@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AuthRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+  SUPPORT
+}
+
+enum DocumentType {
+  LOGO
+  BANNER
+  IMAGE
+  VIDEO
+  AUDIO
+  PDF
+  DOCUMENT
+  OTHER
+}
+
+model User {
+  id                  Int                 @id @default(autoincrement())
+  uuid                String              @unique @default(uuid())
+  email     String   @unique
+  phone     String?   @unique
+  password  String
+
+  role      AuthRole
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([email])
+  @@index([phone])
+  @@index([uuid])
+  @@map("users")
+}
+
+model Document {
+  id                 Int           @id @default(autoincrement())
+  uuid               String        @unique @default(uuid())
+  user_uuid          String
+  filename           String
+  mimetype           String
+  size               Int
+  url                String
+  path               String
+  type               DocumentType  @default(LOGO)
+  created_at         DateTime      @default(now())
+
+  @@index([user_uuid])
+  @@index([uuid])
+  @@map("documents")
+}
+
+
+
