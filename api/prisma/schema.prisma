@@ -31,39 +31,355 @@ enum DocumentType {
   OTHER
 }
 
-model User {
-  id                  Int                 @id @default(autoincrement())
-  uuid                String              @unique @default(uuid())
-  email     String   @unique
-  phone     String?   @unique
-  password  String
+enum CrawlType {
+  HTML
+  API
+  GRAPHQL
+  PLAYWRIGHT
+  SITEMAP
+  HYBRID
+}
 
-  role      AuthRole
+enum PaginationType {
+  NONE
+  PAGE_NUMBER
+  OFFSET
+  CURSOR
+  INFINITE_SCROLL
+  LOAD_MORE
+  UNKNOWN
+}
+
+enum ScraperStatus {
+  ACTIVE
+  INACTIVE
+  DEPRECATED
+  TESTING
+}
+
+enum CrawlRunStatus {
+  QUEUED
+  RUNNING
+  SUCCESS
+  PARTIAL_SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum JobStatus {
+  WAITING
+  ACTIVE
+  COMPLETED
+  FAILED
+  DELAYED
+  PAUSED
+  STALLED
+}
+
+enum PropertyStatus {
+  ACTIVE
+  INACTIVE
+  REMOVED
+  SOLD
+  RENTED
+  UNKNOWN
+}
+
+enum ListingType {
+  SALE
+  RENT
+  SHORT_TERM_RENT
+  UNKNOWN
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  VILLA
+  MAISONETTE
+  STUDIO
+  LAND
+  COMMERCIAL
+  OFFICE
+  WAREHOUSE
+  PARKING
+  OTHER
+  UNKNOWN
+}
+
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  phone    String? @unique
+  password String
+
+  role       AuthRole
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  tracked_agencies UserTrackedAgency[]
+  saved_properties UserProperty[]
+
   @@index([email])
   @@index([phone])
-  @@index([uuid])
   @@map("users")
 }
 
+model CmsTarget {
+  id             String   @id @default(uuid())
+  name           String
+  cms_type       String
+  base_url       String
+  api_key_secret String?
+  config         Json?
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  @@map("cms_targets")
+}
+
+model SourceAgency {
+  id                     String         @id @default(uuid())
+  name                   String
+  base_url               String         @unique
+  city                   String?
+  crawl_type             CrawlType      @default(HTML)
+  pagination_type        PaginationType @default(UNKNOWN)
+  property_url_pattern   String?
+  robots_allowed         Boolean?
+  proxy_required         Boolean        @default(false)
+  crawl_interval_minutes Int            @default(1440)
+  last_success_at        DateTime?
+  last_failure_at        DateTime?
+  last_error_message     String?
+  enabled                Boolean        @default(true)
+  metadata               Json?
+  created_at             DateTime       @default(now())
+  updated_at             DateTime       @updatedAt
+
+  scrapers          Scraper[]
+  crawl_runs        CrawlRun[]
+  source_properties SourceProperty[]
+  tracked_by        UserTrackedAgency[]
+
+  @@index([crawl_type])
+  @@map("source_agencies")
+}
+
+model Scraper {
+  id               String        @id @default(uuid())
+  source_agency_id String
+  name             String
+  version          Int           @default(1)
+  status           ScraperStatus @default(TESTING)
+  adapter_key      String
+  config           Json?
+  selectors        Json?
+  validation_rules Json?
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+
+  source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  crawl_runs    CrawlRun[]
+
+  @@unique([source_agency_id, version])
+  @@index([source_agency_id])
+  @@index([status])
+  @@map("scrapers")
+}
+
+model CrawlRun {
+  id               String         @id @default(uuid())
+  source_agency_id String
+  scraper_id       String?
+  status           CrawlRunStatus @default(QUEUED)
+  started_at       DateTime?
+  finished_at      DateTime?
+  total_found      Int            @default(0)
+  total_created    Int            @default(0)
+  total_updated    Int            @default(0)
+  total_removed    Int            @default(0)
+  total_failed     Int            @default(0)
+  error_message    String?
+  metadata         Json?
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+
+  source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  scraper       Scraper?     @relation(fields: [scraper_id], references: [id], onDelete: SetNull)
+  job_logs      JobLog[]
+
+  @@index([source_agency_id])
+  @@index([scraper_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("crawl_runs")
+}
+
+model JobLog {
+  id            String    @id @default(uuid())
+  queue_name    String
+  job_id        String?
+  job_name      String?
+  status        JobStatus
+  attempt       Int       @default(0)
+  max_attempts  Int?
+  crawl_run_id  String?
+  payload       Json?
+  result        Json?
+  error_message String?
+  stack_trace   String?
+  started_at    DateTime?
+  finished_at   DateTime?
+  duration_ms   Int?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  crawl_run CrawlRun? @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)
+
+  @@index([queue_name])
+  @@index([job_id])
+  @@index([status])
+  @@index([crawl_run_id])
+  @@index([created_at])
+  @@map("job_logs")
+}
+
+model SourceProperty {
+  id               String         @id @default(uuid())
+  source_agency_id String
+  external_id      String?
+  source_url       String
+  canonical_url    String?
+  raw_title        String?
+  raw_description  String?
+  raw_price        String?
+  raw_location     String?
+  raw_data         Json?
+  raw_html_path    String?
+  screenshot_path  String?
+  content_hash     String?
+  first_seen_at    DateTime       @default(now())
+  last_seen_at     DateTime?
+  status           PropertyStatus @default(ACTIVE)
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+
+  source_agency  SourceAgency         @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  property_links PropertySourceLink[]
+
+  @@unique([source_agency_id, source_url])
+  @@index([source_agency_id])
+  @@index([external_id])
+  @@index([content_hash])
+  @@index([status])
+  @@index([last_seen_at])
+  @@map("source_properties")
+}
+
+model Property {
+  id                 String         @id @default(uuid())
+  title              String
+  description        String?
+  listing_type       ListingType    @default(UNKNOWN)
+  property_type      PropertyType   @default(UNKNOWN)
+  status             PropertyStatus @default(ACTIVE)
+  price              Decimal?       @db.Decimal(14, 2)
+  currency           String?        @default("EUR")
+  city               String?
+  district           String?
+  address            String?
+  postal_code        String?
+  country            String?
+  latitude           Decimal?       @db.Decimal(10, 7)
+  longitude          Decimal?       @db.Decimal(10, 7)
+  square_meters      Decimal?       @db.Decimal(10, 2)
+  bedrooms           Int?
+  bathrooms          Int?
+  floor              String?
+  construction_year  Int?
+  renovation_year    Int?
+  features           Json?
+  images             Json?
+  normalized_data    Json?
+  duplicate_group_id String?
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+
+  source_links PropertySourceLink[]
+  saved_by     UserProperty[]
+
+  @@index([listing_type])
+  @@index([property_type])
+  @@index([status])
+  @@index([city])
+  @@index([district])
+  @@index([price])
+  @@index([duplicate_group_id])
+  @@map("properties")
+}
+
+model PropertySourceLink {
+  id                 String   @id @default(uuid())
+  property_id        String
+  source_property_id String
+  confidence_score   Decimal? @db.Decimal(5, 2)
+  is_primary_source  Boolean  @default(false)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  property        Property       @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  source_property SourceProperty @relation(fields: [source_property_id], references: [id], onDelete: Cascade)
+
+  @@unique([property_id, source_property_id])
+  @@index([property_id])
+  @@index([source_property_id])
+  @@map("property_source_links")
+}
+
 model Document {
-  id                 Int           @id @default(autoincrement())
-  uuid               String        @unique @default(uuid())
-  user_uuid          String
-  filename           String
-  mimetype           String
-  size               Int
-  url                String
-  path               String
-  type               DocumentType  @default(LOGO)
-  created_at         DateTime      @default(now())
+  id         String       @id @default(uuid())
+  user_uuid  String
+  filename   String
+  mimetype   String
+  size       Int
+  url        String
+  path       String
+  type       DocumentType @default(LOGO)
+  created_at DateTime     @default(now())
 
   @@index([user_uuid])
-  @@index([uuid])
   @@map("documents")
 }
 
+model UserTrackedAgency {
+  id               String   @id @default(uuid())
+  user_id          String
+  source_agency_id String
+  created_at       DateTime @default(now())
 
+  user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
 
+  @@unique([user_id, source_agency_id])
+  @@index([user_id])
+  @@index([source_agency_id])
+  @@map("user_tracked_agencies")
+}
+
+model UserProperty {
+  id          String   @id @default(uuid())
+  user_id     String
+  property_id String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user     User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [property_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, property_id])
+  @@index([user_id])
+  @@index([property_id])
+  @@map("user_properties")
+}
