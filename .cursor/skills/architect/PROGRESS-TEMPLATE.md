@@ -14,6 +14,8 @@
 ## Session start checklist
 
 - [ ] Read this file (`PROGRESS.md`)
+- [ ] Read `.cursor/rules/app-code-structure-and-best-practices.mdc` and/or
+      `.cursor/rules/api-code-structure-and-best-practices.mdc` for the active task
 - [ ] Read direction docs listed under **Current focus** feature
 - [ ] Open the next incomplete task file in that feature group
 - [ ] Implement until acceptance criteria pass
@@ -47,6 +49,8 @@
 | System architecture | `directions/02-system-architecture.md` |
 | Domain model | `directions/03-domain-model.md` |
 | API design | `directions/04-api-design.md` |
+| App architecture rules | `.cursor/rules/app-code-structure-and-best-practices.mdc` |
+| API architecture rules | `.cursor/rules/api-code-structure-and-best-practices.mdc` |
 
 ### Task files
 
@@ -57,14 +61,20 @@
 
 ### Implementation checklist
 
-- [ ] Database schema / migrations for users (if applicable)
-- [ ] Backend: register endpoint
-- [ ] Backend: login endpoint + JWT/session
-- [ ] Backend: auth guard on protected routes
-- [ ] Frontend: sign-up page wired to API
-- [ ] Frontend: sign-in page wired to API
-- [ ] Frontend: token storage + axios interceptor
-- [ ] Frontend: protected route redirect when unauthenticated
+**API (`api/`)**
+- [ ] Prisma schema / migration (if applicable)
+- [ ] `api/src/modules/auth/` — register, login, JWT
+- [ ] `JwtGuard` on protected routes
+
+**App (`app/`)**
+- [ ] `app/src/features/auth/` — services, hooks, interfaces
+- [ ] `app/src/config/api/routes.ts` — `ApiRoutes` entries
+- [ ] `app/src/routes/routes.ts` — `Routes` entries
+- [ ] Sign-up / sign-in pages wired to feature hooks
+- [ ] Token storage + axios interceptor
+- [ ] Protected route redirect when unauthenticated
+
+**Verification**
 - [ ] Smoke test: new user can register, login, and reach a protected page
 
 **Definition of done:** A new user can register, log in, and access at least one protected screen in the running app.
@@ -96,12 +106,19 @@
 
 ### Implementation checklist
 
-- [ ] Backend: Lead model + CRUD endpoints
-- [ ] Backend: scope leads to account/user
-- [ ] Frontend: leads list page with real data
-- [ ] Frontend: create lead form
-- [ ] Frontend: edit lead
-- [ ] Frontend: delete lead
+**API (`api/`)**
+- [ ] `api/src/modules/leads/` — module, controller, service, DTOs
+- [ ] Prisma model + migration
+- [ ] CRUD endpoints scoped to account/user
+- [ ] Paginated list returns `{ data, pagination }`
+
+**App (`app/`)**
+- [ ] `app/src/features/leads/` — services, hooks, interfaces, schemas
+- [ ] `ApiRoutes` and `Routes` entries
+- [ ] Leads list page with real data
+- [ ] Create / edit / delete forms (zodResolver + toast + invalidate)
+
+**Verification**
 - [ ] Smoke test: full CRUD flow while logged in
 
 **Definition of done:** Logged-in user can perform full lead CRUD from the UI against the live API.
