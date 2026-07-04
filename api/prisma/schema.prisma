@@ -57,6 +57,7 @@ enum ScraperStatus {
   TESTING
 }
 
+// Status for production scraping executions (Playwright runs against a live Scraper).
 enum CrawlRunStatus {
   QUEUED
   RUNNING
@@ -64,6 +65,37 @@ enum CrawlRunStatus {
   PARTIAL_SUCCESS
   FAILED
   CANCELLED
+}
+
+// Separate from CrawlRunStatus: an AI generation/self-heal session has different
+// terminal states than a production crawl (e.g. AWAITING_REVIEW has no crawl equivalent).
+enum GenerationRunStatus {
+  QUEUED
+  RUNNING
+  AWAITING_REVIEW // config produced, not yet promoted to a ScraperVersion
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+// Why a ScraperGenerationRun was started.
+enum GenerationTrigger {
+  MANUAL // user requested a scraper for a new/existing agency
+  SELF_HEAL // triggered automatically after a CrawlRun failure
+  SCHEDULED // periodic re-generation/health check
+}
+
+// A single computer-use action returned by the model during a generation run.
+enum ComputerActionType {
+  CLICK
+  DOUBLE_CLICK
+  TYPE
+  SCROLL
+  WAIT
+  KEYPRESS
+  SCREENSHOT
+  DRAG
+  DONE
 }
 
 enum JobStatus {
@@ -107,6 +139,21 @@ enum PropertyType {
   UNKNOWN
 }
 
+enum CmsType {
+  ESTATEWEB
+}
+
+enum AuthType {
+  BASIC
+  API_KEY
+  OAUTH
+}
+
+// ─────────────────────────────────────────────────────────────
+// USERS & CMS
+// ─────────────────────────────────────────────────────────────
+
+/// App users. Can track agencies and save properties.
 model User {
   id       String  @id @default(uuid())
   email    String  @unique
@@ -125,10 +172,13 @@ model User {
   @@map("users")
 }
 
+/// Destination CMS instance that normalized Property data gets synced to.
+/// Not directly tied to the computer-use loop — this is the output side of the pipeline.
 model CmsTarget {
   id             String   @id @default(uuid())
   name           String
-  cms_type       String
+  cms_type       CmsType
+  auth_type      AuthType
   base_url       String
   api_key_secret String?
   config         Json?
@@ -139,6 +189,13 @@ model CmsTarget {
   @@map("cms_targets")
 }
 
+// ─────────────────────────────────────────────────────────────
+// SOURCE AGENCIES (scrape targets)
+// ─────────────────────────────────────────────────────────────
+
+/// A target website (real-estate agency) to be scraped. Root of the whole pipeline:
+/// SourceAgency → ScraperGenerationRun (AI builds a scraper) → Scraper → CrawlRun (production run)
+/// → SourceProperty → Property.
 model SourceAgency {
   id                     String         @id @default(uuid())
   name                   String
@@ -147,8 +204,6 @@ model SourceAgency {
   crawl_type             CrawlType      @default(HTML)
   pagination_type        PaginationType @default(UNKNOWN)
   property_url_pattern   String?
-  robots_allowed         Boolean?
-  proxy_required         Boolean        @default(false)
   crawl_interval_minutes Int            @default(1440)
   last_success_at        DateTime?
   last_failure_at        DateTime?
@@ -158,57 +213,171 @@ model SourceAgency {
   created_at             DateTime       @default(now())
   updated_at             DateTime       @updatedAt
 
-  scrapers          Scraper[]
-  crawl_runs        CrawlRun[]
-  source_properties SourceProperty[]
-  tracked_by        UserTrackedAgency[]
+  scrapers                Scraper[]
+  scraper_generation_runs ScraperGenerationRun[]
+  crawl_runs              CrawlRun[]
+  source_properties       SourceProperty[]
+  tracked_by              UserTrackedAgency[]
 
   @@index([crawl_type])
   @@map("source_agencies")
 }
 
+// ─────────────────────────────────────────────────────────────
+// AI GENERATION LAYER (computer-use loop)
+// ─────────────────────────────────────────────────────────────
+
+/// A scraper definition for one agency. Holds NO config directly — config always lives on the
+/// active ScraperVersion (see `active_version`). This keeps a single source of truth instead of
+/// letting Scraper.config and ScraperVersion.config drift out of sync.
 model Scraper {
-  id               String        @id @default(uuid())
-  source_agency_id String
-  name             String
-  version          Int           @default(1)
-  status           ScraperStatus @default(TESTING)
-  adapter_key      String
-  config           Json?
-  selectors        Json?
-  validation_rules Json?
-  created_at       DateTime      @default(now())
-  updated_at       DateTime      @updatedAt
+  id                String        @id @default(uuid())
+  source_agency_id  String
+  name              String
+  active_version_id String?       @unique // FK to the ScraperVersion currently in use
+  version_count     Int           @default(0) // convenience counter, incremented on new versions
+  status            ScraperStatus @default(TESTING)
+  adapter_key       String
+  self_healing_enabled           Boolean       @default(true) // whether self-heal is allowed to auto-apply fixes
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
 
   source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
-  crawl_runs    CrawlRun[]
+  active_version ScraperVersion? @relation("ActiveVersion", fields: [active_version_id], references: [id], onDelete: SetNull)
 
-  @@unique([source_agency_id, version])
+  crawl_runs              CrawlRun[]
+  versions                ScraperVersion[]        @relation("ScraperVersions")
+  execution_traces        ScraperExecutionTrace[]
+  scraper_generation_runs ScraperGenerationRun[]
+
   @@index([source_agency_id])
   @@index([status])
   @@map("scrapers")
 }
 
-model CrawlRun {
-  id               String         @id @default(uuid())
-  source_agency_id String
-  scraper_id       String?
-  status           CrawlRunStatus @default(QUEUED)
-  started_at       DateTime?
-  finished_at      DateTime?
-  total_found      Int            @default(0)
-  total_created    Int            @default(0)
-  total_updated    Int            @default(0)
-  total_removed    Int            @default(0)
-  total_failed     Int            @default(0)
-  error_message    String?
-  metadata         Json?
-  created_at       DateTime       @default(now())
-  updated_at       DateTime       @updatedAt
+/// One AI (or human) session that produces or fixes a scraper config. This is the row that
+/// owns a computer-use loop: it's created, the loop runs (see ComputerUseStep), and it ends
+/// with either a promoted ScraperVersion or a failure.
+model ScraperGenerationRun {
+  id                String              @id @default(uuid())
+  source_agency_id  String
+  scraper_id        String? // set when this run is fixing/updating an existing Scraper (self-heal or manual re-gen)
+  trigger           GenerationTrigger   @default(MANUAL)
+  status            GenerationRunStatus @default(QUEUED)
+  prompt            String? // goal/instructions given to the model
+  staged_config     Json? // draft config produced by the model, pending review/promotion
+  produced_version_id String?           @unique // set once staged_config is approved and copied into a ScraperVersion
+  error_message     String?
+  started_at        DateTime?
+  finished_at       DateTime?
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
 
-  source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
-  scraper       Scraper?     @relation(fields: [scraper_id], references: [id], onDelete: SetNull)
-  job_logs      JobLog[]
+  source_agency   SourceAgency    @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  scraper         Scraper?        @relation(fields: [scraper_id], references: [id], onDelete: SetNull)
+  produced_version ScraperVersion? @relation("ProducedVersion", fields: [produced_version_id], references: [id], onDelete: SetNull)
+
+  steps ComputerUseStep[]
+
+  @@index([source_agency_id])
+  @@index([scraper_id])
+  @@index([status])
+  @@map("scraper_generation_runs")
+}
+
+/// A single action in the computer-use loop: model receives a screenshot, returns an action
+/// (click/type/scroll/...), Playwright executes it, a new screenshot is captured. Storing every
+/// step lets you replay a session, debug why the AI navigated somewhere wrong, and show the
+/// user an audit trail of how a scraper config was derived.
+model ComputerUseStep {
+  id                         String             @id @default(uuid())
+  scraper_generation_run_id String
+  step_index                 Int // ordering within the run, starting at 0
+  action_type                ComputerActionType
+  action_payload              Json // raw action from the model, e.g. {"x":320,"y":540} or {"text":"..."}
+  screenshot_before_path      String? // screenshot the model was shown before acting
+  screenshot_after_path       String? // screenshot captured after Playwright executed the action
+  model_reasoning             String? // optional chain-of-thought / rationale text returned by the model
+  created_at                  DateTime           @default(now())
+
+  scraper_generation_run ScraperGenerationRun @relation(fields: [scraper_generation_run_id], references: [id], onDelete: Cascade)
+
+  @@index([scraper_generation_run_id])
+  @@index([scraper_generation_run_id, step_index])
+  @@map("computer_use_steps")
+}
+
+/// Immutable, versioned scraper config. This is the single source of truth for "what a scraper
+/// does" — Scraper.active_version_id points here. New versions are created by generation runs
+/// (AI) or manual edits (human review), enabling rollback and full history / self-healing.
+model ScraperVersion {
+  id         String   @id @default(uuid())
+  scraper_id String
+  version    Int
+  config     Json // full scraper definition: start_url, listing_selector, fields, pagination, etc.
+  created_by String // "AI" | "USER"
+  notes      String? // e.g. reason for the fix, summary of what changed from prior version
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  scraper Scraper @relation("ScraperVersions", fields: [scraper_id], references: [id], onDelete: Cascade)
+
+  // Back-relations used only to let other models point at "the" active/produced version.
+  active_for_scraper Scraper?              @relation("ActiveVersion")
+  produced_by_run     ScraperGenerationRun? @relation("ProducedVersion")
+
+  @@unique([scraper_id, version])
+  @@map("scraper_versions")
+}
+
+/// Step-by-step log of a PRODUCTION Playwright execution (not the AI's exploratory computer-use
+/// loop — see ComputerUseStep for that). Used to detect broken selectors / navigation failures
+/// and feed them into a self-heal ScraperGenerationRun.
+model ScraperExecutionTrace {
+  id            String   @id @default(uuid())
+  scraper_id    String
+  crawl_run_id  String?
+  steps         Json // Playwright step-by-step execution log
+  success       Boolean
+  error_summary String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  scraper   Scraper   @relation(fields: [scraper_id], references: [id], onDelete: Cascade)
+  crawl_run CrawlRun? @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)
+
+  @@index([scraper_id])
+  @@map("scraper_execution_traces")
+}
+
+// ─────────────────────────────────────────────────────────────
+// PRODUCTION EXECUTION LAYER
+// ─────────────────────────────────────────────────────────────
+
+/// One production scraping execution of a Scraper against its SourceAgency. This is the
+/// Playwright run that uses the config from Scraper.active_version — no AI involved here,
+/// unless it fails and triggers a self-heal ScraperGenerationRun.
+model CrawlRun {
+  id                String         @id @default(uuid())
+  source_agency_id  String
+  scraper_id        String?
+  status            CrawlRunStatus @default(QUEUED)
+  started_at        DateTime?
+  finished_at       DateTime?
+  total_found       Int            @default(0)
+  total_created      Int            @default(0)
+  total_updated      Int            @default(0)
+  total_removed      Int            @default(0)
+  total_failed        Int            @default(0)
+  error_message      String?
+  metadata            Json?
+  created_at          DateTime       @default(now())
+  updated_at          DateTime       @updatedAt
+
+  source_agency    SourceAgency            @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  scraper          Scraper?                @relation(fields: [scraper_id], references: [id], onDelete: SetNull)
+  job_logs         JobLog[]
+  execution_traces ScraperExecutionTrace[]
 
   @@index([source_agency_id])
   @@index([scraper_id])
@@ -217,6 +386,8 @@ model CrawlRun {
   @@map("crawl_runs")
 }
 
+/// Generic queue/job execution log (e.g. BullMQ), optionally tied to a CrawlRun. Useful for
+/// ops/debugging independent of the scraping domain model.
 model JobLog {
   id            String    @id @default(uuid())
   queue_name    String
@@ -246,25 +417,31 @@ model JobLog {
   @@map("job_logs")
 }
 
+// ─────────────────────────────────────────────────────────────
+// OUTPUT LAYER
+// ─────────────────────────────────────────────────────────────
+
+/// Raw listing as extracted from a single source website. Not yet normalized/deduplicated —
+/// that happens in Property. One SourceProperty per (agency, url).
 model SourceProperty {
-  id               String         @id @default(uuid())
-  source_agency_id String
-  external_id      String?
-  source_url       String
-  canonical_url    String?
-  raw_title        String?
-  raw_description  String?
-  raw_price        String?
-  raw_location     String?
-  raw_data         Json?
-  raw_html_path    String?
-  screenshot_path  String?
-  content_hash     String?
-  first_seen_at    DateTime       @default(now())
-  last_seen_at     DateTime?
-  status           PropertyStatus @default(ACTIVE)
-  created_at       DateTime       @default(now())
-  updated_at       DateTime       @updatedAt
+  id                String         @id @default(uuid())
+  source_agency_id  String
+  external_id       String?
+  source_url        String
+  canonical_url     String?
+  raw_title         String?
+  raw_description   String?
+  raw_price         String?
+  raw_location      String?
+  raw_data          Json?
+  raw_html_path     String?
+  screenshot_path   String? // single debug screenshot of the listing page (not the computer-use loop)
+  content_hash      String?
+  first_seen_at     DateTime       @default(now())
+  last_seen_at      DateTime?
+  status            PropertyStatus @default(ACTIVE)
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @updatedAt
 
   source_agency  SourceAgency         @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
   property_links PropertySourceLink[]
@@ -278,6 +455,8 @@ model SourceProperty {
   @@map("source_properties")
 }
 
+/// Normalized, deduplicated property record — the canonical entity synced to the CMS.
+/// May be backed by multiple SourceProperty rows (same listing found on multiple agencies).
 model Property {
   id                 String         @id @default(uuid())
   title              String
@@ -320,6 +499,7 @@ model Property {
   @@map("properties")
 }
 
+/// Mapping layer between normalized Property and the raw SourceProperty rows it was built from.
 model PropertySourceLink {
   id                 String   @id @default(uuid())
   property_id        String
@@ -338,26 +518,21 @@ model PropertySourceLink {
   @@map("property_source_links")
 }
 
-model Document {
-  id         String       @id @default(uuid())
-  user_uuid  String
-  filename   String
-  mimetype   String
-  size       Int
-  url        String
-  path       String
-  type       DocumentType @default(LOGO)
-  created_at DateTime     @default(now())
+// ─────────────────────────────────────────────────────────────
+// USER RELATIONS
+// ─────────────────────────────────────────────────────────────
 
-  @@index([user_uuid])
-  @@map("documents")
-}
-
+/// Which SourceAgencies a user follows/monitors.
 model UserTrackedAgency {
-  id               String   @id @default(uuid())
-  user_id          String
-  source_agency_id String
-  created_at       DateTime @default(now())
+  id                String   @id @default(uuid())
+  user_id           String
+  source_agency_id  String
+  enabled           Boolean  @default(true)
+  track_new_listings Boolean  @default(true)
+  track_removed_listings Boolean  @default(true)
+  track_updated_listings Boolean  @default(true)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
 
   user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
   source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
@@ -368,6 +543,7 @@ model UserTrackedAgency {
   @@map("user_tracked_agencies")
 }
 
+/// Properties a user has saved/favorited.
 model UserProperty {
   id          String   @id @default(uuid())
   user_id     String
@@ -382,4 +558,20 @@ model UserProperty {
   @@index([user_id])
   @@index([property_id])
   @@map("user_properties")
+}
+
+/// Generic uploaded file record (logos, banners, media), unrelated to the scraping pipeline.
+model Document {
+  id         String       @id @default(uuid())
+  user_uuid  String
+  filename   String
+  mimetype   String
+  size       Int
+  url        String
+  path       String
+  type       DocumentType @default(LOGO)
+  created_at DateTime     @default(now())
+
+  @@index([user_uuid])
+  @@map("documents")
 }
