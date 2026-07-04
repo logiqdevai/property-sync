@@ -2,9 +2,32 @@
 
 ## Functional Project Specification (v2 — updated for computer-use generation + admin dashboard)
 
+# Implementation Scope (Current Phase)
+
+This section defines what the **current implementation** must deliver. Everything marked **out of scope** may exist in the Prisma schema or in this document as a future design, but must not be built yet.
+
+### In scope
+
+- Crawl pipeline through normalized `Property`, `SourceProperty`, and append-only `PropertyHistory`
+- Automatic **creation and update** of `UserProperty` rows for users tracking the source agency that surfaced a listing
+- **Fetching and displaying** `UserProperty` and `PropertyHistory` (admin and user UI)
+- CMS **configuration UI only**: admin CMS Targets subpage (`CmsTarget` + connected `UserCms` CRUD) and user Integrations page (`UserCms` connect / edit / enable / disable / disconnect)
+- No background jobs, workers, or service classes that push property data to an external CMS
+
+### Out of scope (current phase)
+
+- **No CMS integration service classes** (e.g. no per-`CmsType` adapter under `integrations/`, no sync orchestrator service)
+- **No property synchronization operations** — no pushing `UserProperty` to external CMS APIs, no `CmsSyncRun` creation/processing/retry workers (see `CMS-SYNCHRONIZATION-SPECIFICATION.MD`)
+- **No CMS Sync admin subpage** (`/admin/cms-sync`) and no sync-status UI on dashboard or Integrations page
+- **No CMS sync failure notifications**
+
+The crawl pipeline **ends** after canonical property changes are recorded and matching `UserProperty` rows are created or updated. `PropertyHistory` is written for every detected change. CMS push is deferred to a later phase (see `CMS-SYNCHRONIZATION-SPECIFICATION.MD`).
+
+---
+
 # 1. Project Overview
 
-The platform is a centralized property aggregation system that automatically collects real estate listings from multiple public real estate agency websites and synchronizes them with a customer's CMS.
+The platform is a centralized property aggregation system that automatically collects real estate listings from multiple public real estate agency websites, normalizes them, and maintains per-user property copies. **CMS push is planned but not part of the current implementation phase** (see Implementation Scope).
 
 The system is designed to support hundreds of independent property sources, with the ability to continuously add new websites over time without changing the core platform. Scrapers themselves can now be **generated and repaired by an AI computer-use agent**, rather than hand-written.
 
@@ -19,7 +42,8 @@ The application focuses on:
 - Scraper monitoring
 - Manual and scheduled execution
 - High visibility into scraper health
-- CMS synchronization with guaranteed retry/no-data-loss
+- Per-user property copies (`UserProperty`) with full change history (`PropertyHistory`)
+- CMS connection configuration UI (`CmsTarget`, `UserCms`) — credentials only, no sync execution yet
 - Admin notifications
 
 ---
@@ -39,7 +63,7 @@ The system shall:
 - Keep historical crawl information.
 - Keep historical property-change information (price, images, status).
 - Generate and self-heal scrapers using an AI computer-use agent, with a full replayable audit trail.
-- Synchronize data with the customer's CMS, with retries and a durable sync log.
+- Create and maintain `UserProperty` copies for tracking users, with `PropertyHistory` for every detected change.
 - Provide complete monitoring of every scraper, crawl, job, and generation run.
 - Notify admins of failures and anomalies.
 - Allow new scrapers to be added independently.
@@ -79,8 +103,7 @@ Top-level KPIs:
 - Total Properties
 - Queue Status (waiting / running / failed `JobLog` counts)
 - Active `ScraperGenerationRun`s (computer-use sessions currently running)
-- CMS Synchronization Status (pending / failed `CmsSyncRun`s across all `UserCms` connections)
-- Active CMS Connections (`UserCms` with `is_active: true`) / Total configured
+- Active CMS Connections (`UserCms` with `is_active: true`) / Total configured — configuration count only; no sync metrics in this phase
 - Unread Notifications count
 
 Recent activity feed, each row deep-linking into the relevant subpage:
@@ -168,30 +191,22 @@ Backed by: `Property`, `PropertySourceLink`, `PropertyHistory`, `SourceProperty`
 
 
 
-### CMS Targets (`/admin/cms-targets`)
+### CMS Targets (`/admin/cms-targets`) — configuration only
 
 Backed by: `CmsTarget`, `UserCms`
 
-Platform-level CMS integration definitions. Each `CmsTarget` describes a supported destination CMS type; individual user accounts and credentials live on `UserCms`.
+Platform-level CMS integration definitions. Each `CmsTarget` describes a supported destination CMS type; individual user accounts and credentials live on `UserCms`. **This subpage manages configuration only — no sync execution in the current phase.**
 
 - List / search / filter by `cms_type`, `auth_type`, `is_active`
 - Create / Edit target: `cms_type`, `auth_type`, `base_url`, `allow_multiple` (whether one user may connect more than once), `is_active`
-- Enable / Disable target (`is_active`) — disabling a target prevents new connections and pauses sync for all linked `UserCms` rows
+- Enable / Disable target (`is_active`) — disabling prevents new connections; existing `UserCms` rows remain stored but inactive
 - Detail view:
   - Target metadata and connection count
-  - **Connected accounts table** (`UserCms`): user email, `is_active`, credential fields present (masked — never show raw secrets), `created_at`, recent sync success/failure counts
+  - **Connected accounts table** (`UserCms`): user email, `is_active`, credential fields present (masked — never show raw secrets), `created_at`
   - Per-account actions: **Enable / Disable** (`is_active`), **Edit** credentials (`api_key_secret`, `email`, `username`, `password`, `config` — fields shown depend on the target's `auth_type`), deep-link to the owning user
   - Admin may create a `UserCms` on behalf of a user when `allow_multiple` is false and the user has no existing connection to this target
 
-
-
-### CMS Sync (`/admin/cms-sync`)
-
-Backed by: `CmsSyncRun`, `UserCms`, `UserProperty`
-
-- Sync log: list/filter `CmsSyncRun` by `status` (Pending, Success, Failed, Retrying), `action` (Create/Update/Remove), `user_cms`, user, property
-- Detail view: payload sent, response received, error_message, attempt count, linked `UserCms` and `UserProperty`
-- "Retry sync" action on failed rows — this is what guarantees spec §15's "failures should never lose data": a failed sync stays as a row here until it succeeds or is manually resolved, it is never silently dropped
+> **Future phase:** CMS Sync subpage (`/admin/cms-sync`), sync KPIs, and sync retry actions — see `CMS-SYNCHRONIZATION-SPECIFICATION.MD`.
 
 
 
@@ -199,7 +214,7 @@ Backed by: `CmsSyncRun`, `UserCms`, `UserProperty`
 
 Backed by: `Notification`
 
-- List / filter by `type` (Broken Scraper, CMS Sync Failure, Property Removal Spike, Large Crawl Failure, Queue Failure, Website Unavailable), `severity`, read/unread
+- List / filter by `type` (Broken Scraper, Property Removal Spike, Large Crawl Failure, Queue Failure, Website Unavailable), `severity`, read/unread
 - Mark read / mark all read
 - Each notification deep-links to the relevant Agency / Scraper / CrawlRun
 
@@ -322,7 +337,7 @@ Compare with existing data
 ↓
 Create / Update / Remove (each change logged to `PropertyHistory`)
 ↓
-Synchronize CMS (for each active `UserCms`, push changed `UserProperty` rows and create `CmsSyncRun` records)
+Create or update `UserProperty` for every user tracking the source agency
 ↓
 Generate reports
 
@@ -348,7 +363,7 @@ The platform must detect when a property has been removed from a source website.
 
 Removal may occur because: Listing deleted, sold, rented, URL removed, 404 page, listing hidden.
 
-The system compares every crawl with previous crawls. If a previously discovered listing no longer exists, its `SourceProperty.status` becomes `REMOVED`, a `PropertyHistory` row (`event_type: REMOVED`) is written, and the corresponding `UserProperty` copies are marked for CMS removal (a `CmsSyncRun` with `action: REMOVE` is created per active `UserCms`).
+The system compares every crawl with previous crawls. If a previously discovered listing no longer exists, its `SourceProperty.status` becomes `REMOVED`, a `PropertyHistory` row (`event_type: REMOVED`) is written, and the corresponding `UserProperty` copies for tracking users are updated to reflect removal. No CMS push occurs in the current phase.
 
 The user can see:
 
@@ -367,7 +382,7 @@ If a previously removed listing reappears, a `PropertyHistory` row (`event_type:
 
 When a property changes: Price, Description, Images, Bedrooms, Bathrooms, Surface, Address, Features.
 
-The system detects differences. Only changed fields are synchronized to each user's CMS via their active `UserCms` connections. Every detected difference writes a `PropertyHistory` row with the specific `field`, `old_value`, and `new_value` — this is what powers the property history timeline (§4.2).
+The system detects differences. Every detected difference writes a `PropertyHistory` row with the specific `field`, `old_value`, and `new_value` — this is what powers the property history timeline (§4.2). Matching `UserProperty` rows for tracking users are updated from the canonical `Property`. CMS push is out of scope for the current phase.
 
 ---
 
@@ -402,19 +417,11 @@ Each entry records `field`, `old_value`, `new_value`, and (where applicable) the
 
 
 
-# 15. CMS Synchronization
+# 15. CMS Synchronization — future phase
 
-The system synchronizes each user's `UserProperty` copies to their connected CMS via `UserCms`: New Properties, Updated Properties, Removed Properties.
+> **Not implemented in the current phase.** Full functional specification: [`CMS-SYNCHRONIZATION-SPECIFICATION.MD`](./CMS-SYNCHRONIZATION-SPECIFICATION.MD)
 
-**Architecture:**
-
-- `CmsTarget` — platform-defined CMS type (e.g. EstateWeb): `cms_type`, `auth_type`, `base_url`, `allow_multiple`, `is_active`. Managed by admins on the CMS Targets subpage (§4.2).
-- `UserCms` — per-user connection to a `CmsTarget` with that user's credentials (`api_key_secret`, `email`, `username`, `password`, `config` — populated according to the target's `auth_type`). Managed by the user on the Integrations page (§23) and by admins from the CMS Targets subpage.
-- `CmsSyncRun` — audit log of every push attempt for a specific `UserCms` + `UserProperty` pair.
-
-Sync only runs for `UserCms` rows where both the connection (`is_active`) and its parent `CmsTarget` (`is_active`) are enabled.
-
-Every sync attempt is recorded as a `CmsSyncRun` row (`action`: Create/Update/Remove; `status`: Pending/Success/Failed/Retrying) with the payload sent and response received. Synchronization must support retries — a failed sync is retried up to `max_attempts` and remains visible in the CMS Sync subpage (§4.2) until resolved. Failures never lose data because the row persists until success.
+Covers: per-`CmsType` integration adapters, crawl-triggered and backfill sync, `CmsSyncRun` processing with retries, CMS Sync admin subpage, sync KPIs, sync failure notifications, and user-facing sync status on Integrations.
 
 ---
 
@@ -473,7 +480,6 @@ When a scraper is considered broken:
 Persisted via the `Notification` model (`type`, `severity`, `title`, `message`, links to agency/scraper/crawl run, `is_read`). Notifications exist for:
 
 - Broken scraper
-- CMS synchronization failure
 - Property removal spike
 - Large crawl failure
 - Queue failures
@@ -501,23 +507,49 @@ Backed by `UserTrackedAgency`. A user can track any `SourceAgency` and independe
 
 # 22. User Properties
 
-Backed by `UserProperty` — a full, independently editable copy of a `Property`, created automatically the first time a tracked agency surfaces a matching listing.
+Backed by `UserProperty`, `PropertyHistory`. **Core deliverable of the current implementation phase.**
+
+A `UserProperty` is a full, independently editable copy of a `Property`, created automatically the first time a tracked agency surfaces a matching listing for that user.
+
+### Crawl-time behaviour (in scope)
+
+When a crawl creates or updates a canonical `Property` and writes `PropertyHistory`:
+
+1. Find all users with an enabled `UserTrackedAgency` for the source agency
+2. For each such user, **create** a new `UserProperty` (first sighting) or **update** the existing copy from canonical data
+3. Set `last_synced_at` on update; set `is_modified` to false when overwriting from canonical unless the user had local edits (preserve user edits — do not blindly overwrite when `is_modified` is true without an explicit re-sync action)
+
+### User UI — Properties (`/properties`)
+
+- List the current user's `UserProperty` rows: search/filter by status, city, price, agency
+- Detail view:
+  - Current copy data (editable fields)
+  - **History timeline** (`PropertyHistory` linked via the canonical `Property`): created, price changes, images added/removed, status changes, removed, reappeared
+- Manual **re-sync from canonical** — overwrites local copy with current `Property` data; warn if `is_modified` is true
+
+### Admin visibility
+
+- Per-user `UserProperty` list on the Users subpage (§4.2)
+- Canonical property detail on the Properties subpage includes linked user copies where relevant
+
+### Data model notes
 
 - Users can edit their own copy (notes, corrections, personal categorization) without affecting the canonical `Property` or other users' copies.
-- `is_modified` flags whether the copy has diverged from the canonical property since it was last synced.
-- `last_synced_at` records when it was last refreshed from canonical data.
-- Users can manually **re-sync** a copy (overwriting their edits with current canonical data) or keep their modified version — the UI should warn before an overwrite if `is_modified` is true.
-- This is distinct from `SourceProperty` (raw per-agency scrape data) and `Property` (canonical normalized record) — `UserProperty` is the personal, user-owned layer on top of both, and is the record pushed to the user's CMS through `UserCms` (see §23).
+- `is_modified` flags whether the copy has diverged from the canonical property since it was last synced from crawl data.
+- `last_synced_at` records when the copy was last refreshed from canonical crawl data.
+- This is distinct from `SourceProperty` (raw per-agency scrape data) and `Property` (canonical normalized record) — `UserProperty` is the personal, user-owned layer. CMS push via `UserCms` is specified in `CMS-SYNCHRONIZATION-SPECIFICATION.MD`.
 
 ---
 
 
 
-# 23. User CMS Integrations
+# 23. User CMS Integrations — configuration only (current phase)
 
 Backed by `UserCms`, `CmsTarget`. Displayed on the user **Integrations** page (`/integrations`).
 
-Users connect their own CMS account so tracked listings sync into their website. The page lists every active `CmsTarget` the platform supports and the user's existing connections.
+Users store CMS account credentials for a future sync phase. **No property data is pushed to external CMS in the current implementation.** No CMS integration service classes are created.
+
+The page lists every active `CmsTarget` the platform supports and the user's existing connections.
 
 ### Available targets
 
@@ -530,18 +562,18 @@ Users connect their own CMS account so tracked listings sync into their website.
 For each `UserCms` belonging to the current user:
 
 - Display: target CMS type, connection status (`is_active`), masked credential hint (e.g. last four characters of email or "API key configured"), `created_at`, `updated_at`
-- **Enable / Disable** toggle (`is_active`) — pauses sync without deleting credentials
+- **Enable / Disable** toggle (`is_active`)
 - **Edit** — update credentials and `config` (fields depend on `auth_type`: email/password, username/password, API key, bearer token, OAuth flow)
-- **Disconnect** — delete the `UserCms` row (with confirmation; warn if pending `CmsSyncRun`s exist)
-- **Sync status summary** — recent `CmsSyncRun` counts (pending, failed, last success) with a link to a per-connection sync history view
+- **Disconnect** — delete the `UserCms` row (with confirmation)
+
+> **Future phase:** sync status summary, per-connection sync history, initial backfill sync on connect — see `CMS-SYNCHRONIZATION-SPECIFICATION.MD`.
 
 ### Connect flow
 
 1. User picks an available `CmsTarget`
 2. Form renders credential fields required by that target's `auth_type`
 3. Optional `config` JSON for CMS-specific settings (field mapping, category defaults, etc.)
-4. On submit, create `UserCms` with `is_active: true`
-5. Optionally trigger an initial backfill sync for existing `UserProperty` rows
+4. On submit, create `UserCms` with `is_active: true` — **no sync job is enqueued**
 
 Admins can also manage any user's connection from the CMS Targets subpage (§4.2).
 
@@ -551,7 +583,7 @@ Admins can also manage any user's connection from the CMS Targets subpage (§4.2
 
 # 24. Logs
 
-Every action should be logged. Examples: Manual crawl, Scheduled crawl, CMS synchronization, CMS connection created/updated/disabled, Property removed, Property updated, Scraper failure, Job failure, Retry, AI generation run started/completed/failed, Scraper version promoted/rolled back.
+Every action should be logged. Examples: Manual crawl, Scheduled crawl, CMS connection created/updated/disabled, Property removed, Property updated, UserProperty created/updated, Scraper failure, Job failure, Retry, AI generation run started/completed/failed, Scraper version promoted/rolled back.
 
 ---
 
@@ -563,6 +595,7 @@ The architecture should support:
 
 - Unlimited agencies
 - Unlimited scrapers
+- **CMS property synchronization** — see `CMS-SYNCHRONIZATION-SPECIFICATION.MD`
 - Multiple CMS integrations (`CmsType` enum is extensible)
 - AI-assisted scraper generation (already modeled)
 - Automatic selector validation (via `validation_rules`)
@@ -578,15 +611,16 @@ The architecture should support:
 
 # 26. Success Criteria
 
+### Current phase
+
 The platform should allow an administrator to:
 
 - Add a new agency and configure its crawl/proxy/robots settings.
 - Attach a dedicated scraper, generated by the AI computer-use agent or created manually.
 - Execute it manually.
 - Schedule automatic crawls.
-- Detect new, updated, and removed listings, with full history.
-- Define CMS targets, view all connected user accounts, and enable/disable or edit any `UserCms` connection.
-- Automatically synchronize each user's properties to their CMS via `UserCms`, with guaranteed retry and a durable audit log.
+- Detect new, updated, and removed listings, with full `PropertyHistory`.
+- Define CMS targets and manage connected `UserCms` accounts (enable/disable/edit credentials) — configuration only.
 - Monitor every crawl, every BullMQ job, and every AI generation session (with full step replay).
 - Detect broken scrapers and have them self-heal automatically, or review/approve AI-proposed fixes manually.
 - Review crawl history and property history.
@@ -595,6 +629,14 @@ The platform should allow an administrator to:
 
 The platform should allow a user to:
 
-- Connect, configure, enable/disable, edit, and disconnect their CMS integration from the Integrations page.
-- See sync health for each connected CMS account.
+- Track agencies and receive notifications for listing changes.
+- View their `UserProperty` list and each property's `PropertyHistory` timeline.
+- Edit their personal property copy and re-sync from canonical data when desired.
+- Connect, configure, enable/disable, edit, and disconnect CMS credentials on the Integrations page — **without any property push occurring**.
+
+The crawl pipeline should **complete** at: normalized `Property` + `PropertyHistory` + `UserProperty` create/update. No CMS integration services or sync workers are required to ship this phase.
+
+### Future phase (not required now)
+
+See [`CMS-SYNCHRONIZATION-SPECIFICATION.MD`](./CMS-SYNCHRONIZATION-SPECIFICATION.MD) for full success criteria.
 

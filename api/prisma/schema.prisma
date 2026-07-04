@@ -687,31 +687,6 @@ model PropertyHistory {
   @@map("property_history")
 }
 
-// ---------------------------------------------------------------
-// USER RELATIONS
-// ---------------------------------------------------------------
-
-/// Which SourceAgencies a user follows/monitors, and which kinds of change notify them.
-model UserTrackedAgency {
-  id                     String   @id @default(uuid())
-  user_id                String
-  source_agency_id       String
-  enabled                Boolean  @default(true)
-  track_new_listings     Boolean  @default(true)
-  track_removed_listings Boolean  @default(true)
-  track_updated_listings Boolean  @default(true)
-  created_at             DateTime @default(now())
-  updated_at             DateTime @updatedAt
-
-  user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
-
-  @@unique([user_id, source_agency_id])
-  @@index([user_id])
-  @@index([source_agency_id])
-  @@map("user_tracked_agencies")
-}
-
 /// User-owned, editable copy of a canonical Property. Created automatically the first time a
 /// tracked agency's scraper surfaces a matching Property; after that, edits apply ONLY to this
 /// row -- the canonical Property keeps being updated by the crawler independently.
@@ -759,6 +734,33 @@ model UserProperty {
   @@index([property_id])
   @@map("user_properties")
 }
+
+// ---------------------------------------------------------------
+// USER RELATIONS
+// ---------------------------------------------------------------
+
+/// Which SourceAgencies a user follows/monitors, and which kinds of change notify them.
+model UserTrackedAgency {
+  id                     String   @id @default(uuid())
+  user_id                String
+  source_agency_id       String
+  enabled                Boolean  @default(true)
+  track_new_listings     Boolean  @default(true)
+  track_removed_listings Boolean  @default(true)
+  track_updated_listings Boolean  @default(true)
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, source_agency_id])
+  @@index([user_id])
+  @@index([source_agency_id])
+  @@map("user_tracked_agencies")
+}
+
+
 
 /// Generic uploaded file record (logos, banners, media, and computer-use screenshots).
 model Document {

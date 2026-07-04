@@ -152,7 +152,9 @@ Config is never stored in more than one place at a time — `ScraperVersion` is 
 
 ## 10. Production Flow
 
-`Scraper` (via `active_version`) → `CrawlRun` → Playwright execution → `SourceProperty` → `Property` → CMS sync
+`Scraper` (via `active_version`) → `CrawlRun` → Playwright execution → `SourceProperty` → `Property` → `UserProperty` (+ `PropertyHistory`)
+
+CMS push is a separate phase — see `CMS-SYNCHRONIZATION-SPECIFICATION.MD`.
 
 ---
 
