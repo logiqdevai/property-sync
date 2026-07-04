@@ -162,7 +162,9 @@ enum CmsType {
 }
 
 enum AuthType {
-  BASIC
+  EMAIL_PASSWORD
+  USERNAME_PASSWORD
+  BEARER_TOKEN
   API_KEY
   OAUTH
 }
@@ -227,6 +229,7 @@ model User {
 
   tracked_agencies UserTrackedAgency[]
   saved_properties UserProperty[]
+  user_cms UserCms[]
 
   @@index([email])
   @@index([phone])
@@ -236,19 +239,36 @@ model User {
 /// Destination CMS instance that normalized Property data gets synced to.
 model CmsTarget {
   id             String   @id @default(uuid())
-  name           String
   cms_type       CmsType
   auth_type      AuthType
   base_url       String
+  allow_multiple Boolean  @default(false)
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  user_cms UserCms[]
+
+  @@map("cms_targets")
+}
+
+model UserCms {
+  id             String   @id @default(uuid())
+  cms_target_id  String
+  user_id        String
   api_key_secret String?
+  email       String?
+  username       String?
+  password       String?
   config         Json?
   is_active      Boolean  @default(true)
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
 
   sync_runs CmsSyncRun[]
-
-  @@map("cms_targets")
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  cms_target CmsTarget @relation(fields: [cms_target_id], references: [id], onDelete: Cascade)
+  @@map("user_cms")
 }
 
 // ---------------------------------------------------------------
@@ -520,7 +540,7 @@ model Notification {
 // Nothing is ever deleted here, so a failed sync never loses the record of what was owed.
 model CmsSyncRun {
   id            String        @id @default(uuid())
-  cms_target_id String
+  user_cms_id String
   user_property_id   String?
   action        CmsSyncAction
   status        CmsSyncStatus @default(PENDING)
@@ -534,10 +554,10 @@ model CmsSyncRun {
   created_at    DateTime      @default(now())
   updated_at    DateTime      @updatedAt
 
-  cms_target CmsTarget @relation(fields: [cms_target_id], references: [id], onDelete: Cascade)
+  user_cms UserCms @relation(fields: [user_cms_id], references: [id], onDelete: Cascade)
   user_property   UserProperty? @relation(fields: [user_property_id], references: [id], onDelete: SetNull)
 
-  @@index([cms_target_id])
+  @@index([user_cms_id])
   @@index([user_property_id])
   @@index([status])
   @@index([created_at])
