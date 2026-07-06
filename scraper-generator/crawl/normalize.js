@@ -4,10 +4,12 @@ import {
   PROPERTY_TYPES,
   PROPERTY_STATUSES,
   NORMALIZATION_BATCH_SIZE,
+  NORMALIZATION_MODEL,
 } from './config.js';
 import { now } from './utils.js';
+import { addUsage } from './cost.js';
 
-async function normalizeBatch(sourceProperties) {
+async function normalizeBatch(sourceProperties, usage) {
   const input = sourceProperties.map((sp, i) => ({
     index: i,
     source_url: sp.source_url,
@@ -67,10 +69,11 @@ status: ${PROPERTY_STATUSES.join(' | ')} (use ACTIVE for all fresh listings)
 ${JSON.stringify(input, null, 2)}`;
 
   const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: NORMALIZATION_MODEL,
     max_tokens: 8192,
     messages: [{ role: 'user', content: prompt }],
   });
+  addUsage(usage, response);
 
   const text = response.content.find(b => b.type === 'text')?.text ?? '';
 
@@ -121,6 +124,7 @@ function buildPropertyRecord(n, sp) {
 
 export async function normalizeWithAI(sourceProperties) {
   const results = new Array(sourceProperties.length);
+  const usage = { input_tokens: 0, output_tokens: 0 };
   let failedCount = 0;
 
   for (let i = 0; i < sourceProperties.length; i += NORMALIZATION_BATCH_SIZE) {
@@ -130,13 +134,13 @@ export async function normalizeWithAI(sourceProperties) {
 
     let normalized = null;
     try {
-      normalized = await normalizeBatch(batch);
+      normalized = await normalizeBatch(batch, usage);
     } catch (batchErr) {
       process.stdout.write(` batch failed (${batchErr.message.slice(0, 80)}), retrying individually...\n`);
       for (let j = 0; j < batch.length; j++) {
         const sp = batch[j];
         try {
-          const [singleResult] = await normalizeBatch([sp]);
+          const [singleResult] = await normalizeBatch([sp], usage);
           results[i + j] = buildPropertyRecord(singleResult, sp);
           process.stdout.write(`    [${i + j + 1}] ok\n`);
         } catch (singleErr) {
@@ -159,5 +163,5 @@ export async function normalizeWithAI(sourceProperties) {
   if (failedCount > 0) {
     console.log(`  Warning: ${failedCount} properties failed normalization and will be skipped`);
   }
-  return results;
+  return { results, usage };
 }

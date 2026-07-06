@@ -21,4 +21,10 @@ export const LISTING_TYPES = ['SALE', 'RENT', 'SHORT_TERM_RENT', 'UNKNOWN'];
 export const PROPERTY_TYPES = ['APARTMENT', 'HOUSE', 'VILLA', 'MAISONETTE', 'STUDIO', 'LAND', 'COMMERCIAL', 'OFFICE', 'WAREHOUSE', 'PARKING', 'OTHER', 'UNKNOWN'];
 export const PROPERTY_STATUSES = ['ACTIVE', 'INACTIVE', 'REMOVED', 'SOLD', 'RENTED', 'UNKNOWN'];
 
+export const NORMALIZATION_MODEL = 'claude-haiku-4-5-20251001';
+export const MODEL_PRICING = {
+  input_per_million: 1.0,
+  output_per_million: 5.0,
+};
+
 export const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });

@@ -6,6 +6,7 @@ import { runCrawl } from './crawler.js';
 import { enrichDetailPages } from './detail.js';
 import { normalizeWithAI } from './normalize.js';
 import { detectDuplicates } from './duplicates.js';
+import { buildCostReport } from './cost.js';
 
 async function main() {
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -111,8 +112,11 @@ async function main() {
   const propertyHistory = [];
 
   let normalizedFields;
+  let normalizationUsage = { input_tokens: 0, output_tokens: 0 };
   try {
-    normalizedFields = await normalizeWithAI(sourceProperties);
+    const normalization = await normalizeWithAI(sourceProperties);
+    normalizedFields = normalization.results;
+    normalizationUsage = normalization.usage;
   } catch (err) {
     console.error(`  AI normalization failed: ${err.message}`);
     crawlRun.total_failed = sourceProperties.length;
@@ -162,11 +166,15 @@ async function main() {
   fs.writeFileSync(path.join(OUTPUT_DIR, 'property_source_links.json'), JSON.stringify(propertySourceLinks, null, 2));
   fs.writeFileSync(path.join(OUTPUT_DIR, 'property_history.json'), JSON.stringify(propertyHistory, null, 2));
 
+  const costReport = buildCostReport(normalizationUsage, properties.length);
+  fs.writeFileSync(path.join(OUTPUT_DIR, 'cost.json'), JSON.stringify(costReport, null, 2));
+
   console.log(`\n  Properties:          ${properties.length}`);
   console.log(`  PropertySourceLinks: ${propertySourceLinks.length}`);
   console.log(`  PropertyHistory:     ${propertyHistory.length} events`);
   const dups = properties.filter(p => p.duplicate_group_id).length;
   if (dups) console.log(`  Duplicates grouped:  ${dups}`);
+  console.log(`  AI cost:             $${costReport.total_cost.toFixed(6)} (${costReport.input_tokens} in / ${costReport.output_tokens} out)`);
 
   console.log('\n[ Phase 4: Finalize ]');
   const executionTrace = {
@@ -200,6 +208,7 @@ async function main() {
   console.log('    output/crawl/properties.json');
   console.log('    output/crawl/property_source_links.json');
   console.log('    output/crawl/property_history.json');
+  console.log('    output/crawl/cost.json');
 
   if (!success) process.exit(1);
 }
