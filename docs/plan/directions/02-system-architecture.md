@@ -15,7 +15,7 @@ property-sync/
 
 ## Frontend stack (`app/`)
 
-- React 19, TypeScript, Vite. UI: HeroUI React v3 + Tailwind v4 + shadcn-style primitives in `components/ui/`.
+- React 19, TypeScript, Vite. UI: HeroUI React v3 + Tailwind v4 + shared primitives in `components/ui/`. **Loading:** HeroUI `Skeleton` layouts only — never loading text labels. **Reuse:** audit `components/ui/` before creating new shared atoms. **Destructive actions:** `ConfirmationDialog` + `useOverlayState` for every delete/disconnect.
 - Routing: React Router, all paths centralized in `app/src/routes/routes.ts` (`Routes` object). Current file only has `auth.*` and `dashboard.root` — every feature below adds its own keys.
 - Server state: TanStack Query, hooks in `features/<name>/hooks/`.
 - Client state: Zustand (`stores/`), existing `stores/auth.ts` already holds session + role.
@@ -39,7 +39,7 @@ app/src/
 │   │   ├── crawl-runs/
 │   │   ├── jobs/
 │   │   ├── properties/
-│   │   ├── cms-targets/
+│   │   ├── integration-targets/
 │   │   ├── notifications/
 │   │   └── users/
 │   ├── agencies/                     # user-facing tracked-agencies page
@@ -55,8 +55,8 @@ app/src/
     ├── user-tracked-agencies/
     ├── user-properties/
     ├── notifications/
-    ├── cms-targets/
-    ├── user-cms/
+    ├── integration-targets/
+    ├── user-integrations/
     └── dashboard/
 ```
 
@@ -98,8 +98,8 @@ api/src/
 │   ├── user-tracked-agencies/
 │   ├── user-properties/
 │   ├── notifications/
-│   ├── cms-targets/                # admin CmsTarget CRUD + connected accounts view
-│   ├── user-cms/                   # user-facing UserCms CRUD + admin per-account actions
+│   ├── integration-targets/        # admin IntegrationTarget CRUD + connected accounts view
+│   ├── user-integrations/          # user-facing UserIntegration CRUD + admin per-account actions
 │   ├── users/                      # admin Users subpage (list/detail aggregation)
 │   └── dashboard/                  # KPI + activity-feed aggregation endpoint
 ├── integrations/
@@ -127,7 +127,7 @@ enrichment pipeline (ported from `scraper-generator/crawl/`); consumed by
 
 ## Database
 
-PostgreSQL via Prisma. **`api/prisma/schema.prisma` already models every entity needed for the in-scope current phase** (including `CmsTarget` / `UserCms` / `CmsSyncRun`, though `CmsSyncRun` stays unused until the future sync phase). No new models are required by this plan — see `03-domain-model.md` for the entity map per feature and the one required action: **run the initial migration** (none exists yet).
+PostgreSQL via Prisma. **`api/prisma/schema.prisma` already models every entity needed for the in-scope current phase** (including `IntegrationTarget` / `UserIntegration` / `CmsSyncRun`, though `CmsSyncRun` stays unused until the future sync phase). No new models are required by this plan — see `03-domain-model.md` for the entity map per feature and the one required action: **run the initial migration** (none exists yet).
 
 ## Auth system
 

@@ -120,32 +120,32 @@ Handler must: respond `2xx` immediately; offload work to a background worker; ve
 
 `ApiRoutes.admin.notifications`: `{ prefix, markRead(id), markAllRead }`.
 
-## Feature 09 — CMS Config (`modules/cms-targets`, `modules/user-cms`)
+## Feature 09 — Integrations Config (`modules/integration-targets`, `modules/user-integrations`)
 
-`modules/cms-targets` (admin):
-
-| Method | Path | Body/Query | Response |
-| --- | --- | --- | --- |
-| GET | `/admin/cms-targets` | query (cms_type, auth_type, is_active) | `{ data, pagination }` |
-| GET | `/admin/cms-targets/:id` | — | target + connection count + `user_cms[]` (masked) |
-| POST | `/admin/cms-targets` | `CreateCmsTargetDto` | `CmsTarget` |
-| PATCH | `/admin/cms-targets/:id` | `UpdateCmsTargetDto` | `CmsTarget` |
-| PATCH | `/admin/cms-targets/:id/status` | `{ is_active }` | `CmsTarget` |
-| PATCH | `/admin/cms-targets/:id/accounts/:userCmsId` | `{ is_active? } | credential fields` | `UserCms` (admin edit/enable/disable on behalf of user) |
-| POST | `/admin/cms-targets/:id/accounts` | `CreateUserCmsDto` (+ `user_id`) | `UserCms` (admin create on behalf of user, only when `allow_multiple` is false and user has none) |
-
-`modules/user-cms` (user-scoped):
+`modules/integration-targets` (admin):
 
 | Method | Path | Body/Query | Response |
 | --- | --- | --- | --- |
-| GET | `/integrations/targets` | — | active `CmsTarget[]` + this user's existing connections |
-| GET | `/integrations/connections` | — | this user's `UserCms[]` (masked) |
-| POST | `/integrations/connections` | `CreateUserCmsDto` (cms_target_id + credential fields per `auth_type` + `config?`) | `UserCms` |
-| PATCH | `/integrations/connections/:id` | `UpdateUserCmsDto` | `UserCms` |
-| PATCH | `/integrations/connections/:id/status` | `{ is_active }` | `UserCms` |
+| GET | `/admin/integration-targets` | query (integration_type, auth_type, is_visible) | `{ data, pagination }` |
+| GET | `/admin/integration-targets/:id` | — | target + connection count + `user_integrations[]` (masked) |
+| POST | `/admin/integration-targets` | `CreateIntegrationTargetDto` | `IntegrationTarget` |
+| PATCH | `/admin/integration-targets/:id` | `UpdateIntegrationTargetDto` | `IntegrationTarget` |
+| PATCH | `/admin/integration-targets/:id/visibility` | `{ is_visible }` | `IntegrationTarget` |
+| PATCH | `/admin/integration-targets/:id/accounts/:userIntegrationId` | `{ is_active? } \| credential fields` | `UserIntegration` (admin edit/enable/disable on behalf of user) |
+| POST | `/admin/integration-targets/:id/accounts` | `CreateUserIntegrationDto` (+ `user_id`) | `UserIntegration` (admin create on behalf of user; reject duplicate when `allow_multiple` is false) |
+
+`modules/user-integrations` (user-scoped):
+
+| Method | Path | Body/Query | Response |
+| --- | --- | --- | --- |
+| GET | `/integrations/targets` | — | visible `IntegrationTarget[]` (`is_visible: true`) + this user's existing connections |
+| GET | `/integrations/connections` | — | this user's `UserIntegration[]` (masked) |
+| POST | `/integrations/connections` | `CreateUserIntegrationDto` (integration_target_id + credential fields per `auth_type` + `config?`) | `UserIntegration` |
+| PATCH | `/integrations/connections/:id` | `UpdateUserIntegrationDto` | `UserIntegration` |
+| PATCH | `/integrations/connections/:id/status` | `{ is_active }` | `UserIntegration` |
 | DELETE | `/integrations/connections/:id` | — | `204` |
 
-`ApiRoutes.admin.cmsTargets`: `{ prefix, byId(id), status(id), accounts(id), account(id, userCmsId) }`. `ApiRoutes.integrations`: `{ targets, connections, connection(id), connectionStatus(id) }`.
+`ApiRoutes.admin.integrationTargets`: `{ prefix, byId(id), visibility(id), accounts(id), account(id, userIntegrationId) }`. `ApiRoutes.integrations`: `{ targets, connections, connection(id), connectionStatus(id) }`.
 
 ## Feature 10 — Dashboard & Users (`modules/dashboard`, `modules/users`)
 
@@ -153,6 +153,6 @@ Handler must: respond `2xx` immediately; offload work to a background worker; ve
 | --- | --- | --- | --- |
 | GET | `/admin/dashboard` | — | KPI object (see spec §4.1) + `recent_activity[]` |
 | GET | `/admin/users` | `UserQuerySchema` (search, role) | `{ data, pagination }` |
-| GET | `/admin/users/:id` | — | user + `tracked_agencies` + `saved_properties` (with `is_modified`) + `user_cms` |
+| GET | `/admin/users/:id` | — | user + `tracked_agencies` + `saved_properties` (with `is_modified`) + `user_integrations` |
 
 `ApiRoutes.admin.dashboard`: `{ prefix }`. `ApiRoutes.admin.users`: `{ prefix, byId(id) }`.

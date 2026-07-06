@@ -35,7 +35,7 @@ A centralized real-estate listing aggregation platform. It scrapes public agency
 8. **Broken scraper detection & self-healing** — automatic `ScraperGenerationRun` (`trigger: SELF_HEAL`) on repeated failure signals.
 9. **User tracked agencies** — per-change-type notification preferences, optional **AI batching** (`use_ai_batching`) to trade latency for ~50% lower OpenAI normalization cost when every enabled tracker for an agency opts in, and per-tracker **AI provider/model** preferences (`ai_provider`, `ai_model`) that Feature 06 uses to route normalization.
 10. **User properties (`UserProperty`)** — personal, editable copy of canonical properties, with re-sync from canonical and full history timeline.
-11. **CMS integrations — configuration only** — admin `CmsTarget` CRUD, user `UserCms` connect/edit/enable/disable/disconnect. **No sync execution, no adapters, no background push.**
+11. **Integrations — configuration only** — admin `IntegrationTarget` CRUD (CMS destinations + AI provider slots), user `UserIntegration` connect/edit/enable/disable/disconnect. **No sync execution, no adapters, no background push.**
 12. **Notifications** — broken scraper, property removal spike, large crawl failure, queue failure, website unavailable.
 13. **Full audit logging** — every consequential action across the pipeline.
 
@@ -46,7 +46,7 @@ A centralized real-estate listing aggregation platform. It scrapes public agency
 - Crawl pipeline → normalized `Property`, `SourceProperty`, append-only `PropertyHistory`.
 - Automatic create/update of `UserProperty` for users tracking the source agency.
 - Fetching/displaying `UserProperty` and `PropertyHistory` (admin + user UI).
-- CMS **configuration UI only**: admin CMS Targets subpage + user Integrations page.
+- Integrations **configuration UI only**: admin Integration Targets subpage (`/admin/integration-targets`, full CRUD) + user Integrations page.
 - AI computer-use scraper generation and self-healing, with full session replay.
 
 ### Out of scope (do not build, even though modeled in Prisma)

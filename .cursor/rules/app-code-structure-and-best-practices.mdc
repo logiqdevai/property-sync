@@ -19,6 +19,7 @@ src/
 ├── App.tsx                        # Root: Router > QueryProvider > AppRoutes
 ├── main.tsx                       # Entry point
 ├── index.css                      # Tailwind v4 CSS-first config + CSS variables
+├── DESIGN.md                      # Design system (Material Design 3) — read before UI work
 ├── routes/
 │   └── routes.ts                  # Centralized Routes object (all frontend paths)
 ├── config/
@@ -128,6 +129,82 @@ pages/<section>/
 - shadcn/ui components live in `components/ui/` and must not be modified directly — extend via wrappers
 - Use `variant` prop pattern from `class-variance-authority` (cva) in base UI components
 
+### Shared UI reuse (`components/ui/`)
+
+**Before creating any new UI primitive**, list and read what already exists under `app/src/components/ui/`. Reuse or extend an existing component instead of duplicating markup in a page. Visual tokens and patterns live in `app/DESIGN.md`.
+
+Current shared primitives (extend this list as new ones land):
+
+| File | Use for |
+| --- | --- |
+| `action-button-with-pending.tsx` | Submit / destructive actions while a mutation is pending (HeroUI `Button` + `Spinner`, no loading text) |
+| `password-input.tsx` | Password credential fields (connect / edit forms) |
+| `form.tsx` | React Hook Form field wrappers |
+| `toast.tsx` | Mutation feedback (already used by feature hooks) |
+| `table-skeleton.tsx` | List / connected-accounts table loading placeholders |
+| `detail-skeleton.tsx` | Detail page loading (header + fields + optional sub-table) |
+| `confirmation-dialog.tsx` | Destructive confirmations (delete, disconnect) via HeroUI `AlertDialog` + `useOverlayState` |
+
+**Placement rule:**
+
+- **Page-local only** (one screen, not reused) → `pages/<section>/components/`
+- **Reused across multiple pages or features** → `app/src/components/ui/` (create a new file here)
+- **Domain-specific but shared within one feature** (e.g. credential fields used by admin detail + user Integrations page) → `features/<feature>/components/`, not copied into each page
+
+When adding a shared component to `components/ui/`, keep it presentational — no API calls, no feature hooks.
+
+### Loading states — HeroUI Skeleton only
+
+While TanStack Query reports `isPending` / `isLoading`, render a **layout-shaped skeleton** — never a text label.
+
+**Do not use:** `"Loading..."`, `"Please wait"`, centered spinner-only placeholders, or any loading copy as the primary loading UI.
+
+**Do use:** `Skeleton` from `@heroui/react`, sized to match the final layout (table rows, detail header, form fields, card grid). HeroUI v3 pattern:
+
+```tsx
+import { Skeleton } from "@heroui/react";
+
+if (isPending) {
+  return (
+    <div className="flex flex-col gap-3">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <Skeleton key={i} className="h-10 w-full rounded-lg" />
+      ))}
+    </div>
+  );
+}
+```
+
+When the same skeleton layout appears on more than one page, extract it to `app/src/components/ui/` (e.g. `table-skeleton.tsx`, `detail-skeleton.tsx`) **after checking no equivalent already exists**.
+
+Mutations may still use `ActionButtonWithPending` / `Button isPending` on the triggering control — that is not a page-level loading label.
+
+### Destructive actions — `ConfirmationDialog`
+
+**Never** delete or disconnect on a bare button press. Always confirm through the shared `ConfirmationDialog` in `components/ui/confirmation-dialog.tsx`.
+
+Pattern:
+
+```tsx
+import { useOverlayState } from "@heroui/react";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+
+const deleteConfirm = useOverlayState();
+
+<Button variant="danger" onPress={deleteConfirm.open}>Delete</Button>
+
+<ConfirmationDialog
+  state={deleteConfirm}
+  title="Delete integration target?"
+  description="This action cannot be undone."
+  confirmLabel="Delete"
+  onConfirm={() => deleteTarget.mutateAsync(id)}
+  isPending={deleteTarget.isPending}
+/>
+```
+
+Use `confirmLabel="Disconnect"` for user integration disconnect flows. Reuse the same component — do not build one-off alert modals per page.
+
 ---
 
 ## 5. Hooks Guidelines
@@ -191,9 +268,10 @@ When adding a new route, **always add it to `routes.ts` first**, then reference 
 
 ## 10. Styling Guidelines
 
+- Follow `app/DESIGN.md` for colors, typography, status tokens, and component patterns
 - Use Tailwind CSS utility classes — no CSS modules, no inline `style` objects
 - Theme tokens (colors, radius, etc.) defined as CSS variables in `index.css`
-- Dark mode: class-based (`.dark` on `<html>`)
+- Dark mode: `data-theme="light|dark"` on `<html>` (see `use-theme.ts`)
 - Conditional classes: always use `cn()` from `@/lib/utils`
 - Use `@/` path alias for all imports — never use relative `../../` paths across folders
 
@@ -227,6 +305,12 @@ When adding a new route, **always add it to `routes.ts` first**, then reference 
 | `invalidateQueries` with the base key after mutations        | Target parameterized query keys in mutations         |
 | Access env vars through a typed `environments` object        | Access `import.meta.env.VITE_*` directly             |
 | Extend shadcn/ui components via wrappers                     | Modify files inside `components/ui/` directly        |
+| List `components/ui/` before creating a new primitive      | Duplicate button/form/skeleton markup per page       |
+| Put cross-page shared UI in `components/ui/`                 | Leave reusable atoms inside a single page folder     |
+| Show HeroUI `Skeleton` layouts while queries are pending     | Show "Loading..." or spinner-only loading screens      |
+| Extract repeated skeleton layouts to `components/ui/`        | Copy-paste skeleton blocks across list/detail pages    |
+| Confirm deletes/disconnects with `ConfirmationDialog`        | Delete or disconnect immediately without confirmation  |
+| Use `useOverlayState` + `ConfirmationDialog` for destructive UX | Build a custom confirm modal per page                 |
 
 ---
 

@@ -395,9 +395,9 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 ---
 
-## Feature 09: CMS Targets & User Integrations (configuration only)
+## Feature 09: Integration Targets & User Integrations (configuration only)
 
-**Description:** Admins define supported CMS targets; users connect/manage their own credentials. No sync execution.
+**Description:** Admins define supported integration targets (CMS + AI providers); users connect/manage their own credentials. No sync execution.
 
 **Status:** not started
 **Progress:** 0%
@@ -422,19 +422,19 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 ### Implementation checklist
 
 **API (`api/`)**
-- [ ] `api/src/modules/cms-targets/` (admin CRUD + connected-accounts management)
-- [ ] `api/src/modules/user-cms/` (user-scoped connect/edit/enable/disable/disconnect)
+- [ ] `api/src/modules/integration-targets/` (admin CRUD + connected-accounts management)
+- [ ] `api/src/modules/user-integrations/` (user-scoped connect/edit/enable/disable/disconnect)
 - [ ] Never create a `CmsSyncRun` row anywhere in this feature
 
 **App (`app/`)**
-- [ ] `app/src/features/cms-targets/`, `app/src/features/user-cms/`
-- [ ] `/admin/cms-targets` list/detail + connected accounts table with masked credentials
-- [ ] `/integrations` (user) — available targets, connect form (fields per `auth_type`), connected accounts with enable/disable/edit/disconnect
+- [ ] `app/src/features/integration-targets/`, `app/src/features/user-integrations/`
+- [ ] `/admin/integration-targets` list/detail (full admin CRUD + connected accounts table with masked credentials) — **not started**
+- [ ] `/integrations` (user) — visible targets, connect form (fields per `auth_type`), connected accounts with enable/disable/edit/disconnect
 
 **Verification**
-- [ ] Smoke test: admin creates a `CmsTarget`, user connects to it, edits credentials, disables, disconnects — no sync job is ever created
+- [ ] Smoke test: admin creates an `IntegrationTarget`, user connects to it, edits credentials, disables, disconnects — no sync job is ever created
 
-**Definition of done:** Admins and users can fully manage CMS connections; confirmed no sync execution occurs anywhere in the codebase.
+**Definition of done:** Admins and users can fully manage integration connections; confirmed no sync execution occurs anywhere in the codebase.
 
 ---
 
@@ -463,7 +463,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **API (`api/`)**
 - [ ] `api/src/modules/dashboard/` — single aggregation endpoint (KPIs listed in spec §4.1 + recent activity feed) using `Promise.all()` for independent counts
-- [ ] `api/src/modules/users/` — admin list/detail with tracked agencies, saved properties (+ `is_modified`), `user_cms`
+- [ ] `api/src/modules/users/` — admin list/detail with tracked agencies, saved properties (+ `is_modified`), `user_integrations`
 
 **App (`app/`)**
 - [ ] `app/src/features/dashboard/`, extend `app/src/features/users/` (interfaces already exist) with admin hooks

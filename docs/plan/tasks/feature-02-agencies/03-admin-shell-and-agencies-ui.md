@@ -132,7 +132,14 @@ Replace that with a nested route group under `AdminLayout`, matching the
   hand-rolling table/pagination primitives
 - All new shared, non-page-specific UI atoms (e.g. a `StatusBadge` if the
   same badge is needed in both list and detail) belong in
-  `app/src/components/ui/`, not duplicated per page
+  `app/src/components/ui/`, not duplicated per page — **audit existing files
+  there first** (`ActionButtonWithPending`, `PasswordInput`, `TableSkeleton`,
+  `DetailSkeleton`, etc.)
+- While queries are pending, use HeroUI `Skeleton` via shared components in
+  `components/ui/` — never show loading text labels
+- Destructive actions (delete agency, delete integration target, disconnect
+  integration) must use `ConfirmationDialog` + `useOverlayState` from
+  `components/ui/confirmation-dialog.tsx` — never mutate on first click
 
 ## Acceptance Criteria
 

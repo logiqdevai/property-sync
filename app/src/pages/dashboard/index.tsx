@@ -1,10 +1,10 @@
 import { useAuthStore } from "@/stores/auth";
 
 const stats = [
-  { label: "Total Leads", value: "—" },
-  { label: "Leads This Week", value: "—" },
-  { label: "Conversion Rate", value: "—" },
-  { label: "Active Campaigns", value: "—" },
+  { label: "Total Properties", value: "—", accent: false },
+  { label: "Active Scrapers", value: "—", accent: false },
+  { label: "Imported Today", value: "—", accent: true },
+  { label: "Running Crawls", value: "—", accent: false },
 ];
 
 export default function DashboardHome() {
@@ -13,39 +13,48 @@ export default function DashboardHome() {
 
   return (
     <div className="space-y-6">
-      {/* Greeting card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <p className="text-2xl font-semibold text-gray-900">
-          Welcome back, {displayName} 👋
+      <div
+        className="rounded-xl border border-border bg-surface p-6"
+        style={{ boxShadow: "var(--shadow-1)" }}
+      >
+        <p className="text-2xl font-semibold tracking-tight text-foreground">
+          Welcome back, {displayName}
         </p>
-        <p className="mt-1 text-sm text-gray-500">
-          Here's what's happening with your leads today.
+        <p className="mt-1 text-sm text-muted">
+          Monitor scrapers, crawls, and property changes across your agencies.
         </p>
       </div>
 
-      {/* Stat placeholder cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-2"
+            className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5"
+            style={{ boxShadow: "var(--shadow-1)" }}
           >
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">
               {stat.label}
             </p>
-            <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+            <p
+              className="font-mono text-3xl font-bold"
+              style={{ color: stat.accent ? "var(--tertiary)" : "var(--foreground)" }}
+            >
+              {stat.value}
+            </p>
           </div>
         ))}
       </div>
 
-      {/* Placeholder content area */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <p className="text-sm font-medium text-gray-700 mb-4">Recent Activity</p>
+      <div
+        className="rounded-xl border border-border bg-surface p-6"
+        style={{ boxShadow: "var(--shadow-1)" }}
+      >
+        <p className="mb-4 text-sm font-medium text-foreground">Recent Activity</p>
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-10 rounded-lg bg-gray-100 animate-pulse"
+              className="h-10 animate-pulse rounded-lg bg-surface-secondary"
             />
           ))}
         </div>

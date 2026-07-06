@@ -1,31 +1,33 @@
-# Task: User-scoped CMS connections API
+# Task: User-scoped integration connections API
 
 ## Feature group
 
-`docs/plan/PROGRESS.md` → **Feature 09: CMS Targets & User Integrations (configuration only)**
+`docs/plan/PROGRESS.md` → **Feature 09: Integration Targets & User Integrations (configuration only)**
 
 ## Objective
 
-Let end users browse available CMS targets and connect/manage their own
+Let end users browse available integration targets and connect/manage their own
 credentials.
 
 ## Context — read this before touching anything
 
 Same hard scope boundary and credential-masking requirement as task 01 —
-reuse `mask-credentials.util.ts` from `modules/cms-targets/utils/`, do not
+reuse `mask-credentials.util.ts` from `modules/integration-targets/utils/`, do not
 duplicate it. `CmsSyncRun` remains completely out of scope.
+
+User-facing target browse must filter to `IntegrationTarget.is_visible: true` only.
 
 ## Requirements
 
-1. **`api/src/modules/user-cms/`** — user-scoped, `@UseGuards(JwtGuard)` only:
-   - `GET /integrations/targets` — active `CmsTarget[]` (`is_active: true`)
+1. **`api/src/modules/user-integrations/`** — user-scoped, `@UseGuards(JwtGuard)` only:
+   - `GET /integrations/targets` — visible `IntegrationTarget[]` (`is_visible: true`)
      with `is_connected: boolean` annotated for `@CurrentUser()`
-   - `GET /integrations/connections` — this user's `UserCms[]` (masked)
-   - `POST /integrations/connections` — `CreateUserCmsDto` (`cms_target_id`
+   - `GET /integrations/connections` — this user's `UserIntegration[]` (masked)
+   - `POST /integrations/connections` — `CreateUserIntegrationDto` (`integration_target_id`
      + credential fields per the `auth_type` mapping table from task 01 +
      `config?`); reject if the target's `allow_multiple` is `false` and the
-     user already has a connection to it
-   - `PATCH /integrations/connections/:id` — `UpdateUserCmsDto`; 404 if not
+     user already has a connection to it; reject if target `is_visible` is `false`
+   - `PATCH /integrations/connections/:id` — `UpdateUserIntegrationDto`; 404 if not
      owned by the current user; only overwrite provided credential fields
      (same non-destructive-write rule as task 01)
    - `PATCH /integrations/connections/:id/status` — `{ is_active: boolean }`
@@ -35,14 +37,14 @@ duplicate it. `CmsSyncRun` remains completely out of scope.
 
 ### API (`api/`)
 
-- `api/src/modules/user-cms/user-cms.module.ts`
-- `api/src/modules/user-cms/user-cms.controller.ts`
-- `api/src/modules/user-cms/user-cms.service.ts`
-- `api/src/modules/user-cms/dto/create-user-cms.dto.ts`
-- `api/src/modules/user-cms/dto/update-user-cms.dto.ts`
-- `api/src/modules/user-cms/entities/user-cms-connection.entity.ts`
-- `api/src/modules/user-cms/user-cms.module.ts` (import `CmsTargetsModule` for the shared masking util and `CmsTarget` lookups)
-- `api/src/app.module.ts` (import `UserCmsModule`)
+- `api/src/modules/user-integrations/user-integrations.module.ts`
+- `api/src/modules/user-integrations/user-integrations.controller.ts`
+- `api/src/modules/user-integrations/user-integrations.service.ts`
+- `api/src/modules/user-integrations/dto/create-user-integration.dto.ts`
+- `api/src/modules/user-integrations/dto/update-user-integration.dto.ts`
+- `api/src/modules/user-integrations/entities/user-integration-connection.entity.ts`
+- `api/src/modules/user-integrations/user-integrations.module.ts` (import `IntegrationTargetsModule` for the shared masking util and `IntegrationTarget` lookups)
+- `api/src/app.module.ts` (import `UserIntegrationsModule`)
 
 ## Subtasks
 
@@ -57,8 +59,8 @@ duplicate it. `CmsSyncRun` remains completely out of scope.
 
 ## Acceptance Criteria
 
-- A user can see available CMS targets, connect with credentials matching
+- A user can see available visible integration targets, connect with credentials matching
   the target's `auth_type`, edit/disable/disconnect their own connection
-- A user cannot see or modify another user's `UserCms` row (404, not 403,
+- A user cannot see or modify another user's `UserIntegration` row (404, not 403,
   to avoid leaking existence)
 - `tsc --noEmit` passes in `api/`

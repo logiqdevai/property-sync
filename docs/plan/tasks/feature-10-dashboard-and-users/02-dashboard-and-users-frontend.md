@@ -33,7 +33,7 @@ that completes the current-phase admin experience end to end.
    exist per the codebase — check before adding new files) with admin
    `useAdminUsers(query)` / `useAdminUser(id)` hooks and matching interfaces
    (`AdminUserDetail` with `tracked_agencies`, `saved_properties` incl.
-   `is_modified`, `user_cms` masked)
+   `is_modified`, `user_integrations` masked)
 5. Add to `app/src/routes/routes.ts`:
    ```ts
    admin: {
@@ -49,7 +49,7 @@ that completes the current-phase admin experience end to end.
 6. Replace whatever placeholder currently renders at `/admin` (Feature 01's
    stub route) with `app/src/pages/admin/dashboard/index.tsx`: KPI cards
    grid (grouped logically — Scrapers, Agencies, Properties, Queue, AI
-   Generation, CMS, Notifications) + the activity feed list, each row
+   Generation, Integrations, Notifications) + the activity feed list, each row
    deep-linking via the discriminator (`crawl` →
    `Routes.admin.crawlRuns.detail`, `generation` →
    `Routes.admin.generationRuns.detail`, `scraper` →
@@ -57,8 +57,8 @@ that completes the current-phase admin experience end to end.
 7. `app/src/pages/admin/users/index.tsx` — list/search users, role badge.
 8. `app/src/pages/admin/users/detail.tsx` — user info + tracked agencies
    (with per-type toggle states shown read-only) + saved properties table
-   (with an "edited" badge where `is_modified`) + linked CMS connections
-   (masked, with enable/disable shortcuts reusing the admin CMS account
+   (with an "edited" badge where `is_modified`) + linked integration connections
+   (masked, with enable/disable shortcuts reusing the admin integration account
    mutation hooks from Feature 09).
 9. Add nav item "Users" to `admin-sidebar-content.tsx` (Dashboard Home is
    presumably already the root/first item from Feature 02 — confirm it
@@ -87,7 +87,7 @@ that completes the current-phase admin experience end to end.
 - [ ] Extend the existing `users` feature module with admin hooks (don't duplicate the module)
 - [ ] Build the Dashboard Home page with grouped KPI cards + deep-linking activity feed
 - [ ] Build Users list + detail pages
-- [ ] Manual smoke test: exercise Features 02–09 (create an agency, run a scraper, generate one with AI, track it as a user, connect a CMS target) and confirm every KPI and activity feed entry reflects that real data
+- [ ] Manual smoke test: exercise Features 02–09 (create an agency, run a scraper, generate one with AI, track it as a user, connect an integration target) and confirm every KPI and activity feed entry reflects that real data
 
 ## Technical Notes
 
@@ -100,6 +100,6 @@ that completes the current-phase admin experience end to end.
 - `/admin` shows live KPI cards and an activity feed matching real platform
   data, replacing the Feature 01 placeholder entirely
 - `/admin/users` lists real users; a user's detail page shows their real
-  tracked agencies, saved properties (with divergence flags), and CMS
+  tracked agencies, saved properties (with divergence flags), and integration
   connections
 - Every admin sidebar link resolves to a real, working page

@@ -157,8 +157,12 @@ enum PropertyType {
   UNKNOWN
 }
 
-enum CmsType {
+enum IntegrationType {
   ESTATEWEB
+  OPENAI
+  ANTHROPIC
+  GEMINI
+  DEEPSEEK
 }
 
 enum AuthType {
@@ -241,32 +245,32 @@ model User {
 
   tracked_agencies UserTrackedAgency[]
   saved_properties UserProperty[]
-  user_cms UserCms[]
+  user_integrations UserIntegration[]
 
   @@index([email])
   @@index([phone])
   @@map("users")
 }
 
-/// Destination CMS instance that normalized Property data gets synced to.
-model CmsTarget {
+/// Destination Integration instance that normalized Property data gets synced to and ai models are integrated with.
+model IntegrationTarget {
   id             String   @id @default(uuid())
-  cms_type       CmsType
+  integration_type       IntegrationType
   auth_type      AuthType
-  base_url       String
+  base_url       String?
   allow_multiple Boolean  @default(false)
-  is_active      Boolean  @default(true)
+  is_visible     Boolean  @default(true) // whether the integration is visible to the user (always visible for admin and supper admin)
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
 
-  user_cms UserCms[]
+  user_integrations UserIntegration[]
 
-  @@map("cms_targets")
+  @@map("integration_targets")
 }
 
-model UserCms {
+model UserIntegration {
   id             String   @id @default(uuid())
-  cms_target_id  String
+  integration_target_id  String
   user_id        String
   api_key_secret String?
   email       String?
@@ -279,8 +283,8 @@ model UserCms {
 
   sync_runs CmsSyncRun[]
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  cms_target CmsTarget @relation(fields: [cms_target_id], references: [id], onDelete: Cascade)
-  @@map("user_cms")
+  integration_target IntegrationTarget @relation(fields: [integration_target_id], references: [id], onDelete: Cascade)
+  @@map("user_integrations")
 }
 
 // ---------------------------------------------------------------
@@ -559,7 +563,7 @@ model Notification {
 // Nothing is ever deleted here, so a failed sync never loses the record of what was owed.
 model CmsSyncRun {
   id            String        @id @default(uuid())
-  user_cms_id String
+  user_integration_id String
   user_property_id   String?
   action        CmsSyncAction
   status        CmsSyncStatus @default(PENDING)
@@ -573,10 +577,10 @@ model CmsSyncRun {
   created_at    DateTime      @default(now())
   updated_at    DateTime      @updatedAt
 
-  user_cms UserCms @relation(fields: [user_cms_id], references: [id], onDelete: Cascade)
+  user_integration UserIntegration @relation(fields: [user_integration_id], references: [id], onDelete: Cascade)
   user_property   UserProperty? @relation(fields: [user_property_id], references: [id], onDelete: SetNull)
 
-  @@index([user_cms_id])
+  @@index([user_integration_id])
   @@index([user_property_id])
   @@index([status])
   @@index([created_at])

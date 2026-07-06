@@ -34,7 +34,7 @@ every one listed, do not add or drop items:
 - Queue Status — waiting/running/failed counts from `JobLog.status`
   (`WAITING`, `ACTIVE`, `FAILED`)
 - Active `ScraperGenerationRun`s (count where `status` is `QUEUED` or `RUNNING`)
-- Active CMS Connections / Total configured (`UserCms` count where
+- Active Integration Connections / Total configured (`UserIntegration` count where
   `is_active: true` / total count) — **configuration count only, no sync
   metrics**
 - Unread Notifications count (`Notification` where `is_read: false`)
@@ -70,7 +70,7 @@ sequentially.
      `role?`), `@Roles('ADMIN','SUPER_ADMIN','SUPPORT')`
    - `GET /admin/users/:id` — user + `tracked_agencies:
      UserTrackedAgency[]` + `saved_properties: UserProperty[]` (include
-     `is_modified`) + `user_cms: UserCms[]` (masked, reuse
+     `is_modified`) + `user_integrations: UserIntegration[]` (masked, reuse
      `mask-credentials.util.ts` from Feature 09) — `@Roles('ADMIN','SUPER_ADMIN','SUPPORT')`
 
 ## Files to create or modify
@@ -91,7 +91,7 @@ sequentially.
 - [ ] Check the existing `api/src/modules/users/` module from Feature 01 before extending
 - [ ] Build the dashboard KPI aggregation with `Promise.all()`
 - [ ] Build the merged, sorted, capped activity feed
-- [ ] Extend `users` module with admin list/detail (masked CMS credentials)
+- [ ] Extend `users` module with admin list/detail (masked integration credentials)
 
 ## Technical Notes
 
@@ -105,5 +105,5 @@ sequentially.
   matching what's actually in the database, and an activity feed spanning
   crawls/listings/scrapers/generation runs sorted by recency
 - `GET /admin/users` and `.../:id` return real data including divergence
-  (`is_modified`) flags and masked CMS credentials
+  (`is_modified`) flags and masked integration credentials
 - `tsc --noEmit` passes in `api/`

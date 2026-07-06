@@ -13,6 +13,7 @@ src/
 ├── App.tsx                        # Root: Router > QueryProvider > AppRoutes
 ├── main.tsx                       # Entry point
 ├── index.css                      # Tailwind v4 CSS-first config + CSS variables
+├── DESIGN.md                      # Design system (Material Design 3) — read before UI work
 ├── routes/
 │   └── routes.ts                  # Centralized Routes object (all frontend paths)
 ├── config/
@@ -163,9 +164,10 @@ Use Zustand for global client state.
 
 ## 9. Styling Guidelines
 
+- Follow `DESIGN.md` at the app root for colors, typography, status tokens, and component patterns
 - Use Tailwind CSS utility classes — no CSS modules, no inline `style` objects
 - Theme tokens (colors, radius, etc.) defined as CSS variables in `index.css`
-- Dark mode: class-based (`.dark` on `<html>`)
+- Dark mode: `data-theme="light|dark"` on `<html>` (see `use-theme.ts`)
 - Conditional classes: always use `cn()` from `@/lib/utils`
 - Use `@/` path alias for all imports — never use relative `../../` paths across folders
 

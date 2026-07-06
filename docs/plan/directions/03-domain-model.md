@@ -14,7 +14,7 @@
 | 06 — Properties | `SourceProperty`, `Property`, `PropertySourceLink`, `PropertyHistory` | Normalization/dedup/history layer. Writes `CrawlRun` AI cost fields after normalization. |
 | 07 — User Tracking | `UserTrackedAgency`, `UserProperty` | Per-user copy + preferences. |
 | 08 — Notifications | `Notification` | Read by dashboard unread count. |
-| 09 — CMS Config | `CmsTarget`, `UserCms` | **`CmsSyncRun` is NOT used in this phase** — do not write to it. |
+| 09 — Integrations Config | `IntegrationTarget`, `UserIntegration` | **`CmsSyncRun` is NOT used in this phase** — do not write to it. |
 | 10 — Dashboard & Users | (aggregation only, no new writes) | Reads across all of the above. |
 
 ## Key invariants to respect in every task
@@ -38,7 +38,9 @@
 
 ## Enums already defined (reuse, never redeclare)
 
-`AuthRole`, `DocumentType`, `CrawlType`, `PaginationType`, `AgencyStatus`, `ScraperStatus`, `ScraperHealth`, `CrawlRunStatus`, `GenerationRunStatus`, `GenerationTrigger`, `ComputerActionType`, `JobStatus`, `PropertyStatus`, `ListingType`, `PropertyType`, `CmsType`, `AuthType`, `CmsSyncAction` (unused this phase), `CmsSyncStatus` (unused this phase), `PropertyHistoryEventType`, `NotificationType`, `NotificationSeverity`, `AiProvider`.
+`AuthRole`, `DocumentType`, `CrawlType`, `PaginationType`, `AgencyStatus`, `ScraperStatus`, `ScraperHealth`, `CrawlRunStatus`, `GenerationRunStatus`, `GenerationTrigger`, `ComputerActionType`, `JobStatus`, `PropertyStatus`, `ListingType`, `PropertyType`, `IntegrationType` (`ESTATEWEB`, `OPENAI`, `ANTHROPIC`, `GEMINI`, `DEEPSEEK`), `AuthType`, `CmsSyncAction` (unused this phase), `CmsSyncStatus` (unused this phase), `PropertyHistoryEventType`, `NotificationType`, `NotificationSeverity`, `AiProvider`.
+
+**IntegrationTarget visibility rule**: `IntegrationTarget.is_visible` controls whether end users see a target on the Integrations page. Admins and super admins always see every target in admin CRUD regardless of `is_visible`. `UserIntegration.is_active` is separate — it enables/disables an individual user's connection.
 
 Per the API rule file, always import these from `generated/prisma` — never redeclare them as TypeScript unions in DTOs/interfaces.
 

@@ -55,7 +55,7 @@ property-sync/
 ## Frontend stack (`app/`)
 
 - **Runtime:** React 19, TypeScript, Vite
-- **UI:** HeroUI React v3, Tailwind CSS v4, shadcn-style primitives in `components/ui/`
+- **UI:** HeroUI React v3, Tailwind CSS v4, shared primitives in `components/ui/`
 - **Routing:** React Router — all paths via `Routes` in `@/routes/routes.ts`
 - **Server state:** TanStack Query — hooks in `features/<name>/hooks/`
 - **Client state:** Zustand (`stores/`) with `devtools` + `persist`
@@ -82,6 +82,110 @@ When planning a feature slice, always list:
 - New entries in `app/src/config/api/routes.ts` (`ApiRoutes`)
 - Feature module files under `features/<name>/`
 - Page(s) under `pages/<section>/`
+- Which existing `components/ui/` primitives to reuse vs new shared atoms to add
+
+### Frontend UI conventions (required in every UI task file)
+
+Planning and task specs for any frontend page **must** enforce these rules
+(sourced from `.cursor/rules/app-code-structure-and-best-practices.mdc`):
+
+#### 1. Reuse `components/ui/` before creating anything new
+
+Before specifying a new button, form wrapper, skeleton, or confirm modal in a
+task file, require the coding agent to **list and read**
+`app/src/components/ui/` and reuse what exists. Visual tokens and layout
+patterns live in `app/DESIGN.md` — read before planning new UI.
+
+Current shared inventory (extend in plans when new atoms land):
+
+| File | Use for |
+| --- | --- |
+| `action-button-with-pending.tsx` | Submit / destructive actions while a mutation is pending |
+| `password-input.tsx` | Password credential fields |
+| `form.tsx` | React Hook Form field wrappers |
+| `toast.tsx` | Mutation feedback (via feature hooks) |
+| `table-skeleton.tsx` | List / table loading placeholders |
+| `detail-skeleton.tsx` | Detail page loading (header + fields + sub-table) |
+| `confirmation-dialog.tsx` | Delete / disconnect confirmation |
+
+**Placement when planning new UI:**
+
+- One screen only → `pages/<section>/components/`
+- Reused across pages/features → `app/src/components/ui/`
+- Shared within one domain (e.g. credential fields on admin + user Integrations) → `features/<feature>/components/`
+
+Never plan duplicate markup in pages when a shared primitive fits.
+
+#### 2. Loading states — HeroUI `Skeleton` only, never loading labels
+
+While TanStack Query is `isPending` / `isLoading`, task files must specify
+**layout-shaped skeletons** — not text.
+
+**Forbidden as primary loading UI:** `"Loading..."`, `"Please wait"`,
+centered spinner-only page bodies, or any loading copy.
+
+**Required:** `Skeleton` from `@heroui/react`, or shared `TableSkeleton` /
+`DetailSkeleton` from `components/ui/`, shaped to match the final layout.
+
+Button-level pending on the clicked control (`ActionButtonWithPending`,
+`Button isPending`) is allowed — that is not a page-level loading label.
+
+#### 3. Destructive actions — `ConfirmationDialog` required
+
+Every delete or disconnect in a task spec must use the shared
+`ConfirmationDialog` + `useOverlayState` from
+`components/ui/confirmation-dialog.tsx`. Never plan immediate delete/disconnect
+on first button click. Never plan one-off confirm modals per page.
+
+Task acceptance criteria must include: destructive action shows confirmation
+before mutation runs.
+
+Example pattern to embed in UI task files:
+
+```tsx
+import { useOverlayState } from "@heroui/react";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+
+const deleteConfirm = useOverlayState();
+
+<Button variant="danger" onPress={deleteConfirm.open}>Delete</Button>
+
+<ConfirmationDialog
+  state={deleteConfirm}
+  title="Delete integration target?"
+  description="This action cannot be undone."
+  confirmLabel="Delete"
+  onConfirm={() => deleteTarget.mutateAsync(id)}
+  isPending={deleteTarget.isPending}
+/>
+```
+
+Use `confirmLabel="Disconnect"` for user integration disconnect flows.
+`onConfirm` should return `mutateAsync()` so the dialog waits for completion.
+
+#### 4. Integrations domain naming (schema-aligned)
+
+When planning Feature 09 or any integration work, use current Prisma names —
+**not** legacy `CmsTarget` / `UserCms`:
+
+| Legacy | Current |
+| --- | --- |
+| `CmsTarget` | `IntegrationTarget` |
+| `UserCms` | `UserIntegration` |
+| `CmsType` | `IntegrationType` (`ESTATEWEB`, `OPENAI`, `ANTHROPIC`, `GEMINI`, `DEEPSEEK`) |
+| `cms_type` | `integration_type` |
+| target `is_active` | `is_visible` (user visibility; admins always see all in admin CRUD) |
+| `base_url` required | `base_url` optional |
+| `/admin/cms-targets` | `/admin/integration-targets` |
+| `modules/cms-targets` | `modules/integration-targets` |
+| `modules/user-cms` | `modules/user-integrations` |
+
+`UserIntegration.is_active` remains the per-connection enable/disable flag.
+`CmsSyncRun` is still out of scope for the current phase.
+
+Admin Integration Targets subpage must plan **full CRUD** at
+`/admin/integration-targets` (list + create + detail edit + visibility toggle +
+delete via `ConfirmationDialog`).
 
 ## Backend stack (`api/`)
 
@@ -139,8 +243,10 @@ When planning a feature slice, always list:
   base query key
 - **Side effects:** backend uses `setImmediate` + internal `try/catch`
   for fire-and-forget (email, notifications)
-
----
+- **Frontend UI:** audit `app/src/components/ui/` before new primitives;
+  HeroUI `Skeleton` (or `TableSkeleton` / `DetailSkeleton`) for query
+  loading — never loading text labels; `ConfirmationDialog` for every
+  delete/disconnect; credential fields reuse `PasswordInput` where applicable
 
 # AGILE PROJECT MANAGEMENT (REQUIRED)
 
@@ -332,6 +438,11 @@ Each task file:
 ## Technical Notes
 - Follow `.cursor/rules/app-code-structure-and-best-practices.mdc` for app work
 - Follow `.cursor/rules/api-code-structure-and-best-practices.mdc` for api work
+- **App UI tasks must also specify:**
+  - Existing `components/ui/` primitives to reuse (list files checked)
+  - Skeleton component for each async view (`TableSkeleton`, `DetailSkeleton`, or inline `Skeleton`)
+  - `ConfirmationDialog` for every delete/disconnect action
+  - No loading text labels anywhere in the page body
 
 ## Acceptance Criteria
 (must prove the feature is usable end-to-end, not only that code exists)
@@ -423,6 +534,9 @@ When a coding agent completes work:
   criteria are met (vertical slice complete)
 - **App:** data fetching only in `features/`; `Routes` and `ApiRoutes`
   for all paths; mutations toast + invalidate
+- **App UI:** reuse `components/ui/` primitives; `Skeleton` loading only
+  (no loading labels); `ConfirmationDialog` + `useOverlayState` for all
+  delete/disconnect; never duplicate shared atoms per page
 - **API:** logic in services; Prisma in services; NestJS exceptions;
   guards on protected routes
 

@@ -11,12 +11,12 @@ This section defines what the **current implementation** must deliver. Everythin
 - Crawl pipeline through normalized `Property`, `SourceProperty`, and append-only `PropertyHistory`
 - Automatic **creation and update** of `UserProperty` rows for users tracking the source agency that surfaced a listing
 - **Fetching and displaying** `UserProperty` and `PropertyHistory` (admin and user UI)
-- CMS **configuration UI only**: admin CMS Targets subpage (`CmsTarget` + connected `UserCms` CRUD) and user Integrations page (`UserCms` connect / edit / enable / disable / disconnect)
+- Integrations **configuration UI only**: admin Integration Targets subpage (`IntegrationTarget` + connected `UserIntegration` CRUD) and user Integrations page (`UserIntegration` connect / edit / enable / disable / disconnect)
 - No background jobs, workers, or service classes that push property data to an external CMS
 
 ### Out of scope (current phase)
 
-- **No CMS integration service classes** (e.g. no per-`CmsType` adapter under `integrations/`, no sync orchestrator service)
+- **No CMS integration service classes** (e.g. no per-`IntegrationType` adapter under `integrations/`, no sync orchestrator service)
 - **No property synchronization operations** — no pushing `UserProperty` to external CMS APIs, no `CmsSyncRun` creation/processing/retry workers (see `CMS-SYNCHRONIZATION-SPECIFICATION.MD`)
 - **No CMS Sync admin subpage** (`/admin/cms-sync`) and no sync-status UI on dashboard or Integrations page
 - **No CMS sync failure notifications**
@@ -43,7 +43,7 @@ The application focuses on:
 - Manual and scheduled execution
 - High visibility into scraper health
 - Per-user property copies (`UserProperty`) with full change history (`PropertyHistory`)
-- CMS connection configuration UI (`CmsTarget`, `UserCms`) — credentials only, no sync execution yet
+- Integration connection configuration UI (`IntegrationTarget`, `UserIntegration`) — credentials only, no sync execution yet
 - Admin notifications
 
 ---
@@ -103,7 +103,7 @@ Top-level KPIs:
 - Total Properties
 - Queue Status (waiting / running / failed `JobLog` counts)
 - Active `ScraperGenerationRun`s (computer-use sessions currently running)
-- Active CMS Connections (`UserCms` with `is_active: true`) / Total configured — configuration count only; no sync metrics in this phase
+- Active Integration Connections (`UserIntegration` with `is_active: true`) / Total configured — configuration count only; no sync metrics in this phase
 - Unread Notifications count
 
 Recent activity feed, each row deep-linking into the relevant subpage:
@@ -191,20 +191,21 @@ Backed by: `Property`, `PropertySourceLink`, `PropertyHistory`, `SourceProperty`
 
 
 
-### CMS Targets (`/admin/cms-targets`) — configuration only
+### Integration Targets (`/admin/integration-targets`) — configuration only
 
-Backed by: `CmsTarget`, `UserCms`
+Backed by: `IntegrationTarget`, `UserIntegration`
 
-Platform-level CMS integration definitions. Each `CmsTarget` describes a supported destination CMS type; individual user accounts and credentials live on `UserCms`. **This subpage manages configuration only — no sync execution in the current phase.**
+Platform-level integration definitions — CMS destinations (`ESTATEWEB`) and AI provider slots (`OPENAI`, `ANTHROPIC`, `GEMINI`, `DEEPSEEK`). Each `IntegrationTarget` describes a supported integration type; individual user accounts and credentials live on `UserIntegration`. **This subpage manages configuration only — no sync execution in the current phase.**
 
-- List / search / filter by `cms_type`, `auth_type`, `is_active`
-- Create / Edit target: `cms_type`, `auth_type`, `base_url`, `allow_multiple` (whether one user may connect more than once), `is_active`
-- Enable / Disable target (`is_active`) — disabling prevents new connections; existing `UserCms` rows remain stored but inactive
+- List / search / filter by `integration_type`, `auth_type`, `is_visible`
+- Create / Edit target: `integration_type`, `auth_type`, `base_url` (optional — typically set for CMS targets, omitted for AI API-key slots), `allow_multiple` (whether one user may connect more than once), `is_visible` (whether end users see this target on the Integrations page; admins always see all targets here regardless)
+- Toggle visibility (`is_visible`) — hiding prevents new user connections; existing `UserIntegration` rows remain stored
 - Detail view:
   - Target metadata and connection count
-  - **Connected accounts table** (`UserCms`): user email, `is_active`, credential fields present (masked — never show raw secrets), `created_at`
+  - **Connected accounts table** (`UserIntegration`): user email, `is_active`, credential fields present (masked — never show raw secrets), `created_at`
   - Per-account actions: **Enable / Disable** (`is_active`), **Edit** credentials (`api_key_secret`, `email`, `username`, `password`, `config` — fields shown depend on the target's `auth_type`), deep-link to the owning user
-  - Admin may create a `UserCms` on behalf of a user when `allow_multiple` is false and the user has no existing connection to this target
+  - Admin may create a `UserIntegration` on behalf of a user when `allow_multiple` is false and the user has no existing connection to this target
+  - Delete target only after `ConfirmationDialog` confirmation (blocked when dependent `UserIntegration` rows exist — surface API error via toast)
 
 > **Future phase:** CMS Sync subpage (`/admin/cms-sync`), sync KPIs, and sync retry actions — see `CMS-SYNCHRONIZATION-SPECIFICATION.MD`.
 
@@ -222,10 +223,10 @@ Backed by: `Notification`
 
 ### Users (`/admin/users`)
 
-Backed by: `User`, `UserTrackedAgency`, `UserProperty`, `UserCms`
+Backed by: `User`, `UserTrackedAgency`, `UserProperty`, `UserIntegration`
 
 - List/search users, view role
-- Per-user detail: tracked agencies (with per-notification-type toggles), saved properties, whether any saved copies have diverged (`is_modified`) from canonical data, and linked `UserCms` connections (with enable/disable and edit shortcuts)
+- Per-user detail: tracked agencies (with per-notification-type toggles), saved properties, whether any saved copies have diverged (`is_modified`) from canonical data, and linked `UserIntegration` connections (with enable/disable and edit shortcuts)
 
 ---
 
@@ -421,7 +422,7 @@ Each entry records `field`, `old_value`, `new_value`, and (where applicable) the
 
 > **Not implemented in the current phase.** Full functional specification: [`CMS-SYNCHRONIZATION-SPECIFICATION.MD`](./CMS-SYNCHRONIZATION-SPECIFICATION.MD)
 
-Covers: per-`CmsType` integration adapters, crawl-triggered and backfill sync, `CmsSyncRun` processing with retries, CMS Sync admin subpage, sync KPIs, sync failure notifications, and user-facing sync status on Integrations.
+Covers: per-`IntegrationType` integration adapters, crawl-triggered and backfill sync, `CmsSyncRun` processing with retries, CMS Sync admin subpage, sync KPIs, sync failure notifications, and user-facing sync status on Integrations.
 
 ---
 
@@ -537,45 +538,45 @@ When a crawl creates or updates a canonical `Property` and writes `PropertyHisto
 - Users can edit their own copy (notes, corrections, personal categorization) without affecting the canonical `Property` or other users' copies.
 - `is_modified` flags whether the copy has diverged from the canonical property since it was last synced from crawl data.
 - `last_synced_at` records when the copy was last refreshed from canonical crawl data.
-- This is distinct from `SourceProperty` (raw per-agency scrape data) and `Property` (canonical normalized record) — `UserProperty` is the personal, user-owned layer. CMS push via `UserCms` is specified in `CMS-SYNCHRONIZATION-SPECIFICATION.MD`.
+- This is distinct from `SourceProperty` (raw per-agency scrape data) and `Property` (canonical normalized record) — `UserProperty` is the personal, user-owned layer. CMS push via `UserIntegration` is specified in `CMS-SYNCHRONIZATION-SPECIFICATION.MD`.
 
 ---
 
 
 
-# 23. User CMS Integrations — configuration only (current phase)
+# 23. User Integrations — configuration only (current phase)
 
-Backed by `UserCms`, `CmsTarget`. Displayed on the user **Integrations** page (`/integrations`).
+Backed by `UserIntegration`, `IntegrationTarget`. Displayed on the user **Integrations** page (`/integrations`).
 
-Users store CMS account credentials for a future sync phase. **No property data is pushed to external CMS in the current implementation.** No CMS integration service classes are created.
+Users store integration credentials (CMS accounts, AI API keys) for a future sync/usage phase. **No property data is pushed to external CMS in the current implementation.** No CMS integration service classes are created.
 
-The page lists every active `CmsTarget` the platform supports and the user's existing connections.
+The page lists every visible `IntegrationTarget` (`is_visible: true`) the platform supports and the user's existing connections.
 
 ### Available targets
 
-- Show each active `CmsTarget`: CMS name/type, `auth_type` (determines which credential fields the connect form asks for), `base_url`
+- Show each visible `IntegrationTarget`: integration type, `auth_type` (determines which credential fields the connect form asks for), `base_url` (when set)
 - If the user has no connection and `allow_multiple` is false, show a **Connect** action
-- If `allow_multiple` is true, allow multiple `UserCms` rows per user for the same target
+- If `allow_multiple` is true, allow multiple `UserIntegration` rows per user for the same target
 
 ### Connected accounts
 
-For each `UserCms` belonging to the current user:
+For each `UserIntegration` belonging to the current user:
 
-- Display: target CMS type, connection status (`is_active`), masked credential hint (e.g. last four characters of email or "API key configured"), `created_at`, `updated_at`
+- Display: target integration type, connection status (`is_active`), masked credential hint (e.g. last four characters of email or "API key configured"), `created_at`, `updated_at`
 - **Enable / Disable** toggle (`is_active`)
 - **Edit** — update credentials and `config` (fields depend on `auth_type`: email/password, username/password, API key, bearer token, OAuth flow)
-- **Disconnect** — delete the `UserCms` row (with confirmation)
+- **Disconnect** — delete the `UserIntegration` row after confirming in the shared `ConfirmationDialog`
 
 > **Future phase:** sync status summary, per-connection sync history, initial backfill sync on connect — see `CMS-SYNCHRONIZATION-SPECIFICATION.MD`.
 
 ### Connect flow
 
-1. User picks an available `CmsTarget`
+1. User picks an available visible `IntegrationTarget`
 2. Form renders credential fields required by that target's `auth_type`
-3. Optional `config` JSON for CMS-specific settings (field mapping, category defaults, etc.)
-4. On submit, create `UserCms` with `is_active: true` — **no sync job is enqueued**
+3. Optional `config` JSON for integration-specific settings (field mapping, category defaults, etc.)
+4. On submit, create `UserIntegration` with `is_active: true` — **no sync job is enqueued**
 
-Admins can also manage any user's connection from the CMS Targets subpage (§4.2).
+Admins can also manage any user's connection from the Integration Targets subpage (§4.2).
 
 ---
 
@@ -583,7 +584,7 @@ Admins can also manage any user's connection from the CMS Targets subpage (§4.2
 
 # 24. Logs
 
-Every action should be logged. Examples: Manual crawl, Scheduled crawl, CMS connection created/updated/disabled, Property removed, Property updated, UserProperty created/updated, Scraper failure, Job failure, Retry, AI generation run started/completed/failed, Scraper version promoted/rolled back.
+Every action should be logged. Examples: Manual crawl, Scheduled crawl, integration connection created/updated/disabled, Property removed, Property updated, UserProperty created/updated, Scraper failure, Job failure, Retry, AI generation run started/completed/failed, Scraper version promoted/rolled back.
 
 ---
 
@@ -596,7 +597,7 @@ The architecture should support:
 - Unlimited agencies
 - Unlimited scrapers
 - **CMS property synchronization** — see `CMS-SYNCHRONIZATION-SPECIFICATION.MD`
-- Multiple CMS integrations (`CmsType` enum is extensible)
+- Multiple integrations (`IntegrationType` enum is extensible — CMS destinations and AI providers)
 - AI-assisted scraper generation (already modeled)
 - Automatic selector validation (via `validation_rules`)
 - Automatic layout change detection
@@ -620,7 +621,7 @@ The platform should allow an administrator to:
 - Execute it manually.
 - Schedule automatic crawls.
 - Detect new, updated, and removed listings, with full `PropertyHistory`.
-- Define CMS targets and manage connected `UserCms` accounts (enable/disable/edit credentials) — configuration only.
+- Define integration targets and manage connected `UserIntegration` accounts (enable/disable/edit credentials) — configuration only.
 - Monitor every crawl, every BullMQ job, and every AI generation session (with full step replay).
 - Detect broken scrapers and have them self-heal automatically, or review/approve AI-proposed fixes manually.
 - Review crawl history and property history.
@@ -632,7 +633,7 @@ The platform should allow a user to:
 - Track agencies and receive notifications for listing changes.
 - View their `UserProperty` list and each property's `PropertyHistory` timeline.
 - Edit their personal property copy and re-sync from canonical data when desired.
-- Connect, configure, enable/disable, edit, and disconnect CMS credentials on the Integrations page — **without any property push occurring**.
+- Connect, configure, enable/disable, edit, and disconnect integration credentials on the Integrations page — **without any property push occurring**.
 
 The crawl pipeline should **complete** at: normalized `Property` + `PropertyHistory` + `UserProperty` create/update. No CMS integration services or sync workers are required to ship this phase.
 
