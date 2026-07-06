@@ -1,8 +1,8 @@
 [
   {
-    "id": "prop_86e5d5f9152d",
+    "id": "fcbeb17f-c421-4607-a742-82db7d74d839",
     "title": "Detached House 105 m²",
-    "description": "Detached house in Platana (Therapni) with 2 bedrooms and 1 bathroom. Ground floor property built in 1973 requiring renovation, suitable for holiday home or investment.",
+    "description": "Detached house in Platana (Therapni) with 2 bedrooms and 1 bathroom. Ground floor property built in 1973 requiring renovation, suitable as holiday home or investment.",
     "listing_type": "SALE",
     "property_type": "HOUSE",
     "status": "ACTIVE",
@@ -66,13 +66,13 @@
       "detail_text": "Price per m² € 571 Neighborhood Platana (Therapni) Rooms 2 Floor Ground floor Construction year 1973 Energy class G Levels 1 Kitchens 1 Bathrooms 1 Status Requires Renovation Type Holiday home, Investment"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:01.328Z",
-    "updated_at": "2026-07-06T04:39:01.328Z"
+    "created_at": "2026-07-06T05:33:42.333Z",
+    "updated_at": "2026-07-06T05:33:42.333Z"
   },
   {
-    "id": "prop_5ac5618d2c3b",
+    "id": "7e2d40f6-a53d-4a51-9aff-84c476f8f934",
     "title": "Land Plot 3,430 m²",
-    "description": "Land plot in Kokkinorrachi (Sparti) within urban plan with 60% coverage ratio and 19m facade length. Suitable for investment purposes.",
+    "description": "Land plot for investment in Kokkinorrachi (Sparti) within urban plan with one facade and 60% coverage ratio.",
     "listing_type": "SALE",
     "property_type": "LAND",
     "status": "ACTIVE",
@@ -92,8 +92,7 @@
     "construction_year": null,
     "renovation_year": null,
     "features": [
-      "within urban plan",
-      "60% coverage ratio"
+      "within urban plan"
     ],
     "images": [
       "https://m3.spitogatos.gr/358304477_900x675.jpg?v=20130730",
@@ -139,20 +138,20 @@
       "detail_text": "Price per m² € 17 Neighborhood Kokkinorrachi (Sparti) Within urban plan Yes Facade 1 Facade length 19 Coverage ratio 60% Type Investment"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:01.328Z",
-    "updated_at": "2026-07-06T04:39:01.328Z"
+    "created_at": "2026-07-06T05:33:42.333Z",
+    "updated_at": "2026-07-06T05:33:42.333Z"
   },
   {
-    "id": "prop_c4a98383c16c",
+    "id": "7f8958ad-a748-488f-a594-6dfed97dd39e",
     "title": "Apartment 50 m²",
-    "description": "1-bedroom apartment for rent in Center (Sparti) on the 1st floor. Built in 2003 with autonomous heating system and parking spot included.",
+    "description": "1-bedroom apartment for rent in Center (Sparti) on the 1st floor with parking spot. Built in 2003 with autonomous heating system and energy class D.",
     "listing_type": "RENT",
     "property_type": "APARTMENT",
     "status": "ACTIVE",
     "price": 350,
     "currency": "EUR",
-    "city": "Center",
-    "district": "Sparti",
+    "city": "Sparti",
+    "district": "Center",
     "address": null,
     "postal_code": null,
     "country": "GR",
@@ -165,8 +164,7 @@
     "construction_year": 2003,
     "renovation_year": null,
     "features": [
-      "parking spot",
-      "autonomous heating system"
+      "parking"
     ],
     "images": [
       "https://m3.spitogatos.gr/358304276_900x675.jpg?v=20130730",
@@ -206,13 +204,13 @@
       "detail_text": "Price per m² € 7 Neighborhood Center (Sparti) Rooms 1 Floor 1st Parking spot Yes Construction year 2003 Heating System Autonomous heating system (Petrol) Energy class D Levels 1 Kitchens 1 Living rooms 1 Bathrooms 1"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:01.328Z",
-    "updated_at": "2026-07-06T04:39:01.328Z"
+    "created_at": "2026-07-06T05:33:42.333Z",
+    "updated_at": "2026-07-06T05:33:42.333Z"
   },
   {
-    "id": "prop_0c800a3c6b1a",
+    "id": "07862499-8025-415b-b06e-9567c38ff772",
     "title": "Detached House 162 m²",
-    "description": "2-bedroom detached house in Skoura (Therapni) with 2 levels and parking. Built in 1950 and renovated in 2010, furnished and suitable for holiday home, investment or short-term rental.",
+    "description": "2-bedroom detached house in Skoura (Therapni) with parking spot, built in 1950 and renovated in 2010. Suitable for holiday rental or investment.",
     "listing_type": "SALE",
     "property_type": "HOUSE",
     "status": "ACTIVE",
@@ -232,7 +230,7 @@
     "construction_year": 1950,
     "renovation_year": null,
     "features": [
-      "parking spot",
+      "parking",
       "renovated",
       "furnished"
     ],
@@ -328,13 +326,13 @@
       "detail_text": "Price per m² € 494 Neighborhood Skoura (Therapni) Rooms 2 Parking spot Yes Construction year 1950 Renovation year 2010 Energy class F Levels 2 Kitchens 1 Living rooms 1 Bathrooms 1 Status Renovated, Painted, Furnished Type Holiday home, Investment, Short term rental"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:01.328Z",
-    "updated_at": "2026-07-06T04:39:01.328Z"
+    "created_at": "2026-07-06T05:33:42.333Z",
+    "updated_at": "2026-07-06T05:33:42.333Z"
   },
   {
-    "id": "prop_14dd941c8b8a",
+    "id": "0adf9e52-b5cd-4566-b603-d4f044c289da",
     "title": "Farm Parcel 32,000 m²",
-    "description": "Farm parcel in Geraki (Geronthres) with 32,000 m² of agricultural land. Suitable for agricultural use investment.",
+    "description": "Large agricultural farm parcel for sale in Geraki (Geronthres) suitable for investment.",
     "listing_type": "SALE",
     "property_type": "LAND",
     "status": "ACTIVE",
@@ -354,7 +352,7 @@
     "construction_year": null,
     "renovation_year": null,
     "features": [
-      "agricultural use"
+      "agricultural"
     ],
     "images": [
       "https://m2.spitogatos.gr/354987802_900x675.jpg?v=20130730",
@@ -397,13 +395,13 @@
       "detail_text": "Price per m² € 4 Neighborhood Geraki (Geronthres) Type Agricultural use"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:01.328Z",
-    "updated_at": "2026-07-06T04:39:01.328Z"
+    "created_at": "2026-07-06T05:33:42.333Z",
+    "updated_at": "2026-07-06T05:33:42.333Z"
   },
   {
-    "id": "prop_bd59d05a3ce1",
+    "id": "bb273aab-1de4-4c57-91a7-73752eadbae4",
     "title": "Detached House 280 m²",
-    "description": "4-bedroom detached house in Anogeia (Farida) with 3 bathrooms and parking. Built in 1920 with 2 levels and individual heating, ideal for holiday home, investment or short-term rental.",
+    "description": "4-bedroom detached house in Anogeia (Farida) with 3 bathrooms and parking spot. Historic property built in 1920 with 2 levels suitable for holiday rental or investment.",
     "listing_type": "SALE",
     "property_type": "HOUSE",
     "status": "ACTIVE",
@@ -423,8 +421,7 @@
     "construction_year": 1920,
     "renovation_year": null,
     "features": [
-      "parking spot",
-      "individual heating"
+      "parking"
     ],
     "images": [
       "https://m2.spitogatos.gr/350076613_900x675.jpg?v=20130730",
@@ -506,20 +503,20 @@
       "detail_text": "Price per m² € 536 Neighborhood Anogeia (Farida) Rooms 4 Parking spot Yes Construction year 1920 Heating System Individual Heating Energy class D Levels 2 Kitchens 3 Living rooms 1 Bathrooms 3 Type Holiday home, Investment, Short term rental"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:01.328Z",
-    "updated_at": "2026-07-06T04:39:01.328Z"
+    "created_at": "2026-07-06T05:33:42.333Z",
+    "updated_at": "2026-07-06T05:33:42.333Z"
   },
   {
-    "id": "prop_2fc95be9e3f5",
+    "id": "089db17f-0369-4754-ba82-33e827100b75",
     "title": "Commercial Store 58 m²",
-    "description": "Ground floor commercial store in Center (Sparti) with 58 m² of space. Energy class D property suitable for retail or business use.",
+    "description": "Ground floor commercial store for sale in Center (Sparti) with energy class D.",
     "listing_type": "SALE",
     "property_type": "COMMERCIAL",
     "status": "ACTIVE",
     "price": 180000,
     "currency": "EUR",
-    "city": "Center",
-    "district": "Sparti",
+    "city": "Sparti",
+    "district": "Center",
     "address": null,
     "postal_code": null,
     "country": "GR",
@@ -555,27 +552,27 @@
       "detail_text": "Price per m² € 3,103 Neighborhood Center (Sparti) Floor Ground floor Energy class D Levels 1"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:01.328Z",
-    "updated_at": "2026-07-06T04:39:01.328Z"
+    "created_at": "2026-07-06T05:33:42.333Z",
+    "updated_at": "2026-07-06T05:33:42.333Z"
   },
   {
-    "id": "prop_50445b2704e5",
+    "id": "d6437443-3fa5-46a8-ba54-520412140798",
     "title": "Commercial Store 81 m²",
-    "description": "Ground floor commercial store in Center (Sparti) with 1 room and 1 WC. Built in 1999 with energy class D, suitable for retail or investment purposes.",
+    "description": "Ground floor commercial store for sale in Center (Sparti). Built in 1999 with energy class D, suitable for investment.",
     "listing_type": "SALE",
     "property_type": "COMMERCIAL",
     "status": "ACTIVE",
     "price": 85000,
     "currency": "EUR",
-    "city": "Center",
-    "district": "Sparti",
+    "city": "Sparti",
+    "district": "Center",
     "address": null,
     "postal_code": null,
     "country": "GR",
     "latitude": null,
     "longitude": null,
     "square_meters": 81,
-    "bedrooms": 1,
+    "bedrooms": null,
     "bathrooms": null,
     "floor": "Ground floor",
     "construction_year": 1999,
@@ -622,13 +619,13 @@
       "detail_text": "Price per m² € 1,049 Neighborhood Center (Sparti) Rooms 1 Floor Ground floor Construction year 1999 Energy class D Levels 1 WC 1 Extra Investment"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:01.328Z",
-    "updated_at": "2026-07-06T04:39:01.328Z"
+    "created_at": "2026-07-06T05:33:42.333Z",
+    "updated_at": "2026-07-06T05:33:42.333Z"
   },
   {
-    "id": "prop_7d2e550b778a",
+    "id": "b5a058b8-769e-413f-adf3-938cd9a1e183",
     "title": "Detached House 166 m²",
-    "description": "2-bedroom detached house in Pakia (Molaoi) with 2 bathrooms and 2 levels. Built in 1940, renovated in 2000, furnished with parking and autonomous heating. Described as luxurious home suitable for holiday rental or investment.",
+    "description": "2-bedroom detached house in Pakia (Molaoi) with 2 bathrooms and parking spot. Historic property built in 1940, renovated in 2000, suitable for luxury holiday rental or investment.",
     "listing_type": "SALE",
     "property_type": "HOUSE",
     "status": "ACTIVE",
@@ -648,10 +645,9 @@
     "construction_year": 1940,
     "renovation_year": null,
     "features": [
-      "parking spot",
+      "parking",
       "renovated",
       "furnished",
-      "autonomous heating",
       "luxurious"
     ],
     "images": [
@@ -749,13 +745,13 @@
       "detail_text": "Price per m² € 1,325 Neighborhood Pakia (Molaoi) Rooms 2 Parking spot Yes Construction year 1940 Renovation year 2000 Heating System Autonomous heating system (Petrol) Energy class G Levels 2 Kitchens 2 Living rooms 2 Bathrooms 2 Status Renovated, Painted, Furnished Type Holiday home, Investment, Short term rental Extra Luxurious home"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:01.328Z",
-    "updated_at": "2026-07-06T04:39:01.328Z"
+    "created_at": "2026-07-06T05:33:42.333Z",
+    "updated_at": "2026-07-06T05:33:42.333Z"
   },
   {
-    "id": "prop_ba279e3eb04d",
+    "id": "940cecf2-c74b-47c1-969d-0a860951dae0",
     "title": "Detached House 56 m²",
-    "description": "1-bedroom ground floor detached house in Mirtia (Elos) built in 1950. Property requires renovation but is suitable for holiday home, investment or short-term rental purposes.",
+    "description": "1-bedroom ground floor detached house in Mirtia (Elos) built in 1950 requiring renovation. Suitable as holiday home or investment.",
     "listing_type": "SALE",
     "property_type": "HOUSE",
     "status": "ACTIVE",
@@ -840,15 +836,15 @@
       "detail_text": "Price per m² € 1,071 Neighborhood Mirtia (Elos) Rooms 1 Floor Ground floor Construction year 1950 Energy class G Levels 1 Kitchens 1 Bathrooms 1 Status Requires Renovation Type Holiday home, Investment, Short term rental"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:01.329Z",
-    "updated_at": "2026-07-06T04:39:01.329Z"
+    "created_at": "2026-07-06T05:33:42.333Z",
+    "updated_at": "2026-07-06T05:33:42.333Z"
   },
   {
-    "id": "prop_fa0472040f7f",
+    "id": "3f01aa37-e66a-4e47-a022-2a5408038430",
     "title": "Building 177 m²",
-    "description": "Building constructed in 1955 requiring renovation, suitable for commercial use and investment purposes.",
+    "description": "Building constructed in 1955 requiring renovation, suitable for commercial investment use.",
     "listing_type": "SALE",
-    "property_type": "OTHER",
+    "property_type": "COMMERCIAL",
     "status": "ACTIVE",
     "price": 140000,
     "currency": "EUR",
@@ -868,7 +864,7 @@
     "features": [
       "requires renovation",
       "commercial use",
-      "2 levels"
+      "investment property"
     ],
     "images": [
       "https://m2.spitogatos.gr/326311540_900x675.jpg?v=20130730",
@@ -935,13 +931,13 @@
       "detail_text": "Price per m² € 791 Neighborhood Vlachiotis (Elos) Construction year 1955 Energy class G Levels 2 Status Requires Renovation Type Investment, Suitable for commercial use"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:13.163Z",
-    "updated_at": "2026-07-06T04:39:13.163Z"
+    "created_at": "2026-07-06T05:33:54.398Z",
+    "updated_at": "2026-07-06T05:33:54.398Z"
   },
   {
-    "id": "prop_610702552522",
+    "id": "89784d09-6ca7-41f9-a571-837d24c1ec27",
     "title": "Farm Parcel 22000 m²",
-    "description": "Agricultural land parcel suitable for farming purposes.",
+    "description": "Agricultural land parcel suitable for farming use.",
     "listing_type": "SALE",
     "property_type": "LAND",
     "status": "ACTIVE",
@@ -1007,13 +1003,13 @@
       "detail_text": "Price per m² € 4 Neighborhood Pritsiotiko (Githeio) Type Agricultural use"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:13.163Z",
-    "updated_at": "2026-07-06T04:39:13.163Z"
+    "created_at": "2026-07-06T05:33:54.398Z",
+    "updated_at": "2026-07-06T05:33:54.398Z"
   },
   {
-    "id": "prop_ec577903d08c",
+    "id": "1cc9ff6f-1653-4a4e-8b6f-cca1d8f61a02",
     "title": "Land Plot 1100 m²",
-    "description": "Land plot with building coefficient of 400 and one facade.",
+    "description": "Land plot with building coefficient of 400 and single facade.",
     "listing_type": "SALE",
     "property_type": "LAND",
     "status": "ACTIVE",
@@ -1034,7 +1030,7 @@
     "renovation_year": null,
     "features": [
       "building coefficient 400",
-      "1 facade"
+      "single facade"
     ],
     "images": [
       "https://m3.spitogatos.gr/351050030_900x675.jpg?v=20130730",
@@ -1068,13 +1064,13 @@
       "detail_text": "Price per m² € 27 Neighborhood Sikaraki (Sparti) Building coefficient 400 Facade 1"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:13.163Z",
-    "updated_at": "2026-07-06T04:39:13.163Z"
+    "created_at": "2026-07-06T05:33:54.398Z",
+    "updated_at": "2026-07-06T05:33:54.398Z"
   },
   {
-    "id": "prop_c72ce1ffeb8e",
+    "id": "be6ee857-f16f-4817-9312-4bece401447a",
     "title": "Land Plot 413 m²",
-    "description": "Land plot within urban plan with building coefficient of 2.4, suitable for investment.",
+    "description": "Buildable land plot within urban plan with 70% coverage ratio, suitable for investment.",
     "listing_type": "SALE",
     "property_type": "LAND",
     "status": "ACTIVE",
@@ -1094,10 +1090,12 @@
     "construction_year": null,
     "renovation_year": null,
     "features": [
-      "building coefficient 2.4",
       "within urban plan",
+      "building coefficient 2.4",
       "coverage ratio 70%",
-      "facade length 15"
+      "single facade",
+      "15m facade length",
+      "investment property"
     ],
     "images": [
       "https://m2.spitogatos.gr/327335488_900x675.jpg?v=20130730",
@@ -1173,13 +1171,13 @@
       "detail_text": "Price per m² € 218 Neighborhood Mataleika (Sparti) Building coefficient 2.4 Within urban plan Yes Facade 1 Facade length 15 Coverage ratio 70% Type Investment"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:13.163Z",
-    "updated_at": "2026-07-06T04:39:13.163Z"
+    "created_at": "2026-07-06T05:33:54.398Z",
+    "updated_at": "2026-07-06T05:33:54.398Z"
   },
   {
-    "id": "prop_3c8dddfc4985",
+    "id": "31865813-4c06-46ba-9553-973f569594a0",
     "title": "Hotel 730 m²",
-    "description": "Renovated hotel constructed in 1997 with central heating, equipped and painted, featuring 3 levels and parking spot.",
+    "description": "Three-level renovated hotel constructed in 1997 with central heating, equipped and painted, featuring parking and investment potential.",
     "listing_type": "SALE",
     "property_type": "COMMERCIAL",
     "status": "ACTIVE",
@@ -1202,9 +1200,9 @@
       "renovated",
       "painted",
       "equipped",
+      "parking spot",
       "central heating",
-      "parking",
-      "3 levels"
+      "investment property"
     ],
     "images": [
       "https://m3.spitogatos.gr/350343224_900x675.jpg?v=20130730",
@@ -1301,13 +1299,13 @@
       "detail_text": "Price per m² € 2,466 Neighborhood Xifias (Monemvasia) Construction year 1997 Heating System Central heating (Petrol) Energy class E Levels 3 Parking spot Yes Status Renovated, Painted, Equipped Extra Investment"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:13.163Z",
-    "updated_at": "2026-07-06T04:39:13.163Z"
+    "created_at": "2026-07-06T05:33:54.398Z",
+    "updated_at": "2026-07-06T05:33:54.398Z"
   },
   {
-    "id": "prop_28ca6cc6aff0",
-    "title": "Apartment 112 m²",
-    "description": "Renovated ground floor apartment with 3 bedrooms and 1 bathroom, constructed in 1970 and renovated in 2000, suitable for holiday rental and investment.",
+    "id": "e994153b-c5cc-4e11-a848-4fba81c957c3",
+    "title": "Apartment 112 m², 3 bedrooms",
+    "description": "Ground floor renovated apartment with individual heating and kitchenette, suitable for holiday rental or student accommodation.",
     "listing_type": "SALE",
     "property_type": "APARTMENT",
     "status": "ACTIVE",
@@ -1331,7 +1329,10 @@
       "painted",
       "furnished",
       "individual heating",
-      "ground floor"
+      "holiday home",
+      "short term rental suitable",
+      "student home",
+      "commercial use"
     ],
     "images": [
       "https://m2.spitogatos.gr/316527529_900x675.jpg?v=20130730",
@@ -1428,13 +1429,13 @@
       "detail_text": "Price per m² € 1,232 Neighborhood Neos Kosmos (Sparti) Rooms 3 Floor Ground floor Construction year 1970 Renovation year 2000 Heating System Individual Heating (Current) Energy class C Levels 1 Kitchens 1 Living rooms 1 Bathrooms 1 Status Renovated, Painted, Furnished Type Holiday home, Investment, Suitable for commercial use, Student home, Short term rental"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:13.163Z",
-    "updated_at": "2026-07-06T04:39:13.163Z"
+    "created_at": "2026-07-06T05:33:54.398Z",
+    "updated_at": "2026-07-06T05:33:54.398Z"
   },
   {
-    "id": "prop_929a8cd89b5c",
+    "id": "13f2b4a2-12cc-4b5e-bcc1-ead091d6f156",
     "title": "Land Plot 1003 m²",
-    "description": "Residential land plot within urban plan with building coefficient of 400, suitable for investment.",
+    "description": "Residential zone buildable land within urban plan with 60% coverage ratio, suitable for investment.",
     "listing_type": "SALE",
     "property_type": "LAND",
     "status": "ACTIVE",
@@ -1455,10 +1456,12 @@
     "renovation_year": null,
     "features": [
       "residential zone",
-      "building coefficient 400",
       "within urban plan",
+      "building coefficient 400",
       "coverage ratio 60%",
-      "facade length 41"
+      "single facade",
+      "41m facade length",
+      "investment property"
     ],
     "images": [
       "https://m1.spitogatos.gr/316392330_900x675.jpg?v=20130730",
@@ -1495,13 +1498,13 @@
       "detail_text": "Price per m² € 50 Neighborhood Magoula (Mistras) Zone Residential zone Building coefficient 400 Within urban plan Yes Facade 1 Facade length 41 Coverage ratio 60% Type Investment"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:13.163Z",
-    "updated_at": "2026-07-06T04:39:13.163Z"
+    "created_at": "2026-07-06T05:33:54.398Z",
+    "updated_at": "2026-07-06T05:33:54.398Z"
   },
   {
-    "id": "prop_9a2e2ce72e1a",
+    "id": "84cc325c-84c9-4d8d-a51c-1f25caa942a1",
     "title": "Store 165 m²",
-    "description": "Ground floor commercial store with 1 room and 1 bathroom, featuring individual heating system and 2 levels.",
+    "description": "Ground floor commercial store with individual fan coil heating system, suitable for investment.",
     "listing_type": "RENT",
     "property_type": "COMMERCIAL",
     "status": "ACTIVE",
@@ -1521,9 +1524,9 @@
     "construction_year": null,
     "renovation_year": null,
     "features": [
-      "ground floor",
       "individual heating",
-      "2 levels"
+      "fan coil system",
+      "investment property"
     ],
     "images": [
       "https://m3.spitogatos.gr/328869428_900x675.jpg?v=20130730",
@@ -1569,13 +1572,13 @@
       "detail_text": "Price per m² € 12 Neighborhood Center (Sparti) Rooms 1 Floor Ground floor Heating System Individual Heating (Fan coil) Energy class E Levels 2 Bathrooms 1 Extra Investment"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:13.163Z",
-    "updated_at": "2026-07-06T04:39:13.163Z"
+    "created_at": "2026-07-06T05:33:54.398Z",
+    "updated_at": "2026-07-06T05:33:54.398Z"
   },
   {
-    "id": "prop_776b0b3298dd",
+    "id": "5546e6c6-9106-4b1d-92bd-aa5163aa2e34",
     "title": "Land Plot 1234 m²",
-    "description": "Land plot with building coefficient of 400.",
+    "description": "Buildable land plot with building coefficient of 400.",
     "listing_type": "SALE",
     "property_type": "LAND",
     "status": "ACTIVE",
@@ -1629,13 +1632,13 @@
       "detail_text": "Price per m² € 32 Neighborhood Kokkinorrachi (Sparti) Building coefficient 400"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:13.163Z",
-    "updated_at": "2026-07-06T04:39:13.163Z"
+    "created_at": "2026-07-06T05:33:54.398Z",
+    "updated_at": "2026-07-06T05:33:54.398Z"
   },
   {
-    "id": "prop_85ee737811a7",
-    "title": "House 102 m²",
-    "description": "Renovated detached house constructed in 1955 and renovated in 2024 with 1 bedroom, 1 bathroom, and parking spot, suitable for holiday rental and investment.",
+    "id": "f0538a10-4e64-4fce-8479-c56039acf912",
+    "title": "Detached House 102 m², 1 bedroom",
+    "description": "One-bedroom detached house recently renovated in 2024 with parking, suitable for holiday rental and short-term investment.",
     "listing_type": "SALE",
     "property_type": "HOUSE",
     "status": "ACTIVE",
@@ -1656,9 +1659,11 @@
     "renovation_year": null,
     "features": [
       "renovated",
-      "parking",
+      "parking spot",
       "individual heating",
-      "2 levels"
+      "holiday home",
+      "short term rental",
+      "investment property"
     ],
     "images": [
       "https://m1.spitogatos.gr/336934008_900x675.jpg?v=20130730",
@@ -1725,13 +1730,13 @@
       "detail_text": "Price per m² € 853 Neighborhood Dafni (Farida) Rooms 1 Parking spot Yes Construction year 1955 Renovation year 2024 Heating System Individual Heating (Petrol) Energy class G Levels 2 Kitchens 1 Bathrooms 1 Status Renovated Type Holiday home, Investment, Short term rental"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:13.163Z",
-    "updated_at": "2026-07-06T04:39:13.163Z"
+    "created_at": "2026-07-06T05:33:54.398Z",
+    "updated_at": "2026-07-06T05:33:54.398Z"
   },
   {
-    "id": "prop_a4b284dda9f7",
+    "id": "5acce223-c9f9-47bb-b201-f9b8634d19e7",
     "title": "Detached House 300 m²",
-    "description": "Detached house in Xirokampi (Farida) built in 1930, requiring renovation. Suitable for holiday home, investment, or commercial use with short-term rental potential.",
+    "description": "Detached house in Xirokampi (Farida) built in 1930. Property requires renovation and is suitable for holiday home, investment, or short-term rental purposes.",
     "listing_type": "SALE",
     "property_type": "HOUSE",
     "status": "ACTIVE",
@@ -1752,9 +1757,8 @@
     "renovation_year": null,
     "features": [
       "requires renovation",
-      "holiday home",
-      "investment property",
-      "short term rental"
+      "suitable for short-term rental",
+      "investment property"
     ],
     "images": [
       "https://m1.spitogatos.gr/340723083_900x675.jpg?v=20130730",
@@ -1836,20 +1840,20 @@
       "detail_text": "Price per m² € 600 Neighborhood Xirokampi (Farida) Construction year 1930 Energy class G Levels 3 Status Requires Renovation Type Holiday home, Investment, Suitable for commercial use, Short term rental"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:22.192Z",
-    "updated_at": "2026-07-06T04:39:22.192Z"
+    "created_at": "2026-07-06T05:34:03.354Z",
+    "updated_at": "2026-07-06T05:34:03.354Z"
   },
   {
-    "id": "prop_5dbd527b131b",
+    "id": "e4c4bb00-81df-468c-8b63-baec1456c887",
     "title": "Detached House 288 m²",
-    "description": "Luxurious detached house in Nea Penteli Center with 5 bedrooms and 2 bathrooms, built in 1991 and renovated in 2000. Features autonomous heating system and parking spot.",
+    "description": "Luxury detached house in Nea Penteli Center with 5 bedrooms and 2 bathrooms. Built in 1991 and renovated in 2000 with autonomous heating system and parking.",
     "listing_type": "SALE",
     "property_type": "HOUSE",
     "status": "ACTIVE",
     "price": 900000,
     "currency": "EUR",
     "city": "Nea Penteli",
-    "district": "Nea Penteli Center",
+    "district": "Center",
     "address": null,
     "postal_code": null,
     "country": "GR",
@@ -1865,7 +1869,7 @@
       "parking",
       "autonomous heating",
       "renovated",
-      "luxurious"
+      "luxury"
     ],
     "images": [
       "https://m1.spitogatos.gr/332521464_900x675.jpg?v=20130730",
@@ -1962,20 +1966,20 @@
       "detail_text": "Price per m² € 3,125 Neighborhood Nea Penteli Center (Nea Penteli) Rooms 5 Floor 1st Parking spot Yes Construction year 1991 Renovation year 2000 Heating System Autonomous heating system (Petrol) Energy class C Levels 2 Kitchens 1 Living rooms 1 Bathrooms 2 Status Painted Extra Luxurious home"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:22.192Z",
-    "updated_at": "2026-07-06T04:39:22.192Z"
+    "created_at": "2026-07-06T05:34:03.354Z",
+    "updated_at": "2026-07-06T05:34:03.354Z"
   },
   {
-    "id": "prop_6fbdc7d392cc",
+    "id": "388d23a6-ce85-4f2a-8473-c781d2f6d817",
     "title": "Commercial Building 1184 m²",
-    "description": "Business building in Sikaraki (Sparti) with 3 rooms and 3 bathrooms, built in 1991 and renovated in 2000. Equipped with central heating and parking spot, ideal for investment.",
+    "description": "Commercial building in Sikaraki (Sparti) with 3 rooms and 3 bathrooms. Built in 1991, renovated in 2000, with central heating and parking available.",
     "listing_type": "SALE",
     "property_type": "COMMERCIAL",
     "status": "ACTIVE",
     "price": 600000,
     "currency": "EUR",
-    "city": "Sparti",
-    "district": "Sikaraki",
+    "city": "Sikaraki",
+    "district": "Sparti",
     "address": null,
     "postal_code": null,
     "country": "GR",
@@ -1990,7 +1994,7 @@
     "features": [
       "parking",
       "central heating",
-      "equipped",
+      "renovated",
       "investment property"
     ],
     "images": [
@@ -2085,13 +2089,13 @@
       "detail_text": "Price per m² € 507 Neighborhood Sikaraki (Sparti) Rooms 3 Construction year 1991 Renovation year 2000 Heating System Central heating (Petrol) Energy class C Levels 3 Bathrooms 3 Parking spot Yes Status Equipped Extra Investment"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:22.192Z",
-    "updated_at": "2026-07-06T04:39:22.192Z"
+    "created_at": "2026-07-06T05:34:03.354Z",
+    "updated_at": "2026-07-06T05:34:03.354Z"
   },
   {
-    "id": "prop_8b12db68b191",
+    "id": "97b70437-d6e2-48d8-b1c4-7b50fa8e1d57",
     "title": "Land Plot 9600 m²",
-    "description": "Investment land plot in Areopoli (Oitilos) with building coefficient of 0.1 and 70% coverage ratio. Suitable for development with 187m facade length.",
+    "description": "Investment land plot in Areopoli (Oitilos) with building coefficient of 0.1 and 70% coverage ratio.",
     "listing_type": "SALE",
     "property_type": "LAND",
     "status": "ACTIVE",
@@ -2111,9 +2115,9 @@
     "construction_year": null,
     "renovation_year": null,
     "features": [
-      "investment property",
       "building coefficient 0.1",
-      "coverage ratio 70%"
+      "coverage ratio 70%",
+      "investment property"
     ],
     "images": [
       "https://m3.spitogatos.gr/328241480_900x675.jpg?v=20130730",
@@ -2144,13 +2148,13 @@
       "detail_text": "Price per m² € 26 Neighborhood Areopoli (Oitilos) Building coefficient 0.1 Facade 1 Facade length 187 Coverage ratio 70% Type Investment"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:22.192Z",
-    "updated_at": "2026-07-06T04:39:22.192Z"
+    "created_at": "2026-07-06T05:34:03.354Z",
+    "updated_at": "2026-07-06T05:34:03.354Z"
   },
   {
-    "id": "prop_2e5ca2a9ff08",
+    "id": "2bece7e4-574b-4efe-ad78-c4ea442b5d48",
     "title": "Office 52 m²",
-    "description": "Ground floor office space in Center (Sparti) built in 1992 with 2 WC facilities. Ideal for investment purposes.",
+    "description": "Office space for rent on ground floor in Center (Sparti). Built in 1992 with 2 WCs.",
     "listing_type": "RENT",
     "property_type": "OFFICE",
     "status": "ACTIVE",
@@ -2219,13 +2223,13 @@
       "detail_text": "Price per m² € 7 Neighborhood Center (Sparti) Floor Ground floor Construction year 1992 Energy class D Levels 1 WC 2 Status Painted Extra Investment"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:22.192Z",
-    "updated_at": "2026-07-06T04:39:22.192Z"
+    "created_at": "2026-07-06T05:34:03.354Z",
+    "updated_at": "2026-07-06T05:34:03.354Z"
   },
   {
-    "id": "prop_6e58b55f6536",
+    "id": "e16059c9-871a-4adf-9789-0a83be1ff287",
     "title": "Commercial Store 228 m²",
-    "description": "Renovated store in Center (Sparti) built in 1921 and renovated in 2000, with 3 rooms and 1 WC. Suitable for luxurious business investment.",
+    "description": "Renovated commercial store in Center (Sparti) on ground floor with 3 rooms and 1 WC. Built in 1921 and renovated in 2000.",
     "listing_type": "SALE",
     "property_type": "COMMERCIAL",
     "status": "ACTIVE",
@@ -2247,7 +2251,7 @@
     "features": [
       "renovated",
       "investment property",
-      "luxurious"
+      "luxury"
     ],
     "images": [
       "https://m1.spitogatos.gr/349112748_900x675.jpg?v=20130730",
@@ -2272,13 +2276,13 @@
       "detail_text": "Price per m² € 1,754 Neighborhood Center (Sparti) Rooms 3 Floor Ground floor Construction year 1921 Renovation year 2000 Energy class G Levels 1 WC 1 Status Renovated Extra Investment, Luxurious home"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:22.192Z",
-    "updated_at": "2026-07-06T04:39:22.192Z"
+    "created_at": "2026-07-06T05:34:03.354Z",
+    "updated_at": "2026-07-06T05:34:03.354Z"
   },
   {
-    "id": "prop_62b6fd91f1dd",
+    "id": "07461f1a-168f-4261-a910-7fd362951191",
     "title": "Land Plot 725 m²",
-    "description": "Residential zone land plot in Magoula (Mistras) with building coefficient of 400 and 60% coverage ratio. Investment opportunity with 36m facade length.",
+    "description": "Investment land plot in Magoula (Mistras) in residential zone with building coefficient of 400 and 60% coverage ratio.",
     "listing_type": "SALE",
     "property_type": "LAND",
     "status": "ACTIVE",
@@ -2299,9 +2303,9 @@
     "renovation_year": null,
     "features": [
       "residential zone",
-      "investment property",
       "building coefficient 400",
-      "coverage ratio 60%"
+      "coverage ratio 60%",
+      "investment property"
     ],
     "images": [
       "https://m3.spitogatos.gr/316392437_900x675.jpg?v=20130730",
@@ -2332,7 +2336,7 @@
       "detail_text": "Price per m² € 48 Neighborhood Magoula (Mistras) Zone Residential zone Building coefficient 400 Facade 1 Facade length 36 Coverage ratio 60% Type Investment"
     },
     "duplicate_group_id": null,
-    "created_at": "2026-07-06T04:39:22.192Z",
-    "updated_at": "2026-07-06T04:39:22.192Z"
+    "created_at": "2026-07-06T05:34:03.354Z",
+    "updated_at": "2026-07-06T05:34:03.354Z"
   }
 ]

@@ -32,14 +32,30 @@ so a single `CrawlRun` produces both raw and normalized data (batch-deferred
 listings finish normalization when the OpenAI webhook fires, not in the crawl
 worker).
 
+**Primary reference implementation:** `scraper-generator/crawl/` Phase 3
+(`crawl/index.js` lines 109–177) — port normalization, duplicate grouping, and
+cost rollup into NestJS.
+
+| Reference file | Production target |
+| --- | --- |
+| `scraper-generator/crawl/normalize.js` | `PropertyNormalizationService` sync path (`normalizeBatch`, `buildPropertyRecord`) |
+| `scraper-generator/crawl/duplicates.js` | `PropertyNormalizationService.detectDuplicates()` |
+| `scraper-generator/crawl/cost.js` | `PropertyNormalizationService.buildCostReport()` → `CrawlRun.ai_*` fields |
+| `scraper-generator/crawl/config.js` | `LISTING_TYPES`, `PROPERTY_TYPES`, `PROPERTY_STATUSES`, `NORMALIZATION_BATCH_SIZE` (10), `NORMALIZATION_MODEL`, `MODEL_PRICING` |
+
 **AI normalization** maps raw scraped fields into canonical `Property` columns
-(title, price, city, listing_type, etc.) — mirror the prompt/schema shape
-from `scraper-generator/crawl/normalize.js` and the cost rollup from
-`scraper-generator/crawl/cost.js` (`buildCostReport`). Use the existing
-`api/src/integrations/ai/` (`AiService.generateText` / `generateTextWithSchema`)
-for the **sync path**. For the **batch path**, use the official `openai` npm
-package directly in a new `api/src/integrations/ai-batch/` facade (the Vercel AI
-SDK does not expose Batch API file upload / batch lifecycle).
+(title, price, city, listing_type, etc.) — copy the prompt text and output
+schema from `normalize.js` verbatim (Greek-site heuristics, enum constraints,
+`images: null` in AI output with images taken from `raw_data._all_images` in
+`buildPropertyRecord`). Cost rollup uses `cost.js` `buildCostReport` shape
+(mirrored on `CrawlRun` and in `scraper-generator/output/crawl/cost.json`).
+
+Use the existing `api/src/integrations/ai/` (`AiService.generateText` /
+`generateTextWithSchema`) for the **sync path** when resolved provider is
+OpenAI/Anthropic via Vercel AI SDK, or `@anthropic-ai/sdk` directly when that
+matches the reference CLI. For the **batch path**, use the official `openai`
+npm package directly in a new `api/src/integrations/ai-batch/` facade (the
+Vercel AI SDK does not expose Batch API file upload / batch lifecycle).
 
 **OpenAI Batch API flow** (see [Batch API guide](https://developers.openai.com/api/docs/guides/batch)):
 1. Build a `.jsonl` file — one line per listing:
@@ -76,11 +92,13 @@ SDK does not expose Batch API file upload / batch lifecycle).
      `OPENAI` → **batch path** (delegate to
      `PropertyAiBatchService.submitForCrawlRun(...)` and return early —
      do not create `Property` rows yet for those listings)
-   - **Sync path**: batch source rows (e.g. 10 at a time, same as
-     `scraper-generator`) and call the integration for the resolved
-     `ai_provider` (`integrations/ai/` for OpenAI/Anthropic sync,
-     provider-specific client as needed) with the resolved `ai_model`; on
-     batch failure retry individual rows; map AI output → `Property` fields
+   - **Sync path**: batch source rows (`NORMALIZATION_BATCH_SIZE = 10` from
+     `crawl/config.js`) and call the integration for the resolved
+     `ai_provider` with the resolved `ai_model`; on batch failure retry
+     individual rows (same fallback as `normalize.js`); map AI output →
+     `Property` fields via `buildPropertyRecord` logic: merge `images` from
+     `sp.raw_data._all_images`, `description` from AI or `raw_description`,
+     `normalized_data` = full `raw_data`
    - For each normalized listing: find or create a matching `Property` via its
      `PropertySourceLink` (a `SourceProperty` already linked → update the
      canonical `Property`; a new `SourceProperty` → create a new `Property`
@@ -94,13 +112,12 @@ SDK does not expose Batch API file upload / batch lifecycle).
      `IMAGE_REMOVED` when the `images` array grows/shrinks, `STATUS_CHANGED`
      when `status` differs, generic `UPDATED` for any other field change (do
      not spam an `UPDATED` row when nothing actually changed)
-   - Simple duplicate detection: if a new `Property` has the same
-     normalized `title` + `city` + `price` (within a small tolerance, e.g.
-     ±1%) as an existing `Property` from a **different** `SourceProperty`,
-     assign both the same `duplicate_group_id` (generate one if neither has
-     one yet, reuse the existing one if one already does) — this is a
-     best-effort heuristic, not exact matching; document this limitation in
-     a code comment
+   - Duplicate detection: port `scraper-generator/crawl/duplicates.js` —
+     pairwise compare within the crawl batch (same normalized `title`
+     case-insensitive + same `city` + price within ±1%); assign shared
+     `duplicate_group_id`. Extend to cross-batch matches against existing DB
+     `Property` rows when linking new `SourceProperty` entries — this remains
+     a best-effort heuristic, not exact matching
    - Removal detection: any `Property` whose **every** linked
      `SourceProperty` now has `last_seen_at` older than this crawl's
      `started_at` (i.e. none were seen in the latest full crawl for that
@@ -163,7 +180,7 @@ SDK does not expose Batch API file upload / batch lifecycle).
 
 ### API (`api/`)
 
-- `api/package.json` (add `openai` if not already present from Feature 04)
+- `api/package.json` (add `openai` for Batch API — Feature 06; generation uses `@anthropic-ai/sdk` from Feature 04)
 - `api/src/integrations/ai-batch/ai-batch.module.ts`
 - `api/src/integrations/ai-batch/services/ai-batch-client.service.ts`
 - `api/src/integrations/ai-batch/services/property-ai-batch.service.ts`
@@ -174,6 +191,7 @@ SDK does not expose Batch API file upload / batch lifecycle).
 - `api/src/modules/properties/properties.module.ts`
 - `api/src/modules/properties/properties.controller.ts`
 - `api/src/modules/properties/properties.service.ts`
+- `api/src/modules/properties/constants/normalization-prompt.ts` (port prompt + enums from `crawl/normalize.js` + `crawl/config.js`)
 - `api/src/modules/properties/services/property-normalization.service.ts`
 - `api/src/modules/properties/dto/property-query.schema.ts`
 - `api/src/modules/properties/dto/merge-properties.dto.ts`
@@ -185,7 +203,10 @@ SDK does not expose Batch API file upload / batch lifecycle).
 
 ## Subtasks
 
-- [ ] Build `PropertyNormalizationService` with sync AI path + routing decision + cost rollup onto `CrawlRun`
+- [ ] Port normalization prompt + `buildPropertyRecord` + batch retry from `crawl/normalize.js`
+- [ ] Port `detectDuplicates` from `crawl/duplicates.js`
+- [ ] Port `buildCostReport` from `crawl/cost.js` onto `CrawlRun.ai_*` fields
+- [ ] Build `PropertyNormalizationService` with sync AI path + routing decision
 - [ ] Build `AiBatchClientService` + `PropertyAiBatchService` (OpenAI Batch API)
 - [ ] Build `OpenAiWebhooksController` with signature verification + dedupe
 - [ ] Build `ai-batch-complete` BullMQ processor to finish deferred normalization

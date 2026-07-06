@@ -13,38 +13,70 @@ target site, extracts listings into `SourceProperty` rows, records a
 
 ## Context — read this before touching anything
 
-Read `docs/scraping-generation-computer-use-architecture.md` sections 4, 10,
-11 in full. Config shape (from `ScraperVersion.config`, produced by Feature
-04's AI loop or a manual admin edit in Feature 03):
+**Primary reference implementation:** `scraper-generator/crawl/` — port this
+logic into NestJS; the CLI entrypoint `crawl/index.js` shows the full
+pipeline order (crawl → detail enrichment → SourceProperty upsert → hand off
+to normalization in Feature 06).
+
+| Reference file | Production target |
+| --- | --- |
+| `scraper-generator/crawl/crawler.js` | `CrawlerService.runCrawl()` |
+| `scraper-generator/crawl/extract.js` | `FieldExtractionService` (or inline in crawler) |
+| `scraper-generator/crawl/detail.js` | `DetailEnrichmentService.enrichDetailPages()` |
+| `scraper-generator/crawl/browser.js` | `StealthBrowserService` (shared launch + stealth page) |
+| `scraper-generator/crawl/debug.js` | `CrawlerDebugService.dumpDebugInfo()` on selector failure |
+| `scraper-generator/crawl/config.js` | constants (`MAX_PAGES`, timeouts, concurrency) |
+| `scraper-generator/crawl/index.js` | orchestration order in `crawl.processor.ts` |
+
+Also read `docs/scraping-generation-computer-use-architecture.md` sections 4, 10,
+11. Config shape (from `ScraperVersion.config`, produced by Feature 04's
+generation loop or a manual admin edit in Feature 03):
 
 ```json
 {
   "start_url": "https://example.com/listings",
   "listing_selector": ".card",
-  "fields": { "title": "h2", "price": ".price" },
-  "pagination": { "type": "next_button", "selector": ".next" }
+  "fields": {
+    "title": { "selector": "h2", "type": "text" },
+    "price": { "selector": ".price", "type": "text" },
+    "url": { "selector": "a", "type": "href" }
+  },
+  "pagination": { "type": "next_button", "selector": ".next" },
+  "detail_page": {
+    "image_selector": ".gallery img",
+    "image_type": "src",
+    "description_selector": ".description",
+    "external_id_source": "url_path"
+  }
 }
 ```
 
+`fields` values may also be plain strings (legacy/manual configs) — treat as
+`{ selector: string, type: 'text' }` (see `extract.js` `normalizeFieldDef`).
+
 This is a **loosely-typed JSON contract**, not a Prisma model — define a
-TypeScript interface for it in the new integration (see below) but treat
-unknown/missing fields defensively (e.g. no `pagination` = single page only).
+TypeScript interface mirroring the reference (see below) but treat unknown/missing
+fields defensively (e.g. no `pagination` = single page only).
 
 Key invariants:
 
 - Normalization into canonical `Property` is **out of scope** here — this
   task only writes `SourceProperty` (per `docs/plan/directions/03-domain-model.md`,
   normalization is Feature 06's job, hooked in as a follow-up call at the end
-  of a successful crawl)
+  of a successful crawl — same order as `crawl/index.js` Phase 3)
+- After listing extraction, run **detail page enrichment** when `detail_page` is
+  present (reference Phase 1b): visit each `source_url`, merge gallery images +
+  description + external id into `raw_data` (`_all_images`, `_detail_text`,
+  `_external_id`)
 - `SourceProperty` has a unique constraint on `(source_agency_id,
   source_url)` — always `upsert`, never blind `create`, and set `last_seen_at:
   now()` on every visit so Feature 06 can detect removals (rows with a stale
   `last_seen_at` after a full crawl = removed)
 - `ScraperExecutionTrace.steps` is a `Json` field holding a step-by-step log
-  (page navigations, selector waits, extraction counts) — this is NOT the
-  same as `ComputerUseStep` (that's the AI generation loop, already built in
-  Feature 04); do not reuse or import anything from
-  `api/src/integrations/computer-use/`
+  (page navigations, selector waits, extraction counts) — mirror the `{ ts, msg,
+  ...data }` objects from `crawler.js`; this is NOT the same as
+  `ComputerUseStep` (that's the AI generation loop, Feature 04); do not reuse
+  generation integration code
 - Self-heal trigger condition (spec-driven, from
   `docs/plan/directions/01-product-spec.md` §19 "broken scraper detection
   signals"): mark `Scraper.status = BROKEN` and call
@@ -63,30 +95,39 @@ Key invariants:
 
 1. **`api/src/integrations/crawler/`** (new integration — third-party
    Playwright usage stays out of `modules/`, per architecture rules):
-   - `interfaces/scraper-config.interface.ts` — `ScraperConfig` (`start_url`,
-     `listing_selector`, `fields: Record<string, string>`, `pagination?: {
-     type: 'next_button' | 'none'; selector?: string }`)
-   - `services/crawler.service.ts` — `runCrawl(config: ScraperConfig): Promise<{
-     items: Array<{ source_url: string; raw_title?: string; raw_price?: string;
-     raw_data: Record<string, string> }>; steps: unknown[]; success: boolean;
-     error_summary?: string }>` — launches Playwright (reuse the same
-     `chromium.launch()` pattern Feature 04's computer-use engine uses if one
-     was established there; otherwise a plain headless launch is fine here,
-     no computer-use/AI involved), navigates `start_url`, waits for
-     `listing_selector`, extracts each field's `textContent` per the
-     `fields` map for every matched element, follows pagination up to a
-     sane hard cap (e.g. 50 pages) if `pagination.type === 'next_button'`,
-     and returns the collected raw items + a step log array for
-     `ScraperExecutionTrace.steps`
-   - `crawler.module.ts` exporting `CrawlerService`
-2. **Rewrite `api/src/background/crawl.processor.ts`**:
+   - `interfaces/scraper-config.interface.ts` — port the config types implied
+     by `generate/prompt.js` + `crawl/crawler.js`:
+     - `FieldDef`: `{ selector: string; type: 'text' | 'href' | 'src' | 'background_image' }`
+     - `ScraperConfig`: `start_url`, `listing_selector`,
+       `fields: Record<string, string | FieldDef>`, optional `pagination`:
+       `{ type: 'next_button' | 'load_more' | 'infinite_scroll' | 'url_param' | 'none'; selector?: string; url_param?: string }`,
+       optional `detail_page`: `{ image_selector?, image_type?, description_selector?, external_id_source?: 'url_path' | 'selector', external_id_selector? }`
+   - `services/stealth-browser.service.ts` — port `crawl/browser.js`
+     (`launchBrowser`, `newStealthPage` with anti-automation flags)
+   - `services/field-extraction.service.ts` — port `crawl/extract.js`
+   - `services/detail-enrichment.service.ts` — port `crawl/detail.js`
+     (`enrichDetailPages(items, detailConfig)` with `DETAIL_CONCURRENCY` /
+     `DETAIL_DELAY_MS` from reference config)
+   - `services/crawler.service.ts` — port `crawl/crawler.js`:
+     `runCrawl(config: ScraperConfig): Promise<{ items: Array<{ source_url:
+     string; raw: Record<string, unknown> }>; steps: unknown[]; success:
+     boolean; error_summary?: string }>` — includes pagination handling for
+     all four types, `MAX_PAGES` cap (default 50), per-card image collection
+     (`_all_images`), debug dump of first card HTML on page 0
+   - `crawler.module.ts` exporting the above services
+2. **Rewrite `api/src/background/crawl.processor.ts`** (mirror `crawl/index.js`
+   Phases 1–2 + trace finalize; Phase 3 normalization is Feature 06):
    - Load the `CrawlRun` with `scraper.active_version`
    - If no `scraper` or no `active_version`, fail the run immediately
      (`status: FAILED`, `error_message`) — do not call the crawler
    - Call `CrawlerService.runCrawl(activeVersion.config as ScraperConfig)`
+   - Call `DetailEnrichmentService.enrichDetailPages(items, config.detail_page)`
    - For each returned item, `prisma.sourceProperty.upsert(...)` keyed on
-     `(source_agency_id, source_url)`, updating `raw_title`, `raw_price`,
-     `raw_data`, `last_seen_at: now()`, `status: ACTIVE`
+     `(source_agency_id, source_url)`, mapping `raw.title` → `raw_title`,
+     `raw.price` → `raw_price`, `raw.location` → `raw_location`,
+     `raw._detail_text` → `raw_description`, full `raw` → `raw_data` (include
+     `_all_images`, `_external_id`), `content_hash` per reference
+     `crawl/utils.js`, `last_seen_at: now()`, `status: ACTIVE`
    - Create the `ScraperExecutionTrace` row (`scraper_id`, `crawl_run_id`,
      `steps`, `success`, `error_summary?`)
    - Update `CrawlRun` totals (`total_found`, `total_created`,
@@ -116,6 +157,9 @@ Key invariants:
 
 - `api/src/integrations/crawler/crawler.module.ts`
 - `api/src/integrations/crawler/interfaces/scraper-config.interface.ts`
+- `api/src/integrations/crawler/services/stealth-browser.service.ts`
+- `api/src/integrations/crawler/services/field-extraction.service.ts`
+- `api/src/integrations/crawler/services/detail-enrichment.service.ts`
 - `api/src/integrations/crawler/services/crawler.service.ts`
 - `api/src/background/crawl.processor.ts` (rewrite)
 - `api/src/modules/crawl-runs/crawl-runs.module.ts` (import `CrawlerModule`)
@@ -124,27 +168,41 @@ Key invariants:
   providers aren't auto-registered elsewhere — check how Feature 05 task 01's
   `crawl-scheduler.cron.ts` was registered and follow the same pattern)
 
+### Reference (read-only — do not import at runtime)
+
+- `scraper-generator/crawl/` — run `npm run crawl` (after `npm run generate`)
+  to validate end-to-end before wiring NestJS
+
 ## Subtasks
 
-- [ ] Build `CrawlerService.runCrawl` with real Playwright extraction + pagination cap
-- [ ] Rewrite the crawl processor to use it, upsert `SourceProperty`, write `ScraperExecutionTrace`
+- [ ] Port `StealthBrowserService` from `crawl/browser.js`
+- [ ] Port `FieldExtractionService` from `crawl/extract.js`
+- [ ] Port `CrawlerService.runCrawl` from `crawl/crawler.js` (all pagination types + trace log)
+- [ ] Port `DetailEnrichmentService` from `crawl/detail.js`
+- [ ] Rewrite the crawl processor to match `crawl/index.js` Phases 1–2, upsert `SourceProperty`, write `ScraperExecutionTrace`
 - [ ] Implement broken-scraper detection + self-heal trigger + stub notification
 - [ ] Update `Scraper.consecutive_failures`/`last_success_at`/`last_failure_at` per run
 - [ ] Build the hourly scraper-health cron recomputing `health`/`success_rate`/`avg_runtime_ms`
+- [ ] Smoke test: point NestJS crawl at a config produced by `scraper-generator/output/version.json` and compare `source_properties` shape to `scraper-generator/output/crawl/source_properties.json`
 
 ## Technical Notes
 
 - Follow `.cursor/rules/api-code-structure-and-best-practices.mdc` — third-party
   browser automation stays in `integrations/`, never imported directly by a
   controller
-- Keep the pagination hard cap and per-page timeout configurable via a
-  constant at the top of `crawler.service.ts`, not hardcoded inline
+- Keep `MAX_PAGES`, `PAGE_TIMEOUT_MS`, `SELECTOR_TIMEOUT_MS`,
+  `DETAIL_CONCURRENCY`, `DETAIL_DELAY_MS` as named constants (defaults from
+  `crawl/config.js`), configurable via env if desired
+- Listing-card image extraction and detail-page merge logic must match the
+  reference — normalization (Feature 06) reads `_all_images` and
+  `_detail_text` from `raw_data`
 
 ## Acceptance Criteria
 
-- Running a scraper (via `run-now`) against a real or local test HTML page
-  produces `SourceProperty` rows with correct `raw_title`/`raw_price`
-  matching the page content, and a `ScraperExecutionTrace` row
+- Running a scraper (via `run-now`) against a config from Feature 04 /
+  `scraper-generator` produces `SourceProperty` rows with correct
+  `raw_title`/`raw_price`/`raw_description` and `raw_data._all_images`
+  matching the reference CLI output
 - Re-running the same crawl updates `last_seen_at` on existing
   `SourceProperty` rows rather than duplicating them
 - Pointing a scraper's config at a non-existent selector causes the run to

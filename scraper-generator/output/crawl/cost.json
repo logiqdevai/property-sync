@@ -1,0 +1,10 @@
+{
+  "model": "claude-haiku-4-5-20251001",
+  "input_tokens": 8876,
+  "output_tokens": 6045,
+  "input_cost": 0.008876,
+  "output_cost": 0.030225,
+  "total_cost": 0.039101,
+  "total_properties": 27,
+  "average_cost_per_property": 0.001448
+}

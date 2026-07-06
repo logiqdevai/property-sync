@@ -1,4 +1,4 @@
-# Task: Computer-use loop engine (OpenAI + Playwright)
+# Task: Computer-use loop engine (Anthropic vision + Playwright)
 
 ## Feature group
 
@@ -7,81 +7,135 @@
 ## Objective
 
 Replace the stub processor from the previous task with the real agent loop:
-OpenAI's `computer-use-preview` model drives a Playwright browser, every
-action is persisted as a `ComputerUseStep` with before/after screenshots,
-and the loop ends by writing a scraper config into `staged_config` and
-moving the run to `AWAITING_REVIEW`.
+an Anthropic vision model drives a Playwright browser via screenshot feedback,
+every action is persisted as a `ComputerUseStep` with before/after screenshots,
+proposed configs are verified against the live page before acceptance, and the
+loop ends by writing a scraper config into `staged_config` and moving the run
+to `AWAITING_REVIEW`.
 
 ## Context — read this before touching anything
 
-Read `docs/scraping-generation-computer-use-architecture.md` sections 6–9 in
-full. This is a **new integration**, not an extension of the existing
-`api/src/integrations/ai/` module — that module wraps the **Vercel AI SDK**
-(`@ai-sdk/openai`, used for plain text/object generation elsewhere in the
-app) which does not expose the Responses API's `computer_use_preview` tool.
-Build a separate integration using the official `openai` npm package
-directly.
+**Primary reference implementation:** `scraper-generator/generate/` — port this
+logic into NestJS; do not invent a parallel approach.
 
-The OpenAI computer-use loop shape (Responses API, Node SDK):
+| Reference file | Production target |
+| --- | --- |
+| `scraper-generator/generate/index.js` | `ComputerUseOrchestratorService.run()` |
+| `scraper-generator/generate/prompt.js` | `ScraperGenerationPromptService` (or inline constant) |
+| `scraper-generator/generate/actions.js` | `PlaywrightDriverService.executeAction()` |
+| `scraper-generator/generate/verify.js` | `ScraperConfigVerificationService.verify()` |
+| `scraper-generator/generate/config.js` | env-driven constants (`MAX_STEPS`, model id, timeouts) |
+| `scraper-generator/generate/utils.js` | `extractJSON()` helper |
+
+Also read `docs/scraping-generation-computer-use-architecture.md` sections 6–9
+for domain-model invariants (`ComputerUseStep`, `staged_config` lifecycle).
+
+This is a **new integration**, not an extension of the existing
+`api/src/integrations/ai/` module — that module wraps the **Vercel AI SDK**
+(`@ai-sdk/anthropic`, used for plain text/object generation elsewhere in the
+app) which does not expose the multi-turn vision + action loop used here.
+Build a separate integration using `@anthropic-ai/sdk` directly (same package
+the reference CLI uses).
+
+### Loop shape (from `scraper-generator/generate/index.js`)
+
+The reference uses Anthropic Messages API with vision, not OpenAI's
+`computer-use-preview` tool:
 
 ```ts
-// First call
-const response = await client.responses.create({
-  model: "computer-use-preview",
-  tools: [{ type: "computer_use_preview", display_width: 1280, display_height: 800, environment: "browser" }],
-  input: [{ role: "user", content: [{ type: "input_text", text: prompt }, { type: "input_image", image_url: `data:image/png;base64,${screenshot}` }] }],
-  truncation: "auto",
+// Each step: screenshot → user message with image + hint → model returns JSON action
+const response = await client.messages.create({
+  model: 'claude-opus-4-8', // configurable via env
+  max_tokens: 2048,
+  thinking: { type: 'adaptive' },
+  system: SYSTEM_PROMPT, // from generate/prompt.js — copy verbatim into api/
+  messages, // accumulates user (screenshot) + assistant (JSON action) turns
 });
 
-// response.output contains items; find the one with type "computer_call" — it has { call_id, action: { type, ...params } }
-
-// After executing `action` via Playwright and capturing a new screenshot:
-const next = await client.responses.create({
-  model: "computer-use-preview",
-  previous_response_id: response.id,
-  tools: [{ type: "computer_use_preview", display_width: 1280, display_height: 800, environment: "browser" }],
-  input: [{ type: "computer_call_output", call_id: computerCall.call_id, output: { type: "computer_screenshot", image_url: `data:image/png;base64,${newScreenshot}` } }],
-  truncation: "auto",
-});
+const action = extractJSON(response.content.find(b => b.type === 'text')?.text);
+// action.action: click | scroll_down | scroll_up | type | navigate | go_back | close_tab | wait | done
 ```
 
-`action.type` values map 1:1 onto the schema's `ComputerActionType` enum
-(`CLICK`, `DOUBLE_CLICK`, `TYPE`, `SCROLL`, `WAIT`, `KEYPRESS`, `SCREENSHOT`,
-`DRAG`) plus a `DONE` you define yourself: the loop ends when a response has
-no `computer_call` output item (the model has finished and returned a final
-text/JSON message instead) — treat that as `DONE` and parse the final config
-out of the response's text output.
+When `action.action === 'done'`, run **config verification** before accepting
+(see `generate/verify.js`). If verification fails, feed errors back to the
+model and continue the loop — do not set `AWAITING_REVIEW` until verification
+passes.
 
-Since the model only knows how to click/type/scroll — it does not
-natively output a `{ start_url, listing_selector, fields, pagination }`
-config — the `prompt` sent to the model must explicitly instruct it to (1)
-navigate and explore the target listing site, then (2) once it has
-identified the repeating listing element and field selectors, respond with
-a final plain-text message containing **only** a JSON code block with that
-exact shape (see architecture doc section 9 for the exact fields). Parse
-that JSON out of the final response's output text; if parsing fails, mark
-the run `FAILED` with a clear `error_message`.
+### Action types → `ComputerActionType`
+
+Map reference actions onto the schema enum (add members if missing in a
+migration):
+
+| Reference `action.action` | `ComputerActionType` |
+| --- | --- |
+| `click` | `CLICK` |
+| `type` | `TYPE` |
+| `scroll_down` / `scroll_up` | `SCROLL` (store direction in `action_payload`) |
+| `navigate` | `NAVIGATE` (new — or store as `TYPE` with url; prefer adding `NAVIGATE`) |
+| `go_back` | `GO_BACK` (new) |
+| `close_tab` | `CLOSE_TAB` (new) |
+| `wait` | `WAIT` |
+| `done` | `DONE` |
+
+Tab handling: when a click opens a new tab, switch to it (reference:
+`actions.js` uses `context.waitForEvent('page')`).
+
+### Config schema (from `generate/prompt.js`)
+
+The `staged_config` shape produced by `done` is richer than the minimal
+example in the architecture doc:
+
+```json
+{
+  "start_url": "https://example.com/listings",
+  "listing_selector": ".card",
+  "fields": {
+    "title": { "selector": "h2", "type": "text" },
+    "price": { "selector": ".price", "type": "text" },
+    "location": { "selector": ".loc", "type": "text" },
+    "listing_type": { "selector": ".badge", "type": "text" },
+    "url": { "selector": "a.detail", "type": "href" },
+    "image": { "selector": ".thumb", "type": "background_image" }
+  },
+  "pagination": {
+    "type": "next_button",
+    "selector": ".next",
+    "url_param": "page"
+  },
+  "detail_page": {
+    "image_selector": ".gallery img",
+    "image_type": "src",
+    "description_selector": ".description",
+    "external_id_source": "url_path",
+    "external_id_selector": ".property-id"
+  }
+}
+```
+
+Field `type` values: `text`, `href`, `src`, `background_image`.
+Pagination `type` values: `next_button`, `load_more`, `infinite_scroll`,
+`url_param`, `none`.
+`detail_page` is optional but the prompt instructs the model to visit a detail
+page and populate it — Feature 05's crawler uses it in the enrichment phase.
 
 ## Requirements
 
-1. Add dependencies to `api/package.json`: `openai` (official SDK) and
-   `playwright` (+ run `npx playwright install chromium` as a documented
-   setup step in the PR/task notes, not something the app does at runtime)
+1. Add dependencies to `api/package.json`: `@anthropic-ai/sdk` and `playwright`
+   (+ run `npx playwright install chromium` as a documented setup step in the
+   PR/task notes, not something the app does at runtime)
 2. `api/src/integrations/computer-use/computer-use.module.ts`
 3. `api/src/integrations/computer-use/services/computer-use-client.service.ts`
-   — thin wrapper around `new OpenAI({ apiKey: config.get('OPENAI_API_KEY')
-   })` exposing `startSession(prompt, screenshot)` and
-   `continueSession(previousResponseId, callId, screenshot)`, both returning
-   a normalized `{ responseId, computerCall: { callId, action } | null,
-   finalText: string | null }` shape so the orchestrator (below) never
-   touches the raw OpenAI response format directly
+   — thin wrapper around `new Anthropic({ apiKey: config.get('ANTHROPIC_API_KEY')
+   })` exposing `sendStep(messages, systemPrompt)` returning a normalized
+   `{ rawText, usage }` shape; the orchestrator parses JSON from `rawText`
 4. `api/src/integrations/computer-use/services/playwright-driver.service.ts`
-   — wraps a single Playwright `Browser`/`Page` per generation run:
-   `launch()`, `screenshot(): Promise<Buffer>`, `executeAction(action:
-   ComputerActionType, payload: any): Promise<void>` (map every action type
-   to the matching Playwright `page.mouse`/`page.keyboard`/`page.evaluate`
-   call), `close()`
-5. `api/src/integrations/computer-use/services/screenshot-storage.service.ts`
+   — port `scraper-generator/generate/actions.js`: `launch()`, `screenshot():
+   Promise<Buffer>`, `executeAction(action): Promise<Page>` (returns active
+   page after tab switches), `close()`
+5. `api/src/integrations/computer-use/services/scraper-config-verification.service.ts`
+   — port `scraper-generator/generate/verify.js`: `verify(context, page,
+   config): Promise<string[]>` (empty array = pass)
+6. `api/src/integrations/computer-use/services/screenshot-storage.service.ts`
    — persists a screenshot `Buffer` as a `Document` row (`type:
    DocumentType.IMAGE`): call the existing `GcsService.uploadImageFromBuffer(
    buffer, filename, 'image/png', folder)` (`api/src/integrations/storage/gcs/services/gcs.service.ts`,
@@ -92,74 +146,91 @@ the run `FAILED` with a clear `error_message`.
    tied to an end user) store the acting admin's `id` there, or leave a
    placeholder value if that's not available in this context; do not treat
    it as a real Prisma relation.
-6. `api/src/integrations/computer-use/computer-use-orchestrator.service.ts`
-   — the actual loop, `async run(generationRunId: string): Promise<void>`:
+7. `api/src/integrations/computer-use/computer-use-orchestrator.service.ts`
+   — port `scraper-generator/generate/index.js` as `async run(generationRunId:
+   string): Promise<void>`:
    1. Load the run + agency; set `status: 'RUNNING'`, `started_at: now()`
-   2. Launch Playwright, navigate to the agency's `base_url`
-   3. Loop (cap at a max step count, e.g. 40, to guarantee termination):
-      a. Screenshot → store as `Document` → call the OpenAI client
-      b. Persist a `ComputerUseStep` row (`step_index`, `action_type`,
-         `action_payload`, `screenshot_before_id`, `model_reasoning` if the
-         response included any text alongside the action)
-      c. If no `computer_call` was returned, this is the final message —
-         parse the JSON config from it, break the loop
-      d. Otherwise execute the action via `PlaywrightDriverService`, take
-         the after-screenshot, store it, update the step's
-         `screenshot_after_id`
-   4. On success: `staged_config` = parsed config, `status:
+   2. Launch Playwright, navigate to the agency's `base_url` (or URL from
+      `prompt` / run metadata)
+   3. Loop (cap at `MAX_STEPS`, default 50 from reference):
+      a. Screenshot → store as `Document` → append user message with image
+      b. Call Anthropic client with accumulated `messages` + `SYSTEM_PROMPT`
+      c. Persist a `ComputerUseStep` row (`step_index`, `action_type`,
+         `action_payload`, `screenshot_before_id`, `model_reasoning`)
+      d. Parse JSON action; if `action === 'done'`, run verification — on
+         failure, append feedback message and `continue` (do not break)
+      e. If `done` and verification passes, set `finalConfig`, break
+      f. Otherwise execute action via `PlaywrightDriverService`, take
+         after-screenshot, update step's `screenshot_after_id`, append
+         assistant message to `messages`
+   4. On success: `staged_config` = verified config, `status:
       'AWAITING_REVIEW'`
    5. On any error or max-steps-exceeded: `status: 'FAILED'`,
       `error_message`
    6. Always `finished_at: now()` and always close the Playwright browser in
       a `finally` block
-7. Replace `api/src/background/generation.processor.ts` (the stub from the
+8. Replace `api/src/background/generation.processor.ts` (the stub from the
    previous task): `@Processor('generation')` calling
    `ComputerUseOrchestratorService.run(job.data.runId)`, with the processor
    itself only responsible for job-level try/catch + logging (the
    orchestrator handles all DB status transitions itself so the run's status
    is always correct even if the processor crashes)
-8. Add `OPENAI_API_KEY` as required (not optional) in
+9. Add `ANTHROPIC_API_KEY` as required (not optional) in
    `api/src/shared/config/env/env.validation.ts` if this feature is being
    actively developed — otherwise leave it optional and throw a clear
-   runtime error from `ComputerUseClientService`'s constructor if missing
+   runtime error from `ComputerUseClientService`'s constructor if missing.
+   Add `SCRAPER_GENERATION_MODEL` (default `claude-opus-4-8`) optional env.
 
 ## Files to create or modify
 
 ### API (`api/`)
 
-- `api/package.json` (add `openai`, `playwright`)
+- `api/package.json` (add `@anthropic-ai/sdk`, `playwright`)
 - `api/src/integrations/computer-use/computer-use.module.ts`
+- `api/src/integrations/computer-use/constants/generation-prompt.ts` (port `generate/prompt.js`)
 - `api/src/integrations/computer-use/services/computer-use-client.service.ts`
 - `api/src/integrations/computer-use/services/playwright-driver.service.ts`
+- `api/src/integrations/computer-use/services/scraper-config-verification.service.ts`
 - `api/src/integrations/computer-use/services/screenshot-storage.service.ts`
 - `api/src/integrations/computer-use/computer-use-orchestrator.service.ts`
 - `api/src/background/generation.processor.ts` (replace stub body)
 - `api/src/modules/scraper-generation/scraper-generation.module.ts` (import `ComputerUseModule`; register the `@Processor('generation')` class as a provider here since `api/src/background/` has no existing processors to pattern-match — this is the first one)
+- `api/prisma/schema.prisma` (extend `ComputerActionType` if needed for `NAVIGATE`, `GO_BACK`, `CLOSE_TAB`)
+
+### Reference (read-only — do not import at runtime)
+
+- `scraper-generator/generate/` — CLI proof-of-concept; run `npm run generate`
+  locally to validate behaviour before wiring NestJS
 
 ## Subtasks
 
-- [ ] Add `openai` + `playwright` dependencies, install chromium
-- [ ] Build `ComputerUseClientService` (OpenAI wrapper)
-- [ ] Build `PlaywrightDriverService` (action executor)
-- [ ] Build/reuse screenshot storage → `Document` rows
-- [ ] Build `ComputerUseOrchestratorService` (the full loop with step persistence)
+- [ ] Add `@anthropic-ai/sdk` + `playwright` dependencies, install chromium
+- [ ] Port `SYSTEM_PROMPT` from `generate/prompt.js`
+- [ ] Build `ComputerUseClientService` (Anthropic vision wrapper)
+- [ ] Port `PlaywrightDriverService` from `generate/actions.js`
+- [ ] Port `ScraperConfigVerificationService` from `generate/verify.js`
+- [ ] Build screenshot storage → `Document` rows
+- [ ] Port orchestrator loop from `generate/index.js` with step persistence
 - [ ] Replace the stub processor with the real orchestrator call
-- [ ] Manual test: trigger a generation run against a simple real estate listing page (or a static test HTML page you control) and confirm it reaches `AWAITING_REVIEW` with a plausible `staged_config`, and that every step has before/after screenshots visible via `GET /admin/generation-runs/:id`
+- [ ] Manual test: `cd scraper-generator && npm run generate` against a target site, then trigger `POST /admin/generation-runs` for the same site and confirm equivalent `staged_config` shape + `AWAITING_REVIEW`
 
 ## Technical Notes
 
 - Follow `.cursor/rules/api-code-structure-and-best-practices.mdc` — no
-  `process.env` access outside `ConfigService`; all OpenAI/Playwright SDK
+  `process.env` access outside `ConfigService`; all Anthropic/Playwright SDK
   usage stays inside `integrations/computer-use/`, the orchestrator and
   processor are the only consumers
 - Cap loop iterations and wrap the whole loop in a timeout to guarantee a
   stuck session can't run forever and block the queue
+- The verification retry loop is intentional — a `done` action with bad
+  selectors must not reach `AWAITING_REVIEW` (matches reference behaviour)
 - This task deliberately does not touch approve/reject/cancel HTTP
   behavior — those already work from the previous task once `staged_config`
   is populated by a real run instead of a manual DB edit
 
 ## Acceptance Criteria
 
-- Triggering `POST /admin/generation-runs` against a real target site runs an actual browser session, produces multiple `ComputerUseStep` rows with real screenshots, and ends in `AWAITING_REVIEW` with a `staged_config` matching the `{ start_url, listing_selector, fields, pagination }` shape
+- Triggering `POST /admin/generation-runs` against a real target site runs an actual browser session, produces multiple `ComputerUseStep` rows with real screenshots, and ends in `AWAITING_REVIEW` with a `staged_config` matching the reference schema (`fields` with typed defs, `pagination`, optional `detail_page`)
+- A session where verification rejects the config retries until fixed or max steps — never promotes a broken config
 - A session that fails (bad URL, model never converges, timeout) ends in `FAILED` with a useful `error_message`, never left stuck in `RUNNING`
-- Approving the resulting run (from the previous task's `approve` endpoint) produces a working `ScraperVersion`
+- Approving the resulting run (from the previous task's `approve` endpoint) produces a working `ScraperVersion` that `scraper-generator/crawl/index.js` can execute when pointed at the same config

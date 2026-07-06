@@ -10,7 +10,8 @@ Build the `CrawlRun`/`JobLog` HTTP surface, register the `crawl` BullMQ
 queue, wire `Scraper.run-now` (Feature 03 stub) to actually enqueue a run,
 and add a cron scheduler that enqueues crawls for `ACTIVE` agencies on their
 own `crawl_interval`. Stub the actual Playwright execution as a `// TODO(next
-task)` in the processor so this task is independently verifiable.
+task)` in the processor so this task is independently verifiable. Task 02
+replaces the stub by porting `scraper-generator/crawl/`.
 
 ## Context — read this before touching anything
 

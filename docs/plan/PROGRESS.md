@@ -184,6 +184,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 | Doc | Path |
 |-----|------|
 | Computer-use architecture | `../../scraping-generation-computer-use-architecture.md` |
+| Reference CLI (generation + crawl + normalization) | `../../scraper-generator/` |
 | System architecture | `directions/02-system-architecture.md` |
 | API design — Feature 04 | `directions/04-api-design.md` |
 
@@ -199,8 +200,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 ### Implementation checklist
 
 **API (`api/`)**
-- [ ] Add `openai` and `playwright` dependencies
-- [ ] `api/src/integrations/computer-use/` — OpenAI computer-use client + Playwright action executor + screenshot capture (writes `Document` rows)
+- [ ] Add `@anthropic-ai/sdk` and `playwright` dependencies
+- [ ] `api/src/integrations/computer-use/` — port `scraper-generator/generate/` (Anthropic vision loop + Playwright actions + config verification + screenshot capture → `Document` rows)
 - [ ] `api/src/modules/scraper-generation/` — module, controller, service; `ScraperGenerationRun` + `ComputerUseStep` persistence; BullMQ `generation` queue + processor running the loop
 - [ ] Approve/reject/cancel endpoints; approve promotes `staged_config` into a new `ScraperVersion` and activates it
 - [ ] Public service method `triggerGeneration(agencyId, scraperId | null, trigger, prompt?)` for later self-heal wiring (Feature 05)
@@ -228,6 +229,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 | Doc | Path |
 |-----|------|
 | Product spec §7–9, §16–19 | `directions/01-product-spec.md` |
+| Reference CLI (crawl pipeline) | `../../scraper-generator/crawl/` |
 | System architecture | `directions/02-system-architecture.md` |
 | API design — Feature 05 | `directions/04-api-design.md` |
 
@@ -245,7 +247,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 **API (`api/`)**
 - [ ] `api/src/modules/crawl-runs/`, `api/src/modules/jobs/`
 - [ ] BullMQ `crawl` queue + processor; cron scheduler reading `SourceAgency.crawl_interval` (only `ACTIVE` agencies)
-- [ ] Playwright production runner: discover → collect URLs → visit → extract → normalize (writes `SourceProperty` — normalization into canonical `Property` is Feature 06) → `ScraperExecutionTrace`
+- [ ] `api/src/integrations/crawler/` — port `scraper-generator/crawl/` (stealth browser, listing extraction, pagination, detail enrichment, execution trace)
+- [ ] Playwright production runner: discover → collect URLs → detail enrich → extract → write `SourceProperty` (normalization into canonical `Property` is Feature 06) → `ScraperExecutionTrace`
 - [ ] Broken-scraper detection (signals per spec §19) → `Scraper.status = BROKEN` + `Notification` (stub call until Feature 08) + calls `triggerGeneration(..., 'SELF_HEAL')` when `self_healing_enabled`
 - [ ] `background/scraper-health.cron.ts` recomputing `health`/`success_rate`/`avg_runtime_ms`/`consecutive_failures`
 - [ ] Wire `Scraper.run-now` (Feature 03 stub) to actually enqueue a `CrawlRun`
@@ -275,6 +278,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 |-----|------|
 | Product spec §10–14 | `directions/01-product-spec.md` |
 | Domain model | `directions/03-domain-model.md` |
+| Reference CLI (normalization + dedup + cost) | `../../scraper-generator/crawl/normalize.js`, `duplicates.js`, `cost.js` |
 | API design — Feature 06 | `directions/04-api-design.md` |
 
 ### Task files
@@ -289,7 +293,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **API (`api/`)**
 - [ ] `api/src/modules/properties/`
-- [ ] AI-assisted normalization (sync via `integrations/ai/`, batch via `integrations/ai-batch/` + OpenAI webhooks) with routing based on `UserTrackedAgency.use_ai_batching` and provider/model resolution from `UserTrackedAgency.ai_provider` / `ai_model`
+- [ ] AI-assisted normalization — port `scraper-generator/crawl/normalize.js` + `duplicates.js` + `cost.js` (sync via `integrations/ai/` or direct Anthropic SDK, batch via `integrations/ai-batch/` + OpenAI webhooks) with routing based on `UserTrackedAgency.use_ai_batching` and provider/model resolution from `UserTrackedAgency.ai_provider` / `ai_model`
 - [ ] `POST /webhooks/openai` — verify `batch.completed` / `batch.failed` / `batch.expired` / `batch.cancelled`, enqueue `ai-batch-complete` worker
 - [ ] Normalization/dedup service invoked at the end of each `CrawlRun` (hook into Feature 05's pipeline): create/update `Property`, `PropertySourceLink`, duplicate detection (`duplicate_group_id`)
 - [ ] Persist AI normalization cost totals on `CrawlRun` (`ai_*` fields; mirror `scraper-generator/output/crawl/cost.json`)

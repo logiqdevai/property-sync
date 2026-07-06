@@ -78,10 +78,10 @@ Every one of these follows the Feature Module Pattern (`hooks/`, `interfaces/`, 
 
 | Package | Why | Added in |
 | --- | --- | --- |
-| `playwright` | Production `CrawlRun` execution + Playwright driver for the computer-use loop | Feature 04 (loop) / Feature 05 (crawl engine) |
-| `openai` | Computer Use tool (Responses API `computer-use-preview`) — the existing `ai`/`@ai-sdk/openai` packages do not expose the computer-use tool; call the official `openai` SDK directly from a dedicated integration | Feature 04 |
+| `playwright` | Production `CrawlRun` execution + Playwright driver for the AI generation loop | Feature 04 (loop) / Feature 05 (crawl engine) |
+| `@anthropic-ai/sdk` | AI scraper generation loop — Anthropic vision messages + JSON actions (reference: `scraper-generator/generate/`). The existing `ai`/`@ai-sdk/anthropic` packages are for plain text/object generation, not the multi-turn screenshot loop | Feature 04 |
 | `openai` (Batch API + webhooks) | Property normalization batch path when all enabled trackers for an agency have `UserTrackedAgency.use_ai_batching: true` and resolved `ai_provider: OPENAI` — upload `.jsonl`, create batch, receive `batch.completed` webhook, download results | Feature 06 |
-| `anthropic` / `gemini` (sync) | Property normalization sync path when resolved `UserTrackedAgency.ai_provider` is `ANTHROPIC` or `GEMINI` (batch API not used) | Feature 06 |
+| `@anthropic-ai/sdk` (normalization sync) | Property normalization sync path — port `scraper-generator/crawl/normalize.js` when resolved provider is `ANTHROPIC` | Feature 06 |
 | `@nestjs/bullmq` processors | Already installed — add new queues (`crawl`, `generation`, `ai-batch-complete`) | Feature 04 / 05 / 06 |
 
 ### Top-level backend layout additions
@@ -105,7 +105,8 @@ api/src/
 ├── integrations/
 │   ├── ai/                         # existing — sync Chat Completions via Vercel AI SDK (normalization fast path)
 │   ├── ai-batch/                   # new: OpenAI Batch API client (files upload, batches.create/retrieve/cancel, output download)
-│   └── computer-use/               # new: OpenAI computer-use loop client + Playwright bridge
+│   ├── computer-use/               # new: Anthropic vision generation loop + Playwright bridge (port of scraper-generator/generate/)
+│   └── crawler/                    # new: production crawl pipeline (port of scraper-generator/crawl/)
 ├── core/queues/
 │   ├── crawl.queue.ts / crawl.processor.ts        # BullMQ: production CrawlRun execution
 │   ├── generation.queue.ts / generation.processor.ts  # BullMQ: computer-use generation runs
@@ -115,7 +116,14 @@ api/src/
     └── scraper-health.cron.ts      # recomputes Scraper.health / success_rate / avg_runtime_ms
 ```
 
-`integrations/computer-use/` holds the OpenAI computer-use client + the Playwright bridge that executes each returned action and captures screenshots — this is a pure integration facade; `modules/scraper-generation/` is the only feature module allowed to call it (per the "feature modules import facades, never SDKs directly" rule).
+`integrations/computer-use/` holds the Anthropic vision generation client +
+Playwright action executor + config verification (ported from
+`scraper-generator/generate/`) — this is a pure integration facade;
+`modules/scraper-generation/` is the only feature module allowed to call it.
+
+`integrations/crawler/` holds the production Playwright crawl + detail
+enrichment pipeline (ported from `scraper-generator/crawl/`); consumed by
+`crawl.processor.ts` only.
 
 ## Database
 
@@ -129,9 +137,10 @@ JWT access token issued by `api/src/modules/auth/`, stored via the existing `sto
 
 | Service | Used by | Facade location |
 | --- | --- | --- |
-| OpenAI Computer Use (Responses API) | AI scraper generation loop | `api/src/integrations/computer-use/` |
+| Anthropic Messages API (vision + JSON actions) | AI scraper generation loop | `api/src/integrations/computer-use/` (reference: `scraper-generator/generate/`) |
 | OpenAI Batch API + webhooks | Deferred property normalization when all trackers opt into `use_ai_batching` | `api/src/integrations/ai-batch/` + `api/src/modules/openai-webhooks/` |
-| Playwright | Computer-use loop execution + production `CrawlRun` execution | `api/src/integrations/computer-use/` (loop) and `api/src/modules/crawl-runs/` (production runner, may share a `shared/services/playwright/` browser-session helper) |
+| Anthropic sync (normalization) | Property normalization fast path | `api/src/modules/properties/` + `integrations/ai/` or direct SDK (reference: `scraper-generator/crawl/normalize.js`) |
+| Playwright | AI generation loop + production `CrawlRun` execution | `api/src/integrations/computer-use/` (generation) and `api/src/integrations/crawler/` (production crawl; reference: `scraper-generator/crawl/`) |
 | Redis + BullMQ | Crawl queue, generation queue, ai-batch completion queue, job monitoring | `api/src/core/queues/` (existing) |
 | Document storage (existing `integrations/storage/gcs`) | Computer-use step screenshots (`Document` model) | reused as-is |
 

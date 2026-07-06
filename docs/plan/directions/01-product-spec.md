@@ -1,6 +1,6 @@
 # Product Specification — Property Sync
 
-> Source documents: `docs/PROJECT-SPECIFICATIONS.MD`, `docs/scraping-generation-computer-use-architecture.md`. This file clarifies and restates them as an executable product spec. `docs/CMS-SYNCHRONIZATION-SPECIFICATION.MD` is a **future phase** and is not planned here.
+> Source documents: `docs/PROJECT-SPECIFICATIONS.MD`, `docs/scraping-generation-computer-use-architecture.md`, `scraper-generator/` (working reference CLI for generation + crawl + normalization). This file clarifies and restates them as an executable product spec. `docs/CMS-SYNCHRONIZATION-SPECIFICATION.MD` is a **future phase** and is not planned here.
 
 ## Product name
 
@@ -28,7 +28,7 @@ A centralized real-estate listing aggregation platform. It scrapes public agency
 1. **Authentication & roles** — register/login, `USER` / `ADMIN` / `SUPER_ADMIN` / `SUPPORT`.
 2. **Admin dashboard** — home KPIs + activity feed, and subpages: Agencies, Scrapers, Crawl Runs, Computer-Use Generation Runs, Job Queue, Properties, CMS Targets (config only), Notifications, Users.
 3. **Source agency management** — CRUD, enable/disable/archive, crawl interval (cron), per-agency history.
-4. **AI-generated & self-healing scrapers** — computer-use loop (OpenAI model driving Playwright), full step replay, staged config review/approve/reject, immutable version history with rollback.
+4. **AI-generated & self-healing scrapers** — Anthropic vision agent driving Playwright (reference: `scraper-generator/generate/`), config verification before staging, full step replay, staged config review/approve/reject, immutable version history with rollback.
 5. **Manual + scheduled crawling** — "Run Now" and cron-scheduled `CrawlRun`s, BullMQ job queue with monitoring.
 6. **Crawl pipeline** — discover → collect URLs → visit → extract → normalize → compare → create/update/remove, ending at canonical `Property` + `PropertyHistory` + `UserProperty`. **No CMS push in this phase.**
 7. **Duplicate detection** — grouping via `duplicate_group_id`, admin merge/split.

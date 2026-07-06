@@ -19,7 +19,7 @@
 
 ## Key invariants to respect in every task
 
-- **Single source of truth for scraper config**: `Scraper.active_version_id` → `ScraperVersion.config`. Never add a `config` field to `Scraper`. Every config change (AI or human) is a **new** `ScraperVersion` row; never mutate an existing version's `config`.
+- **Single source of truth for scraper config**: `Scraper.active_version_id` → `ScraperVersion.config`. Never add a `config` field to `Scraper`. Every config change (AI or human) is a **new** `ScraperVersion` row; never mutate an existing version's `config`. Config JSON shape matches `scraper-generator` (`fields` with `{ selector, type }` defs, optional `detail_page`, pagination types: `next_button` | `load_more` | `infinite_scroll` | `url_param` | `none`) — see `scraper-generator/generate/prompt.js` and `scraper-generator/crawl/crawler.js`.
 - **`ComputerUseStep` vs `ScraperExecutionTrace`**: the former logs the AI's exploratory generation-time loop; the latter logs a production Playwright run. Do not conflate them or write one from the other's code path.
 - **`PropertyHistory` is append-only.** Every detected change (create, price, image add/remove, status change, removed, reappeared) writes a new row; never update or delete existing rows. `field` is `null` for `CREATED` / `REMOVED` / `REAPPEARED`.
 - **`UserProperty` divergence rule**: when a crawl updates canonical `Property` data, the matching `UserProperty` is updated from canonical **unless** `is_modified` is `true` (user has local edits) — in that case, leave the copy untouched and do not silently overwrite; only a manual re-sync action may overwrite it. Always set `last_synced_at` when a copy is written from canonical.

@@ -15,7 +15,9 @@ Playwright integration (next task) is attempted.
 ## Context — read this before touching anything
 
 Read `docs/scraping-generation-computer-use-architecture.md` in full and
-`docs/plan/directions/03-domain-model.md`. Key invariants:
+`docs/plan/directions/03-domain-model.md`. For the generation loop behaviour
+that task 02 will implement, see the working reference in
+`scraper-generator/generate/` (CLI: `npm run generate`). Key invariants:
 
 - `ScraperGenerationRun.status` lifecycle: `QUEUED` → `RUNNING` →
   `AWAITING_REVIEW` → `SUCCESS` / `FAILED` / `CANCELLED`
@@ -115,7 +117,7 @@ Read `docs/scraping-generation-computer-use-architecture.md` in full and
 ## Technical Notes
 
 - Follow `.cursor/rules/api-code-structure-and-best-practices.mdc`
-- Do not write any OpenAI/Playwright code in this task — that is entirely the next task
+- Do not write any Anthropic/Playwright code in this task — that is entirely task 02 (`scraper-generator/generate/` is the reference to port)
 - `staged_config` and `action_payload` are `Json` columns — no DTO validation needed on their shape, they're system-internal
 
 ## Acceptance Criteria

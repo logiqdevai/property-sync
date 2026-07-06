@@ -1,10 +1,10 @@
 {
-  "id": "crawlrun_dd8567acdb6f",
-  "source_agency_id": "agency_e76ec1cad142",
-  "scraper_id": "scraper_3c94584aab06",
+  "id": "ddcb3df9-4207-45ea-89d5-70bb9008882d",
+  "source_agency_id": "16122131-20d1-4907-b544-bc5ee78d6168",
+  "scraper_id": "c53187f7-a0f2-4aa4-b953-1293def6a4fd",
   "status": "SUCCESS",
-  "started_at": "2026-07-06T04:37:41.670Z",
-  "finished_at": "2026-07-06T04:39:22.202Z",
+  "started_at": "2026-07-06T05:32:24.083Z",
+  "finished_at": "2026-07-06T05:34:03.359Z",
   "total_found": 27,
   "total_created": 27,
   "total_updated": 0,
@@ -54,6 +54,6 @@
       }
     }
   },
-  "created_at": "2026-07-06T04:37:41.670Z",
-  "updated_at": "2026-07-06T04:39:22.202Z"
+  "created_at": "2026-07-06T05:32:24.083Z",
+  "updated_at": "2026-07-06T05:34:03.359Z"
 }
