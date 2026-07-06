@@ -30,8 +30,10 @@ real data.
    status badge, totals (found/created/updated/removed/failed), started/
    finished times; filters (status, agency, scraper, date range).
 4. `app/src/pages/admin/crawl-runs/detail.tsx` — header with totals and
-   status (live-updating while `RUNNING` via the polling hook); "Rerun"
-   button; `ScraperExecutionTrace` steps rendered as a readable log (JSON
+   status (live-updating while `RUNNING` via the polling hook); AI
+   normalization cost summary when `ai_total_cost` is set (model, tokens,
+   input/output/total USD, average per property); "Rerun" button;
+   `ScraperExecutionTrace` steps rendered as a readable log (JSON
    pretty-print is acceptable, this is a debug view not end-user facing);
    linked `JobLog` rows with status badges linking to job detail.
 5. `app/src/pages/admin/jobs/index.tsx` — table: queue name, job name,

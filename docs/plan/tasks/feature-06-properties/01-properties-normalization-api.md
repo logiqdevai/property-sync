@@ -9,10 +9,10 @@
 Turn raw `SourceProperty` rows (written by Feature 05's crawl pipeline) into
 normalized, deduplicated `Property` records using AI-assisted field mapping,
 write `PropertyHistory` for every detected change, detect
-removals/reappearances, route normalization through either synchronous OpenAI
-Chat Completions or the OpenAI Batch API based on
-`UserTrackedAgency.use_ai_batching`, and expose an admin API for
-listing/inspecting/merging/splitting properties.
+removals/reappearances, route normalization through the AI provider/model
+resolved from `UserTrackedAgency.ai_provider` / `ai_model` (sync or OpenAI
+Batch API based on `UserTrackedAgency.use_ai_batching`), and expose an admin
+API for listing/inspecting/merging/splitting properties.
 
 ## Context — read this before touching anything
 
@@ -20,7 +20,9 @@ Read `docs/plan/directions/03-domain-model.md` in full — this task owns the
 invariants: **`PropertyHistory` is append-only**, `field` is `null` for
 `CREATED`/`REMOVED`/`REAPPEARED`, duplicate grouping is a flat
 `Property.duplicate_group_id` string (no separate table), and the
-**`UserTrackedAgency.use_ai_batching` routing rule** (sync vs batch path).
+**`UserTrackedAgency.use_ai_batching` routing rule** (sync vs batch path) and
+**`UserTrackedAgency.ai_provider` / `ai_model` selection rule** (see
+`docs/plan/directions/03-domain-model.md`).
 
 This task **hooks into the end of Feature 05's crawl pipeline** — do not
 build a separate cron/queue for normalization; it must run synchronously
@@ -32,7 +34,8 @@ worker).
 
 **AI normalization** maps raw scraped fields into canonical `Property` columns
 (title, price, city, listing_type, etc.) — mirror the prompt/schema shape
-from `scraper-generator/crawl/normalize.js`. Use the existing
+from `scraper-generator/crawl/normalize.js` and the cost rollup from
+`scraper-generator/crawl/cost.js` (`buildCostReport`). Use the existing
 `api/src/integrations/ai/` (`AiService.generateText` / `generateTextWithSchema`)
 for the **sync path**. For the **batch path**, use the official `openai` npm
 package directly in a new `api/src/integrations/ai-batch/` facade (the Vercel AI
@@ -65,14 +68,19 @@ SDK does not expose Batch API file upload / batch lifecycle).
      processor — pass the crawl's `started_at` timestamp in, and select
      `last_seen_at >= started_at`)
    - **Routing decision**: load enabled `UserTrackedAgency` rows for
-     `sourceAgencyId`. If none exist **or** any has `use_ai_batching: false`
-     → **sync path**. If at least one exists **and all** have
-     `use_ai_batching: true` → **batch path** (delegate to
+     `sourceAgencyId`. Resolve `ai_provider` + `ai_model` per the domain
+     model rule (unanimous tracker prefs, else platform defaults). If none
+     exist **or** any has `use_ai_batching: false` **or** resolved
+     `ai_provider !== OPENAI` → **sync path**. If at least one exists,
+     every tracker has `use_ai_batching: true`, and resolved provider is
+     `OPENAI` → **batch path** (delegate to
      `PropertyAiBatchService.submitForCrawlRun(...)` and return early —
      do not create `Property` rows yet for those listings)
    - **Sync path**: batch source rows (e.g. 10 at a time, same as
-     `scraper-generator`) and call `AiService` to normalize; on batch failure
-     retry individual rows; map AI output → `Property` fields
+     `scraper-generator`) and call the integration for the resolved
+     `ai_provider` (`integrations/ai/` for OpenAI/Anthropic sync,
+     provider-specific client as needed) with the resolved `ai_model`; on
+     batch failure retry individual rows; map AI output → `Property` fields
    - For each normalized listing: find or create a matching `Property` via its
      `PropertySourceLink` (a `SourceProperty` already linked → update the
      canonical `Property`; a new `SourceProperty` → create a new `Property`
@@ -102,6 +110,18 @@ SDK does not expose Batch API file upload / batch lifecycle).
      linked `SourceProperty` was just re-upserted with a fresh
      `last_seen_at` → set `status` back to `ACTIVE` + write
      `PropertyHistory` (`event_type: REAPPEARED`)
+   - **AI cost tracking**: accumulate token usage across all normalization
+     API calls in the run (sync path: during `normalizeForCrawlRun`; batch
+     path: when `applyNormalizedResults` finishes after webhook). Compute
+     USD costs using the per-million rates for the **resolved** provider/model
+     (same rates as `scraper-generator/crawl/config.js` for Anthropic Haiku;
+     OpenAI rates from env/config). Persist on the `CrawlRun` row:
+     `ai_model`, `ai_input_tokens`, `ai_output_tokens`, `ai_input_cost`,
+     `ai_output_cost`, `ai_total_cost`, `ai_average_cost_per_property`
+     (`ai_total_cost / total_created` when `total_created > 0`, else leave
+     `ai_average_cost_per_property` null). On the batch path, update these
+     fields when the deferred batch completes, not when the crawl worker
+     returns.
 2. **Wire into the crawl pipeline**: in `api/src/background/crawl.processor.ts` (Feature 05),
    after the `SourceProperty` upserts and `ScraperExecutionTrace` write,
    call `propertyNormalizationService.normalizeForCrawlRun(crawlRun.id,
@@ -165,7 +185,7 @@ SDK does not expose Batch API file upload / batch lifecycle).
 
 ## Subtasks
 
-- [ ] Build `PropertyNormalizationService` with sync AI path + routing decision
+- [ ] Build `PropertyNormalizationService` with sync AI path + routing decision + cost rollup onto `CrawlRun`
 - [ ] Build `AiBatchClientService` + `PropertyAiBatchService` (OpenAI Batch API)
 - [ ] Build `OpenAiWebhooksController` with signature verification + dedupe
 - [ ] Build `ai-batch-complete` BullMQ processor to finish deferred normalization
@@ -188,6 +208,7 @@ SDK does not expose Batch API file upload / batch lifecycle).
 
 - Running a crawl (Feature 05) with sync routing produces both `SourceProperty`
   and normalized `Property` rows immediately, with a `CREATED` history entry
+  and populated `CrawlRun.ai_*` cost fields matching token usage
 - Running a crawl where all enabled trackers have `use_ai_batching: true`
   submits an OpenAI batch, stores pending state on `CrawlRun.metadata`, and
   completes normalization only after a verified `batch.completed` webhook

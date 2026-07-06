@@ -29,7 +29,10 @@ Build the `crawl-runs` and `jobs` feature modules.
    ```
 2. `app/src/features/crawl-runs/interfaces/crawl-runs.interfaces.ts` —
    `CrawlRun` (mirror entity incl. `total_found`/`total_created`/
-   `total_updated`/`total_removed`/`total_failed`), `CrawlRunDetail` (+
+   `total_updated`/`total_removed`/`total_failed` and nullable AI cost
+   fields: `ai_model`, `ai_input_tokens`, `ai_output_tokens`,
+   `ai_input_cost`, `ai_output_cost`, `ai_total_cost`,
+   `ai_average_cost_per_property`), `CrawlRunDetail` (+
    `execution_traces`, `job_logs`), `CrawlRunStatus` union,
    `CrawlRunListQuery`
 3. `app/src/features/crawl-runs/services/crawl-runs.services.ts` —

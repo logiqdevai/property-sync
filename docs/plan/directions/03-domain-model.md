@@ -1,6 +1,6 @@
 # Domain Model — Property Sync
 
-`api/prisma/schema.prisma` already defines **every model needed for the in-scope current phase**. This plan makes **no schema changes**. The only outstanding action is running the **initial migration** (`api/prisma/migrations/` is currently empty) and writing a seed script (`api/prisma/seed.ts`) for local development — both handled in Feature 01.
+`api/prisma/schema.prisma` defines every model needed for the in-scope current phase. The outstanding migration action is running migrations when schema fields change (`api/prisma/migrations/`) and writing a seed script (`api/prisma/seed.ts`) for local development — both handled in Feature 01.
 
 ## Entity map (which feature owns which model)
 
@@ -10,8 +10,8 @@
 | 02 — Agencies | `SourceAgency` | Root of the pipeline. |
 | 03 — Scraper Management | `Scraper`, `ScraperVersion` | `Scraper` holds **no config** — always read `active_version.config`. |
 | 04 — AI Generation | `ScraperGenerationRun`, `ComputerUseStep`, `Document` (screenshots) | `staged_config` lives only on the run until approved into a `ScraperVersion`. |
-| 05 — Crawl Engine | `CrawlRun`, `ScraperExecutionTrace`, `JobLog` | Production execution, independent of AI. |
-| 06 — Properties | `SourceProperty`, `Property`, `PropertySourceLink`, `PropertyHistory` | Normalization/dedup/history layer. |
+| 05 — Crawl Engine | `CrawlRun`, `ScraperExecutionTrace`, `JobLog` | Production execution. `CrawlRun` also stores AI normalization cost totals once Feature 06 finishes (or when a deferred batch completes). |
+| 06 — Properties | `SourceProperty`, `Property`, `PropertySourceLink`, `PropertyHistory` | Normalization/dedup/history layer. Writes `CrawlRun` AI cost fields after normalization. |
 | 07 — User Tracking | `UserTrackedAgency`, `UserProperty` | Per-user copy + preferences. |
 | 08 — Notifications | `Notification` | Read by dashboard unread count. |
 | 09 — CMS Config | `CmsTarget`, `UserCms` | **`CmsSyncRun` is NOT used in this phase** — do not write to it. |
@@ -27,12 +27,18 @@
   - **Sync path** — use when there are **no** enabled trackers, **or** when **any** enabled tracker has `use_ai_batching: false`. Normalize immediately inside the crawl pipeline (Feature 06) and proceed to `UserProperty` sync in the same run.
   - **Batch path** — use only when there is at least one enabled tracker **and every** enabled tracker has `use_ai_batching: true`. Build a `.jsonl` batch input (`/v1/chat/completions`, one request per source listing with a stable `custom_id`), upload via Files API (`purpose: "batch"`), create the batch (`completion_window: "24h"`), persist the OpenAI batch id + pending source-property ids on `CrawlRun.metadata`, and return without blocking the crawl worker. When OpenAI sends `batch.completed` (verified webhook), download the output file, map results back via `custom_id`, finish normalization + history + `UserProperty` sync. Handle `batch.failed` / `batch.expired` / `batch.cancelled` by writing a `Notification` and storing the error on `CrawlRun.metadata` — never leave a crawl stuck silently.
   - Admin canonical data and user copies for batch-deferred listings must not appear until the batch completes; the crawl run itself may finish `SUCCESS` while `metadata.ai_batch_status` is `pending`.
+- **`UserTrackedAgency.ai_provider` / `ai_model` selection rule**: each tracker row stores the user's preferred AI vendor (`AiProvider`: `OPENAI`, `ANTHROPIC`, `GEMINI`) and optional model id (`ai_model`, null = that provider's configured default). After a crawl upserts `SourceProperty` rows, Feature 06 resolves the normalization provider/model from enabled trackers for that `source_agency_id`:
+  - **No enabled trackers** — use platform defaults from env/config (e.g. `OPENAI` + `gpt-4o-mini`).
+  - **Enabled trackers agree** — all enabled rows share the same `ai_provider` and the same `ai_model` value (including all-null `ai_model` on the same provider) → use that pair for normalization and persist it on `CrawlRun.ai_model`.
+  - **Enabled trackers disagree** — fall back to platform defaults for the sync path (same as mixed `use_ai_batching`). Do not block the crawl.
+  - **Batch path constraint** — OpenAI Batch API applies only when every enabled tracker has `use_ai_batching: true` **and** the resolved `ai_provider` is `OPENAI`. Trackers with `ai_provider: ANTHROPIC` or `GEMINI` must use the sync path regardless of `use_ai_batching`.
 - **`CmsSyncRun` is out of scope.** It exists in the schema for the future sync phase only. No task in this plan creates, updates, or reads it.
+- **`CrawlRun` AI normalization cost fields** (`ai_model`, `ai_input_tokens`, `ai_output_tokens`, `ai_input_cost`, `ai_output_cost`, `ai_total_cost`, `ai_average_cost_per_property`): populated by Feature 06 after normalization completes. All monetary fields are USD. `ai_average_cost_per_property = ai_total_cost / total_created` when `total_created > 0`, else `null`. On the batch path, leave these null until the OpenAI webhook worker finishes normalization. Mirror the shape of `scraper-generator/output/crawl/cost.json` (the local CLI also writes that file; production persists the same values on the `CrawlRun` row).
 - **Duplicate grouping** is a flat `Property.duplicate_group_id` string shared by all members of a group; there is no separate `DuplicateGroup` table. Merge = assign the same `duplicate_group_id` to multiple properties; split = clear/reassign it on one member.
 
 ## Enums already defined (reuse, never redeclare)
 
-`AuthRole`, `DocumentType`, `CrawlType`, `PaginationType`, `AgencyStatus`, `ScraperStatus`, `ScraperHealth`, `CrawlRunStatus`, `GenerationRunStatus`, `GenerationTrigger`, `ComputerActionType`, `JobStatus`, `PropertyStatus`, `ListingType`, `PropertyType`, `CmsType`, `AuthType`, `CmsSyncAction` (unused this phase), `CmsSyncStatus` (unused this phase), `PropertyHistoryEventType`, `NotificationType`, `NotificationSeverity`.
+`AuthRole`, `DocumentType`, `CrawlType`, `PaginationType`, `AgencyStatus`, `ScraperStatus`, `ScraperHealth`, `CrawlRunStatus`, `GenerationRunStatus`, `GenerationTrigger`, `ComputerActionType`, `JobStatus`, `PropertyStatus`, `ListingType`, `PropertyType`, `CmsType`, `AuthType`, `CmsSyncAction` (unused this phase), `CmsSyncStatus` (unused this phase), `PropertyHistoryEventType`, `NotificationType`, `NotificationSeverity`, `AiProvider`.
 
 Per the API rule file, always import these from `generated/prisma` — never redeclare them as TypeScript unions in DTOs/interfaces.
 

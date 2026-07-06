@@ -252,7 +252,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **App (`app/`)**
 - [ ] `app/src/features/crawl-runs/`, `app/src/features/jobs/`
-- [ ] `/admin/crawl-runs` list + detail (totals, error, trace, job logs) + re-run action
+- [ ] `/admin/crawl-runs` list + detail (totals, AI cost, error, trace, job logs) + re-run action
 - [ ] `/admin/jobs` list + detail + retry action
 
 **Verification**
@@ -289,9 +289,10 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **API (`api/`)**
 - [ ] `api/src/modules/properties/`
-- [ ] AI-assisted normalization (sync via `integrations/ai/`, batch via `integrations/ai-batch/` + OpenAI webhooks) with routing based on `UserTrackedAgency.use_ai_batching`
+- [ ] AI-assisted normalization (sync via `integrations/ai/`, batch via `integrations/ai-batch/` + OpenAI webhooks) with routing based on `UserTrackedAgency.use_ai_batching` and provider/model resolution from `UserTrackedAgency.ai_provider` / `ai_model`
 - [ ] `POST /webhooks/openai` — verify `batch.completed` / `batch.failed` / `batch.expired` / `batch.cancelled`, enqueue `ai-batch-complete` worker
 - [ ] Normalization/dedup service invoked at the end of each `CrawlRun` (hook into Feature 05's pipeline): create/update `Property`, `PropertySourceLink`, duplicate detection (`duplicate_group_id`)
+- [ ] Persist AI normalization cost totals on `CrawlRun` (`ai_*` fields; mirror `scraper-generator/output/crawl/cost.json`)
 - [ ] `PropertyHistory` writes for every detected change (created/updated/price/images/status/removed/reappeared)
 - [ ] Removal detection (previously seen `SourceProperty` missing from a new crawl → `REMOVED`) and reappearance detection
 - [ ] Merge/split endpoints
@@ -335,7 +336,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **API (`api/`)**
 - [ ] `api/src/modules/user-tracked-agencies/`, `api/src/modules/user-properties/`
-- [ ] Track/untrack + per-type toggle + `use_ai_batching` endpoints
+- [ ] Track/untrack + per-type toggle + `use_ai_batching` + `ai_provider` / `ai_model` endpoints
 - [ ] Crawl-time hook (extends Feature 06's normalization path): for every tracking user, create-or-update `UserProperty` after normalization completes (immediate for sync path, deferred for batch path), respecting the `is_modified` divergence rule
 - [ ] User list/detail/edit/resync endpoints
 

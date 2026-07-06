@@ -34,8 +34,11 @@ task)` in the processor so this task is independently verifiable.
 
 ## Requirements
 
-1. **Prisma**: no schema changes needed — `CrawlRun`, `JobLog`,
-   `ScraperExecutionTrace` already exist.
+1. **Prisma**: run a migration for `CrawlRun` AI cost columns (`ai_model`,
+   `ai_input_tokens`, `ai_output_tokens`, `ai_input_cost`, `ai_output_cost`,
+   `ai_total_cost`, `ai_average_cost_per_property`) — see
+   `api/prisma/schema.prisma`. Populated by Feature 06 normalization, not
+   this task.
 2. **`api/src/modules/crawl-runs/`**:
    - `crawl-runs.module.ts` — registers `BullModule.registerQueue({ name: 'crawl' })`
    - `crawl-runs.controller.ts`:
@@ -55,7 +58,8 @@ task)` in the processor so this task is independently verifiable.
        scheduler — do not duplicate this logic anywhere else.
      - `findAll(query)`, `findOne(id)`
    - `dto/create-crawl-run-query.schema.ts` (Zod)
-   - `entities/crawl-run.entity.ts`
+   - `entities/crawl-run.entity.ts` — include nullable `ai_*` cost fields
+     (returned on detail; list may omit or include summary `ai_total_cost`)
    - `api/src/background/crawl.processor.ts` (same convention as Feature
      04's `generation.processor.ts` — queue processors live in
      `api/src/background/`, not inside the feature module) — `@Processor('crawl')`, `@Process()`

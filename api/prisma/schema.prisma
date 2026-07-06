@@ -218,6 +218,12 @@ enum ScraperVersionCreatedBy {
   USER
 }
 
+enum AiProvider {
+  OPENAI
+  ANTHROPIC
+  GEMINI
+}
+
 // ---------------------------------------------------------------
 // USERS & CMS
 // ---------------------------------------------------------------
@@ -454,8 +460,8 @@ model ScraperExecutionTrace {
 // ---------------------------------------------------------------
 
 /// One production scraping execution of a Scraper against its SourceAgency. This is the
-/// Playwright run that uses the config from Scraper.active_version -- no AI involved here,
-/// unless it fails and triggers a self-heal ScraperGenerationRun.
+/// Playwright run that uses the config from Scraper.active_version -- no AI involved in the
+/// crawl itself, unless normalization (Feature 06) or a failure triggers self-heal.
 model CrawlRun {
   id               String         @id @default(uuid())
   source_agency_id String
@@ -470,6 +476,13 @@ model CrawlRun {
   total_failed     Int            @default(0)
   error_message    String?
   metadata         Json?
+  ai_model                      String?
+  ai_input_tokens               Int?
+  ai_output_tokens              Int?
+  ai_input_cost                 Decimal? @db.Decimal(12, 6)
+  ai_output_cost                Decimal? @db.Decimal(12, 6)
+  ai_total_cost                 Decimal? @db.Decimal(12, 6)
+  ai_average_cost_per_property  Decimal? @db.Decimal(12, 8)
   created_at       DateTime       @default(now())
   updated_at       DateTime       @updatedAt
 
@@ -754,7 +767,9 @@ model UserTrackedAgency {
   track_new_listings     Boolean  @default(true)
   track_removed_listings Boolean  @default(true)
   track_updated_listings Boolean  @default(true)
-  use_ai_batching        Boolean  @default(false) // use openai batching to reduce costs
+  use_ai_batching        Boolean    @default(false)
+  ai_provider            AiProvider @default(OPENAI)
+  ai_model               String?
   created_at             DateTime @default(now())
   updated_at             DateTime @updatedAt
 

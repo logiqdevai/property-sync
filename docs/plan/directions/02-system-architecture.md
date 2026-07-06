@@ -80,7 +80,8 @@ Every one of these follows the Feature Module Pattern (`hooks/`, `interfaces/`, 
 | --- | --- | --- |
 | `playwright` | Production `CrawlRun` execution + Playwright driver for the computer-use loop | Feature 04 (loop) / Feature 05 (crawl engine) |
 | `openai` | Computer Use tool (Responses API `computer-use-preview`) — the existing `ai`/`@ai-sdk/openai` packages do not expose the computer-use tool; call the official `openai` SDK directly from a dedicated integration | Feature 04 |
-| `openai` (Batch API + webhooks) | Property normalization batch path when all enabled trackers for an agency have `UserTrackedAgency.use_ai_batching: true` — upload `.jsonl`, create batch, receive `batch.completed` webhook, download results | Feature 06 |
+| `openai` (Batch API + webhooks) | Property normalization batch path when all enabled trackers for an agency have `UserTrackedAgency.use_ai_batching: true` and resolved `ai_provider: OPENAI` — upload `.jsonl`, create batch, receive `batch.completed` webhook, download results | Feature 06 |
+| `anthropic` / `gemini` (sync) | Property normalization sync path when resolved `UserTrackedAgency.ai_provider` is `ANTHROPIC` or `GEMINI` (batch API not used) | Feature 06 |
 | `@nestjs/bullmq` processors | Already installed — add new queues (`crawl`, `generation`, `ai-batch-complete`) | Feature 04 / 05 / 06 |
 
 ### Top-level backend layout additions

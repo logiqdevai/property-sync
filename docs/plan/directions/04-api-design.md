@@ -59,7 +59,7 @@ Internal-only (not HTTP): `ScraperGenerationService.trigger(agencyId, scraperId 
 | Method | Path | Body/Query | Response |
 | --- | --- | --- | --- |
 | GET | `/admin/crawl-runs` | `CrawlRunQuerySchema` (status, agency_id, scraper_id, date_from, date_to) | `{ data, pagination }` |
-| GET | `/admin/crawl-runs/:id` | — | run + totals + `execution_traces` + `job_logs` |
+| GET | `/admin/crawl-runs/:id` | — | run + totals + AI cost fields (`ai_*`) + `execution_traces` + `job_logs` |
 | POST | `/admin/crawl-runs/:id/rerun` | — | new `CrawlRun` (same agency/scraper) |
 | GET | `/admin/jobs` | `JobLogQuerySchema` (status, queue_name) | `{ data, pagination }` |
 | GET | `/admin/jobs/:id` | — | `JobLog` detail |
@@ -85,8 +85,8 @@ Internal-only (not HTTP): `ScraperGenerationService.trigger(agencyId, scraperId 
 | Method | Path | Body/Query | Response |
 | --- | --- | --- | --- |
 | GET | `/agencies` | query (status, search) — public active agencies + this user's tracking state | `{ data, pagination }` |
-| POST | `/agencies/:agencyId/track` | `{ track_new_listings?, track_removed_listings?, track_updated_listings?, use_ai_batching? }` | `UserTrackedAgency` (creates if absent) |
-| PATCH | `/agencies/:agencyId/track` | same fields + `enabled` + `use_ai_batching?` | `UserTrackedAgency` |
+| POST | `/agencies/:agencyId/track` | `{ track_new_listings?, track_removed_listings?, track_updated_listings?, use_ai_batching?, ai_provider?, ai_model? }` | `UserTrackedAgency` (creates if absent) |
+| PATCH | `/agencies/:agencyId/track` | same fields + `enabled` | `UserTrackedAgency` |
 | DELETE | `/agencies/:agencyId/track` | — | `204` |
 
 `modules/user-properties` (user-scoped):

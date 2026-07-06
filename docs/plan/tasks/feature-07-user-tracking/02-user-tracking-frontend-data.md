@@ -28,8 +28,9 @@ Features 02/06 — these hit different, user-scoped endpoints).
    ```
 2. `app/src/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces.ts`
    — `TrackableAgency` (public agency fields + `is_tracked`,
-   `tracking_prefs?` including `use_ai_batching`), `TrackAgencyPayload`
-   (change-type toggles + optional `use_ai_batching`), `AgencyListQuery`
+   `tracking_prefs?` including `use_ai_batching`, `ai_provider`, `ai_model`),
+   `TrackAgencyPayload` (change-type toggles + optional `use_ai_batching`,
+   `ai_provider`, `ai_model`), `AgencyListQuery`
 3. `app/src/features/user-tracked-agencies/services/user-tracked-agencies.services.ts`
    — list/track/updateTracking/untrack
 4. `app/src/features/user-tracked-agencies/hooks/use-user-tracked-agencies.ts`

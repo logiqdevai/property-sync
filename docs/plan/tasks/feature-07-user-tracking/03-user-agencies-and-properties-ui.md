@@ -39,9 +39,11 @@ routes and not under `/admin`.
    agencies (name, base_url, city/country if present) with a "Track" toggle
    per card; when tracked, expand to show three checkboxes (new/removed/
    updated listings) plus a **"Use AI batching (lower cost, slower updates)"**
-   toggle bound to `use_ai_batching` using `useUpdateAgencyTracking()`; show
-   helper text that batching only takes effect when all trackers for that
-   agency opt in; untrack action with a confirm.
+   toggle bound to `use_ai_batching` using `useUpdateAgencyTracking()`; an
+   **AI provider** select (`OPENAI` / `ANTHROPIC` / `GEMINI`) and optional
+   **model** text input bound to `ai_provider` / `ai_model`; show helper
+   text that batching only takes effect when all trackers for that agency
+   opt in and use OpenAI; untrack action with a confirm.
 4. `app/src/pages/dashboard/properties/index.tsx` — table/grid of the
    user's `UserProperty` rows with filters (status, city, price range); each
    row shows an "edited" badge when `is_modified` is true.
@@ -71,7 +73,7 @@ routes and not under `/admin`.
 ## Subtasks
 
 - [ ] Extend routes + nav items in the user shell
-- [ ] Build the Agencies browse/track page with per-type preference toggles + AI batching toggle
+- [ ] Build the Agencies browse/track page with per-type preference toggles, AI batching toggle, and AI provider/model controls
 - [ ] Build the My Properties list page
 - [ ] Build the property detail/edit page with the `is_modified` warning + resync flow
 - [ ] Manual test: track an agency, wait for/trigger a crawl, see a property appear, edit it, re-trigger a crawl, confirm the edit persists, then resync and confirm it's overwritten
@@ -85,7 +87,8 @@ routes and not under `/admin`.
 ## Acceptance Criteria
 
 - A logged-in user can browse active agencies, track one with specific
-  change-type preferences and optional AI batching, and see it reflected immediately
+  change-type preferences, optional AI batching, and AI provider/model
+  selection, and see it reflected immediately
 - The user's tracked properties list shows real data once a tracked
   agency's scraper has run
 - Editing a property shows the "edited" badge and warning banner; resync

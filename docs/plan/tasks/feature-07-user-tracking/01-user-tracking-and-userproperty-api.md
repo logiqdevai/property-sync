@@ -30,20 +30,23 @@ authenticated `USER` can track agencies and manage their own properties.
 1. **`api/src/modules/user-tracked-agencies/`**:
    - `dto/track-agency.dto.ts` — optional booleans:
      `track_new_listings`, `track_removed_listings`, `track_updated_listings`,
-     `use_ai_batching`, `enabled` (PATCH only for `enabled`)
+     `use_ai_batching`, `enabled` (PATCH only for `enabled`); optional
+     `ai_provider` (`AiProvider` enum, default `OPENAI`) and `ai_model`
+     (provider-specific model id, nullable = provider default)
    - `GET /agencies` — public **active** `SourceAgency` list (`status:
      ACTIVE`) with `page`, `limit`, `search` query, plus each row annotated
      with `is_tracked: boolean` and the current user's tracking prefs if
      tracked (`track_new_listings`, `track_removed_listings`,
-     `track_updated_listings`, `use_ai_batching`; left join against
-     `UserTrackedAgency` for `@CurrentUser()`)
+     `track_updated_listings`, `use_ai_batching`, `ai_provider`, `ai_model`;
+     left join against `UserTrackedAgency` for `@CurrentUser()`)
    - `POST /agencies/:agencyId/track` — body `{ track_new_listings?,
-     track_removed_listings?, track_updated_listings?, use_ai_batching? }`
-     (change-type fields optional, default `true` per schema;
-     `use_ai_batching` optional, default `false`) — upsert
-     `UserTrackedAgency` for `(user_id, agencyId)`, `enabled: true`
-   - `PATCH /agencies/:agencyId/track` — same fields + `enabled?` +
-     `use_ai_batching?` — update existing row, 404 if not tracked
+     track_removed_listings?, track_updated_listings?, use_ai_batching?,
+     ai_provider?, ai_model? }` (change-type fields optional, default `true`
+     per schema; `use_ai_batching` optional, default `false`; `ai_provider`
+     optional, default `OPENAI`; `ai_model` optional, default `null`) —
+     upsert `UserTrackedAgency` for `(user_id, agencyId)`, `enabled: true`
+   - `PATCH /agencies/:agencyId/track` — same fields + `enabled?` —
+     update existing row, 404 if not tracked
    - `DELETE /agencies/:agencyId/track` — hard delete the `UserTrackedAgency`
      row, `204`
 2. **`api/src/modules/user-properties/`**:
@@ -120,12 +123,13 @@ authenticated `USER` can track agencies and manage their own properties.
 - Follow `.cursor/rules/api-code-structure-and-best-practices.mdc`
 - `JwtGuard` only (no `RolesGuard`) — these are user-scoped, not admin endpoints
 - Always scope queries by `@CurrentUser().id`; never trust a client-supplied user id
-- Changing `use_ai_batching` on an existing track row affects **future** crawls only; it does not retroactively cancel in-flight OpenAI batches
-- When explaining `use_ai_batching` in API docs/entities: batch mode applies only when **every** enabled tracker for that agency has it enabled; if any tracker opts out, the agency uses synchronous normalization for everyone
+- Changing `use_ai_batching`, `ai_provider`, or `ai_model` on an existing track row affects **future** crawls only; it does not retroactively cancel in-flight OpenAI batches
+- When explaining `use_ai_batching` in API docs/entities: batch mode applies only when **every** enabled tracker for that agency has it enabled **and** the resolved `ai_provider` is `OPENAI`; if any tracker opts out of batching or uses a non-OpenAI provider, the agency uses synchronous normalization for everyone
+- When explaining `ai_provider` / `ai_model`: Feature 06 resolves a single provider/model per crawl from enabled trackers (see `docs/plan/directions/03-domain-model.md`); validate `ai_provider` against the `AiProvider` enum and reject unknown model strings only at normalization time if the provider SDK rejects them
 
 ## Acceptance Criteria
 
-- A user can track an agency, see it marked `is_tracked: true` in `GET /agencies`, and adjust per-type preferences including `use_ai_batching`
+- A user can track an agency, see it marked `is_tracked: true` in `GET /agencies`, and adjust per-type preferences including `use_ai_batching`, `ai_provider`, and `ai_model`
 - When a tracked agency's scraper runs and surfaces a new property, a `UserProperty` automatically appears for that user
 - Editing a `UserProperty` sets `is_modified: true`; a subsequent crawl update to the same canonical property does NOT overwrite the user's edits
 - Calling `resync` overwrites the edits from canonical and clears `is_modified`
