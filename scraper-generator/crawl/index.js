@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { ROOT_DIR, OUTPUT_DIR } from './config.js';
+import { ROOT_DIR, OUTPUT_DIR, NORMALIZATION_CACHE_PATH } from './config.js';
 import { uuid, now, contentHash } from './utils.js';
 import { runCrawl } from './crawler.js';
 import { enrichDetailPages } from './detail.js';
-import { normalizeWithAI } from './normalize.js';
+import { normalizeWithAI, buildPropertyRecord } from './normalize.js';
 import { detectDuplicates } from './duplicates.js';
-import { buildCostReport } from './cost.js';
+import { buildCostReport, emptyUsage } from './cost.js';
 
 async function main() {
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -107,36 +107,71 @@ async function main() {
   console.log(`  Written ${sourceProperties.length} SourceProperty records\n`);
 
   console.log('[ Phase 3: Normalization (AI) ]');
+
+  let normalizationCache = {};
+  if (fs.existsSync(NORMALIZATION_CACHE_PATH)) {
+    try {
+      normalizationCache = JSON.parse(fs.readFileSync(NORMALIZATION_CACHE_PATH, 'utf8'));
+    } catch {
+      normalizationCache = {};
+    }
+  }
+
+  const cacheHits = [];
+  const needsAI = [];
+  for (const sp of sourceProperties) {
+    const cached = normalizationCache[sp.source_url];
+    if (cached && cached.content_hash === sp.content_hash) {
+      cacheHits.push(sp);
+    } else {
+      needsAI.push(sp);
+    }
+  }
+  if (sourceProperties.length > 0) {
+    console.log(`  ${cacheHits.length} unchanged (cache hit), ${needsAI.length} new/changed (needs AI)`);
+  }
+
   const properties = [];
   const propertySourceLinks = [];
   const propertyHistory = [];
 
-  let normalizedFields;
-  let normalizationUsage = { input_tokens: 0, output_tokens: 0 };
+  const rawNormalizedByUrl = new Map();
+  let normalizationUsage = emptyUsage();
   try {
-    const normalization = await normalizeWithAI(sourceProperties);
-    normalizedFields = normalization.results;
+    const normalization = await normalizeWithAI(needsAI);
     normalizationUsage = normalization.usage;
+    for (let i = 0; i < needsAI.length; i++) {
+      if (normalization.results[i]) {
+        rawNormalizedByUrl.set(needsAI[i].source_url, normalization.results[i]);
+      }
+    }
   } catch (err) {
     console.error(`  AI normalization failed: ${err.message}`);
-    crawlRun.total_failed = sourceProperties.length;
-    normalizedFields = [];
+    crawlRun.total_failed += needsAI.length;
+  }
+  for (const sp of cacheHits) {
+    rawNormalizedByUrl.set(sp.source_url, normalizationCache[sp.source_url].normalized);
   }
 
   for (let i = 0; i < sourceProperties.length; i++) {
     const sp = sourceProperties[i];
-    const fields = normalizedFields[i];
-    if (!fields) {
+    const rawFields = rawNormalizedByUrl.get(sp.source_url);
+    if (!rawFields) {
       crawlRun.total_failed++;
       continue;
     }
 
     const prop = {
       id: uuid(),
-      ...fields,
+      ...buildPropertyRecord(rawFields, sp),
     };
 
     properties.push(prop);
+    normalizationCache[sp.source_url] = {
+      content_hash: sp.content_hash,
+      normalized: rawFields,
+      updated_at: now(),
+    };
 
     propertySourceLinks.push({
       id: uuid(),
@@ -165,8 +200,14 @@ async function main() {
   fs.writeFileSync(path.join(OUTPUT_DIR, 'properties.json'), JSON.stringify(properties, null, 2));
   fs.writeFileSync(path.join(OUTPUT_DIR, 'property_source_links.json'), JSON.stringify(propertySourceLinks, null, 2));
   fs.writeFileSync(path.join(OUTPUT_DIR, 'property_history.json'), JSON.stringify(propertyHistory, null, 2));
+  fs.writeFileSync(NORMALIZATION_CACHE_PATH, JSON.stringify(normalizationCache, null, 2));
 
-  const costReport = buildCostReport(normalizationUsage, properties.length);
+  const costReport = buildCostReport(normalizationUsage, {
+    totalProperties: properties.length,
+    totalSourceProperties: sourceProperties.length,
+    aiNormalizedCount: needsAI.length,
+    cacheHitCount: cacheHits.length,
+  });
   fs.writeFileSync(path.join(OUTPUT_DIR, 'cost.json'), JSON.stringify(costReport, null, 2));
 
   console.log(`\n  Properties:          ${properties.length}`);
@@ -174,6 +215,7 @@ async function main() {
   console.log(`  PropertyHistory:     ${propertyHistory.length} events`);
   const dups = properties.filter(p => p.duplicate_group_id).length;
   if (dups) console.log(`  Duplicates grouped:  ${dups}`);
+  console.log(`  AI normalized:       ${costReport.ai_normalized_count} (${costReport.cache_hit_count} cache hits)`);
   console.log(`  AI cost:             $${costReport.total_cost.toFixed(6)} (${costReport.input_tokens} in / ${costReport.output_tokens} out)`);
 
   console.log('\n[ Phase 4: Finalize ]');
@@ -209,6 +251,7 @@ async function main() {
   console.log('    output/crawl/property_source_links.json');
   console.log('    output/crawl/property_history.json');
   console.log('    output/crawl/cost.json');
+  console.log('    output/normalization_cache.json');
 
   if (!success) process.exit(1);
 }

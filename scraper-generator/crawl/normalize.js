@@ -2,12 +2,48 @@ import {
   client,
   LISTING_TYPES,
   PROPERTY_TYPES,
-  PROPERTY_STATUSES,
   NORMALIZATION_BATCH_SIZE,
   NORMALIZATION_MODEL,
 } from './config.js';
 import { now } from './utils.js';
-import { addUsage } from './cost.js';
+import { addUsage, emptyUsage } from './cost.js';
+
+const STATIC_INSTRUCTIONS = `You are normalizing raw property listings scraped from a Greek real estate website into a structured database schema.
+
+Return a JSON array with one object per input listing (same order, same length).
+
+## Accepted enum values — use ONLY these exact strings:
+
+listing_type: ${LISTING_TYPES.join(' | ')}
+property_type: ${PROPERTY_TYPES.join(' | ')}
+
+## Output schema per property (every field required, use null if unknown):
+
+{
+  "index": <same as input index>,
+  "title": string (clean title: property type + size, no agency codes or extra whitespace),
+  "description": string | null (1-3 sentence property description extracted from raw_description),
+  "listing_type": ListingType,
+  "property_type": PropertyType,
+  "price": number | null (numeric value only, no symbols — "100.000€" → 100000, "450 €/μήνα" → 450),
+  "city": string | null,
+  "district": string | null,
+  "address": string | null,
+  "square_meters": number | null,
+  "bedrooms": number | null,
+  "bathrooms": number | null,
+  "floor": string | null,
+  "construction_year": number | null,
+  "features": string[] | null (notable attributes like "sea view", "parking", "garden")
+}
+
+## Notes:
+- The site is Greek. Infer listing_type from labels like "ΠΩΛΕΙΤΑΙ" (SALE), "ΕΝΟΙΚΙΑΖΕΤΑΙ" (RENT), "Αγγελία Προς Πώληση" (SALE), "Αγγελία Ενοικίασης" (RENT)
+- raw_location may contain "Κωδικός <code>  <city>" — extract just the city name. raw_description has Υποπεριοχή (sub-region=city) and Γειτονιά (neighborhood=district) for more precise location
+- Prices use Greek thousand separators: "100.000" = 100000, not 100
+- description: extract a clean 1-3 sentence property description from raw_description text (strip navigation/label noise)
+- city/district: prefer values from raw_description (Υποπεριοχή/Γειτονιά) over raw_location when available
+- Return ONLY the JSON array, no prose`;
 
 async function normalizeBatch(sourceProperties, usage) {
   const input = sourceProperties.map((sp, i) => ({
@@ -22,56 +58,18 @@ async function normalizeBatch(sourceProperties, usage) {
       : null,
   }));
 
-  const prompt = `You are normalizing raw property listings scraped from a Greek real estate website into a structured database schema.
-
-Return a JSON array with one object per input listing (same order, same length).
-
-## Accepted enum values — use ONLY these exact strings:
-
-listing_type: ${LISTING_TYPES.join(' | ')}
-property_type: ${PROPERTY_TYPES.join(' | ')}
-status: ${PROPERTY_STATUSES.join(' | ')} (use ACTIVE for all fresh listings)
-
-## Output schema per property (every field required, use null if unknown):
-
-{
-  "index": <same as input index>,
-  "title": string (clean title: property type + size, no agency codes or extra whitespace),
-  "description": string | null (1-3 sentence property description extracted from raw_description),
-  "listing_type": ListingType,
-  "property_type": PropertyType,
-  "status": PropertyStatus,
-  "price": number | null (numeric value only, no symbols — "100.000€" → 100000, "450 €/μήνα" → 450),
-  "currency": "EUR",
-  "city": string | null,
-  "district": string | null,
-  "address": string | null,
-  "country": "GR",
-  "square_meters": number | null,
-  "bedrooms": number | null,
-  "bathrooms": number | null,
-  "floor": string | null,
-  "construction_year": number | null,
-  "features": string[] | null (notable attributes like "sea view", "parking", "garden"),
-  "images": null
-}
-
-## Notes:
-- The site is Greek. Infer listing_type from labels like "ΠΩΛΕΙΤΑΙ" (SALE), "ΕΝΟΙΚΙΑΖΕΤΑΙ" (RENT), "Αγγελία Προς Πώληση" (SALE), "Αγγελία Ενοικίασης" (RENT)
-- raw_location may contain "Κωδικός <code>  <city>" — extract just the city name. raw_description has Υποπεριοχή (sub-region=city) and Γειτονιά (neighborhood=district) for more precise location
-- Prices use Greek thousand separators: "100.000" = 100000, not 100
-- description: extract a clean 1-3 sentence property description from raw_description text (strip navigation/label noise)
-- city/district: prefer values from raw_description (Υποπεριοχή/Γειτονιά) over raw_location when available
-- Always return images as null — images are populated separately by the pipeline
-- Return ONLY the JSON array, no prose
-
-## Input listings:
-${JSON.stringify(input, null, 2)}`;
+  const dynamicInput = `## Input listings:\n${JSON.stringify(input, null, 2)}`;
 
   const response = await client.messages.create({
     model: NORMALIZATION_MODEL,
     max_tokens: 8192,
-    messages: [{ role: 'user', content: prompt }],
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'text', text: STATIC_INSTRUCTIONS, cache_control: { type: 'ephemeral' } },
+        { type: 'text', text: dynamicInput },
+      ],
+    }],
   });
   addUsage(usage, response);
 
@@ -89,7 +87,7 @@ ${JSON.stringify(input, null, 2)}`;
   }
 }
 
-function buildPropertyRecord(n, sp) {
+export function buildPropertyRecord(n, sp) {
   const now_ = now();
   const allImages = sp.raw_data?.all_images ?? [];
   return {
@@ -97,14 +95,14 @@ function buildPropertyRecord(n, sp) {
     description: n.description ?? null,
     listing_type: n.listing_type ?? 'UNKNOWN',
     property_type: n.property_type ?? 'UNKNOWN',
-    status: n.status ?? 'ACTIVE',
+    status: 'ACTIVE',
     price: n.price ?? null,
-    currency: n.currency ?? 'EUR',
+    currency: 'EUR',
     city: n.city ?? null,
     district: n.district ?? null,
     address: n.address ?? null,
     postal_code: null,
-    country: n.country ?? 'GR',
+    country: 'GR',
     latitude: null,
     longitude: null,
     square_meters: n.square_meters ?? null,
@@ -122,9 +120,14 @@ function buildPropertyRecord(n, sp) {
   };
 }
 
+/**
+ * Normalizes sourceProperties via AI and returns the raw per-property AI
+ * output (not the built property record) so callers can cache it — the
+ * caller is responsible for calling buildPropertyRecord with fresh sp data.
+ */
 export async function normalizeWithAI(sourceProperties) {
   const results = new Array(sourceProperties.length);
-  const usage = { input_tokens: 0, output_tokens: 0 };
+  const usage = emptyUsage();
   let failedCount = 0;
 
   for (let i = 0; i < sourceProperties.length; i += NORMALIZATION_BATCH_SIZE) {
@@ -141,7 +144,7 @@ export async function normalizeWithAI(sourceProperties) {
         const sp = batch[j];
         try {
           const [singleResult] = await normalizeBatch([sp], usage);
-          results[i + j] = buildPropertyRecord(singleResult, sp);
+          results[i + j] = singleResult;
           process.stdout.write(`    [${i + j + 1}] ok\n`);
         } catch (singleErr) {
           failedCount++;
@@ -155,7 +158,7 @@ export async function normalizeWithAI(sourceProperties) {
       if (n == null || n.index == null) continue;
       const sp = sourceProperties[i + n.index];
       if (!sp) continue;
-      results[i + n.index] = buildPropertyRecord(n, sp);
+      results[i + n.index] = n;
     }
     process.stdout.write(' done\n');
   }
