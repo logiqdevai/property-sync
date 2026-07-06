@@ -24,69 +24,106 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
 
 // --- Config ---
-const TARGET_URL = 'https://dinvestment.gr';
-const MAX_STEPS = 40; // extra headroom for verification retries
+const TARGET_URL = process.env.TARGET_URL;
+if (!TARGET_URL) {
+  console.error('ERROR: TARGET_URL is not set. Add it to your .env file.');
+  process.exit(1);
+}
+const MAX_STEPS = 50;
 const VERIFY_TIMEOUT_MS = 4000;
 const SCREENSHOTS_DIR = path.join(__dirname, 'output', 'screenshots');
 const STEPS_DIR = path.join(__dirname, 'output', 'steps');
 const OUTPUT_DIR = path.join(__dirname, 'output');
 
-// --- Init dirs ---
-[SCREENSHOTS_DIR, STEPS_DIR, OUTPUT_DIR].forEach(d => fs.mkdirSync(d, { recursive: true }));
+function initOutputDir() {
+  if (fs.existsSync(OUTPUT_DIR)) {
+    fs.rmSync(OUTPUT_DIR, { recursive: true, force: true });
+  }
+  [OUTPUT_DIR, SCREENSHOTS_DIR, STEPS_DIR].forEach(d => fs.mkdirSync(d, { recursive: true }));
+}
 
 // --- Anthropic client ---
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // --- System prompt ---
-const SYSTEM_PROMPT = `You are a web scraping config generator. You control a browser exploring a Greek real estate agency site (https://dinvestment.gr) to produce a Playwright scraper config.
+const SYSTEM_PROMPT = `You are a web scraping config generator. You control a real browser to explore a real estate website and produce a complete Playwright scraper config.
 
-Goal: find the page listing ALL properties, identify the exact CSS selectors on the actual rendered DOM, and output a complete config.
+## MANDATORY WORKFLOW — follow this exact sequence every time:
 
-At each step you receive a screenshot. Return ONLY a JSON object — no prose:
+STEP 1 — Find listings page
+  Navigate to the page that lists ALL properties (the main property search/listings page).
+
+STEP 2 — Identify listing selectors
+  Scroll down to see property cards fully rendered. Identify the repeating card container and field selectors. Count how many cards are visible to confirm the selector.
+
+STEP 3 — Visit a detail page
+  Click a property card link OR use navigate to its URL to open the property detail page.
+  On the detail page: scroll down, identify the image gallery selector, the description text block, and any property ID element.
+  Then use go_back (or close_tab if it opened in a new tab) to return to the listings page.
+
+STEP 4 — Test pagination
+  From the listings page, click the "next page" or "page 2" link. Verify that a different set of properties loads. Return to page 1 if needed.
+
+STEP 5 — Call done with the complete config
+
+## Actions available — return ONLY a JSON object, no prose:
 
 {
-  "reasoning": "what you see and why you're taking this action",
-  "action": "click" | "scroll_down" | "scroll_up" | "type" | "navigate" | "wait" | "done",
-  "selector": "CSS selector",   // for click/type
-  "text": "string",             // for type
-  "url": "string",              // for navigate
-  "config": { ... }             // ONLY for done
+  "reasoning": "what you see and why you are taking this action",
+  "action": "click" | "scroll_down" | "scroll_up" | "type" | "navigate" | "go_back" | "close_tab" | "wait" | "done",
+  "selector": "CSS selector",   // required for click / type
+  "text": "string",             // required for type
+  "url": "string",              // required for navigate
+  "config": { ... }             // required for done
 }
 
-Config format (done only):
+Tab behaviour:
+- If a click opens a NEW tab the browser automatically switches to it — the next screenshot will show the new tab's page.
+- "go_back"   — browser back button (use to return to the previous page in the same tab)
+- "close_tab" — close current tab; control returns to the tab that was open before
+
+## Config schema (for "done" only):
+
 {
-  "start_url": "the full URL of the property listings page",
-  "listing_selector": "CSS selector that matches EACH property card (the repeating container element)",
+  "start_url": "full URL of the property listings page",
+  "listing_selector": "CSS selector matching EACH property card container",
   "fields": {
-    "title":        { "selector": "CSS selector WITHIN a card", "type": "text" },
-    "price":        { "selector": "CSS selector WITHIN a card", "type": "text" },
-    "location":     { "selector": "CSS selector WITHIN a card", "type": "text" },
-    "listing_type": { "selector": "CSS selector WITHIN a card (e.g. sale/rent badge)", "type": "text" },
-    "url":          { "selector": "CSS selector WITHIN a card for the detail link", "type": "href" },
-    "image":        { "selector": "CSS selector WITHIN a card", "type": "src" | "background_image" }
+    "title":        { "selector": "selector WITHIN a card", "type": "text" },
+    "price":        { "selector": "selector WITHIN a card", "type": "text" },
+    "location":     { "selector": "selector WITHIN a card", "type": "text" },
+    "listing_type": { "selector": "selector WITHIN a card (sale/rent badge)", "type": "text" },
+    "url":          { "selector": "selector WITHIN a card for the detail link", "type": "href" },
+    "image":        { "selector": "selector WITHIN a card", "type": "src" | "background_image" }
   },
   "pagination": {
     "type": "next_button" | "infinite_scroll" | "load_more" | "url_param",
-    "selector": "CSS selector for the Next page element",
+    "selector": "CSS selector for the Next/Load More button",
     "url_param": "query param name (only for url_param type)"
+  },
+  "detail_page": {
+    "image_selector": "CSS selector matching gallery images on the detail page",
+    "image_type": "src" | "background_image",
+    "description_selector": "CSS selector for the main property description text block",
+    "external_id_source": "url_path" | "selector",
+    "external_id_selector": "CSS selector for the property ID element (only when external_id_source is 'selector')"
   }
 }
 
 Field types:
-- "text"             — reads the element's text content
-- "href"             — reads the <a> href attribute
-- "src"              — reads the <img> src attribute
-- "background_image" — reads the URL from a CSS background-image: url(...) style attribute
+- "text"             — element's textContent
+- "href"             — <a> href attribute
+- "src"              — <img> src attribute
+- "background_image" — URL from CSS background-image: url(...)
 
-IMPORTANT rules:
-- Site is in Greek. Navigation labels: "Ακίνητα", "Αγγελίες", "Αγορά", "Ενοικίαση", "Προς Πώληση", "listings"
-- SCROLL DOWN on the listings page to see property cards before deciding on selectors
-- Your selectors are AUTOMATICALLY VERIFIED against the real page after you return "done"
-- If verification fails you will be told exactly which selector failed — you MUST correct it
-- DO NOT guess selectors — use what you can see in the rendered page (class names, tags, structure)
-- Property cards are repeating elements — count how many appear and ensure your listing_selector matches all of them
-- Field selectors must work WITHIN a single card element, not at the page level
-- Image fields: if the image is a CSS background (no <img> tag), use type "background_image" with the element that has the style attribute`;
+## Critical rules:
+- SCROLL DOWN before choosing any selector — cards may not be visible at the top of the page
+- Selectors are AUTOMATICALLY VERIFIED after "done" — if they fail you will be told exactly what broke and MUST fix them
+- listing_selector must match ALL card containers on the page (the repeating outer wrapper)
+- Fields must work WITHIN a single card, not at page level
+- For detail_page: you MUST visit an actual detail page and inspect it — do not guess selectors
+- external_id_source "url_path": pipeline extracts last URL path segment (e.g. /property/1165 → "1165")
+- external_id_source "selector": pipeline reads the text of external_id_selector on the detail page
+- You MUST test pagination (click page 2) before calling done`;
 
 // --- Helpers ---
 function uid() {
@@ -107,21 +144,90 @@ async function takeScreenshot(page, step) {
   return file;
 }
 
-// --- Config verifier — runs selectors against the live page ---
-async function verifyConfig(page, config) {
+// --- Tab-aware action executor ---
+// Returns the page that should be used for all subsequent steps.
+async function executeAction(context, page, action) {
+  switch (action.action) {
+    case 'click': {
+      // Race: detect a new tab opening within 3 seconds of the click
+      const newPagePromise = context.waitForEvent('page', { timeout: 3000 }).catch(() => null);
+      await page.locator(action.selector).first().click({ timeout: 8000 });
+      const newPage = await newPagePromise;
+      if (newPage) {
+        // A new tab opened — switch to it automatically
+        await newPage.waitForLoadState('domcontentloaded', { timeout: 15000 }).catch(() => {});
+        await newPage.waitForTimeout(1000);
+        await newPage.bringToFront();
+        return newPage;
+      }
+      await page.waitForLoadState('domcontentloaded', { timeout: 15000 }).catch(() => {});
+      await page.waitForTimeout(1500);
+      return page;
+    }
+    case 'go_back':
+      await page.goBack({ timeout: 15000, waitUntil: 'domcontentloaded' }).catch(() => {});
+      await page.waitForTimeout(1500);
+      return page;
+    case 'close_tab': {
+      const pages = context.pages();
+      if (pages.length <= 1) return page; // nothing to close
+      const idx = pages.indexOf(page);
+      await page.close();
+      // Switch to the page that was open before this one
+      const prev = pages[idx > 0 ? idx - 1 : 0] ?? pages[0];
+      await prev.bringToFront();
+      return prev;
+    }
+    case 'scroll_down':
+      await page.evaluate(() => window.scrollBy(0, 700));
+      await page.waitForTimeout(700);
+      return page;
+    case 'scroll_up':
+      await page.evaluate(() => window.scrollBy(0, -700));
+      await page.waitForTimeout(700);
+      return page;
+    case 'type':
+      await page.locator(action.selector).first().fill(action.text, { timeout: 5000 });
+      return page;
+    case 'navigate':
+      await page.goto(action.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.waitForTimeout(2000);
+      return page;
+    case 'wait':
+      await page.waitForTimeout(3000);
+      return page;
+    default:
+      throw new Error(`Unknown action: ${action.action}`);
+  }
+}
+
+// --- Config verifier ---
+// Tests all listing selectors against the live listings page,
+// then opens the first property detail page and tests detail_page selectors.
+async function verifyConfig(context, page, config) {
   const errors = [];
 
-  // 1. listing_selector must match at least 1 element
+  // ── 1. Navigate to start_url to ensure we're on the listings page ──
+  if (page.url() !== config.start_url) {
+    try {
+      await page.goto(config.start_url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+      await page.waitForTimeout(1500);
+    } catch (e) {
+      errors.push(`Could not navigate to start_url "${config.start_url}": ${e.message.slice(0, 80)}`);
+      return errors;
+    }
+  }
+
+  // ── 2. listing_selector ──
   let cardCount = 0;
   try {
     cardCount = await page.locator(config.listing_selector).count();
   } catch (e) {
     errors.push(`listing_selector "${config.listing_selector}" is invalid CSS: ${e.message.slice(0, 120)}`);
-    return errors; // can't verify fields without valid card selector
+    return errors;
   }
 
   if (cardCount === 0) {
-    // Give Claude a hint: show which class names are repeated on this page
     const candidates = await page.evaluate(() => {
       const counts = {};
       document.querySelectorAll('*').forEach(el => {
@@ -139,32 +245,26 @@ async function verifyConfig(page, config) {
     });
     errors.push(
       `listing_selector "${config.listing_selector}" matched 0 elements. ` +
-      `Repeated class names on this page (candidates for card selector): ${candidates}`
+      `Repeated class names on this page (candidates): ${candidates}`
     );
     return errors;
   }
 
-  // 2. Each field selector must return a non-empty value on the FIRST card
+  // ── 3. Field selectors ──
   const firstCard = page.locator(config.listing_selector).first();
 
   for (const [field, def] of Object.entries(config.fields ?? {})) {
     const selector = typeof def === 'string' ? def : def?.selector;
     const type = (typeof def === 'object' ? def?.type : null) ?? 'text';
 
-    if (!selector) {
-      errors.push(`field "${field}" has no selector`);
-      continue;
-    }
+    if (!selector) { errors.push(`field "${field}" has no selector`); continue; }
 
     try {
       const el = firstCard.locator(selector).first();
       let value = null;
-
-      if (type === 'href') {
-        value = await el.getAttribute('href', { timeout: VERIFY_TIMEOUT_MS });
-      } else if (type === 'src') {
-        value = await el.getAttribute('src', { timeout: VERIFY_TIMEOUT_MS });
-      } else if (type === 'background_image') {
+      if (type === 'href') value = await el.getAttribute('href', { timeout: VERIFY_TIMEOUT_MS });
+      else if (type === 'src') value = await el.getAttribute('src', { timeout: VERIFY_TIMEOUT_MS });
+      else if (type === 'background_image') {
         const style = await el.getAttribute('style', { timeout: VERIFY_TIMEOUT_MS }) ?? '';
         const m = style.match(/background-image:\s*url\(['"]?(.*?)['"]?\)/);
         value = m ? m[1] : null;
@@ -173,52 +273,83 @@ async function verifyConfig(page, config) {
       }
 
       if (!value || !String(value).trim()) {
-        // Show what IS in the first card to help Claude pick a better selector
         const cardText = await firstCard.textContent({ timeout: VERIFY_TIMEOUT_MS }).catch(() => '');
-        const cardHint = cardText.replace(/\s+/g, ' ').trim().slice(0, 200);
-        errors.push(
-          `field "${field}": selector "${selector}" (type: ${type}) returned empty/null on the first card. ` +
-          `First card text content (for reference): "${cardHint}"`
-        );
+        const hint = cardText.replace(/\s+/g, ' ').trim().slice(0, 200);
+        errors.push(`field "${field}": selector "${selector}" (type: ${type}) returned empty. Card text: "${hint}"`);
       }
     } catch (e) {
-      errors.push(
-        `field "${field}": selector "${selector}" (type: ${type}) not found inside first card — ${e.message.slice(0, 120)}`
-      );
+      errors.push(`field "${field}": selector "${selector}" not found in first card — ${e.message.slice(0, 120)}`);
+    }
+  }
+
+  // ── 4. detail_page selectors (open first property in a new tab, verify, close) ──
+  const dp = config.detail_page;
+  if (dp && config.fields?.url) {
+    const urlDef = config.fields.url;
+    const urlSel = typeof urlDef === 'string' ? urlDef : urlDef?.selector;
+    let detailUrl = null;
+
+    try {
+      detailUrl = await firstCard.locator(urlSel).first().getAttribute('href', { timeout: VERIFY_TIMEOUT_MS });
+      if (detailUrl && !detailUrl.startsWith('http')) {
+        detailUrl = new URL(detailUrl, page.url()).href;
+      }
+    } catch (e) {
+      errors.push(`Cannot get detail URL for verification: ${e.message.slice(0, 80)}`);
+    }
+
+    if (detailUrl) {
+      console.log(`  Verifying detail page selectors on: ${detailUrl}`);
+      const detailPage = await context.newPage();
+      try {
+        await detailPage.goto(detailUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
+        await detailPage.waitForTimeout(1500);
+
+        if (dp.image_selector) {
+          try {
+            const imgEl = detailPage.locator(dp.image_selector).first();
+            let imgVal = null;
+            if ((dp.image_type ?? 'src') === 'background_image') {
+              const style = await imgEl.getAttribute('style', { timeout: VERIFY_TIMEOUT_MS }) ?? '';
+              const m = style.match(/background-image:\s*url\(['"]?(.*?)['"]?\)/);
+              imgVal = m ? m[1] : null;
+            } else {
+              imgVal = await imgEl.getAttribute('src', { timeout: VERIFY_TIMEOUT_MS });
+            }
+            if (!imgVal) errors.push(`detail_page.image_selector "${dp.image_selector}" matched an element but returned no image value`);
+          } catch (e) {
+            const cands = await detailPage.evaluate(() => {
+              const imgs = [...document.querySelectorAll('img')].slice(0, 5).map(i => i.className || i.id || i.src?.split('/').pop()).join(', ');
+              return imgs || 'none found';
+            });
+            errors.push(`detail_page.image_selector "${dp.image_selector}" not found. Sample <img> elements: ${cands}`);
+          }
+        }
+
+        if (dp.description_selector) {
+          try {
+            const text = await detailPage.locator(dp.description_selector).first().textContent({ timeout: VERIFY_TIMEOUT_MS });
+            if (!text?.trim()) errors.push(`detail_page.description_selector "${dp.description_selector}" matched but returned empty text`);
+          } catch (e) {
+            errors.push(`detail_page.description_selector "${dp.description_selector}" not found on detail page — ${e.message.slice(0, 80)}`);
+          }
+        }
+
+        if (dp.external_id_source === 'selector' && dp.external_id_selector) {
+          try {
+            const text = await detailPage.locator(dp.external_id_selector).first().textContent({ timeout: VERIFY_TIMEOUT_MS });
+            if (!text?.trim()) errors.push(`detail_page.external_id_selector "${dp.external_id_selector}" returned empty text`);
+          } catch (e) {
+            errors.push(`detail_page.external_id_selector "${dp.external_id_selector}" not found — ${e.message.slice(0, 80)}`);
+          }
+        }
+      } finally {
+        await detailPage.close();
+      }
     }
   }
 
   return errors;
-}
-
-async function executeAction(page, action) {
-  switch (action.action) {
-    case 'click':
-      await page.locator(action.selector).first().click({ timeout: 8000 });
-      await page.waitForLoadState('domcontentloaded', { timeout: 15000 }).catch(() => {});
-      await page.waitForTimeout(1500);
-      break;
-    case 'scroll_down':
-      await page.evaluate(() => window.scrollBy(0, 600));
-      await page.waitForTimeout(600);
-      break;
-    case 'scroll_up':
-      await page.evaluate(() => window.scrollBy(0, -600));
-      await page.waitForTimeout(600);
-      break;
-    case 'type':
-      await page.locator(action.selector).first().fill(action.text, { timeout: 5000 });
-      break;
-    case 'navigate':
-      await page.goto(action.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForTimeout(2000);
-      break;
-    case 'wait':
-      await page.waitForTimeout(3000);
-      break;
-    default:
-      throw new Error(`Unknown action: ${action.action}`);
-  }
 }
 
 // --- Main ---
@@ -228,9 +359,11 @@ async function main() {
     process.exit(1);
   }
 
+  initOutputDir();
+
   const run = {
     id: `run_${uid()}`,
-    source_agency: 'dinvestment.gr',
+    source_agency: new URL(TARGET_URL).hostname,
     trigger: 'MANUAL',
     status: 'RUNNING',
     prompt: `Find all property listings on ${TARGET_URL}. Handle filters and pagination.`,
@@ -244,10 +377,11 @@ async function main() {
   console.log(`  Output: ${OUTPUT_DIR}\n`);
 
   const browser = await chromium.launch({ headless: false, slowMo: 80 });
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  let currentPage = await context.newPage();
 
-  await page.goto(TARGET_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await page.waitForTimeout(2000);
+  await currentPage.goto(TARGET_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await currentPage.waitForTimeout(2000);
 
   const messages = [];
   let finalConfig = null;
@@ -255,19 +389,23 @@ async function main() {
 
   try {
     for (stepIndex = 0; stepIndex < MAX_STEPS; stepIndex++) {
-      console.log(`\n=== Step ${stepIndex} | URL: ${page.url()} ===`);
+      const tabCount = context.pages().length;
+      const tabInfo = tabCount > 1
+        ? `Open tabs: ${tabCount}  |  Active tab URL: ${currentPage.url()}`
+        : `URL: ${currentPage.url()}`;
 
-      const screenshotBefore = await takeScreenshot(page, stepIndex);
+      console.log(`\n=== Step ${stepIndex} | ${tabInfo} ===`);
+
+      const screenshotBefore = await takeScreenshot(currentPage, stepIndex);
       const imageData = fs.readFileSync(screenshotBefore).toString('base64');
+
+      const stepHint = stepIndex === 0
+        ? 'Initial page. Follow the mandatory workflow: find the listings page, inspect cards, visit a detail page, test pagination, then call done.'
+        : `Step ${stepIndex}. ${tabInfo}.`;
 
       const userContent = [
         { type: 'image', source: { type: 'base64', media_type: 'image/png', data: imageData } },
-        {
-          type: 'text',
-          text: stepIndex === 0
-            ? 'Initial page. Analyze the navigation and find the path to all property listings. Navigate there.'
-            : `Step ${stepIndex}. Current URL: ${page.url()}. Continue.`,
-        },
+        { type: 'text', text: stepHint },
       ];
       messages.push({ role: 'user', content: userContent });
 
@@ -281,7 +419,6 @@ async function main() {
 
       const rawText = response.content.find(b => b.type === 'text')?.text ?? '';
       console.log('Claude:', rawText.substring(0, 400));
-
       messages.push({ role: 'assistant', content: rawText });
 
       let action;
@@ -310,33 +447,29 @@ async function main() {
       };
 
       if (action.action === 'done') {
-        // --- Automatic config verification ---
         console.log('\n  Verifying proposed config against live page...');
-        const errors = await verifyConfig(page, action.config);
+        const errors = await verifyConfig(context, currentPage, action.config);
 
         if (errors.length > 0) {
           console.log(`  Verification FAILED (${errors.length} issue${errors.length > 1 ? 's' : ''}):`);
-          errors.forEach(e => console.log(`    ✗ ${e.slice(0, 120)}`));
+          errors.forEach(e => console.log(`    ✗ ${e.slice(0, 140)}`));
 
-          // Tell Claude exactly what failed — it will correct selectors on the next step
           const feedback = [
             'Your proposed config was verified against the actual page and FAILED. Do NOT return "done" again with the same selectors.',
             '',
             'Errors:',
             ...errors.map(e => `- ${e}`),
             '',
-            'Scroll down on the listings page to inspect the actual card elements, then return a corrected JSON action with the right selectors.',
+            'Return to the listings page, inspect the actual elements, and return a corrected config.',
           ].join('\n');
 
           step.screenshot_after_path = screenshotBefore;
           step.model_reasoning += ' [VERIFICATION FAILED]';
           fs.writeFileSync(path.join(STEPS_DIR, `step_${String(stepIndex).padStart(3, '0')}.json`), JSON.stringify(step, null, 2));
-
           messages.push({ role: 'user', content: feedback });
-          continue; // back to the loop — Claude will try again
+          continue;
         }
 
-        // Verification passed
         finalConfig = action.config;
         step.screenshot_after_path = screenshotBefore;
         fs.writeFileSync(path.join(STEPS_DIR, `step_${String(stepIndex).padStart(3, '0')}.json`), JSON.stringify(step, null, 2));
@@ -345,7 +478,7 @@ async function main() {
       }
 
       try {
-        await executeAction(page, action);
+        currentPage = await executeAction(context, currentPage, action);
       } catch (e) {
         console.error(`Action failed: ${e.message}`);
         messages.push({
@@ -354,7 +487,7 @@ async function main() {
         });
       }
 
-      const screenshotAfter = await takeScreenshot(page, stepIndex);
+      const screenshotAfter = await takeScreenshot(currentPage, stepIndex);
       step.screenshot_after_path = screenshotAfter;
       fs.writeFileSync(path.join(STEPS_DIR, `step_${String(stepIndex).padStart(3, '0')}.json`), JSON.stringify(step, null, 2));
     }

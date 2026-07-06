@@ -1,0 +1,49 @@
+{
+  "id": "run_16d65259",
+  "source_agency": "gaiaestate.gr",
+  "trigger": "MANUAL",
+  "status": "AWAITING_REVIEW",
+  "prompt": "Find all property listings on https://gaiaestate.gr/en. Handle filters and pagination.",
+  "staged_config": {
+    "start_url": "https://gaiaestate.gr/en/property/search",
+    "listing_selector": ".listing-item",
+    "fields": {
+      "title": {
+        "selector": "a[href*='propertyDetails']",
+        "type": "text"
+      },
+      "price": {
+        "selector": ".listing-image + div, .col-sm-7",
+        "type": "text"
+      },
+      "location": {
+        "selector": "a[href*='propertyDetails']",
+        "type": "text"
+      },
+      "listing_type": {
+        "selector": "a[href*='propertyDetails']",
+        "type": "text"
+      },
+      "url": {
+        "selector": "a[href*='propertyDetails']",
+        "type": "href"
+      },
+      "image": {
+        "selector": "img",
+        "type": "src"
+      }
+    },
+    "pagination": {
+      "type": "url_param",
+      "url_param": "page"
+    },
+    "detail_page": {
+      "image_selector": "img[src*='_900x675']",
+      "image_type": "src",
+      "description_selector": "table",
+      "external_id_source": "url_path"
+    }
+  },
+  "started_at": "2026-07-06T04:33:31.324Z",
+  "finished_at": "2026-07-06T04:37:29.879Z"
+}

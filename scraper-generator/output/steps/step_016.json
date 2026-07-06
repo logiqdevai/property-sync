@@ -1,0 +1,52 @@
+{
+  "id": "step_c3a80933",
+  "run_id": "run_16d65259",
+  "step_index": 16,
+  "action_type": "DONE",
+  "action_payload": {
+    "config": {
+      "start_url": "https://gaiaestate.gr/en/property/search",
+      "listing_selector": ".listing-item",
+      "fields": {
+        "title": {
+          "selector": "a[href*='propertyDetails']",
+          "type": "text"
+        },
+        "price": {
+          "selector": ".listing-image + div, .col-sm-7",
+          "type": "text"
+        },
+        "location": {
+          "selector": "a[href*='propertyDetails']",
+          "type": "text"
+        },
+        "listing_type": {
+          "selector": "a[href*='propertyDetails']",
+          "type": "text"
+        },
+        "url": {
+          "selector": "a[href*='propertyDetails']",
+          "type": "href"
+        },
+        "image": {
+          "selector": "img",
+          "type": "src"
+        }
+      },
+      "pagination": {
+        "type": "url_param",
+        "url_param": "page"
+      },
+      "detail_page": {
+        "image_selector": "img[src*='_900x675']",
+        "image_type": "src",
+        "description_selector": "table",
+        "external_id_source": "url_path"
+      }
+    }
+  },
+  "screenshot_before_path": "C:\\Users\\petro\\Desktop\\files\\projects\\logiqdev\\property-sync\\scraper-generator\\output\\screenshots\\step_016.png",
+  "screenshot_after_path": "C:\\Users\\petro\\Desktop\\files\\projects\\logiqdev\\property-sync\\scraper-generator\\output\\screenshots\\step_016.png",
+  "model_reasoning": "There's no dedicated description paragraph on this detail page — it's a details table. I'll use 'table' for description. The gallery images have src containing '_900x675'. I'll target those for images. External ID from URL path works.",
+  "timestamp": "2026-07-06T04:37:24.447Z"
+}

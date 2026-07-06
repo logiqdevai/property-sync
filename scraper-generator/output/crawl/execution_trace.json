@@ -1,0 +1,67 @@
+{
+  "id": "trace_2e3e04a20c67",
+  "scraper_id": "scraper_3c94584aab06",
+  "crawl_run_id": "crawlrun_dd8567acdb6f",
+  "steps": [
+    {
+      "ts": "2026-07-06T04:37:41.831Z",
+      "msg": "navigate",
+      "url": "https://gaiaestate.gr/en/property/search"
+    },
+    {
+      "ts": "2026-07-06T04:37:48.988Z",
+      "msg": "page_0",
+      "url": "https://gaiaestate.gr/en/property/search"
+    },
+    {
+      "ts": "2026-07-06T04:37:49.041Z",
+      "msg": "cards_found",
+      "count": 10,
+      "page": 0
+    },
+    {
+      "ts": "2026-07-06T04:37:51.920Z",
+      "msg": "page_1",
+      "url": "https://gaiaestate.gr/en/property/search?page=2"
+    },
+    {
+      "ts": "2026-07-06T04:37:51.950Z",
+      "msg": "cards_found",
+      "count": 10,
+      "page": 1
+    },
+    {
+      "ts": "2026-07-06T04:37:54.882Z",
+      "msg": "page_2",
+      "url": "https://gaiaestate.gr/en/property/search?page=3"
+    },
+    {
+      "ts": "2026-07-06T04:37:54.926Z",
+      "msg": "cards_found",
+      "count": 7,
+      "page": 2
+    },
+    {
+      "ts": "2026-07-06T04:37:57.642Z",
+      "msg": "page_3",
+      "url": "https://gaiaestate.gr/en/property/search?page=4"
+    },
+    {
+      "ts": "2026-07-06T04:38:12.653Z",
+      "msg": "selector_timeout",
+      "selector": ".listing-item",
+      "page": 3
+    },
+    {
+      "ts": "2026-07-06T04:38:12.654Z",
+      "msg": "done",
+      "total_items": 27,
+      "pages": 4,
+      "success": true
+    }
+  ],
+  "success": true,
+  "error_summary": null,
+  "created_at": "2026-07-06T04:39:22.201Z",
+  "updated_at": "2026-07-06T04:39:22.201Z"
+}

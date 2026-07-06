@@ -1,0 +1,59 @@
+{
+  "id": "crawlrun_dd8567acdb6f",
+  "source_agency_id": "agency_e76ec1cad142",
+  "scraper_id": "scraper_3c94584aab06",
+  "status": "SUCCESS",
+  "started_at": "2026-07-06T04:37:41.670Z",
+  "finished_at": "2026-07-06T04:39:22.202Z",
+  "total_found": 27,
+  "total_created": 27,
+  "total_updated": 0,
+  "total_removed": 0,
+  "total_failed": 0,
+  "error_message": null,
+  "metadata": {
+    "version_file": "C:\\Users\\petro\\Desktop\\files\\projects\\logiqdev\\property-sync\\scraper-generator\\output\\version.json",
+    "config": {
+      "start_url": "https://gaiaestate.gr/en/property/search",
+      "listing_selector": ".listing-item",
+      "fields": {
+        "title": {
+          "selector": "a[href*='propertyDetails']",
+          "type": "text"
+        },
+        "price": {
+          "selector": ".listing-image + div, .col-sm-7",
+          "type": "text"
+        },
+        "location": {
+          "selector": "a[href*='propertyDetails']",
+          "type": "text"
+        },
+        "listing_type": {
+          "selector": "a[href*='propertyDetails']",
+          "type": "text"
+        },
+        "url": {
+          "selector": "a[href*='propertyDetails']",
+          "type": "href"
+        },
+        "image": {
+          "selector": "img",
+          "type": "src"
+        }
+      },
+      "pagination": {
+        "type": "url_param",
+        "url_param": "page"
+      },
+      "detail_page": {
+        "image_selector": "img[src*='_900x675']",
+        "image_type": "src",
+        "description_selector": "table",
+        "external_id_source": "url_path"
+      }
+    }
+  },
+  "created_at": "2026-07-06T04:37:41.670Z",
+  "updated_at": "2026-07-06T04:39:22.202Z"
+}

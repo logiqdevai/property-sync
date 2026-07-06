@@ -48,6 +48,39 @@ const PROPERTY_STATUSES = ['ACTIVE', 'INACTIVE', 'REMOVED', 'SOLD', 'RENTED', 'U
 // --- Anthropic client ---
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+// --- Browser helpers ---
+// CloudFront and similar CDNs block the default headless Playwright fingerprint.
+// This helper launches with args that remove automation indicators.
+const STEALTH_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+
+async function launchBrowser() {
+  const browser = await chromium.launch({
+    headless: true,
+    args: [
+      '--disable-blink-features=AutomationControlled',
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+    ],
+  });
+  return browser;
+}
+
+async function newStealthPage(browser) {
+  const ctx = await browser.newContext({
+    userAgent: STEALTH_UA,
+    viewport: { width: 1280, height: 900 },
+    extraHTTPHeaders: {
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    },
+  });
+  // Remove the webdriver flag that sites check via JS
+  await ctx.addInitScript(() => {
+    Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+  });
+  return ctx.newPage();
+}
+
 // --- Helpers ---
 function uid() {
   return crypto.randomBytes(6).toString('hex');
@@ -299,57 +332,92 @@ async function normalizeWithAI(sourceProperties) {
 const DETAIL_CONCURRENCY = 3;
 const DETAIL_DELAY_MS = 500;
 
-async function enrichOneDetailPage(browser, item) {
-  const page = await browser.newPage();
+async function enrichOneDetailPage(browser, item, detailConfig) {
+  const page = await newStealthPage(browser);
   try {
     await page.goto(item.source_url, { waitUntil: 'domcontentloaded', timeout: PAGE_TIMEOUT_MS });
     await page.waitForTimeout(1000);
 
-    return await page.evaluate(() => {
-      // All property images: only /uploads/ paths (excludes flags, logos)
+    return await page.evaluate((cfg) => {
       const images = [];
-      document.querySelectorAll('[style]').forEach(el => {
-        const m = (el.getAttribute('style') || '').match(/background-image:\s*url\(['"]?(.*?)['"]?\)/);
-        if (m && m[1] && m[1].includes('/uploads/')) images.push(m[1]);
-      });
-      document.querySelectorAll('img').forEach(el => {
-        if (el.src && el.src.includes('/uploads/')) images.push(el.src);
-      });
 
-      // Description: the detail info section text, cleaned up
-      const detailEl = document.querySelector('.kf_detail_information');
-      const descText = detailEl ? detailEl.innerText.replace(/\s+/g, ' ').trim() : null;
+      if (cfg && cfg.image_selector) {
+        // Use generated config selector
+        const type = cfg.image_type ?? 'src';
+        document.querySelectorAll(cfg.image_selector).forEach(el => {
+          if (type === 'background_image') {
+            const m = (el.getAttribute('style') || '').match(/background-image:\s*url\(['"]?(.*?)['"]?\)/);
+            if (m && m[1]) images.push(m[1]);
+          } else {
+            if (el.src) images.push(el.src);
+          }
+        });
+      } else {
+        // Generic fallback: collect all background-image + img src values (skip SVGs / icons)
+        document.querySelectorAll('[style]').forEach(el => {
+          const m = (el.getAttribute('style') || '').match(/background-image:\s*url\(['"]?(.*?)['"]?\)/);
+          if (m && m[1] && !m[1].endsWith('.svg')) images.push(m[1]);
+        });
+        document.querySelectorAll('img').forEach(el => {
+          if (el.src && !el.src.endsWith('.svg') && !el.src.includes('logo') && !el.src.includes('icon')) {
+            images.push(el.src);
+          }
+        });
+      }
+
+      let descText = null;
+      if (cfg && cfg.description_selector) {
+        const el = document.querySelector(cfg.description_selector);
+        descText = el ? el.innerText.replace(/\s+/g, ' ').trim() : null;
+      } else {
+        // Generic fallback: try common description class patterns
+        const patterns = [
+          '.description', '[class*="description"]', '.property-description',
+          '[class*="detail-info"]', '.property-details', '[class*="property-text"]',
+        ];
+        for (const sel of patterns) {
+          const el = document.querySelector(sel);
+          if (el) { descText = el.innerText.replace(/\s+/g, ' ').trim(); break; }
+        }
+      }
+
+      let externalId = null;
+      if (cfg && cfg.external_id_source === 'selector' && cfg.external_id_selector) {
+        const el = document.querySelector(cfg.external_id_selector);
+        externalId = el ? el.textContent.trim() : null;
+      }
 
       return {
         images: [...new Set(images)],
         raw_detail_text: descText,
+        external_id: externalId,
       };
-    });
+    }, detailConfig ?? null);
   } catch (err) {
-    return { images: [], raw_detail_text: null, error: err.message };
+    return { images: [], raw_detail_text: null, external_id: null, error: err.message };
   } finally {
     await page.close();
   }
 }
 
-async function enrichDetailPages(items) {
+async function enrichDetailPages(items, detailConfig) {
   console.log(`  Enriching ${items.length} detail pages (concurrency: ${DETAIL_CONCURRENCY})...`);
-  const browser = await chromium.launch({ headless: true });
+  const browser = await launchBrowser();
 
   try {
     let done = 0;
     for (let i = 0; i < items.length; i += DETAIL_CONCURRENCY) {
       const batch = items.slice(i, i + DETAIL_CONCURRENCY);
-      const results = await Promise.all(batch.map(item => enrichOneDetailPage(browser, item)));
+      const results = await Promise.all(batch.map(item => enrichOneDetailPage(browser, item, detailConfig)));
 
       for (let j = 0; j < batch.length; j++) {
         const item = batch[j];
         const detail = results[j];
-        // Merge: detail images take priority (more complete), fall back to listing thumbnail
         const listingImages = item.raw._all_images ?? [];
         const allImages = [...new Set([...detail.images, ...listingImages])];
         item.raw._all_images = allImages;
         item.raw._detail_text = detail.raw_detail_text;
+        if (detail.external_id) item.raw._external_id = detail.external_id;
         done++;
         process.stdout.write(`\r  ${done}/${items.length} detail pages enriched...`);
       }
@@ -390,8 +458,8 @@ async function runCrawl(config) {
   let success = false;
   let errorSummary = null;
 
-  const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const browser = await launchBrowser();
+  const page = await newStealthPage(browser);
 
   function log(msg, data = {}) {
     steps.push({ ts: now(), msg, ...data });
@@ -607,7 +675,7 @@ async function main() {
 
   // Phase 1b: Enrich from detail pages
   console.log('[ Phase 1b: Detail Page Enrichment ]');
-  await enrichDetailPages(items);
+  await enrichDetailPages(items, config.detail_page ?? null);
   console.log();
 
   // Phase 2: SourceProperty
@@ -619,8 +687,11 @@ async function main() {
     if (seenUrls.has(item.source_url)) continue;
     seenUrls.add(item.source_url);
     const raw = item.raw ?? {};
-    // Extract external_id from the URL path (e.g. "https://dinvestment.gr/1165" → "1165")
-    const externalId = raw.url ?? item.source_url.split('/').filter(Boolean).pop() ?? null;
+    // external_id: prefer what was extracted from the detail page DOM (selector source),
+    // otherwise fall back to the last path segment of the detail URL (url_path source).
+    const externalId = raw._external_id
+      ?? item.source_url.split('/').filter(Boolean).pop()
+      ?? null;
 
     sourceProperties.push({
       id: `sp_${uid()}`,

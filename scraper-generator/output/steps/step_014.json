@@ -1,0 +1,11 @@
+{
+  "id": "step_6af88c16",
+  "run_id": "run_16d65259",
+  "step_index": 14,
+  "action_type": "SCROLL_DOWN",
+  "action_payload": {},
+  "screenshot_before_path": "C:\\Users\\petro\\Desktop\\files\\projects\\logiqdev\\property-sync\\scraper-generator\\output\\screenshots\\step_014.png",
+  "screenshot_after_path": "C:\\Users\\petro\\Desktop\\files\\projects\\logiqdev\\property-sync\\scraper-generator\\output\\screenshots\\step_014.png",
+  "model_reasoning": "On detail page. I need to identify image and description selectors. Let me scroll down to find description text.",
+  "timestamp": "2026-07-06T04:36:51.175Z"
+}
