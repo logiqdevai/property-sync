@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "generate": "node generate.js",
-    "crawl": "node crawl.js"
+    "generate": "node generate/index.js",
+    "crawl": "node crawl/index.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.55.0",
