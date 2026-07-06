@@ -1,4 +1,4 @@
-import { uid } from './utils.js';
+import { uuid } from './utils.js';
 
 export function detectDuplicates(properties) {
   for (let i = 0; i < properties.length; i++) {
@@ -10,7 +10,7 @@ export function detectDuplicates(properties) {
       const sameCity = a.city && b.city && a.city.toLowerCase() === b.city.toLowerCase();
       const priceClose = a.price && b.price && Math.abs(a.price - b.price) / Math.max(a.price, b.price) <= 0.01;
       if (sameTitle && sameCity && priceClose) {
-        const groupId = a.duplicate_group_id ?? b.duplicate_group_id ?? `dup_${uid()}`;
+        const groupId = a.duplicate_group_id ?? b.duplicate_group_id ?? uuid();
         a.duplicate_group_id = groupId;
         b.duplicate_group_id = groupId;
       }

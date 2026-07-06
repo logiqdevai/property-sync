@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
-export function uid() {
-  return crypto.randomBytes(6).toString('hex');
+export function uuid() {
+  return crypto.randomUUID();
 }
 
 export function now() {

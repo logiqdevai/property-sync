@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { ROOT_DIR, OUTPUT_DIR } from './config.js';
-import { uid, now, contentHash } from './utils.js';
+import { uuid, now, contentHash } from './utils.js';
 import { runCrawl } from './crawler.js';
 import { enrichDetailPages } from './detail.js';
 import { normalizeWithAI } from './normalize.js';
@@ -30,9 +30,9 @@ async function main() {
 
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
-  const sourceAgencyId = `agency_${uid()}`;
-  const scraperId = `scraper_${uid()}`;
-  const crawlRunId = `crawlrun_${uid()}`;
+  const sourceAgencyId = uuid();
+  const scraperId = uuid();
+  const crawlRunId = uuid();
   const startedAt = now();
 
   const crawlRun = {
@@ -82,7 +82,7 @@ async function main() {
       ?? null;
 
     sourceProperties.push({
-      id: `sp_${uid()}`,
+      id: uuid(),
       source_agency_id: sourceAgencyId,
       external_id: externalId,
       source_url: item.source_url,
@@ -128,14 +128,14 @@ async function main() {
     }
 
     const prop = {
-      id: `prop_${uid()}`,
+      id: uuid(),
       ...fields,
     };
 
     properties.push(prop);
 
     propertySourceLinks.push({
-      id: `psl_${uid()}`,
+      id: uuid(),
       property_id: prop.id,
       source_property_id: sp.id,
       confidence_score: 1.0,
@@ -145,7 +145,7 @@ async function main() {
     });
 
     propertyHistory.push({
-      id: `ph_${uid()}`,
+      id: uuid(),
       property_id: prop.id,
       event_type: 'CREATED',
       field: null,
@@ -170,7 +170,7 @@ async function main() {
 
   console.log('\n[ Phase 4: Finalize ]');
   const executionTrace = {
-    id: `trace_${uid()}`,
+    id: uuid(),
     scraper_id: scraperId,
     crawl_run_id: crawlRunId,
     steps,
