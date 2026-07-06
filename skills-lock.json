@@ -21,6 +21,12 @@
       "sourceType": "github",
       "computedHash": "68658903272e1015f3ec5084c7d0988216a47f42f675ed819a675250fc6a23cd"
     },
+    "openai-docs": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/openai-docs/SKILL.md",
+      "computedHash": "80d1836b9c7cdee24521c47e33a77cbf02b34783267f5a7e32c41557170fa6dd"
+    },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",

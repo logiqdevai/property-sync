@@ -80,7 +80,8 @@ Every one of these follows the Feature Module Pattern (`hooks/`, `interfaces/`, 
 | --- | --- | --- |
 | `playwright` | Production `CrawlRun` execution + Playwright driver for the computer-use loop | Feature 04 (loop) / Feature 05 (crawl engine) |
 | `openai` | Computer Use tool (Responses API `computer-use-preview`) — the existing `ai`/`@ai-sdk/openai` packages do not expose the computer-use tool; call the official `openai` SDK directly from a dedicated integration | Feature 04 |
-| `@nestjs/bullmq` processors | Already installed — add new queues (`crawl`, `generation`) | Feature 04 / 05 |
+| `openai` (Batch API + webhooks) | Property normalization batch path when all enabled trackers for an agency have `UserTrackedAgency.use_ai_batching: true` — upload `.jsonl`, create batch, receive `batch.completed` webhook, download results | Feature 06 |
+| `@nestjs/bullmq` processors | Already installed — add new queues (`crawl`, `generation`, `ai-batch-complete`) | Feature 04 / 05 / 06 |
 
 ### Top-level backend layout additions
 
@@ -101,11 +102,13 @@ api/src/
 │   ├── users/                      # admin Users subpage (list/detail aggregation)
 │   └── dashboard/                  # KPI + activity-feed aggregation endpoint
 ├── integrations/
-│   ├── ai/                         # existing — reused for text/reasoning calls if needed
+│   ├── ai/                         # existing — sync Chat Completions via Vercel AI SDK (normalization fast path)
+│   ├── ai-batch/                   # new: OpenAI Batch API client (files upload, batches.create/retrieve/cancel, output download)
 │   └── computer-use/               # new: OpenAI computer-use loop client + Playwright bridge
 ├── core/queues/
 │   ├── crawl.queue.ts / crawl.processor.ts        # BullMQ: production CrawlRun execution
-│   └── generation.queue.ts / generation.processor.ts  # BullMQ: computer-use generation runs
+│   ├── generation.queue.ts / generation.processor.ts  # BullMQ: computer-use generation runs
+│   └── ai-batch-complete.processor.ts             # BullMQ: finish normalization after webhook (keeps webhook handler fast)
 └── background/
     ├── crawl-scheduler.cron.ts     # reads SourceAgency.crawl_interval, enqueues CrawlRuns
     └── scraper-health.cron.ts      # recomputes Scraper.health / success_rate / avg_runtime_ms
@@ -126,8 +129,9 @@ JWT access token issued by `api/src/modules/auth/`, stored via the existing `sto
 | Service | Used by | Facade location |
 | --- | --- | --- |
 | OpenAI Computer Use (Responses API) | AI scraper generation loop | `api/src/integrations/computer-use/` |
+| OpenAI Batch API + webhooks | Deferred property normalization when all trackers opt into `use_ai_batching` | `api/src/integrations/ai-batch/` + `api/src/modules/openai-webhooks/` |
 | Playwright | Computer-use loop execution + production `CrawlRun` execution | `api/src/integrations/computer-use/` (loop) and `api/src/modules/crawl-runs/` (production runner, may share a `shared/services/playwright/` browser-session helper) |
-| Redis + BullMQ | Crawl queue, generation queue, job monitoring | `api/src/core/queues/` (existing) |
+| Redis + BullMQ | Crawl queue, generation queue, ai-batch completion queue, job monitoring | `api/src/core/queues/` (existing) |
 | Document storage (existing `integrations/storage/gcs`) | Computer-use step screenshots (`Document` model) | reused as-is |
 
 ## Deployment approach

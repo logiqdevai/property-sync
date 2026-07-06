@@ -212,6 +212,12 @@ enum NotificationSeverity {
   CRITICAL
 }
 
+// Who created a ScraperVersion.
+enum ScraperVersionCreatedBy {
+  AI
+  USER
+}
+
 // ---------------------------------------------------------------
 // USERS & CMS
 // ---------------------------------------------------------------
@@ -408,7 +414,7 @@ model ScraperVersion {
   scraper_id String
   version    Int
   config     Json // full scraper definition: start_url, listing_selector, fields, pagination, etc.
-  created_by String // "AI" | "USER"
+  created_by ScraperVersionCreatedBy
   notes      String? // e.g. reason for the fix, summary of what changed from prior version
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -748,6 +754,7 @@ model UserTrackedAgency {
   track_new_listings     Boolean  @default(true)
   track_removed_listings Boolean  @default(true)
   track_updated_listings Boolean  @default(true)
+  use_ai_batching        Boolean  @default(false) // use openai batching to reduce costs
   created_at             DateTime @default(now())
   updated_at             DateTime @updatedAt
 

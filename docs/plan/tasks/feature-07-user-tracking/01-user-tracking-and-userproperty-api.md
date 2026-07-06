@@ -28,16 +28,22 @@ authenticated `USER` can track agencies and manage their own properties.
 ## Requirements
 
 1. **`api/src/modules/user-tracked-agencies/`**:
+   - `dto/track-agency.dto.ts` — optional booleans:
+     `track_new_listings`, `track_removed_listings`, `track_updated_listings`,
+     `use_ai_batching`, `enabled` (PATCH only for `enabled`)
    - `GET /agencies` — public **active** `SourceAgency` list (`status:
      ACTIVE`) with `page`, `limit`, `search` query, plus each row annotated
      with `is_tracked: boolean` and the current user's tracking prefs if
-     tracked (left join against `UserTrackedAgency` for `@CurrentUser()`)
+     tracked (`track_new_listings`, `track_removed_listings`,
+     `track_updated_listings`, `use_ai_batching`; left join against
+     `UserTrackedAgency` for `@CurrentUser()`)
    - `POST /agencies/:agencyId/track` — body `{ track_new_listings?,
-     track_removed_listings?, track_updated_listings? }` (all optional,
-     default `true` per schema) — upsert `UserTrackedAgency` for
-     `(user_id, agencyId)`, `enabled: true`
-   - `PATCH /agencies/:agencyId/track` — same fields + `enabled?` — update
-     existing row, 404 if not tracked
+     track_removed_listings?, track_updated_listings?, use_ai_batching? }`
+     (change-type fields optional, default `true` per schema;
+     `use_ai_batching` optional, default `false`) — upsert
+     `UserTrackedAgency` for `(user_id, agencyId)`, `enabled: true`
+   - `PATCH /agencies/:agencyId/track` — same fields + `enabled?` +
+     `use_ai_batching?` — update existing row, 404 if not tracked
    - `DELETE /agencies/:agencyId/track` — hard delete the `UserTrackedAgency`
      row, `204`
 2. **`api/src/modules/user-properties/`**:
@@ -60,6 +66,11 @@ authenticated `USER` can track agencies and manage their own properties.
    sourceAgencyId): Promise<void>` that:
    - Finds all `UserTrackedAgency` rows for `sourceAgencyId` where `enabled:
      true`
+   - **Batch deferral**: if Feature 06 routed this crawl's listings through
+     the OpenAI Batch path (`CrawlRun.metadata.ai_batch_status === 'pending'`),
+     skip `UserProperty` sync here — Feature 06's batch completion handler
+     must call `UserPropertiesService.syncForProperty` after normalization
+     finishes (wire that dependency when implementing Feature 06 + 07 together)
    - For a newly-created `Property`: for each tracking user (respecting
      `track_new_listings`), `prisma.userProperty.create(...)` copying
      canonical fields, `last_synced_at: now()`
@@ -102,16 +113,19 @@ authenticated `USER` can track agencies and manage their own properties.
 - [ ] Build `user-properties` module (list/detail/update/resync, ownership-checked)
 - [ ] Build `UserPropertiesService.syncForProperty` and wire it into normalization
 - [ ] Verify the `is_modified` divergence rule with a manual test: edit a `UserProperty`, re-crawl, confirm it is NOT silently overwritten
+- [ ] Verify `use_ai_batching`: track with `true`, crawl, confirm properties appear only after batch webhook (not immediately)
 
 ## Technical Notes
 
 - Follow `.cursor/rules/api-code-structure-and-best-practices.mdc`
 - `JwtGuard` only (no `RolesGuard`) — these are user-scoped, not admin endpoints
 - Always scope queries by `@CurrentUser().id`; never trust a client-supplied user id
+- Changing `use_ai_batching` on an existing track row affects **future** crawls only; it does not retroactively cancel in-flight OpenAI batches
+- When explaining `use_ai_batching` in API docs/entities: batch mode applies only when **every** enabled tracker for that agency has it enabled; if any tracker opts out, the agency uses synchronous normalization for everyone
 
 ## Acceptance Criteria
 
-- A user can track an agency, see it marked `is_tracked: true` in `GET /agencies`, and adjust per-type preferences
+- A user can track an agency, see it marked `is_tracked: true` in `GET /agencies`, and adjust per-type preferences including `use_ai_batching`
 - When a tracked agency's scraper runs and surfaces a new property, a `UserProperty` automatically appears for that user
 - Editing a `UserProperty` sets `is_modified: true`; a subsequent crawl update to the same canonical property does NOT overwrite the user's edits
 - Calling `resync` overwrites the edits from canonical and clears `is_modified`

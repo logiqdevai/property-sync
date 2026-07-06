@@ -5,7 +5,7 @@
 > implement next. Open the **References** paths for the active feature
 > before writing code. Update this file when deliverables are verified.
 
-**Last updated:** 2026-07-04
+**Last updated:** 2026-07-06
 **Overall progress:** 5% (0.5 / 10 features complete — Feature 01 partially pre-built)
 **Current focus:** Feature 01 — `Platform Foundation` → `tasks/feature-01-foundation/01-foundation-db-and-auth-api.md`
 
@@ -289,6 +289,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **API (`api/`)**
 - [ ] `api/src/modules/properties/`
+- [ ] AI-assisted normalization (sync via `integrations/ai/`, batch via `integrations/ai-batch/` + OpenAI webhooks) with routing based on `UserTrackedAgency.use_ai_batching`
+- [ ] `POST /webhooks/openai` — verify `batch.completed` / `batch.failed` / `batch.expired` / `batch.cancelled`, enqueue `ai-batch-complete` worker
 - [ ] Normalization/dedup service invoked at the end of each `CrawlRun` (hook into Feature 05's pipeline): create/update `Property`, `PropertySourceLink`, duplicate detection (`duplicate_group_id`)
 - [ ] `PropertyHistory` writes for every detected change (created/updated/price/images/status/removed/reappeared)
 - [ ] Removal detection (previously seen `SourceProperty` missing from a new crawl → `REMOVED`) and reappearance detection
@@ -333,13 +335,13 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **API (`api/`)**
 - [ ] `api/src/modules/user-tracked-agencies/`, `api/src/modules/user-properties/`
-- [ ] Track/untrack + per-type toggle endpoints
-- [ ] Crawl-time hook (extends Feature 06's `PropertyHistory` write path): for every tracking user, create-or-update `UserProperty`, respecting the `is_modified` divergence rule
+- [ ] Track/untrack + per-type toggle + `use_ai_batching` endpoints
+- [ ] Crawl-time hook (extends Feature 06's normalization path): for every tracking user, create-or-update `UserProperty` after normalization completes (immediate for sync path, deferred for batch path), respecting the `is_modified` divergence rule
 - [ ] User list/detail/edit/resync endpoints
 
 **App (`app/`)**
 - [ ] `app/src/features/user-tracked-agencies/`, `app/src/features/user-properties/`
-- [ ] `/agencies` (user) — browse + track/untrack + per-type toggles
+- [ ] `/agencies` (user) — browse + track/untrack + per-type toggles + AI batching toggle
 - [ ] `/properties` (user) — list/detail/history timeline/edit/resync with `is_modified` warning banner
 
 **Verification**

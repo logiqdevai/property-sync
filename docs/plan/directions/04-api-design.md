@@ -85,8 +85,8 @@ Internal-only (not HTTP): `ScraperGenerationService.trigger(agencyId, scraperId 
 | Method | Path | Body/Query | Response |
 | --- | --- | --- | --- |
 | GET | `/agencies` | query (status, search) — public active agencies + this user's tracking state | `{ data, pagination }` |
-| POST | `/agencies/:agencyId/track` | `{ track_new_listings?, track_removed_listings?, track_updated_listings? }` | `UserTrackedAgency` (creates if absent) |
-| PATCH | `/agencies/:agencyId/track` | same fields + `enabled` | `UserTrackedAgency` |
+| POST | `/agencies/:agencyId/track` | `{ track_new_listings?, track_removed_listings?, track_updated_listings?, use_ai_batching? }` | `UserTrackedAgency` (creates if absent) |
+| PATCH | `/agencies/:agencyId/track` | same fields + `enabled` + `use_ai_batching?` | `UserTrackedAgency` |
 | DELETE | `/agencies/:agencyId/track` | — | `204` |
 
 `modules/user-properties` (user-scoped):
@@ -99,6 +99,16 @@ Internal-only (not HTTP): `ScraperGenerationService.trigger(agencyId, scraperId 
 | POST | `/properties/:id/resync` | — | overwrites from canonical, `is_modified: false`, `last_synced_at: now()` |
 
 `ApiRoutes.agencies`: `{ prefix, track(agencyId) }`. `ApiRoutes.userProperties`: `{ prefix, byId(id), resync(id) }`.
+
+### OpenAI webhooks (Feature 06 batch normalization — not under `/admin`)
+
+Public endpoint, no JWT — authenticated via OpenAI webhook signature only.
+
+| Method | Path | Body/Query | Response |
+| --- | --- | --- | --- |
+| POST | `/webhooks/openai` | raw JSON body + OpenAI signature headers (`webhook-id`, `webhook-timestamp`, `webhook-signature`) | `204` on success |
+
+Handler must: respond `2xx` immediately; offload work to a background worker; verify with `openai.webhooks.unwrap(body, headers, { secret })` (official SDK); dedupe on `webhook-id` header; subscribe in the OpenAI dashboard to at least `batch.completed`, `batch.failed`, `batch.expired`, and `batch.cancelled`. On `batch.completed`, retrieve the batch, download `output_file_id`, and call the internal normalization completion service. Not an `ApiRoutes` entry — register the path as a literal constant in the webhook module only.
 
 ## Feature 08 — Notifications (`modules/notifications`)
 

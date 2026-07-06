@@ -33,7 +33,7 @@ A centralized real-estate listing aggregation platform. It scrapes public agency
 6. **Crawl pipeline** — discover → collect URLs → visit → extract → normalize → compare → create/update/remove, ending at canonical `Property` + `PropertyHistory` + `UserProperty`. **No CMS push in this phase.**
 7. **Duplicate detection** — grouping via `duplicate_group_id`, admin merge/split.
 8. **Broken scraper detection & self-healing** — automatic `ScraperGenerationRun` (`trigger: SELF_HEAL`) on repeated failure signals.
-9. **User tracked agencies** — per-change-type notification preferences (new/removed/updated).
+9. **User tracked agencies** — per-change-type notification preferences (new/removed/updated) and optional **AI batching** (`use_ai_batching`) to trade latency for ~50% lower OpenAI normalization cost when every enabled tracker for an agency opts in.
 10. **User properties (`UserProperty`)** — personal, editable copy of canonical properties, with re-sync from canonical and full history timeline.
 11. **CMS integrations — configuration only** — admin `CmsTarget` CRUD, user `UserCms` connect/edit/enable/disable/disconnect. **No sync execution, no adapters, no background push.**
 12. **Notifications** — broken scraper, property removal spike, large crawl failure, queue failure, website unavailable.
