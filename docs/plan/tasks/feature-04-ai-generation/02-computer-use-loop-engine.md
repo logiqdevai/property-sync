@@ -30,6 +30,12 @@ logic into NestJS; do not invent a parallel approach.
 Also read `docs/scraping-generation-computer-use-architecture.md` sections 6–9
 for domain-model invariants (`ComputerUseStep`, `staged_config` lifecycle).
 
+Read `docs/plan/directions/03-domain-model.md` — **`UserIntegration` AI
+credential rule**: every Anthropic call uses `UserIntegration.api_key_secret`
+via `UserIntegrationsService` (Feature 09, exported). Import
+`UserIntegrationsModule` in `ComputerUseModule`; do not read
+`ANTHROPIC_API_KEY` from env.
+
 This is a **new integration**, not an extension of the existing
 `api/src/integrations/ai/` module — that module wraps the **Vercel AI SDK**
 (`@ai-sdk/anthropic`, used for plain text/object generation elsewhere in the
@@ -125,9 +131,10 @@ page and populate it — Feature 05's crawler uses it in the enrichment phase.
    PR/task notes, not something the app does at runtime)
 2. `api/src/integrations/computer-use/computer-use.module.ts`
 3. `api/src/integrations/computer-use/services/computer-use-client.service.ts`
-   — thin wrapper around `new Anthropic({ apiKey: config.get('ANTHROPIC_API_KEY')
-   })` exposing `sendStep(messages, systemPrompt)` returning a normalized
-   `{ rawText, usage }` shape; the orchestrator parses JSON from `rawText`
+   — factory `createClient(apiKey: string)` wrapping `new Anthropic({ apiKey })`
+   exposing `sendStep(messages, systemPrompt, apiKey)` returning a normalized
+   `{ rawText, usage }` shape; the orchestrator parses JSON from `rawText`. Do
+   **not** read `ANTHROPIC_API_KEY` from env
 4. `api/src/integrations/computer-use/services/playwright-driver.service.ts`
    — port `scraper-generator/generate/actions.js`: `launch()`, `screenshot():
    Promise<Buffer>`, `executeAction(action): Promise<Page>` (returns active
@@ -148,13 +155,14 @@ page and populate it — Feature 05's crawler uses it in the enrichment phase.
    it as a real Prisma relation.
 7. `api/src/integrations/computer-use/computer-use-orchestrator.service.ts`
    — port `scraper-generator/generate/index.js` as `async run(generationRunId:
-   string): Promise<void>`:
+   string, apiKey: string): Promise<void>`:
    1. Load the run + agency; set `status: 'RUNNING'`, `started_at: now()`
    2. Launch Playwright, navigate to the agency's `base_url` (or URL from
       `prompt` / run metadata)
    3. Loop (cap at `MAX_STEPS`, default 50 from reference):
       a. Screenshot → store as `Document` → append user message with image
-      b. Call Anthropic client with accumulated `messages` + `SYSTEM_PROMPT`
+      b. Call Anthropic client with accumulated `messages` + `SYSTEM_PROMPT` +
+         the resolved `apiKey`
       c. Persist a `ComputerUseStep` row (`step_index`, `action_type`,
          `action_payload`, `screenshot_before_id`, `model_reasoning`)
       d. Parse JSON action; if `action === 'done'`, run verification — on
@@ -170,16 +178,13 @@ page and populate it — Feature 05's crawler uses it in the enrichment phase.
    6. Always `finished_at: now()` and always close the Playwright browser in
       a `finally` block
 8. Replace `api/src/background/generation.processor.ts` (the stub from the
-   previous task): `@Processor('generation')` calling
-   `ComputerUseOrchestratorService.run(job.data.runId)`, with the processor
-   itself only responsible for job-level try/catch + logging (the
-   orchestrator handles all DB status transitions itself so the run's status
-   is always correct even if the processor crashes)
-9. Add `ANTHROPIC_API_KEY` as required (not optional) in
-   `api/src/shared/config/env/env.validation.ts` if this feature is being
-   actively developed — otherwise leave it optional and throw a clear
-   runtime error from `ComputerUseClientService`'s constructor if missing.
-   Add `SCRAPER_GENERATION_MODEL` (default `claude-opus-4-8`) optional env.
+   previous task): `@Processor('generation')` resolves the API key first
+   (`MANUAL` → `resolveActiveApiKey(job.data.initiatedByUserId, ANTHROPIC)`;
+   `SELF_HEAL` → `resolveForSourceAgency` from the run's `source_agency_id`),
+   then calls `ComputerUseOrchestratorService.run(job.data.runId, apiKey)`;
+   processor-level try/catch + logging only (orchestrator handles DB status)
+9. Add `SCRAPER_GENERATION_MODEL` (default `claude-opus-4-8`) optional env for
+   model id only. Do **not** add `ANTHROPIC_API_KEY` to `env.validation.ts`
 
 ## Files to create or modify
 

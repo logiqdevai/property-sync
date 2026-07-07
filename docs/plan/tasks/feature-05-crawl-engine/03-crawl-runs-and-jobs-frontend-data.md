@@ -32,7 +32,9 @@ Build the `crawl-runs` and `jobs` feature modules.
    `total_updated`/`total_removed`/`total_failed` and nullable AI cost
    fields: `ai_model`, `ai_input_tokens`, `ai_output_tokens`,
    `ai_input_cost`, `ai_output_cost`, `ai_total_cost`,
-   `ai_average_cost_per_property`), `CrawlRunDetail` (+
+   `ai_average_cost_per_property`), optional `user_tracked_agency_id` and
+   nested `user_tracked_agency?` (tracker user email for admin display on
+   detail), `CrawlRunDetail` (+
    `execution_traces`, `job_logs`), `CrawlRunStatus` union,
    `CrawlRunListQuery`
 3. `app/src/features/crawl-runs/services/crawl-runs.services.ts` —

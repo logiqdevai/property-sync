@@ -13,9 +13,233 @@ datasource db {
   provider = "postgresql"
 }
 
+enum AuthRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+  SUPPORT
+}
+
+enum DocumentType {
+  LOGO
+  BANNER
+  IMAGE
+  VIDEO
+  AUDIO
+  PDF
+  DOCUMENT
+  OTHER
+}
+
+enum CrawlType {
+  HTML
+  API
+  GRAPHQL
+  PLAYWRIGHT
+  SITEMAP
+  HYBRID
+}
+
+enum PaginationType {
+  NONE
+  PAGE_NUMBER
+  OFFSET
+  CURSOR
+  INFINITE_SCROLL
+  LOAD_MORE
+  UNKNOWN
+}
+
+// Lifecycle state of a SourceAgency (spec section 5: enable / disable / archive).
+enum AgencyStatus {
+  ACTIVE
+  DISABLED
+  ARCHIVED
+}
+
+// Added BROKEN to support spec section 19 (Broken Scraper Detection).
+enum ScraperStatus {
+  ACTIVE
+  INACTIVE
+  DEPRECATED
+  TESTING
+  BROKEN
+}
+
+// Rolled-up health rating shown on the dashboard (spec section 18).
+enum ScraperHealth {
+  EXCELLENT
+  GOOD
+  WARNING
+  CRITICAL
+  BROKEN
+}
+
+// Status for production scraping executions (Playwright runs against a live Scraper).
+enum CrawlRunStatus {
+  QUEUED
+  RUNNING
+  SUCCESS
+  PARTIAL_SUCCESS
+  FAILED
+  CANCELLED
+}
+
+// Separate from CrawlRunStatus: an AI generation/self-heal session has different
+// terminal states than a production crawl (e.g. AWAITING_REVIEW has no crawl equivalent).
+enum GenerationRunStatus {
+  QUEUED
+  RUNNING
+  AWAITING_REVIEW // config produced, not yet promoted to a ScraperVersion
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+// Why a ScraperGenerationRun was started.
+enum GenerationTrigger {
+  MANUAL // user requested a scraper for a new/existing agency
+  SELF_HEAL // triggered automatically after a CrawlRun failure
+  SCHEDULED // periodic re-generation/health check
+}
+
+// A single computer-use action returned by the model during a generation run.
+enum ComputerActionType {
+  CLICK
+  DOUBLE_CLICK
+  TYPE
+  SCROLL
+  SCROLL_UP
+  SCROLL_DOWN
+  NAVIGATE
+  GO_BACK
+  CLOSE_TAB
+  WAIT
+  KEYPRESS
+  SCREENSHOT
+  DRAG
+  DONE
+}
+
+enum JobStatus {
+  WAITING
+  ACTIVE
+  COMPLETED
+  FAILED
+  DELAYED
+  PAUSED
+  STALLED
+}
+
+enum PropertyStatus {
+  ACTIVE
+  INACTIVE
+  REMOVED
+  SOLD
+  RENTED
+  UNKNOWN
+}
+
+enum ListingType {
+  SALE
+  RENT
+  SHORT_TERM_RENT
+  UNKNOWN
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  VILLA
+  MAISONETTE
+  STUDIO
+  LAND
+  COMMERCIAL
+  OFFICE
+  WAREHOUSE
+  PARKING
+  OTHER
+  UNKNOWN
+}
+
+enum IntegrationType {
+  ESTATEWEB
+  OPENAI
+  ANTHROPIC
+  GEMINI
+  DEEPSEEK
+}
+
+enum AuthType {
+  EMAIL_PASSWORD
+  USERNAME_PASSWORD
+  BEARER_TOKEN
+  API_KEY
+  OAUTH
+}
+
+// New: spec section 15 requires sync retries and guarantees data is never lost on failure --
+// this is the audit trail of every attempt to push a Property to a CmsTarget.
+enum CmsSyncAction {
+  CREATE
+  UPDATE
+  REMOVE
+}
+
+enum CmsSyncStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  RETRYING
+}
+
+// New: spec section 14 Property History -- every detectable change to a Property over time.
+enum PropertyHistoryEventType {
+  CREATED
+  UPDATED
+  PRICE_CHANGED
+  IMAGE_ADDED
+  IMAGE_REMOVED
+  STATUS_CHANGED
+  REMOVED
+  REAPPEARED
+}
+
+// New: spec section 20 Notifications.
+enum NotificationType {
+  BROKEN_SCRAPER
+  CMS_SYNC_FAILURE
+  PROPERTY_REMOVAL_SPIKE
+  LARGE_CRAWL_FAILURE
+  QUEUE_FAILURE
+  WEBSITE_UNAVAILABLE
+}
+
+enum NotificationSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+// Who created a ScraperVersion.
+enum ScraperVersionCreatedBy {
+  AI
+  USER
+}
+
+enum AiProvider {
+  OPENAI
+  ANTHROPIC
+  GEMINI
+}
+
+// ---------------------------------------------------------------
+// USERS & CMS
+// ---------------------------------------------------------------
+
+/// App users. Can track agencies and save properties.
 model User {
-  id       Int     @id @default(autoincrement())
-  uuid     String  @unique @default(uuid())
+  id       String  @id @default(uuid())
   email    String  @unique
   phone    String? @unique
   password String
@@ -24,15 +248,566 @@ model User {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  tracked_agencies  UserTrackedAgency[]
+  saved_properties  UserProperty[]
+  user_integrations UserIntegration[]
+
   @@index([email])
   @@index([phone])
-  @@index([uuid])
   @@map("users")
 }
 
-enum AuthRole {
-  USER
-  ADMIN
-  SUPER_ADMIN
-  SUPPORT
+/// Destination Integration instance that normalized Property data gets synced to and ai models are integrated with.
+model IntegrationTarget {
+  id               String          @id @default(uuid())
+  integration_type IntegrationType
+  auth_type        AuthType
+  base_url         String?
+  allow_multiple   Boolean         @default(false)
+  is_visible       Boolean         @default(true) // whether the integration is visible to the user (always visible for admin and supper admin)
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @updatedAt
+
+  user_integrations UserIntegration[]
+
+  @@map("integration_targets")
+}
+
+model UserIntegration {
+  id                    String   @id @default(uuid())
+  integration_target_id String
+  user_id               String
+  api_key_secret        String?
+  email                 String?
+  username              String?
+  password              String?
+  config                Json?
+  is_active             Boolean  @default(true)
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  sync_runs          CmsSyncRun[]
+  user               User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  integration_target IntegrationTarget @relation(fields: [integration_target_id], references: [id], onDelete: Cascade)
+
+  @@map("user_integrations")
+}
+
+// ---------------------------------------------------------------
+// SOURCE AGENCIES (scrape targets)
+// ---------------------------------------------------------------
+
+/// A target website (real-estate agency) to be scraped. Root of the whole pipeline:
+/// SourceAgency -> ScraperGenerationRun (AI builds a scraper) -> Scraper -> CrawlRun (production run)
+/// -> SourceProperty -> Property.
+model SourceAgency {
+  id                 String       @id @default(uuid())
+  name               String
+  base_url           String       @unique
+  country            String?
+  city               String?
+  status             AgencyStatus @default(ACTIVE)
+  is_visible         Boolean      @default(false) // not displayed to the user, only to the admin
+  is_enabled         Boolean      @default(false) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin
+  notes              String?
+  last_success_at    DateTime?
+  last_failure_at    DateTime?
+  last_error_message String?
+  metadata           Json?
+  created_at         DateTime     @default(now())
+  updated_at         DateTime     @updatedAt
+
+  scrapers                Scraper[]
+  user_tracked_agencies   UserTrackedAgency[]
+  scraper_generation_runs ScraperGenerationRun[]
+  crawl_runs              CrawlRun[]
+  source_properties       SourceProperty[]
+  notifications           Notification[]
+
+  @@index([status])
+  @@map("source_agencies")
+}
+
+/// Which SourceAgencies a user follows/monitors, and which kinds of change notify them.
+model UserTrackedAgency {
+  id                     String     @id @default(uuid())
+  user_id                String
+  source_agency_id       String
+  enabled                Boolean    @default(true)
+  crawl_interval         String     @default("0 */6 * * *") // cron expression only changed by admin or super admins
+  track_new_listings     Boolean    @default(true)
+  track_removed_listings Boolean    @default(true)
+  track_updated_listings Boolean    @default(true)
+  use_ai_batching        Boolean    @default(false)
+  ai_provider            AiProvider @default(OPENAI)
+  ai_model               String?
+  created_at             DateTime   @default(now())
+  updated_at             DateTime   @updatedAt
+
+  user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  crawl_runs    CrawlRun[]
+
+  @@unique([user_id, source_agency_id])
+  @@index([user_id])
+  @@index([source_agency_id])
+  @@map("user_tracked_agencies")
+}
+
+// ---------------------------------------------------------------
+// AI GENERATION LAYER (computer-use loop)
+// ---------------------------------------------------------------
+
+/// A scraper definition for one agency. Holds NO config directly -- config always lives on the
+/// active ScraperVersion (see `active_version`). This keeps a single source of truth instead of
+/// letting Scraper.config and ScraperVersion.config drift out of sync.
+model Scraper {
+  id                   String        @id @default(uuid())
+  source_agency_id     String
+  name                 String
+  active_version_id    String?       @unique // FK to the ScraperVersion currently in use
+  version_count        Int           @default(0) // convenience counter, incremented on new versions
+  status               ScraperStatus @default(TESTING)
+  self_healing_enabled Boolean       @default(true) // whether self-heal is allowed to auto-apply fixes
+  health               ScraperHealth @default(GOOD) // cached rollup, recomputed by a background job (spec section 18)
+  success_rate         Decimal?      @db.Decimal(5, 2) // cached % over trailing window
+  avg_runtime_ms       Int? // cached average CrawlRun duration
+  consecutive_failures Int           @default(0) // reset to 0 on any SUCCESS CrawlRun
+  last_success_at      DateTime?
+  last_failure_at      DateTime?
+  created_at           DateTime      @default(now())
+  updated_at           DateTime      @updatedAt
+
+  source_agency  SourceAgency    @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  active_version ScraperVersion? @relation("ActiveVersion", fields: [active_version_id], references: [id], onDelete: SetNull)
+
+  crawl_runs              CrawlRun[]
+  versions                ScraperVersion[]        @relation("ScraperVersions")
+  execution_traces        ScraperExecutionTrace[]
+  scraper_generation_runs ScraperGenerationRun[]
+  notifications           Notification[]
+
+  @@index([source_agency_id])
+  @@index([status])
+  @@index([health])
+  @@map("scrapers")
+}
+
+/// One AI (or human) session that produces or fixes a scraper config. This is the row that
+/// owns a computer-use loop: it's created, the loop runs (see ComputerUseStep), and it ends
+/// with either a promoted ScraperVersion or a failure.
+model ScraperGenerationRun {
+  id                  String              @id @default(uuid())
+  source_agency_id    String
+  scraper_id          String? // set when this run is fixing/updating an existing Scraper (self-heal or manual re-gen)
+  trigger             GenerationTrigger   @default(MANUAL)
+  status              GenerationRunStatus @default(QUEUED)
+  prompt              String? // goal/instructions given to the model
+  staged_config       Json? // draft config produced by the model, pending review/promotion
+  produced_version_id String?             @unique // set once staged_config is approved and copied into a ScraperVersion
+  error_message       String?
+  started_at          DateTime?
+  finished_at         DateTime?
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
+
+  source_agency    SourceAgency    @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  scraper          Scraper?        @relation(fields: [scraper_id], references: [id], onDelete: SetNull)
+  produced_version ScraperVersion? @relation("ProducedVersion", fields: [produced_version_id], references: [id], onDelete: SetNull)
+
+  steps ComputerUseStep[]
+
+  @@index([source_agency_id])
+  @@index([scraper_id])
+  @@index([status])
+  @@map("scraper_generation_runs")
+}
+
+/// A single action in the computer-use loop: model receives a screenshot, returns an action
+/// (click/type/scroll/...), Playwright executes it, a new screenshot is captured. Storing every
+/// step lets you replay a session, debug why the AI navigated somewhere wrong, and show the
+/// user an audit trail of how a scraper config was derived.
+model ComputerUseStep {
+  id                        String             @id @default(uuid())
+  scraper_generation_run_id String
+  step_index                Int // ordering within the run, starting at 0
+  action_type               ComputerActionType
+  action_payload            Json // raw action from the model, e.g. {"x":320,"y":540} or {"text":"..."}
+  screenshot_before_id      String?
+  screenshot_after_id       String?
+  model_reasoning           String? // optional chain-of-thought / rationale text returned by the model
+  created_at                DateTime           @default(now())
+
+  scraper_generation_run ScraperGenerationRun @relation(fields: [scraper_generation_run_id], references: [id], onDelete: Cascade)
+  screenshot_before      Document?            @relation("ComputerUseStepScreenshotBefore", fields: [screenshot_before_id], references: [id], onDelete: SetNull)
+  screenshot_after       Document?            @relation("ComputerUseStepScreenshotAfter", fields: [screenshot_after_id], references: [id], onDelete: SetNull)
+
+  @@index([scraper_generation_run_id])
+  @@index([scraper_generation_run_id, step_index])
+  @@index([screenshot_before_id])
+  @@index([screenshot_after_id])
+  @@map("computer_use_steps")
+}
+
+/// Immutable, versioned scraper config. This is the single source of truth for "what a scraper
+/// does" -- Scraper.active_version_id points here. New versions are created by generation runs
+/// (AI) or manual edits (human review), enabling rollback and full history / self-healing.
+model ScraperVersion {
+  id         String                  @id @default(uuid())
+  scraper_id String
+  version    Int
+  config     Json // full scraper definition: start_url, listing_selector, fields, pagination, etc.
+  created_by ScraperVersionCreatedBy
+  notes      String? // e.g. reason for the fix, summary of what changed from prior version
+  created_at DateTime                @default(now())
+  updated_at DateTime                @updatedAt
+
+  scraper Scraper @relation("ScraperVersions", fields: [scraper_id], references: [id], onDelete: Cascade)
+
+  // Back-relations used only to let other models point at "the" active/produced version.
+  active_for_scraper Scraper?              @relation("ActiveVersion")
+  produced_by_run    ScraperGenerationRun? @relation("ProducedVersion")
+
+  @@unique([scraper_id, version])
+  @@map("scraper_versions")
+}
+
+/// Step-by-step log of a PRODUCTION Playwright execution (not the AI's exploratory computer-use
+/// loop -- see ComputerUseStep for that). Used to detect broken selectors / navigation failures
+/// and feed them into a self-heal ScraperGenerationRun.
+model ScraperExecutionTrace {
+  id            String   @id @default(uuid())
+  scraper_id    String
+  crawl_run_id  String?
+  steps         Json // Playwright step-by-step execution log
+  success       Boolean
+  error_summary String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  scraper   Scraper   @relation(fields: [scraper_id], references: [id], onDelete: Cascade)
+  crawl_run CrawlRun? @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)
+
+  @@index([scraper_id])
+  @@map("scraper_execution_traces")
+}
+
+// ---------------------------------------------------------------
+// PRODUCTION EXECUTION LAYER
+// ---------------------------------------------------------------
+
+/// One production scraping execution of a Scraper against its SourceAgency. This is the
+/// Playwright run that uses the config from Scraper.active_version -- no AI involved in the
+/// crawl itself, unless normalization (Feature 06) or a failure triggers self-heal.
+model CrawlRun {
+  id                           String         @id @default(uuid())
+  source_agency_id             String
+  scraper_id                   String?
+  user_tracked_agency_id       String?
+  status                       CrawlRunStatus @default(QUEUED)
+  started_at                   DateTime?
+  finished_at                  DateTime?
+  total_found                  Int            @default(0)
+  total_created                Int            @default(0)
+  total_updated                Int            @default(0)
+  total_removed                Int            @default(0)
+  total_failed                 Int            @default(0)
+  error_message                String?
+  metadata                     Json?
+  ai_model                     String?
+  ai_input_tokens              Int?
+  ai_output_tokens             Int?
+  ai_input_cost                Decimal?       @db.Decimal(12, 6)
+  ai_output_cost               Decimal?       @db.Decimal(12, 6)
+  ai_total_cost                Decimal?       @db.Decimal(12, 6)
+  ai_average_cost_per_property Decimal?       @db.Decimal(12, 8)
+  created_at                   DateTime       @default(now())
+  updated_at                   DateTime       @updatedAt
+
+  source_agency       SourceAgency            @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  user_tracked_agency UserTrackedAgency?      @relation(fields: [user_tracked_agency_id], references: [id], onDelete: SetNull)
+  scraper             Scraper?                @relation(fields: [scraper_id], references: [id], onDelete: SetNull)
+  job_logs            JobLog[]
+  execution_traces    ScraperExecutionTrace[]
+  property_history    PropertyHistory[]
+  notifications       Notification[]
+
+  @@index([source_agency_id])
+  @@index([scraper_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("crawl_runs")
+}
+
+/// Generic queue/job execution log (e.g. BullMQ), optionally tied to a CrawlRun. Useful for
+/// ops/debugging independent of the scraping domain model.
+model JobLog {
+  id            String    @id @default(uuid())
+  queue_name    String
+  job_id        String?
+  job_name      String?
+  status        JobStatus
+  attempt       Int       @default(0)
+  max_attempts  Int?
+  crawl_run_id  String?
+  payload       Json?
+  result        Json?
+  error_message String?
+  stack_trace   String?
+  started_at    DateTime?
+  finished_at   DateTime?
+  duration_ms   Int?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  crawl_run CrawlRun? @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)
+
+  @@index([queue_name])
+  @@index([job_id])
+  @@index([status])
+  @@index([crawl_run_id])
+  @@index([created_at])
+  @@map("job_logs")
+}
+
+// New: dashboard section 20 -- persisted notifications, independent of any push/email channel.
+model Notification {
+  id               String               @id @default(uuid())
+  type             NotificationType
+  severity         NotificationSeverity @default(INFO)
+  title            String
+  message          String
+  source_agency_id String?
+  scraper_id       String?
+  crawl_run_id     String?
+  is_read          Boolean              @default(false)
+  created_at       DateTime             @default(now())
+
+  source_agency SourceAgency? @relation(fields: [source_agency_id], references: [id], onDelete: SetNull)
+  scraper       Scraper?      @relation(fields: [scraper_id], references: [id], onDelete: SetNull)
+  crawl_run     CrawlRun?     @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)
+
+  @@index([type])
+  @@index([severity])
+  @@index([is_read])
+  @@index([created_at])
+  @@map("notifications")
+}
+
+// New: spec section 15 -- every attempt (including retries) to push a Property to a CmsTarget.
+// Nothing is ever deleted here, so a failed sync never loses the record of what was owed.
+model CmsSyncRun {
+  id                  String        @id @default(uuid())
+  user_integration_id String
+  user_property_id    String?
+  action              CmsSyncAction
+  status              CmsSyncStatus @default(PENDING)
+  attempt             Int           @default(0)
+  max_attempts        Int?
+  payload             Json?
+  response            Json?
+  error_message       String?
+  started_at          DateTime?
+  finished_at         DateTime?
+  created_at          DateTime      @default(now())
+  updated_at          DateTime      @updatedAt
+
+  user_integration UserIntegration @relation(fields: [user_integration_id], references: [id], onDelete: Cascade)
+  user_property    UserProperty?   @relation(fields: [user_property_id], references: [id], onDelete: SetNull)
+
+  @@index([user_integration_id])
+  @@index([user_property_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("cms_sync_runs")
+}
+
+// ---------------------------------------------------------------
+// OUTPUT LAYER
+// ---------------------------------------------------------------
+
+/// Raw listing as extracted from a single source website. Not yet normalized/deduplicated --
+/// that happens in Property. One SourceProperty per (agency, url).
+model SourceProperty {
+  id               String         @id @default(uuid())
+  source_agency_id String
+  external_id      String?
+  source_url       String
+  canonical_url    String?
+  raw_title        String?
+  raw_description  String?
+  raw_price        String?
+  raw_location     String?
+  raw_data         Json?
+  raw_html_path    String?
+  content_hash     String? // used for deduplication
+  first_seen_at    DateTime       @default(now())
+  last_seen_at     DateTime?
+  status           PropertyStatus @default(ACTIVE)
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+
+  source_agency  SourceAgency         @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  property_links PropertySourceLink[]
+
+  @@unique([source_agency_id, source_url])
+  @@index([source_agency_id])
+  @@index([external_id])
+  @@index([content_hash])
+  @@index([status])
+  @@index([last_seen_at])
+  @@map("source_properties")
+}
+
+/// Normalized, deduplicated property record -- the canonical entity synced to the CMS.
+/// May be backed by multiple SourceProperty rows (same listing found on multiple agencies).
+model Property {
+  id                 String         @id @default(uuid())
+  title              String
+  description        String?
+  listing_type       ListingType    @default(UNKNOWN)
+  property_type      PropertyType   @default(UNKNOWN)
+  status             PropertyStatus @default(ACTIVE)
+  price              Decimal?       @db.Decimal(14, 2)
+  currency           String?        @default("EUR")
+  city               String?
+  district           String?
+  address            String?
+  postal_code        String?
+  country            String?
+  latitude           Decimal?       @db.Decimal(10, 7)
+  longitude          Decimal?       @db.Decimal(10, 7)
+  square_meters      Decimal?       @db.Decimal(10, 2)
+  bedrooms           Int?
+  bathrooms          Int?
+  floor              String?
+  construction_year  Int?
+  renovation_year    Int?
+  features           Json?
+  images             Json?
+  normalized_data    Json?
+  duplicate_group_id String?
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+
+  source_links         PropertySourceLink[]
+  user_property_copies UserProperty[]
+  history              PropertyHistory[] // spec section 14
+
+  @@index([listing_type])
+  @@index([property_type])
+  @@index([status])
+  @@index([city])
+  @@index([district])
+  @@index([price])
+  @@index([duplicate_group_id])
+  @@map("properties")
+}
+
+/// Mapping layer between normalized Property and the raw SourceProperty rows it was built from.
+model PropertySourceLink {
+  id                 String   @id @default(uuid())
+  property_id        String
+  source_property_id String
+  confidence_score   Decimal? @db.Decimal(5, 2)
+  is_primary_source  Boolean  @default(false)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  property        Property       @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  source_property SourceProperty @relation(fields: [source_property_id], references: [id], onDelete: Cascade)
+
+  @@unique([property_id, source_property_id])
+  @@index([property_id])
+  @@index([source_property_id])
+  @@map("property_source_links")
+}
+
+// New: spec section 14 Property History -- append-only audit log of everything that happened to a
+// Property. This is what powers "Price Changes", "Images Added/Removed", "Removal",
+// "Reappearance" etc. in the property detail view. Never mutated, only appended to.
+model PropertyHistory {
+  id           String                   @id @default(uuid())
+  property_id  String
+  event_type   PropertyHistoryEventType
+  field        String? // e.g. "price", "images", "status" -- null for CREATED/REMOVED/REAPPEARED
+  old_value    Json?
+  new_value    Json?
+  crawl_run_id String? // which crawl detected this change, if any
+  created_at   DateTime                 @default(now())
+
+  property  Property  @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  crawl_run CrawlRun? @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)
+
+  @@index([property_id])
+  @@index([event_type])
+  @@index([crawl_run_id])
+  @@map("property_history")
+}
+
+/// User-owned, editable copy of a canonical Property. Created automatically the first time a
+/// tracked agency's scraper surfaces a matching Property; after that, edits apply ONLY to this
+/// row -- the canonical Property keeps being updated by the crawler independently.
+/// `is_modified` / `last_synced_at` track whether (and when) this copy has diverged, so the UI
+/// can show a "this differs from the source listing" banner and offer a manual re-sync.
+model UserProperty {
+  id                 String         @id @default(uuid())
+  user_id            String
+  property_id        String
+  title              String
+  description        String?
+  listing_type       ListingType    @default(UNKNOWN)
+  property_type      PropertyType   @default(UNKNOWN)
+  status             PropertyStatus @default(ACTIVE)
+  price              Decimal?       @db.Decimal(14, 2)
+  currency           String?        @default("EUR")
+  city               String?
+  district           String?
+  address            String?
+  postal_code        String?
+  country            String?
+  latitude           Decimal?       @db.Decimal(10, 7)
+  longitude          Decimal?       @db.Decimal(10, 7)
+  square_meters      Decimal?       @db.Decimal(10, 2)
+  bedrooms           Int?
+  bathrooms          Int?
+  floor              String?
+  construction_year  Int?
+  renovation_year    Int?
+  features           Json?
+  images             Json?
+  normalized_data    Json?
+  duplicate_group_id String?
+  is_modified        Boolean        @default(false) // true once any field diverges from canonical_property
+  last_synced_at     DateTime? // last time this copy was refreshed from canonical_property
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+
+  user               User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  canonical_property Property     @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  cms_sync_runs      CmsSyncRun[]
+
+  @@unique([user_id, property_id])
+  @@index([user_id])
+  @@index([property_id])
+  @@map("user_properties")
+}
+
+/// Generic uploaded file record (logos, banners, media, and computer-use screenshots).
+model Document {
+  id         String       @id @default(uuid())
+  user_uuid  String
+  filename   String
+  mimetype   String
+  size       Int
+  url        String
+  path       String
+  type       DocumentType @default(LOGO)
+  created_at DateTime     @default(now())
+
+  computer_use_steps_before ComputerUseStep[] @relation("ComputerUseStepScreenshotBefore")
+  computer_use_steps_after  ComputerUseStep[] @relation("ComputerUseStepScreenshotAfter")
+
+  @@index([user_uuid])
+  @@map("documents")
 }

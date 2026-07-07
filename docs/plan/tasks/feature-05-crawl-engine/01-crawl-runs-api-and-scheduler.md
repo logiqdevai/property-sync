@@ -8,19 +8,22 @@
 
 Build the `CrawlRun`/`JobLog` HTTP surface, register the `crawl` BullMQ
 queue, wire `Scraper.run-now` (Feature 03 stub) to actually enqueue a run,
-and add a cron scheduler that enqueues crawls for `ACTIVE` agencies on their
-own `crawl_interval`. Stub the actual Playwright execution as a `// TODO(next
-task)` in the processor so this task is independently verifiable. Task 02
-replaces the stub by porting `scraper-generator/crawl/`.
+and add a cron scheduler that enqueues one `CrawlRun` per matching enabled
+`UserTrackedAgency` (with `user_tracked_agency_id` set). Stub the actual
+Playwright execution as a `// TODO(next task)` in the processor so this task
+is independently verifiable. Task 02 replaces the stub by porting
+`scraper-generator/crawl/`.
 
 ## Context — read this before touching anything
 
 - `docs/plan/directions/04-api-design.md` → "Feature 05 — Crawl Runs & Jobs"
-- Schema: `api/prisma/schema.prisma` → `CrawlRun`, `JobLog`, `ScraperExecutionTrace`
+- Schema: `api/prisma/schema.prisma` → `CrawlRun` (incl. optional
+  `user_tracked_agency_id`), `JobLog`, `ScraperExecutionTrace`, `UserTrackedAgency`
 - `CrawlRun.status` lifecycle: `QUEUED` → `RUNNING` → `SUCCESS` /
   `PARTIAL_SUCCESS` / `FAILED` / `CANCELLED`
-- `SourceAgency.crawl_interval` is a **cron expression string** (default
-  `"0 */6 * * *"`) — do not reinterpret it as an interval in minutes
+- `UserTrackedAgency.crawl_interval` is a **cron expression string** (default
+  `"0 */6 * * *"`) on each tracker row — `SourceAgency` has no schedule field.
+  Do not reinterpret it as an interval in minutes
 - `JobLog` is a generic queue-activity log, not specific to crawling —
   `queue_name` + `job_id` link it back to the actual BullMQ job; write one
   row per job attempt (create on `active`, update on `completed`/`failed`)
@@ -35,11 +38,12 @@ replaces the stub by porting `scraper-generator/crawl/`.
 
 ## Requirements
 
-1. **Prisma**: run a migration for `CrawlRun` AI cost columns (`ai_model`,
-   `ai_input_tokens`, `ai_output_tokens`, `ai_input_cost`, `ai_output_cost`,
-   `ai_total_cost`, `ai_average_cost_per_property`) — see
-   `api/prisma/schema.prisma`. Populated by Feature 06 normalization, not
-   this task.
+1. **Prisma**: run a migration for `CrawlRun.user_tracked_agency_id` (optional
+   FK → `UserTrackedAgency`, `onDelete: SetNull`) plus AI cost columns
+   (`ai_model`, `ai_input_tokens`, `ai_output_tokens`, `ai_input_cost`,
+   `ai_output_cost`, `ai_total_cost`, `ai_average_cost_per_property`) — see
+   `api/prisma/schema.prisma`. Populated by Feature 06 normalization, not this
+   task.
 2. **`api/src/modules/crawl-runs/`**:
    - `crawl-runs.module.ts` — registers `BullModule.registerQueue({ name: 'crawl' })`
    - `crawl-runs.controller.ts`:
@@ -49,14 +53,15 @@ replaces the stub by porting `scraper-generator/crawl/`.
      - `GET /admin/crawl-runs/:id` — includes `execution_traces`, `job_logs`
        ordered by `created_at`
      - `POST /admin/crawl-runs/:id/rerun` — reads the existing run's
-       `source_agency_id`/`scraper_id`, delegates to the same
-       `CrawlRunsService.enqueue(...)` method used by `run-now`
+       `source_agency_id`/`scraper_id`/`user_tracked_agency_id`, delegates to
+       the same `CrawlRunsService.enqueue(...)` method used by `run-now`
    - `crawl-runs.service.ts`:
-     - `enqueue(sourceAgencyId: string, scraperId?: string): Promise<CrawlRun>`
-       — creates a `CrawlRun` row (`status: QUEUED`), adds a job to the
-       `crawl` queue with `{ crawlRunId }`, returns the row. This is the
-       **single entry point** used by `run-now`, `rerun`, and the cron
-       scheduler — do not duplicate this logic anywhere else.
+     - `enqueue(sourceAgencyId: string, scraperId?: string, userTrackedAgencyId?: string): Promise<CrawlRun>`
+       — creates a `CrawlRun` row (`status: QUEUED`, `user_tracked_agency_id`
+       when provided), adds a job to the `crawl` queue with `{ crawlRunId }`,
+       returns the row. This is the **single entry point** used by `run-now`,
+       `rerun`, and the cron scheduler — do not duplicate this logic anywhere
+       else.
      - `findAll(query)`, `findOne(id)`
    - `dto/create-crawl-run-query.schema.ts` (Zod)
    - `entities/crawl-run.entity.ts` — include nullable `ai_*` cost fields
@@ -82,18 +87,22 @@ replaces the stub by porting `scraper-generator/crawl/`.
 4. **Wire `Scraper.run-now`** (Feature 03 stub controller method): inject
    `CrawlRunsService` into `ScrapersModule`'s imports (export
    `CrawlRunsService` from `CrawlRunsModule`) and replace the stub body with
-   `this.crawlRunsService.enqueue(scraper.source_agency_id, scraper.id)`.
+   `this.crawlRunsService.enqueue(scraper.source_agency_id, scraper.id)` —
+   no `userTrackedAgencyId` (manual run; `user_tracked_agency_id` stays null).
 5. **Cron scheduler**: `api/src/background/crawl-scheduler.cron.ts` —
    `@Injectable()` with a `@Cron(CronExpression.EVERY_MINUTE)` method
    (`@nestjs/schedule` is already an `api/package.json` dependency, and
    `cron-parser` is already available transitively via it — do not add either
    as a new direct dependency, just import `CronExpressionParser`/`parseExpression`
    from `cron-parser` and `@Cron`/`CronExpression` from `@nestjs/schedule`)
-   that: queries all `SourceAgency` where `status: 'ACTIVE'`, and for each
-   one whose `crawl_interval` cron expression matches "now" (parse with
-   `cron-parser`, compare `prev().toDate()` against a 1-minute window) and
-   which has no `CrawlRun` currently `QUEUED` or `RUNNING` for that agency
-   (avoid overlapping runs), calls `crawlRunsService.enqueue(agency.id)`.
+   that: queries all `UserTrackedAgency` where `enabled: true` and the related
+   `SourceAgency.status` is `ACTIVE`; for **each** tracker whose
+   `crawl_interval` cron expression matches "now" (parse with `cron-parser`,
+   compare `prev().toDate()` against a 1-minute window) and which has no
+   `CrawlRun` currently `QUEUED` or `RUNNING` with the same
+   `user_tracked_agency_id` (overlap prevention per tracker, not per agency),
+   calls `crawlRunsService.enqueue(tracker.source_agency_id, undefined,
+   tracker.id)`.
    Register this provider in `CrawlRunsModule` and ensure
    `ScheduleModule.forRoot()` is imported once in `app.module.ts` — search
    `app.module.ts` first, it is likely not yet imported even though the
@@ -143,7 +152,7 @@ replaces the stub by porting `scraper-generator/crawl/`.
 - `GET /admin/crawl-runs` and `GET /admin/jobs` return real data with
   working filters and pagination
 - `POST /admin/jobs/:id/retry` re-enqueues and increments `attempt`
-- The cron scheduler enqueues a run for an `ACTIVE` agency whose interval
-  matches, and does **not** double-enqueue while a run is already
-  `QUEUED`/`RUNNING` for that agency
+- The cron scheduler enqueues a run for each enabled tracker whose interval
+  matches, sets `user_tracked_agency_id`, and does **not** double-enqueue while
+  a run is already `QUEUED`/`RUNNING` for that tracker
 - `tsc --noEmit` passes in `api/`

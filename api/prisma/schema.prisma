@@ -109,6 +109,11 @@ enum ComputerActionType {
   DOUBLE_CLICK
   TYPE
   SCROLL
+  SCROLL_UP
+  SCROLL_DOWN
+  NAVIGATE
+  GO_BACK
+  CLOSE_TAB
   WAIT
   KEYPRESS
   SCREENSHOT
@@ -301,7 +306,8 @@ model SourceAgency {
   country            String? 
   city               String?
   status             AgencyStatus @default(ACTIVE)
-  crawl_interval     String       @default("0 */6 * * *") // cron expression
+  is_visible         Boolean      @default(false) // not displayed to the user, only to the admin
+  is_enabled         Boolean      @default(false) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin
   notes              String?
   last_success_at    DateTime?
   last_failure_at    DateTime?
@@ -311,14 +317,40 @@ model SourceAgency {
   updated_at         DateTime     @updatedAt
 
   scrapers                Scraper[]
+  user_tracked_agencies    UserTrackedAgency[]
   scraper_generation_runs ScraperGenerationRun[]
   crawl_runs              CrawlRun[]
   source_properties       SourceProperty[]
-  tracked_by              UserTrackedAgency[]
   notifications           Notification[]
 
   @@index([status])
   @@map("source_agencies")
+}
+
+/// Which SourceAgencies a user follows/monitors, and which kinds of change notify them.
+model UserTrackedAgency {
+  id                     String   @id @default(uuid())
+  user_id                String
+  source_agency_id       String
+  enabled                Boolean  @default(true)
+  crawl_interval     String       @default("0 */6 * * *") // cron expression only changed by admin or super admins
+  track_new_listings     Boolean  @default(true)
+  track_removed_listings Boolean  @default(true)
+  track_updated_listings Boolean  @default(true)
+  use_ai_batching        Boolean    @default(false)
+  ai_provider            AiProvider @default(OPENAI)
+  ai_model               String?
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  crawl_runs CrawlRun[]
+
+  @@unique([user_id, source_agency_id])
+  @@index([user_id])
+  @@index([source_agency_id])
+  @@map("user_tracked_agencies")
 }
 
 // ---------------------------------------------------------------
@@ -470,6 +502,7 @@ model CrawlRun {
   id               String         @id @default(uuid())
   source_agency_id String
   scraper_id       String?
+  user_tracked_agency_id String?
   status           CrawlRunStatus @default(QUEUED)
   started_at       DateTime?
   finished_at      DateTime?
@@ -491,6 +524,7 @@ model CrawlRun {
   updated_at       DateTime       @updatedAt
 
   source_agency    SourceAgency            @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  user_tracked_agency UserTrackedAgency?    @relation(fields: [user_tracked_agency_id], references: [id], onDelete: SetNull)
   scraper          Scraper?                @relation(fields: [scraper_id], references: [id], onDelete: SetNull)
   job_logs         JobLog[]
   execution_traces ScraperExecutionTrace[]
@@ -756,34 +790,6 @@ model UserProperty {
   @@index([user_id])
   @@index([property_id])
   @@map("user_properties")
-}
-
-// ---------------------------------------------------------------
-// USER RELATIONS
-// ---------------------------------------------------------------
-
-/// Which SourceAgencies a user follows/monitors, and which kinds of change notify them.
-model UserTrackedAgency {
-  id                     String   @id @default(uuid())
-  user_id                String
-  source_agency_id       String
-  enabled                Boolean  @default(true)
-  track_new_listings     Boolean  @default(true)
-  track_removed_listings Boolean  @default(true)
-  track_updated_listings Boolean  @default(true)
-  use_ai_batching        Boolean    @default(false)
-  ai_provider            AiProvider @default(OPENAI)
-  ai_model               String?
-  created_at             DateTime @default(now())
-  updated_at             DateTime @updatedAt
-
-  user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
-
-  @@unique([user_id, source_agency_id])
-  @@index([user_id])
-  @@index([source_agency_id])
-  @@map("user_tracked_agencies")
 }
 
 

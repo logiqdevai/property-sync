@@ -15,12 +15,11 @@ in API responses.
 ## Context — read this before touching anything
 
 **Hard scope boundary** (from `docs/plan/directions/01-product-spec.md` and
-`03-domain-model.md`): this feature is **configuration only**.
-`CmsSyncRun` must never be created, updated, or read by any code in this
-task. No sync execution, no push-to-CMS logic, nothing that resembles
-"syncing a property" — that is a future phase
-(`docs/CMS-SYNCHRONIZATION-SPECIFICATION.MD`, reference only, do not build
-against it).
+`03-domain-model.md`): this feature is **configuration only** for CMS targets,
+but `UserIntegration` rows are also the **sole source of AI API keys** for
+Features 04/06 (see `UserIntegration` AI credential rule in the domain model).
+Export credential resolution from this module. `CmsSyncRun` must never be
+created, updated, or read by any code in this task.
 
 `IntegrationTarget` fields (from `api/prisma/schema.prisma`):
 - `integration_type` — `IntegrationType` enum
@@ -70,7 +69,13 @@ plaintext on write (POST/PATCH).
      with `BadRequestException` if `allow_multiple` is `false` and the
      target user already has a `UserIntegration` for this target
    - `@Roles('ADMIN','SUPER_ADMIN')` for mutations, `SUPPORT` allowed on GETs
-2. Build a shared masking utility (e.g.
+2. `user-integrations.service.ts` — export credential helpers used by Features
+   04/06 (implement here, do not duplicate elsewhere):
+   - `resolveActiveApiKey(userId, integrationType): Promise<{ userIntegrationId, apiKey }>`
+   - `resolveForSourceAgency(sourceAgencyId, aiProvider): Promise<{ userIntegrationId, apiKey, userId }>`
+   Both throw `BadRequestException` when no active connection with
+   `api_key_secret` exists. Never read AI keys from env.
+3. Build a shared masking utility (e.g.
    `api/src/modules/integration-targets/utils/mask-credentials.util.ts`) used by
    both this module's `UserIntegration` serialization and Feature 09 task 02's
    user-scoped module — do not duplicate the masking logic.

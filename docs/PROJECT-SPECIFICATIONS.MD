@@ -11,7 +11,7 @@ This section defines what the **current implementation** must deliver. Everythin
 - Crawl pipeline through normalized `Property`, `SourceProperty`, and append-only `PropertyHistory`
 - Automatic **creation and update** of `UserProperty` rows for users tracking the source agency that surfaced a listing
 - **Fetching and displaying** `UserProperty` and `PropertyHistory` (admin and user UI)
-- Integrations **configuration UI only**: admin Integration Targets subpage (`IntegrationTarget` + connected `UserIntegration` CRUD) and user Integrations page (`UserIntegration` connect / edit / enable / disable / disconnect)
+- Integrations UI **and AI credential storage**: admin Integration Targets subpage (`IntegrationTarget` + connected `UserIntegration` CRUD) and user Integrations page (`UserIntegration` connect / edit / enable / disable / disconnect). **All AI API calls** (scraper generation, property normalization, OpenAI Batch) authenticate with the owning user's `UserIntegration.api_key_secret` — never platform env API keys.
 - No background jobs, workers, or service classes that push property data to an external CMS
 
 ### Out of scope (current phase)
@@ -43,7 +43,7 @@ The application focuses on:
 - Manual and scheduled execution
 - High visibility into scraper health
 - Per-user property copies (`UserProperty`) with full change history (`PropertyHistory`)
-- Integration connection configuration UI (`IntegrationTarget`, `UserIntegration`) — credentials only, no sync execution yet
+- Integration connection UI (`IntegrationTarget`, `UserIntegration`) — credentials stored per user; AI features consume AI provider keys from these connections (CMS push still out of scope)
 - Admin notifications
 
 ---
@@ -125,10 +125,10 @@ Each subpage below maps directly to one or more Prisma models, so the dashboard 
 
 Backed by: `SourceAgency`
 
-- List / search / filter by `status` (Active, Disabled, Archived), , `country`, `city`
-- Create / Edit agency: name, base_url, country, city, crawl_interval, notes
-- Enable / Disable / Archive (updates `status`)
-- Detail view: linked Scraper(s), recent `CrawlRun`s, recent `Notification`s, `last_success_at` / `last_failure_at`
+- List / search / filter by `status` (Active, Disabled, Archived), `country`, `city`, `is_visible`, `is_enabled`
+- Create / Edit agency: name, base_url, country, city, notes, `is_visible`, `is_enabled`
+- Enable / Disable / Archive (updates `status` — pipeline operational state, separate from user-catalog flags)
+- Detail view: linked Scraper(s), recent `CrawlRun`s, recent `Notification`s, `last_success_at` / `last_failure_at`, tracked users (each `UserTrackedAgency` row shows `crawl_interval` — editable by admins only)
 
 
 
@@ -195,7 +195,7 @@ Backed by: `Property`, `PropertySourceLink`, `PropertyHistory`, `SourceProperty`
 
 Backed by: `IntegrationTarget`, `UserIntegration`
 
-Platform-level integration definitions — CMS destinations (`ESTATEWEB`) and AI provider slots (`OPENAI`, `ANTHROPIC`, `GEMINI`, `DEEPSEEK`). Each `IntegrationTarget` describes a supported integration type; individual user accounts and credentials live on `UserIntegration`. **This subpage manages configuration only — no sync execution in the current phase.**
+Platform-level integration definitions — CMS destinations (`ESTATEWEB`) and AI provider slots (`OPENAI`, `ANTHROPIC`, `GEMINI`, `DEEPSEEK`). Each `IntegrationTarget` describes a supported integration type; individual user accounts and credentials live on `UserIntegration`. **CMS sync is not executed in the current phase**, but AI provider connections are **actively used** by scraper generation and property normalization (see §23).
 
 - List / search / filter by `integration_type`, `auth_type`, `is_visible`
 - Create / Edit target: `integration_type`, `auth_type`, `base_url` (optional — typically set for CMS targets, omitted for AI API-key slots), `allow_multiple` (whether one user may connect more than once), `is_visible` (whether end users see this target on the Integrations page; admins always see all targets here regardless)
@@ -226,7 +226,7 @@ Backed by: `Notification`
 Backed by: `User`, `UserTrackedAgency`, `UserProperty`, `UserIntegration`
 
 - List/search users, view role
-- Per-user detail: tracked agencies (with per-notification-type toggles), saved properties, whether any saved copies have diverged (`is_modified`) from canonical data, and linked `UserIntegration` connections (with enable/disable and edit shortcuts)
+- Per-user detail: tracked agencies (with per-notification-type toggles and `crawl_interval`), saved properties, whether any saved copies have diverged (`is_modified`) from canonical data, and linked `UserIntegration` connections (with enable/disable and edit shortcuts)
 
 ---
 
@@ -240,25 +240,26 @@ Each source agency contains:
 - Website URL
 - Country
 - City
-- Status (`Active` / `Disabled` / `Archived`)
-- Crawl Interval (Cron)
+- Status (`Active` / `Disabled` / `Archived`) — pipeline operational state
+- `is_visible` — whether end users see the agency in browse (default `false`; admins always see all agencies)
+- `is_enabled` — whether end users may start tracking (default `false`; visible-but-disabled agencies may appear read-only)
 - Notes
 
 Admin Users can:
 
 - View agencies
 - Search agencies
-- Enable
-- Disable
-- Archive
+- Enable / Disable / Archive (`status`)
+- Toggle user-catalog visibility (`is_visible`, `is_enabled`)
 - View crawl history
 - View scraper history
 - View AI generation history (see §4.2 Computer-Use Generation Runs)
 
 Users can:
 
-- View their agencies
-- Enable / Disable tracking
+- Browse agencies where `status: Active`, `is_visible: true`
+- Track agencies only when `is_enabled: true` (see §21)
+- Enable / Disable their own tracking (`UserTrackedAgency.enabled`)
 - View added listings
 - View removed listings
 - Configure per-agency notification preferences (new / removed / updated listings) — see §21
@@ -305,16 +306,15 @@ This immediately creates a crawl job (`CrawlRun`), regardless of the configured 
 
 # 8. Scheduled Scraping
 
-Every scraper has its own cron schedule (via its agency's `crawl_interval`).
+Crawl scheduling is driven by `UserTrackedAgency.crawl_interval` — a **cron expression string** per tracker row (default `0 */6 * * *`). `SourceAgency` has no schedule field.
 
-Examples:
+When a user tracks an agency, a `UserTrackedAgency` row is created with the default interval. Only **Admin** and **Super Admin** users may change `crawl_interval`; end users cannot.
 
-- Every hour
-- Every 6 hours
-- Every day
-- Every week
+The scheduler evaluates **each** enabled `UserTrackedAgency` row independently. When a tracker's cron expression matches the current minute and its agency is `ACTIVE`, it enqueues one `CrawlRun` with `user_tracked_agency_id` set to that tracker. Agencies with `status: ACTIVE` but zero enabled trackers are not scheduled. Overlapping runs are prevented **per tracker** (no new enqueue while a run is `QUEUED` or `RUNNING` with the same `user_tracked_agency_id`). Multiple users tracking the same agency each get separate scheduled runs on their own intervals.
 
-Each scraper runs independently. The scheduler automatically creates queue jobs (`JobLog` + `CrawlRun`), and only for agencies with `status: ACTIVE`.
+Manual "Run Now" (§7) creates a `CrawlRun` with `user_tracked_agency_id` null (raw crawl only; AI normalization is skipped unless a prior attributed run is re-run and copies the FK forward).
+
+Example cron expressions: every hour, every 6 hours, daily, weekly. Each matching tick creates `JobLog` + `CrawlRun` rows.
 
 ---
 
@@ -332,13 +332,13 @@ Visit property pages
 ↓
 Extract data
 ↓
-Normalize
+Normalize (AI-assisted when `CrawlRun.user_tracked_agency_id` is set — prefs and API key from that tracker's `UserIntegration`; skipped on manual runs with null FK — see §21, §23)
 ↓
 Compare with existing data
 ↓
 Create / Update / Remove (each change logged to `PropertyHistory`)
 ↓
-Create or update `UserProperty` for every user tracking the source agency
+Create or update `UserProperty` for the attributed tracker user when `user_tracked_agency_id` is set (otherwise for every enabled tracker on the agency on legacy/admin paths)
 ↓
 Generate reports
 
@@ -469,7 +469,7 @@ When a scraper is considered broken:
 - `Scraper.status` is set to `BROKEN`
 - A `Notification` (`type: BROKEN_SCRAPER`) is generated
 - It surfaces on the dashboard and Notifications subpage
-- If `self_healing_enabled` is true, a `ScraperGenerationRun` (`trigger: SELF_HEAL`) is created automatically
+- If `self_healing_enabled` is true, a `ScraperGenerationRun` (`trigger: SELF_HEAL`) is created automatically, billed to an enabled tracker's `UserIntegration` for `ANTHROPIC` when available (see §23)
 - Scheduled execution is suspended (optional, configurable); manual execution and manual "Regenerate with AI" remain available for testing
 
 ---
@@ -494,13 +494,18 @@ Managed from the Notifications subpage (§4.2): filter, mark read, deep-link to 
 
 # 21. User Tracked Agencies
 
-Backed by `UserTrackedAgency`. A user can track any `SourceAgency` and independently control which kinds of change generate a notification for them:
+Backed by `UserTrackedAgency`. A user can track a `SourceAgency` that is `ACTIVE`, `is_visible: true`, and `is_enabled: true`, and independently control which kinds of change generate a notification for them:
 
 - `track_new_listings` — notify when a new `SourceProperty`/`Property` appears from this agency
 - `track_removed_listings` — notify on removal
 - `track_updated_listings` — notify on price/detail changes
+- `crawl_interval` — cron expression controlling how often this agency is crawled for this user (default `0 */6 * * *`; set by Admin/Super Admin only — see §8)
+- `use_ai_batching` — opt into OpenAI Batch normalization for **this** tracker's scheduled runs (`use_ai_batching: true` and `ai_provider: OPENAI` on the attributed `UserTrackedAgency` row)
+- `ai_provider` / `ai_model` — preferred AI vendor and optional model for normalization on runs attributed to this tracker; requires an active `UserIntegration` for that provider (see §23)
 
-`enabled` toggles tracking on/off without deleting the preference record. This closes the previous gap where tracking existed but had no per-change-type granularity.
+Users must connect the matching AI provider on the Integrations page before tracking an agency with that `ai_provider`. Tracking is rejected if no active integration with an API key exists, or if the agency is not user-enabled (`is_enabled: false`) or not visible (`is_visible: false`).
+
+`enabled` toggles tracking on/off without deleting the preference record.
 
 ---
 
@@ -516,8 +521,8 @@ A `UserProperty` is a full, independently editable copy of a `Property`, created
 
 When a crawl creates or updates a canonical `Property` and writes `PropertyHistory`:
 
-1. Find all users with an enabled `UserTrackedAgency` for the source agency
-2. For each such user, **create** a new `UserProperty` (first sighting) or **update** the existing copy from canonical data
+1. If `CrawlRun.user_tracked_agency_id` is set, sync **only** for that tracker user (respecting their `track_*` prefs). Otherwise find all users with an enabled `UserTrackedAgency` for the source agency.
+2. For each targeted user, **create** a new `UserProperty` (first sighting) or **update** the existing copy from canonical data
 3. Set `last_synced_at` on update; set `is_modified` to false when overwriting from canonical unless the user had local edits (preserve user edits — do not blindly overwrite when `is_modified` is true without an explicit re-sync action)
 
 ### User UI — Properties (`/properties`)
@@ -544,11 +549,26 @@ When a crawl creates or updates a canonical `Property` and writes `PropertyHisto
 
 
 
-# 23. User Integrations — configuration only (current phase)
+# 23. User Integrations — credentials (CMS config + AI billing)
 
 Backed by `UserIntegration`, `IntegrationTarget`. Displayed on the user **Integrations** page (`/integrations`).
 
-Users store integration credentials (CMS accounts, AI API keys) for a future sync/usage phase. **No property data is pushed to external CMS in the current implementation.** No CMS integration service classes are created.
+Users store integration credentials: CMS accounts (for a future sync phase) and **AI provider API keys** (used in the current phase). **No property data is pushed to external CMS in the current implementation.** No CMS integration service classes are created.
+
+### AI API credentials (current phase)
+
+Every outbound AI call uses an **active** `UserIntegration` row (`is_active: true`, non-null `api_key_secret` on `AuthType.API_KEY` targets). Platform env vars such as `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` are **not** used for AI requests.
+
+| AI feature | Provider | Whose key |
+| --- | --- | --- |
+| Manual scraper generation (`ScraperGenerationRun`, `trigger: MANUAL`) | `ANTHROPIC` | Initiating admin's `UserIntegration` |
+| Self-heal scraper generation (`trigger: SELF_HEAL`) | `ANTHROPIC` | Earliest enabled tracker's `UserIntegration` for that agency |
+| Property normalization (sync path) | Attributed tracker's `ai_provider` | That tracker's `UserIntegration` via `CrawlRun.user_tracked_agency` |
+| Property normalization (OpenAI Batch path) | `OPENAI` on attributed tracker | Same; `user_integration_id` stored on `CrawlRun.metadata` for webhook completion |
+
+`AiProvider` maps to `IntegrationType` by name (`OPENAI` → `IntegrationType.OPENAI`, etc.). If no suitable active integration exists, the AI step fails or is skipped (raw crawl data may still be saved). `OPENAI_WEBHOOK_SECRET` remains an env var for inbound webhook signature verification only.
+
+Manual "Generate scraper" requires the admin to have connected Anthropic on Integrations first.
 
 The page lists every visible `IntegrationTarget` (`is_visible: true`) the platform supports and the user's existing connections.
 
@@ -574,7 +594,7 @@ For each `UserIntegration` belonging to the current user:
 1. User picks an available visible `IntegrationTarget`
 2. Form renders credential fields required by that target's `auth_type`
 3. Optional `config` JSON for integration-specific settings (field mapping, category defaults, etc.)
-4. On submit, create `UserIntegration` with `is_active: true` — **no sync job is enqueued**
+4. On submit, create `UserIntegration` with `is_active: true` — **no CMS sync job is enqueued**; AI provider connections are immediately eligible for generation/normalization billing
 
 Admins can also manage any user's connection from the Integration Targets subpage (§4.2).
 
@@ -616,12 +636,11 @@ The architecture should support:
 
 The platform should allow an administrator to:
 
-- Add a new agency and configure its crawl/proxy/robots settings.
-- Attach a dedicated scraper, generated by the AI computer-use agent or created manually.
+- Add a new agency and attach a dedicated scraper, generated by the AI computer-use agent (using the admin's Anthropic `UserIntegration`) or created manually.
 - Execute it manually.
-- Schedule automatic crawls.
+- Schedule automatic crawls (per tracked-user `crawl_interval`, §8).
 - Detect new, updated, and removed listings, with full `PropertyHistory`.
-- Define integration targets and manage connected `UserIntegration` accounts (enable/disable/edit credentials) — configuration only.
+- Define integration targets and manage connected `UserIntegration` accounts (enable/disable/edit credentials) — required before AI generation or agency tracking with AI normalization.
 - Monitor every crawl, every BullMQ job, and every AI generation session (with full step replay).
 - Detect broken scrapers and have them self-heal automatically, or review/approve AI-proposed fixes manually.
 - Review crawl history and property history.
@@ -630,10 +649,11 @@ The platform should allow an administrator to:
 
 The platform should allow a user to:
 
-- Track agencies and receive notifications for listing changes.
+- Track agencies that admins have marked visible and enabled for users (with connected AI provider per `ai_provider`) and receive notifications for listing changes.
+- Connect AI provider API keys on the Integrations page before tracking agencies that use AI normalization.
 - View their `UserProperty` list and each property's `PropertyHistory` timeline.
 - Edit their personal property copy and re-sync from canonical data when desired.
-- Connect, configure, enable/disable, edit, and disconnect integration credentials on the Integrations page — **without any property push occurring**.
+- Connect, configure, enable/disable, edit, and disconnect integration credentials on the Integrations page — CMS push does not occur; AI keys are used for generation and normalization.
 
 The crawl pipeline should **complete** at: normalized `Property` + `PropertyHistory` + `UserProperty` create/update. No CMS integration services or sync workers are required to ship this phase.
 

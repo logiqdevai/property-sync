@@ -27,15 +27,15 @@ A centralized real-estate listing aggregation platform. It scrapes public agency
 
 1. **Authentication & roles** — register/login, `USER` / `ADMIN` / `SUPER_ADMIN` / `SUPPORT`.
 2. **Admin dashboard** — home KPIs + activity feed, and subpages: Agencies, Scrapers, Crawl Runs, Computer-Use Generation Runs, Job Queue, Properties, CMS Targets (config only), Notifications, Users.
-3. **Source agency management** — CRUD, enable/disable/archive, crawl interval (cron), per-agency history.
+3. **Source agency management** — CRUD, enable/disable/archive (`status`), user-catalog visibility (`is_visible` / `is_enabled`), per-agency history.
 4. **AI-generated & self-healing scrapers** — Anthropic vision agent driving Playwright (reference: `scraper-generator/generate/`), config verification before staging, full step replay, staged config review/approve/reject, immutable version history with rollback.
 5. **Manual + scheduled crawling** — "Run Now" and cron-scheduled `CrawlRun`s, BullMQ job queue with monitoring.
 6. **Crawl pipeline** — discover → collect URLs → visit → extract → normalize → compare → create/update/remove, ending at canonical `Property` + `PropertyHistory` + `UserProperty`. **No CMS push in this phase.**
 7. **Duplicate detection** — grouping via `duplicate_group_id`, admin merge/split.
 8. **Broken scraper detection & self-healing** — automatic `ScraperGenerationRun` (`trigger: SELF_HEAL`) on repeated failure signals.
-9. **User tracked agencies** — per-change-type notification preferences, optional **AI batching** (`use_ai_batching`) to trade latency for ~50% lower OpenAI normalization cost when every enabled tracker for an agency opts in, and per-tracker **AI provider/model** preferences (`ai_provider`, `ai_model`) that Feature 06 uses to route normalization.
+9. **User tracked agencies** — per-change-type notification preferences, per-tracker **crawl interval** (cron, default `0 */6 * * *`, editable by admins only), optional **AI batching** (`use_ai_batching`) per tracker for scheduled runs (`CrawlRun.user_tracked_agency_id`), and per-tracker **AI provider/model** preferences (`ai_provider`, `ai_model`) that Feature 06 reads from the attributed tracker row.
 10. **User properties (`UserProperty`)** — personal, editable copy of canonical properties, with re-sync from canonical and full history timeline.
-11. **Integrations — configuration only** — admin `IntegrationTarget` CRUD (CMS destinations + AI provider slots), user `UserIntegration` connect/edit/enable/disable/disconnect. **No sync execution, no adapters, no background push.**
+11. **Integrations — configuration + AI credential source** — admin `IntegrationTarget` CRUD (CMS destinations + AI provider slots), user `UserIntegration` connect/edit/enable/disable/disconnect. **All AI API calls bill the owning user's stored key** — see `03-domain-model.md` `UserIntegration` AI credential rule. No CMS sync execution in this phase.
 12. **Notifications** — broken scraper, property removal spike, large crawl failure, queue failure, website unavailable.
 13. **Full audit logging** — every consequential action across the pipeline.
 

@@ -49,14 +49,21 @@ that task 02 will implement, see the working reference in
 5. `scraper-generation.service.ts`:
    - `findAll(query)` — paginated
    - `findOne(id)` — include `steps` ordered by `step_index asc`
-   - `create(dto)` — creates the run with `trigger: 'MANUAL'`, `status:
-     'QUEUED'`, then enqueues a `'generation'` BullMQ job with the run id as
-     payload; returns the created run immediately (do not await the job)
+   - `create(dto, initiatedByUserId: string)` — creates the run with `trigger: 'MANUAL'`, `status:
+     'QUEUED'`, stores `initiatedByUserId` in the BullMQ job payload (and optionally
+     `ScraperGenerationRun.metadata`), then enqueues a `'generation'` BullMQ job;
+     returns the created run immediately (do not await the job). Before enqueue,
+     call `UserIntegrationsService.resolveActiveApiKey(initiatedByUserId, ANTHROPIC)`
+     — if missing, throw `BadRequestException` telling the admin to connect
+     Anthropic on the Integrations page first
    - `trigger(sourceAgencyId, scraperId, trigger, prompt?)` — the
      **internal, non-HTTP** method described in
      `directions/04-api-design.md` Feature 04 (used later by Feature 05's
      self-heal detection); same body as `create` but with a caller-supplied
-     `trigger` value instead of always `MANUAL`
+     `trigger` value instead of always `MANUAL`. For `SELF_HEAL`, resolve
+     Anthropic credentials via `UserIntegrationsService.resolveForSourceAgency(
+     sourceAgencyId, ANTHROPIC)` before enqueue — if no key, log + return
+     without creating a run (leave `// TODO(Feature 08)` notification stub)
    - `approve(id)` — validates `status === 'AWAITING_REVIEW'` and
      `staged_config` is set (else `BadRequestException`); in a
      `prisma.$transaction`: if `scraper_id` is null, create the `Scraper`

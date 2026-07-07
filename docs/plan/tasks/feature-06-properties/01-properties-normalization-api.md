@@ -10,9 +10,9 @@ Turn raw `SourceProperty` rows (written by Feature 05's crawl pipeline) into
 normalized, deduplicated `Property` records using AI-assisted field mapping,
 write `PropertyHistory` for every detected change, detect
 removals/reappearances, route normalization through the AI provider/model
-resolved from `UserTrackedAgency.ai_provider` / `ai_model` (sync or OpenAI
-Batch API based on `UserTrackedAgency.use_ai_batching`), and expose an admin
-API for listing/inspecting/merging/splitting properties.
+resolved from the attributed `CrawlRun.user_tracked_agency` row when set (sync
+or OpenAI Batch API based on that tracker's `use_ai_batching`), and expose an
+admin API for listing/inspecting/merging/splitting properties.
 
 ## Context — read this before touching anything
 
@@ -51,11 +51,15 @@ schema from `normalize.js` verbatim (Greek-site heuristics, enum constraints,
 (mirrored on `CrawlRun` and in `scraper-generator/output/crawl/cost.json`).
 
 Use the existing `api/src/integrations/ai/` (`AiService.generateText` /
-`generateTextWithSchema`) for the **sync path** when resolved provider is
-OpenAI/Anthropic via Vercel AI SDK, or `@anthropic-ai/sdk` directly when that
-matches the reference CLI. For the **batch path**, use the official `openai`
-npm package directly in a new `api/src/integrations/ai-batch/` facade (the
-Vercel AI SDK does not expose Batch API file upload / batch lifecycle).
+`generateTextWithSchema`) for the **sync path** — pass the resolved
+`api_key_secret` into `AiConfig.getModelAdapter(provider, model, apiKey)` (refactor
+`AiService` / `AiConfig` so adapters are constructed per call with the user's
+key, not from env). For Anthropic normalization when the reference CLI path is
+used directly, instantiate `@anthropic-ai/sdk` with the same resolved key. For
+the **batch path**, use the official `openai` npm package in
+`api/src/integrations/ai-batch/` with `new OpenAI({ apiKey })` from the resolved
+`UserIntegration` (the Vercel AI SDK does not expose Batch API file upload /
+batch lifecycle).
 
 **OpenAI Batch API flow** (see [Batch API guide](https://developers.openai.com/api/docs/guides/batch)):
 1. Build a `.jsonl` file — one line per listing:
@@ -64,7 +68,10 @@ Vercel AI SDK does not expose Batch API file upload / batch lifecycle).
 3. Create with `openai.batches.create({ input_file_id, endpoint: "/v1/chat/completions", completion_window: "24h", metadata: { crawl_run_id, source_agency_id } })`
 4. Persist on `CrawlRun.metadata`: `{ ai_batch_id, ai_batch_status: "pending", pending_source_property_ids: string[] }` and write a `JobLog` row (`queue_name: "openai-batch"`)
 5. On webhook `batch.completed` (see [Webhooks guide](https://developers.openai.com/api/docs/guides/webhooks)): verify signature with `openai.webhooks.unwrap()`, enqueue an `ai-batch-complete` BullMQ job with `{ batchId, crawlRunId }`, respond `204` immediately
-6. Worker downloads `output_file_id`, parses each line's `custom_id` → normalized JSON, then runs the same create/update/history/dedup logic as the sync path
+6. Worker downloads `output_file_id` using the same `user_integration_id` from
+   `CrawlRun.metadata` (reload key via `UserIntegrationsService`), parses each
+   line's `custom_id` → normalized JSON, then runs the same create/update/
+   history/dedup logic as the sync path
 7. On `batch.failed` / `batch.expired` / `batch.cancelled`: set `metadata.ai_batch_status` accordingly, store `error_message`, leave a `// TODO(Feature 08)` notification stub
 
 `PropertyHistoryEventType` enum (reuse, do not redeclare): `CREATED`,
@@ -77,26 +84,30 @@ Vercel AI SDK does not expose Batch API file upload / batch lifecycle).
    — exported and injected into `CrawlRunsModule`'s processor (add
    `PropertiesModule` to `CrawlRunsModule`'s imports, export this service
    from `PropertiesModule`). Public method:
-   `normalizeForCrawlRun(crawlRunId: string, sourceAgencyId: string): Promise<void>`
+   `normalizeForCrawlRun(crawlRunId: string): Promise<void>`
    that:
+   - Loads the `CrawlRun` (include `user_tracked_agency` when
+     `user_tracked_agency_id` is set)
    - Loads all `SourceProperty` rows for the agency with `last_seen_at`
      matching this crawl's run window (i.e. rows just upserted by the
      processor — pass the crawl's `started_at` timestamp in, and select
      `last_seen_at >= started_at`)
-   - **Routing decision**: load enabled `UserTrackedAgency` rows for
-     `sourceAgencyId`. Resolve `ai_provider` + `ai_model` per the domain
-     model rule (unanimous tracker prefs, else platform defaults). If none
-     exist **or** any has `use_ai_batching: false` **or** resolved
-     `ai_provider !== OPENAI` → **sync path**. If at least one exists,
-     every tracker has `use_ai_batching: true`, and resolved provider is
-     `OPENAI` → **batch path** (delegate to
+   - **Routing decision**: if `user_tracked_agency_id` is null → skip AI
+     normalization (admin manual run; raw data only). Otherwise read
+     `use_ai_batching`, `ai_provider`, and `ai_model` from
+     `crawlRun.user_tracked_agency`; resolve credentials via
+     `resolveActiveApiKey(tracker.user_id, integrationType)` and persist
+     `user_integration_id` on `CrawlRun.metadata`. If no active
+     `UserIntegration` key → skip AI normalization. If `use_ai_batching: false`
+     or `ai_provider !== OPENAI` → **sync path**. If `use_ai_batching: true`
+     and `ai_provider: OPENAI` with a key → **batch path** (delegate to
      `PropertyAiBatchService.submitForCrawlRun(...)` and return early —
      do not create `Property` rows yet for those listings)
    - **Sync path**: batch source rows (`NORMALIZATION_BATCH_SIZE = 10` from
      `crawl/config.js`) and call the integration for the resolved
-     `ai_provider` with the resolved `ai_model`; on batch failure retry
-     individual rows (same fallback as `normalize.js`); map AI output →
-     `Property` fields via `buildPropertyRecord` logic: merge `images` from
+     `ai_provider` with the resolved `ai_model` and resolved `apiKey`; on
+     batch failure retry individual rows (same fallback as `normalize.js`);
+     map AI output → `Property` fields via `buildPropertyRecord` logic: merge `images` from
      `sp.raw_data._all_images`, `description` from AI or `raw_description`,
      `normalized_data` = full `raw_data`
    - For each normalized listing: find or create a matching `Property` via its
@@ -132,7 +143,8 @@ Vercel AI SDK does not expose Batch API file upload / batch lifecycle).
      path: when `applyNormalizedResults` finishes after webhook). Compute
      USD costs using the per-million rates for the **resolved** provider/model
      (same rates as `scraper-generator/crawl/config.js` for Anthropic Haiku;
-     OpenAI rates from env/config). Persist on the `CrawlRun` row:
+     OpenAI rates from integration owner pricing config / `ai-pricing.ts`).
+     Persist on the `CrawlRun` row:
      `ai_model`, `ai_input_tokens`, `ai_output_tokens`, `ai_input_cost`,
      `ai_output_cost`, `ai_total_cost`, `ai_average_cost_per_property`
      (`ai_total_cost / total_created` when `total_created > 0`, else leave
@@ -141,9 +153,8 @@ Vercel AI SDK does not expose Batch API file upload / batch lifecycle).
      returns.
 2. **Wire into the crawl pipeline**: in `api/src/background/crawl.processor.ts` (Feature 05),
    after the `SourceProperty` upserts and `ScraperExecutionTrace` write,
-   call `propertyNormalizationService.normalizeForCrawlRun(crawlRun.id,
-   crawlRun.source_agency_id)` inside the same try block (a normalization
-   failure should not silently swallow the crawl's own success/failure
+   call `propertyNormalizationService.normalizeForCrawlRun(crawlRun.id)` inside
+   the same try block (a normalization failure should not silently swallow the
    status — log and continue, this is additive, not required for the crawl
    run itself to be `SUCCESS`)
 3. **`api/src/modules/properties/`** admin controller per
@@ -161,7 +172,8 @@ Vercel AI SDK does not expose Batch API file upload / batch lifecycle).
    - `@Roles('ADMIN','SUPER_ADMIN')` for merge/split, `SUPPORT` allowed on
      GETs
 4. **`api/src/integrations/ai-batch/`** — `AiBatchModule` exporting
-   `AiBatchClientService` (official `openai` SDK wrapper: uploadJsonl,
+   `AiBatchClientService` (official `openai` SDK wrapper constructed with
+   per-run `apiKey` from `UserIntegration`: uploadJsonl,
    createBatch, retrieveBatch, downloadOutputFile, cancelBatch) and
    `PropertyAiBatchService` (build normalization `.jsonl` from source rows,
    submit batch, complete batch from output file by delegating back into
@@ -214,7 +226,7 @@ Vercel AI SDK does not expose Batch API file upload / batch lifecycle).
 - [ ] Build the admin `properties` CRUD-read + merge/split API
 - [ ] Verify `PropertyHistory` is genuinely append-only (no update/delete calls anywhere in this task's code)
 - [ ] Manual test (sync): crawl with a tracker who has `use_ai_batching: false` → properties appear immediately
-- [ ] Manual test (batch): all trackers with `use_ai_batching: true` → crawl finishes, `CrawlRun.metadata.ai_batch_status` is `pending`, trigger test webhook → properties appear
+- [ ] Manual test (batch): tracker with `use_ai_batching: true` on a scheduled run (`user_tracked_agency_id` set) → crawl finishes, `CrawlRun.metadata.ai_batch_status` is `pending`, trigger test webhook → properties appear
 
 ## Technical Notes
 
@@ -223,7 +235,8 @@ Vercel AI SDK does not expose Batch API file upload / batch lifecycle).
 - Business logic lives in services, not the controller
 - Batch output line order may not match input — always map by `custom_id` (= `source_property_id`)
 - Webhook handler must respond within a few seconds; never run full normalization inline in the HTTP handler
-- Subscribe to batch webhook events in the OpenAI dashboard for the project that owns `OPENAI_API_KEY`
+- Subscribe to batch webhook events in the OpenAI dashboard for each user
+  project whose key is used (keys are per `UserIntegration`, not platform-wide)
 
 ## Acceptance Criteria
 

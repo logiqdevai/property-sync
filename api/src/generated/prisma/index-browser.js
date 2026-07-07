@@ -122,7 +122,6 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
-  uuid: 'uuid',
   email: 'email',
   phone: 'phone',
   password: 'password',
@@ -131,9 +130,338 @@ exports.Prisma.UserScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.IntegrationTargetScalarFieldEnum = {
+  id: 'id',
+  integration_type: 'integration_type',
+  auth_type: 'auth_type',
+  base_url: 'base_url',
+  allow_multiple: 'allow_multiple',
+  is_visible: 'is_visible',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.UserIntegrationScalarFieldEnum = {
+  id: 'id',
+  integration_target_id: 'integration_target_id',
+  user_id: 'user_id',
+  api_key_secret: 'api_key_secret',
+  email: 'email',
+  username: 'username',
+  password: 'password',
+  config: 'config',
+  is_active: 'is_active',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.SourceAgencyScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  base_url: 'base_url',
+  country: 'country',
+  city: 'city',
+  status: 'status',
+  is_visible: 'is_visible',
+  is_enabled: 'is_enabled',
+  notes: 'notes',
+  last_success_at: 'last_success_at',
+  last_failure_at: 'last_failure_at',
+  last_error_message: 'last_error_message',
+  metadata: 'metadata',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.UserTrackedAgencyScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  source_agency_id: 'source_agency_id',
+  enabled: 'enabled',
+  crawl_interval: 'crawl_interval',
+  track_new_listings: 'track_new_listings',
+  track_removed_listings: 'track_removed_listings',
+  track_updated_listings: 'track_updated_listings',
+  use_ai_batching: 'use_ai_batching',
+  ai_provider: 'ai_provider',
+  ai_model: 'ai_model',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ScraperScalarFieldEnum = {
+  id: 'id',
+  source_agency_id: 'source_agency_id',
+  name: 'name',
+  active_version_id: 'active_version_id',
+  version_count: 'version_count',
+  status: 'status',
+  self_healing_enabled: 'self_healing_enabled',
+  health: 'health',
+  success_rate: 'success_rate',
+  avg_runtime_ms: 'avg_runtime_ms',
+  consecutive_failures: 'consecutive_failures',
+  last_success_at: 'last_success_at',
+  last_failure_at: 'last_failure_at',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ScraperGenerationRunScalarFieldEnum = {
+  id: 'id',
+  source_agency_id: 'source_agency_id',
+  scraper_id: 'scraper_id',
+  trigger: 'trigger',
+  status: 'status',
+  prompt: 'prompt',
+  staged_config: 'staged_config',
+  produced_version_id: 'produced_version_id',
+  error_message: 'error_message',
+  started_at: 'started_at',
+  finished_at: 'finished_at',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ComputerUseStepScalarFieldEnum = {
+  id: 'id',
+  scraper_generation_run_id: 'scraper_generation_run_id',
+  step_index: 'step_index',
+  action_type: 'action_type',
+  action_payload: 'action_payload',
+  screenshot_before_id: 'screenshot_before_id',
+  screenshot_after_id: 'screenshot_after_id',
+  model_reasoning: 'model_reasoning',
+  created_at: 'created_at'
+};
+
+exports.Prisma.ScraperVersionScalarFieldEnum = {
+  id: 'id',
+  scraper_id: 'scraper_id',
+  version: 'version',
+  config: 'config',
+  created_by: 'created_by',
+  notes: 'notes',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ScraperExecutionTraceScalarFieldEnum = {
+  id: 'id',
+  scraper_id: 'scraper_id',
+  crawl_run_id: 'crawl_run_id',
+  steps: 'steps',
+  success: 'success',
+  error_summary: 'error_summary',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.CrawlRunScalarFieldEnum = {
+  id: 'id',
+  source_agency_id: 'source_agency_id',
+  scraper_id: 'scraper_id',
+  user_tracked_agency_id: 'user_tracked_agency_id',
+  status: 'status',
+  started_at: 'started_at',
+  finished_at: 'finished_at',
+  total_found: 'total_found',
+  total_created: 'total_created',
+  total_updated: 'total_updated',
+  total_removed: 'total_removed',
+  total_failed: 'total_failed',
+  error_message: 'error_message',
+  metadata: 'metadata',
+  ai_model: 'ai_model',
+  ai_input_tokens: 'ai_input_tokens',
+  ai_output_tokens: 'ai_output_tokens',
+  ai_input_cost: 'ai_input_cost',
+  ai_output_cost: 'ai_output_cost',
+  ai_total_cost: 'ai_total_cost',
+  ai_average_cost_per_property: 'ai_average_cost_per_property',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.JobLogScalarFieldEnum = {
+  id: 'id',
+  queue_name: 'queue_name',
+  job_id: 'job_id',
+  job_name: 'job_name',
+  status: 'status',
+  attempt: 'attempt',
+  max_attempts: 'max_attempts',
+  crawl_run_id: 'crawl_run_id',
+  payload: 'payload',
+  result: 'result',
+  error_message: 'error_message',
+  stack_trace: 'stack_trace',
+  started_at: 'started_at',
+  finished_at: 'finished_at',
+  duration_ms: 'duration_ms',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  severity: 'severity',
+  title: 'title',
+  message: 'message',
+  source_agency_id: 'source_agency_id',
+  scraper_id: 'scraper_id',
+  crawl_run_id: 'crawl_run_id',
+  is_read: 'is_read',
+  created_at: 'created_at'
+};
+
+exports.Prisma.CmsSyncRunScalarFieldEnum = {
+  id: 'id',
+  user_integration_id: 'user_integration_id',
+  user_property_id: 'user_property_id',
+  action: 'action',
+  status: 'status',
+  attempt: 'attempt',
+  max_attempts: 'max_attempts',
+  payload: 'payload',
+  response: 'response',
+  error_message: 'error_message',
+  started_at: 'started_at',
+  finished_at: 'finished_at',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.SourcePropertyScalarFieldEnum = {
+  id: 'id',
+  source_agency_id: 'source_agency_id',
+  external_id: 'external_id',
+  source_url: 'source_url',
+  canonical_url: 'canonical_url',
+  raw_title: 'raw_title',
+  raw_description: 'raw_description',
+  raw_price: 'raw_price',
+  raw_location: 'raw_location',
+  raw_data: 'raw_data',
+  raw_html_path: 'raw_html_path',
+  content_hash: 'content_hash',
+  first_seen_at: 'first_seen_at',
+  last_seen_at: 'last_seen_at',
+  status: 'status',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.PropertyScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  listing_type: 'listing_type',
+  property_type: 'property_type',
+  status: 'status',
+  price: 'price',
+  currency: 'currency',
+  city: 'city',
+  district: 'district',
+  address: 'address',
+  postal_code: 'postal_code',
+  country: 'country',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  square_meters: 'square_meters',
+  bedrooms: 'bedrooms',
+  bathrooms: 'bathrooms',
+  floor: 'floor',
+  construction_year: 'construction_year',
+  renovation_year: 'renovation_year',
+  features: 'features',
+  images: 'images',
+  normalized_data: 'normalized_data',
+  duplicate_group_id: 'duplicate_group_id',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.PropertySourceLinkScalarFieldEnum = {
+  id: 'id',
+  property_id: 'property_id',
+  source_property_id: 'source_property_id',
+  confidence_score: 'confidence_score',
+  is_primary_source: 'is_primary_source',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.PropertyHistoryScalarFieldEnum = {
+  id: 'id',
+  property_id: 'property_id',
+  event_type: 'event_type',
+  field: 'field',
+  old_value: 'old_value',
+  new_value: 'new_value',
+  crawl_run_id: 'crawl_run_id',
+  created_at: 'created_at'
+};
+
+exports.Prisma.UserPropertyScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  property_id: 'property_id',
+  title: 'title',
+  description: 'description',
+  listing_type: 'listing_type',
+  property_type: 'property_type',
+  status: 'status',
+  price: 'price',
+  currency: 'currency',
+  city: 'city',
+  district: 'district',
+  address: 'address',
+  postal_code: 'postal_code',
+  country: 'country',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  square_meters: 'square_meters',
+  bedrooms: 'bedrooms',
+  bathrooms: 'bathrooms',
+  floor: 'floor',
+  construction_year: 'construction_year',
+  renovation_year: 'renovation_year',
+  features: 'features',
+  images: 'images',
+  normalized_data: 'normalized_data',
+  duplicate_group_id: 'duplicate_group_id',
+  is_modified: 'is_modified',
+  last_synced_at: 'last_synced_at',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.DocumentScalarFieldEnum = {
+  id: 'id',
+  user_uuid: 'user_uuid',
+  filename: 'filename',
+  mimetype: 'mimetype',
+  size: 'size',
+  url: 'url',
+  path: 'path',
+  type: 'type',
+  created_at: 'created_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -145,6 +473,12 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
 exports.AuthRole = exports.$Enums.AuthRole = {
   USER: 'USER',
   ADMIN: 'ADMIN',
@@ -152,8 +486,208 @@ exports.AuthRole = exports.$Enums.AuthRole = {
   SUPPORT: 'SUPPORT'
 };
 
+exports.IntegrationType = exports.$Enums.IntegrationType = {
+  ESTATEWEB: 'ESTATEWEB',
+  OPENAI: 'OPENAI',
+  ANTHROPIC: 'ANTHROPIC',
+  GEMINI: 'GEMINI',
+  DEEPSEEK: 'DEEPSEEK'
+};
+
+exports.AuthType = exports.$Enums.AuthType = {
+  EMAIL_PASSWORD: 'EMAIL_PASSWORD',
+  USERNAME_PASSWORD: 'USERNAME_PASSWORD',
+  BEARER_TOKEN: 'BEARER_TOKEN',
+  API_KEY: 'API_KEY',
+  OAUTH: 'OAUTH'
+};
+
+exports.AgencyStatus = exports.$Enums.AgencyStatus = {
+  ACTIVE: 'ACTIVE',
+  DISABLED: 'DISABLED',
+  ARCHIVED: 'ARCHIVED'
+};
+
+exports.AiProvider = exports.$Enums.AiProvider = {
+  OPENAI: 'OPENAI',
+  ANTHROPIC: 'ANTHROPIC',
+  GEMINI: 'GEMINI'
+};
+
+exports.ScraperStatus = exports.$Enums.ScraperStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  DEPRECATED: 'DEPRECATED',
+  TESTING: 'TESTING',
+  BROKEN: 'BROKEN'
+};
+
+exports.ScraperHealth = exports.$Enums.ScraperHealth = {
+  EXCELLENT: 'EXCELLENT',
+  GOOD: 'GOOD',
+  WARNING: 'WARNING',
+  CRITICAL: 'CRITICAL',
+  BROKEN: 'BROKEN'
+};
+
+exports.GenerationTrigger = exports.$Enums.GenerationTrigger = {
+  MANUAL: 'MANUAL',
+  SELF_HEAL: 'SELF_HEAL',
+  SCHEDULED: 'SCHEDULED'
+};
+
+exports.GenerationRunStatus = exports.$Enums.GenerationRunStatus = {
+  QUEUED: 'QUEUED',
+  RUNNING: 'RUNNING',
+  AWAITING_REVIEW: 'AWAITING_REVIEW',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.ComputerActionType = exports.$Enums.ComputerActionType = {
+  CLICK: 'CLICK',
+  DOUBLE_CLICK: 'DOUBLE_CLICK',
+  TYPE: 'TYPE',
+  SCROLL: 'SCROLL',
+  SCROLL_UP: 'SCROLL_UP',
+  SCROLL_DOWN: 'SCROLL_DOWN',
+  NAVIGATE: 'NAVIGATE',
+  GO_BACK: 'GO_BACK',
+  CLOSE_TAB: 'CLOSE_TAB',
+  WAIT: 'WAIT',
+  KEYPRESS: 'KEYPRESS',
+  SCREENSHOT: 'SCREENSHOT',
+  DRAG: 'DRAG',
+  DONE: 'DONE'
+};
+
+exports.ScraperVersionCreatedBy = exports.$Enums.ScraperVersionCreatedBy = {
+  AI: 'AI',
+  USER: 'USER'
+};
+
+exports.CrawlRunStatus = exports.$Enums.CrawlRunStatus = {
+  QUEUED: 'QUEUED',
+  RUNNING: 'RUNNING',
+  SUCCESS: 'SUCCESS',
+  PARTIAL_SUCCESS: 'PARTIAL_SUCCESS',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.JobStatus = exports.$Enums.JobStatus = {
+  WAITING: 'WAITING',
+  ACTIVE: 'ACTIVE',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  DELAYED: 'DELAYED',
+  PAUSED: 'PAUSED',
+  STALLED: 'STALLED'
+};
+
+exports.NotificationType = exports.$Enums.NotificationType = {
+  BROKEN_SCRAPER: 'BROKEN_SCRAPER',
+  CMS_SYNC_FAILURE: 'CMS_SYNC_FAILURE',
+  PROPERTY_REMOVAL_SPIKE: 'PROPERTY_REMOVAL_SPIKE',
+  LARGE_CRAWL_FAILURE: 'LARGE_CRAWL_FAILURE',
+  QUEUE_FAILURE: 'QUEUE_FAILURE',
+  WEBSITE_UNAVAILABLE: 'WEBSITE_UNAVAILABLE'
+};
+
+exports.NotificationSeverity = exports.$Enums.NotificationSeverity = {
+  INFO: 'INFO',
+  WARNING: 'WARNING',
+  CRITICAL: 'CRITICAL'
+};
+
+exports.CmsSyncAction = exports.$Enums.CmsSyncAction = {
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  REMOVE: 'REMOVE'
+};
+
+exports.CmsSyncStatus = exports.$Enums.CmsSyncStatus = {
+  PENDING: 'PENDING',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  RETRYING: 'RETRYING'
+};
+
+exports.PropertyStatus = exports.$Enums.PropertyStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  REMOVED: 'REMOVED',
+  SOLD: 'SOLD',
+  RENTED: 'RENTED',
+  UNKNOWN: 'UNKNOWN'
+};
+
+exports.ListingType = exports.$Enums.ListingType = {
+  SALE: 'SALE',
+  RENT: 'RENT',
+  SHORT_TERM_RENT: 'SHORT_TERM_RENT',
+  UNKNOWN: 'UNKNOWN'
+};
+
+exports.PropertyType = exports.$Enums.PropertyType = {
+  APARTMENT: 'APARTMENT',
+  HOUSE: 'HOUSE',
+  VILLA: 'VILLA',
+  MAISONETTE: 'MAISONETTE',
+  STUDIO: 'STUDIO',
+  LAND: 'LAND',
+  COMMERCIAL: 'COMMERCIAL',
+  OFFICE: 'OFFICE',
+  WAREHOUSE: 'WAREHOUSE',
+  PARKING: 'PARKING',
+  OTHER: 'OTHER',
+  UNKNOWN: 'UNKNOWN'
+};
+
+exports.PropertyHistoryEventType = exports.$Enums.PropertyHistoryEventType = {
+  CREATED: 'CREATED',
+  UPDATED: 'UPDATED',
+  PRICE_CHANGED: 'PRICE_CHANGED',
+  IMAGE_ADDED: 'IMAGE_ADDED',
+  IMAGE_REMOVED: 'IMAGE_REMOVED',
+  STATUS_CHANGED: 'STATUS_CHANGED',
+  REMOVED: 'REMOVED',
+  REAPPEARED: 'REAPPEARED'
+};
+
+exports.DocumentType = exports.$Enums.DocumentType = {
+  LOGO: 'LOGO',
+  BANNER: 'BANNER',
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO',
+  AUDIO: 'AUDIO',
+  PDF: 'PDF',
+  DOCUMENT: 'DOCUMENT',
+  OTHER: 'OTHER'
+};
+
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  IntegrationTarget: 'IntegrationTarget',
+  UserIntegration: 'UserIntegration',
+  SourceAgency: 'SourceAgency',
+  UserTrackedAgency: 'UserTrackedAgency',
+  Scraper: 'Scraper',
+  ScraperGenerationRun: 'ScraperGenerationRun',
+  ComputerUseStep: 'ComputerUseStep',
+  ScraperVersion: 'ScraperVersion',
+  ScraperExecutionTrace: 'ScraperExecutionTrace',
+  CrawlRun: 'CrawlRun',
+  JobLog: 'JobLog',
+  Notification: 'Notification',
+  CmsSyncRun: 'CmsSyncRun',
+  SourceProperty: 'SourceProperty',
+  Property: 'Property',
+  PropertySourceLink: 'PropertySourceLink',
+  PropertyHistory: 'PropertyHistory',
+  UserProperty: 'UserProperty',
+  Document: 'Document'
 };
 
 /**

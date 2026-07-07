@@ -123,7 +123,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 - [ ] `app/src/features/agencies/` — services, hooks, interfaces, schemas
 - [ ] `ApiRoutes.admin.agencies` + `Routes.admin.agencies`
 - [ ] `components/layout/admin-layout.tsx`, `admin-sidebar-content.tsx`, `admin-dashboard-navbar.tsx`
-- [ ] `/admin/agencies` list (search/filter by status/country/city) + create/edit + enable/disable/archive + detail stub (linked scrapers/crawl runs sections show empty state until Features 03/05 land)
+- [ ] `/admin/agencies` list (search/filter by status/country/city/is_visible/is_enabled) + create/edit + enable/disable/archive + visibility toggles + detail stub (linked scrapers/crawl runs sections show empty state until Features 03/05 land)
 
 **Verification**
 - [ ] Smoke test: admin logs in, opens Admin Shell, creates an agency, edits it, disables it, sees it reflected in the list
@@ -201,7 +201,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **API (`api/`)**
 - [ ] Add `@anthropic-ai/sdk` and `playwright` dependencies
-- [ ] `api/src/integrations/computer-use/` — port `scraper-generator/generate/` (Anthropic vision loop + Playwright actions + config verification + screenshot capture → `Document` rows)
+- [ ] `api/src/integrations/computer-use/` — port `scraper-generator/generate/` (Anthropic vision loop + Playwright actions + config verification + screenshot capture → `Document` rows); API key from initiating admin's or self-heal tracker's `UserIntegration`
 - [ ] `api/src/modules/scraper-generation/` — module, controller, service; `ScraperGenerationRun` + `ComputerUseStep` persistence; BullMQ `generation` queue + processor running the loop
 - [ ] Approve/reject/cancel endpoints; approve promotes `staged_config` into a new `ScraperVersion` and activates it
 - [ ] Public service method `triggerGeneration(agencyId, scraperId | null, trigger, prompt?)` for later self-heal wiring (Feature 05)
@@ -246,7 +246,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **API (`api/`)**
 - [ ] `api/src/modules/crawl-runs/`, `api/src/modules/jobs/`
-- [ ] BullMQ `crawl` queue + processor; cron scheduler reading `SourceAgency.crawl_interval` (only `ACTIVE` agencies)
+- [ ] BullMQ `crawl` queue + processor; cron scheduler per enabled `UserTrackedAgency.crawl_interval` → `CrawlRun` with `user_tracked_agency_id` (overlap check per tracker)
 - [ ] `api/src/integrations/crawler/` — port `scraper-generator/crawl/` (stealth browser, listing extraction, pagination, detail enrichment, execution trace)
 - [ ] Playwright production runner: discover → collect URLs → detail enrich → extract → write `SourceProperty` (normalization into canonical `Property` is Feature 06) → `ScraperExecutionTrace`
 - [ ] Broken-scraper detection (signals per spec §19) → `Scraper.status = BROKEN` + `Notification` (stub call until Feature 08) + calls `triggerGeneration(..., 'SELF_HEAL')` when `self_healing_enabled`
@@ -293,7 +293,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **API (`api/`)**
 - [ ] `api/src/modules/properties/`
-- [ ] AI-assisted normalization — port `scraper-generator/crawl/normalize.js` + `duplicates.js` + `cost.js` (sync via `integrations/ai/` or direct Anthropic SDK, batch via `integrations/ai-batch/` + OpenAI webhooks) with routing based on `UserTrackedAgency.use_ai_batching` and provider/model resolution from `UserTrackedAgency.ai_provider` / `ai_model`
+- [ ] AI-assisted normalization — port `scraper-generator/crawl/normalize.js` + `duplicates.js` + `cost.js` (sync via `integrations/ai/` with attributed tracker's `UserIntegration` key, batch via `integrations/ai-batch/` + OpenAI webhooks) using prefs from `CrawlRun.user_tracked_agency` when set
 - [ ] `POST /webhooks/openai` — verify `batch.completed` / `batch.failed` / `batch.expired` / `batch.cancelled`, enqueue `ai-batch-complete` worker
 - [ ] Normalization/dedup service invoked at the end of each `CrawlRun` (hook into Feature 05's pipeline): create/update `Property`, `PropertySourceLink`, duplicate detection (`duplicate_group_id`)
 - [ ] Persist AI normalization cost totals on `CrawlRun` (`ai_*` fields; mirror `scraper-generator/output/crawl/cost.json`)
@@ -340,7 +340,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **API (`api/`)**
 - [ ] `api/src/modules/user-tracked-agencies/`, `api/src/modules/user-properties/`
-- [ ] Track/untrack + per-type toggle + `use_ai_batching` + `ai_provider` / `ai_model` endpoints
+- [ ] Track/untrack + per-type toggle + `use_ai_batching` + `ai_provider` / `ai_model` endpoints (`crawl_interval` defaults on track; admins set it via Feature 02); reject track when agency `is_enabled`/`is_visible` is false or user lacks active `UserIntegration` for chosen `ai_provider`
+- [ ] User `GET /agencies` filters `status: ACTIVE`, `is_visible: true`; returns `is_enabled` per row
 - [ ] Crawl-time hook (extends Feature 06's normalization path): for every tracking user, create-or-update `UserProperty` after normalization completes (immediate for sync path, deferred for batch path), respecting the `is_modified` divergence rule
 - [ ] User list/detail/edit/resync endpoints
 
@@ -397,7 +398,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 ## Feature 09: Integration Targets & User Integrations (configuration only)
 
-**Description:** Admins define supported integration targets (CMS + AI providers); users connect/manage their own credentials. No sync execution.
+**Description:** Admins define supported integration targets (CMS + AI providers); users connect/manage their own credentials. AI features bill each user's stored API key. No CMS sync execution.
 
 **Status:** not started
 **Progress:** 0%
@@ -423,7 +424,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **API (`api/`)**
 - [ ] `api/src/modules/integration-targets/` (admin CRUD + connected-accounts management)
-- [ ] `api/src/modules/user-integrations/` (user-scoped connect/edit/enable/disable/disconnect)
+- [ ] `api/src/modules/user-integrations/` (user-scoped connect/edit/enable/disable/disconnect + exported `resolveActiveApiKey` / `resolveForSourceAgency` for Features 04/06)
 - [ ] Never create a `CmsSyncRun` row anywhere in this feature
 
 **App (`app/`)**

@@ -13,12 +13,13 @@ so the admin UI (next task) has zero direct API calls to write.
 
 1. Add to `app/src/config/api/routes.ts`:
    ```ts
-   admin: {
+     admin: {
      agencies: {
        prefix: "/admin/agencies",
        list: "/admin/agencies",
        detail: (id: string) => `/admin/agencies/${id}`,
        status: (id: string) => `/admin/agencies/${id}/status`,
+       visibility: (id: string) => `/admin/agencies/${id}/visibility`,
      },
    },
    ```
@@ -28,15 +29,18 @@ so the admin UI (next task) has zero direct API calls to write.
    - `SourceAgency` (mirror the Prisma model minus relations, plus optional
      `_count: { scrapers: number; crawl_runs: number }` on the detail shape)
    - `AgencyStatus` union type (`'ACTIVE' | 'DISABLED' | 'ARCHIVED'`)
-   - `CreateAgencyPayload`, `UpdateAgencyPayload`
-   - `AgencyListQuery` (page, limit, search?, status?, country?, city?)
+   - `CreateAgencyPayload`, `UpdateAgencyPayload` (incl. optional
+     `is_visible`, `is_enabled`)
+   - `UpdateAgencyVisibilityPayload` (`is_visible`, `is_enabled?`)
+   - `AgencyListQuery` (page, limit, search?, status?, country?, city?,
+     is_visible?, is_enabled?)
    - `PaginatedResponse<T>` generic if one doesn't already exist in a shared
      interfaces file (check `app/src/features/` for an existing shared
      pagination type before creating a new one; if none exists, define it
      locally in this file)
 3. `app/src/features/agencies/validation-schemas/agencies.schema.ts` — Zod
    schema for the create/edit form (`name` required, `base_url` required
-   valid URL, `country`/`city`/`notes` optional, `crawl_interval` optional)
+   valid URL, `country`/`city`/`notes` optional)
 4. `app/src/features/agencies/services/agencies.services.ts` — plain async
    functions using `axiosInstance` + `ApiRoutes.admin.agencies.*`, each
    returning `response.data` directly (list function returns the full
@@ -48,6 +52,7 @@ so the admin UI (next task) has zero direct API calls to write.
    - `useCreateAgency()` — `useMutation`, on success: `toast()` + `queryClient.invalidateQueries({ queryKey: ['agencies'] })`
    - `useUpdateAgency()` — same pattern, invalidate `['agencies']`
    - `useUpdateAgencyStatus()` — same pattern
+   - `useUpdateAgencyVisibility()` — same pattern
    - `useDeleteAgency()` — same pattern
 
 ## Files to create or modify

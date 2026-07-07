@@ -80,7 +80,7 @@ Every one of these follows the Feature Module Pattern (`hooks/`, `interfaces/`, 
 | --- | --- | --- |
 | `playwright` | Production `CrawlRun` execution + Playwright driver for the AI generation loop | Feature 04 (loop) / Feature 05 (crawl engine) |
 | `@anthropic-ai/sdk` | AI scraper generation loop — Anthropic vision messages + JSON actions (reference: `scraper-generator/generate/`). The existing `ai`/`@ai-sdk/anthropic` packages are for plain text/object generation, not the multi-turn screenshot loop | Feature 04 |
-| `openai` (Batch API + webhooks) | Property normalization batch path when all enabled trackers for an agency have `UserTrackedAgency.use_ai_batching: true` and resolved `ai_provider: OPENAI` — upload `.jsonl`, create batch, receive `batch.completed` webhook, download results | Feature 06 |
+| `openai` (Batch API + webhooks) | Property normalization batch path when the attributed `UserTrackedAgency` has `use_ai_batching: true` and `ai_provider: OPENAI` on a scheduled crawl (`CrawlRun.user_tracked_agency_id` set) — upload `.jsonl`, create batch, receive `batch.completed` webhook, download results | Feature 06 |
 | `@anthropic-ai/sdk` (normalization sync) | Property normalization sync path — port `scraper-generator/crawl/normalize.js` when resolved provider is `ANTHROPIC` | Feature 06 |
 | `@nestjs/bullmq` processors | Already installed — add new queues (`crawl`, `generation`, `ai-batch-complete`) | Feature 04 / 05 / 06 |
 
@@ -99,7 +99,7 @@ api/src/
 │   ├── user-properties/
 │   ├── notifications/
 │   ├── integration-targets/        # admin IntegrationTarget CRUD + connected accounts view
-│   ├── user-integrations/          # user-facing UserIntegration CRUD + admin per-account actions
+│   ├── user-integrations/          # user-facing UserIntegration CRUD + credential resolver (exported to Features 04/06)
 │   ├── users/                      # admin Users subpage (list/detail aggregation)
 │   └── dashboard/                  # KPI + activity-feed aggregation endpoint
 ├── integrations/
@@ -112,7 +112,7 @@ api/src/
 │   ├── generation.queue.ts / generation.processor.ts  # BullMQ: computer-use generation runs
 │   └── ai-batch-complete.processor.ts             # BullMQ: finish normalization after webhook (keeps webhook handler fast)
 └── background/
-    ├── crawl-scheduler.cron.ts     # reads SourceAgency.crawl_interval, enqueues CrawlRuns
+    ├── crawl-scheduler.cron.ts     # per enabled UserTrackedAgency.crawl_interval → CrawlRun with user_tracked_agency_id
     └── scraper-health.cron.ts      # recomputes Scraper.health / success_rate / avg_runtime_ms
 ```
 
@@ -135,11 +135,11 @@ JWT access token issued by `api/src/modules/auth/`, stored via the existing `sto
 
 ## External services / integrations
 
-| Service | Used by | Facade location |
-| --- | --- | --- |
-| Anthropic Messages API (vision + JSON actions) | AI scraper generation loop | `api/src/integrations/computer-use/` (reference: `scraper-generator/generate/`) |
-| OpenAI Batch API + webhooks | Deferred property normalization when all trackers opt into `use_ai_batching` | `api/src/integrations/ai-batch/` + `api/src/modules/openai-webhooks/` |
-| Anthropic sync (normalization) | Property normalization fast path | `api/src/modules/properties/` + `integrations/ai/` or direct SDK (reference: `scraper-generator/crawl/normalize.js`) |
+| Service | Used by | Facade location | Credentials |
+| --- | --- | --- | --- |
+| Anthropic Messages API (vision + JSON actions) | AI scraper generation loop | `api/src/integrations/computer-use/` (reference: `scraper-generator/generate/`) | Initiating admin's or agency-tracker's `UserIntegration` (`IntegrationType.ANTHROPIC`, `api_key_secret`) |
+| OpenAI Batch API + webhooks | Deferred property normalization when all trackers opt into `use_ai_batching` | `api/src/integrations/ai-batch/` + `api/src/modules/openai-webhooks/` | Tracker-resolved `UserIntegration` (`IntegrationType.OPENAI`); webhook uses `OPENAI_WEBHOOK_SECRET` env only |
+| OpenAI / Anthropic / Gemini sync (normalization) | Property normalization fast path | `api/src/modules/properties/` + `api/src/integrations/ai/` (reference: `scraper-generator/crawl/normalize.js`) | Tracker-resolved `UserIntegration` per `AiProvider` |
 | Playwright | AI generation loop + production `CrawlRun` execution | `api/src/integrations/computer-use/` (generation) and `api/src/integrations/crawler/` (production crawl; reference: `scraper-generator/crawl/`) |
 | Redis + BullMQ | Crawl queue, generation queue, ai-batch completion queue, job monitoring | `api/src/core/queues/` (existing) |
 | Document storage (existing `integrations/storage/gcs`) | Computer-use step screenshots (`Document` model) | reused as-is |

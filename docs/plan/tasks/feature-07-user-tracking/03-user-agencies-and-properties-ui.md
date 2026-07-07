@@ -35,15 +35,20 @@ routes and not under `/admin`.
    dashboard layout route. Add nav items "Agencies" and "My Properties" to
    the user-facing sidebar content (`app/src/components/layout/sidebar-content.tsx`
    — the existing user shell's nav list, not the admin one).
-3. `app/src/pages/dashboard/agencies/index.tsx` — grid/list of active
-   agencies (name, base_url, city/country if present) with a "Track" toggle
-   per card; when tracked, expand to show three checkboxes (new/removed/
-   updated listings) plus a **"Use AI batching (lower cost, slower updates)"**
-   toggle bound to `use_ai_batching` using `useUpdateAgencyTracking()`; an
-   **AI provider** select (`OPENAI` / `ANTHROPIC` / `GEMINI`) and optional
-   **model** text input bound to `ai_provider` / `ai_model`; show helper
-   text that batching only takes effect when all trackers for that agency
-   opt in and use OpenAI; untrack action with a confirm.
+3. `app/src/pages/dashboard/agencies/index.tsx` — grid/list of visible active
+   agencies (`is_visible: true` from API) with a "Track" toggle per card;
+   disable the toggle when `is_enabled` is `false` (show "Not available for
+   tracking" helper text). When tracked, expand to show three checkboxes
+   (new/removed/updated listings) plus a **"Use AI batching (lower cost,
+   slower updates)"** toggle bound to `use_ai_batching` using
+   `useUpdateAgencyTracking()`; an **AI provider** select (`OPENAI` /
+   `ANTHROPIC` / `GEMINI`) and optional **model** text input bound to
+   `ai_provider` / `ai_model`; if the user lacks an active integration for
+   the selected provider, show an inline link to `/integrations` to connect
+   first (disable track/save until connected); helper text that batching
+   applies only on scheduled crawls attributed to this tracker when
+   `use_ai_batching: true` and `ai_provider: OPENAI`; untrack action with a
+   confirm.
 4. `app/src/pages/dashboard/properties/index.tsx` — table/grid of the
    user's `UserProperty` rows with filters (status, city, price range); each
    row shows an "edited" badge when `is_modified` is true.

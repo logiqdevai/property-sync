@@ -75,7 +75,8 @@ Replace that with a nested route group under `AdminLayout`, matching the
    for now (real KPIs are Feature 10) — just move it under the new layout.
 6. `app/src/pages/admin/agencies/index.tsx` — list page:
    - Table (HeroUI table components) of agencies: name, base_url, status
-     badge, country/city, last_success_at, last_failure_at
+     badge, visible/enabled badges, country/city, last_success_at,
+     last_failure_at
    - Search input (debounced) + status filter + pagination controls, all
      driving `useAgencies(query)` state (`useState` for the query object)
    - "New agency" button opening a create form (modal or dedicated route —
@@ -89,8 +90,12 @@ Replace that with a nested route group under `AdminLayout`, matching the
    use `detail.tsx` and read `:id` via `useParams`):
    - Header with name, status badge, edit button (inline form or modal, same
      form component as create, pre-filled, using `useUpdateAgency()`)
-   - Metadata panel: base_url, country/city, crawl_interval, notes,
+   - Metadata panel: base_url, country/city, notes, `is_visible` /
+     `is_enabled` toggles (admin-only, via `useUpdateAgencyVisibility()`),
      last_success_at/last_failure_at/last_error_message
+   - "Tracked users" section (empty state until Feature 07 lands; when
+     populated, show each tracker's `crawl_interval` with an admin-only edit
+     control calling `PATCH /admin/agencies/:id/trackers/:userId`)
    - Empty-state placeholder sections titled "Scrapers" and "Recent Crawl
      Runs" (each just a HeroUI empty-state component saying "Coming in a
      later phase") — Features 03 and 05 will replace these with real data,

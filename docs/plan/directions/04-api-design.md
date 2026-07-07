@@ -12,13 +12,15 @@ No new endpoints. Verify `POST /auth/email/register`, `POST /auth/email/login`, 
 
 | Method | Path | Body/Query | Response |
 | --- | --- | --- | --- |
-| GET | `/admin/agencies` | `AgencyQuerySchema` (page, limit, search, status, country, city) | `{ data: SourceAgency[], pagination }` |
+| GET | `/admin/agencies` | `AgencyQuerySchema` (page, limit, search, status, country, city, is_visible?, is_enabled?) | `{ data: SourceAgency[], pagination }` — admin list returns all agencies; optional filters for the flags |
 | GET | `/admin/agencies/:id` | — | `SourceAgency` + counts (scrapers, recent crawl runs, notifications) |
-| POST | `/admin/agencies` | `CreateAgencyDto` (name, base_url, country?, city?, crawl_interval?, notes?) | `SourceAgency` |
+| POST | `/admin/agencies` | `CreateAgencyDto` (name, base_url, country?, city?, notes?, is_visible?, is_enabled?) | `SourceAgency` |
+| PATCH | `/admin/agencies/:id/trackers/:userId` | `{ crawl_interval }` | `UserTrackedAgency` (`ADMIN`/`SUPER_ADMIN` only; 404 if that user does not track the agency) |
 | PATCH | `/admin/agencies/:id` | `UpdateAgencyDto` | `SourceAgency` |
 | PATCH | `/admin/agencies/:id/status` | `{ status: AgencyStatus }` | `SourceAgency` |
+| PATCH | `/admin/agencies/:id/visibility` | `{ is_visible: boolean, is_enabled?: boolean }` | `SourceAgency` (`ADMIN`/`SUPER_ADMIN` only) |
 
-`ApiRoutes.admin.agencies`: `{ prefix, byId(id), status(id) }`.
+`ApiRoutes.admin.agencies`: `{ prefix, byId(id), status(id), visibility(id), tracker(agencyId, userId) }`.
 
 ## Feature 03 — Scrapers (`modules/scrapers`)
 
@@ -45,7 +47,7 @@ Base path `/admin/generation-runs`.
 | --- | --- | --- | --- |
 | GET | `/admin/generation-runs` | `GenerationRunQuerySchema` (status, trigger, agency_id, scraper_id) | `{ data, pagination }` |
 | GET | `/admin/generation-runs/:id` | — | run + `steps` ordered by `step_index` |
-| POST | `/admin/generation-runs` | `CreateGenerationRunDto` (`source_agency_id`, `scraper_id?`, `prompt?`) — `trigger: MANUAL` | run (`status: QUEUED`, enqueues BullMQ `generation` job) |
+| POST | `/admin/generation-runs` | `CreateGenerationRunDto` (`source_agency_id`, `scraper_id?`, `prompt?`) — `trigger: MANUAL`; uses initiating admin's `UserIntegration` (`ANTHROPIC`) | run (`status: QUEUED`, enqueues BullMQ `generation` job with `initiatedByUserId`) |
 | POST | `/admin/generation-runs/:id/approve` | — | promotes `staged_config` → new `ScraperVersion`, sets `Scraper.active_version_id`, run → `SUCCESS` |
 | POST | `/admin/generation-runs/:id/reject` | `{ reason?: string }` | run → `FAILED` |
 | POST | `/admin/generation-runs/:id/cancel` | — | run → `CANCELLED` (best-effort loop interruption) |
@@ -58,9 +60,9 @@ Internal-only (not HTTP): `ScraperGenerationService.trigger(agencyId, scraperId 
 
 | Method | Path | Body/Query | Response |
 | --- | --- | --- | --- |
-| GET | `/admin/crawl-runs` | `CrawlRunQuerySchema` (status, agency_id, scraper_id, date_from, date_to) | `{ data, pagination }` |
-| GET | `/admin/crawl-runs/:id` | — | run + totals + AI cost fields (`ai_*`) + `execution_traces` + `job_logs` |
-| POST | `/admin/crawl-runs/:id/rerun` | — | new `CrawlRun` (same agency/scraper) |
+| GET | `/admin/crawl-runs` | `CrawlRunQuerySchema` (status, agency_id, scraper_id, user_tracked_agency_id, date_from, date_to) | `{ data, pagination }` — each row includes optional `user_tracked_agency_id` |
+| GET | `/admin/crawl-runs/:id` | — | run + totals + AI cost fields (`ai_*`) + optional `user_tracked_agency` (tracker user email) + `execution_traces` + `job_logs` |
+| POST | `/admin/crawl-runs/:id/rerun` | — | new `CrawlRun` (same agency/scraper/`user_tracked_agency_id` when present on source run) |
 | GET | `/admin/jobs` | `JobLogQuerySchema` (status, queue_name) | `{ data, pagination }` |
 | GET | `/admin/jobs/:id` | — | `JobLog` detail |
 | POST | `/admin/jobs/:id/retry` | — | re-enqueues the underlying BullMQ job |
@@ -84,9 +86,9 @@ Internal-only (not HTTP): `ScraperGenerationService.trigger(agencyId, scraperId 
 
 | Method | Path | Body/Query | Response |
 | --- | --- | --- | --- |
-| GET | `/agencies` | query (status, search) — public active agencies + this user's tracking state | `{ data, pagination }` |
-| POST | `/agencies/:agencyId/track` | `{ track_new_listings?, track_removed_listings?, track_updated_listings?, use_ai_batching?, ai_provider?, ai_model? }` | `UserTrackedAgency` (creates if absent) |
-| PATCH | `/agencies/:agencyId/track` | same fields + `enabled` | `UserTrackedAgency` |
+| GET | `/agencies` | query (search) — `status: ACTIVE`, `is_visible: true`, plus this user's tracking state | `{ data, pagination }` — each row includes `is_enabled` |
+| POST | `/agencies/:agencyId/track` | `{ track_new_listings?, track_removed_listings?, track_updated_listings?, use_ai_batching?, ai_provider?, ai_model? }` | `UserTrackedAgency` — rejects `400` when agency `is_enabled` is `false` or `is_visible` is `false` |
+| PATCH | `/agencies/:agencyId/track` | same fields + `enabled` | `UserTrackedAgency` (`crawl_interval` is **not** accepted here — admins use `PATCH /admin/agencies/:id/trackers/:userId`) |
 | DELETE | `/agencies/:agencyId/track` | — | `204` |
 
 `modules/user-properties` (user-scoped):

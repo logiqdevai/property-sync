@@ -95,7 +95,6 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
-  uuid: 'uuid',
   email: 'email',
   phone: 'phone',
   password: 'password',
@@ -104,9 +103,338 @@ exports.Prisma.UserScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.IntegrationTargetScalarFieldEnum = {
+  id: 'id',
+  integration_type: 'integration_type',
+  auth_type: 'auth_type',
+  base_url: 'base_url',
+  allow_multiple: 'allow_multiple',
+  is_visible: 'is_visible',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.UserIntegrationScalarFieldEnum = {
+  id: 'id',
+  integration_target_id: 'integration_target_id',
+  user_id: 'user_id',
+  api_key_secret: 'api_key_secret',
+  email: 'email',
+  username: 'username',
+  password: 'password',
+  config: 'config',
+  is_active: 'is_active',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.SourceAgencyScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  base_url: 'base_url',
+  country: 'country',
+  city: 'city',
+  status: 'status',
+  is_visible: 'is_visible',
+  is_enabled: 'is_enabled',
+  notes: 'notes',
+  last_success_at: 'last_success_at',
+  last_failure_at: 'last_failure_at',
+  last_error_message: 'last_error_message',
+  metadata: 'metadata',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.UserTrackedAgencyScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  source_agency_id: 'source_agency_id',
+  enabled: 'enabled',
+  crawl_interval: 'crawl_interval',
+  track_new_listings: 'track_new_listings',
+  track_removed_listings: 'track_removed_listings',
+  track_updated_listings: 'track_updated_listings',
+  use_ai_batching: 'use_ai_batching',
+  ai_provider: 'ai_provider',
+  ai_model: 'ai_model',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ScraperScalarFieldEnum = {
+  id: 'id',
+  source_agency_id: 'source_agency_id',
+  name: 'name',
+  active_version_id: 'active_version_id',
+  version_count: 'version_count',
+  status: 'status',
+  self_healing_enabled: 'self_healing_enabled',
+  health: 'health',
+  success_rate: 'success_rate',
+  avg_runtime_ms: 'avg_runtime_ms',
+  consecutive_failures: 'consecutive_failures',
+  last_success_at: 'last_success_at',
+  last_failure_at: 'last_failure_at',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ScraperGenerationRunScalarFieldEnum = {
+  id: 'id',
+  source_agency_id: 'source_agency_id',
+  scraper_id: 'scraper_id',
+  trigger: 'trigger',
+  status: 'status',
+  prompt: 'prompt',
+  staged_config: 'staged_config',
+  produced_version_id: 'produced_version_id',
+  error_message: 'error_message',
+  started_at: 'started_at',
+  finished_at: 'finished_at',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ComputerUseStepScalarFieldEnum = {
+  id: 'id',
+  scraper_generation_run_id: 'scraper_generation_run_id',
+  step_index: 'step_index',
+  action_type: 'action_type',
+  action_payload: 'action_payload',
+  screenshot_before_id: 'screenshot_before_id',
+  screenshot_after_id: 'screenshot_after_id',
+  model_reasoning: 'model_reasoning',
+  created_at: 'created_at'
+};
+
+exports.Prisma.ScraperVersionScalarFieldEnum = {
+  id: 'id',
+  scraper_id: 'scraper_id',
+  version: 'version',
+  config: 'config',
+  created_by: 'created_by',
+  notes: 'notes',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ScraperExecutionTraceScalarFieldEnum = {
+  id: 'id',
+  scraper_id: 'scraper_id',
+  crawl_run_id: 'crawl_run_id',
+  steps: 'steps',
+  success: 'success',
+  error_summary: 'error_summary',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.CrawlRunScalarFieldEnum = {
+  id: 'id',
+  source_agency_id: 'source_agency_id',
+  scraper_id: 'scraper_id',
+  user_tracked_agency_id: 'user_tracked_agency_id',
+  status: 'status',
+  started_at: 'started_at',
+  finished_at: 'finished_at',
+  total_found: 'total_found',
+  total_created: 'total_created',
+  total_updated: 'total_updated',
+  total_removed: 'total_removed',
+  total_failed: 'total_failed',
+  error_message: 'error_message',
+  metadata: 'metadata',
+  ai_model: 'ai_model',
+  ai_input_tokens: 'ai_input_tokens',
+  ai_output_tokens: 'ai_output_tokens',
+  ai_input_cost: 'ai_input_cost',
+  ai_output_cost: 'ai_output_cost',
+  ai_total_cost: 'ai_total_cost',
+  ai_average_cost_per_property: 'ai_average_cost_per_property',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.JobLogScalarFieldEnum = {
+  id: 'id',
+  queue_name: 'queue_name',
+  job_id: 'job_id',
+  job_name: 'job_name',
+  status: 'status',
+  attempt: 'attempt',
+  max_attempts: 'max_attempts',
+  crawl_run_id: 'crawl_run_id',
+  payload: 'payload',
+  result: 'result',
+  error_message: 'error_message',
+  stack_trace: 'stack_trace',
+  started_at: 'started_at',
+  finished_at: 'finished_at',
+  duration_ms: 'duration_ms',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  severity: 'severity',
+  title: 'title',
+  message: 'message',
+  source_agency_id: 'source_agency_id',
+  scraper_id: 'scraper_id',
+  crawl_run_id: 'crawl_run_id',
+  is_read: 'is_read',
+  created_at: 'created_at'
+};
+
+exports.Prisma.CmsSyncRunScalarFieldEnum = {
+  id: 'id',
+  user_integration_id: 'user_integration_id',
+  user_property_id: 'user_property_id',
+  action: 'action',
+  status: 'status',
+  attempt: 'attempt',
+  max_attempts: 'max_attempts',
+  payload: 'payload',
+  response: 'response',
+  error_message: 'error_message',
+  started_at: 'started_at',
+  finished_at: 'finished_at',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.SourcePropertyScalarFieldEnum = {
+  id: 'id',
+  source_agency_id: 'source_agency_id',
+  external_id: 'external_id',
+  source_url: 'source_url',
+  canonical_url: 'canonical_url',
+  raw_title: 'raw_title',
+  raw_description: 'raw_description',
+  raw_price: 'raw_price',
+  raw_location: 'raw_location',
+  raw_data: 'raw_data',
+  raw_html_path: 'raw_html_path',
+  content_hash: 'content_hash',
+  first_seen_at: 'first_seen_at',
+  last_seen_at: 'last_seen_at',
+  status: 'status',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.PropertyScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  listing_type: 'listing_type',
+  property_type: 'property_type',
+  status: 'status',
+  price: 'price',
+  currency: 'currency',
+  city: 'city',
+  district: 'district',
+  address: 'address',
+  postal_code: 'postal_code',
+  country: 'country',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  square_meters: 'square_meters',
+  bedrooms: 'bedrooms',
+  bathrooms: 'bathrooms',
+  floor: 'floor',
+  construction_year: 'construction_year',
+  renovation_year: 'renovation_year',
+  features: 'features',
+  images: 'images',
+  normalized_data: 'normalized_data',
+  duplicate_group_id: 'duplicate_group_id',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.PropertySourceLinkScalarFieldEnum = {
+  id: 'id',
+  property_id: 'property_id',
+  source_property_id: 'source_property_id',
+  confidence_score: 'confidence_score',
+  is_primary_source: 'is_primary_source',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.PropertyHistoryScalarFieldEnum = {
+  id: 'id',
+  property_id: 'property_id',
+  event_type: 'event_type',
+  field: 'field',
+  old_value: 'old_value',
+  new_value: 'new_value',
+  crawl_run_id: 'crawl_run_id',
+  created_at: 'created_at'
+};
+
+exports.Prisma.UserPropertyScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  property_id: 'property_id',
+  title: 'title',
+  description: 'description',
+  listing_type: 'listing_type',
+  property_type: 'property_type',
+  status: 'status',
+  price: 'price',
+  currency: 'currency',
+  city: 'city',
+  district: 'district',
+  address: 'address',
+  postal_code: 'postal_code',
+  country: 'country',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  square_meters: 'square_meters',
+  bedrooms: 'bedrooms',
+  bathrooms: 'bathrooms',
+  floor: 'floor',
+  construction_year: 'construction_year',
+  renovation_year: 'renovation_year',
+  features: 'features',
+  images: 'images',
+  normalized_data: 'normalized_data',
+  duplicate_group_id: 'duplicate_group_id',
+  is_modified: 'is_modified',
+  last_synced_at: 'last_synced_at',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.DocumentScalarFieldEnum = {
+  id: 'id',
+  user_uuid: 'user_uuid',
+  filename: 'filename',
+  mimetype: 'mimetype',
+  size: 'size',
+  url: 'url',
+  path: 'path',
+  type: 'type',
+  created_at: 'created_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -118,6 +446,12 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
 exports.AuthRole = exports.$Enums.AuthRole = {
   USER: 'USER',
   ADMIN: 'ADMIN',
@@ -125,8 +459,227 @@ exports.AuthRole = exports.$Enums.AuthRole = {
   SUPPORT: 'SUPPORT'
 };
 
+exports.DocumentType = exports.$Enums.DocumentType = {
+  LOGO: 'LOGO',
+  BANNER: 'BANNER',
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO',
+  AUDIO: 'AUDIO',
+  PDF: 'PDF',
+  DOCUMENT: 'DOCUMENT',
+  OTHER: 'OTHER'
+};
+
+exports.CrawlType = exports.$Enums.CrawlType = {
+  HTML: 'HTML',
+  API: 'API',
+  GRAPHQL: 'GRAPHQL',
+  PLAYWRIGHT: 'PLAYWRIGHT',
+  SITEMAP: 'SITEMAP',
+  HYBRID: 'HYBRID'
+};
+
+exports.PaginationType = exports.$Enums.PaginationType = {
+  NONE: 'NONE',
+  PAGE_NUMBER: 'PAGE_NUMBER',
+  OFFSET: 'OFFSET',
+  CURSOR: 'CURSOR',
+  INFINITE_SCROLL: 'INFINITE_SCROLL',
+  LOAD_MORE: 'LOAD_MORE',
+  UNKNOWN: 'UNKNOWN'
+};
+
+exports.AgencyStatus = exports.$Enums.AgencyStatus = {
+  ACTIVE: 'ACTIVE',
+  DISABLED: 'DISABLED',
+  ARCHIVED: 'ARCHIVED'
+};
+
+exports.ScraperStatus = exports.$Enums.ScraperStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  DEPRECATED: 'DEPRECATED',
+  TESTING: 'TESTING',
+  BROKEN: 'BROKEN'
+};
+
+exports.ScraperHealth = exports.$Enums.ScraperHealth = {
+  EXCELLENT: 'EXCELLENT',
+  GOOD: 'GOOD',
+  WARNING: 'WARNING',
+  CRITICAL: 'CRITICAL',
+  BROKEN: 'BROKEN'
+};
+
+exports.CrawlRunStatus = exports.$Enums.CrawlRunStatus = {
+  QUEUED: 'QUEUED',
+  RUNNING: 'RUNNING',
+  SUCCESS: 'SUCCESS',
+  PARTIAL_SUCCESS: 'PARTIAL_SUCCESS',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.GenerationRunStatus = exports.$Enums.GenerationRunStatus = {
+  QUEUED: 'QUEUED',
+  RUNNING: 'RUNNING',
+  AWAITING_REVIEW: 'AWAITING_REVIEW',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.GenerationTrigger = exports.$Enums.GenerationTrigger = {
+  MANUAL: 'MANUAL',
+  SELF_HEAL: 'SELF_HEAL',
+  SCHEDULED: 'SCHEDULED'
+};
+
+exports.ComputerActionType = exports.$Enums.ComputerActionType = {
+  CLICK: 'CLICK',
+  DOUBLE_CLICK: 'DOUBLE_CLICK',
+  TYPE: 'TYPE',
+  SCROLL: 'SCROLL',
+  SCROLL_UP: 'SCROLL_UP',
+  SCROLL_DOWN: 'SCROLL_DOWN',
+  NAVIGATE: 'NAVIGATE',
+  GO_BACK: 'GO_BACK',
+  CLOSE_TAB: 'CLOSE_TAB',
+  WAIT: 'WAIT',
+  KEYPRESS: 'KEYPRESS',
+  SCREENSHOT: 'SCREENSHOT',
+  DRAG: 'DRAG',
+  DONE: 'DONE'
+};
+
+exports.JobStatus = exports.$Enums.JobStatus = {
+  WAITING: 'WAITING',
+  ACTIVE: 'ACTIVE',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  DELAYED: 'DELAYED',
+  PAUSED: 'PAUSED',
+  STALLED: 'STALLED'
+};
+
+exports.PropertyStatus = exports.$Enums.PropertyStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  REMOVED: 'REMOVED',
+  SOLD: 'SOLD',
+  RENTED: 'RENTED',
+  UNKNOWN: 'UNKNOWN'
+};
+
+exports.ListingType = exports.$Enums.ListingType = {
+  SALE: 'SALE',
+  RENT: 'RENT',
+  SHORT_TERM_RENT: 'SHORT_TERM_RENT',
+  UNKNOWN: 'UNKNOWN'
+};
+
+exports.PropertyType = exports.$Enums.PropertyType = {
+  APARTMENT: 'APARTMENT',
+  HOUSE: 'HOUSE',
+  VILLA: 'VILLA',
+  MAISONETTE: 'MAISONETTE',
+  STUDIO: 'STUDIO',
+  LAND: 'LAND',
+  COMMERCIAL: 'COMMERCIAL',
+  OFFICE: 'OFFICE',
+  WAREHOUSE: 'WAREHOUSE',
+  PARKING: 'PARKING',
+  OTHER: 'OTHER',
+  UNKNOWN: 'UNKNOWN'
+};
+
+exports.IntegrationType = exports.$Enums.IntegrationType = {
+  ESTATEWEB: 'ESTATEWEB',
+  OPENAI: 'OPENAI',
+  ANTHROPIC: 'ANTHROPIC',
+  GEMINI: 'GEMINI',
+  DEEPSEEK: 'DEEPSEEK'
+};
+
+exports.AuthType = exports.$Enums.AuthType = {
+  EMAIL_PASSWORD: 'EMAIL_PASSWORD',
+  USERNAME_PASSWORD: 'USERNAME_PASSWORD',
+  BEARER_TOKEN: 'BEARER_TOKEN',
+  API_KEY: 'API_KEY',
+  OAUTH: 'OAUTH'
+};
+
+exports.CmsSyncAction = exports.$Enums.CmsSyncAction = {
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  REMOVE: 'REMOVE'
+};
+
+exports.CmsSyncStatus = exports.$Enums.CmsSyncStatus = {
+  PENDING: 'PENDING',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  RETRYING: 'RETRYING'
+};
+
+exports.PropertyHistoryEventType = exports.$Enums.PropertyHistoryEventType = {
+  CREATED: 'CREATED',
+  UPDATED: 'UPDATED',
+  PRICE_CHANGED: 'PRICE_CHANGED',
+  IMAGE_ADDED: 'IMAGE_ADDED',
+  IMAGE_REMOVED: 'IMAGE_REMOVED',
+  STATUS_CHANGED: 'STATUS_CHANGED',
+  REMOVED: 'REMOVED',
+  REAPPEARED: 'REAPPEARED'
+};
+
+exports.NotificationType = exports.$Enums.NotificationType = {
+  BROKEN_SCRAPER: 'BROKEN_SCRAPER',
+  CMS_SYNC_FAILURE: 'CMS_SYNC_FAILURE',
+  PROPERTY_REMOVAL_SPIKE: 'PROPERTY_REMOVAL_SPIKE',
+  LARGE_CRAWL_FAILURE: 'LARGE_CRAWL_FAILURE',
+  QUEUE_FAILURE: 'QUEUE_FAILURE',
+  WEBSITE_UNAVAILABLE: 'WEBSITE_UNAVAILABLE'
+};
+
+exports.NotificationSeverity = exports.$Enums.NotificationSeverity = {
+  INFO: 'INFO',
+  WARNING: 'WARNING',
+  CRITICAL: 'CRITICAL'
+};
+
+exports.ScraperVersionCreatedBy = exports.$Enums.ScraperVersionCreatedBy = {
+  AI: 'AI',
+  USER: 'USER'
+};
+
+exports.AiProvider = exports.$Enums.AiProvider = {
+  OPENAI: 'OPENAI',
+  ANTHROPIC: 'ANTHROPIC',
+  GEMINI: 'GEMINI'
+};
+
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  IntegrationTarget: 'IntegrationTarget',
+  UserIntegration: 'UserIntegration',
+  SourceAgency: 'SourceAgency',
+  UserTrackedAgency: 'UserTrackedAgency',
+  Scraper: 'Scraper',
+  ScraperGenerationRun: 'ScraperGenerationRun',
+  ComputerUseStep: 'ComputerUseStep',
+  ScraperVersion: 'ScraperVersion',
+  ScraperExecutionTrace: 'ScraperExecutionTrace',
+  CrawlRun: 'CrawlRun',
+  JobLog: 'JobLog',
+  Notification: 'Notification',
+  CmsSyncRun: 'CmsSyncRun',
+  SourceProperty: 'SourceProperty',
+  Property: 'Property',
+  PropertySourceLink: 'PropertySourceLink',
+  PropertyHistory: 'PropertyHistory',
+  UserProperty: 'UserProperty',
+  Document: 'Document'
 };
 /**
  * Create the Client
@@ -136,10 +689,10 @@ const config = {
   "clientVersion": "7.2.0",
   "engineVersion": "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3",
   "activeProvider": "postgresql",
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id       Int     @id @default(autoincrement())\n  uuid     String  @unique @default(uuid())\n  email    String  @unique\n  phone    String? @unique\n  password String\n\n  role       AuthRole\n  created_at DateTime @default(now())\n  updated_at DateTime @updatedAt\n\n  @@index([email])\n  @@index([phone])\n  @@index([uuid])\n  @@map(\"users\")\n}\n\nenum AuthRole {\n  USER\n  ADMIN\n  SUPER_ADMIN\n  SUPPORT\n}\n"
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nenum AuthRole {\n  USER\n  ADMIN\n  SUPER_ADMIN\n  SUPPORT\n}\n\nenum DocumentType {\n  LOGO\n  BANNER\n  IMAGE\n  VIDEO\n  AUDIO\n  PDF\n  DOCUMENT\n  OTHER\n}\n\nenum CrawlType {\n  HTML\n  API\n  GRAPHQL\n  PLAYWRIGHT\n  SITEMAP\n  HYBRID\n}\n\nenum PaginationType {\n  NONE\n  PAGE_NUMBER\n  OFFSET\n  CURSOR\n  INFINITE_SCROLL\n  LOAD_MORE\n  UNKNOWN\n}\n\n// Lifecycle state of a SourceAgency (spec section 5: enable / disable / archive).\nenum AgencyStatus {\n  ACTIVE\n  DISABLED\n  ARCHIVED\n}\n\n// Added BROKEN to support spec section 19 (Broken Scraper Detection).\nenum ScraperStatus {\n  ACTIVE\n  INACTIVE\n  DEPRECATED\n  TESTING\n  BROKEN\n}\n\n// Rolled-up health rating shown on the dashboard (spec section 18).\nenum ScraperHealth {\n  EXCELLENT\n  GOOD\n  WARNING\n  CRITICAL\n  BROKEN\n}\n\n// Status for production scraping executions (Playwright runs against a live Scraper).\nenum CrawlRunStatus {\n  QUEUED\n  RUNNING\n  SUCCESS\n  PARTIAL_SUCCESS\n  FAILED\n  CANCELLED\n}\n\n// Separate from CrawlRunStatus: an AI generation/self-heal session has different\n// terminal states than a production crawl (e.g. AWAITING_REVIEW has no crawl equivalent).\nenum GenerationRunStatus {\n  QUEUED\n  RUNNING\n  AWAITING_REVIEW // config produced, not yet promoted to a ScraperVersion\n  SUCCESS\n  FAILED\n  CANCELLED\n}\n\n// Why a ScraperGenerationRun was started.\nenum GenerationTrigger {\n  MANUAL // user requested a scraper for a new/existing agency\n  SELF_HEAL // triggered automatically after a CrawlRun failure\n  SCHEDULED // periodic re-generation/health check\n}\n\n// A single computer-use action returned by the model during a generation run.\nenum ComputerActionType {\n  CLICK\n  DOUBLE_CLICK\n  TYPE\n  SCROLL\n  SCROLL_UP\n  SCROLL_DOWN\n  NAVIGATE\n  GO_BACK\n  CLOSE_TAB\n  WAIT\n  KEYPRESS\n  SCREENSHOT\n  DRAG\n  DONE\n}\n\nenum JobStatus {\n  WAITING\n  ACTIVE\n  COMPLETED\n  FAILED\n  DELAYED\n  PAUSED\n  STALLED\n}\n\nenum PropertyStatus {\n  ACTIVE\n  INACTIVE\n  REMOVED\n  SOLD\n  RENTED\n  UNKNOWN\n}\n\nenum ListingType {\n  SALE\n  RENT\n  SHORT_TERM_RENT\n  UNKNOWN\n}\n\nenum PropertyType {\n  APARTMENT\n  HOUSE\n  VILLA\n  MAISONETTE\n  STUDIO\n  LAND\n  COMMERCIAL\n  OFFICE\n  WAREHOUSE\n  PARKING\n  OTHER\n  UNKNOWN\n}\n\nenum IntegrationType {\n  ESTATEWEB\n  OPENAI\n  ANTHROPIC\n  GEMINI\n  DEEPSEEK\n}\n\nenum AuthType {\n  EMAIL_PASSWORD\n  USERNAME_PASSWORD\n  BEARER_TOKEN\n  API_KEY\n  OAUTH\n}\n\n// New: spec section 15 requires sync retries and guarantees data is never lost on failure --\n// this is the audit trail of every attempt to push a Property to a CmsTarget.\nenum CmsSyncAction {\n  CREATE\n  UPDATE\n  REMOVE\n}\n\nenum CmsSyncStatus {\n  PENDING\n  SUCCESS\n  FAILED\n  RETRYING\n}\n\n// New: spec section 14 Property History -- every detectable change to a Property over time.\nenum PropertyHistoryEventType {\n  CREATED\n  UPDATED\n  PRICE_CHANGED\n  IMAGE_ADDED\n  IMAGE_REMOVED\n  STATUS_CHANGED\n  REMOVED\n  REAPPEARED\n}\n\n// New: spec section 20 Notifications.\nenum NotificationType {\n  BROKEN_SCRAPER\n  CMS_SYNC_FAILURE\n  PROPERTY_REMOVAL_SPIKE\n  LARGE_CRAWL_FAILURE\n  QUEUE_FAILURE\n  WEBSITE_UNAVAILABLE\n}\n\nenum NotificationSeverity {\n  INFO\n  WARNING\n  CRITICAL\n}\n\n// Who created a ScraperVersion.\nenum ScraperVersionCreatedBy {\n  AI\n  USER\n}\n\nenum AiProvider {\n  OPENAI\n  ANTHROPIC\n  GEMINI\n}\n\n// ---------------------------------------------------------------\n// USERS & CMS\n// ---------------------------------------------------------------\n\n/// App users. Can track agencies and save properties.\nmodel User {\n  id       String  @id @default(uuid())\n  email    String  @unique\n  phone    String? @unique\n  password String\n\n  role       AuthRole\n  created_at DateTime @default(now())\n  updated_at DateTime @updatedAt\n\n  tracked_agencies  UserTrackedAgency[]\n  saved_properties  UserProperty[]\n  user_integrations UserIntegration[]\n\n  @@index([email])\n  @@index([phone])\n  @@map(\"users\")\n}\n\n/// Destination Integration instance that normalized Property data gets synced to and ai models are integrated with.\nmodel IntegrationTarget {\n  id               String          @id @default(uuid())\n  integration_type IntegrationType\n  auth_type        AuthType\n  base_url         String?\n  allow_multiple   Boolean         @default(false)\n  is_visible       Boolean         @default(true) // whether the integration is visible to the user (always visible for admin and supper admin)\n  created_at       DateTime        @default(now())\n  updated_at       DateTime        @updatedAt\n\n  user_integrations UserIntegration[]\n\n  @@map(\"integration_targets\")\n}\n\nmodel UserIntegration {\n  id                    String   @id @default(uuid())\n  integration_target_id String\n  user_id               String\n  api_key_secret        String?\n  email                 String?\n  username              String?\n  password              String?\n  config                Json?\n  is_active             Boolean  @default(true)\n  created_at            DateTime @default(now())\n  updated_at            DateTime @updatedAt\n\n  sync_runs          CmsSyncRun[]\n  user               User              @relation(fields: [user_id], references: [id], onDelete: Cascade)\n  integration_target IntegrationTarget @relation(fields: [integration_target_id], references: [id], onDelete: Cascade)\n\n  @@map(\"user_integrations\")\n}\n\n// ---------------------------------------------------------------\n// SOURCE AGENCIES (scrape targets)\n// ---------------------------------------------------------------\n\n/// A target website (real-estate agency) to be scraped. Root of the whole pipeline:\n/// SourceAgency -> ScraperGenerationRun (AI builds a scraper) -> Scraper -> CrawlRun (production run)\n/// -> SourceProperty -> Property.\nmodel SourceAgency {\n  id                 String       @id @default(uuid())\n  name               String\n  base_url           String       @unique\n  country            String?\n  city               String?\n  status             AgencyStatus @default(ACTIVE)\n  is_visible         Boolean      @default(false) // not displayed to the user, only to the admin\n  is_enabled         Boolean      @default(false) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin\n  notes              String?\n  last_success_at    DateTime?\n  last_failure_at    DateTime?\n  last_error_message String?\n  metadata           Json?\n  created_at         DateTime     @default(now())\n  updated_at         DateTime     @updatedAt\n\n  scrapers                Scraper[]\n  user_tracked_agencies   UserTrackedAgency[]\n  scraper_generation_runs ScraperGenerationRun[]\n  crawl_runs              CrawlRun[]\n  source_properties       SourceProperty[]\n  notifications           Notification[]\n\n  @@index([status])\n  @@map(\"source_agencies\")\n}\n\n/// Which SourceAgencies a user follows/monitors, and which kinds of change notify them.\nmodel UserTrackedAgency {\n  id                     String     @id @default(uuid())\n  user_id                String\n  source_agency_id       String\n  enabled                Boolean    @default(true)\n  crawl_interval         String     @default(\"0 */6 * * *\") // cron expression only changed by admin or super admins\n  track_new_listings     Boolean    @default(true)\n  track_removed_listings Boolean    @default(true)\n  track_updated_listings Boolean    @default(true)\n  use_ai_batching        Boolean    @default(false)\n  ai_provider            AiProvider @default(OPENAI)\n  ai_model               String?\n  created_at             DateTime   @default(now())\n  updated_at             DateTime   @updatedAt\n\n  user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)\n  source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)\n  crawl_runs    CrawlRun[]\n\n  @@unique([user_id, source_agency_id])\n  @@index([user_id])\n  @@index([source_agency_id])\n  @@map(\"user_tracked_agencies\")\n}\n\n// ---------------------------------------------------------------\n// AI GENERATION LAYER (computer-use loop)\n// ---------------------------------------------------------------\n\n/// A scraper definition for one agency. Holds NO config directly -- config always lives on the\n/// active ScraperVersion (see `active_version`). This keeps a single source of truth instead of\n/// letting Scraper.config and ScraperVersion.config drift out of sync.\nmodel Scraper {\n  id                   String        @id @default(uuid())\n  source_agency_id     String\n  name                 String\n  active_version_id    String?       @unique // FK to the ScraperVersion currently in use\n  version_count        Int           @default(0) // convenience counter, incremented on new versions\n  status               ScraperStatus @default(TESTING)\n  self_healing_enabled Boolean       @default(true) // whether self-heal is allowed to auto-apply fixes\n  health               ScraperHealth @default(GOOD) // cached rollup, recomputed by a background job (spec section 18)\n  success_rate         Decimal?      @db.Decimal(5, 2) // cached % over trailing window\n  avg_runtime_ms       Int? // cached average CrawlRun duration\n  consecutive_failures Int           @default(0) // reset to 0 on any SUCCESS CrawlRun\n  last_success_at      DateTime?\n  last_failure_at      DateTime?\n  created_at           DateTime      @default(now())\n  updated_at           DateTime      @updatedAt\n\n  source_agency  SourceAgency    @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)\n  active_version ScraperVersion? @relation(\"ActiveVersion\", fields: [active_version_id], references: [id], onDelete: SetNull)\n\n  crawl_runs              CrawlRun[]\n  versions                ScraperVersion[]        @relation(\"ScraperVersions\")\n  execution_traces        ScraperExecutionTrace[]\n  scraper_generation_runs ScraperGenerationRun[]\n  notifications           Notification[]\n\n  @@index([source_agency_id])\n  @@index([status])\n  @@index([health])\n  @@map(\"scrapers\")\n}\n\n/// One AI (or human) session that produces or fixes a scraper config. This is the row that\n/// owns a computer-use loop: it's created, the loop runs (see ComputerUseStep), and it ends\n/// with either a promoted ScraperVersion or a failure.\nmodel ScraperGenerationRun {\n  id                  String              @id @default(uuid())\n  source_agency_id    String\n  scraper_id          String? // set when this run is fixing/updating an existing Scraper (self-heal or manual re-gen)\n  trigger             GenerationTrigger   @default(MANUAL)\n  status              GenerationRunStatus @default(QUEUED)\n  prompt              String? // goal/instructions given to the model\n  staged_config       Json? // draft config produced by the model, pending review/promotion\n  produced_version_id String?             @unique // set once staged_config is approved and copied into a ScraperVersion\n  error_message       String?\n  started_at          DateTime?\n  finished_at         DateTime?\n  created_at          DateTime            @default(now())\n  updated_at          DateTime            @updatedAt\n\n  source_agency    SourceAgency    @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)\n  scraper          Scraper?        @relation(fields: [scraper_id], references: [id], onDelete: SetNull)\n  produced_version ScraperVersion? @relation(\"ProducedVersion\", fields: [produced_version_id], references: [id], onDelete: SetNull)\n\n  steps ComputerUseStep[]\n\n  @@index([source_agency_id])\n  @@index([scraper_id])\n  @@index([status])\n  @@map(\"scraper_generation_runs\")\n}\n\n/// A single action in the computer-use loop: model receives a screenshot, returns an action\n/// (click/type/scroll/...), Playwright executes it, a new screenshot is captured. Storing every\n/// step lets you replay a session, debug why the AI navigated somewhere wrong, and show the\n/// user an audit trail of how a scraper config was derived.\nmodel ComputerUseStep {\n  id                        String             @id @default(uuid())\n  scraper_generation_run_id String\n  step_index                Int // ordering within the run, starting at 0\n  action_type               ComputerActionType\n  action_payload            Json // raw action from the model, e.g. {\"x\":320,\"y\":540} or {\"text\":\"...\"}\n  screenshot_before_id      String?\n  screenshot_after_id       String?\n  model_reasoning           String? // optional chain-of-thought / rationale text returned by the model\n  created_at                DateTime           @default(now())\n\n  scraper_generation_run ScraperGenerationRun @relation(fields: [scraper_generation_run_id], references: [id], onDelete: Cascade)\n  screenshot_before      Document?            @relation(\"ComputerUseStepScreenshotBefore\", fields: [screenshot_before_id], references: [id], onDelete: SetNull)\n  screenshot_after       Document?            @relation(\"ComputerUseStepScreenshotAfter\", fields: [screenshot_after_id], references: [id], onDelete: SetNull)\n\n  @@index([scraper_generation_run_id])\n  @@index([scraper_generation_run_id, step_index])\n  @@index([screenshot_before_id])\n  @@index([screenshot_after_id])\n  @@map(\"computer_use_steps\")\n}\n\n/// Immutable, versioned scraper config. This is the single source of truth for \"what a scraper\n/// does\" -- Scraper.active_version_id points here. New versions are created by generation runs\n/// (AI) or manual edits (human review), enabling rollback and full history / self-healing.\nmodel ScraperVersion {\n  id         String                  @id @default(uuid())\n  scraper_id String\n  version    Int\n  config     Json // full scraper definition: start_url, listing_selector, fields, pagination, etc.\n  created_by ScraperVersionCreatedBy\n  notes      String? // e.g. reason for the fix, summary of what changed from prior version\n  created_at DateTime                @default(now())\n  updated_at DateTime                @updatedAt\n\n  scraper Scraper @relation(\"ScraperVersions\", fields: [scraper_id], references: [id], onDelete: Cascade)\n\n  // Back-relations used only to let other models point at \"the\" active/produced version.\n  active_for_scraper Scraper?              @relation(\"ActiveVersion\")\n  produced_by_run    ScraperGenerationRun? @relation(\"ProducedVersion\")\n\n  @@unique([scraper_id, version])\n  @@map(\"scraper_versions\")\n}\n\n/// Step-by-step log of a PRODUCTION Playwright execution (not the AI's exploratory computer-use\n/// loop -- see ComputerUseStep for that). Used to detect broken selectors / navigation failures\n/// and feed them into a self-heal ScraperGenerationRun.\nmodel ScraperExecutionTrace {\n  id            String   @id @default(uuid())\n  scraper_id    String\n  crawl_run_id  String?\n  steps         Json // Playwright step-by-step execution log\n  success       Boolean\n  error_summary String?\n  created_at    DateTime @default(now())\n  updated_at    DateTime @updatedAt\n\n  scraper   Scraper   @relation(fields: [scraper_id], references: [id], onDelete: Cascade)\n  crawl_run CrawlRun? @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)\n\n  @@index([scraper_id])\n  @@map(\"scraper_execution_traces\")\n}\n\n// ---------------------------------------------------------------\n// PRODUCTION EXECUTION LAYER\n// ---------------------------------------------------------------\n\n/// One production scraping execution of a Scraper against its SourceAgency. This is the\n/// Playwright run that uses the config from Scraper.active_version -- no AI involved in the\n/// crawl itself, unless normalization (Feature 06) or a failure triggers self-heal.\nmodel CrawlRun {\n  id                           String         @id @default(uuid())\n  source_agency_id             String\n  scraper_id                   String?\n  user_tracked_agency_id       String?\n  status                       CrawlRunStatus @default(QUEUED)\n  started_at                   DateTime?\n  finished_at                  DateTime?\n  total_found                  Int            @default(0)\n  total_created                Int            @default(0)\n  total_updated                Int            @default(0)\n  total_removed                Int            @default(0)\n  total_failed                 Int            @default(0)\n  error_message                String?\n  metadata                     Json?\n  ai_model                     String?\n  ai_input_tokens              Int?\n  ai_output_tokens             Int?\n  ai_input_cost                Decimal?       @db.Decimal(12, 6)\n  ai_output_cost               Decimal?       @db.Decimal(12, 6)\n  ai_total_cost                Decimal?       @db.Decimal(12, 6)\n  ai_average_cost_per_property Decimal?       @db.Decimal(12, 8)\n  created_at                   DateTime       @default(now())\n  updated_at                   DateTime       @updatedAt\n\n  source_agency       SourceAgency            @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)\n  user_tracked_agency UserTrackedAgency?      @relation(fields: [user_tracked_agency_id], references: [id], onDelete: SetNull)\n  scraper             Scraper?                @relation(fields: [scraper_id], references: [id], onDelete: SetNull)\n  job_logs            JobLog[]\n  execution_traces    ScraperExecutionTrace[]\n  property_history    PropertyHistory[]\n  notifications       Notification[]\n\n  @@index([source_agency_id])\n  @@index([scraper_id])\n  @@index([status])\n  @@index([created_at])\n  @@map(\"crawl_runs\")\n}\n\n/// Generic queue/job execution log (e.g. BullMQ), optionally tied to a CrawlRun. Useful for\n/// ops/debugging independent of the scraping domain model.\nmodel JobLog {\n  id            String    @id @default(uuid())\n  queue_name    String\n  job_id        String?\n  job_name      String?\n  status        JobStatus\n  attempt       Int       @default(0)\n  max_attempts  Int?\n  crawl_run_id  String?\n  payload       Json?\n  result        Json?\n  error_message String?\n  stack_trace   String?\n  started_at    DateTime?\n  finished_at   DateTime?\n  duration_ms   Int?\n  created_at    DateTime  @default(now())\n  updated_at    DateTime  @updatedAt\n\n  crawl_run CrawlRun? @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)\n\n  @@index([queue_name])\n  @@index([job_id])\n  @@index([status])\n  @@index([crawl_run_id])\n  @@index([created_at])\n  @@map(\"job_logs\")\n}\n\n// New: dashboard section 20 -- persisted notifications, independent of any push/email channel.\nmodel Notification {\n  id               String               @id @default(uuid())\n  type             NotificationType\n  severity         NotificationSeverity @default(INFO)\n  title            String\n  message          String\n  source_agency_id String?\n  scraper_id       String?\n  crawl_run_id     String?\n  is_read          Boolean              @default(false)\n  created_at       DateTime             @default(now())\n\n  source_agency SourceAgency? @relation(fields: [source_agency_id], references: [id], onDelete: SetNull)\n  scraper       Scraper?      @relation(fields: [scraper_id], references: [id], onDelete: SetNull)\n  crawl_run     CrawlRun?     @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)\n\n  @@index([type])\n  @@index([severity])\n  @@index([is_read])\n  @@index([created_at])\n  @@map(\"notifications\")\n}\n\n// New: spec section 15 -- every attempt (including retries) to push a Property to a CmsTarget.\n// Nothing is ever deleted here, so a failed sync never loses the record of what was owed.\nmodel CmsSyncRun {\n  id                  String        @id @default(uuid())\n  user_integration_id String\n  user_property_id    String?\n  action              CmsSyncAction\n  status              CmsSyncStatus @default(PENDING)\n  attempt             Int           @default(0)\n  max_attempts        Int?\n  payload             Json?\n  response            Json?\n  error_message       String?\n  started_at          DateTime?\n  finished_at         DateTime?\n  created_at          DateTime      @default(now())\n  updated_at          DateTime      @updatedAt\n\n  user_integration UserIntegration @relation(fields: [user_integration_id], references: [id], onDelete: Cascade)\n  user_property    UserProperty?   @relation(fields: [user_property_id], references: [id], onDelete: SetNull)\n\n  @@index([user_integration_id])\n  @@index([user_property_id])\n  @@index([status])\n  @@index([created_at])\n  @@map(\"cms_sync_runs\")\n}\n\n// ---------------------------------------------------------------\n// OUTPUT LAYER\n// ---------------------------------------------------------------\n\n/// Raw listing as extracted from a single source website. Not yet normalized/deduplicated --\n/// that happens in Property. One SourceProperty per (agency, url).\nmodel SourceProperty {\n  id               String         @id @default(uuid())\n  source_agency_id String\n  external_id      String?\n  source_url       String\n  canonical_url    String?\n  raw_title        String?\n  raw_description  String?\n  raw_price        String?\n  raw_location     String?\n  raw_data         Json?\n  raw_html_path    String?\n  content_hash     String? // used for deduplication\n  first_seen_at    DateTime       @default(now())\n  last_seen_at     DateTime?\n  status           PropertyStatus @default(ACTIVE)\n  created_at       DateTime       @default(now())\n  updated_at       DateTime       @updatedAt\n\n  source_agency  SourceAgency         @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)\n  property_links PropertySourceLink[]\n\n  @@unique([source_agency_id, source_url])\n  @@index([source_agency_id])\n  @@index([external_id])\n  @@index([content_hash])\n  @@index([status])\n  @@index([last_seen_at])\n  @@map(\"source_properties\")\n}\n\n/// Normalized, deduplicated property record -- the canonical entity synced to the CMS.\n/// May be backed by multiple SourceProperty rows (same listing found on multiple agencies).\nmodel Property {\n  id                 String         @id @default(uuid())\n  title              String\n  description        String?\n  listing_type       ListingType    @default(UNKNOWN)\n  property_type      PropertyType   @default(UNKNOWN)\n  status             PropertyStatus @default(ACTIVE)\n  price              Decimal?       @db.Decimal(14, 2)\n  currency           String?        @default(\"EUR\")\n  city               String?\n  district           String?\n  address            String?\n  postal_code        String?\n  country            String?\n  latitude           Decimal?       @db.Decimal(10, 7)\n  longitude          Decimal?       @db.Decimal(10, 7)\n  square_meters      Decimal?       @db.Decimal(10, 2)\n  bedrooms           Int?\n  bathrooms          Int?\n  floor              String?\n  construction_year  Int?\n  renovation_year    Int?\n  features           Json?\n  images             Json?\n  normalized_data    Json?\n  duplicate_group_id String?\n  created_at         DateTime       @default(now())\n  updated_at         DateTime       @updatedAt\n\n  source_links         PropertySourceLink[]\n  user_property_copies UserProperty[]\n  history              PropertyHistory[] // spec section 14\n\n  @@index([listing_type])\n  @@index([property_type])\n  @@index([status])\n  @@index([city])\n  @@index([district])\n  @@index([price])\n  @@index([duplicate_group_id])\n  @@map(\"properties\")\n}\n\n/// Mapping layer between normalized Property and the raw SourceProperty rows it was built from.\nmodel PropertySourceLink {\n  id                 String   @id @default(uuid())\n  property_id        String\n  source_property_id String\n  confidence_score   Decimal? @db.Decimal(5, 2)\n  is_primary_source  Boolean  @default(false)\n  created_at         DateTime @default(now())\n  updated_at         DateTime @updatedAt\n\n  property        Property       @relation(fields: [property_id], references: [id], onDelete: Cascade)\n  source_property SourceProperty @relation(fields: [source_property_id], references: [id], onDelete: Cascade)\n\n  @@unique([property_id, source_property_id])\n  @@index([property_id])\n  @@index([source_property_id])\n  @@map(\"property_source_links\")\n}\n\n// New: spec section 14 Property History -- append-only audit log of everything that happened to a\n// Property. This is what powers \"Price Changes\", \"Images Added/Removed\", \"Removal\",\n// \"Reappearance\" etc. in the property detail view. Never mutated, only appended to.\nmodel PropertyHistory {\n  id           String                   @id @default(uuid())\n  property_id  String\n  event_type   PropertyHistoryEventType\n  field        String? // e.g. \"price\", \"images\", \"status\" -- null for CREATED/REMOVED/REAPPEARED\n  old_value    Json?\n  new_value    Json?\n  crawl_run_id String? // which crawl detected this change, if any\n  created_at   DateTime                 @default(now())\n\n  property  Property  @relation(fields: [property_id], references: [id], onDelete: Cascade)\n  crawl_run CrawlRun? @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)\n\n  @@index([property_id])\n  @@index([event_type])\n  @@index([crawl_run_id])\n  @@map(\"property_history\")\n}\n\n/// User-owned, editable copy of a canonical Property. Created automatically the first time a\n/// tracked agency's scraper surfaces a matching Property; after that, edits apply ONLY to this\n/// row -- the canonical Property keeps being updated by the crawler independently.\n/// `is_modified` / `last_synced_at` track whether (and when) this copy has diverged, so the UI\n/// can show a \"this differs from the source listing\" banner and offer a manual re-sync.\nmodel UserProperty {\n  id                 String         @id @default(uuid())\n  user_id            String\n  property_id        String\n  title              String\n  description        String?\n  listing_type       ListingType    @default(UNKNOWN)\n  property_type      PropertyType   @default(UNKNOWN)\n  status             PropertyStatus @default(ACTIVE)\n  price              Decimal?       @db.Decimal(14, 2)\n  currency           String?        @default(\"EUR\")\n  city               String?\n  district           String?\n  address            String?\n  postal_code        String?\n  country            String?\n  latitude           Decimal?       @db.Decimal(10, 7)\n  longitude          Decimal?       @db.Decimal(10, 7)\n  square_meters      Decimal?       @db.Decimal(10, 2)\n  bedrooms           Int?\n  bathrooms          Int?\n  floor              String?\n  construction_year  Int?\n  renovation_year    Int?\n  features           Json?\n  images             Json?\n  normalized_data    Json?\n  duplicate_group_id String?\n  is_modified        Boolean        @default(false) // true once any field diverges from canonical_property\n  last_synced_at     DateTime? // last time this copy was refreshed from canonical_property\n  created_at         DateTime       @default(now())\n  updated_at         DateTime       @updatedAt\n\n  user               User         @relation(fields: [user_id], references: [id], onDelete: Cascade)\n  canonical_property Property     @relation(fields: [property_id], references: [id], onDelete: Cascade)\n  cms_sync_runs      CmsSyncRun[]\n\n  @@unique([user_id, property_id])\n  @@index([user_id])\n  @@index([property_id])\n  @@map(\"user_properties\")\n}\n\n/// Generic uploaded file record (logos, banners, media, and computer-use screenshots).\nmodel Document {\n  id         String       @id @default(uuid())\n  user_uuid  String\n  filename   String\n  mimetype   String\n  size       Int\n  url        String\n  path       String\n  type       DocumentType @default(LOGO)\n  created_at DateTime     @default(now())\n\n  computer_use_steps_before ComputerUseStep[] @relation(\"ComputerUseStepScreenshotBefore\")\n  computer_use_steps_after  ComputerUseStep[] @relation(\"ComputerUseStepScreenshotAfter\")\n\n  @@index([user_uuid])\n  @@map(\"documents\")\n}\n"
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"uuid\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"AuthRole\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"users\"}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"AuthRole\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"tracked_agencies\",\"kind\":\"object\",\"type\":\"UserTrackedAgency\",\"relationName\":\"UserToUserTrackedAgency\"},{\"name\":\"saved_properties\",\"kind\":\"object\",\"type\":\"UserProperty\",\"relationName\":\"UserToUserProperty\"},{\"name\":\"user_integrations\",\"kind\":\"object\",\"type\":\"UserIntegration\",\"relationName\":\"UserToUserIntegration\"}],\"dbName\":\"users\"},\"IntegrationTarget\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"integration_type\",\"kind\":\"enum\",\"type\":\"IntegrationType\"},{\"name\":\"auth_type\",\"kind\":\"enum\",\"type\":\"AuthType\"},{\"name\":\"base_url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"allow_multiple\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"is_visible\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user_integrations\",\"kind\":\"object\",\"type\":\"UserIntegration\",\"relationName\":\"IntegrationTargetToUserIntegration\"}],\"dbName\":\"integration_targets\"},\"UserIntegration\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"integration_target_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"api_key_secret\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"config\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"is_active\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"sync_runs\",\"kind\":\"object\",\"type\":\"CmsSyncRun\",\"relationName\":\"CmsSyncRunToUserIntegration\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserToUserIntegration\"},{\"name\":\"integration_target\",\"kind\":\"object\",\"type\":\"IntegrationTarget\",\"relationName\":\"IntegrationTargetToUserIntegration\"}],\"dbName\":\"user_integrations\"},\"SourceAgency\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"base_url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"AgencyStatus\"},{\"name\":\"is_visible\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"is_enabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"last_success_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"last_failure_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"last_error_message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"metadata\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"scrapers\",\"kind\":\"object\",\"type\":\"Scraper\",\"relationName\":\"ScraperToSourceAgency\"},{\"name\":\"user_tracked_agencies\",\"kind\":\"object\",\"type\":\"UserTrackedAgency\",\"relationName\":\"SourceAgencyToUserTrackedAgency\"},{\"name\":\"scraper_generation_runs\",\"kind\":\"object\",\"type\":\"ScraperGenerationRun\",\"relationName\":\"ScraperGenerationRunToSourceAgency\"},{\"name\":\"crawl_runs\",\"kind\":\"object\",\"type\":\"CrawlRun\",\"relationName\":\"CrawlRunToSourceAgency\"},{\"name\":\"source_properties\",\"kind\":\"object\",\"type\":\"SourceProperty\",\"relationName\":\"SourceAgencyToSourceProperty\"},{\"name\":\"notifications\",\"kind\":\"object\",\"type\":\"Notification\",\"relationName\":\"NotificationToSourceAgency\"}],\"dbName\":\"source_agencies\"},\"UserTrackedAgency\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"source_agency_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"enabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"crawl_interval\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"track_new_listings\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"track_removed_listings\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"track_updated_listings\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"use_ai_batching\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"ai_provider\",\"kind\":\"enum\",\"type\":\"AiProvider\"},{\"name\":\"ai_model\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserToUserTrackedAgency\"},{\"name\":\"source_agency\",\"kind\":\"object\",\"type\":\"SourceAgency\",\"relationName\":\"SourceAgencyToUserTrackedAgency\"},{\"name\":\"crawl_runs\",\"kind\":\"object\",\"type\":\"CrawlRun\",\"relationName\":\"CrawlRunToUserTrackedAgency\"}],\"dbName\":\"user_tracked_agencies\"},\"Scraper\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"source_agency_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"active_version_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"version_count\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"ScraperStatus\"},{\"name\":\"self_healing_enabled\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"health\",\"kind\":\"enum\",\"type\":\"ScraperHealth\"},{\"name\":\"success_rate\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"avg_runtime_ms\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"consecutive_failures\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"last_success_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"last_failure_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"source_agency\",\"kind\":\"object\",\"type\":\"SourceAgency\",\"relationName\":\"ScraperToSourceAgency\"},{\"name\":\"active_version\",\"kind\":\"object\",\"type\":\"ScraperVersion\",\"relationName\":\"ActiveVersion\"},{\"name\":\"crawl_runs\",\"kind\":\"object\",\"type\":\"CrawlRun\",\"relationName\":\"CrawlRunToScraper\"},{\"name\":\"versions\",\"kind\":\"object\",\"type\":\"ScraperVersion\",\"relationName\":\"ScraperVersions\"},{\"name\":\"execution_traces\",\"kind\":\"object\",\"type\":\"ScraperExecutionTrace\",\"relationName\":\"ScraperToScraperExecutionTrace\"},{\"name\":\"scraper_generation_runs\",\"kind\":\"object\",\"type\":\"ScraperGenerationRun\",\"relationName\":\"ScraperToScraperGenerationRun\"},{\"name\":\"notifications\",\"kind\":\"object\",\"type\":\"Notification\",\"relationName\":\"NotificationToScraper\"}],\"dbName\":\"scrapers\"},\"ScraperGenerationRun\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"source_agency_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"scraper_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"trigger\",\"kind\":\"enum\",\"type\":\"GenerationTrigger\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"GenerationRunStatus\"},{\"name\":\"prompt\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"staged_config\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"produced_version_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"error_message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"started_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"finished_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"source_agency\",\"kind\":\"object\",\"type\":\"SourceAgency\",\"relationName\":\"ScraperGenerationRunToSourceAgency\"},{\"name\":\"scraper\",\"kind\":\"object\",\"type\":\"Scraper\",\"relationName\":\"ScraperToScraperGenerationRun\"},{\"name\":\"produced_version\",\"kind\":\"object\",\"type\":\"ScraperVersion\",\"relationName\":\"ProducedVersion\"},{\"name\":\"steps\",\"kind\":\"object\",\"type\":\"ComputerUseStep\",\"relationName\":\"ComputerUseStepToScraperGenerationRun\"}],\"dbName\":\"scraper_generation_runs\"},\"ComputerUseStep\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"scraper_generation_run_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"step_index\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"action_type\",\"kind\":\"enum\",\"type\":\"ComputerActionType\"},{\"name\":\"action_payload\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"screenshot_before_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"screenshot_after_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"model_reasoning\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"scraper_generation_run\",\"kind\":\"object\",\"type\":\"ScraperGenerationRun\",\"relationName\":\"ComputerUseStepToScraperGenerationRun\"},{\"name\":\"screenshot_before\",\"kind\":\"object\",\"type\":\"Document\",\"relationName\":\"ComputerUseStepScreenshotBefore\"},{\"name\":\"screenshot_after\",\"kind\":\"object\",\"type\":\"Document\",\"relationName\":\"ComputerUseStepScreenshotAfter\"}],\"dbName\":\"computer_use_steps\"},\"ScraperVersion\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"scraper_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"version\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"config\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"created_by\",\"kind\":\"enum\",\"type\":\"ScraperVersionCreatedBy\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"scraper\",\"kind\":\"object\",\"type\":\"Scraper\",\"relationName\":\"ScraperVersions\"},{\"name\":\"active_for_scraper\",\"kind\":\"object\",\"type\":\"Scraper\",\"relationName\":\"ActiveVersion\"},{\"name\":\"produced_by_run\",\"kind\":\"object\",\"type\":\"ScraperGenerationRun\",\"relationName\":\"ProducedVersion\"}],\"dbName\":\"scraper_versions\"},\"ScraperExecutionTrace\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"scraper_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"crawl_run_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"steps\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"success\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"error_summary\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"scraper\",\"kind\":\"object\",\"type\":\"Scraper\",\"relationName\":\"ScraperToScraperExecutionTrace\"},{\"name\":\"crawl_run\",\"kind\":\"object\",\"type\":\"CrawlRun\",\"relationName\":\"CrawlRunToScraperExecutionTrace\"}],\"dbName\":\"scraper_execution_traces\"},\"CrawlRun\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"source_agency_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"scraper_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user_tracked_agency_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"CrawlRunStatus\"},{\"name\":\"started_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"finished_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"total_found\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"total_created\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"total_updated\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"total_removed\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"total_failed\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"error_message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"metadata\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"ai_model\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"ai_input_tokens\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"ai_output_tokens\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"ai_input_cost\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"ai_output_cost\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"ai_total_cost\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"ai_average_cost_per_property\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"source_agency\",\"kind\":\"object\",\"type\":\"SourceAgency\",\"relationName\":\"CrawlRunToSourceAgency\"},{\"name\":\"user_tracked_agency\",\"kind\":\"object\",\"type\":\"UserTrackedAgency\",\"relationName\":\"CrawlRunToUserTrackedAgency\"},{\"name\":\"scraper\",\"kind\":\"object\",\"type\":\"Scraper\",\"relationName\":\"CrawlRunToScraper\"},{\"name\":\"job_logs\",\"kind\":\"object\",\"type\":\"JobLog\",\"relationName\":\"CrawlRunToJobLog\"},{\"name\":\"execution_traces\",\"kind\":\"object\",\"type\":\"ScraperExecutionTrace\",\"relationName\":\"CrawlRunToScraperExecutionTrace\"},{\"name\":\"property_history\",\"kind\":\"object\",\"type\":\"PropertyHistory\",\"relationName\":\"CrawlRunToPropertyHistory\"},{\"name\":\"notifications\",\"kind\":\"object\",\"type\":\"Notification\",\"relationName\":\"CrawlRunToNotification\"}],\"dbName\":\"crawl_runs\"},\"JobLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"queue_name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"job_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"job_name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"JobStatus\"},{\"name\":\"attempt\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"max_attempts\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"crawl_run_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"payload\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"result\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"error_message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"stack_trace\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"started_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"finished_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"duration_ms\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"crawl_run\",\"kind\":\"object\",\"type\":\"CrawlRun\",\"relationName\":\"CrawlRunToJobLog\"}],\"dbName\":\"job_logs\"},\"Notification\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"NotificationType\"},{\"name\":\"severity\",\"kind\":\"enum\",\"type\":\"NotificationSeverity\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"source_agency_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"scraper_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"crawl_run_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"is_read\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"source_agency\",\"kind\":\"object\",\"type\":\"SourceAgency\",\"relationName\":\"NotificationToSourceAgency\"},{\"name\":\"scraper\",\"kind\":\"object\",\"type\":\"Scraper\",\"relationName\":\"NotificationToScraper\"},{\"name\":\"crawl_run\",\"kind\":\"object\",\"type\":\"CrawlRun\",\"relationName\":\"CrawlRunToNotification\"}],\"dbName\":\"notifications\"},\"CmsSyncRun\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user_integration_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user_property_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"action\",\"kind\":\"enum\",\"type\":\"CmsSyncAction\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"CmsSyncStatus\"},{\"name\":\"attempt\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"max_attempts\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"payload\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"response\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"error_message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"started_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"finished_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user_integration\",\"kind\":\"object\",\"type\":\"UserIntegration\",\"relationName\":\"CmsSyncRunToUserIntegration\"},{\"name\":\"user_property\",\"kind\":\"object\",\"type\":\"UserProperty\",\"relationName\":\"CmsSyncRunToUserProperty\"}],\"dbName\":\"cms_sync_runs\"},\"SourceProperty\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"source_agency_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"external_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"source_url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"canonical_url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"raw_title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"raw_description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"raw_price\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"raw_location\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"raw_data\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"raw_html_path\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"content_hash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"first_seen_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"last_seen_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"PropertyStatus\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"source_agency\",\"kind\":\"object\",\"type\":\"SourceAgency\",\"relationName\":\"SourceAgencyToSourceProperty\"},{\"name\":\"property_links\",\"kind\":\"object\",\"type\":\"PropertySourceLink\",\"relationName\":\"PropertySourceLinkToSourceProperty\"}],\"dbName\":\"source_properties\"},\"Property\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"listing_type\",\"kind\":\"enum\",\"type\":\"ListingType\"},{\"name\":\"property_type\",\"kind\":\"enum\",\"type\":\"PropertyType\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"PropertyStatus\"},{\"name\":\"price\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"currency\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"district\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"postal_code\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"latitude\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"longitude\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"square_meters\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"bedrooms\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"bathrooms\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"floor\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"construction_year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"renovation_year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"features\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"images\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"normalized_data\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"duplicate_group_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"source_links\",\"kind\":\"object\",\"type\":\"PropertySourceLink\",\"relationName\":\"PropertyToPropertySourceLink\"},{\"name\":\"user_property_copies\",\"kind\":\"object\",\"type\":\"UserProperty\",\"relationName\":\"PropertyToUserProperty\"},{\"name\":\"history\",\"kind\":\"object\",\"type\":\"PropertyHistory\",\"relationName\":\"PropertyToPropertyHistory\"}],\"dbName\":\"properties\"},\"PropertySourceLink\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"property_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"source_property_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"confidence_score\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"is_primary_source\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"property\",\"kind\":\"object\",\"type\":\"Property\",\"relationName\":\"PropertyToPropertySourceLink\"},{\"name\":\"source_property\",\"kind\":\"object\",\"type\":\"SourceProperty\",\"relationName\":\"PropertySourceLinkToSourceProperty\"}],\"dbName\":\"property_source_links\"},\"PropertyHistory\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"property_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"event_type\",\"kind\":\"enum\",\"type\":\"PropertyHistoryEventType\"},{\"name\":\"field\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"old_value\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"new_value\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"crawl_run_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"property\",\"kind\":\"object\",\"type\":\"Property\",\"relationName\":\"PropertyToPropertyHistory\"},{\"name\":\"crawl_run\",\"kind\":\"object\",\"type\":\"CrawlRun\",\"relationName\":\"CrawlRunToPropertyHistory\"}],\"dbName\":\"property_history\"},\"UserProperty\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"property_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"listing_type\",\"kind\":\"enum\",\"type\":\"ListingType\"},{\"name\":\"property_type\",\"kind\":\"enum\",\"type\":\"PropertyType\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"PropertyStatus\"},{\"name\":\"price\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"currency\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"district\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"postal_code\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"latitude\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"longitude\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"square_meters\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"bedrooms\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"bathrooms\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"floor\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"construction_year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"renovation_year\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"features\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"images\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"normalized_data\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"duplicate_group_id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"is_modified\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"last_synced_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserToUserProperty\"},{\"name\":\"canonical_property\",\"kind\":\"object\",\"type\":\"Property\",\"relationName\":\"PropertyToUserProperty\"},{\"name\":\"cms_sync_runs\",\"kind\":\"object\",\"type\":\"CmsSyncRun\",\"relationName\":\"CmsSyncRunToUserProperty\"}],\"dbName\":\"user_properties\"},\"Document\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user_uuid\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"filename\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"mimetype\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"size\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"path\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"DocumentType\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"computer_use_steps_before\",\"kind\":\"object\",\"type\":\"ComputerUseStep\",\"relationName\":\"ComputerUseStepScreenshotBefore\"},{\"name\":\"computer_use_steps_after\",\"kind\":\"object\",\"type\":\"ComputerUseStep\",\"relationName\":\"ComputerUseStepScreenshotAfter\"}],\"dbName\":\"documents\"}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.compilerWasm = {
       getRuntime: async () => require('./query_compiler_bg.js'),

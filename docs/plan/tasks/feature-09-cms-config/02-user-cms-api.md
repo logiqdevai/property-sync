@@ -13,7 +13,8 @@ credentials.
 
 Same hard scope boundary and credential-masking requirement as task 01 —
 reuse `mask-credentials.util.ts` from `modules/integration-targets/utils/`, do not
-duplicate it. `CmsSyncRun` remains completely out of scope.
+duplicate it. `UserIntegrationsService` credential resolver from task 01 is
+consumed by Features 04/06. `CmsSyncRun` remains completely out of scope.
 
 User-facing target browse must filter to `IntegrationTarget.is_visible: true` only.
 
