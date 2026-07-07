@@ -230,6 +230,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 |-----|------|
 | Product spec §7–9, §16–19 | `directions/01-product-spec.md` |
 | Reference CLI (crawl pipeline) | `../../scraper-generator/crawl/` |
+| Production browser/worker resource rules | `../playwright-scraping-worker-architecture.md` |
 | System architecture | `directions/02-system-architecture.md` |
 | API design — Feature 05 | `directions/04-api-design.md` |
 
@@ -248,6 +249,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 - [ ] `api/src/modules/crawl-runs/`, `api/src/modules/jobs/`
 - [ ] BullMQ `crawl` queue + processor; cron scheduler per enabled `UserTrackedAgency.crawl_interval` → `CrawlRun` with `user_tracked_agency_id` (overlap check per tracker)
 - [ ] `api/src/integrations/crawler/` — port `scraper-generator/crawl/` (stealth browser, listing extraction, pagination, detail enrichment, execution trace)
+- [ ] `StealthBrowserService` launches **one Chromium instance per worker process** (`OnModuleInit`/`OnModuleDestroy`), not one per job — see `docs/playwright-scraping-worker-architecture.md`; per-job isolation comes from a fresh `BrowserContext`, closed after each job
+- [ ] `crawl` processor has an explicit, env-configurable bounded `concurrency` (`CRAWL_WORKER_CONCURRENCY`) instead of unbounded/default-1 parallelism
 - [ ] Playwright production runner: discover → collect URLs → detail enrich → extract → write `SourceProperty` (normalization into canonical `Property` is Feature 06) → `ScraperExecutionTrace`
 - [ ] Broken-scraper detection (signals per spec §19) → `Scraper.status = BROKEN` + `Notification` (stub call until Feature 08) + calls `triggerGeneration(..., 'SELF_HEAL')` when `self_healing_enabled`
 - [ ] `background/scraper-health.cron.ts` recomputing `health`/`success_rate`/`avg_runtime_ms`/`consecutive_failures`

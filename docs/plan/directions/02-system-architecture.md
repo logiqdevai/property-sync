@@ -123,7 +123,16 @@ Playwright action executor + config verification (ported from
 
 `integrations/crawler/` holds the production Playwright crawl + detail
 enrichment pipeline (ported from `scraper-generator/crawl/`); consumed by
-`crawl.processor.ts` only.
+`crawl.processor.ts` only. Unlike the reference CLI (which launches and closes
+a Chromium process per invocation), the production `BrowserManagerService`
+launches **one Chromium instance per worker process** on `OnModuleInit` and
+keeps it alive for the life of the process — each `CrawlRun` job gets its own
+isolated `BrowserContext` (cookies/storage/cache) created from that shared
+browser and closed when the job finishes; the browser itself only closes on
+`OnModuleDestroy` (graceful shutdown) or if Playwright reports it
+disconnected/crashed, in which case the manager relaunches it. See
+`../tasks/feature-05-crawl-engine/02-crawl-playwright-pipeline.md` for the
+exact contract.
 
 ## Database
 
@@ -147,6 +156,23 @@ JWT access token issued by `api/src/modules/auth/`, stored via the existing `sto
 ## Deployment approach
 
 No change from the existing setup: `api/` deploys as a NestJS service (with a long-running worker process for BullMQ processors — Playwright-heavy jobs should run in a separate worker deployment from the HTTP API in production, but for this phase both can run in-process via `@Processor()` classes registered in `AppModule`). `app/` deploys as a static Vite build. Environment-specific `.env.*` files per existing convention (`shared/config/env/`).
+
+### Crawl worker concurrency & scaling
+
+- The `crawl` BullMQ processor sets a bounded `concurrency` (env-configurable,
+  e.g. `CRAWL_WORKER_CONCURRENCY`, default `5`) — never unbounded. Each
+  concurrent job borrows one `BrowserContext` from the single shared Chromium
+  instance (see `integrations/crawler/` above); do not launch a new browser
+  per job.
+- To scale beyond one worker's concurrency ceiling, run additional worker
+  containers/processes pointed at the same Redis instance — BullMQ
+  distributes queued `crawl` jobs across them automatically. Do not manually
+  assign jobs to a specific worker.
+- Any container image used for a Playwright-heavy worker deployment must be
+  Playwright-compatible (Chromium + its OS-level dependencies/fonts
+  preinstalled, e.g. based on `mcr.microsoft.com/playwright:<version>`) —
+  this repo does not yet have that Dockerfile; add it when a real deployment
+  target is chosen, matching the `api/` build output (`dist/`).
 
 ## Cross-cutting planning rules (repeated from the architect skill, do not violate)
 

@@ -143,6 +143,11 @@ is independently verifiable. Task 02 replaces the stub by porting
 - Follow `.cursor/rules/api-code-structure-and-best-practices.mdc`
 - `{ data, pagination }` for all list endpoints
 - `JwtGuard` + `RolesGuard`; `SUPPORT` gets `GET` only on both modules
+- Leave the `@Processor('crawl')` concurrency at BullMQ's default here — this
+  task's processor is a no-op stub. Task 02 (`02-crawl-playwright-pipeline.md`)
+  sets an explicit bounded `concurrency` once real Playwright/browser
+  resource usage exists (see `docs/playwright-scraping-worker-architecture.md`
+  "Concurrency Management"); don't tune it prematurely against a stub
 
 ## Acceptance Criteria
 

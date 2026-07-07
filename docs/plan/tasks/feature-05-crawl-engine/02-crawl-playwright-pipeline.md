@@ -29,7 +29,12 @@ to normalization in Feature 06).
 | `scraper-generator/crawl/index.js` | orchestration order in `crawl.processor.ts` |
 
 Also read `docs/scraping-generation-computer-use-architecture.md` sections 4, 10,
-11. Config shape (from `ScraperVersion.config`, produced by Feature 04's
+11, and `docs/playwright-scraping-worker-architecture.md` in full — it defines
+the production browser-resource-management rules this task must follow
+(persistent browser, per-job context isolation, bounded concurrency,
+graceful shutdown). It is an architectural reference only; do not copy its
+example code verbatim, adapt it to this codebase's DI/module conventions.
+Config shape (from `ScraperVersion.config`, produced by Feature 04's
 generation loop or a manual admin edit in Feature 03):
 
 ```json
@@ -90,6 +95,14 @@ Key invariants:
   notification for a human to act.
 - Success/failure must update `Scraper.consecutive_failures` (reset to `0`
   on success, increment on failure), `last_success_at`/`last_failure_at`
+- **Browser lifecycle differs from the reference CLI**: `crawl/browser.js`
+  launches a fresh Chromium per CLI run because it only ever runs once. The
+  production worker must **not** do this — one Chromium instance is launched
+  per worker process and reused across every `CrawlRun` job; only the
+  per-job `BrowserContext` (created via `newStealthPage`) is job-scoped and
+  closed when that job's crawl (including detail enrichment) finishes. See
+  `docs/playwright-scraping-worker-architecture.md` "Browser Lifecycle" /
+  "Browser Context Isolation" sections.
 
 ## Requirements
 
@@ -102,8 +115,21 @@ Key invariants:
        `fields: Record<string, string | FieldDef>`, optional `pagination`:
        `{ type: 'next_button' | 'load_more' | 'infinite_scroll' | 'url_param' | 'none'; selector?: string; url_param?: string }`,
        optional `detail_page`: `{ image_selector?, image_type?, description_selector?, external_id_source?: 'url_path' | 'selector', external_id_selector? }`
-   - `services/stealth-browser.service.ts` — port `crawl/browser.js`
-     (`launchBrowser`, `newStealthPage` with anti-automation flags)
+   - `services/stealth-browser.service.ts` — port `crawl/browser.js`, but as a
+     `@Injectable()` singleton with `OnModuleInit`/`OnModuleDestroy` lifecycle
+     hooks instead of a per-call `launchBrowser()` function:
+     - `onModuleInit()` launches one Chromium instance (same args as
+       `launchBrowser`) and keeps a reference to it for the process lifetime
+     - `newStealthPage()` takes no browser argument — it creates a new
+       `BrowserContext` from the retained instance (per-job isolation:
+       cookies/storage/cache never shared between jobs), applies the same
+       stealth UA/headers/init script as the reference, and returns
+       `{ context, page }` so the caller can `context.close()` when the job's
+       crawl (incl. detail enrichment) finishes — never close the shared
+       browser itself here
+     - if `browser.isConnected()` is `false` when a job requests a context
+       (crash/disconnect), relaunch before creating the context
+     - `onModuleDestroy()` closes the shared browser for graceful shutdown
    - `services/field-extraction.service.ts` — port `crawl/extract.js`
    - `services/detail-enrichment.service.ts` — port `crawl/detail.js`
      (`enrichDetailPages(items, detailConfig)` with `DETAIL_CONCURRENCY` /
@@ -150,6 +176,17 @@ Key invariants:
    'BROKEN' → BROKEN`, `success_rate >= 95 → EXCELLENT`, `>= 80 → GOOD`, `>=
    50 → WARNING`, else `CRITICAL`. Do not overwrite `health: BROKEN` back to
    a numeric-derived value while `Scraper.status` is still `BROKEN`.
+4. **Bound crawl worker concurrency**: set an explicit `concurrency` on the
+   `crawl` `@Processor()` (`@Processor('crawl', { concurrency: crawlConcurrency })`),
+   read from a new env var (e.g. `CRAWL_WORKER_CONCURRENCY`, default `5`, add
+   to the Zod env schema per `.cursor/rules/api-code-structure-and-best-practices.mdc`
+   §11) rather than leaving BullMQ's default of `1` or an unbounded value —
+   each concurrent job holds one `BrowserContext` from the single shared
+   Chromium instance, so this is what actually limits browser memory/CPU
+   pressure per worker process (see `docs/playwright-scraping-worker-architecture.md`
+   "Concurrency Management"). Horizontal scaling beyond this ceiling is a
+   deployment concern (more worker processes/containers against the same
+   Redis), not something this task builds.
 
 ## Files to create or modify
 
@@ -175,7 +212,9 @@ Key invariants:
 
 ## Subtasks
 
-- [ ] Port `StealthBrowserService` from `crawl/browser.js`
+- [ ] Port `StealthBrowserService` from `crawl/browser.js` as a persistent
+      singleton (`OnModuleInit` launch / `OnModuleDestroy` shutdown /
+      relaunch-on-disconnect), not a per-call `launchBrowser()`
 - [ ] Port `FieldExtractionService` from `crawl/extract.js`
 - [ ] Port `CrawlerService.runCrawl` from `crawl/crawler.js` (all pagination types + trace log)
 - [ ] Port `DetailEnrichmentService` from `crawl/detail.js`
@@ -183,7 +222,9 @@ Key invariants:
 - [ ] Implement broken-scraper detection + self-heal trigger + stub notification
 - [ ] Update `Scraper.consecutive_failures`/`last_success_at`/`last_failure_at` per run
 - [ ] Build the hourly scraper-health cron recomputing `health`/`success_rate`/`avg_runtime_ms`
+- [ ] Add `CRAWL_WORKER_CONCURRENCY` env var (default `5`) and set it as the `crawl` processor's `concurrency`
 - [ ] Smoke test: point NestJS crawl at a config produced by `scraper-generator/output/version.json` and compare `source_properties` shape to `scraper-generator/output/crawl/source_properties.json`
+- [ ] Smoke test: enqueue several `CrawlRun`s concurrently and confirm (via logs/`process.pid` of the Chromium child, or a debug counter) that only one Chromium process is launched while N contexts run in parallel
 
 ## Technical Notes
 
@@ -196,6 +237,12 @@ Key invariants:
 - Listing-card image extraction and detail-page merge logic must match the
   reference — normalization (Feature 06) reads `_all_images` and
   `_detail_text` from `raw_data`
+- `StealthBrowserService` is the only place that calls `chromium.launch()`;
+  `CrawlerService`/`DetailEnrichmentService` always ask it for a context, never
+  launch a browser themselves
+- Do not add a browser-context pool/queue abstraction beyond BullMQ's own
+  concurrency limit — the processor's `concurrency` option already caps how
+  many contexts exist at once, a second limiter would be redundant
 
 ## Acceptance Criteria
 
@@ -210,4 +257,9 @@ Key invariants:
   and (if `self_healing_enabled`) a new `ScraperGenerationRun` with `trigger:
   SELF_HEAL` is created
 - The hourly cron updates `Scraper.health`/`success_rate`/`avg_runtime_ms` based on real `CrawlRun` history
+- Enqueuing multiple `CrawlRun`s at once launches exactly one Chromium
+  process (per worker instance) and runs them concurrently up to
+  `CRAWL_WORKER_CONCURRENCY`, each in its own `BrowserContext`; stopping the
+  worker process closes that Chromium instance cleanly (no orphaned browser
+  processes)
 - `tsc --noEmit` passes in `api/`
