@@ -1,0 +1,42 @@
+{
+  "name": "EstateWeb - Production",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "https://app.estateweb.gr",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "estateSession",
+      "value": "eyJpdiI6IlFiMHhVaGt4TktsUEZvYkU1d3U0bUE9PSIsInZhbHVlIjoia0hjL2FIdDBMRmV2Nm5wVHBqMTVENUU0QTNLaUNPM0ZSeElqY0pHODdIMTVDNzJ4SEVGY3IwNlh2MmR1WWU5VjJmeGhqUUh2MTRaMG5iMjNOWEJsenc9PSIsIm1hYyI6ImZlYWRjMTM0NDdlNmE1OGU5ZjIzMDQ4NDE5YWExNDg4MmY3ZmY2NDcxODVjYThmZjM2YmYxMjFmODM0MTNlOTIifQ%3D%3D",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "bearerToken",
+      "value": "G36g47zh04jnrAOxMNg2k8Z9Pb02khCq9anUoncE",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "acceptLanguage",
+      "value": "en-US,en;q=0.9,el;q=0.8",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "propertyId",
+      "value": "51700",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "propertyCode",
+      "value": "2193",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}
