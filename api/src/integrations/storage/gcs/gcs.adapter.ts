@@ -19,7 +19,7 @@ export class GcsAdapter {
     constructor(
         private gcsConfig: GcsConfig,
     ) {
-        this.folder = this.gcsConfig.getConfig().folder_name;
+        this.folder = this.gcsConfig.getConfig()?.folder_name ?? 'documents';
     }
 
     public async uploadImage(request: UploadImageRequest): Promise<UploadImageResponse> {

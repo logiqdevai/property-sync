@@ -6,9 +6,11 @@
 > before writing code. Update this file when deliverables are verified.
 
 **Last updated:** 2026-07-14
-**Overall progress:** 30% (3 / 10 features complete — Features 01, 02, and 03 are all verified end-to-end against a real DB and real browser UI; Feature 04 task 01 of 4 is also done, see below)
-**Current focus:** Continue Feature 04 (AI Computer-Use Scraper Generation) — `tasks/feature-04-ai-generation/02-computer-use-loop-engine.md`. Read `../../scraping-generation-computer-use-architecture.md`, the reference CLI under `../../scraper-generator/generate/`, and that task file in full before implementing. This task adds `@anthropic-ai/sdk` + `playwright` dependencies and replaces the stub `api/src/background/generation.processor.ts` with the real Anthropic-vision + Playwright loop.
+**Overall progress:** 30% (3 / 10 features complete — Features 01, 02, and 03 are all verified end-to-end against a real DB and real browser UI; Feature 04 tasks 01–02 of 4 are also done, see below)
+**Current focus:** Continue Feature 04 (AI Computer-Use Scraper Generation) — `tasks/feature-04-ai-generation/03-generation-runs-frontend-data.md`. The API side (generation-runs CRUD + the real computer-use loop) is done; this task builds `app/src/features/scraper-generation/` (services/hooks/interfaces) so task 04 can build the UI on top of it.
+**Path correction:** the reference CLI referenced throughout this file as `scraper-generator/...` actually lives at `scripts/scraper-generator/...` (moved there in commit `363ef61`) — paths below have been corrected. If a future session still can't find it, run `git log --all --diff-filter=A --name-only | grep scraper-generator` to relocate it.
 **Dependency note:** Feature 04 task 01 needed `UserIntegrationsService.resolveActiveApiKey` / `resolveForSourceAgency`, which is formally Feature 09's deliverable but Feature 09 hasn't started yet. A **minimal** `api/src/modules/user-integrations/` module was added out-of-order containing just those two resolver methods (matching the contract in `directions/03-domain-model.md`'s `UserIntegration AI credential rule`) — no controllers/DTOs/CRUD. When Feature 09 is implemented, extend this module in place (add `integration-targets` module + this module's admin/user CRUD endpoints) rather than recreating it.
+**Local testing gap:** `GCS_PROJECT_ID`/`GCS_BUCKET_NAME` are unset in `api/.env.local`, so `ScreenshotStorageService` (used by the computer-use loop) can't upload screenshots locally, and there's no real `UserIntegration.api_key_secret` for Anthropic (a placeholder key was used for testing — real API calls would 401). Task 02's happy path (`AWAITING_REVIEW` with a real AI-produced config) is therefore **not yet verified against a real target site** — only the failure path is (see Feature 04 checklist). To fully verify, either configure a real GCS bucket + Anthropic key in `.env.local`, or accept this gap and verify later once real credentials exist.
 
 ---
 
@@ -32,7 +34,7 @@
 | 01 | Platform Foundation (DB, Auth, Roles) | done | 100% | 2 files |
 | 02 | Admin Shell & Agencies | done | 100% | 3 files |
 | 03 | Scraper Management | done | 100% | 3 files |
-| 04 | AI Computer-Use Scraper Generation | in progress | 25% (1/4 task files) | 4 files |
+| 04 | AI Computer-Use Scraper Generation | in progress | 50% (2/4 task files) | 4 files |
 | 05 | Crawl Execution Engine & Job Queue | not started | 0% | 4 files |
 | 06 | Property Normalization & Admin Properties | not started | 0% | 3 files |
 | 07 | User Tracked Agencies & UserProperty | not started | 0% | 3 files |
@@ -182,14 +184,14 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 **Description:** Admins can trigger an AI computer-use session that generates or fixes a scraper, replay every step it took, and approve/reject the result.
 
 **Status:** in progress
-**Progress:** 25% (task 01 of 4 done and verified end-to-end against the live DB; the computer-use loop itself is still a stub)
+**Progress:** 50% (tasks 01–02 of 4 done; the real computer-use loop is implemented and its failure path is verified end-to-end — its happy path needs real GCS + Anthropic credentials to fully verify, see **Local testing gap** above)
 
 ### References
 
 | Doc | Path |
 |-----|------|
 | Computer-use architecture | `../../scraping-generation-computer-use-architecture.md` |
-| Reference CLI (generation + crawl + normalization) | `../../scraper-generator/` |
+| Reference CLI (generation + crawl + normalization) | `../../scripts/scraper-generator/` |
 | System architecture | `directions/02-system-architecture.md` |
 | API design — Feature 04 | `directions/04-api-design.md` |
 
@@ -198,26 +200,28 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 | File | Status |
 |------|--------|
 | `tasks/feature-04-ai-generation/01-generation-runs-api-core.md` | done |
-| `tasks/feature-04-ai-generation/02-computer-use-loop-engine.md` | ready |
+| `tasks/feature-04-ai-generation/02-computer-use-loop-engine.md` | done |
 | `tasks/feature-04-ai-generation/03-generation-runs-frontend-data.md` | ready |
 | `tasks/feature-04-ai-generation/04-generation-runs-ui.md` | ready |
 
 ### Implementation checklist
 
 **API (`api/`)**
-- [ ] Add `@anthropic-ai/sdk` and `playwright` dependencies (task 02)
-- [ ] `api/src/integrations/computer-use/` — port `scraper-generator/generate/` (Anthropic vision loop + Playwright actions + config verification + screenshot capture → `Document` rows); API key from initiating admin's or self-heal tracker's `UserIntegration` (task 02)
-- [x] `api/src/modules/scraper-generation/` — module, controller, service; `ScraperGenerationRun` + `ComputerUseStep` persistence (findAll/findOne with steps ordered by `step_index asc`); BullMQ `generation` queue registered + stub processor (`api/src/background/generation.processor.ts`, real loop is task 02) — verified end-to-end against the live DB: `POST /admin/generation-runs` without a connected Anthropic key → `400`; with one connected → creates `QUEUED` run, stub processor flips it `RUNNING` → `FAILED` (`"AI loop not implemented yet"`); `reject`/`cancel`/`approve` all correctly blocked (`400`) on a terminal run; manually staged `AWAITING_REVIEW` rows (new-scraper case and existing-`BROKEN`-scraper case) both `approve` correctly — new `Scraper`+`ScraperVersion` created/activated, `produced_version_id` set, `BROKEN` reset to `ACTIVE`, version_count incremented; `SUPPORT`/`ADMIN` can `GET` (200), `USER` gets `403`, unauthenticated gets `401`. Test agency/scraper/versions/runs/integration cleaned up afterward.
+- [x] Add `@anthropic-ai/sdk` (`^0.55.0`) and `playwright` (`^1.50.0`) dependencies; `npx playwright install chromium` run locally
+- [x] `api/src/integrations/computer-use/` — ported `scripts/scraper-generator/generate/` (Anthropic vision loop + Playwright actions + config verification + screenshot capture → `Document` rows via `GcsService`): `computer-use.module.ts`, `constants/generation-prompt.ts` (verbatim `SYSTEM_PROMPT` port), `services/computer-use-client.service.ts` (Anthropic wrapper — dropped the reference's `thinking: { type: 'adaptive' }`, not a value the installed SDK's `ThinkingConfigParam` accepts), `services/playwright-driver.service.ts` (plain class, `new`'d per run — not a DI singleton, since it holds per-session browser/page state), `services/scraper-config-verification.service.ts`, `services/screenshot-storage.service.ts`, `computer-use-orchestrator.service.ts` (`run(generationRunId, apiKey)`: loads run+agency → `RUNNING` → step loop (screenshot → `Document` → Anthropic call → `ComputerUseStep` persist → `done`-verify-or-execute) capped at `MAX_GENERATION_STEPS=50` → `AWAITING_REVIEW`+`staged_config` or `FAILED`+`error_message`, browser always closed in `finally`)
+- [x] `api/src/modules/scraper-generation/` — module, controller, service; `ScraperGenerationRun` + `ComputerUseStep` persistence (findAll/findOne with steps ordered by `step_index asc`); BullMQ `generation` queue + **real** processor (`api/src/background/generation.processor.ts`: resolves the Anthropic key — `MANUAL` via `resolveActiveApiKey(initiatedByUserId)`, else via `resolveForSourceAgency` — skips re-processing a run that's no longer `QUEUED` e.g. already `CANCELLED`, then calls `ComputerUseOrchestratorService.run`) — verified end-to-end against the live DB: `POST /admin/generation-runs` without a connected Anthropic key → `400`; with one connected → creates `QUEUED` run, processor picks it up, launches a real headless Chromium, navigates to the agency's `base_url`, takes a screenshot, then fails cleanly at the (locally-unconfigured) GCS upload step → run ends `FAILED` with a real, useful `error_message` (never stuck `RUNNING`), browser confirmed closed (no orphaned `chrome.exe` processes). Also re-verified `reject`/`cancel`/`approve` guards and the new-scraper/existing-`BROKEN`-scraper `approve` paths from task 01 still pass. Test agency/scraper/versions/runs/integration cleaned up afterward.
 - [x] Approve/reject/cancel endpoints; approve promotes `staged_config` into a new `ScraperVersion` and activates it (creates the `Scraper` too when `scraper_id` was null)
 - [x] Internal `trigger(sourceAgencyId, scraperId, trigger, prompt?)` method (no HTTP route) for Feature 05's self-heal wiring — resolves Anthropic credentials via `resolveForSourceAgency` for non-`MANUAL` triggers
 - [x] Minimal `api/src/modules/user-integrations/` (Feature 09 dependency, added out-of-order — see **Dependency note** above) with only `resolveActiveApiKey` / `resolveForSourceAgency`
+- [x] Bug fix (pre-existing, unrelated to this feature's own code but blocked app boot once `GcsIntegrationModule` was first wired into the module graph): `GcsAdapter`'s constructor crashed on `this.gcsConfig.getConfig().folder_name` when GCS env vars are unset (`getConfig()` returns `undefined`) — now falls back to `'documents'`, matching the graceful-degradation pattern already used by `TwillioConfig`/`RedisModule`. Without this fix the entire API fails to boot locally (GCS isn't configured in `api/.env.local`).
+- [x] Added optional `SCRAPER_GENERATION_MODEL` env var (`env.validation.ts` + `shared/config/env/index.ts` + `.env.template`); default `claude-opus-4-8` handled in code. Did **not** add `ANTHROPIC_API_KEY` anywhere, per the `UserIntegration` credential rule.
 
 **App (`app/`)**
 - [ ] `app/src/features/scraper-generation/`
 - [ ] `/admin/generation-runs` list + session replay view (steps with before/after screenshots + reasoning) + review screen (diff `staged_config` vs current active version, approve/reject) + manual "Generate scraper" trigger (from Agencies or Scrapers page)
 
 **Verification**
-- [ ] Smoke test: trigger a manual generation run against a real simple test page, watch it reach `AWAITING_REVIEW`, approve it, confirm a new `ScraperVersion` is active — blocked on task 02 (real computer-use loop); task 01's queue wiring + approve/reject/cancel transitions are already verified above using a manually-staged run
+- [ ] Smoke test: trigger a manual generation run against a real simple test page, watch it reach `AWAITING_REVIEW`, approve it, confirm a new `ScraperVersion` is active — **not yet verified** (see **Local testing gap** above): the failure path (bad/missing credentials → clean `FAILED`) is verified; the happy path (real AI-produced `staged_config` → `AWAITING_REVIEW`) needs a real GCS bucket + real Anthropic API key, neither configured in this environment
 
 **Definition of done:** An admin can generate a working scraper end-to-end via the AI computer-use loop with full replay and manual approval.
 
@@ -235,7 +239,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 | Doc | Path |
 |-----|------|
 | Product spec §7–9, §16–19 | `directions/01-product-spec.md` |
-| Reference CLI (crawl pipeline) | `../../scraper-generator/crawl/` |
+| Reference CLI (crawl pipeline) | `../../scripts/scraper-generator/crawl/` |
 | Production browser/worker resource rules | `../playwright-scraping-worker-architecture.md` |
 | System architecture | `directions/02-system-architecture.md` |
 | API design — Feature 05 | `directions/04-api-design.md` |
@@ -254,7 +258,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 **API (`api/`)**
 - [ ] `api/src/modules/crawl-runs/`, `api/src/modules/jobs/`
 - [ ] BullMQ `crawl` queue + processor; cron scheduler per enabled `UserTrackedAgency.crawl_interval` → `CrawlRun` with `user_tracked_agency_id` (overlap check per tracker)
-- [ ] `api/src/integrations/crawler/` — port `scraper-generator/crawl/` (stealth browser, listing extraction, pagination, detail enrichment, execution trace)
+- [ ] `api/src/integrations/crawler/` — port `scripts/scraper-generator/crawl/` (stealth browser, listing extraction, pagination, detail enrichment, execution trace)
 - [ ] `StealthBrowserService` launches **one Chromium instance per worker process** (`OnModuleInit`/`OnModuleDestroy`), not one per job — see `docs/playwright-scraping-worker-architecture.md`; per-job isolation comes from a fresh `BrowserContext`, closed after each job
 - [ ] `crawl` processor has an explicit, env-configurable bounded `concurrency` (`CRAWL_WORKER_CONCURRENCY`) instead of unbounded/default-1 parallelism
 - [ ] Playwright production runner: discover → collect URLs → detail enrich → extract → write `SourceProperty` (normalization into canonical `Property` is Feature 06) → `ScraperExecutionTrace`
@@ -287,7 +291,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 |-----|------|
 | Product spec §10–14 | `directions/01-product-spec.md` |
 | Domain model | `directions/03-domain-model.md` |
-| Reference CLI (normalization + dedup + cost) | `../../scraper-generator/crawl/normalize.js`, `duplicates.js`, `cost.js` |
+| Reference CLI (normalization + dedup + cost) | `../../scripts/scraper-generator/crawl/normalize.js`, `duplicates.js`, `cost.js` |
 | API design — Feature 06 | `directions/04-api-design.md` |
 
 ### Task files
@@ -302,10 +306,10 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **API (`api/`)**
 - [ ] `api/src/modules/properties/`
-- [ ] AI-assisted normalization — port `scraper-generator/crawl/normalize.js` + `duplicates.js` + `cost.js` (sync via `integrations/ai/` with attributed tracker's `UserIntegration` key, batch via `integrations/ai-batch/` + OpenAI webhooks) using prefs from `CrawlRun.user_tracked_agency` when set
+- [ ] AI-assisted normalization — port `scripts/scraper-generator/crawl/normalize.js` + `duplicates.js` + `cost.js` (sync via `integrations/ai/` with attributed tracker's `UserIntegration` key, batch via `integrations/ai-batch/` + OpenAI webhooks) using prefs from `CrawlRun.user_tracked_agency` when set
 - [ ] `POST /webhooks/openai` — verify `batch.completed` / `batch.failed` / `batch.expired` / `batch.cancelled`, enqueue `ai-batch-complete` worker
 - [ ] Normalization/dedup service invoked at the end of each `CrawlRun` (hook into Feature 05's pipeline): create/update `Property`, `PropertySourceLink`, duplicate detection (`duplicate_group_id`)
-- [ ] Persist AI normalization cost totals on `CrawlRun` (`ai_*` fields; mirror `scraper-generator/output/crawl/cost.json`)
+- [ ] Persist AI normalization cost totals on `CrawlRun` (`ai_*` fields; mirror `scripts/scraper-generator/output/crawl/cost.json`)
 - [ ] `PropertyHistory` writes for every detected change (created/updated/price/images/status/removed/reappeared)
 - [ ] Removal detection (previously seen `SourceProperty` missing from a new crawl → `REMOVED`) and reappearance detection
 - [ ] Merge/split endpoints
