@@ -21,6 +21,9 @@ export class AvailableIntegrationTargetEntity {
   is_visible: boolean;
 
   @ApiProperty()
+  is_enabled: boolean;
+
+  @ApiProperty()
   is_connected: boolean;
 
   @ApiProperty()
@@ -78,5 +81,6 @@ export class UserIntegrationConnectionEntity {
     base_url: string | null;
     allow_multiple: boolean;
     is_visible: boolean;
+    is_enabled: boolean;
   };
 }

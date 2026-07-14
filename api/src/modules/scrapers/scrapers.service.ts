@@ -75,6 +75,20 @@ export class ScrapersService {
   }
 
   async create(dto: CreateScraperDto) {
+    if (dto.config === undefined) {
+      return this.prisma.scraper.create({
+        data: {
+          source_agency_id: dto.source_agency_id,
+          name: dto.name,
+          status: ScraperStatus.TESTING,
+        },
+        include: {
+          active_version: true,
+          source_agency: { select: { name: true } },
+        },
+      });
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const scraper = await tx.scraper.create({
         data: {
@@ -126,7 +140,7 @@ export class ScrapersService {
         data: {
           scraper_id: scraperId,
           version: (latest?.version ?? 0) + 1,
-          config: dto.config as Prisma.InputJsonValue,
+          config: (dto.config ?? {}) as Prisma.InputJsonValue,
           notes: dto.notes,
           created_by: ScraperVersionCreatedBy.USER,
         },

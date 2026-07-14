@@ -144,7 +144,7 @@ export default function IntegrationTargetsListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={6} />
+        <TableSkeleton rows={8} columns={7} />
       ) : targets.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No integration targets found.
@@ -160,6 +160,7 @@ export default function IntegrationTargetsListPage() {
                   <Table.Column>Base URL</Table.Column>
                   <Table.Column>Multiple</Table.Column>
                   <Table.Column>Visible</Table.Column>
+                  <Table.Column>Enabled</Table.Column>
                   <Table.Column>Connections</Table.Column>
                 </Table.Header>
                 <Table.Body>
@@ -183,7 +184,26 @@ export default function IntegrationTargetsListPage() {
                           isSelected={target.is_visible}
                           isDisabled={updateVisibility.isPending}
                           onChange={(next) =>
-                            updateVisibility.mutate({ id: target.id, isVisible: next })
+                            updateVisibility.mutate({
+                              id: target.id,
+                              payload: { is_visible: next, is_enabled: target.is_enabled },
+                            })
+                          }
+                        >
+                          <Switch.Control>
+                            <Switch.Thumb />
+                          </Switch.Control>
+                        </Switch>
+                      </Table.Cell>
+                      <Table.Cell onClick={(event) => event.stopPropagation()}>
+                        <Switch
+                          isSelected={target.is_enabled}
+                          isDisabled={updateVisibility.isPending}
+                          onChange={(next) =>
+                            updateVisibility.mutate({
+                              id: target.id,
+                              payload: { is_visible: target.is_visible, is_enabled: next },
+                            })
                           }
                         >
                           <Switch.Control>

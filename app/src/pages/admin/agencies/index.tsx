@@ -10,10 +10,15 @@ import {
   Pagination,
   useOverlayState,
 } from "@heroui/react";
-import { Search, Plus } from "lucide-react";
+import { Archive, Ban, CheckCircle, Plus, Search } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import {
+  TableRowActionsMenu,
+  type TableRowAction,
+} from "@/components/ui/table-row-actions-menu";
 import { AgencyForm } from "./components/agency-form";
 import { AgencyStatusChip } from "./components/agency-status-chip";
 import { useAgencies, useCreateAgency, useUpdateAgencyStatus } from "@/features/agencies/hooks/use-agencies";
@@ -21,18 +26,39 @@ import {
   AgencyStatuses,
   type AgencyListQuery,
   type AgencyStatus,
+  type SourceAgency,
 } from "@/features/agencies/interfaces/agencies.interfaces";
 import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agency-status-filter.options";
 import { formatDate } from "@/lib/date";
 import { useDebouncedValue } from "./hooks/use-debounced-value";
 
+function getAgencyActions(agency: SourceAgency): TableRowAction[] {
+  const actions: TableRowAction[] = [];
+
+  if (agency.status !== AgencyStatuses.ACTIVE) {
+    actions.push({ id: "activate", label: "Activate", icon: CheckCircle });
+  }
+
+  if (agency.status === AgencyStatuses.ACTIVE) {
+    actions.push({ id: "disable", label: "Disable", icon: Ban });
+  }
+
+  if (agency.status !== AgencyStatuses.ARCHIVED) {
+    actions.push({ id: "archive", label: "Archive", variant: "danger", icon: Archive });
+  }
+
+  return actions;
+}
+
 export default function AgenciesListPage() {
   const navigate = useNavigate();
   const createModal = useOverlayState();
+  const archiveConfirm = useOverlayState();
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<AgencyStatus | "all">("all");
   const [page, setPage] = useState(1);
+  const [archiveAgencyId, setArchiveAgencyId] = useState<string | null>(null);
   const debouncedSearch = useDebouncedValue(search, 300);
 
   const query = useMemo<AgencyListQuery>(
@@ -51,6 +77,23 @@ export default function AgenciesListPage() {
 
   const agencies = data?.data ?? [];
   const pagination = data?.pagination;
+
+  const handleAgencyAction = (agencyId: string, actionId: string) => {
+    if (actionId === "activate") {
+      updateStatus.mutate({ id: agencyId, status: AgencyStatuses.ACTIVE });
+      return;
+    }
+
+    if (actionId === "disable") {
+      updateStatus.mutate({ id: agencyId, status: AgencyStatuses.DISABLED });
+      return;
+    }
+
+    if (actionId === "archive") {
+      setArchiveAgencyId(agencyId);
+      archiveConfirm.open();
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -105,7 +148,7 @@ export default function AgenciesListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={6} />
+        <TableSkeleton rows={8} columns={7} />
       ) : agencies.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No agencies found.
@@ -122,6 +165,7 @@ export default function AgenciesListPage() {
                   <Table.Column>Location</Table.Column>
                   <Table.Column>Last success</Table.Column>
                   <Table.Column>Last failure</Table.Column>
+                  <Table.Column>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
                   {agencies.map((agency) => (
@@ -138,39 +182,7 @@ export default function AgenciesListPage() {
                         </div>
                       </Table.Cell>
                       <Table.Cell>
-                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                          <AgencyStatusChip status={agency.status} />
-                          {agency.status !== AgencyStatuses.ACTIVE && (
-                            <button
-                              className="text-xs text-accent hover:underline"
-                              onClick={() =>
-                                updateStatus.mutate({ id: agency.id, status: AgencyStatuses.ACTIVE })
-                              }
-                            >
-                              Activate
-                            </button>
-                          )}
-                          {agency.status === AgencyStatuses.ACTIVE && (
-                            <button
-                              className="text-xs text-muted hover:underline"
-                              onClick={() =>
-                                updateStatus.mutate({ id: agency.id, status: AgencyStatuses.DISABLED })
-                              }
-                            >
-                              Disable
-                            </button>
-                          )}
-                          {agency.status !== AgencyStatuses.ARCHIVED && (
-                            <button
-                              className="text-xs text-danger hover:underline"
-                              onClick={() =>
-                                updateStatus.mutate({ id: agency.id, status: AgencyStatuses.ARCHIVED })
-                              }
-                            >
-                              Archive
-                            </button>
-                          )}
-                        </div>
+                        <AgencyStatusChip status={agency.status} />
                       </Table.Cell>
                       <Table.Cell>
                         <div className="flex gap-1.5">
@@ -187,6 +199,13 @@ export default function AgenciesListPage() {
                       </Table.Cell>
                       <Table.Cell>{formatDate(agency.last_success_at)}</Table.Cell>
                       <Table.Cell>{formatDate(agency.last_failure_at)}</Table.Cell>
+                      <Table.Cell>
+                        <TableRowActionsMenu
+                          actions={getAgencyActions(agency)}
+                          onAction={(actionId) => handleAgencyAction(agency.id, actionId)}
+                          ariaLabel={`Actions for ${agency.name}`}
+                        />
+                      </Table.Cell>
                     </Table.Row>
                   ))}
                 </Table.Body>
@@ -223,6 +242,23 @@ export default function AgenciesListPage() {
           </Pagination.Content>
         </Pagination>
       )}
+
+      <ConfirmationDialog
+        state={archiveConfirm}
+        title="Archive this agency?"
+        description="Archived agencies are hidden from active operations."
+        confirmLabel="Archive"
+        isPending={updateStatus.isPending}
+        onConfirm={() => {
+          if (!archiveAgencyId) return;
+          updateStatus.mutate(
+            { id: archiveAgencyId, status: AgencyStatuses.ARCHIVED },
+            {
+              onSuccess: () => setArchiveAgencyId(null),
+            },
+          );
+        }}
+      />
 
       <Modal state={createModal}>
         <Modal.Backdrop isDismissable>

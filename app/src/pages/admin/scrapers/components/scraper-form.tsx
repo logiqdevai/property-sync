@@ -30,7 +30,7 @@ export function ScraperForm({ defaultAgencyId, submitLabel, isPending, onSubmit,
     defaultValues: {
       source_agency_id: defaultAgencyId ?? "",
       name: "",
-      config: '{\n  "start_url": ""\n}',
+      config: "",
     },
   });
 
@@ -73,7 +73,7 @@ export function ScraperForm({ defaultAgencyId, submitLabel, isPending, onSubmit,
       </div>
 
       <div className="flex flex-col gap-1">
-        <Label htmlFor="scraper-config">Config (JSON)</Label>
+        <Label htmlFor="scraper-config">Config (JSON, optional)</Label>
         <TextArea
           id="scraper-config"
           {...register("config")}

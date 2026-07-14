@@ -9,6 +9,7 @@ export interface AvailableIntegrationTarget {
   base_url: string | null;
   allow_multiple: boolean;
   is_visible: boolean;
+  is_enabled: boolean;
   is_connected: boolean;
   created_at: string;
   updated_at: string;
@@ -35,6 +36,7 @@ export interface MaskedUserIntegrationConnection {
     base_url: string | null;
     allow_multiple: boolean;
     is_visible: boolean;
+    is_enabled: boolean;
   };
 }
 

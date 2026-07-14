@@ -18,6 +18,7 @@ export const IntegrationTargetQuerySchema = z.object({
   integration_type: z.nativeEnum(IntegrationType).optional(),
   auth_type: z.nativeEnum(AuthType).optional(),
   is_visible: booleanQueryParam,
+  is_enabled: booleanQueryParam,
 });
 
 export type IntegrationTargetQueryType = z.infer<typeof IntegrationTargetQuerySchema>;

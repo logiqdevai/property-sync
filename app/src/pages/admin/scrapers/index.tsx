@@ -10,6 +10,7 @@ import { ScraperForm } from "./components/scraper-form";
 import { ScraperStatusChip } from "./components/scraper-status-chip";
 import { ScraperHealthChip } from "./components/scraper-health-chip";
 import { useCreateScraper, useScrapers } from "@/features/scrapers/hooks/use-scrapers";
+import { parseOptionalJsonConfig } from "@/features/scrapers/validation-schemas/scrapers.schema";
 import {
   type ScraperHealth,
   type ScraperListQuery,
@@ -259,12 +260,17 @@ export default function ScrapersListPage() {
                   submitLabel="Create"
                   isPending={createScraper.isPending}
                   onCancel={createModal.close}
-                  onSubmit={(values) =>
+                  onSubmit={(values) => {
+                    const config = parseOptionalJsonConfig(values.config);
                     createScraper.mutate(
-                      { source_agency_id: values.source_agency_id, name: values.name, config: JSON.parse(values.config) },
+                      {
+                        source_agency_id: values.source_agency_id,
+                        name: values.name,
+                        ...(config && { config }),
+                      },
                       { onSuccess: () => createModal.close() },
-                    )
-                  }
+                    );
+                  }}
                 />
               </Modal.Body>
             </Modal.Dialog>

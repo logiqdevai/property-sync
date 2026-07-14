@@ -22,7 +22,7 @@ export function ScraperVersionForm({ defaultConfig, isPending, onSubmit, onCance
   } = useForm<CreateScraperVersionFormValues>({
     resolver: zodResolver(createScraperVersionFormSchema),
     defaultValues: {
-      config: defaultConfig ?? '{\n  "start_url": ""\n}',
+      config: defaultConfig ?? "",
       notes: "",
     },
   });
@@ -30,7 +30,7 @@ export function ScraperVersionForm({ defaultConfig, isPending, onSubmit, onCance
   return (
     <Form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
       <div className="flex flex-col gap-1">
-        <Label htmlFor="version-config">Config (JSON)</Label>
+        <Label htmlFor="version-config">Config (JSON, optional)</Label>
         <TextArea
           id="version-config"
           {...register("config")}

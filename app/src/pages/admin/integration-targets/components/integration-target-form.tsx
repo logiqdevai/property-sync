@@ -31,6 +31,7 @@ const integrationTargetFormSchema = z.object({
   base_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   allow_multiple: z.boolean(),
   is_visible: z.boolean(),
+  is_enabled: z.boolean(),
 });
 
 export type IntegrationTargetFormValues = z.infer<typeof integrationTargetFormSchema>;
@@ -64,11 +65,13 @@ export function IntegrationTargetForm({
       base_url: defaultValues?.base_url ?? "",
       allow_multiple: defaultValues?.allow_multiple ?? false,
       is_visible: defaultValues?.is_visible ?? true,
+      is_enabled: defaultValues?.is_enabled ?? true,
     },
   });
 
   const allowMultiple = watch("allow_multiple");
   const isVisible = watch("is_visible");
+  const isEnabled = watch("is_enabled");
   const integrationType = watch("integration_type");
   const authType = watch("auth_type");
 
@@ -78,6 +81,7 @@ export function IntegrationTargetForm({
       auth_type: values.auth_type,
       allow_multiple: values.allow_multiple,
       is_visible: values.is_visible,
+      is_enabled: values.is_enabled,
       ...(values.base_url ? { base_url: values.base_url } : {}),
     });
   };
@@ -155,6 +159,13 @@ export function IntegrationTargetForm({
           <Switch.Thumb />
         </Switch.Control>
         <Switch.Content>Visible to users on Integrations page</Switch.Content>
+      </Switch>
+
+      <Switch isSelected={isEnabled} onChange={(value) => setValue("is_enabled", value)}>
+        <Switch.Control>
+          <Switch.Thumb />
+        </Switch.Control>
+        <Switch.Content>Users can connect and modify</Switch.Content>
       </Switch>
 
       <div className="flex justify-end gap-2 mt-2">

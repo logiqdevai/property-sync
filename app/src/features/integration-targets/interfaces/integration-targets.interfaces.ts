@@ -25,6 +25,7 @@ export interface IntegrationTarget {
   base_url: string | null;
   allow_multiple: boolean;
   is_visible: boolean;
+  is_enabled: boolean;
   created_at: string;
   updated_at: string;
   _count?: {
@@ -63,6 +64,7 @@ export interface CreateIntegrationTargetPayload {
   base_url?: string;
   allow_multiple?: boolean;
   is_visible?: boolean;
+  is_enabled?: boolean;
 }
 
 export interface UpdateIntegrationTargetPayload extends Partial<CreateIntegrationTargetPayload> {}
@@ -73,6 +75,7 @@ export interface IntegrationTargetListQuery {
   integration_type?: IntegrationType;
   auth_type?: AuthType;
   is_visible?: boolean;
+  is_enabled?: boolean;
 }
 
 export interface CreateUserIntegrationAccountPayload {

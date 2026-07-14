@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Table, Select, ListBox, Pagination, Button } from "@heroui/react";
+import { MailOpen } from "lucide-react";
+import { Table, Select, ListBox, Pagination } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { TableRowActionsMenu } from "@/components/ui/table-row-actions-menu";
 import { NotificationSeverityChip } from "./components/notification-severity-chip";
 import { NotificationTypeChip } from "./components/notification-type-chip";
 import {
@@ -210,18 +212,22 @@ export default function NotificationsListPage() {
                             </span>
                           </Table.Cell>
                           <Table.Cell>
-                            {!notification.is_read ? (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onPress={() => markRead.mutate(notification.id)}
-                                isDisabled={markRead.isPending}
-                              >
-                                Mark read
-                              </Button>
-                            ) : (
-                              <span className="text-muted text-sm">—</span>
-                            )}
+                            <TableRowActionsMenu
+                              actions={
+                                notification.is_read
+                                  ? []
+                                  : [
+                                      {
+                                        id: "mark-read",
+                                        label: "Mark read",
+                                        icon: MailOpen,
+                                        isDisabled: markRead.isPending,
+                                      },
+                                    ]
+                              }
+                              onAction={() => markRead.mutate(notification.id)}
+                              ariaLabel={`Actions for ${notification.title}`}
+                            />
                           </Table.Cell>
                         </Table.Row>
                       );

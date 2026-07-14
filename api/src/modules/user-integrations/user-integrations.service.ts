@@ -120,6 +120,7 @@ export class UserIntegrationsService {
             base_url: true,
             allow_multiple: true,
             is_visible: true,
+            is_enabled: true,
           },
         },
       },
@@ -138,6 +139,12 @@ export class UserIntegrationsService {
 
     if (!target || !target.is_visible) {
       throw new NotFoundException('Integration target not found');
+    }
+
+    if (!target.is_enabled) {
+      throw new BadRequestException(
+        'This integration is not enabled for changes',
+      );
     }
 
     if (!target.allow_multiple) {
@@ -172,6 +179,7 @@ export class UserIntegrationsService {
             base_url: true,
             allow_multiple: true,
             is_visible: true,
+            is_enabled: true,
           },
         },
       },
@@ -189,6 +197,12 @@ export class UserIntegrationsService {
     dto: UpdateUserIntegrationDto,
   ) {
     const connection = await this.findOwnedConnection(userId, connectionId);
+
+    if (!connection.integration_target.is_enabled) {
+      throw new BadRequestException(
+        'This integration is not enabled for changes',
+      );
+    }
     const credentialData = applyCredentialFields(dto);
 
     if (Object.keys(credentialData).length > 0) {
@@ -216,6 +230,7 @@ export class UserIntegrationsService {
             base_url: true,
             allow_multiple: true,
             is_visible: true,
+            is_enabled: true,
           },
         },
       },
@@ -232,7 +247,13 @@ export class UserIntegrationsService {
     connectionId: string,
     isActive: boolean,
   ) {
-    await this.findOwnedConnection(userId, connectionId);
+    const connection = await this.findOwnedConnection(userId, connectionId);
+
+    if (!connection.integration_target.is_enabled) {
+      throw new BadRequestException(
+        'This integration is not enabled for changes',
+      );
+    }
 
     const updated = await this.prisma.userIntegration.update({
       where: { id: connectionId },
@@ -246,6 +267,7 @@ export class UserIntegrationsService {
             base_url: true,
             allow_multiple: true,
             is_visible: true,
+            is_enabled: true,
           },
         },
       },
@@ -258,7 +280,14 @@ export class UserIntegrationsService {
   }
 
   async deleteConnection(userId: string, connectionId: string) {
-    await this.findOwnedConnection(userId, connectionId);
+    const connection = await this.findOwnedConnection(userId, connectionId);
+
+    if (!connection.integration_target.is_enabled) {
+      throw new BadRequestException(
+        'This integration is not enabled for changes',
+      );
+    }
+
     await this.prisma.userIntegration.delete({ where: { id: connectionId } });
   }
 

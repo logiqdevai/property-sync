@@ -66,12 +66,12 @@ export const updateIntegrationTarget = async (
 
 export const updateIntegrationTargetVisibility = async (
   id: string,
-  isVisible: boolean,
+  payload: { is_visible: boolean; is_enabled?: boolean },
 ): Promise<IntegrationTarget> => {
   try {
     const response = await axiosInstance.patch(
       ApiRoutes.admin.integrationTargets.visibility(id),
-      { is_visible: isVisible },
+      payload,
     );
     return response.data;
   } catch (error: any) {

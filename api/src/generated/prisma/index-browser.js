@@ -137,6 +137,7 @@ exports.Prisma.IntegrationTargetScalarFieldEnum = {
   base_url: 'base_url',
   allow_multiple: 'allow_multiple',
   is_visible: 'is_visible',
+  is_enabled: 'is_enabled',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };

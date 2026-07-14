@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsObject, IsString, IsUUID, MinLength } from 'class-validator';
+import { IsObject, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
 
 export class CreateScraperDto {
   @ApiProperty({ description: 'Source agency this scraper belongs to' })
@@ -15,10 +15,12 @@ export class CreateScraperDto {
   name: string;
 
   @ApiProperty({
+    required: false,
     description:
-      'Initial scraper config (start_url, listing_selector, fields, pagination, ...)',
+      'Initial scraper config (start_url, listing_selector, fields, pagination, ...). Omit to create the scraper without an initial version.',
     example: { start_url: 'https://acme-realestate.com/listings' },
   })
+  @IsOptional()
   @IsObject()
-  config: Record<string, unknown>;
+  config?: Record<string, unknown>;
 }

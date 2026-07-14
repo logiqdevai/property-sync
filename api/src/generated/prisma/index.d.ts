@@ -4801,6 +4801,7 @@ export namespace Prisma {
     base_url: string | null
     allow_multiple: boolean | null
     is_visible: boolean | null
+    is_enabled: boolean | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -4812,6 +4813,7 @@ export namespace Prisma {
     base_url: string | null
     allow_multiple: boolean | null
     is_visible: boolean | null
+    is_enabled: boolean | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -4823,6 +4825,7 @@ export namespace Prisma {
     base_url: number
     allow_multiple: number
     is_visible: number
+    is_enabled: number
     created_at: number
     updated_at: number
     _all: number
@@ -4836,6 +4839,7 @@ export namespace Prisma {
     base_url?: true
     allow_multiple?: true
     is_visible?: true
+    is_enabled?: true
     created_at?: true
     updated_at?: true
   }
@@ -4847,6 +4851,7 @@ export namespace Prisma {
     base_url?: true
     allow_multiple?: true
     is_visible?: true
+    is_enabled?: true
     created_at?: true
     updated_at?: true
   }
@@ -4858,6 +4863,7 @@ export namespace Prisma {
     base_url?: true
     allow_multiple?: true
     is_visible?: true
+    is_enabled?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -4942,6 +4948,7 @@ export namespace Prisma {
     base_url: string | null
     allow_multiple: boolean
     is_visible: boolean
+    is_enabled: boolean
     created_at: Date
     updated_at: Date
     _count: IntegrationTargetCountAggregateOutputType | null
@@ -4970,6 +4977,7 @@ export namespace Prisma {
     base_url?: boolean
     allow_multiple?: boolean
     is_visible?: boolean
+    is_enabled?: boolean
     created_at?: boolean
     updated_at?: boolean
     user_integrations?: boolean | IntegrationTarget$user_integrationsArgs<ExtArgs>
@@ -4983,6 +4991,7 @@ export namespace Prisma {
     base_url?: boolean
     allow_multiple?: boolean
     is_visible?: boolean
+    is_enabled?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["integrationTarget"]>
@@ -4994,6 +5003,7 @@ export namespace Prisma {
     base_url?: boolean
     allow_multiple?: boolean
     is_visible?: boolean
+    is_enabled?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["integrationTarget"]>
@@ -5005,11 +5015,12 @@ export namespace Prisma {
     base_url?: boolean
     allow_multiple?: boolean
     is_visible?: boolean
+    is_enabled?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type IntegrationTargetOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "integration_type" | "auth_type" | "base_url" | "allow_multiple" | "is_visible" | "created_at" | "updated_at", ExtArgs["result"]["integrationTarget"]>
+  export type IntegrationTargetOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "integration_type" | "auth_type" | "base_url" | "allow_multiple" | "is_visible" | "is_enabled" | "created_at" | "updated_at", ExtArgs["result"]["integrationTarget"]>
   export type IntegrationTargetInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user_integrations?: boolean | IntegrationTarget$user_integrationsArgs<ExtArgs>
     _count?: boolean | IntegrationTargetCountOutputTypeDefaultArgs<ExtArgs>
@@ -5029,6 +5040,7 @@ export namespace Prisma {
       base_url: string | null
       allow_multiple: boolean
       is_visible: boolean
+      is_enabled: boolean
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["integrationTarget"]>
@@ -5461,6 +5473,7 @@ export namespace Prisma {
     readonly base_url: FieldRef<"IntegrationTarget", 'String'>
     readonly allow_multiple: FieldRef<"IntegrationTarget", 'Boolean'>
     readonly is_visible: FieldRef<"IntegrationTarget", 'Boolean'>
+    readonly is_enabled: FieldRef<"IntegrationTarget", 'Boolean'>
     readonly created_at: FieldRef<"IntegrationTarget", 'DateTime'>
     readonly updated_at: FieldRef<"IntegrationTarget", 'DateTime'>
   }
@@ -29714,6 +29727,7 @@ export namespace Prisma {
     base_url: 'base_url',
     allow_multiple: 'allow_multiple',
     is_visible: 'is_visible',
+    is_enabled: 'is_enabled',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -30631,6 +30645,7 @@ export namespace Prisma {
     base_url?: StringNullableFilter<"IntegrationTarget"> | string | null
     allow_multiple?: BoolFilter<"IntegrationTarget"> | boolean
     is_visible?: BoolFilter<"IntegrationTarget"> | boolean
+    is_enabled?: BoolFilter<"IntegrationTarget"> | boolean
     created_at?: DateTimeFilter<"IntegrationTarget"> | Date | string
     updated_at?: DateTimeFilter<"IntegrationTarget"> | Date | string
     user_integrations?: UserIntegrationListRelationFilter
@@ -30643,6 +30658,7 @@ export namespace Prisma {
     base_url?: SortOrderInput | SortOrder
     allow_multiple?: SortOrder
     is_visible?: SortOrder
+    is_enabled?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     user_integrations?: UserIntegrationOrderByRelationAggregateInput
@@ -30658,6 +30674,7 @@ export namespace Prisma {
     base_url?: StringNullableFilter<"IntegrationTarget"> | string | null
     allow_multiple?: BoolFilter<"IntegrationTarget"> | boolean
     is_visible?: BoolFilter<"IntegrationTarget"> | boolean
+    is_enabled?: BoolFilter<"IntegrationTarget"> | boolean
     created_at?: DateTimeFilter<"IntegrationTarget"> | Date | string
     updated_at?: DateTimeFilter<"IntegrationTarget"> | Date | string
     user_integrations?: UserIntegrationListRelationFilter
@@ -30670,6 +30687,7 @@ export namespace Prisma {
     base_url?: SortOrderInput | SortOrder
     allow_multiple?: SortOrder
     is_visible?: SortOrder
+    is_enabled?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: IntegrationTargetCountOrderByAggregateInput
@@ -30687,6 +30705,7 @@ export namespace Prisma {
     base_url?: StringNullableWithAggregatesFilter<"IntegrationTarget"> | string | null
     allow_multiple?: BoolWithAggregatesFilter<"IntegrationTarget"> | boolean
     is_visible?: BoolWithAggregatesFilter<"IntegrationTarget"> | boolean
+    is_enabled?: BoolWithAggregatesFilter<"IntegrationTarget"> | boolean
     created_at?: DateTimeWithAggregatesFilter<"IntegrationTarget"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"IntegrationTarget"> | Date | string
   }
@@ -32804,6 +32823,7 @@ export namespace Prisma {
     base_url?: string | null
     allow_multiple?: boolean
     is_visible?: boolean
+    is_enabled?: boolean
     created_at?: Date | string
     updated_at?: Date | string
     user_integrations?: UserIntegrationCreateNestedManyWithoutIntegration_targetInput
@@ -32816,6 +32836,7 @@ export namespace Prisma {
     base_url?: string | null
     allow_multiple?: boolean
     is_visible?: boolean
+    is_enabled?: boolean
     created_at?: Date | string
     updated_at?: Date | string
     user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutIntegration_targetInput
@@ -32828,6 +32849,7 @@ export namespace Prisma {
     base_url?: NullableStringFieldUpdateOperationsInput | string | null
     allow_multiple?: BoolFieldUpdateOperationsInput | boolean
     is_visible?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_integrations?: UserIntegrationUpdateManyWithoutIntegration_targetNestedInput
@@ -32840,6 +32862,7 @@ export namespace Prisma {
     base_url?: NullableStringFieldUpdateOperationsInput | string | null
     allow_multiple?: BoolFieldUpdateOperationsInput | boolean
     is_visible?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_integrations?: UserIntegrationUncheckedUpdateManyWithoutIntegration_targetNestedInput
@@ -32852,6 +32875,7 @@ export namespace Prisma {
     base_url?: string | null
     allow_multiple?: boolean
     is_visible?: boolean
+    is_enabled?: boolean
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -32863,6 +32887,7 @@ export namespace Prisma {
     base_url?: NullableStringFieldUpdateOperationsInput | string | null
     allow_multiple?: BoolFieldUpdateOperationsInput | boolean
     is_visible?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -32874,6 +32899,7 @@ export namespace Prisma {
     base_url?: NullableStringFieldUpdateOperationsInput | string | null
     allow_multiple?: BoolFieldUpdateOperationsInput | boolean
     is_visible?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -35379,6 +35405,7 @@ export namespace Prisma {
     base_url?: SortOrder
     allow_multiple?: SortOrder
     is_visible?: SortOrder
+    is_enabled?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -35390,6 +35417,7 @@ export namespace Prisma {
     base_url?: SortOrder
     allow_multiple?: SortOrder
     is_visible?: SortOrder
+    is_enabled?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -35401,6 +35429,7 @@ export namespace Prisma {
     base_url?: SortOrder
     allow_multiple?: SortOrder
     is_visible?: SortOrder
+    is_enabled?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -40298,6 +40327,7 @@ export namespace Prisma {
     base_url?: string | null
     allow_multiple?: boolean
     is_visible?: boolean
+    is_enabled?: boolean
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -40309,6 +40339,7 @@ export namespace Prisma {
     base_url?: string | null
     allow_multiple?: boolean
     is_visible?: boolean
+    is_enabled?: boolean
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -40432,6 +40463,7 @@ export namespace Prisma {
     base_url?: NullableStringFieldUpdateOperationsInput | string | null
     allow_multiple?: BoolFieldUpdateOperationsInput | boolean
     is_visible?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40443,6 +40475,7 @@ export namespace Prisma {
     base_url?: NullableStringFieldUpdateOperationsInput | string | null
     allow_multiple?: BoolFieldUpdateOperationsInput | boolean
     is_visible?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }

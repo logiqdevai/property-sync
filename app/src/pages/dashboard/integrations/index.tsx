@@ -55,6 +55,7 @@ function TargetCard({
   const targetConnections = connections.filter(
     (connection) => connection.integration_target_id === target.id,
   );
+  const isReadOnly = !target.is_enabled;
 
   return (
     <article className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
@@ -64,12 +65,16 @@ function TargetCard({
           <p className="text-sm text-muted">{target.auth_type}</p>
           {target.base_url && <p className="text-xs text-muted truncate">{target.base_url}</p>}
         </div>
-        {!target.is_connected || target.allow_multiple ? (
+        {!isReadOnly && (!target.is_connected || target.allow_multiple) ? (
           <ActionButtonWithPending size="sm" onPress={() => onConnect(target)} isDisabled={isPending}>
             Connect
           </ActionButtonWithPending>
         ) : null}
       </div>
+
+      {isReadOnly && (
+        <p className="text-sm text-muted">View only — changes are disabled for this integration</p>
+      )}
 
       {targetConnections.length > 0 && (
         <div className="flex flex-col gap-3 border-t border-border pt-4">
@@ -85,7 +90,7 @@ function TargetCard({
               <div className="flex items-center justify-between gap-2">
                 <Switch
                   isSelected={connection.is_active}
-                  isDisabled={isPending}
+                  isDisabled={isReadOnly || isPending}
                   onChange={(next) => onToggleActive(connection, next)}
                 >
                   <Switch.Control>
@@ -93,24 +98,26 @@ function TargetCard({
                   </Switch.Control>
                   <Switch.Content>{connection.is_active ? "Active" : "Disabled"}</Switch.Content>
                 </Switch>
-                <div className="flex gap-2">
-                  <ActionButtonWithPending
-                    size="sm"
-                    variant="secondary"
-                    onPress={() => onEdit(connection)}
-                    isDisabled={isPending}
-                  >
-                    Edit
-                  </ActionButtonWithPending>
-                  <ActionButtonWithPending
-                    size="sm"
-                    variant="danger"
-                    onPress={() => onDisconnectRequest(connection)}
-                    isDisabled={isPending}
-                  >
-                    Disconnect
-                  </ActionButtonWithPending>
-                </div>
+                {!isReadOnly ? (
+                  <div className="flex gap-2">
+                    <ActionButtonWithPending
+                      size="sm"
+                      variant="secondary"
+                      onPress={() => onEdit(connection)}
+                      isDisabled={isPending}
+                    >
+                      Edit
+                    </ActionButtonWithPending>
+                    <ActionButtonWithPending
+                      size="sm"
+                      variant="danger"
+                      onPress={() => onDisconnectRequest(connection)}
+                      isDisabled={isPending}
+                    >
+                      Disconnect
+                    </ActionButtonWithPending>
+                  </div>
+                ) : null}
               </div>
             </div>
           ))}

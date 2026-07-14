@@ -76,8 +76,13 @@ export const useUpdateIntegrationTargetVisibility = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, isVisible }: { id: string; isVisible: boolean }) =>
-      updateIntegrationTargetVisibility(id, isVisible),
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: { is_visible: boolean; is_enabled?: boolean };
+    }) => updateIntegrationTargetVisibility(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["integrationTargets"] });
       toast({ title: "Visibility updated", duration: 2000, variant: "success" });

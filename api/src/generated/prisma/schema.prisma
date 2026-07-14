@@ -289,6 +289,7 @@ model IntegrationTarget {
   base_url         String?
   allow_multiple   Boolean         @default(false)
   is_visible       Boolean         @default(true) // whether the integration is visible to the user (always visible for admin and supper admin)
+  is_enabled       Boolean         @default(true) // when false, users can view but not connect or modify on the Integrations page
   created_at       DateTime        @default(now())
   updated_at       DateTime        @updatedAt
 

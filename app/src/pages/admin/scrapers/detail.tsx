@@ -16,6 +16,7 @@ import {
   useScraperVersions,
   useUpdateScraper,
 } from "@/features/scrapers/hooks/use-scrapers";
+import { parseOptionalJsonConfig } from "@/features/scrapers/validation-schemas/scrapers.schema";
 import { ScraperStatuses } from "@/features/scrapers/interfaces/scrapers.interfaces";
 import { CreateGenerationRunForm } from "./components/create-generation-run-form";
 import { GenerationRunStatusChip } from "./components/generation-run-status-chip";
@@ -340,12 +341,19 @@ export default function ScraperDetailPage() {
                   }
                   isPending={createVersion.isPending}
                   onCancel={newVersionModal.close}
-                  onSubmit={(values) =>
+                  onSubmit={(values) => {
+                    const config = parseOptionalJsonConfig(values.config);
                     createVersion.mutate(
-                      { id: scraper.id, payload: { config: JSON.parse(values.config), notes: values.notes } },
+                      {
+                        id: scraper.id,
+                        payload: {
+                          ...(config && { config }),
+                          notes: values.notes,
+                        },
+                      },
                       { onSuccess: () => newVersionModal.close() },
-                    )
-                  }
+                    );
+                  }}
                 />
               </Modal.Body>
             </Modal.Dialog>

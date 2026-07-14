@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Eye, RotateCcw } from "lucide-react";
 import { Table, Select, ListBox, Pagination } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { TableRowActionsMenu, type TableRowAction } from "@/components/ui/table-row-actions-menu";
 import { JobStatusChip } from "./components/job-status-chip";
 import { useJobs, useRetryJob } from "@/features/jobs/hooks/use-jobs";
 import {
@@ -18,6 +19,20 @@ function formatDuration(ms: number | null) {
   if (ms === null) return "—";
   if (ms < 1000) return `${ms}ms`;
   return `${(ms / 1000).toFixed(1)}s`;
+}
+
+function getJobActions(job: { id: string; status: JobStatus }): TableRowAction[] {
+  const actions: TableRowAction[] = [{ id: "details", label: "Details", icon: Eye }];
+
+  if (job.status === JobStatuses.FAILED) {
+    actions.push({
+      id: "retry",
+      label: "Retry",
+      icon: RotateCcw,
+    });
+  }
+
+  return actions;
 }
 
 export default function JobsListPage() {
@@ -42,6 +57,17 @@ export default function JobsListPage() {
 
   const jobs = data?.data ?? [];
   const pagination = data?.pagination;
+
+  const handleJobAction = (jobId: string, actionId: string) => {
+    if (actionId === "details") {
+      navigate(Routes.admin.jobs.detail(jobId));
+      return;
+    }
+
+    if (actionId === "retry") {
+      retryJob.mutate(jobId);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -148,24 +174,15 @@ export default function JobsListPage() {
                         )}
                       </Table.Cell>
                       <Table.Cell>
-                        <div className="flex items-center gap-2">
-                          <button
-                            className="text-sm text-accent hover:underline"
-                            onClick={() => navigate(Routes.admin.jobs.detail(job.id))}
-                          >
-                            Details
-                          </button>
-                          {job.status === JobStatuses.FAILED && (
-                            <ActionButtonWithPending
-                              variant="secondary"
-                              isPending={retryJob.isPending}
-                              isDisabled={retryJob.isPending}
-                              onPress={() => retryJob.mutate(job.id)}
-                            >
-                              Retry
-                            </ActionButtonWithPending>
+                        <TableRowActionsMenu
+                          actions={getJobActions(job).map((action) =>
+                            action.id === "retry"
+                              ? { ...action, isDisabled: retryJob.isPending }
+                              : action,
                           )}
-                        </div>
+                          onAction={(actionId) => handleJobAction(job.id, actionId)}
+                          ariaLabel={`Actions for job ${job.id}`}
+                        />
                       </Table.Cell>
                     </Table.Row>
                   ))}

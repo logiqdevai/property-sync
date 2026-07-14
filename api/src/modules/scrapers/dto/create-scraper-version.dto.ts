@@ -2,9 +2,13 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsObject, IsOptional, IsString } from 'class-validator';
 
 export class CreateScraperVersionDto {
-  @ApiProperty({ description: 'Full scraper config for this version' })
+  @ApiProperty({
+    required: false,
+    description: 'Full scraper config for this version. Omit or leave empty to store an empty config object.',
+  })
+  @IsOptional()
   @IsObject()
-  config: Record<string, unknown>;
+  config?: Record<string, unknown>;
 
   @ApiProperty({
     required: false,

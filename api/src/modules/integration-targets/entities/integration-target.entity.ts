@@ -21,6 +21,9 @@ export class IntegrationTarget {
   is_visible: boolean;
 
   @ApiProperty()
+  is_enabled: boolean;
+
+  @ApiProperty()
   created_at: Date;
 
   @ApiProperty()

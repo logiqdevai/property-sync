@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { Pencil } from "lucide-react";
 import { Form, Input, Label, Modal, Switch, Table, useOverlayState } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { TableRowActionsMenu } from "@/components/ui/table-row-actions-menu";
 import { IntegrationTargetForm } from "./components/integration-target-form";
 import {
   useCreateIntegrationTargetAccount,
@@ -152,6 +154,7 @@ export default function IntegrationTargetDetailPage() {
             base_url: target.base_url ?? "",
             allow_multiple: target.allow_multiple,
             is_visible: target.is_visible,
+            is_enabled: target.is_enabled,
           }}
           submitLabel="Save changes"
           isPending={updateTarget.isPending}
@@ -219,13 +222,18 @@ export default function IntegrationTargetDetailPage() {
                           </Switch>
                         </Table.Cell>
                         <Table.Cell>
-                          <ActionButtonWithPending
-                            variant="secondary"
-                            size="sm"
-                            onPress={() => openEditAccount(account)}
-                          >
-                            Edit
-                          </ActionButtonWithPending>
+                          <TableRowActionsMenu
+                            actions={[
+                              {
+                                id: "edit",
+                                label: "Edit",
+                                icon: Pencil,
+                                isDisabled: updateAccount.isPending,
+                              },
+                            ]}
+                            onAction={() => openEditAccount(account)}
+                            ariaLabel={`Actions for ${account.user?.email ?? account.user_id}`}
+                          />
                         </Table.Cell>
                       </Table.Row>
                     ))}

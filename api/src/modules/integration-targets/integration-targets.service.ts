@@ -28,6 +28,7 @@ export class IntegrationTargetsService {
       ...(query.integration_type && { integration_type: query.integration_type }),
       ...(query.auth_type && { auth_type: query.auth_type }),
       ...(query.is_visible !== undefined && { is_visible: query.is_visible }),
+      ...(query.is_enabled !== undefined && { is_enabled: query.is_enabled }),
     };
 
     const [items, total] = await Promise.all([
@@ -97,7 +98,10 @@ export class IntegrationTargetsService {
 
     return this.prisma.integrationTarget.update({
       where: { id },
-      data: { is_visible: dto.is_visible },
+      data: {
+        is_visible: dto.is_visible,
+        ...(dto.is_enabled !== undefined && { is_enabled: dto.is_enabled }),
+      },
     });
   }
 

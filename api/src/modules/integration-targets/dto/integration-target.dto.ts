@@ -25,6 +25,11 @@ export class CreateIntegrationTargetDto {
   @IsOptional()
   @IsBoolean()
   is_visible?: boolean;
+
+  @ApiPropertyOptional({ default: true })
+  @IsOptional()
+  @IsBoolean()
+  is_enabled?: boolean;
 }
 
 export class UpdateIntegrationTargetDto {
@@ -52,12 +57,22 @@ export class UpdateIntegrationTargetDto {
   @IsOptional()
   @IsBoolean()
   is_visible?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  is_enabled?: boolean;
 }
 
 export class UpdateIntegrationTargetVisibilityDto {
   @ApiProperty()
   @IsBoolean()
   is_visible: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  is_enabled?: boolean;
 }
 
 export class UserIntegrationCredentialsDto {

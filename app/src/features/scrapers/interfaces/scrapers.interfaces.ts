@@ -60,11 +60,11 @@ export interface Scraper {
 export interface CreateScraperPayload {
   source_agency_id: string;
   name: string;
-  config: Record<string, unknown>;
+  config?: Record<string, unknown>;
 }
 
 export interface CreateScraperVersionPayload {
-  config: Record<string, unknown>;
+  config?: Record<string, unknown>;
   notes?: string;
 }
 
