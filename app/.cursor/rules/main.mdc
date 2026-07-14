@@ -5,3 +5,5 @@ alwaysApply: false
 ---
 
 Follow the app coding rules in `.cursor/rules/app-code-structure-and-best-practices.mdc` at the repository root when reading, writing, or refactoring code under `app/`.
+
+**Non-negotiable:** All static enum display vocabulary (select options, filter options, labels, descriptions, chip text, `get*Label` / `get*Description` helpers) lives in `app/src/config/constants/dropdowns/*.options.ts`. Never add `*-label.utils.ts`, `*-description.utils.ts`, or inline `Record<Enum, string>` label maps in pages/components/features.

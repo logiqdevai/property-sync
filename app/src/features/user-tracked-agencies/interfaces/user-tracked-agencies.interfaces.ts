@@ -12,9 +12,11 @@ export interface TrackingPrefs {
   use_ai_batching: boolean;
   ai_provider: AiProvider;
   ai_model: string | null;
-  crawl_interval: string;
   enabled: boolean;
   user_integration_id?: string | null;
+  crawl_interval?: string;
+  concurrent_insertions?: number;
+  insertion_interval_minutes?: number;
 }
 
 export interface TrackableAgency {
@@ -64,6 +66,8 @@ export interface UserTrackedAgency {
   source_agency_id: string;
   enabled: boolean;
   crawl_interval: string;
+  concurrent_insertions: number;
+  insertion_interval_minutes: number;
   track_new_listings: boolean;
   track_removed_listings: boolean;
   track_updated_listings: boolean;

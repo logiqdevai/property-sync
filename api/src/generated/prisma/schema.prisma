@@ -356,19 +356,21 @@ model SourceAgency {
 
 /// Which SourceAgencies a user follows/monitors, and which kinds of change notify them.
 model UserTrackedAgency {
-  id                     String     @id @default(uuid())
-  user_id                String
-  source_agency_id       String
-  enabled                Boolean    @default(true)
-  crawl_interval         String     @default("0 */6 * * *") // cron expression only changed by admin or super admins
-  track_new_listings     Boolean    @default(true)
-  track_removed_listings Boolean    @default(true)
-  track_updated_listings Boolean    @default(true)
-  use_ai_batching        Boolean    @default(false)
-  ai_provider            AiProvider @default(OPENAI)
-  ai_model               String?
-  created_at             DateTime   @default(now())
-  updated_at             DateTime   @updatedAt
+  id                         String     @id @default(uuid())
+  user_id                    String
+  source_agency_id           String
+  enabled                    Boolean    @default(true)
+  crawl_interval             String     @default("0 */6 * * *")
+  concurrent_insertions      Int        @default(1)
+  insertion_interval_minutes Int        @default(5)
+  track_new_listings         Boolean    @default(true)
+  track_removed_listings     Boolean    @default(true)
+  track_updated_listings     Boolean    @default(true)
+  use_ai_batching            Boolean    @default(false)
+  ai_provider                AiProvider @default(OPENAI)
+  ai_model                   String?
+  created_at                 DateTime   @default(now())
+  updated_at                 DateTime   @updatedAt
 
   user             User                              @relation(fields: [user_id], references: [id], onDelete: Cascade)
   source_agency    SourceAgency                      @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)

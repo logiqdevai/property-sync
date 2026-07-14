@@ -8,6 +8,7 @@ import type {
   SourceAgency,
   UpdateAgencyPayload,
   UpdateAgencyVisibilityPayload,
+  UpdateTrackerAdminSettingsPayload,
 } from "../interfaces/agencies.interfaces";
 
 export const getAgencies = async (
@@ -80,5 +81,23 @@ export const deleteAgency = async (id: string): Promise<void> => {
     await axiosInstance.delete(ApiRoutes.admin.agencies.detail(id));
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to delete agency. Please try again.");
+  }
+};
+
+export const updateTrackerAdminSettings = async (
+  agencyId: string,
+  userId: string,
+  payload: UpdateTrackerAdminSettingsPayload,
+) => {
+  try {
+    const response = await axiosInstance.patch(
+      ApiRoutes.admin.agencies.trackerSettings(agencyId, userId),
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to update tracker settings. Please try again.",
+    );
   }
 };

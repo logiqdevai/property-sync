@@ -25,6 +25,8 @@ export const ApiRoutes = {
             detail: (id: string) => `/admin/agencies/${id}`,
             status: (id: string) => `/admin/agencies/${id}/status`,
             visibility: (id: string) => `/admin/agencies/${id}/visibility`,
+            trackerSettings: (agencyId: string, userId: string) =>
+                `/admin/agencies/${agencyId}/trackers/${userId}`,
         },
         scrapers: {
             prefix: "/admin/scrapers",

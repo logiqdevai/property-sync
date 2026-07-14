@@ -359,7 +359,9 @@ model UserTrackedAgency {
   user_id                String
   source_agency_id       String
   enabled                Boolean  @default(true)
-  crawl_interval     String       @default("0 */6 * * *") // cron expression only changed by admin or super admins
+  crawl_interval              String @default("0 */6 * * *")
+  concurrent_insertions       Int    @default(1)
+  insertion_interval_minutes  Int    @default(5)
   track_new_listings     Boolean  @default(true)
   track_removed_listings Boolean  @default(true)
   track_updated_listings Boolean  @default(true)

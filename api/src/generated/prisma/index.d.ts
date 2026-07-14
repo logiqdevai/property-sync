@@ -8441,8 +8441,20 @@ export namespace Prisma {
 
   export type AggregateUserTrackedAgency = {
     _count: UserTrackedAgencyCountAggregateOutputType | null
+    _avg: UserTrackedAgencyAvgAggregateOutputType | null
+    _sum: UserTrackedAgencySumAggregateOutputType | null
     _min: UserTrackedAgencyMinAggregateOutputType | null
     _max: UserTrackedAgencyMaxAggregateOutputType | null
+  }
+
+  export type UserTrackedAgencyAvgAggregateOutputType = {
+    concurrent_insertions: number | null
+    insertion_interval_minutes: number | null
+  }
+
+  export type UserTrackedAgencySumAggregateOutputType = {
+    concurrent_insertions: number | null
+    insertion_interval_minutes: number | null
   }
 
   export type UserTrackedAgencyMinAggregateOutputType = {
@@ -8451,6 +8463,8 @@ export namespace Prisma {
     source_agency_id: string | null
     enabled: boolean | null
     crawl_interval: string | null
+    concurrent_insertions: number | null
+    insertion_interval_minutes: number | null
     track_new_listings: boolean | null
     track_removed_listings: boolean | null
     track_updated_listings: boolean | null
@@ -8467,6 +8481,8 @@ export namespace Prisma {
     source_agency_id: string | null
     enabled: boolean | null
     crawl_interval: string | null
+    concurrent_insertions: number | null
+    insertion_interval_minutes: number | null
     track_new_listings: boolean | null
     track_removed_listings: boolean | null
     track_updated_listings: boolean | null
@@ -8483,6 +8499,8 @@ export namespace Prisma {
     source_agency_id: number
     enabled: number
     crawl_interval: number
+    concurrent_insertions: number
+    insertion_interval_minutes: number
     track_new_listings: number
     track_removed_listings: number
     track_updated_listings: number
@@ -8495,12 +8513,24 @@ export namespace Prisma {
   }
 
 
+  export type UserTrackedAgencyAvgAggregateInputType = {
+    concurrent_insertions?: true
+    insertion_interval_minutes?: true
+  }
+
+  export type UserTrackedAgencySumAggregateInputType = {
+    concurrent_insertions?: true
+    insertion_interval_minutes?: true
+  }
+
   export type UserTrackedAgencyMinAggregateInputType = {
     id?: true
     user_id?: true
     source_agency_id?: true
     enabled?: true
     crawl_interval?: true
+    concurrent_insertions?: true
+    insertion_interval_minutes?: true
     track_new_listings?: true
     track_removed_listings?: true
     track_updated_listings?: true
@@ -8517,6 +8547,8 @@ export namespace Prisma {
     source_agency_id?: true
     enabled?: true
     crawl_interval?: true
+    concurrent_insertions?: true
+    insertion_interval_minutes?: true
     track_new_listings?: true
     track_removed_listings?: true
     track_updated_listings?: true
@@ -8533,6 +8565,8 @@ export namespace Prisma {
     source_agency_id?: true
     enabled?: true
     crawl_interval?: true
+    concurrent_insertions?: true
+    insertion_interval_minutes?: true
     track_new_listings?: true
     track_removed_listings?: true
     track_updated_listings?: true
@@ -8582,6 +8616,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: UserTrackedAgencyAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserTrackedAgencySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: UserTrackedAgencyMinAggregateInputType
@@ -8612,6 +8658,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UserTrackedAgencyCountAggregateInputType | true
+    _avg?: UserTrackedAgencyAvgAggregateInputType
+    _sum?: UserTrackedAgencySumAggregateInputType
     _min?: UserTrackedAgencyMinAggregateInputType
     _max?: UserTrackedAgencyMaxAggregateInputType
   }
@@ -8622,6 +8670,8 @@ export namespace Prisma {
     source_agency_id: string
     enabled: boolean
     crawl_interval: string
+    concurrent_insertions: number
+    insertion_interval_minutes: number
     track_new_listings: boolean
     track_removed_listings: boolean
     track_updated_listings: boolean
@@ -8631,6 +8681,8 @@ export namespace Prisma {
     created_at: Date
     updated_at: Date
     _count: UserTrackedAgencyCountAggregateOutputType | null
+    _avg: UserTrackedAgencyAvgAggregateOutputType | null
+    _sum: UserTrackedAgencySumAggregateOutputType | null
     _min: UserTrackedAgencyMinAggregateOutputType | null
     _max: UserTrackedAgencyMaxAggregateOutputType | null
   }
@@ -8655,6 +8707,8 @@ export namespace Prisma {
     source_agency_id?: boolean
     enabled?: boolean
     crawl_interval?: boolean
+    concurrent_insertions?: boolean
+    insertion_interval_minutes?: boolean
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -8676,6 +8730,8 @@ export namespace Prisma {
     source_agency_id?: boolean
     enabled?: boolean
     crawl_interval?: boolean
+    concurrent_insertions?: boolean
+    insertion_interval_minutes?: boolean
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -8694,6 +8750,8 @@ export namespace Prisma {
     source_agency_id?: boolean
     enabled?: boolean
     crawl_interval?: boolean
+    concurrent_insertions?: boolean
+    insertion_interval_minutes?: boolean
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -8712,6 +8770,8 @@ export namespace Prisma {
     source_agency_id?: boolean
     enabled?: boolean
     crawl_interval?: boolean
+    concurrent_insertions?: boolean
+    insertion_interval_minutes?: boolean
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -8722,7 +8782,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "crawl_interval" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "use_ai_batching" | "ai_provider" | "ai_model" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
+  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "crawl_interval" | "concurrent_insertions" | "insertion_interval_minutes" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "use_ai_batching" | "ai_provider" | "ai_model" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
   export type UserTrackedAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
@@ -8753,6 +8813,8 @@ export namespace Prisma {
       source_agency_id: string
       enabled: boolean
       crawl_interval: string
+      concurrent_insertions: number
+      insertion_interval_minutes: number
       track_new_listings: boolean
       track_removed_listings: boolean
       track_updated_listings: boolean
@@ -9193,6 +9255,8 @@ export namespace Prisma {
     readonly source_agency_id: FieldRef<"UserTrackedAgency", 'String'>
     readonly enabled: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly crawl_interval: FieldRef<"UserTrackedAgency", 'String'>
+    readonly concurrent_insertions: FieldRef<"UserTrackedAgency", 'Int'>
+    readonly insertion_interval_minutes: FieldRef<"UserTrackedAgency", 'Int'>
     readonly track_new_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly track_removed_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly track_updated_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
@@ -29779,6 +29843,8 @@ export namespace Prisma {
     source_agency_id: 'source_agency_id',
     enabled: 'enabled',
     crawl_interval: 'crawl_interval',
+    concurrent_insertions: 'concurrent_insertions',
+    insertion_interval_minutes: 'insertion_interval_minutes',
     track_new_listings: 'track_new_listings',
     track_removed_listings: 'track_removed_listings',
     track_updated_listings: 'track_updated_listings',
@@ -30268,20 +30334,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'AiProvider'
-   */
-  export type EnumAiProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiProvider'>
-    
-
-
-  /**
-   * Reference to a field of type 'AiProvider[]'
-   */
-  export type ListEnumAiProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiProvider[]'>
-    
-
-
-  /**
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -30292,6 +30344,20 @@ export namespace Prisma {
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'AiProvider'
+   */
+  export type EnumAiProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiProvider'>
+    
+
+
+  /**
+   * Reference to a field of type 'AiProvider[]'
+   */
+  export type ListEnumAiProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiProvider[]'>
     
 
 
@@ -30933,6 +30999,8 @@ export namespace Prisma {
     source_agency_id?: StringFilter<"UserTrackedAgency"> | string
     enabled?: BoolFilter<"UserTrackedAgency"> | boolean
     crawl_interval?: StringFilter<"UserTrackedAgency"> | string
+    concurrent_insertions?: IntFilter<"UserTrackedAgency"> | number
+    insertion_interval_minutes?: IntFilter<"UserTrackedAgency"> | number
     track_new_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -30953,6 +31021,8 @@ export namespace Prisma {
     source_agency_id?: SortOrder
     enabled?: SortOrder
     crawl_interval?: SortOrder
+    concurrent_insertions?: SortOrder
+    insertion_interval_minutes?: SortOrder
     track_new_listings?: SortOrder
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
@@ -30977,6 +31047,8 @@ export namespace Prisma {
     source_agency_id?: StringFilter<"UserTrackedAgency"> | string
     enabled?: BoolFilter<"UserTrackedAgency"> | boolean
     crawl_interval?: StringFilter<"UserTrackedAgency"> | string
+    concurrent_insertions?: IntFilter<"UserTrackedAgency"> | number
+    insertion_interval_minutes?: IntFilter<"UserTrackedAgency"> | number
     track_new_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -30997,6 +31069,8 @@ export namespace Prisma {
     source_agency_id?: SortOrder
     enabled?: SortOrder
     crawl_interval?: SortOrder
+    concurrent_insertions?: SortOrder
+    insertion_interval_minutes?: SortOrder
     track_new_listings?: SortOrder
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
@@ -31006,8 +31080,10 @@ export namespace Prisma {
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: UserTrackedAgencyCountOrderByAggregateInput
+    _avg?: UserTrackedAgencyAvgOrderByAggregateInput
     _max?: UserTrackedAgencyMaxOrderByAggregateInput
     _min?: UserTrackedAgencyMinOrderByAggregateInput
+    _sum?: UserTrackedAgencySumOrderByAggregateInput
   }
 
   export type UserTrackedAgencyScalarWhereWithAggregatesInput = {
@@ -31019,6 +31095,8 @@ export namespace Prisma {
     source_agency_id?: StringWithAggregatesFilter<"UserTrackedAgency"> | string
     enabled?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     crawl_interval?: StringWithAggregatesFilter<"UserTrackedAgency"> | string
+    concurrent_insertions?: IntWithAggregatesFilter<"UserTrackedAgency"> | number
+    insertion_interval_minutes?: IntWithAggregatesFilter<"UserTrackedAgency"> | number
     track_new_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     track_removed_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
@@ -33162,6 +33240,8 @@ export namespace Prisma {
     id?: string
     enabled?: boolean
     crawl_interval?: string
+    concurrent_insertions?: number
+    insertion_interval_minutes?: number
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -33182,6 +33262,8 @@ export namespace Prisma {
     source_agency_id: string
     enabled?: boolean
     crawl_interval?: string
+    concurrent_insertions?: number
+    insertion_interval_minutes?: number
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -33198,6 +33280,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -33218,6 +33302,8 @@ export namespace Prisma {
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -33236,6 +33322,8 @@ export namespace Prisma {
     source_agency_id: string
     enabled?: boolean
     crawl_interval?: string
+    concurrent_insertions?: number
+    insertion_interval_minutes?: number
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -33250,6 +33338,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -33266,6 +33356,8 @@ export namespace Prisma {
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -35720,6 +35812,17 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
   export type EnumAiProviderFilter<$PrismaModel = never> = {
     equals?: $Enums.AiProvider | EnumAiProviderFieldRefInput<$PrismaModel>
     in?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
@@ -35743,6 +35846,8 @@ export namespace Prisma {
     source_agency_id?: SortOrder
     enabled?: SortOrder
     crawl_interval?: SortOrder
+    concurrent_insertions?: SortOrder
+    insertion_interval_minutes?: SortOrder
     track_new_listings?: SortOrder
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
@@ -35753,12 +35858,19 @@ export namespace Prisma {
     updated_at?: SortOrder
   }
 
+  export type UserTrackedAgencyAvgOrderByAggregateInput = {
+    concurrent_insertions?: SortOrder
+    insertion_interval_minutes?: SortOrder
+  }
+
   export type UserTrackedAgencyMaxOrderByAggregateInput = {
     id?: SortOrder
     user_id?: SortOrder
     source_agency_id?: SortOrder
     enabled?: SortOrder
     crawl_interval?: SortOrder
+    concurrent_insertions?: SortOrder
+    insertion_interval_minutes?: SortOrder
     track_new_listings?: SortOrder
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
@@ -35775,6 +35887,8 @@ export namespace Prisma {
     source_agency_id?: SortOrder
     enabled?: SortOrder
     crawl_interval?: SortOrder
+    concurrent_insertions?: SortOrder
+    insertion_interval_minutes?: SortOrder
     track_new_listings?: SortOrder
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
@@ -35783,6 +35897,27 @@ export namespace Prisma {
     ai_model?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+  }
+
+  export type UserTrackedAgencySumOrderByAggregateInput = {
+    concurrent_insertions?: SortOrder
+    insertion_interval_minutes?: SortOrder
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type EnumAiProviderWithAggregatesFilter<$PrismaModel = never> = {
@@ -35827,17 +35962,6 @@ export namespace Prisma {
     user_integration_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
-  }
-
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
   }
 
   export type EnumScraperStatusFilter<$PrismaModel = never> = {
@@ -35967,22 +36091,6 @@ export namespace Prisma {
     success_rate?: SortOrder
     avg_runtime_ms?: SortOrder
     consecutive_failures?: SortOrder
-  }
-
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type EnumScraperStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -37871,6 +37979,14 @@ export namespace Prisma {
     connect?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
   }
 
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type EnumAiProviderFieldUpdateOperationsInput = {
     set?: $Enums.AiProvider
   }
@@ -38047,14 +38163,6 @@ export namespace Prisma {
     connectOrCreate?: NotificationCreateOrConnectWithoutScraperInput | NotificationCreateOrConnectWithoutScraperInput[]
     createMany?: NotificationCreateManyScraperInputEnvelope
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-  }
-
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type EnumScraperStatusFieldUpdateOperationsInput = {
@@ -39488,6 +39596,33 @@ export namespace Prisma {
     not?: NestedEnumAiProviderFilter<$PrismaModel> | $Enums.AiProvider
   }
 
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
   export type NestedEnumAiProviderWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.AiProvider | EnumAiProviderFieldRefInput<$PrismaModel>
     in?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
@@ -39521,33 +39656,6 @@ export namespace Prisma {
     gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-  }
-
-  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedEnumScraperStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -39895,6 +40003,8 @@ export namespace Prisma {
     id?: string
     enabled?: boolean
     crawl_interval?: string
+    concurrent_insertions?: number
+    insertion_interval_minutes?: number
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -39913,6 +40023,8 @@ export namespace Prisma {
     source_agency_id: string
     enabled?: boolean
     crawl_interval?: string
+    concurrent_insertions?: number
+    insertion_interval_minutes?: number
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -40078,6 +40190,8 @@ export namespace Prisma {
     source_agency_id?: StringFilter<"UserTrackedAgency"> | string
     enabled?: BoolFilter<"UserTrackedAgency"> | boolean
     crawl_interval?: StringFilter<"UserTrackedAgency"> | string
+    concurrent_insertions?: IntFilter<"UserTrackedAgency"> | number
+    insertion_interval_minutes?: IntFilter<"UserTrackedAgency"> | number
     track_new_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -40538,6 +40652,8 @@ export namespace Prisma {
     id?: string
     enabled?: boolean
     crawl_interval?: string
+    concurrent_insertions?: number
+    insertion_interval_minutes?: number
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -40556,6 +40672,8 @@ export namespace Prisma {
     user_id: string
     enabled?: boolean
     crawl_interval?: string
+    concurrent_insertions?: number
+    insertion_interval_minutes?: number
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -41280,6 +41398,8 @@ export namespace Prisma {
     id?: string
     enabled?: boolean
     crawl_interval?: string
+    concurrent_insertions?: number
+    insertion_interval_minutes?: number
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -41299,6 +41419,8 @@ export namespace Prisma {
     source_agency_id: string
     enabled?: boolean
     crawl_interval?: string
+    concurrent_insertions?: number
+    insertion_interval_minutes?: number
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -41365,6 +41487,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -41384,6 +41508,8 @@ export namespace Prisma {
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -43058,6 +43184,8 @@ export namespace Prisma {
     id?: string
     enabled?: boolean
     crawl_interval?: string
+    concurrent_insertions?: number
+    insertion_interval_minutes?: number
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -43077,6 +43205,8 @@ export namespace Prisma {
     source_agency_id: string
     enabled?: boolean
     crawl_interval?: string
+    concurrent_insertions?: number
+    insertion_interval_minutes?: number
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -43356,6 +43486,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -43375,6 +43507,8 @@ export namespace Prisma {
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -45478,6 +45612,8 @@ export namespace Prisma {
     source_agency_id: string
     enabled?: boolean
     crawl_interval?: string
+    concurrent_insertions?: number
+    insertion_interval_minutes?: number
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -45538,6 +45674,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -45556,6 +45694,8 @@ export namespace Prisma {
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -45573,6 +45713,8 @@ export namespace Prisma {
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -45869,6 +46011,8 @@ export namespace Prisma {
     user_id: string
     enabled?: boolean
     crawl_interval?: string
+    concurrent_insertions?: number
+    insertion_interval_minutes?: number
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
@@ -46015,6 +46159,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -46033,6 +46179,8 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -46050,6 +46198,8 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean

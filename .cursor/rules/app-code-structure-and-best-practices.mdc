@@ -1,5 +1,5 @@
 ---
-description: Architectural rules, naming conventions, and coding patterns for the React + TypeScript app. Follow when reading, writing, or refactoring app code.
+description: Architectural rules, naming conventions, and coding patterns for the React + TypeScript app. Follow when reading, writing, or refactoring app code. Static enum labels/options/descriptions MUST live in config/constants/dropdowns/ — never in features/utils or inline in components.
 globs: app/**
 alwaysApply: false
 ---
@@ -38,7 +38,7 @@ src/
 │   └── providers/                 # React context providers
 ├── stores/                        # Zustand stores
 ├── hooks/                         # Global reusable hooks (not feature-specific)
-├── lib/                           # Pure utility functions
+├── lib/                           # Pure utility functions (incl. dropdown-option-label.utils.ts)
 ├── interfaces/                    # Shared cross-domain interfaces
 └── types/                         # Global TypeScript declarations
 ```
@@ -58,6 +58,8 @@ features/<feature-name>/
 └── validation-schemas/               # (optional — only if feature has forms)
     └── <feature-name>.schema.ts      # Zod schemas + inferred types
 ```
+
+Optional `utils/` under a feature is only for **non-UI business helpers** (e.g. payload mappers, link resolution from API shapes). It must **not** contain enum labels, select options, descriptions, or other static display vocabulary — those belong in `config/constants/dropdowns/`.
 
 **Never create `components/` under `features/`.** Features are data-only modules (hooks, services, interfaces, schemas). All React UI lives in `pages/<section>/components/` or `components/ui/`.
 
@@ -79,23 +81,113 @@ pages/<section>/
 **Don't:** Put API calls, Zod schemas, or React components inside `features/`.  
 **Don't:** Create `features/<feature-name>/components/` — page-local UI belongs in `pages/<section>/components/`.
 
-### Dropdown and Select Options
+### Static UI vocabulary (dropdowns, labels, descriptions)
 
-Static option arrays for `Select`, `ListBox`, filter toolbars, and form pickers **must not** live in page or component files.
+**All static human-readable enum vocabulary belongs in `src/config/constants/dropdowns/`.** This is not limited to `<Select>` / `<ListBox>` data. It includes anything that maps a domain enum/id to display text:
 
-**Do:** Put them in `src/config/constants/dropdowns/` — one file per option set, named `<domain>-<context>.options.ts` (e.g. `agency-status-filter.options.ts`, `auth-type-form.options.ts`).
+- Filter/toolbar select options (`{ id, label }[]`)
+- Form select options (`{ id, label }[]`)
+- Short descriptions shown in cards or help text (`{ id, description }[]` or `Record<Enum, string>`)
+- Chip/badge/table display labels for enum values
+- `get<Entity><Field>Label()` / `get<Entity><Field>Description()` helpers tied to that vocabulary
 
-**Export naming:** `PascalCase` + `Options` suffix (e.g. `AgencyStatusFilterOptions`, `CountryOptions`).
+**Canonical location:** `src/config/constants/dropdowns/<domain>-<context>.options.ts`
 
-**Shape:**
+**Never put this data in:**
 
-- Filter/toolbar selects: `{ id: T | "all"; label: string }[]` with a first `{ id: "all", label: "..." }` entry when applicable
-- Form selects (no "all"): `{ id: T; label: string }[]`
-- Reuse existing files when the same options appear on multiple pages (e.g. admin + dashboard property status filters share `property-status-filter.options.ts`)
+- `features/**/utils/**` (including `*-label.utils.ts`, `*-description.utils.ts`, `*-options.ts`)
+- `pages/**/components/**` or `pages/**/index.tsx` (no inline `const xLabel: Record<...>` / `const xOptions = [...]`)
+- `pages/**/utils/**`
+- `features/**/components/**`
+- `lib/**` (except the single shared reader below)
 
-**Don't:** Define `const statusFilterOptions = [...]` or similar arrays at the top of `pages/**/index.tsx` or form components.
+`features/` is **data-only** (hooks, services, interfaces, validation-schemas). It must not own display labels, select options, or React UI.
 
-**Exception:** Options derived at runtime from API data (e.g. mapping fetched entities to `{ id, label }`) may stay colocated with the component that owns that data.
+#### File naming
+
+One file per option set. Use a suffix that matches usage:
+
+| Suffix | Purpose | Example |
+| --- | --- | --- |
+| `-filter.options.ts` | Toolbar/filter `<Select>` with `{ id: T \| "all", label }` | `agency-status-filter.options.ts` |
+| `-form.options.ts` | Form `<Select>` with `{ id: T, label }` — often the **canonical label source** | `integration-type-form.options.ts` |
+| `-description.options.ts` | Card/help copy keyed by enum | `integration-type-description.options.ts` |
+| `.options.ts` (no suffix) | Shared static lists not tied to filter/form | `country.options.ts`, `timezone.options.ts` |
+
+**Export naming:** `PascalCase` + `Options` suffix (`AgencyStatusFilterOptions`, `IntegrationTypeFormOptions`).
+
+#### Shapes
+
+- **Filter:** `{ id: T | "all"; label: string }[]` — first entry `{ id: "all", label: "..." }` when applicable
+- **Form:** `{ id: T; label: string }[]`
+- **Description:** `{ id: T; description: string }[]` or `Record<T, string>` when labels are not `{ id, label }[]`
+- Import enum types from `@/features/<feature>/interfaces/` — dropdown files do not redefine enums
+
+#### Canonical source & reuse (mandatory)
+
+When the same enum labels appear in filter + form + chips + tables:
+
+1. Define labels once in `<domain>-form.options.ts` (or the filter file if there is no form select).
+2. `<domain>-filter.options.ts` spreads the form/canonical list: `[{ id: "all", ... }, ...FormOptions]`.
+3. `<domain>-description.options.ts` holds descriptions only — do not duplicate labels there.
+4. **Do not** import dropdown data from `features/**`. Dropdown files may import types from `features/**/interfaces/` only.
+
+#### Label/description getters
+
+- Export `get<Domain><Context>Label()` / `get<Domain><Context>Description()` from the **same** `*.options.ts` file that owns the data.
+- For reading labels from a filter/form options array in chips or tables, use the shared helper  
+  `getDropdownOptionLabel()` from `@/lib/dropdown-option-label.utils.ts` — do **not** copy a local `find()` helper per component.
+- Do **not** create per-domain label utils under `features/` or `pages/`.
+
+#### Chips, badges, and tables
+
+Status/type chips **must** resolve display text from `config/constants/dropdowns/` (via `getDropdownOptionLabel` or a co-located `get*Label`).
+
+**Wrong — label map in a chip component:**
+
+```tsx
+const statusLabel: Record<AgencyStatus, string> = {
+  [AgencyStatuses.ACTIVE]: "Active",
+  ...
+};
+<Chip.Label>{statusLabel[status]}</Chip.Label>
+```
+
+**Correct:**
+
+```tsx
+import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agency-status-filter.options";
+import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
+
+<Chip.Label>{getDropdownOptionLabel(AgencyStatusFilterOptions, status)}</Chip.Label>
+```
+
+Chip color maps (`Record<Enum, ChipColor>`) may stay in the chip component — only **text vocabulary** is centralized.
+
+#### Hard bans (agents must not generate)
+
+- `features/<feature>/utils/*-label.utils.ts`
+- `features/<feature>/utils/*-description.utils.ts`
+- `features/<feature>/utils/*-options.ts`
+- `const <name>Options = [...]` or `const <name>Label: Record<...>` in pages/components (except the exceptions below)
+- `features/<feature>/components/**` for any UI, including chips and forms
+- Dropdown files that re-export data from `features/**/utils/**`
+- Duplicating the same `{ id, label }` list in a second file when an existing `*.options.ts` already defines it
+- Using `enumValue.replace(/_/g, " ")` or `role.replace("_", " ")` for user-visible labels when a dropdown options file exists or should exist
+
+#### Allowed exceptions
+
+- **Runtime/API-derived options only** — mapping fetched entities to `{ id, label }` in the component or hook that owns that query (e.g. connection picker built from `useUserIntegrationConnections()`).
+- **Ephemeral action menus** — row action definitions local to a table (`{ id: "delete", label: "Delete" }`) when they are not reused enum vocabulary.
+- **Chip color maps** — visual styling keyed by enum, not display strings.
+
+#### Agent checklist (before finishing any UI task)
+
+1. Adding or changing enum display text? → edit/create `config/constants/dropdowns/*.options.ts` first.
+2. Need a label in a chip, table cell, modal title, or card? → import from dropdowns; never add a local `Record<..., string>`.
+3. Filter and form share labels? → one canonical file; filter spreads it.
+4. Tempted to add `features/.../utils/...label...`? → stop; use dropdowns.
+5. New enum value? → update **every** related `*.options.ts` (form, filter, description, chips) in the same change.
 
 ---
 
@@ -443,13 +535,21 @@ When adding a new route, **always add it to `routes.ts` first**, then reference 
 | Use `Table.ScrollContainer` → `Table.Content` for tables       | Put `Table.Column` directly under `<Table>`          |
 | Put `<Label>` inside `<Select>` or use `aria-label`            | Leave `Select` unlabeled or label as sibling only    |
 | Put static select/filter options in `config/constants/dropdowns/` | Define option arrays inline in pages or form components |
+| Put static labels/descriptions/getters in `config/constants/dropdowns/` | Add `*-label.utils.ts` / `*-description.utils.ts` under `features/**/utils/` |
+| Import label/description helpers from `@/config/constants/dropdowns/` | Import display vocabulary from `@/features/**/utils/` |
+| Use `getDropdownOptionLabel()` in chips/tables for enum text | Define `const statusLabel: Record<Enum, string>` in chip components |
+| Keep one canonical `*-form.options.ts`; filter files spread it | Duplicate `{ id, label }` lists across multiple files |
+| Add new enum values to all related `*.options.ts` in the same change | Update only the page and leave dropdown files stale |
 | Reuse an existing `*.options.ts` when labels match           | Duplicate the same option list in another file         |
+| Colocate runtime API-mapped `{ id, label }` with the owning hook/component | Move API-derived pickers into `config/constants/dropdowns/` |
 
 ---
 
 ## 13. Examples
 
 ### Dropdown Options
+
+**Filter options (canonical pattern):**
 
 ```ts
 import { AgencyStatuses, type AgencyStatus } from "@/features/agencies/interfaces/agencies.interfaces";
@@ -461,6 +561,53 @@ export const AgencyStatusFilterOptions: { id: AgencyStatus | "all"; label: strin
   { id: AgencyStatuses.ARCHIVED, label: "Archived" },
 ];
 ```
+
+**Form options as canonical label source; filter spreads it:**
+
+```ts
+// integration-type-form.options.ts
+export const IntegrationTypeFormOptions: { id: IntegrationType; label: string }[] = [
+  { id: IntegrationTypes.OPENAI, label: "OpenAI" },
+  ...
+];
+
+export function getIntegrationTypeLabel(type: IntegrationType | string): string {
+  return IntegrationTypeFormOptions.find((option) => option.id === type)?.label ?? type;
+}
+
+// integration-type-filter.options.ts
+import { IntegrationTypeFormOptions } from "@/config/constants/dropdowns/integration-type-form.options";
+
+export const IntegrationTypeFilterOptions: { id: IntegrationType | "all"; label: string }[] = [
+  { id: "all", label: "All types" },
+  ...IntegrationTypeFormOptions,
+];
+```
+
+**Descriptions (separate file, same folder):**
+
+```ts
+// integration-type-description.options.ts
+export const IntegrationTypeDescriptionOptions: { id: IntegrationType; description: string }[] = [
+  { id: IntegrationTypes.OPENAI, description: "Generate and normalize listing content..." },
+  ...
+];
+
+export function getIntegrationTypeDescription(type: IntegrationType | string): string {
+  return IntegrationTypeDescriptionOptions.find((option) => option.id === type)?.description ?? "";
+}
+```
+
+**Chip display text from dropdowns:**
+
+```tsx
+import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agency-status-filter.options";
+import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
+
+<Chip.Label>{getDropdownOptionLabel(AgencyStatusFilterOptions, status)}</Chip.Label>
+```
+
+**Select usage:**
 
 ```tsx
 import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agency-status-filter.options";

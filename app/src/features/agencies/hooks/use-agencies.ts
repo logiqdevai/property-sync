@@ -8,6 +8,7 @@ import {
   updateAgency,
   updateAgencyStatus,
   updateAgencyVisibility,
+  updateTrackerAdminSettings,
 } from "../services/agencies.services";
 import type {
   AgencyListQuery,
@@ -15,6 +16,7 @@ import type {
   CreateAgencyPayload,
   UpdateAgencyPayload,
   UpdateAgencyVisibilityPayload,
+  UpdateTrackerAdminSettingsPayload,
 } from "../interfaces/agencies.interfaces";
 
 export const useAgencies = (query: AgencyListQuery, options?: { enabled?: boolean }) => {
@@ -107,6 +109,34 @@ export const useDeleteAgency = () => {
     },
     onError: (error: any) => {
       toast({ title: "Could not delete agency", description: error.message, variant: "error" });
+    },
+  });
+};
+
+export const useUpdateTrackerAdminSettings = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      agencyId,
+      userId,
+      payload,
+    }: {
+      agencyId: string;
+      userId: string;
+      payload: UpdateTrackerAdminSettingsPayload;
+    }) => updateTrackerAdminSettings(agencyId, userId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["trackableAgencies"] });
+      queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+      toast({ title: "Tracker settings saved", duration: 2000, variant: "success" });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not save tracker settings",
+        description: error.message,
+        variant: "error",
+      });
     },
   });
 };

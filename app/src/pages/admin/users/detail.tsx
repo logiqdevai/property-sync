@@ -8,6 +8,7 @@ import {
   RoleTypes,
   type RoleType,
 } from "@/features/user/interfaces/user.interface";
+import { useAuthStore } from "@/stores/auth";
 import { RoleTypeFilterOptions } from "@/config/constants/dropdowns/role-type-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { CredentialStatusIndicators } from "./components/integration-credential-fields";
@@ -36,6 +37,9 @@ export default function AdminUserDetailPage() {
   const { id = "" } = useParams();
   const { data: user, isPending, refetch } = useAdminUser(id);
   const updateIntegrationAccount = useUpdateIntegrationTargetAccount();
+  const role = useAuthStore((state) => state.role);
+  const showAdminTrackerSettings =
+    role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN;
 
   if (isPending || !user) {
     return <DetailSkeleton fieldCount={6} showSubTable subTableRows={5} />;
@@ -84,6 +88,13 @@ export default function AdminUserDetailPage() {
                     <Table.Column>Updated</Table.Column>
                     <Table.Column>Removed</Table.Column>
                     <Table.Column>AI batch</Table.Column>
+                    {showAdminTrackerSettings && (
+                      <>
+                        <Table.Column>Crawl interval</Table.Column>
+                        <Table.Column>Concurrent insertions</Table.Column>
+                        <Table.Column>Insertion interval (min)</Table.Column>
+                      </>
+                    )}
                   </Table.Header>
                   <Table.Body>
                     {user.tracked_agencies.map((tracking) => (
@@ -105,6 +116,15 @@ export default function AdminUserDetailPage() {
                         <Table.Cell>{tracking.track_updated_listings ? "Yes" : "No"}</Table.Cell>
                         <Table.Cell>{tracking.track_removed_listings ? "Yes" : "No"}</Table.Cell>
                         <Table.Cell>{tracking.use_ai_batching ? "Yes" : "No"}</Table.Cell>
+                        {showAdminTrackerSettings && (
+                          <>
+                            <Table.Cell className="font-mono text-xs">
+                              {tracking.crawl_interval}
+                            </Table.Cell>
+                            <Table.Cell>{tracking.concurrent_insertions}</Table.Cell>
+                            <Table.Cell>{tracking.insertion_interval_minutes}</Table.Cell>
+                          </>
+                        )}
                       </Table.Row>
                     ))}
                   </Table.Body>

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  Accordion,
   Input,
   Label,
   Pagination,
@@ -13,7 +14,9 @@ import { Search } from "lucide-react";
 import { RoleGate } from "@/components/providers/role-gate";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { useUpdateTrackerAdminSettings } from "@/features/agencies/hooks/use-agencies";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
+import { useAuthStore } from "@/stores/auth";
 import { TrackedAgencyIntegrationLink } from "@/pages/dashboard/components/tracked-agency-integration-link";
 import {
   useTrackableAgencies,
@@ -28,6 +31,7 @@ import {
   type TrackAgencyPayload,
   type TrackableAgency,
 } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
+import type { UpdateTrackerAdminSettingsPayload } from "@/features/agencies/interfaces/agencies.interfaces";
 import { AiProviderFormOptions } from "@/config/constants/dropdowns/ai-provider-form.options";
 import { Routes } from "@/routes/routes";
 
@@ -40,12 +44,20 @@ function AgencyCard({
 }) {
   const trackAgency = useTrackAgency();
   const updateTracking = useUpdateAgencyTracking();
+  const updateTrackerAdminSettings = useUpdateTrackerAdminSettings();
+  const userId = useAuthStore((state) => state.user_uuid);
   const prefs = agency.tracking_prefs;
-  const isPending = trackAgency.isPending || updateTracking.isPending;
+  const isPending =
+    trackAgency.isPending || updateTracking.isPending || updateTrackerAdminSettings.isPending;
 
   const savePrefs = (payload: TrackAgencyPayload) => {
     if (!agency.is_tracked) return;
     updateTracking.mutate({ agencyId: agency.id, payload });
+  };
+
+  const saveAdminSettings = (payload: UpdateTrackerAdminSettingsPayload) => {
+    if (!agency.is_tracked || !userId) return;
+    updateTrackerAdminSettings.mutate({ agencyId: agency.id, userId, payload });
   };
 
   const handleTrackToggle = (next: boolean) => {
@@ -139,63 +151,144 @@ function AgencyCard({
           </div>
 
           <RoleGate roles={[RoleTypes.ADMIN]}>
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex min-w-0 flex-col gap-0.5">
-                <span className="text-sm text-foreground">Use AI batching</span>
-                <span className="text-xs text-muted">Lower cost, slower updates on scheduled crawls.</span>
-              </div>
-              <Switch
-                isSelected={prefs.use_ai_batching}
-                isDisabled={isPending}
-                onChange={(isSelected) => savePrefs({ use_ai_batching: isSelected })}
-                aria-label="Use AI batching"
-              >
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
-              </Switch>
-            </div>
+            <Accordion defaultExpandedKeys={[]} hideSeparator>
+              <Accordion.Item id="admin-options">
+                <Accordion.Heading>
+                  <Accordion.Trigger className="text-sm font-medium text-foreground">
+                    Admin options
+                    <Accordion.Indicator />
+                  </Accordion.Trigger>
+                </Accordion.Heading>
+                <Accordion.Panel>
+                  <Accordion.Body>
+                    <div
+                      className="flex flex-col gap-3 pt-1"
+                      key={`${agency.id}-admin-${prefs.crawl_interval}-${prefs.concurrent_insertions}-${prefs.insertion_interval_minutes}`}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex min-w-0 flex-col gap-0.5">
+                          <span className="text-sm text-foreground">Use AI batching</span>
+                          <span className="text-xs text-muted">
+                            Lower cost, slower updates on scheduled crawls.
+                          </span>
+                        </div>
+                        <Switch
+                          isSelected={prefs.use_ai_batching}
+                          isDisabled={isPending}
+                          onChange={(isSelected) => savePrefs({ use_ai_batching: isSelected })}
+                          aria-label="Use AI batching"
+                        >
+                          <Switch.Control>
+                            <Switch.Thumb />
+                          </Switch.Control>
+                        </Switch>
+                      </div>
 
-            <Select
-              selectedKey={prefs.ai_provider}
-              isDisabled={isPending}
-              onSelectionChange={(key) => savePrefs({ ai_provider: key as AiProvider })}
-              className="w-full"
-            >
-              <Label>AI provider</Label>
-              <Select.Trigger>
-                <Select.Value />
-                <Select.Indicator />
-              </Select.Trigger>
-              <Select.Popover>
-                <ListBox>
-                  {AiProviderFormOptions.map((option) => (
-                    <ListBox.Item key={option.id} id={option.id}>
-                      {option.label}
-                    </ListBox.Item>
-                  ))}
-                </ListBox>
-              </Select.Popover>
-            </Select>
+                      <Select
+                        selectedKey={prefs.ai_provider}
+                        isDisabled={isPending}
+                        onSelectionChange={(key) => savePrefs({ ai_provider: key as AiProvider })}
+                        className="w-full"
+                      >
+                        <Label>AI provider</Label>
+                        <Select.Trigger>
+                          <Select.Value />
+                          <Select.Indicator />
+                        </Select.Trigger>
+                        <Select.Popover>
+                          <ListBox>
+                            {AiProviderFormOptions.map((option) => (
+                              <ListBox.Item key={option.id} id={option.id}>
+                                {option.label}
+                              </ListBox.Item>
+                            ))}
+                          </ListBox>
+                        </Select.Popover>
+                      </Select>
 
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-muted">AI model (optional)</span>
-              <input
-                className="rounded-lg border border-border bg-background px-3 py-2"
-                value={prefs.ai_model ?? ""}
-                disabled={isPending}
-                onChange={(e) => savePrefs({ ai_model: e.target.value || null })}
-              />
-            </label>
+                      <label className="flex flex-col gap-1 text-sm">
+                        <span className="text-muted">AI model (optional)</span>
+                        <input
+                          className="rounded-lg border border-border bg-background px-3 py-2"
+                          value={prefs.ai_model ?? ""}
+                          disabled={isPending}
+                          onChange={(e) => savePrefs({ ai_model: e.target.value || null })}
+                        />
+                      </label>
 
-            <p className="text-xs text-muted">
-              Batching applies on scheduled crawls when batching is enabled and provider is OpenAI.
-              Connect your AI key on{" "}
-              <Link to={Routes.dashboard.integrations} className="text-accent hover:underline">
-                Integrations
-              </Link>{" "}
-              before tracking.
-            </p>
+                      <label className="flex flex-col gap-1 text-sm">
+                        <span className="text-muted">Crawl interval (cron)</span>
+                        <input
+                          className="rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs"
+                          defaultValue={prefs.crawl_interval ?? ""}
+                          disabled={isPending}
+                          onBlur={(e) => {
+                            const value = e.target.value.trim();
+                            if (value && value !== prefs.crawl_interval) {
+                              saveAdminSettings({ crawl_interval: value });
+                            }
+                          }}
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1 text-sm">
+                        <span className="text-muted">Concurrent insertions</span>
+                        <input
+                          type="number"
+                          min={1}
+                          className="rounded-lg border border-border bg-background px-3 py-2"
+                          defaultValue={prefs.concurrent_insertions ?? 1}
+                          disabled={isPending}
+                          onBlur={(e) => {
+                            const value = Number.parseInt(e.target.value, 10);
+                            if (
+                              Number.isFinite(value) &&
+                              value >= 1 &&
+                              value !== prefs.concurrent_insertions
+                            ) {
+                              saveAdminSettings({ concurrent_insertions: value });
+                            }
+                          }}
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1 text-sm">
+                        <span className="text-muted">Insertion interval (minutes)</span>
+                        <input
+                          type="number"
+                          min={1}
+                          className="rounded-lg border border-border bg-background px-3 py-2"
+                          defaultValue={prefs.insertion_interval_minutes ?? 5}
+                          disabled={isPending}
+                          onBlur={(e) => {
+                            const value = Number.parseInt(e.target.value, 10);
+                            if (
+                              Number.isFinite(value) &&
+                              value >= 1 &&
+                              value !== prefs.insertion_interval_minutes
+                            ) {
+                              saveAdminSettings({ insertion_interval_minutes: value });
+                            }
+                          }}
+                        />
+                      </label>
+
+                      <p className="text-xs text-muted">
+                        Batching applies on scheduled crawls when batching is enabled and provider is
+                        OpenAI. Connect your AI key on{" "}
+                        <Link
+                          to={Routes.dashboard.integrations}
+                          className="text-accent hover:underline"
+                        >
+                          Integrations
+                        </Link>{" "}
+                        before tracking.
+                      </p>
+                    </div>
+                  </Accordion.Body>
+                </Accordion.Panel>
+              </Accordion.Item>
+            </Accordion>
           </RoleGate>
 
           <TrackedAgencyIntegrationLink

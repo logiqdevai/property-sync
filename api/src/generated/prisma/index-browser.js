@@ -180,6 +180,8 @@ exports.Prisma.UserTrackedAgencyScalarFieldEnum = {
   source_agency_id: 'source_agency_id',
   enabled: 'enabled',
   crawl_interval: 'crawl_interval',
+  concurrent_insertions: 'concurrent_insertions',
+  insertion_interval_minutes: 'insertion_interval_minutes',
   track_new_listings: 'track_new_listings',
   track_removed_listings: 'track_removed_listings',
   track_updated_listings: 'track_updated_listings',

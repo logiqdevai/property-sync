@@ -9,7 +9,7 @@ import { CreateAgencyDto } from './dto/create-agency.dto';
 import { UpdateAgencyDto } from './dto/update-agency.dto';
 import { UpdateAgencyStatusDto } from './dto/update-agency-status.dto';
 import { UpdateAgencyVisibilityDto } from './dto/update-agency-visibility.dto';
-import { UpdateTrackerCrawlIntervalDto } from './dto/update-tracker-crawl-interval.dto';
+import { UpdateTrackerAdminSettingsDto } from './dto/update-tracker-admin-settings.dto';
 import { AgencyQuerySchema, AgencyQueryType } from './dto/agency-query.schema';
 import { Agency } from './entities/agency.entity';
 
@@ -47,15 +47,15 @@ export class AgenciesController {
 
     @Patch(':id/trackers/:userId')
     @Roles('ADMIN', 'SUPER_ADMIN')
-    @ApiOperation({ summary: "Update a user's crawl interval for this agency" })
+    @ApiOperation({ summary: "Update admin-only tracker settings for a user's tracked agency" })
     @ApiResponse({ status: 200, description: 'Updated UserTrackedAgency' })
     @ApiResponse({ status: 404, description: 'User does not track this agency' })
-    updateTrackerCrawlInterval(
+    updateTrackerAdminSettings(
         @Param('id') id: string,
         @Param('userId') userId: string,
-        @Body() dto: UpdateTrackerCrawlIntervalDto,
+        @Body() dto: UpdateTrackerAdminSettingsDto,
     ) {
-        return this.agenciesService.updateTrackerCrawlInterval(id, userId, dto.crawl_interval);
+        return this.agenciesService.updateTrackerAdminSettings(id, userId, dto);
     }
 
     @Patch(':id')

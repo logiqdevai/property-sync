@@ -47,6 +47,12 @@ export interface UpdateAgencyVisibilityPayload {
   is_enabled?: boolean;
 }
 
+export interface UpdateTrackerAdminSettingsPayload {
+  crawl_interval?: string;
+  concurrent_insertions?: number;
+  insertion_interval_minutes?: number;
+}
+
 export interface AgencyListQuery {
   page?: number;
   limit?: number;

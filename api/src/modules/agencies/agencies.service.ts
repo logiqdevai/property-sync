@@ -4,6 +4,7 @@ import { AgencyStatus } from 'generated/prisma';
 import { CreateAgencyDto } from './dto/create-agency.dto';
 import { UpdateAgencyDto } from './dto/update-agency.dto';
 import { UpdateAgencyVisibilityDto } from './dto/update-agency-visibility.dto';
+import { UpdateTrackerAdminSettingsDto } from './dto/update-tracker-admin-settings.dto';
 import { AgencyQueryType } from './dto/agency-query.schema';
 import { PaginatedResult } from './interfaces/agency.interface';
 
@@ -122,7 +123,11 @@ export class AgenciesService {
         await this.prisma.sourceAgency.delete({ where: { id } });
     }
 
-    async updateTrackerCrawlInterval(agencyId: string, userId: string, crawl_interval: string) {
+    async updateTrackerAdminSettings(
+        agencyId: string,
+        userId: string,
+        dto: UpdateTrackerAdminSettingsDto,
+    ) {
         const tracker = await this.prisma.userTrackedAgency.findUnique({
             where: { user_id_source_agency_id: { user_id: userId, source_agency_id: agencyId } },
         });
@@ -133,7 +138,15 @@ export class AgenciesService {
 
         return this.prisma.userTrackedAgency.update({
             where: { id: tracker.id },
-            data: { crawl_interval },
+            data: {
+                ...(dto.crawl_interval !== undefined && { crawl_interval: dto.crawl_interval }),
+                ...(dto.concurrent_insertions !== undefined && {
+                    concurrent_insertions: dto.concurrent_insertions,
+                }),
+                ...(dto.insertion_interval_minutes !== undefined && {
+                    insertion_interval_minutes: dto.insertion_interval_minutes,
+                }),
+            },
         });
     }
 

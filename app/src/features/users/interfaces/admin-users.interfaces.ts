@@ -35,6 +35,8 @@ export interface AdminUserTrackedAgency {
   source_agency_id: string;
   enabled: boolean;
   crawl_interval: string;
+  concurrent_insertions: number;
+  insertion_interval_minutes: number;
   track_new_listings: boolean;
   track_removed_listings: boolean;
   track_updated_listings: boolean;
