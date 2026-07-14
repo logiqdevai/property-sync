@@ -69,39 +69,45 @@ export default function AdminUserDetailPage() {
         {user.tracked_agencies.length === 0 ? (
           <p className="text-sm text-muted">No tracked agencies.</p>
         ) : (
-          <Table aria-label="Tracked agencies">
-            <Table.Header>
-              <Table.Column isRowHeader>Agency</Table.Column>
-              <Table.Column>Status</Table.Column>
-              <Table.Column>New</Table.Column>
-              <Table.Column>Updated</Table.Column>
-              <Table.Column>Removed</Table.Column>
-              <Table.Column>AI batch</Table.Column>
-            </Table.Header>
-            <Table.Body items={user.tracked_agencies}>
-              {(tracking) => (
-                <Table.Row key={tracking.id}>
-                  <Table.Cell>
-                    <Link
-                      to={Routes.admin.agencies.detail(tracking.source_agency.id)}
-                      className="text-accent hover:underline"
-                    >
-                      {tracking.source_agency.name}
-                    </Link>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Chip size="sm" variant="soft" color={tracking.enabled ? "success" : "default"}>
-                      {tracking.enabled ? "Enabled" : "Disabled"}
-                    </Chip>
-                  </Table.Cell>
-                  <Table.Cell>{tracking.track_new_listings ? "Yes" : "No"}</Table.Cell>
-                  <Table.Cell>{tracking.track_updated_listings ? "Yes" : "No"}</Table.Cell>
-                  <Table.Cell>{tracking.track_removed_listings ? "Yes" : "No"}</Table.Cell>
-                  <Table.Cell>{tracking.use_ai_batching ? "Yes" : "No"}</Table.Cell>
-                </Table.Row>
-              )}
-            </Table.Body>
-          </Table>
+          <div className="rounded-xl border border-border bg-surface overflow-hidden">
+            <Table>
+              <Table.ScrollContainer>
+                <Table.Content aria-label="Tracked agencies">
+                  <Table.Header>
+                    <Table.Column isRowHeader>Agency</Table.Column>
+                    <Table.Column>Status</Table.Column>
+                    <Table.Column>New</Table.Column>
+                    <Table.Column>Updated</Table.Column>
+                    <Table.Column>Removed</Table.Column>
+                    <Table.Column>AI batch</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    {user.tracked_agencies.map((tracking) => (
+                      <Table.Row key={tracking.id}>
+                        <Table.Cell>
+                          <Link
+                            to={Routes.admin.agencies.detail(tracking.source_agency.id)}
+                            className="text-accent hover:underline"
+                          >
+                            {tracking.source_agency.name}
+                          </Link>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Chip size="sm" variant="soft" color={tracking.enabled ? "success" : "default"}>
+                            {tracking.enabled ? "Enabled" : "Disabled"}
+                          </Chip>
+                        </Table.Cell>
+                        <Table.Cell>{tracking.track_new_listings ? "Yes" : "No"}</Table.Cell>
+                        <Table.Cell>{tracking.track_updated_listings ? "Yes" : "No"}</Table.Cell>
+                        <Table.Cell>{tracking.track_removed_listings ? "Yes" : "No"}</Table.Cell>
+                        <Table.Cell>{tracking.use_ai_batching ? "Yes" : "No"}</Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
+            </Table>
+          </div>
         )}
       </section>
 
@@ -110,45 +116,51 @@ export default function AdminUserDetailPage() {
         {user.saved_properties.length === 0 ? (
           <p className="text-sm text-muted">No saved properties.</p>
         ) : (
-          <Table aria-label="Saved properties">
-            <Table.Header>
-              <Table.Column isRowHeader>Title</Table.Column>
-              <Table.Column>City</Table.Column>
-              <Table.Column>Price</Table.Column>
-              <Table.Column>Status</Table.Column>
-              <Table.Column>Edited</Table.Column>
-            </Table.Header>
-            <Table.Body items={user.saved_properties}>
-              {(property) => (
-                <Table.Row key={property.id}>
-                  <Table.Cell>
-                    <Link
-                      to={Routes.admin.properties.detail(property.property_id)}
-                      className="text-accent hover:underline"
-                    >
-                      {property.title}
-                    </Link>
-                  </Table.Cell>
-                  <Table.Cell>{property.city ?? "—"}</Table.Cell>
-                  <Table.Cell>
-                    {property.price != null
-                      ? `${property.currency ?? ""} ${property.price}`.trim()
-                      : "—"}
-                  </Table.Cell>
-                  <Table.Cell>{property.status}</Table.Cell>
-                  <Table.Cell>
-                    {property.is_modified ? (
-                      <Chip size="sm" variant="soft" color="warning">
-                        Edited
-                      </Chip>
-                    ) : (
-                      "—"
-                    )}
-                  </Table.Cell>
-                </Table.Row>
-              )}
-            </Table.Body>
-          </Table>
+          <div className="rounded-xl border border-border bg-surface overflow-hidden">
+            <Table>
+              <Table.ScrollContainer>
+                <Table.Content aria-label="Saved properties">
+                  <Table.Header>
+                    <Table.Column isRowHeader>Title</Table.Column>
+                    <Table.Column>City</Table.Column>
+                    <Table.Column>Price</Table.Column>
+                    <Table.Column>Status</Table.Column>
+                    <Table.Column>Edited</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    {user.saved_properties.map((property) => (
+                      <Table.Row key={property.id}>
+                        <Table.Cell>
+                          <Link
+                            to={Routes.admin.properties.detail(property.property_id)}
+                            className="text-accent hover:underline"
+                          >
+                            {property.title}
+                          </Link>
+                        </Table.Cell>
+                        <Table.Cell>{property.city ?? "—"}</Table.Cell>
+                        <Table.Cell>
+                          {property.price != null
+                            ? `${property.currency ?? ""} ${property.price}`.trim()
+                            : "—"}
+                        </Table.Cell>
+                        <Table.Cell>{property.status}</Table.Cell>
+                        <Table.Cell>
+                          {property.is_modified ? (
+                            <Chip size="sm" variant="soft" color="warning">
+                              Edited
+                            </Chip>
+                          ) : (
+                            "—"
+                          )}
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
+            </Table>
+          </div>
         )}
       </section>
 
@@ -157,50 +169,56 @@ export default function AdminUserDetailPage() {
         {user.user_integrations.length === 0 ? (
           <p className="text-sm text-muted">No integration connections.</p>
         ) : (
-          <Table aria-label="Integration connections">
-            <Table.Header>
-              <Table.Column isRowHeader>Target</Table.Column>
-              <Table.Column>Credentials</Table.Column>
-              <Table.Column>Active</Table.Column>
-            </Table.Header>
-            <Table.Body items={user.user_integrations}>
-              {(integration) => (
-                <Table.Row key={integration.id}>
-                  <Table.Cell>
-                    <Link
-                      to={Routes.admin.integrationTargets.detail(integration.integration_target_id)}
-                      className="text-accent hover:underline"
-                    >
-                      {integration.integration_target.integration_type}
-                    </Link>
-                    <p className="text-xs text-muted">{integration.integration_target.auth_type}</p>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <CredentialStatusIndicators
-                      hasApiKey={integration.has_api_key_secret}
-                      hasPassword={integration.has_password}
-                      hasConfig={integration.has_config}
-                      email={integration.email}
-                      username={integration.username}
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Switch
-                      isSelected={integration.is_active}
-                      onChange={(checked) =>
-                        handleToggleIntegration(
-                          integration.integration_target_id,
-                          integration.id,
-                          checked,
-                        )
-                      }
-                      isDisabled={updateIntegrationAccount.isPending}
-                    />
-                  </Table.Cell>
-                </Table.Row>
-              )}
-            </Table.Body>
-          </Table>
+          <div className="rounded-xl border border-border bg-surface overflow-hidden">
+            <Table>
+              <Table.ScrollContainer>
+                <Table.Content aria-label="Integration connections">
+                  <Table.Header>
+                    <Table.Column isRowHeader>Target</Table.Column>
+                    <Table.Column>Credentials</Table.Column>
+                    <Table.Column>Active</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    {user.user_integrations.map((integration) => (
+                      <Table.Row key={integration.id}>
+                        <Table.Cell>
+                          <Link
+                            to={Routes.admin.integrationTargets.detail(integration.integration_target_id)}
+                            className="text-accent hover:underline"
+                          >
+                            {integration.integration_target.integration_type}
+                          </Link>
+                          <p className="text-xs text-muted">{integration.integration_target.auth_type}</p>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <CredentialStatusIndicators
+                            hasApiKey={integration.has_api_key_secret}
+                            hasPassword={integration.has_password}
+                            hasConfig={integration.has_config}
+                            email={integration.email}
+                            username={integration.username}
+                          />
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Switch
+                            isSelected={integration.is_active}
+                            onChange={(checked) =>
+                              handleToggleIntegration(
+                                integration.integration_target_id,
+                                integration.id,
+                                checked,
+                              )
+                            }
+                            isDisabled={updateIntegrationAccount.isPending}
+                          />
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
+            </Table>
+          </div>
         )}
       </section>
     </div>

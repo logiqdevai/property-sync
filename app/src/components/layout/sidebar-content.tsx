@@ -1,7 +1,9 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Building2, Home, Plug } from 'lucide-react';
+import { LayoutDashboard, Building2, Home, Plug, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes/routes';
+import { useAuthStore } from '@/stores/auth';
+import { canAccessAdmin } from '@/features/user/interfaces/user.interface';
 
 interface SidebarContentProps {
   collapsed: boolean;
@@ -78,9 +80,17 @@ function NavItem({
 }
 
 export default function SidebarContent({ collapsed, onNavigate }: SidebarContentProps) {
+  const role = useAuthStore((state) => state.role);
+  const items = canAccessAdmin(role)
+    ? [
+        ...navItems,
+        { label: 'Admin Panel', icon: Shield, href: Routes.admin.root, end: true },
+      ]
+    : navItems;
+
   return (
     <ul className="space-y-0.5">
-      {navItems.map(({ label, icon, href, end }) => (
+      {items.map(({ label, icon, href, end }) => (
         <NavItem
           key={href}
           label={label}

@@ -4,7 +4,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useNavigate } from "react-router-dom";
 import type { SignInUser, SignUpUser } from "../interfaces/auth.interface";
 import { Routes } from "@/routes/routes";
-import type { LoggedInUser } from "@/features/user/interfaces/user.interface";
+import { canAccessAdmin, type LoggedInUser } from "@/features/user/interfaces/user.interface";
 import { toast } from "@/hooks/use-toast";
 
 
@@ -24,7 +24,7 @@ export function useSignin() {
                 description: "You have successfully logged in",
                 duration: 2000,
             });
-            navigate(Routes.dashboard.root);
+            navigate(canAccessAdmin(data.role) ? Routes.admin.root : Routes.dashboard.root);
         },
         onError: (error: any) => {
             toast({

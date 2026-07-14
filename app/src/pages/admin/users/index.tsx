@@ -80,6 +80,7 @@ export default function AdminUsersListPage() {
         </div>
 
         <Select
+          aria-label="Filter by role"
           selectedKey={role}
           onSelectionChange={(key) => {
             setPage(1);
@@ -92,12 +93,12 @@ export default function AdminUsersListPage() {
             <Select.Indicator />
           </Select.Trigger>
           <Select.Popover>
-            <ListBox items={roleFilterOptions}>
-              {(item) => (
-                <ListBox.Item key={item.id} id={item.id} textValue={item.label}>
-                  {item.label}
+            <ListBox>
+              {roleFilterOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
                 </ListBox.Item>
-              )}
+              ))}
             </ListBox>
           </Select.Popover>
         </Select>
@@ -105,31 +106,42 @@ export default function AdminUsersListPage() {
 
       {isPending ? (
         <TableSkeleton columns={4} rows={8} />
+      ) : users.length === 0 ? (
+        <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
+          No users found.
+        </div>
       ) : (
-        <Table aria-label="Users">
-          <Table.Header>
-            <Table.Column isRowHeader>Email</Table.Column>
-            <Table.Column>Role</Table.Column>
-            <Table.Column>Phone</Table.Column>
-            <Table.Column>Joined</Table.Column>
-          </Table.Header>
-          <Table.Body items={users}>
-            {(user) => (
-              <Table.Row
-                key={user.id}
-                className="cursor-pointer"
-                onClick={() => navigate(Routes.admin.users.detail(user.id))}
-              >
-                <Table.Cell>{user.email}</Table.Cell>
-                <Table.Cell>
-                  <RoleBadge role={user.role} />
-                </Table.Cell>
-                <Table.Cell>{user.phone ?? "—"}</Table.Cell>
-                <Table.Cell>{formatDate(user.created_at)}</Table.Cell>
-              </Table.Row>
-            )}
-          </Table.Body>
-        </Table>
+        <div className="rounded-xl border border-border bg-surface overflow-hidden">
+          <Table>
+            <Table.ScrollContainer>
+              <Table.Content aria-label="Users">
+                <Table.Header>
+                  <Table.Column isRowHeader>Email</Table.Column>
+                  <Table.Column>Role</Table.Column>
+                  <Table.Column>Phone</Table.Column>
+                  <Table.Column>Joined</Table.Column>
+                </Table.Header>
+                <Table.Body>
+                  {users.map((user) => (
+                    <Table.Row
+                      key={user.id}
+                      id={user.id}
+                      onAction={() => navigate(Routes.admin.users.detail(user.id))}
+                      className="cursor-pointer"
+                    >
+                      <Table.Cell>{user.email}</Table.Cell>
+                      <Table.Cell>
+                        <RoleBadge role={user.role} />
+                      </Table.Cell>
+                      <Table.Cell>{user.phone ?? "—"}</Table.Cell>
+                      <Table.Cell>{formatDate(user.created_at)}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Content>
+            </Table.ScrollContainer>
+          </Table>
+        </div>
       )}
 
       {pagination && pagination.total_pages > 1 && (

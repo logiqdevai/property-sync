@@ -1,7 +1,10 @@
 import { Popover } from '@heroui/react';
-import { User, CreditCard, LogOut, ChevronsUpDown } from 'lucide-react';
+import { User, CreditCard, LogOut, ChevronsUpDown, Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
 import { cn } from '@/lib/utils';
+import { Routes } from '@/routes/routes';
+import { canAccessAdmin } from '@/features/user/interfaces/user.interface';
 
 function getInitials(name: string): string {
   return name
@@ -18,12 +21,16 @@ interface UserMenuPopoverProps {
 }
 
 export default function UserMenuPopover({ collapsed = false, placement = 'top' }: UserMenuPopoverProps) {
-  const { full_name, email, logout } = useAuthStore();
+  const navigate = useNavigate();
+  const { full_name, email, role, logout } = useAuthStore();
 
   const displayName = full_name || email || 'User';
   const initials = getInitials(displayName);
 
   const menuItems = [
+    ...(canAccessAdmin(role)
+      ? [{ label: 'Admin Panel', icon: Shield, onClick: () => navigate(Routes.admin.root) }]
+      : []),
     { label: 'Account', icon: User, onClick: () => {} },
     { label: 'Billing', icon: CreditCard, onClick: () => {} },
   ];

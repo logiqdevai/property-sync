@@ -31,3 +31,13 @@ export const RoleTypes = {
 } as const;
 
 export type RoleType = (typeof RoleTypes)[keyof typeof RoleTypes];
+
+export const ADMIN_AREA_ROLES: RoleType[] = [
+    RoleTypes.ADMIN,
+    RoleTypes.SUPER_ADMIN,
+    RoleTypes.SUPPORT,
+];
+
+export function canAccessAdmin(role: RoleType | null | undefined): boolean {
+    return !!role && ADMIN_AREA_ROLES.includes(role);
+}

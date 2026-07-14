@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Building2, Bot, Sparkles, Activity, ListTodo, Home, Bell, Plug, Users } from 'lucide-react';
+import { LayoutDashboard, Building2, Bot, Sparkles, Activity, ListTodo, Home, Bell, Plug, Users, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes/routes';
 import { useUnreadNotificationsCount } from '@/features/notifications/hooks/use-notifications';
@@ -105,6 +105,14 @@ export default function AdminSidebarContent({ collapsed, onNavigate }: AdminSide
 
   return (
     <ul className="space-y-0.5">
+      <NavItem
+        label="User Dashboard"
+        icon={ArrowLeft}
+        href={Routes.dashboard.root}
+        end={true}
+        collapsed={collapsed}
+        onNavigate={onNavigate}
+      />
       {navItems.map(({ label, icon, href, end, showUnreadBadge }) => (
         <NavItem
           key={href}
