@@ -3,7 +3,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { JobStatusChip } from "@/features/jobs/components/job-status-chip";
+import { JobStatusChip } from "./components/job-status-chip";
 import { useJob, useRetryJob } from "@/features/jobs/hooks/use-jobs";
 import { JobStatuses } from "@/features/jobs/interfaces/jobs.interfaces";
 import { formatDateTime } from "@/lib/date";

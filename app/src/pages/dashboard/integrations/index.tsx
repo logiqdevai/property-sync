@@ -17,7 +17,7 @@ import {
 import {
   CredentialStatusIndicators,
   IntegrationCredentialFields,
-} from "@/features/user-integrations/components/integration-credential-fields";
+} from "./components/integration-credential-fields";
 import {
   getConnectCredentialsSchema,
   mapConnectFormToPayload,

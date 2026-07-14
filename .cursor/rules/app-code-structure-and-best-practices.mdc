@@ -58,6 +58,8 @@ features/<feature-name>/
     └── <feature-name>.schema.ts      # Zod schemas + inferred types
 ```
 
+**Never create `components/` under `features/`.** Features are data-only modules (hooks, services, interfaces, schemas). All React UI lives in `pages/<section>/components/` or `components/ui/`.
+
 ### Page Structure
 
 Pages live in `src/pages/<section>/` and may contain nested sub-pages:
@@ -72,8 +74,9 @@ pages/<section>/
 └── validation-schemas/            # Page-local Zod schemas (if not in features/)
 ```
 
-**Do:** Put all data-fetching logic in `features/`. Pages only import from features.  
-**Don't:** Put API calls or Zod schemas directly inside page components or hooks.
+**Do:** Put all data-fetching logic in `features/`. Pages import hooks, services, interfaces, and schemas from features.  
+**Don't:** Put API calls, Zod schemas, or React components inside `features/`.  
+**Don't:** Create `features/<feature-name>/components/` — page-local UI belongs in `pages/<section>/components/`.
 
 ---
 
@@ -147,9 +150,12 @@ Current shared primitives (extend this list as new ones land):
 
 **Placement rule:**
 
-- **Page-local only** (one screen, not reused) → `pages/<section>/components/`
-- **Reused across multiple pages or features** → `app/src/components/ui/` (create a new file here)
-- **Domain-specific but shared within one feature** (e.g. credential fields used by admin detail + user Integrations page) → `features/<feature>/components/`, not copied into each page
+- **Used by one page route** → `pages/<section>/components/` (import via `./components/<file>`)
+- **Used by multiple pages in the same section** (e.g. admin list + detail) → `pages/<section>/components/` (shared within that section folder)
+- **Used by multiple pages across sections** → copy into each page's `components/` folder **or** promote to `app/src/components/ui/` when the component is presentational and identical everywhere
+- **Reused app-wide primitives** (buttons, skeletons, dialogs) → `app/src/components/ui/`
+
+**Never** place UI in `features/<feature>/components/`. If a form or chip is tied to a domain, colocate it with the page that renders it and import domain types/hooks from `@/features/<feature>/`.
 
 When adding a shared component to `components/ui/`, keep it presentational — no API calls, no feature hooks.
 
@@ -396,6 +402,8 @@ When adding a new route, **always add it to `routes.ts` first**, then reference 
 | Add new paths to `routes.ts` before using them               | Write path literals in `<Link>`, `navigate()`, etc.  |
 | Define all API paths in a central `ApiRoutes` object         | Hardcode API path strings in service files           |
 | Put API calls in `features/<name>/services/`                 | Call `axiosInstance` from components or hooks        |
+| Put page UI in `pages/<section>/components/`                 | Create `features/<name>/components/`                 |
+| Import page components via `./components/<file>`             | Import UI from `@/features/*/components/`            |
 | Use TanStack Query for all server state                      | Use `useState` + `useEffect` for data fetching       |
 | Call `toast()` in every mutation's `onSuccess` and `onError` | Leave mutations silent                               |
 | Use `zodResolver` with React Hook Form                       | Write manual form validation logic                   |
@@ -559,6 +567,10 @@ import { cn } from "@/lib/utils";
 ### Page Component
 
 ```tsx
+import { AgencyForm } from "./components/agency-form";
+import { AgencyStatusChip } from "./components/agency-status-chip";
+import { useAgencies, useCreateAgency } from "@/features/agencies/hooks/use-agencies";
+
 const FeaturePage: FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);

@@ -6,7 +6,7 @@ import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import {
   createGenerationRunFormSchema,
   type CreateGenerationRunFormValues,
-} from "../validation-schemas/scraper-generation.schema";
+} from "@/features/scraper-generation/validation-schemas/scraper-generation.schema";
 
 interface CreateGenerationRunFormProps {
   defaultAgencyId?: string;

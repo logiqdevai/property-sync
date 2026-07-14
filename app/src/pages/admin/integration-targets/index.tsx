@@ -13,7 +13,7 @@ import { Plus } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { IntegrationTargetForm } from "@/features/integration-targets/components/integration-target-form";
+import { IntegrationTargetForm } from "./components/integration-target-form";
 import {
   useCreateIntegrationTarget,
   useIntegrationTargets,

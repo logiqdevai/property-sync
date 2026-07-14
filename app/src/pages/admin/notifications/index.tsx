@@ -4,8 +4,8 @@ import { Table, Select, ListBox, Pagination, Button } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { NotificationSeverityChip } from "@/features/notifications/components/notification-severity-chip";
-import { NotificationTypeChip } from "@/features/notifications/components/notification-type-chip";
+import { NotificationSeverityChip } from "./components/notification-severity-chip";
+import { NotificationTypeChip } from "./components/notification-type-chip";
 import {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,

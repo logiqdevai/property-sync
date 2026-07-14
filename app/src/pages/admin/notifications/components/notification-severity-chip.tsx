@@ -2,7 +2,7 @@ import { Chip } from "@heroui/react";
 import {
   NotificationSeverities,
   type NotificationSeverity,
-} from "../interfaces/notifications.interfaces";
+} from "@/features/notifications/interfaces/notifications.interfaces";
 
 const severityColor: Record<
   NotificationSeverity,

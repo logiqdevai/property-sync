@@ -4,7 +4,7 @@ import { Table, Select, ListBox, Pagination } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { JobStatusChip } from "@/features/jobs/components/job-status-chip";
+import { JobStatusChip } from "./components/job-status-chip";
 import { useJobs, useRetryJob } from "@/features/jobs/hooks/use-jobs";
 import {
   JobStatuses,

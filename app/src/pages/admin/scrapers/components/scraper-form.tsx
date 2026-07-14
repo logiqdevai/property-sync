@@ -6,7 +6,7 @@ import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import {
   createScraperFormSchema,
   type CreateScraperFormValues,
-} from "../validation-schemas/scrapers.schema";
+} from "@/features/scrapers/validation-schemas/scrapers.schema";
 
 interface ScraperFormProps {
   defaultAgencyId?: string;

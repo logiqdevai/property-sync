@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, Label, Input, FieldError } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { agencyFormSchema, type AgencyFormValues } from "../validation-schemas/agencies.schema";
+import { agencyFormSchema, type AgencyFormValues } from "@/features/agencies/validation-schemas/agencies.schema";
 
 interface AgencyFormProps {
   defaultValues?: Partial<AgencyFormValues>;

@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { PropertyStatuses, type PropertyStatus } from "../interfaces/properties.interfaces";
+import { PropertyStatuses, type PropertyStatus } from "@/features/properties/interfaces/properties.interfaces";
 
 const statusColor: Record<PropertyStatus, "success" | "default" | "warning" | "danger"> = {
   [PropertyStatuses.ACTIVE]: "success",

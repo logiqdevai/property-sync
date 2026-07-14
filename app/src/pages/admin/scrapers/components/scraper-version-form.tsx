@@ -5,7 +5,7 @@ import { ActionButtonWithPending } from "@/components/ui/action-button-with-pend
 import {
   createScraperVersionFormSchema,
   type CreateScraperVersionFormValues,
-} from "../validation-schemas/scrapers.schema";
+} from "@/features/scrapers/validation-schemas/scrapers.schema";
 
 interface ScraperVersionFormProps {
   defaultConfig?: string;

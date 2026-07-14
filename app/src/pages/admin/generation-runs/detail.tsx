@@ -5,8 +5,8 @@ import { ArrowLeft, Loader2, ImageOff, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { GenerationRunStatusChip } from "@/features/scraper-generation/components/generation-run-status-chip";
-import { GenerationRunTriggerChip } from "@/features/scraper-generation/components/generation-run-trigger-chip";
+import { GenerationRunStatusChip } from "./components/generation-run-status-chip";
+import { GenerationRunTriggerChip } from "./components/generation-run-trigger-chip";
 import {
   useApproveGenerationRun,
   useCancelGenerationRun,

@@ -8,7 +8,7 @@ import {
   RoleTypes,
   type RoleType,
 } from "@/features/user/interfaces/user.interface";
-import { CredentialStatusIndicators } from "@/features/user-integrations/components/integration-credential-fields";
+import { CredentialStatusIndicators } from "./components/integration-credential-fields";
 import { formatDate } from "@/lib/date";
 
 function RoleBadge({ role }: { role: RoleType }) {

@@ -3,13 +3,13 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { CrawlRunStatusChip } from "@/features/crawl-runs/components/crawl-run-status-chip";
+import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import { useCrawlRun, useRerunCrawlRun } from "@/features/crawl-runs/hooks/use-crawl-runs";
 import {
   CrawlRunStatuses,
   type CrawlRunStatus,
 } from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
-import { JobStatusChip } from "@/features/jobs/components/job-status-chip";
+import { JobStatusChip } from "./components/job-status-chip";
 import type { JobStatus } from "@/features/jobs/interfaces/jobs.interfaces";
 import { formatDateTime } from "@/lib/date";
 

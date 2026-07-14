@@ -6,9 +6,9 @@ import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
-import { ScraperForm } from "@/features/scrapers/components/scraper-form";
-import { ScraperStatusChip } from "@/features/scrapers/components/scraper-status-chip";
-import { ScraperHealthChip } from "@/features/scrapers/components/scraper-health-chip";
+import { ScraperForm } from "./components/scraper-form";
+import { ScraperStatusChip } from "./components/scraper-status-chip";
+import { ScraperHealthChip } from "./components/scraper-health-chip";
 import { useCreateScraper, useScrapers } from "@/features/scrapers/hooks/use-scrapers";
 import {
   ScraperHealths,

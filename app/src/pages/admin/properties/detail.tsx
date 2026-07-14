@@ -4,7 +4,7 @@ import { ExternalLink, Layers } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { PropertyStatusChip } from "@/features/properties/components/property-status-chip";
+import { PropertyStatusChip } from "./components/property-status-chip";
 import { useProperty, useSplitProperty } from "@/features/properties/hooks/use-properties";
 import { formatPropertyHistoryLabel } from "@/features/properties/utils/format-property-history";
 import { formatDateTime } from "@/lib/date";

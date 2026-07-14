@@ -5,9 +5,9 @@ import { ArrowLeft, Bot, Activity, History, Sparkles } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { ScraperStatusChip } from "@/features/scrapers/components/scraper-status-chip";
-import { ScraperHealthChip } from "@/features/scrapers/components/scraper-health-chip";
-import { ScraperVersionForm } from "@/features/scrapers/components/scraper-version-form";
+import { ScraperStatusChip } from "./components/scraper-status-chip";
+import { ScraperHealthChip } from "./components/scraper-health-chip";
+import { ScraperVersionForm } from "./components/scraper-version-form";
 import {
   useActivateScraperVersion,
   useCreateScraperVersion,
@@ -17,14 +17,14 @@ import {
   useUpdateScraper,
 } from "@/features/scrapers/hooks/use-scrapers";
 import { ScraperStatuses } from "@/features/scrapers/interfaces/scrapers.interfaces";
-import { CreateGenerationRunForm } from "@/features/scraper-generation/components/create-generation-run-form";
-import { GenerationRunStatusChip } from "@/features/scraper-generation/components/generation-run-status-chip";
-import { GenerationRunTriggerChip } from "@/features/scraper-generation/components/generation-run-trigger-chip";
+import { CreateGenerationRunForm } from "./components/create-generation-run-form";
+import { GenerationRunStatusChip } from "./components/generation-run-status-chip";
+import { GenerationRunTriggerChip } from "./components/generation-run-trigger-chip";
 import {
   useCreateGenerationRun,
   useGenerationRuns,
 } from "@/features/scraper-generation/hooks/use-scraper-generation";
-import { CrawlRunStatusChip } from "@/features/crawl-runs/components/crawl-run-status-chip";
+import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import { useCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
 import { formatDateTime } from "@/lib/date";
 

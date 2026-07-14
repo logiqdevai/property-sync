@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { CrawlRunStatuses, type CrawlRunStatus } from "../interfaces/crawl-runs.interfaces";
+import { CrawlRunStatuses, type CrawlRunStatus } from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
 
 const statusColor: Record<CrawlRunStatus, "success" | "default" | "warning" | "danger"> = {
   [CrawlRunStatuses.QUEUED]: "default",

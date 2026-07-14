@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { ScraperHealths, type ScraperHealth } from "../interfaces/scrapers.interfaces";
+import { ScraperHealths, type ScraperHealth } from "@/features/scrapers/interfaces/scrapers.interfaces";
 
 const healthColor: Record<ScraperHealth, "success" | "warning" | "danger"> = {
   [ScraperHealths.EXCELLENT]: "success",

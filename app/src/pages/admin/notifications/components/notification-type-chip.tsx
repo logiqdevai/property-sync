@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { NotificationTypes, type NotificationType } from "../interfaces/notifications.interfaces";
+import { NotificationTypes, type NotificationType } from "@/features/notifications/interfaces/notifications.interfaces";
 
 const typeLabel: Record<NotificationType, string> = {
   [NotificationTypes.BROKEN_SCRAPER]: "Broken scraper",

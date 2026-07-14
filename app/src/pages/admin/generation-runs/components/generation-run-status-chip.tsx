@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { GenerationRunStatuses, type GenerationRunStatus } from "../interfaces/scraper-generation.interfaces";
+import { GenerationRunStatuses, type GenerationRunStatus } from "@/features/scraper-generation/interfaces/scraper-generation.interfaces";
 
 const statusColor: Record<GenerationRunStatus, "success" | "default" | "warning" | "danger"> = {
   [GenerationRunStatuses.QUEUED]: "default",

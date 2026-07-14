@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { GenerationTriggers, type GenerationTrigger } from "../interfaces/scraper-generation.interfaces";
+import { GenerationTriggers, type GenerationTrigger } from "@/features/scraper-generation/interfaces/scraper-generation.interfaces";
 
 const triggerColor: Record<GenerationTrigger, "default" | "warning"> = {
   [GenerationTriggers.MANUAL]: "default",

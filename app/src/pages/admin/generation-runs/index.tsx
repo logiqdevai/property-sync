@@ -6,9 +6,9 @@ import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
-import { CreateGenerationRunForm } from "@/features/scraper-generation/components/create-generation-run-form";
-import { GenerationRunStatusChip } from "@/features/scraper-generation/components/generation-run-status-chip";
-import { GenerationRunTriggerChip } from "@/features/scraper-generation/components/generation-run-trigger-chip";
+import { CreateGenerationRunForm } from "./components/create-generation-run-form";
+import { GenerationRunStatusChip } from "./components/generation-run-status-chip";
+import { GenerationRunTriggerChip } from "./components/generation-run-trigger-chip";
 import {
   useCreateGenerationRun,
   useGenerationRuns,

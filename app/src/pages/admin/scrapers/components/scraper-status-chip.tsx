@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { ScraperStatuses, type ScraperStatus } from "../interfaces/scrapers.interfaces";
+import { ScraperStatuses, type ScraperStatus } from "@/features/scrapers/interfaces/scrapers.interfaces";
 
 const statusColor: Record<ScraperStatus, "success" | "default" | "warning" | "danger"> = {
   [ScraperStatuses.ACTIVE]: "success",

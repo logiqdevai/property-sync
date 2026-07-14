@@ -12,7 +12,7 @@ import {
 import { Search } from "lucide-react";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { TrackedAgencyIntegrationLink } from "@/features/user-tracked-agencies/components/tracked-agency-integration-link";
+import { TrackedAgencyIntegrationLink } from "./components/tracked-agency-integration-link";
 import {
   useTrackableAgencies,
   useTrackAgency,

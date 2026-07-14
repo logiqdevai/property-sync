@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { AgencyStatuses, type AgencyStatus } from "../interfaces/agencies.interfaces";
+import { AgencyStatuses, type AgencyStatus } from "@/features/agencies/interfaces/agencies.interfaces";
 
 const statusColor: Record<AgencyStatus, "success" | "default" | "danger"> = {
   [AgencyStatuses.ACTIVE]: "success",

@@ -6,7 +6,7 @@ import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { IntegrationTargetForm } from "@/features/integration-targets/components/integration-target-form";
+import { IntegrationTargetForm } from "./components/integration-target-form";
 import {
   useCreateIntegrationTargetAccount,
   useDeleteIntegrationTarget,
@@ -18,7 +18,7 @@ import type { MaskedUserIntegration } from "@/features/integration-targets/inter
 import {
   CredentialStatusIndicators,
   IntegrationCredentialFields,
-} from "@/features/user-integrations/components/integration-credential-fields";
+} from "./components/integration-credential-fields";
 import {
   getConnectCredentialsSchema,
   mapConnectFormToPayload,

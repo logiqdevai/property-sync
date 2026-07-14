@@ -7,7 +7,7 @@ import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { PropertyStatusChip } from "@/features/properties/components/property-status-chip";
+import { PropertyStatusChip } from "./components/property-status-chip";
 import { formatPropertyHistoryLabel } from "@/features/properties/utils/format-property-history";
 import {
   useResyncUserProperty,

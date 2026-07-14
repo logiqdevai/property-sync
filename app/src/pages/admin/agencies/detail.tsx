@@ -5,15 +5,15 @@ import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { AgencyForm } from "@/features/agencies/components/agency-form";
-import { AgencyStatusChip } from "@/features/agencies/components/agency-status-chip";
+import { AgencyForm } from "./components/agency-form";
+import { AgencyStatusChip } from "./components/agency-status-chip";
 import {
   useAgency,
   useDeleteAgency,
   useUpdateAgency,
   useUpdateAgencyVisibility,
 } from "@/features/agencies/hooks/use-agencies";
-import { CrawlRunStatusChip } from "@/features/crawl-runs/components/crawl-run-status-chip";
+import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import { useCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
 import { formatDateTime } from "@/lib/date";
 

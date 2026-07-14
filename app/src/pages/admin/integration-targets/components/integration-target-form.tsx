@@ -9,7 +9,7 @@ import {
   type AuthType,
   type CreateIntegrationTargetPayload,
   type IntegrationType,
-} from "../interfaces/integration-targets.interfaces";
+} from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 
 const integrationTargetFormSchema = z.object({
   integration_type: z.enum([

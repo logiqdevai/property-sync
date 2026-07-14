@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { JobStatuses, type JobStatus } from "../interfaces/jobs.interfaces";
+import { JobStatuses, type JobStatus } from "@/features/jobs/interfaces/jobs.interfaces";
 
 const statusColor: Record<JobStatus, "success" | "default" | "warning" | "danger"> = {
   [JobStatuses.WAITING]: "default",

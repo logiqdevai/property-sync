@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ListBox, Label, Select, Skeleton, useOverlayState } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { CredentialStatusIndicators } from "@/features/user-integrations/components/integration-credential-fields";
+import { CredentialStatusIndicators } from "./integration-credential-fields";
 import { useUserIntegrationConnections } from "@/features/user-integrations/hooks/use-user-integrations";
 import {
   useLinkIntegration,

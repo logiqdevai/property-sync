@@ -14,8 +14,8 @@ import { Search, Plus } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { AgencyForm } from "@/features/agencies/components/agency-form";
-import { AgencyStatusChip } from "@/features/agencies/components/agency-status-chip";
+import { AgencyForm } from "./components/agency-form";
+import { AgencyStatusChip } from "./components/agency-status-chip";
 import { useAgencies, useCreateAgency, useUpdateAgencyStatus } from "@/features/agencies/hooks/use-agencies";
 import {
   AgencyStatuses,

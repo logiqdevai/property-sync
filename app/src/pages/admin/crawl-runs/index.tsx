@@ -5,7 +5,7 @@ import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { useScrapers } from "@/features/scrapers/hooks/use-scrapers";
-import { CrawlRunStatusChip } from "@/features/crawl-runs/components/crawl-run-status-chip";
+import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import { useCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
 import {
   CrawlRunStatuses,
