@@ -1,5 +1,6 @@
 import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
+import type { CrawlRun } from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
 import type {
   CreateScraperPayload,
   CreateScraperVersionPayload,
@@ -88,9 +89,10 @@ export const updateScraper = async (
   }
 };
 
-export const runScraperNow = async (id: string): Promise<void> => {
+export const runScraperNow = async (id: string): Promise<CrawlRun> => {
   try {
-    await axiosInstance.post(ApiRoutes.admin.scrapers.runNow(id));
+    const response = await axiosInstance.post(ApiRoutes.admin.scrapers.runNow(id));
+    return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to run scraper. Please try again.");
   }

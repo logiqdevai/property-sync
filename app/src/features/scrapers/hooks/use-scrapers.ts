@@ -113,12 +113,13 @@ export const useRunScraperNow = () => {
     mutationFn: (id: string) => runScraperNow(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scrapers"] });
+      queryClient.invalidateQueries({ queryKey: ["crawlRuns"] });
       toast({ title: "Crawl run triggered", duration: 2000, variant: "success" });
     },
     onError: (error: any) => {
       toast({
-        title: "Manual runs are not available yet",
-        description: error.message || "Coming with the crawl engine.",
+        title: "Could not run scraper",
+        description: error.message,
         variant: "error",
       });
     },

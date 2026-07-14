@@ -24,6 +24,8 @@ import {
   useCreateGenerationRun,
   useGenerationRuns,
 } from "@/features/scraper-generation/hooks/use-scraper-generation";
+import { CrawlRunStatusChip } from "@/features/crawl-runs/components/crawl-run-status-chip";
+import { useCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
 import { formatDateTime } from "@/lib/date";
 
 export default function ScraperDetailPage() {
@@ -38,6 +40,7 @@ export default function ScraperDetailPage() {
   const { data: scraper, isPending } = useScraper(id!);
   const { data: versions } = useScraperVersions(id!);
   const { data: generationRunsData } = useGenerationRuns({ scraper_id: id!, limit: 5 });
+  const { data: crawlRunsData } = useCrawlRuns({ scraper_id: id!, limit: 5 });
   const updateScraper = useUpdateScraper();
   const activateVersion = useActivateScraperVersion();
   const createVersion = useCreateScraperVersion();
@@ -45,6 +48,7 @@ export default function ScraperDetailPage() {
   const createGenerationRun = useCreateGenerationRun();
 
   const generationRuns = generationRunsData?.data ?? [];
+  const crawlRuns = crawlRunsData?.data ?? [];
 
   const versionA = useMemo(
     () => versions?.find((v) => v.id === compareA) ?? null,
@@ -86,7 +90,11 @@ export default function ScraperDetailPage() {
           <ActionButtonWithPending
             isPending={runNow.isPending}
             isDisabled={runNow.isPending}
-            onPress={() => runNow.mutate(scraper.id)}
+            onPress={() =>
+              runNow.mutate(scraper.id, {
+                onSuccess: (run) => navigate(Routes.admin.crawlRuns.detail(run.id)),
+              })
+            }
           >
             Run now
           </ActionButtonWithPending>
@@ -287,10 +295,25 @@ export default function ScraperDetailPage() {
         </div>
         <div className="rounded-xl border border-border bg-surface p-6">
           <p className="mb-3 text-sm font-medium text-foreground">Recent crawl runs</p>
-          <EmptyState>
-            <Activity className="h-6 w-6 text-muted" />
-            <p className="text-sm text-muted mt-2">Coming in a later phase</p>
-          </EmptyState>
+          {crawlRuns.length === 0 ? (
+            <EmptyState>
+              <Activity className="h-6 w-6 text-muted" />
+              <p className="text-sm text-muted mt-2">No crawl runs yet for this scraper</p>
+            </EmptyState>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {crawlRuns.map((run) => (
+                <button
+                  key={run.id}
+                  onClick={() => navigate(Routes.admin.crawlRuns.detail(run.id))}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-left hover:border-accent/50 transition-colors"
+                >
+                  <span className="text-xs text-muted">{formatDateTime(run.created_at)}</span>
+                  <CrawlRunStatusChip status={run.status} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

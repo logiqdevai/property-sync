@@ -25,6 +25,7 @@ const EnvSchema = z.object({
     STRIPE_WEBHOOK_SECRET: z.string().optional(),
     OPENAI_API_KEY: z.string().optional(),
     SCRAPER_GENERATION_MODEL: z.string().optional(),
+    CRAWL_WORKER_CONCURRENCY: z.coerce.number().default(5),
     BULL_BOARD_USER: z.string().optional(),
     BULL_BOARD_PASSWORD: z.string().optional(),
 });

@@ -1,0 +1,218 @@
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { Routes } from "@/routes/routes";
+import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { CrawlRunStatusChip } from "@/features/crawl-runs/components/crawl-run-status-chip";
+import { useCrawlRun, useRerunCrawlRun } from "@/features/crawl-runs/hooks/use-crawl-runs";
+import {
+  CrawlRunStatuses,
+  type CrawlRunStatus,
+} from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
+import { JobStatusChip } from "@/features/jobs/components/job-status-chip";
+import type { JobStatus } from "@/features/jobs/interfaces/jobs.interfaces";
+import { formatDateTime } from "@/lib/date";
+
+const ACTIVE_STATUSES: CrawlRunStatus[] = [
+  CrawlRunStatuses.QUEUED,
+  CrawlRunStatuses.RUNNING,
+];
+
+function formatUsd(value: string | null) {
+  if (!value) return "—";
+  const num = Number(value);
+  if (Number.isNaN(num)) return value;
+  return `$${num.toFixed(6)}`;
+}
+
+export default function CrawlRunDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  const { data: run, isPending } = useCrawlRun(id!);
+  const rerun = useRerunCrawlRun();
+
+  if (isPending || !run) {
+    return <DetailSkeleton fieldCount={6} showSubTable subTableRows={3} />;
+  }
+
+  const isActive = ACTIVE_STATUSES.includes(run.status);
+  const traces = run.execution_traces ?? [];
+  const jobLogs = run.job_logs ?? [];
+  const hasAiCost = run.ai_total_cost !== null;
+
+  return (
+    <div className="flex flex-col gap-6">
+      <button
+        onClick={() => navigate(Routes.admin.crawlRuns.list)}
+        className="flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to crawl runs
+      </button>
+
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <p className="text-2xl font-semibold tracking-tight text-foreground">
+            {run.source_agency?.name ?? run.source_agency_id}
+          </p>
+          <CrawlRunStatusChip status={run.status} />
+          {isActive && <Loader2 className="h-4 w-4 animate-spin text-muted" />}
+        </div>
+        <ActionButtonWithPending
+          variant="secondary"
+          isPending={rerun.isPending}
+          isDisabled={rerun.isPending}
+          onPress={() =>
+            rerun.mutate(run.id, {
+              onSuccess: (newRun) => navigate(Routes.admin.crawlRuns.detail(newRun.id)),
+            })
+          }
+        >
+          Rerun
+        </ActionButtonWithPending>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 rounded-xl border border-border bg-surface p-6">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Scraper</span>
+          {run.scraper_id ? (
+            <button
+              className="text-sm text-accent hover:underline text-left"
+              onClick={() => navigate(Routes.admin.scrapers.detail(run.scraper_id!))}
+            >
+              {run.scraper?.name ?? run.scraper_id}
+            </button>
+          ) : (
+            <span className="text-sm text-foreground">—</span>
+          )}
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Agency</span>
+          <button
+            className="text-sm text-accent hover:underline text-left"
+            onClick={() => navigate(Routes.admin.agencies.detail(run.source_agency_id))}
+          >
+            {run.source_agency?.name ?? run.source_agency_id}
+          </button>
+        </div>
+        {run.user_tracked_agency?.user?.email && (
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">
+              Tracked by
+            </span>
+            <span className="text-sm text-foreground">{run.user_tracked_agency.user.email}</span>
+          </div>
+        )}
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">
+            Started / finished
+          </span>
+          <span className="text-sm text-foreground">
+            {formatDateTime(run.started_at)} / {formatDateTime(run.finished_at)}
+          </span>
+        </div>
+        <div className="flex flex-col gap-1 sm:col-span-2">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Totals</span>
+          <span className="text-sm text-foreground font-mono">
+            found {run.total_found} · created {run.total_created} · updated {run.total_updated} ·
+            removed {run.total_removed} · failed {run.total_failed}
+          </span>
+        </div>
+        {run.error_message && (
+          <div className="flex flex-col gap-1 sm:col-span-2 lg:col-span-3">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Error</span>
+            <span className="text-sm text-danger">{run.error_message}</span>
+          </div>
+        )}
+      </div>
+
+      {hasAiCost && (
+        <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-3">
+          <p className="text-sm font-medium text-foreground">AI normalization cost</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 text-sm">
+            <div>
+              <span className="text-muted">Model</span>
+              <p className="text-foreground">{run.ai_model ?? "—"}</p>
+            </div>
+            <div>
+              <span className="text-muted">Input tokens</span>
+              <p className="text-foreground">{run.ai_input_tokens ?? "—"}</p>
+            </div>
+            <div>
+              <span className="text-muted">Output tokens</span>
+              <p className="text-foreground">{run.ai_output_tokens ?? "—"}</p>
+            </div>
+            <div>
+              <span className="text-muted">Input cost</span>
+              <p className="text-foreground">{formatUsd(run.ai_input_cost)}</p>
+            </div>
+            <div>
+              <span className="text-muted">Output cost</span>
+              <p className="text-foreground">{formatUsd(run.ai_output_cost)}</p>
+            </div>
+            <div>
+              <span className="text-muted">Total cost</span>
+              <p className="text-foreground font-medium">{formatUsd(run.ai_total_cost)}</p>
+            </div>
+            <div>
+              <span className="text-muted">Avg per property</span>
+              <p className="text-foreground">{formatUsd(run.ai_average_cost_per_property)}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-4">
+        <p className="text-sm font-medium text-foreground">Execution traces</p>
+        {traces.length === 0 ? (
+          <p className="text-sm text-muted">No execution traces recorded.</p>
+        ) : (
+          traces.map((trace) => (
+            <div key={trace.id} className="flex flex-col gap-2">
+              <div className="flex items-center gap-2 text-sm">
+                <span className={trace.success ? "text-success" : "text-danger"}>
+                  {trace.success ? "Success" : "Failed"}
+                </span>
+                <span className="text-muted">{formatDateTime(trace.created_at)}</span>
+                {trace.error_summary && (
+                  <span className="text-danger text-xs">{trace.error_summary}</span>
+                )}
+              </div>
+              <pre className="rounded-lg border border-border bg-background p-3 text-xs overflow-auto max-h-96">
+                {JSON.stringify(trace.steps, null, 2)}
+              </pre>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-3">
+        <p className="text-sm font-medium text-foreground">Linked jobs</p>
+        {jobLogs.length === 0 ? (
+          <p className="text-sm text-muted">No linked job logs.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {jobLogs.map((job) => (
+              <button
+                key={job.id}
+                onClick={() => navigate(Routes.admin.jobs.detail(job.id))}
+                className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-left hover:border-accent/50 transition-colors"
+              >
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm text-foreground">{job.job_name ?? job.queue_name}</span>
+                  <span className="text-xs text-muted">
+                    attempt {job.attempt}
+                    {job.max_attempts !== null ? ` / ${job.max_attempts}` : ""}
+                    {job.duration_ms !== null ? ` · ${job.duration_ms}ms` : ""}
+                  </span>
+                </div>
+                <JobStatusChip status={job.status as JobStatus} />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

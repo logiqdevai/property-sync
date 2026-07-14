@@ -1,0 +1,37 @@
+import axiosInstance from "@/config/api/axios";
+import { ApiRoutes } from "@/config/api/routes";
+import type {
+  CrawlRun,
+  CrawlRunDetail,
+  CrawlRunListQuery,
+  PaginatedResponse,
+} from "../interfaces/crawl-runs.interfaces";
+
+export const getCrawlRuns = async (
+  query?: CrawlRunListQuery,
+): Promise<PaginatedResponse<CrawlRun>> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.crawlRuns.list, { params: query });
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to fetch crawl runs. Please try again.");
+  }
+};
+
+export const getCrawlRun = async (id: string): Promise<CrawlRunDetail> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.crawlRuns.detail(id));
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to fetch crawl run. Please try again.");
+  }
+};
+
+export const rerunCrawlRun = async (id: string): Promise<CrawlRun> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.crawlRuns.rerun(id));
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to rerun crawl. Please try again.");
+  }
+};

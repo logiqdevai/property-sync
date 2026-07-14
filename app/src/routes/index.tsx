@@ -14,6 +14,10 @@ import ScrapersListPage from "@/pages/admin/scrapers";
 import ScraperDetailPage from "@/pages/admin/scrapers/detail";
 import GenerationRunsListPage from "@/pages/admin/generation-runs";
 import GenerationRunDetailPage from "@/pages/admin/generation-runs/detail";
+import CrawlRunsListPage from "@/pages/admin/crawl-runs";
+import CrawlRunDetailPage from "@/pages/admin/crawl-runs/detail";
+import JobsListPage from "@/pages/admin/jobs";
+import JobDetailPage from "@/pages/admin/jobs/detail";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
 
 export default function AppRoutes() {
@@ -66,6 +70,10 @@ export default function AppRoutes() {
         <Route path="scrapers/:id" element={<ScraperDetailPage />} />
         <Route path="generation-runs" element={<GenerationRunsListPage />} />
         <Route path="generation-runs/:id" element={<GenerationRunDetailPage />} />
+        <Route path="crawl-runs" element={<CrawlRunsListPage />} />
+        <Route path="crawl-runs/:id" element={<CrawlRunDetailPage />} />
+        <Route path="jobs" element={<JobsListPage />} />
+        <Route path="jobs/:id" element={<JobDetailPage />} />
       </Route>
 
       {/* Default redirect */}
