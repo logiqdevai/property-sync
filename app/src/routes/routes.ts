@@ -5,6 +5,11 @@ export const Routes = {
     },
     dashboard: {
         root: "/dashboard",
+        agencies: "/dashboard/agencies",
+        properties: {
+            list: "/dashboard/properties",
+            detail: (id: string) => `/dashboard/properties/${id}`,
+        },
     },
     admin: {
         root: "/admin",
@@ -27,6 +32,10 @@ export const Routes = {
         jobs: {
             list: "/admin/jobs",
             detail: (id: string) => `/admin/jobs/${id}`,
+        },
+        properties: {
+            list: "/admin/properties",
+            detail: (id: string) => `/admin/properties/${id}`,
         },
     },
 };

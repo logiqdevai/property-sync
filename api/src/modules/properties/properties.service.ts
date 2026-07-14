@@ -1,0 +1,135 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { PropertyQueryType } from './dto/property-query.schema';
+import { MergePropertiesDto } from './dto/merge-properties.dto';
+import { Prisma } from 'generated/prisma';
+
+@Injectable()
+export class PropertiesService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findAll(query: PropertyQueryType) {
+    const where: Prisma.PropertyWhereInput = {
+      ...(query.status && { status: query.status }),
+      ...(query.listing_type && { listing_type: query.listing_type }),
+      ...(query.property_type && { property_type: query.property_type }),
+      ...(query.city && { city: { contains: query.city, mode: 'insensitive' } }),
+      ...(query.duplicate_group_id && {
+        duplicate_group_id: query.duplicate_group_id,
+      }),
+      ...(query.search && {
+        OR: [
+          { title: { contains: query.search, mode: 'insensitive' } },
+          { city: { contains: query.search, mode: 'insensitive' } },
+          { district: { contains: query.search, mode: 'insensitive' } },
+        ],
+      }),
+      ...(query.price_min != null || query.price_max != null
+        ? {
+            price: {
+              ...(query.price_min != null ? { gte: query.price_min } : {}),
+              ...(query.price_max != null ? { lte: query.price_max } : {}),
+            },
+          }
+        : {}),
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.property.findMany({
+        where,
+        skip: (query.page - 1) * query.limit,
+        take: query.limit,
+        orderBy: { updated_at: 'desc' },
+      }),
+      this.prisma.property.count({ where }),
+    ]);
+
+    return {
+      data: items,
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        total_pages: Math.ceil(total / query.limit),
+        has_next: query.page < Math.ceil(total / query.limit),
+        has_prev: query.page > 1,
+      },
+    };
+  }
+
+  async findOne(id: string) {
+    const property = await this.prisma.property.findUnique({
+      where: { id },
+      include: {
+        source_links: {
+          include: {
+            source_property: {
+              select: {
+                id: true,
+                source_url: true,
+                external_id: true,
+                raw_title: true,
+                raw_price: true,
+                last_seen_at: true,
+                status: true,
+              },
+            },
+          },
+        },
+        history: {
+          orderBy: { created_at: 'desc' },
+        },
+      },
+    });
+
+    if (!property) {
+      throw new NotFoundException('Property not found');
+    }
+
+    return property;
+  }
+
+  async merge(dto: MergePropertiesDto) {
+    const properties = await this.prisma.property.findMany({
+      where: { id: { in: dto.property_ids } },
+      select: { id: true, duplicate_group_id: true },
+    });
+
+    if (properties.length !== dto.property_ids.length) {
+      throw new NotFoundException('One or more properties not found');
+    }
+
+    const existingGroup = properties.find((p) => p.duplicate_group_id)?.duplicate_group_id;
+    const groupId = existingGroup ?? randomUUID();
+
+    await this.prisma.property.updateMany({
+      where: { id: { in: dto.property_ids } },
+      data: { duplicate_group_id: groupId },
+    });
+
+    return this.prisma.property.findMany({
+      where: { id: { in: dto.property_ids } },
+    });
+  }
+
+  async split(id: string) {
+    const property = await this.prisma.property.findUnique({ where: { id } });
+    if (!property) {
+      throw new NotFoundException('Property not found');
+    }
+
+    if (!property.duplicate_group_id) {
+      throw new BadRequestException('Property is not in a duplicate group');
+    }
+
+    return this.prisma.property.update({
+      where: { id },
+      data: { duplicate_group_id: null },
+    });
+  }
+}

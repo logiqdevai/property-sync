@@ -6,8 +6,8 @@
 > before writing code. Update this file when deliverables are verified.
 
 **Last updated:** 2026-07-14
-**Overall progress:** 60% (Feature 05 tasks 01–04 done — full crawl engine + admin UI wired; live crawl smoke test still pending)
-**Current focus:** Feature 06 — `docs/plan/tasks/feature-06-properties/01-properties-normalization-api.md`
+**Overall progress:** 60% (Feature 07 tasks 01–03 done — user tracking API + dashboard UI wired; track→crawl→UserProperty smoke test still pending)
+**Current focus:** Feature 08 — `docs/plan/tasks/feature-08-notifications/01-notifications-api.md`
 **Path correction:** the reference CLI referenced throughout this file as `scraper-generator/...` actually lives at `scripts/scraper-generator/...` (moved there in commit `363ef61`) — paths below have been corrected. If a future session still can't find it, run `git log --all --diff-filter=A --name-only | grep scraper-generator` to relocate it.
 **Dependency note:** Feature 04 task 01 needed `UserIntegrationsService.resolveActiveApiKey` / `resolveForSourceAgency`, which is formally Feature 09's deliverable but Feature 09 hasn't started yet. A **minimal** `api/src/modules/user-integrations/` module was added out-of-order containing just those two resolver methods (matching the contract in `directions/03-domain-model.md`'s `UserIntegration AI credential rule`) — no controllers/DTOs/CRUD. When Feature 09 is implemented, extend this module in place (add `integration-targets` module + this module's admin/user CRUD endpoints) rather than recreating it.
 **Local testing gap:** `GCS_PROJECT_ID`/`GCS_BUCKET_NAME` are unset in `api/.env.local`, so `ScreenshotStorageService` (used by the computer-use loop) can't upload screenshots locally, and there's no real `UserIntegration.api_key_secret` for Anthropic (a placeholder key was used for testing — real API calls would 401). Feature 04's happy path (`AWAITING_REVIEW` with a real AI-produced config, all the way through to an approved active `ScraperVersion`) is therefore **not yet verified against a real target site** — the failure path and the full UI flow around it (trigger → live replay → terminal state) are (see Feature 04 checklist). To fully verify, either configure a real GCS bucket + Anthropic key in `.env.local`, or accept this gap and verify later once real credentials exist.
@@ -36,8 +36,8 @@
 | 03 | Scraper Management | done | 100% | 3 files |
 | 04 | AI Computer-Use Scraper Generation | done | 100% | 4 files |
 | 05 | Crawl Execution Engine & Job Queue | in progress | 90% | 4 files |
-| 06 | Property Normalization & Admin Properties | not started | 0% | 3 files |
-| 07 | User Tracked Agencies & UserProperty | not started | 0% | 3 files |
+| 06 | Property Normalization & Admin Properties | in progress | 90% | 3 files |
+| 07 | User Tracked Agencies & UserProperty | in progress | 90% | 3 files |
 | 08 | Notifications | not started | 0% | 2 files |
 | 09 | CMS Targets & User Integrations (config only) | not started | 0% | 4 files |
 | 10 | Dashboard Home & Users Admin | not started | 0% | 2 files |
@@ -295,8 +295,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **Description:** Raw `SourceProperty` rows become normalized, deduplicated `Property` records with full history, visible to admins.
 
-**Status:** not started
-**Progress:** 0%
+**Status:** in progress
+**Progress:** 90% (tasks 01–03 done — normalization pipeline + OpenAI batch webhooks + admin properties UI; crawl→property smoke test still pending)
 
 ### References
 
@@ -311,29 +311,33 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 | File | Status |
 |------|--------|
-| `tasks/feature-06-properties/01-properties-normalization-api.md` | ready |
-| `tasks/feature-06-properties/02-properties-frontend-data.md` | ready |
-| `tasks/feature-06-properties/03-properties-admin-ui.md` | ready |
+| `tasks/feature-06-properties/01-properties-normalization-api.md` | done |
+| `tasks/feature-06-properties/02-properties-frontend-data.md` | done |
+| `tasks/feature-06-properties/03-properties-admin-ui.md` | done |
 
 ### Implementation checklist
 
 **API (`api/`)**
-- [ ] `api/src/modules/properties/`
-- [ ] AI-assisted normalization — port `scripts/scraper-generator/crawl/normalize.js` + `duplicates.js` + `cost.js` (sync via `integrations/ai/` with attributed tracker's `UserIntegration` key, batch via `integrations/ai-batch/` + OpenAI webhooks) using prefs from `CrawlRun.user_tracked_agency` when set
-- [ ] `POST /webhooks/openai` — verify `batch.completed` / `batch.failed` / `batch.expired` / `batch.cancelled`, enqueue `ai-batch-complete` worker
-- [ ] Normalization/dedup service invoked at the end of each `CrawlRun` (hook into Feature 05's pipeline): create/update `Property`, `PropertySourceLink`, duplicate detection (`duplicate_group_id`)
-- [ ] Persist AI normalization cost totals on `CrawlRun` (`ai_*` fields; mirror `scripts/scraper-generator/output/crawl/cost.json`)
-- [ ] `PropertyHistory` writes for every detected change (created/updated/price/images/status/removed/reappeared)
-- [ ] Removal detection (previously seen `SourceProperty` missing from a new crawl → `REMOVED`) and reappearance detection
-- [ ] Merge/split endpoints
-- [ ] List/detail endpoints with source links + history timeline
+- [x] `api/src/modules/properties/` — module, controller, service, DTOs, entity; list/detail/merge/split admin endpoints
+- [x] AI-assisted normalization — ported `scripts/scraper-generator/crawl/normalize.js` + duplicate detection + cost tracking (`property-normalization.utils.ts`, `anthropic-normalization.service.ts`, `property-normalization.service.ts`); sync path via `integrations/ai/` (OpenAI) or direct Anthropic SDK; batch path via `integrations/ai-batch/` using tracker's `UserIntegration` key when `CrawlRun.user_tracked_agency_id` is set
+- [x] `POST /webhooks/openai` — signature verify (`OPENAI_WEBHOOK_SECRET`), dedupe, enqueue `ai-batch-complete` BullMQ worker (`ai-batch-complete.processor.ts`)
+- [x] Normalization invoked at end of each successful `CrawlRun` in `crawl.processor.ts` (errors logged, crawl still succeeds); creates/updates `Property`, `PropertySourceLink`, `duplicate_group_id` assignment
+- [x] AI normalization cost totals persisted on `CrawlRun` (`ai_*` fields)
+- [x] `PropertyHistory` append-only writes for detected changes (created/updated/price/images/status/removed/reappeared)
+- [x] Removal detection (missing `SourceProperty` → `REMOVED`) and reappearance detection
+- [x] `main.ts` `{ rawBody: true }` for webhook signature verification; `openai` SDK upgraded for `webhooks.unwrap`
+- [x] `tsc --noEmit` passes in `api/`
 
 **App (`app/`)**
-- [ ] `app/src/features/properties/` (admin-facing read/merge/split)
-- [ ] `/admin/properties` list/filter + detail (current data, source links, history timeline, duplicate group actions)
+- [x] `app/src/features/properties/` — interfaces, services, hooks (`useProperties`, `useProperty`, `useMergeProperties`, `useSplitProperty`), Zod schemas, status chip, history formatter
+- [x] `/admin/properties` list (search + city/price/status/listing-type/property-type filters + pagination + multi-select merge) + detail (source links, history timeline, split action)
+- [x] Sidebar nav item "Properties"; routes wired in `routes.ts` + `routes/index.tsx`
+- [x] `tsc -b` passes (only 2 pre-existing unrelated errors in `confirmation-dialog.tsx`/`password-input.tsx`)
 
 **Verification**
 - [ ] Smoke test: run a crawl twice against a page with a changed price; confirm a `PRICE_CHANGED` history row appears and is visible in the UI
+- [ ] Smoke test: OpenAI batch path (`use_ai_batching: true`) completes via webhook and properties appear
+- [ ] Smoke test: admin merge/split duplicate groups from the properties UI
 
 **Definition of done:** Canonical properties and their full change history are visible and manageable by admins, sourced from real crawls.
 
@@ -343,8 +347,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **Description:** Users can track agencies with per-change-type notification preferences and get their own editable, re-syncable property copies.
 
-**Status:** not started
-**Progress:** 0%
+**Status:** in progress
+**Progress:** 90% (tasks 01–03 done — user tracking API + crawl-time UserProperty sync + dashboard UI; end-to-end smoke test still pending)
 
 ### References
 
@@ -358,26 +362,31 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 | File | Status |
 |------|--------|
-| `tasks/feature-07-user-tracking/01-user-tracking-and-userproperty-api.md` | ready |
-| `tasks/feature-07-user-tracking/02-user-tracking-frontend-data.md` | ready |
-| `tasks/feature-07-user-tracking/03-user-agencies-and-properties-ui.md` | ready |
+| `tasks/feature-07-user-tracking/01-user-tracking-and-userproperty-api.md` | done |
+| `tasks/feature-07-user-tracking/02-user-tracking-frontend-data.md` | done |
+| `tasks/feature-07-user-tracking/03-user-agencies-and-properties-ui.md` | done |
 
 ### Implementation checklist
 
 **API (`api/`)**
-- [ ] `api/src/modules/user-tracked-agencies/`, `api/src/modules/user-properties/`
-- [ ] Track/untrack + per-type toggle + `use_ai_batching` + `ai_provider` / `ai_model` endpoints (`crawl_interval` defaults on track; admins set it via Feature 02); reject track when agency `is_enabled`/`is_visible` is false or user lacks active `UserIntegration` for chosen `ai_provider`
-- [ ] User `GET /agencies` filters `status: ACTIVE`, `is_visible: true`; returns `is_enabled` per row
-- [ ] Crawl-time hook (extends Feature 06's normalization path): for every tracking user, create-or-update `UserProperty` after normalization completes (immediate for sync path, deferred for batch path), respecting the `is_modified` divergence rule
-- [ ] User list/detail/edit/resync endpoints
+- [x] `api/src/modules/user-tracked-agencies/` — `GET /agencies` (browse + `is_tracked` prefs), `POST/PATCH/DELETE /agencies/:agencyId/track`; rejects track when agency not visible/enabled; validates active `UserIntegration` for chosen `ai_provider`
+- [x] `api/src/modules/user-properties/` — `GET/PATCH /properties`, `POST /properties/:id/resync`; ownership-scoped to `@CurrentUser()`; detail includes canonical `PropertyHistory`
+- [x] `UserPropertiesService.syncForProperty` — respects `is_modified` divergence rule + per-tracker `track_*` prefs; wired into `PropertyNormalizationService` on create/update/remove (sync + batch completion paths)
+- [x] `UserTrackedAgenciesModule` + `UserPropertiesModule` registered in `app.module.ts`; `PropertiesModule` imports `UserPropertiesModule` for sync hook
+- [x] `tsc --noEmit` passes in `api/`
 
 **App (`app/`)**
-- [ ] `app/src/features/user-tracked-agencies/`, `app/src/features/user-properties/`
-- [ ] `/agencies` (user) — browse + track/untrack + per-type toggles + AI batching toggle
-- [ ] `/properties` (user) — list/detail/history timeline/edit/resync with `is_modified` warning banner
+- [x] `app/src/features/user-tracked-agencies/` — interfaces, services, hooks (`useTrackableAgencies`, `useTrackAgency`, `useUpdateAgencyTracking`, `useUntrackAgency`)
+- [x] `app/src/features/user-properties/` — interfaces, services, hooks, Zod edit schema
+- [x] `/dashboard/agencies` — browse, track/untrack, per-type toggles, AI batching + provider/model controls
+- [x] `/dashboard/properties` list + detail — filters, edited badge, edit form, `is_modified` warning + resync confirm, history timeline
+- [x] User sidebar nav items "Agencies" + "My Properties"; routes wired
+- [x] `tsc -b` passes (only 2 pre-existing unrelated errors in `confirmation-dialog.tsx`/`password-input.tsx`)
 
 **Verification**
-- [ ] Smoke test: user tracks an agency, a crawl runs, a `UserProperty` appears for them; user edits it, then re-syncs and sees the warning + overwrite
+- [ ] Smoke test: user tracks an agency, a crawl runs, a `UserProperty` appears for them
+- [ ] Smoke test: user edits a `UserProperty`, re-crawl does NOT overwrite edits; `resync` restores canonical data
+- [ ] Smoke test: batch path — properties appear only after batch webhook completes
 
 **Definition of done:** A tracking user automatically gets and can manage their own property copies with full history.
 

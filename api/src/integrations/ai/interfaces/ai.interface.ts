@@ -3,6 +3,7 @@ import { z } from 'zod';
 export interface AIGenerateOptions {
     provider?: AiProvider;
     model?: AiModel;
+    apiKey?: string;
     system?: string;
     prompt: string;
     schema?: z.ZodSchema;

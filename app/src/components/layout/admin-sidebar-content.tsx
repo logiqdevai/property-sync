@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Building2, Bot, Sparkles, Activity, ListTodo } from 'lucide-react';
+import { LayoutDashboard, Building2, Bot, Sparkles, Activity, ListTodo, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes/routes';
 
@@ -15,7 +15,7 @@ const navItems = [
   { label: 'Generation Runs', icon: Sparkles, href: Routes.admin.generationRuns.list, end: false },
   { label: 'Crawl Runs', icon: Activity, href: Routes.admin.crawlRuns.list, end: false },
   { label: 'Job Queue', icon: ListTodo, href: Routes.admin.jobs.list, end: false },
-  // Properties (Feature 06)
+  { label: 'Properties', icon: Home, href: Routes.admin.properties.list, end: false },
   // CMS Targets (Feature 09)
   // Notifications (Feature 08)
   // Users (Feature 10)

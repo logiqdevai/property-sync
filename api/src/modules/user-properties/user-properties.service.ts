@@ -1,0 +1,291 @@
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { UserPropertyQueryType } from './dto/user-property-query.schema';
+import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
+import { Prisma, Property, PropertyStatus } from 'generated/prisma';
+
+export type PropertySyncChangeType = 'created' | 'updated' | 'removed';
+
+export interface SyncForPropertyOptions {
+  userTrackedAgencyId?: string;
+  sourceAgencyId?: string;
+  changeType: PropertySyncChangeType;
+}
+
+@Injectable()
+export class UserPropertiesService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findAll(userId: string, query: UserPropertyQueryType) {
+    const where: Prisma.UserPropertyWhereInput = {
+      user_id: userId,
+      ...(query.status && { status: query.status }),
+      ...(query.city && { city: { contains: query.city, mode: 'insensitive' } }),
+      ...(query.agency_id && {
+        canonical_property: {
+          source_links: {
+            some: {
+              source_property: { source_agency_id: query.agency_id },
+            },
+          },
+        },
+      }),
+      ...(query.price_min != null || query.price_max != null
+        ? {
+            price: {
+              ...(query.price_min != null ? { gte: query.price_min } : {}),
+              ...(query.price_max != null ? { lte: query.price_max } : {}),
+            },
+          }
+        : {}),
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.userProperty.findMany({
+        where,
+        skip: (query.page - 1) * query.limit,
+        take: query.limit,
+        orderBy: { updated_at: 'desc' },
+      }),
+      this.prisma.userProperty.count({ where }),
+    ]);
+
+    return {
+      data: items,
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        total_pages: Math.ceil(total / query.limit),
+        has_next: query.page < Math.ceil(total / query.limit),
+        has_prev: query.page > 1,
+      },
+    };
+  }
+
+  async findOne(userId: string, id: string) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id, user_id: userId },
+      include: {
+        canonical_property: {
+          include: {
+            history: {
+              orderBy: { created_at: 'desc' },
+            },
+          },
+        },
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const { canonical_property, ...rest } = userProperty;
+
+    return {
+      ...rest,
+      history: canonical_property.history,
+    };
+  }
+
+  async update(userId: string, id: string, dto: UpdateUserPropertyDto) {
+    await this.assertOwned(userId, id);
+
+    return this.prisma.userProperty.update({
+      where: { id },
+      data: {
+        ...dto,
+        is_modified: true,
+      },
+    });
+  }
+
+  async resync(userId: string, id: string) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id, user_id: userId },
+      include: { canonical_property: true },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    return this.prisma.userProperty.update({
+      where: { id },
+      data: {
+        ...this.mapFromCanonical(userProperty.canonical_property),
+        is_modified: false,
+        last_synced_at: new Date(),
+      },
+    });
+  }
+
+  async syncForProperty(
+    propertyId: string,
+    options: SyncForPropertyOptions,
+  ): Promise<void> {
+    const property = await this.prisma.property.findUnique({
+      where: { id: propertyId },
+    });
+
+    if (!property) return;
+
+    const sourceAgencyId =
+      options.sourceAgencyId ??
+      (await this.resolveSourceAgencyId(propertyId));
+
+    if (!sourceAgencyId) return;
+
+    const trackers = options.userTrackedAgencyId
+      ? await this.prisma.userTrackedAgency.findMany({
+          where: {
+            id: options.userTrackedAgencyId,
+            enabled: true,
+          },
+        })
+      : await this.prisma.userTrackedAgency.findMany({
+          where: {
+            source_agency_id: sourceAgencyId,
+            enabled: true,
+          },
+        });
+
+    for (const tracker of trackers) {
+      if (
+        options.changeType === 'created' &&
+        !tracker.track_new_listings
+      ) {
+        continue;
+      }
+
+      if (
+        options.changeType === 'updated' &&
+        !tracker.track_updated_listings
+      ) {
+        continue;
+      }
+
+      if (
+        options.changeType === 'removed' &&
+        !tracker.track_removed_listings
+      ) {
+        continue;
+      }
+
+      const existing = await this.prisma.userProperty.findUnique({
+        where: {
+          user_id_property_id: {
+            user_id: tracker.user_id,
+            property_id: propertyId,
+          },
+        },
+      });
+
+      const canonicalFields = this.mapFromCanonical(property);
+
+      if (options.changeType === 'created') {
+        if (existing) continue;
+        await this.prisma.userProperty.create({
+          data: {
+            user_id: tracker.user_id,
+            property_id: propertyId,
+            ...canonicalFields,
+          },
+        });
+        continue;
+      }
+
+      if (options.changeType === 'removed') {
+        if (!existing) continue;
+        if (existing.is_modified) {
+          continue;
+        }
+        await this.prisma.userProperty.update({
+          where: { id: existing.id },
+          data: {
+            status: PropertyStatus.REMOVED,
+            last_synced_at: new Date(),
+          },
+        });
+        continue;
+      }
+
+      if (!existing) {
+        if (!tracker.track_new_listings) continue;
+        await this.prisma.userProperty.create({
+          data: {
+            user_id: tracker.user_id,
+            property_id: propertyId,
+            ...canonicalFields,
+          },
+        });
+        continue;
+      }
+
+      if (existing.is_modified) continue;
+
+      await this.prisma.userProperty.update({
+        where: { id: existing.id },
+        data: canonicalFields,
+      });
+    }
+  }
+
+  private mapFromCanonical(property: Property) {
+    return {
+      title: property.title,
+      description: property.description,
+      listing_type: property.listing_type,
+      property_type: property.property_type,
+      status: property.status,
+      price: property.price,
+      currency: property.currency,
+      city: property.city,
+      district: property.district,
+      address: property.address,
+      postal_code: property.postal_code,
+      country: property.country,
+      latitude: property.latitude,
+      longitude: property.longitude,
+      square_meters: property.square_meters,
+      bedrooms: property.bedrooms,
+      bathrooms: property.bathrooms,
+      floor: property.floor,
+      construction_year: property.construction_year,
+      renovation_year: property.renovation_year,
+      features: property.features ?? undefined,
+      images: property.images ?? undefined,
+      normalized_data: property.normalized_data ?? undefined,
+      duplicate_group_id: property.duplicate_group_id,
+      last_synced_at: new Date(),
+      is_modified: false,
+    };
+  }
+
+  private async resolveSourceAgencyId(propertyId: string): Promise<string | null> {
+    const link = await this.prisma.propertySourceLink.findFirst({
+      where: { property_id: propertyId },
+      include: {
+        source_property: { select: { source_agency_id: true } },
+      },
+    });
+
+    return link?.source_property.source_agency_id ?? null;
+  }
+
+  private async assertOwned(userId: string, id: string) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id, user_id: userId },
+      select: { id: true },
+    });
+
+    if (!userProperty) {
+      throw new ForbiddenException('Property not found');
+    }
+  }
+}

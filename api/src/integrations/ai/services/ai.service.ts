@@ -23,7 +23,11 @@ export class AiService {
 
             // this.aiConfig.validateProviderAndModel(options.provider, options.model);
 
-            const modelAdapter = this.aiConfig.getModelAdapter(options.provider, options.model);
+            const modelAdapter = this.aiConfig.getModelAdapter(
+                options.provider,
+                options.model,
+                options.apiKey,
+            );
 
             const { text, usage } = await generateText({
                 prompt: options.prompt,
@@ -60,7 +64,11 @@ export class AiService {
 
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                const modelAdapter = this.aiConfig.getModelAdapter(options.provider, options.model);
+                const modelAdapter = this.aiConfig.getModelAdapter(
+                    options.provider,
+                    options.model,
+                    options.apiKey,
+                );
 
                 const { object, usage } = await generateObject({
                     model: modelAdapter,

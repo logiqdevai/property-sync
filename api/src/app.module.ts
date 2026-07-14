@@ -14,7 +14,11 @@ import { ScrapersModule } from './modules/scrapers/scrapers.module';
 import { ScraperGenerationModule } from './modules/scraper-generation/scraper-generation.module';
 import { CrawlRunsModule } from './modules/crawl-runs/crawl-runs.module';
 import { JobsModule } from './modules/jobs/jobs.module';
+import { PropertiesModule } from './modules/properties/properties.module';
+import { OpenAiWebhooksModule } from './modules/openai-webhooks/openai-webhooks.module';
 import { UserIntegrationsModule } from './modules/user-integrations/user-integrations.module';
+import { UserTrackedAgenciesModule } from './modules/user-tracked-agencies/user-tracked-agencies.module';
+import { UserPropertiesModule } from './modules/user-properties/user-properties.module';
 import { QueuesModule } from './core/queues/queues.module';
 import { ConfigModule } from './shared/config/env/env.module';
 
@@ -37,6 +41,10 @@ import { ConfigModule } from './shared/config/env/env.module';
     ScraperGenerationModule,
     CrawlRunsModule,
     JobsModule,
+    PropertiesModule,
+    OpenAiWebhooksModule,
+    UserTrackedAgenciesModule,
+    UserPropertiesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

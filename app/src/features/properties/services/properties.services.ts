@@ -1,0 +1,51 @@
+import axiosInstance from "@/config/api/axios";
+import { ApiRoutes } from "@/config/api/routes";
+import type {
+  MergePropertiesPayload,
+  PaginatedResponse,
+  Property,
+  PropertyDetail,
+  PropertyListQuery,
+} from "../interfaces/properties.interfaces";
+
+export const getProperties = async (
+  query?: PropertyListQuery,
+): Promise<PaginatedResponse<Property>> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.properties.list, {
+      params: query,
+    });
+    return response.data;
+  } catch {
+    throw new Error("Failed to fetch properties. Please try again.");
+  }
+};
+
+export const getProperty = async (id: string): Promise<PropertyDetail> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.properties.detail(id));
+    return response.data;
+  } catch {
+    throw new Error("Failed to fetch property. Please try again.");
+  }
+};
+
+export const mergeProperties = async (
+  payload: MergePropertiesPayload,
+): Promise<Property[]> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.properties.merge, payload);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to merge properties.");
+  }
+};
+
+export const splitProperty = async (id: string): Promise<Property> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.properties.split(id));
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to split property from group.");
+  }
+};

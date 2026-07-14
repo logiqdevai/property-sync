@@ -55,5 +55,23 @@ export const ApiRoutes = {
             detail: (id: string) => `/admin/jobs/${id}`,
             retry: (id: string) => `/admin/jobs/${id}/retry`,
         },
+        properties: {
+            prefix: "/admin/properties",
+            list: "/admin/properties",
+            detail: (id: string) => `/admin/properties/${id}`,
+            merge: "/admin/properties/merge",
+            split: (id: string) => `/admin/properties/${id}/split`,
+        },
+    },
+    agencies: {
+        prefix: "/agencies",
+        list: "/agencies",
+        track: (agencyId: string) => `/agencies/${agencyId}/track`,
+    },
+    userProperties: {
+        prefix: "/properties",
+        list: "/properties",
+        detail: (id: string) => `/properties/${id}`,
+        resync: (id: string) => `/properties/${id}/resync`,
     },
 }

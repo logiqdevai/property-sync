@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, Building2, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes/routes';
 
@@ -10,6 +10,8 @@ interface SidebarContentProps {
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: Routes.dashboard.root, end: true },
+  { label: 'Agencies', icon: Building2, href: Routes.dashboard.agencies, end: true },
+  { label: 'My Properties', icon: Home, href: Routes.dashboard.properties.list, end: true },
 ];
 
 function NavItem({

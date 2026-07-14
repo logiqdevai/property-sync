@@ -9,6 +9,7 @@ import { DetailEnrichmentService } from '@/integrations/crawler/services/detail-
 import { ScraperConfig } from '@/integrations/crawler/interfaces/scraper-config.interface';
 import { contentHash } from '@/integrations/crawler/utils/crawler.utils';
 import { ScraperGenerationService } from '@/modules/scraper-generation/scraper-generation.service';
+import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
 import {
   CrawlRunStatus,
   GenerationTrigger,
@@ -34,6 +35,7 @@ export class CrawlProcessor extends WorkerHost {
     private readonly crawlerService: CrawlerService,
     private readonly detailEnrichmentService: DetailEnrichmentService,
     private readonly scraperGenerationService: ScraperGenerationService,
+    private readonly propertyNormalizationService: PropertyNormalizationService,
   ) {
     super();
   }
@@ -229,6 +231,20 @@ export class CrawlProcessor extends WorkerHost {
           error_message: runFailed ? crawlResult.errorSummary : null,
         },
       });
+
+      if (!runFailed) {
+        try {
+          await this.propertyNormalizationService.normalizeForCrawlRun(crawlRunId);
+        } catch (normalizationError) {
+          const normalizationMessage =
+            normalizationError instanceof Error
+              ? normalizationError.message
+              : String(normalizationError);
+          this.logger.error(
+            `Normalization failed for crawl ${crawlRunId}: ${normalizationMessage}`,
+          );
+        }
+      }
 
       return;
     } catch (error) {

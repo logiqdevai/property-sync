@@ -18,6 +18,11 @@ import CrawlRunsListPage from "@/pages/admin/crawl-runs";
 import CrawlRunDetailPage from "@/pages/admin/crawl-runs/detail";
 import JobsListPage from "@/pages/admin/jobs";
 import JobDetailPage from "@/pages/admin/jobs/detail";
+import PropertiesListPage from "@/pages/admin/properties";
+import PropertyDetailPage from "@/pages/admin/properties/detail";
+import DashboardAgenciesPage from "@/pages/dashboard/agencies";
+import DashboardPropertiesListPage from "@/pages/dashboard/properties";
+import DashboardPropertyDetailPage from "@/pages/dashboard/properties/detail";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
 
 export default function AppRoutes() {
@@ -47,6 +52,9 @@ export default function AppRoutes() {
         }
       >
         <Route index element={<DashboardHome />} />
+        <Route path="agencies" element={<DashboardAgenciesPage />} />
+        <Route path="properties" element={<DashboardPropertiesListPage />} />
+        <Route path="properties/:id" element={<DashboardPropertyDetailPage />} />
       </Route>
 
       {/* Admin routes */}
@@ -74,6 +82,8 @@ export default function AppRoutes() {
         <Route path="crawl-runs/:id" element={<CrawlRunDetailPage />} />
         <Route path="jobs" element={<JobsListPage />} />
         <Route path="jobs/:id" element={<JobDetailPage />} />
+        <Route path="properties" element={<PropertiesListPage />} />
+        <Route path="properties/:id" element={<PropertyDetailPage />} />
       </Route>
 
       {/* Default redirect */}

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AIModelInfo, AiModels, AiProvider, AiProviders } from '../interfaces/ai.interface';
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI, openai } from '@ai-sdk/openai';
 
 @Injectable()
 export class AiConfig {
@@ -18,16 +18,24 @@ export class AiConfig {
         { provider: AiProviders.gemini, model: AiModels.gemini.gemini15Pro },
     ];
 
-    getModelAdapter(provider: AiProvider = AiProviders.openai, model: string = AiModels.openai.gpt4o) {
+    getModelAdapter(
+        provider: AiProvider = AiProviders.openai,
+        model: string = AiModels.openai.gpt4o,
+        apiKey?: string,
+    ) {
         switch (provider) {
-            case AiProviders.openai:
-                return openai(model);
+            case AiProviders.openai: {
+                const client = apiKey ? createOpenAI({ apiKey }) : openai;
+                return client(model);
+            }
             case AiProviders.grok:
                 throw new Error('Grok provider not yet implemented. SDK required.');
             case AiProviders.gemini:
                 throw new Error('Gemini provider not yet implemented. SDK required.');
-            default:
-                return openai(model);
+            default: {
+                const client = apiKey ? createOpenAI({ apiKey }) : openai;
+                return client(model);
+            }
         }
     }
 
