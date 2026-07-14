@@ -81,7 +81,13 @@ export class ScraperGenerationService {
       include: {
         source_agency: { select: { name: true } },
         scraper: { select: { name: true } },
-        steps: { orderBy: { step_index: 'asc' } },
+        steps: {
+          orderBy: { step_index: 'asc' },
+          include: {
+            screenshot_before: { select: { url: true } },
+            screenshot_after: { select: { url: true } },
+          },
+        },
       },
     });
 
@@ -89,7 +95,24 @@ export class ScraperGenerationService {
       throw new NotFoundException('Generation run not found');
     }
 
-    return run;
+    return {
+      ...run,
+      // The frontend replay view renders images directly; resolve Document ids to their
+      // GCS urls here instead of making it fetch each screenshot by id itself.
+      steps: run.steps.map(
+        ({
+          screenshot_before,
+          screenshot_after,
+          screenshot_before_id,
+          screenshot_after_id,
+          ...step
+        }) => ({
+          ...step,
+          screenshot_before_url: screenshot_before?.url ?? null,
+          screenshot_after_url: screenshot_after?.url ?? null,
+        }),
+      ),
+    };
   }
 
   async create(dto: CreateGenerationRunDto, initiatedByUserId: string) {

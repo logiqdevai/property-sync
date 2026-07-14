@@ -20,11 +20,17 @@ export class ComputerUseStep {
   })
   action_payload: Record<string, unknown>;
 
-  @ApiProperty({ nullable: true })
-  screenshot_before_id: string | null;
+  @ApiProperty({
+    nullable: true,
+    description: 'Resolved GCS url of the screenshot taken before this action',
+  })
+  screenshot_before_url: string | null;
 
-  @ApiProperty({ nullable: true })
-  screenshot_after_id: string | null;
+  @ApiProperty({
+    nullable: true,
+    description: 'Resolved GCS url of the screenshot taken after this action',
+  })
+  screenshot_after_url: string | null;
 
   @ApiProperty({ nullable: true })
   model_reasoning: string | null;

@@ -35,5 +35,13 @@ export const ApiRoutes = {
                 `/admin/scrapers/${id}/versions/${versionId}/activate`,
             runNow: (id: string) => `/admin/scrapers/${id}/run-now`,
         },
+        generationRuns: {
+            prefix: "/admin/generation-runs",
+            list: "/admin/generation-runs",
+            detail: (id: string) => `/admin/generation-runs/${id}`,
+            approve: (id: string) => `/admin/generation-runs/${id}/approve`,
+            reject: (id: string) => `/admin/generation-runs/${id}/reject`,
+            cancel: (id: string) => `/admin/generation-runs/${id}/cancel`,
+        },
     },
 }
