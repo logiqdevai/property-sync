@@ -11,7 +11,7 @@ export class AuthResponse {
         description: 'User information',
         type: 'object',
         properties: {
-            uuid: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174000' },
+            id: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174000' },
             email: { type: 'string', example: 'user@example.com' },
             phone: { type: 'string', example: '+1234567890', nullable: true },
             created_at: { type: 'string', example: '2024-01-01T00:00:00.000Z' },
@@ -19,7 +19,7 @@ export class AuthResponse {
         }
     })
     user: {
-        uuid: string;
+        id: string;
         email?: string;
         phone?: string;
         created_at: Date;

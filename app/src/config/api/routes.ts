@@ -18,4 +18,30 @@ export const ApiRoutes = {
     google_maps: {
         timezone: "/google-maps/timezone",
     },
+    admin: {
+        agencies: {
+            prefix: "/admin/agencies",
+            list: "/admin/agencies",
+            detail: (id: string) => `/admin/agencies/${id}`,
+            status: (id: string) => `/admin/agencies/${id}/status`,
+            visibility: (id: string) => `/admin/agencies/${id}/visibility`,
+        },
+        scrapers: {
+            prefix: "/admin/scrapers",
+            list: "/admin/scrapers",
+            detail: (id: string) => `/admin/scrapers/${id}`,
+            versions: (id: string) => `/admin/scrapers/${id}/versions`,
+            activateVersion: (id: string, versionId: string) =>
+                `/admin/scrapers/${id}/versions/${versionId}/activate`,
+            runNow: (id: string) => `/admin/scrapers/${id}/run-now`,
+        },
+        generationRuns: {
+            prefix: "/admin/generation-runs",
+            list: "/admin/generation-runs",
+            detail: (id: string) => `/admin/generation-runs/${id}`,
+            approve: (id: string) => `/admin/generation-runs/${id}/approve`,
+            reject: (id: string) => `/admin/generation-runs/${id}/reject`,
+            cancel: (id: string) => `/admin/generation-runs/${id}/cancel`,
+        },
+    },
 }

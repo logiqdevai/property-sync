@@ -67,14 +67,12 @@ so the admin UI (next task) has zero direct API calls to write.
 
 ## Subtasks
 
-- [ ] Add `ApiRoutes.admin.agencies`
-- [ ] Write interfaces matching the API response shape from task 01
-- [ ] Write Zod form schema
-- [ ] Write services (list/detail/create/update/updateStatus/remove)
-- [ ] Write hooks with toast + invalidateQueries on every mutation
-- [ ] No page/component in this task — verify by importing the hooks in a
-      throwaway test file or the browser console only if needed; the real UI
-      wiring happens in the next task
+- [x] Add `ApiRoutes.admin.agencies`
+- [x] Write interfaces matching the API response shape from task 01 (`_count` includes `notifications` too, matching the actual `findOne` response)
+- [x] Write Zod form schema (`agencyFormSchema`, shared by create + edit per task 03)
+- [x] Write services (list/detail/create/update/updateStatus/updateVisibility/remove)
+- [x] Write hooks with toast + invalidateQueries on every mutation
+- [x] No page/component in this task — superseded by actually building and typechecking the pages in task 03, which exercises every hook
 
 ## Technical Notes
 

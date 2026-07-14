@@ -121,11 +121,11 @@ Replace that with a nested route group under `AdminLayout`, matching the
 
 ## Subtasks
 
-- [ ] Build `AdminLayout` + admin sidebar/navbar variants
-- [ ] Wire nested `/admin/*` routes with role guard
-- [ ] Build Agencies list page (table, search, filter, pagination, create modal, quick status actions)
-- [ ] Build Agency detail page (metadata, edit, delete/archive, empty-state placeholders for Scrapers/Crawl Runs)
-- [ ] Manual test: as seeded `ADMIN`, create an agency, see it in the list, open detail, edit it, disable it, confirm status badge updates, attempt delete (blocked if it somehow has dependents, otherwise succeeds)
+- [x] Build `AdminLayout` + admin sidebar/navbar variants — inlined the collapsible sidebar chrome directly into `admin-layout.tsx` (with its own `admin_sidebar_collapsed` localStorage key) rather than adding a separate `admin-sidebar.tsx`, since the existing `Sidebar` component isn't parameterized for swappable content and only `admin-sidebar-content.tsx` was in the file list
+- [x] Wire nested `/admin/*` routes with role guard
+- [x] Build Agencies list page (table, search, filter, pagination, create modal, quick status actions) — quick actions are inline text actions (Activate/Disable/Archive) rather than a per-row `Select`/dropdown, to keep the HeroUI v3 react-aria Table integration simple and correct
+- [x] Build Agency detail page (metadata, edit, delete/archive, empty-state placeholders for Scrapers/Crawl Runs, and also for Tracked Users since no Feature 07 data source exists yet)
+- [ ] Manual test: as seeded `ADMIN`, create an agency, see it in the list, open detail, edit it, disable it, confirm status badge updates, attempt delete (blocked if it somehow has dependents, otherwise succeeds) — pending: no local DB/seed yet, and the app hasn't been run in a browser this session
 
 ## Technical Notes
 
