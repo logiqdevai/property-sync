@@ -34,28 +34,29 @@ export function ConfirmationDialog({
 
   return (
     <Modal state={state}>
-      <Modal.Backdrop isDismissable={!isPending} />
-      <Modal.Container>
-        <Modal.Dialog>
-          <Modal.Header>
-            <Modal.Heading>{title}</Modal.Heading>
-          </Modal.Header>
-          {description ? <Modal.Body>{description}</Modal.Body> : null}
-          <Modal.Footer>
-            <Button variant="secondary" isDisabled={isPending} onPress={state.close}>
-              {cancelLabel}
-            </Button>
-            <ActionButtonWithPending
-              variant="danger"
-              isPending={isPending}
-              isDisabled={isPending}
-              onPress={handleConfirm}
-            >
-              {confirmLabel}
-            </ActionButtonWithPending>
-          </Modal.Footer>
-        </Modal.Dialog>
-      </Modal.Container>
+      <Modal.Backdrop isDismissable={!isPending}>
+        <Modal.Container>
+          <Modal.Dialog>
+            <Modal.Header>
+              <Modal.Heading>{title}</Modal.Heading>
+            </Modal.Header>
+            {description ? <Modal.Body>{description}</Modal.Body> : null}
+            <Modal.Footer>
+              <Button variant="secondary" isDisabled={isPending} onPress={state.close}>
+                {cancelLabel}
+              </Button>
+              <ActionButtonWithPending
+                variant="danger"
+                isPending={isPending}
+                isDisabled={isPending}
+                onPress={handleConfirm}
+              >
+                {confirmLabel}
+              </ActionButtonWithPending>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
     </Modal>
   );
 }

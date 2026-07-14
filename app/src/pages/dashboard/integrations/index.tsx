@@ -271,83 +271,85 @@ export default function DashboardIntegrationsPage() {
       )}
 
       <Modal state={connectModal}>
-        <Modal.Backdrop isDismissable={!connectIntegration.isPending} />
-        <Modal.Container>
-          <Modal.Dialog className="max-w-lg">
-            <Modal.Header>
-              <Modal.Heading>
-                Connect {selectedTarget?.integration_type ?? "integration"}
-              </Modal.Heading>
-            </Modal.Header>
-            <Modal.Body>
-              {selectedTarget && (
-                <Form onSubmit={submitConnect} className="grid gap-4">
-                  <IntegrationCredentialFields
-                    authType={selectedTarget.auth_type}
-                    register={connectForm.register}
-                    errors={connectForm.formState.errors}
-                  />
-                  <div className="flex justify-end gap-2">
-                    <ActionButtonWithPending
-                      type="button"
-                      variant="secondary"
-                      onPress={connectModal.close}
-                      isDisabled={connectIntegration.isPending}
-                    >
-                      Cancel
-                    </ActionButtonWithPending>
-                    <ActionButtonWithPending type="submit" isPending={connectIntegration.isPending}>
-                      Connect
-                    </ActionButtonWithPending>
-                  </div>
-                </Form>
-              )}
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
+        <Modal.Backdrop isDismissable={!connectIntegration.isPending}>
+          <Modal.Container>
+            <Modal.Dialog className="max-w-lg">
+              <Modal.Header>
+                <Modal.Heading>
+                  Connect {selectedTarget?.integration_type ?? "integration"}
+                </Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                {selectedTarget && (
+                  <Form onSubmit={submitConnect} className="grid gap-4">
+                    <IntegrationCredentialFields
+                      authType={selectedTarget.auth_type}
+                      register={connectForm.register}
+                      errors={connectForm.formState.errors}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <ActionButtonWithPending
+                        type="button"
+                        variant="secondary"
+                        onPress={connectModal.close}
+                        isDisabled={connectIntegration.isPending}
+                      >
+                        Cancel
+                      </ActionButtonWithPending>
+                      <ActionButtonWithPending type="submit" isPending={connectIntegration.isPending}>
+                        Connect
+                      </ActionButtonWithPending>
+                    </div>
+                  </Form>
+                )}
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
 
       <Modal state={editModal}>
-        <Modal.Backdrop isDismissable={!updateConnection.isPending} />
-        <Modal.Container>
-          <Modal.Dialog className="max-w-lg">
-            <Modal.Header>
-              <Modal.Heading>Edit integration credentials</Modal.Heading>
-            </Modal.Header>
-            <Modal.Body>
-              {editingConnection && (
-                <Form onSubmit={submitEdit} className="grid gap-4">
-                  <CredentialStatusIndicators
-                    hasApiKey={editingConnection.has_api_key_secret}
-                    hasPassword={editingConnection.has_password}
-                    hasConfig={editingConnection.has_config}
-                    email={editingConnection.email}
-                    username={editingConnection.username}
-                  />
-                  <IntegrationCredentialFields
-                    authType={editingConnection.integration_target.auth_type}
-                    register={editForm.register}
-                    errors={editForm.formState.errors}
-                    mode="edit"
-                  />
-                  <div className="flex justify-end gap-2">
-                    <ActionButtonWithPending
-                      type="button"
-                      variant="secondary"
-                      onPress={editModal.close}
-                      isDisabled={updateConnection.isPending}
-                    >
-                      Cancel
-                    </ActionButtonWithPending>
-                    <ActionButtonWithPending type="submit" isPending={updateConnection.isPending}>
-                      Save
-                    </ActionButtonWithPending>
-                  </div>
-                </Form>
-              )}
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
+        <Modal.Backdrop isDismissable={!updateConnection.isPending}>
+          <Modal.Container>
+            <Modal.Dialog className="max-w-lg">
+              <Modal.Header>
+                <Modal.Heading>Edit integration credentials</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                {editingConnection && (
+                  <Form onSubmit={submitEdit} className="grid gap-4">
+                    <CredentialStatusIndicators
+                      hasApiKey={editingConnection.has_api_key_secret}
+                      hasPassword={editingConnection.has_password}
+                      hasConfig={editingConnection.has_config}
+                      email={editingConnection.email}
+                      username={editingConnection.username}
+                    />
+                    <IntegrationCredentialFields
+                      authType={editingConnection.integration_target.auth_type}
+                      register={editForm.register}
+                      errors={editForm.formState.errors}
+                      mode="edit"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <ActionButtonWithPending
+                        type="button"
+                        variant="secondary"
+                        onPress={editModal.close}
+                        isDisabled={updateConnection.isPending}
+                      >
+                        Cancel
+                      </ActionButtonWithPending>
+                      <ActionButtonWithPending type="submit" isPending={updateConnection.isPending}>
+                        Save
+                      </ActionButtonWithPending>
+                    </div>
+                  </Form>
+                )}
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
 
       <ConfirmationDialog

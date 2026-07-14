@@ -97,6 +97,7 @@ export default function ScrapersListPage() {
         </div>
 
         <Select
+          aria-label="Filter by status"
           selectedKey={status}
           onSelectionChange={(key) => {
             setPage(1);
@@ -120,6 +121,7 @@ export default function ScrapersListPage() {
         </Select>
 
         <Select
+          aria-label="Filter by health"
           selectedKey={health}
           onSelectionChange={(key) => {
             setPage(1);
@@ -143,6 +145,7 @@ export default function ScrapersListPage() {
         </Select>
 
         <Select
+          aria-label="Filter by agency"
           selectedKey={agencyId}
           onSelectionChange={(key) => {
             setPage(1);
@@ -263,27 +266,28 @@ export default function ScrapersListPage() {
       )}
 
       <Modal state={createModal}>
-        <Modal.Backdrop isDismissable />
-        <Modal.Container>
-          <Modal.Dialog>
-            <Modal.Header>
-              <Modal.Heading>New scraper</Modal.Heading>
-            </Modal.Header>
-            <Modal.Body>
-              <ScraperForm
-                submitLabel="Create"
-                isPending={createScraper.isPending}
-                onCancel={createModal.close}
-                onSubmit={(values) =>
-                  createScraper.mutate(
-                    { source_agency_id: values.source_agency_id, name: values.name, config: JSON.parse(values.config) },
-                    { onSuccess: () => createModal.close() },
-                  )
-                }
-              />
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
+        <Modal.Backdrop isDismissable>
+          <Modal.Container>
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Heading>New scraper</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <ScraperForm
+                  submitLabel="Create"
+                  isPending={createScraper.isPending}
+                  onCancel={createModal.close}
+                  onSubmit={(values) =>
+                    createScraper.mutate(
+                      { source_agency_id: values.source_agency_id, name: values.name, config: JSON.parse(values.config) },
+                      { onSuccess: () => createModal.close() },
+                    )
+                  }
+                />
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </div>
   );

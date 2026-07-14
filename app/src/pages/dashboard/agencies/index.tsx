@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Input,
+  Label,
   Pagination,
   Select,
   ListBox,
@@ -136,16 +137,18 @@ function AgencyCard({
             onSelectionChange={(key) => savePrefs({ ai_provider: key as AiProvider })}
             className="w-full"
           >
+            <Label>AI provider</Label>
             <Select.Trigger>
               <Select.Value />
+              <Select.Indicator />
             </Select.Trigger>
             <Select.Popover>
-              <ListBox items={aiProviderOptions}>
-                {(item) => (
-                  <ListBox.Item key={item.id} id={item.id} textValue={item.label}>
-                    {item.label}
+              <ListBox>
+                {aiProviderOptions.map((option) => (
+                  <ListBox.Item key={option.id} id={option.id}>
+                    {option.label}
                   </ListBox.Item>
-                )}
+                ))}
               </ListBox>
             </Select.Popover>
           </Select>

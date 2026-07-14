@@ -159,6 +159,7 @@ export default function PropertiesListPage() {
           className="w-32"
         />
         <Select
+          aria-label="Filter by status"
           selectedKey={status}
           onSelectionChange={(key) => {
             setPage(1);
@@ -168,18 +169,20 @@ export default function PropertiesListPage() {
         >
           <Select.Trigger>
             <Select.Value />
+            <Select.Indicator />
           </Select.Trigger>
           <Select.Popover>
-            <ListBox items={statusOptions}>
-              {(item) => (
-                <ListBox.Item key={item.id} id={item.id} textValue={item.label}>
-                  {item.label}
+            <ListBox>
+              {statusOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
                 </ListBox.Item>
-              )}
+              ))}
             </ListBox>
           </Select.Popover>
         </Select>
         <Select
+          aria-label="Filter by listing type"
           selectedKey={listingType}
           onSelectionChange={(key) => {
             setPage(1);
@@ -189,18 +192,20 @@ export default function PropertiesListPage() {
         >
           <Select.Trigger>
             <Select.Value />
+            <Select.Indicator />
           </Select.Trigger>
           <Select.Popover>
-            <ListBox items={listingTypeOptions}>
-              {(item) => (
-                <ListBox.Item key={item.id} id={item.id} textValue={item.label}>
-                  {item.label}
+            <ListBox>
+              {listingTypeOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
                 </ListBox.Item>
-              )}
+              ))}
             </ListBox>
           </Select.Popover>
         </Select>
         <Select
+          aria-label="Filter by property type"
           selectedKey={propertyType}
           onSelectionChange={(key) => {
             setPage(1);
@@ -210,14 +215,15 @@ export default function PropertiesListPage() {
         >
           <Select.Trigger>
             <Select.Value />
+            <Select.Indicator />
           </Select.Trigger>
           <Select.Popover>
-            <ListBox items={propertyTypeOptions}>
-              {(item) => (
-                <ListBox.Item key={item.id} id={item.id} textValue={item.label}>
-                  {item.label}
+            <ListBox>
+              {propertyTypeOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
                 </ListBox.Item>
-              )}
+              ))}
             </ListBox>
           </Select.Popover>
         </Select>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ListBox, Select, Skeleton, useOverlayState } from "@heroui/react";
+import { ListBox, Label, Select, Skeleton, useOverlayState } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { CredentialStatusIndicators } from "@/features/user-integrations/components/integration-credential-fields";
@@ -117,28 +117,27 @@ export function TrackedAgencyIntegrationLink({
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-muted">Connection</span>
-            <Select
-              selectedKey={selectedConnectionId ?? undefined}
-              isDisabled={disabled || isPending}
-              onSelectionChange={(key) => setSelectedConnectionId(String(key))}
-              className="w-full"
-            >
+          <Select
+            selectedKey={selectedConnectionId ?? undefined}
+            isDisabled={disabled || isPending}
+            onSelectionChange={(key) => setSelectedConnectionId(String(key))}
+            className="w-full"
+          >
+            <Label>Connection</Label>
             <Select.Trigger>
               <Select.Value />
+              <Select.Indicator />
             </Select.Trigger>
             <Select.Popover>
-              <ListBox items={connectionOptions}>
-                {(item) => (
-                  <ListBox.Item key={item.id} id={item.id} textValue={item.label}>
-                    {item.label}
+              <ListBox>
+                {connectionOptions.map((option) => (
+                  <ListBox.Item key={option.id} id={option.id}>
+                    {option.label}
                   </ListBox.Item>
-                )}
+                ))}
               </ListBox>
             </Select.Popover>
           </Select>
-          </label>
 
           <div className="flex items-center justify-between gap-2">
             <Link

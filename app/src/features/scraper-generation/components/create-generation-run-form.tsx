@@ -52,14 +52,16 @@ export function CreateGenerationRunForm({
   return (
     <Form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
       <div className="flex flex-col gap-1">
-        <Label htmlFor="generation-agency">Source agency</Label>
         {lockAgency ? (
-          <div
-            id="generation-agency"
-            className="rounded-lg border border-border bg-surface-secondary px-3 py-2 text-sm text-muted"
-          >
-            {defaultAgencyName ?? defaultAgencyId}
-          </div>
+          <>
+            <Label htmlFor="generation-agency">Source agency</Label>
+            <div
+              id="generation-agency"
+              className="rounded-lg border border-border bg-surface-secondary px-3 py-2 text-sm text-muted"
+            >
+              {defaultAgencyName ?? defaultAgencyId}
+            </div>
+          </>
         ) : (
           <Controller
             name="source_agency_id"
@@ -70,7 +72,8 @@ export function CreateGenerationRunForm({
                 selectedKey={field.value}
                 onSelectionChange={(key) => field.onChange(key as string)}
               >
-                <Select.Trigger id="generation-agency">
+                <Label>Source agency</Label>
+                <Select.Trigger>
                   <Select.Value />
                   <Select.Indicator />
                 </Select.Trigger>

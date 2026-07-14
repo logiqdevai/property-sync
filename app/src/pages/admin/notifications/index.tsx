@@ -103,6 +103,7 @@ export default function NotificationsListPage() {
 
       <div className="flex items-center gap-3 flex-wrap">
         <Select
+          aria-label="Filter by notification type"
           selectedKey={type}
           onSelectionChange={(key) => {
             setPage(1);
@@ -126,6 +127,7 @@ export default function NotificationsListPage() {
         </Select>
 
         <Select
+          aria-label="Filter by severity"
           selectedKey={severity}
           onSelectionChange={(key) => {
             setPage(1);
@@ -149,6 +151,7 @@ export default function NotificationsListPage() {
         </Select>
 
         <Select
+          aria-label="Filter by read status"
           selectedKey={readState}
           onSelectionChange={(key) => {
             setPage(1);
@@ -180,69 +183,75 @@ export default function NotificationsListPage() {
         </div>
       ) : (
         <>
-          <Table aria-label="Notifications">
-            <Table.Header>
-              <Table.Column isRowHeader>Title</Table.Column>
-              <Table.Column>Type</Table.Column>
-              <Table.Column>Severity</Table.Column>
-              <Table.Column>Created</Table.Column>
-              <Table.Column>Status</Table.Column>
-              <Table.Column>Actions</Table.Column>
-            </Table.Header>
-            <Table.Body>
-              {notifications.map((notification) => {
-                const link = resolveNotificationLink(notification);
+          <div className="rounded-xl border border-border bg-surface overflow-hidden">
+            <Table>
+              <Table.ScrollContainer>
+                <Table.Content aria-label="Notifications">
+                  <Table.Header>
+                    <Table.Column isRowHeader>Title</Table.Column>
+                    <Table.Column>Type</Table.Column>
+                    <Table.Column>Severity</Table.Column>
+                    <Table.Column>Created</Table.Column>
+                    <Table.Column>Status</Table.Column>
+                    <Table.Column>Actions</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    {notifications.map((notification) => {
+                      const link = resolveNotificationLink(notification);
 
-                return (
-                  <Table.Row key={notification.id}>
-                    <Table.Cell>
-                      <div className="flex flex-col gap-1 max-w-md">
-                        {link ? (
-                          <Link
-                            to={link}
-                            className="font-medium text-foreground hover:text-accent transition-colors"
-                          >
-                            {notification.title}
-                          </Link>
-                        ) : (
-                          <span className="font-medium text-foreground">{notification.title}</span>
-                        )}
-                        <span className="text-xs text-muted line-clamp-2">{notification.message}</span>
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <NotificationTypeChip type={notification.type} />
-                    </Table.Cell>
-                    <Table.Cell>
-                      <NotificationSeverityChip severity={notification.severity} />
-                    </Table.Cell>
-                    <Table.Cell className="text-sm text-muted whitespace-nowrap">
-                      {formatTimestamp(notification.created_at)}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <span className={notification.is_read ? "text-muted" : "text-foreground font-medium"}>
-                        {notification.is_read ? "Read" : "Unread"}
-                      </span>
-                    </Table.Cell>
-                    <Table.Cell>
-                      {!notification.is_read ? (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onPress={() => markRead.mutate(notification.id)}
-                          isDisabled={markRead.isPending}
-                        >
-                          Mark read
-                        </Button>
-                      ) : (
-                        <span className="text-muted text-sm">—</span>
-                      )}
-                    </Table.Cell>
-                  </Table.Row>
-                );
-              })}
-            </Table.Body>
-          </Table>
+                      return (
+                        <Table.Row key={notification.id}>
+                          <Table.Cell>
+                            <div className="flex flex-col gap-1 max-w-md">
+                              {link ? (
+                                <Link
+                                  to={link}
+                                  className="font-medium text-foreground hover:text-accent transition-colors"
+                                >
+                                  {notification.title}
+                                </Link>
+                              ) : (
+                                <span className="font-medium text-foreground">{notification.title}</span>
+                              )}
+                              <span className="text-xs text-muted line-clamp-2">{notification.message}</span>
+                            </div>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <NotificationTypeChip type={notification.type} />
+                          </Table.Cell>
+                          <Table.Cell>
+                            <NotificationSeverityChip severity={notification.severity} />
+                          </Table.Cell>
+                          <Table.Cell className="text-sm text-muted whitespace-nowrap">
+                            {formatTimestamp(notification.created_at)}
+                          </Table.Cell>
+                          <Table.Cell>
+                            <span className={notification.is_read ? "text-muted" : "text-foreground font-medium"}>
+                              {notification.is_read ? "Read" : "Unread"}
+                            </span>
+                          </Table.Cell>
+                          <Table.Cell>
+                            {!notification.is_read ? (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onPress={() => markRead.mutate(notification.id)}
+                                isDisabled={markRead.isPending}
+                              >
+                                Mark read
+                              </Button>
+                            ) : (
+                              <span className="text-muted text-sm">—</span>
+                            )}
+                          </Table.Cell>
+                        </Table.Row>
+                      );
+                    })}
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
+            </Table>
+          </div>
 
           {pagination && pagination.total_pages > 1 && (
             <Pagination>

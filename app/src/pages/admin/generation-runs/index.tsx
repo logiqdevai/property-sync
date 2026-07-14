@@ -81,6 +81,7 @@ export default function GenerationRunsListPage() {
 
       <div className="flex items-center gap-3 flex-wrap">
         <Select
+          aria-label="Filter by status"
           selectedKey={status}
           onSelectionChange={(key) => {
             setPage(1);
@@ -104,6 +105,7 @@ export default function GenerationRunsListPage() {
         </Select>
 
         <Select
+          aria-label="Filter by trigger"
           selectedKey={trigger}
           onSelectionChange={(key) => {
             setPage(1);
@@ -127,6 +129,7 @@ export default function GenerationRunsListPage() {
         </Select>
 
         <Select
+          aria-label="Filter by agency"
           selectedKey={agencyId}
           onSelectionChange={(key) => {
             setPage(1);
@@ -232,35 +235,36 @@ export default function GenerationRunsListPage() {
       )}
 
       <Modal state={createModal}>
-        <Modal.Backdrop isDismissable />
-        <Modal.Container>
-          <Modal.Dialog>
-            <Modal.Header>
-              <Modal.Heading>New generation run</Modal.Heading>
-            </Modal.Header>
-            <Modal.Body>
-              <CreateGenerationRunForm
-                isPending={createGenerationRun.isPending}
-                onCancel={createModal.close}
-                onSubmit={(values) =>
-                  createGenerationRun.mutate(
-                    {
-                      source_agency_id: values.source_agency_id,
-                      scraper_id: values.scraper_id || undefined,
-                      prompt: values.prompt || undefined,
-                    },
-                    {
-                      onSuccess: (run) => {
-                        createModal.close();
-                        navigate(Routes.admin.generationRuns.detail(run.id));
+        <Modal.Backdrop isDismissable>
+          <Modal.Container>
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Heading>New generation run</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <CreateGenerationRunForm
+                  isPending={createGenerationRun.isPending}
+                  onCancel={createModal.close}
+                  onSubmit={(values) =>
+                    createGenerationRun.mutate(
+                      {
+                        source_agency_id: values.source_agency_id,
+                        scraper_id: values.scraper_id || undefined,
+                        prompt: values.prompt || undefined,
                       },
-                    },
-                  )
-                }
-              />
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
+                      {
+                        onSuccess: (run) => {
+                          createModal.close();
+                          navigate(Routes.admin.generationRuns.detail(run.id));
+                        },
+                      },
+                    )
+                  }
+                />
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </div>
   );

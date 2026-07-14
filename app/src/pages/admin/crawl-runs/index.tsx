@@ -73,6 +73,7 @@ export default function CrawlRunsListPage() {
 
       <div className="flex items-center gap-3 flex-wrap">
         <Select
+          aria-label="Filter by status"
           selectedKey={status}
           onSelectionChange={(key) => {
             setPage(1);
@@ -96,6 +97,7 @@ export default function CrawlRunsListPage() {
         </Select>
 
         <Select
+          aria-label="Filter by agency"
           selectedKey={agencyId}
           onSelectionChange={(key) => {
             setPage(1);
@@ -122,6 +124,7 @@ export default function CrawlRunsListPage() {
         </Select>
 
         <Select
+          aria-label="Filter by scraper"
           selectedKey={scraperId}
           onSelectionChange={(key) => {
             setPage(1);

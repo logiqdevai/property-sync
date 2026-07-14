@@ -94,6 +94,7 @@ export default function IntegrationTargetsListPage() {
 
       <div className="flex flex-wrap items-center gap-3">
         <Select
+          aria-label="Filter by integration type"
           selectedKey={integrationType}
           onSelectionChange={(key) => {
             setPage(1);
@@ -117,6 +118,7 @@ export default function IntegrationTargetsListPage() {
         </Select>
 
         <Select
+          aria-label="Filter by auth type"
           selectedKey={authType}
           onSelectionChange={(key) => {
             setPage(1);
@@ -140,6 +142,7 @@ export default function IntegrationTargetsListPage() {
         </Select>
 
         <Select
+          aria-label="Filter by visibility"
           selectedKey={visibility}
           onSelectionChange={(key) => {
             setPage(1);
@@ -250,26 +253,27 @@ export default function IntegrationTargetsListPage() {
       )}
 
       <Modal state={createModal}>
-        <Modal.Backdrop isDismissable={!createTarget.isPending} />
-        <Modal.Container>
-          <Modal.Dialog className="max-w-lg">
-            <Modal.Header>
-              <Modal.Heading>Create integration target</Modal.Heading>
-            </Modal.Header>
-            <Modal.Body>
-              <IntegrationTargetForm
-                submitLabel="Create"
-                isPending={createTarget.isPending}
-                onCancel={createModal.close}
-                onSubmit={(payload) =>
-                  createTarget.mutate(payload, {
-                    onSuccess: () => createModal.close(),
-                  })
-                }
-              />
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
+        <Modal.Backdrop isDismissable={!createTarget.isPending}>
+          <Modal.Container>
+            <Modal.Dialog className="max-w-lg">
+              <Modal.Header>
+                <Modal.Heading>Create integration target</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <IntegrationTargetForm
+                  submitLabel="Create"
+                  isPending={createTarget.isPending}
+                  onCancel={createModal.close}
+                  onSubmit={(payload) =>
+                    createTarget.mutate(payload, {
+                      onSuccess: () => createModal.close(),
+                    })
+                  }
+                />
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </div>
   );

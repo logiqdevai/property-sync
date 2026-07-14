@@ -185,34 +185,35 @@ export default function AgencyDetailPage() {
       </div>
 
       <Modal state={editModal}>
-        <Modal.Backdrop isDismissable />
-        <Modal.Container>
-          <Modal.Dialog>
-            <Modal.Header>
-              <Modal.Heading>Edit agency</Modal.Heading>
-            </Modal.Header>
-            <Modal.Body>
-              <AgencyForm
-                submitLabel="Save"
-                isPending={updateAgency.isPending}
-                onCancel={editModal.close}
-                defaultValues={{
-                  name: agency.name,
-                  base_url: agency.base_url,
-                  country: agency.country ?? "",
-                  city: agency.city ?? "",
-                  notes: agency.notes ?? "",
-                }}
-                onSubmit={(values) =>
-                  updateAgency.mutate(
-                    { id: agency.id, payload: values },
-                    { onSuccess: () => editModal.close() },
-                  )
-                }
-              />
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
+        <Modal.Backdrop isDismissable>
+          <Modal.Container>
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Heading>Edit agency</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <AgencyForm
+                  submitLabel="Save"
+                  isPending={updateAgency.isPending}
+                  onCancel={editModal.close}
+                  defaultValues={{
+                    name: agency.name,
+                    base_url: agency.base_url,
+                    country: agency.country ?? "",
+                    city: agency.city ?? "",
+                    notes: agency.notes ?? "",
+                  }}
+                  onSubmit={(values) =>
+                    updateAgency.mutate(
+                      { id: agency.id, payload: values },
+                      { onSuccess: () => editModal.close() },
+                    )
+                  }
+                />
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
 
       <ConfirmationDialog

@@ -233,55 +233,56 @@ export default function GenerationRunDetailPage() {
       )}
 
       <Modal state={rejectModal}>
-        <Modal.Backdrop isDismissable={!rejectRun.isPending} />
-        <Modal.Container>
-          <Modal.Dialog>
-            <Modal.Header>
-              <Modal.Heading>Reject this run</Modal.Heading>
-            </Modal.Header>
-            <Modal.Body>
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1">
-                  <Label htmlFor="reject-reason">Reason (optional)</Label>
-                  <TextArea
-                    id="reject-reason"
-                    value={rejectReason}
-                    onChange={(e) => setRejectReason(e.target.value)}
-                    rows={3}
-                    fullWidth
-                  />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <ActionButtonWithPending
-                    variant="secondary"
-                    isDisabled={rejectRun.isPending}
-                    onPress={rejectModal.close}
-                  >
-                    Cancel
-                  </ActionButtonWithPending>
-                  <ActionButtonWithPending
-                    variant="danger"
-                    isPending={rejectRun.isPending}
-                    isDisabled={rejectRun.isPending}
-                    onPress={() =>
-                      rejectRun.mutate(
-                        { id: run.id, payload: { reason: rejectReason || undefined } },
-                        {
-                          onSuccess: () => {
-                            rejectModal.close();
-                            setRejectReason("");
+        <Modal.Backdrop isDismissable={!rejectRun.isPending}>
+          <Modal.Container>
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Heading>Reject this run</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="reject-reason">Reason (optional)</Label>
+                    <TextArea
+                      id="reject-reason"
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      rows={3}
+                      fullWidth
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <ActionButtonWithPending
+                      variant="secondary"
+                      isDisabled={rejectRun.isPending}
+                      onPress={rejectModal.close}
+                    >
+                      Cancel
+                    </ActionButtonWithPending>
+                    <ActionButtonWithPending
+                      variant="danger"
+                      isPending={rejectRun.isPending}
+                      isDisabled={rejectRun.isPending}
+                      onPress={() =>
+                        rejectRun.mutate(
+                          { id: run.id, payload: { reason: rejectReason || undefined } },
+                          {
+                            onSuccess: () => {
+                              rejectModal.close();
+                              setRejectReason("");
+                            },
                           },
-                        },
-                      )
-                    }
-                  >
-                    Reject
-                  </ActionButtonWithPending>
+                        )
+                      }
+                    >
+                      Reject
+                    </ActionButtonWithPending>
+                  </div>
                 </div>
-              </div>
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </div>
   );

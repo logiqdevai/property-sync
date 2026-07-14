@@ -37,7 +37,6 @@ export function ScraperForm({ defaultAgencyId, submitLabel, isPending, onSubmit,
   return (
     <Form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
       <div className="flex flex-col gap-1">
-        <Label htmlFor="scraper-agency">Source agency</Label>
         <Controller
           name="source_agency_id"
           control={control}
@@ -47,7 +46,8 @@ export function ScraperForm({ defaultAgencyId, submitLabel, isPending, onSubmit,
               selectedKey={field.value}
               onSelectionChange={(key) => field.onChange(key as string)}
             >
-              <Select.Trigger id="scraper-agency">
+              <Label>Source agency</Label>
+              <Select.Trigger>
                 <Select.Value />
                 <Select.Indicator />
               </Select.Trigger>

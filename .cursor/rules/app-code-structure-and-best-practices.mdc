@@ -143,7 +143,7 @@ Current shared primitives (extend this list as new ones land):
 | `toast.tsx` | Mutation feedback (already used by feature hooks) |
 | `table-skeleton.tsx` | List / connected-accounts table loading placeholders |
 | `detail-skeleton.tsx` | Detail page loading (header + fields + optional sub-table) |
-| `confirmation-dialog.tsx` | Destructive confirmations (delete, disconnect) via HeroUI `AlertDialog` + `useOverlayState` |
+| `confirmation-dialog.tsx` | Destructive confirmations (delete, disconnect) via HeroUI `Modal` + `useOverlayState` |
 
 **Placement rule:**
 
@@ -204,6 +204,107 @@ const deleteConfirm = useOverlayState();
 ```
 
 Use `confirmLabel="Disconnect"` for user integration disconnect flows. Reuse the same component — do not build one-off alert modals per page.
+
+### HeroUI v3 — Modal (required nesting)
+
+This project uses **HeroUI React v3** (`@heroui/react`). Modal dialog content **must** be nested inside `Modal.Backdrop`. Sibling `Backdrop` + `Container` renders only the overlay — no dialog.
+
+**Wrong — overlay only, dialog never appears:**
+
+```tsx
+<Modal state={modal}>
+  <Modal.Backdrop isDismissable />
+  <Modal.Container>
+    <Modal.Dialog>...</Modal.Dialog>
+  </Modal.Container>
+</Modal>
+```
+
+**Correct — `Container` is a child of `Backdrop`:**
+
+```tsx
+import { Modal, useOverlayState } from "@heroui/react";
+
+const modal = useOverlayState();
+
+<Modal state={modal}>
+  <Modal.Backdrop isDismissable={!mutation.isPending}>
+    <Modal.Container>
+      <Modal.Dialog>
+        <Modal.Header>
+          <Modal.Heading>Title</Modal.Heading>
+        </Modal.Header>
+        <Modal.Body>...</Modal.Body>
+        <Modal.Footer>...</Modal.Footer>
+      </Modal.Dialog>
+    </Modal.Container>
+  </Modal.Backdrop>
+</Modal>
+```
+
+Rules:
+
+- Always nest: `Modal` → `Modal.Backdrop` → `Modal.Container` → `Modal.Dialog`
+- Use `useOverlayState()` for open/close; pass `state={modal}` to `Modal`
+- Set `isDismissable={!isPending}` while a mutation inside the modal is in flight
+- For destructive confirms, reuse `ConfirmationDialog` — it already follows this structure
+- When adding or editing any modal, verify nesting before shipping — do not copy the sibling pattern from older HeroUI v2 examples or docs snippets
+
+### HeroUI v3 — Table (collection context)
+
+`Table.Column` must render inside the table collection. Do not put `Table.Header` / `Table.Body` directly under `<Table>`.
+
+**Correct structure:**
+
+```tsx
+<Table aria-label="Users">
+  <Table.ScrollContainer>
+    <Table.Content>
+      <Table.Header>
+        <Table.Column isRowHeader>Name</Table.Column>
+        <Table.Column>Email</Table.Column>
+      </Table.Header>
+      <Table.Body items={rows}>
+        {(row) => (
+          <Table.Row id={row.id}>
+            <Table.Cell>{row.name}</Table.Cell>
+            <Table.Cell>{row.email}</Table.Cell>
+          </Table.Row>
+        )}
+      </Table.Body>
+    </Table.Content>
+  </Table.ScrollContainer>
+</Table>
+```
+
+### HeroUI v3 — Select (accessible name required)
+
+Every `Select` needs an accessible name. React Aria will throw if neither `aria-label` nor an associated label is present.
+
+**Form fields — put `<Label>` inside `<Select>`:**
+
+```tsx
+<Select selectedKey={value} onSelectionChange={setValue}>
+  <Label>Agency</Label>
+  <Select.Trigger>
+    <Select.Value />
+  </Select.Trigger>
+  <Select.Popover>
+    <ListBox>...</ListBox>
+  </Select.Popover>
+</Select>
+```
+
+A sibling `<Label>` **outside** `<Select>` does **not** satisfy accessibility requirements.
+
+**Toolbar / filter selects without visible labels — use `aria-label`:**
+
+```tsx
+<Select aria-label="Filter by status" selectedKey={status} onSelectionChange={setStatus}>
+  <Select.Trigger>...</Select.Trigger>
+  <Select.Popover>...</Select.Popover>
+</Select>
+```
 
 ---
 
@@ -311,6 +412,9 @@ When adding a new route, **always add it to `routes.ts` first**, then reference 
 | Extract repeated skeleton layouts to `components/ui/`        | Copy-paste skeleton blocks across list/detail pages    |
 | Confirm deletes/disconnects with `ConfirmationDialog`        | Delete or disconnect immediately without confirmation  |
 | Use `useOverlayState` + `ConfirmationDialog` for destructive UX | Build a custom confirm modal per page                 |
+| Nest `Modal.Container` inside `Modal.Backdrop`                 | Use sibling `Backdrop` + `Container` under `Modal`   |
+| Use `Table.ScrollContainer` → `Table.Content` for tables       | Put `Table.Column` directly under `<Table>`          |
+| Put `<Label>` inside `<Select>` or use `aria-label`            | Leave `Select` unlabeled or label as sibling only    |
 
 ---
 

@@ -202,6 +202,7 @@ export default function ScraperDetailPage() {
             <p className="text-sm font-medium text-foreground">Compare versions</p>
             <div className="flex items-center gap-3">
               <Select
+                aria-label="Compare version A"
                 placeholder="Version A"
                 selectedKey={compareA ?? undefined}
                 onSelectionChange={(key) => setCompareA(key as string)}
@@ -222,6 +223,7 @@ export default function ScraperDetailPage() {
                 </Select.Popover>
               </Select>
               <Select
+                aria-label="Compare version B"
                 placeholder="Version B"
                 selectedKey={compareB ?? undefined}
                 onSelectionChange={(key) => setCompareB(key as string)}
@@ -318,78 +320,80 @@ export default function ScraperDetailPage() {
       </div>
 
       <Modal state={newVersionModal}>
-        <Modal.Backdrop isDismissable />
-        <Modal.Container>
-          <Modal.Dialog>
-            <Modal.Header>
-              <Modal.Heading>
-                <div className="flex items-center gap-2">
-                  <History className="h-4 w-4" />
-                  New version
-                </div>
-              </Modal.Heading>
-            </Modal.Header>
-            <Modal.Body>
-              <ScraperVersionForm
-                defaultConfig={
-                  scraper.active_version
-                    ? JSON.stringify(scraper.active_version.config, null, 2)
-                    : undefined
-                }
-                isPending={createVersion.isPending}
-                onCancel={newVersionModal.close}
-                onSubmit={(values) =>
-                  createVersion.mutate(
-                    { id: scraper.id, payload: { config: JSON.parse(values.config), notes: values.notes } },
-                    { onSuccess: () => newVersionModal.close() },
-                  )
-                }
-              />
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
+        <Modal.Backdrop isDismissable>
+          <Modal.Container>
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Heading>
+                  <div className="flex items-center gap-2">
+                    <History className="h-4 w-4" />
+                    New version
+                  </div>
+                </Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <ScraperVersionForm
+                  defaultConfig={
+                    scraper.active_version
+                      ? JSON.stringify(scraper.active_version.config, null, 2)
+                      : undefined
+                  }
+                  isPending={createVersion.isPending}
+                  onCancel={newVersionModal.close}
+                  onSubmit={(values) =>
+                    createVersion.mutate(
+                      { id: scraper.id, payload: { config: JSON.parse(values.config), notes: values.notes } },
+                      { onSuccess: () => newVersionModal.close() },
+                    )
+                  }
+                />
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
 
       <Modal state={generateModal}>
-        <Modal.Backdrop isDismissable />
-        <Modal.Container>
-          <Modal.Dialog>
-            <Modal.Header>
-              <Modal.Heading>
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4" />
-                  {scraper.status === ScraperStatuses.BROKEN ? "Fix with AI" : "Generate with AI"}
-                </div>
-              </Modal.Heading>
-            </Modal.Header>
-            <Modal.Body>
-              <CreateGenerationRunForm
-                defaultAgencyId={scraper.source_agency_id}
-                defaultAgencyName={scraper.source_agency?.name}
-                lockAgency
-                defaultScraperId={scraper.id}
-                submitLabel="Generate"
-                isPending={createGenerationRun.isPending}
-                onCancel={generateModal.close}
-                onSubmit={(values) =>
-                  createGenerationRun.mutate(
-                    {
-                      source_agency_id: values.source_agency_id,
-                      scraper_id: values.scraper_id,
-                      prompt: values.prompt || undefined,
-                    },
-                    {
-                      onSuccess: (run) => {
-                        generateModal.close();
-                        navigate(Routes.admin.generationRuns.detail(run.id));
+        <Modal.Backdrop isDismissable>
+          <Modal.Container>
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Heading>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    {scraper.status === ScraperStatuses.BROKEN ? "Fix with AI" : "Generate with AI"}
+                  </div>
+                </Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <CreateGenerationRunForm
+                  defaultAgencyId={scraper.source_agency_id}
+                  defaultAgencyName={scraper.source_agency?.name}
+                  lockAgency
+                  defaultScraperId={scraper.id}
+                  submitLabel="Generate"
+                  isPending={createGenerationRun.isPending}
+                  onCancel={generateModal.close}
+                  onSubmit={(values) =>
+                    createGenerationRun.mutate(
+                      {
+                        source_agency_id: values.source_agency_id,
+                        scraper_id: values.scraper_id,
+                        prompt: values.prompt || undefined,
                       },
-                    },
-                  )
-                }
-              />
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
+                      {
+                        onSuccess: (run) => {
+                          generateModal.close();
+                          navigate(Routes.admin.generationRuns.detail(run.id));
+                        },
+                      },
+                    )
+                  }
+                />
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </div>
   );

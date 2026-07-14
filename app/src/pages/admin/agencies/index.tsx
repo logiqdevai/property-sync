@@ -86,6 +86,7 @@ export default function AgenciesListPage() {
         </div>
 
         <Select
+          aria-label="Filter by status"
           selectedKey={status}
           onSelectionChange={(key) => {
             setPage(1);
@@ -230,26 +231,27 @@ export default function AgenciesListPage() {
       )}
 
       <Modal state={createModal}>
-        <Modal.Backdrop isDismissable />
-        <Modal.Container>
-          <Modal.Dialog>
-            <Modal.Header>
-              <Modal.Heading>New agency</Modal.Heading>
-            </Modal.Header>
-            <Modal.Body>
-              <AgencyForm
-                submitLabel="Create"
-                isPending={createAgency.isPending}
-                onCancel={createModal.close}
-                onSubmit={(values) =>
-                  createAgency.mutate(values, {
-                    onSuccess: () => createModal.close(),
-                  })
-                }
-              />
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
+        <Modal.Backdrop isDismissable>
+          <Modal.Container>
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Heading>New agency</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <AgencyForm
+                  submitLabel="Create"
+                  isPending={createAgency.isPending}
+                  onCancel={createModal.close}
+                  onSubmit={(values) =>
+                    createAgency.mutate(values, {
+                      onSuccess: () => createModal.close(),
+                    })
+                  }
+                />
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </div>
   );

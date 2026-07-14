@@ -99,13 +99,13 @@ export function IntegrationTargetForm({
   return (
     <Form onSubmit={handleSubmit(submit)} className="grid gap-4">
       <div className="flex flex-col gap-1">
-        <Label>Integration type</Label>
         <Select
           selectedKey={integrationType}
           onSelectionChange={(key) =>
             setValue("integration_type", key as IntegrationType, { shouldValidate: true })
           }
         >
+          <Label>Integration type</Label>
           <Select.Trigger>
             <Select.Value />
             <Select.Indicator />
@@ -124,11 +124,11 @@ export function IntegrationTargetForm({
       </div>
 
       <div className="flex flex-col gap-1">
-        <Label>Auth type</Label>
         <Select
           selectedKey={authType}
           onSelectionChange={(key) => setValue("auth_type", key as AuthType, { shouldValidate: true })}
         >
+          <Label>Auth type</Label>
           <Select.Trigger>
             <Select.Value />
             <Select.Indicator />

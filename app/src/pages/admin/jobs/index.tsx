@@ -66,6 +66,7 @@ export default function JobsListPage() {
 
       <div className="flex items-center gap-3 flex-wrap">
         <Select
+          aria-label="Filter by status"
           selectedKey={status}
           onSelectionChange={(key) => {
             setPage(1);
@@ -89,6 +90,7 @@ export default function JobsListPage() {
         </Select>
 
         <Select
+          aria-label="Filter by queue"
           selectedKey={queueName}
           onSelectionChange={(key) => {
             setPage(1);

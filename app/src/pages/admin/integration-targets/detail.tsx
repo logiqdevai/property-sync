@@ -247,83 +247,85 @@ export default function IntegrationTargetDetailPage() {
       />
 
       <Modal state={addAccountModal}>
-        <Modal.Backdrop isDismissable={!createAccount.isPending} />
-        <Modal.Container>
-          <Modal.Dialog className="max-w-lg">
-            <Modal.Header>
-              <Modal.Heading>Add user connection</Modal.Heading>
-            </Modal.Header>
-            <Modal.Body>
-              <Form onSubmit={submitAddAccount} className="grid gap-4">
-                <div className="flex flex-col gap-1">
-                  <Label htmlFor="account-user-id">User ID</Label>
-                  <Input id="account-user-id" {...addAccountForm.register("user_id")} fullWidth />
-                </div>
-                <IntegrationCredentialFields
-                  authType={target.auth_type}
-                  register={addAccountForm.register}
-                  errors={addAccountForm.formState.errors}
-                />
-                <div className="flex justify-end gap-2">
-                  <ActionButtonWithPending
-                    type="button"
-                    variant="secondary"
-                    onPress={addAccountModal.close}
-                    isDisabled={createAccount.isPending}
-                  >
-                    Cancel
-                  </ActionButtonWithPending>
-                  <ActionButtonWithPending type="submit" isPending={createAccount.isPending}>
-                    Add connection
-                  </ActionButtonWithPending>
-                </div>
-              </Form>
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal>
-
-      <Modal state={editAccountModal}>
-        <Modal.Backdrop isDismissable={!updateAccount.isPending} />
-        <Modal.Container>
-          <Modal.Dialog className="max-w-lg">
-            <Modal.Header>
-              <Modal.Heading>Edit user connection</Modal.Heading>
-            </Modal.Header>
-            <Modal.Body>
-              {editingAccount && (
-                <Form onSubmit={submitEditAccount} className="grid gap-4">
-                  <CredentialStatusIndicators
-                    hasApiKey={editingAccount.has_api_key_secret}
-                    hasPassword={editingAccount.has_password}
-                    hasConfig={editingAccount.has_config}
-                    email={editingAccount.email}
-                    username={editingAccount.username}
-                  />
+        <Modal.Backdrop isDismissable={!createAccount.isPending}>
+          <Modal.Container>
+            <Modal.Dialog className="max-w-lg">
+              <Modal.Header>
+                <Modal.Heading>Add user connection</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <Form onSubmit={submitAddAccount} className="grid gap-4">
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="account-user-id">User ID</Label>
+                    <Input id="account-user-id" {...addAccountForm.register("user_id")} fullWidth />
+                  </div>
                   <IntegrationCredentialFields
                     authType={target.auth_type}
-                    register={editAccountForm.register}
-                    errors={editAccountForm.formState.errors}
-                    mode="edit"
+                    register={addAccountForm.register}
+                    errors={addAccountForm.formState.errors}
                   />
                   <div className="flex justify-end gap-2">
                     <ActionButtonWithPending
                       type="button"
                       variant="secondary"
-                      onPress={editAccountModal.close}
-                      isDisabled={updateAccount.isPending}
+                      onPress={addAccountModal.close}
+                      isDisabled={createAccount.isPending}
                     >
                       Cancel
                     </ActionButtonWithPending>
-                    <ActionButtonWithPending type="submit" isPending={updateAccount.isPending}>
-                      Save credentials
+                    <ActionButtonWithPending type="submit" isPending={createAccount.isPending}>
+                      Add connection
                     </ActionButtonWithPending>
                   </div>
                 </Form>
-              )}
-            </Modal.Body>
-          </Modal.Dialog>
-        </Modal.Container>
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
+
+      <Modal state={editAccountModal}>
+        <Modal.Backdrop isDismissable={!updateAccount.isPending}>
+          <Modal.Container>
+            <Modal.Dialog className="max-w-lg">
+              <Modal.Header>
+                <Modal.Heading>Edit user connection</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                {editingAccount && (
+                  <Form onSubmit={submitEditAccount} className="grid gap-4">
+                    <CredentialStatusIndicators
+                      hasApiKey={editingAccount.has_api_key_secret}
+                      hasPassword={editingAccount.has_password}
+                      hasConfig={editingAccount.has_config}
+                      email={editingAccount.email}
+                      username={editingAccount.username}
+                    />
+                    <IntegrationCredentialFields
+                      authType={target.auth_type}
+                      register={editAccountForm.register}
+                      errors={editAccountForm.formState.errors}
+                      mode="edit"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <ActionButtonWithPending
+                        type="button"
+                        variant="secondary"
+                        onPress={editAccountModal.close}
+                        isDisabled={updateAccount.isPending}
+                      >
+                        Cancel
+                      </ActionButtonWithPending>
+                      <ActionButtonWithPending type="submit" isPending={updateAccount.isPending}>
+                        Save credentials
+                      </ActionButtonWithPending>
+                    </div>
+                  </Form>
+                )}
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
       </Modal>
     </div>
   );
