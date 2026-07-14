@@ -1,4 +1,4 @@
-import { EstateWebErrorCode } from '../constants/estateweb-error-codes';
+import { NotificationType } from 'generated/prisma';
 
 export interface EstateWebErrorContext {
   userIntegrationId?: string;
@@ -8,5 +8,5 @@ export interface EstateWebErrorContext {
   method?: string;
   propertyId?: number | string;
   statusCode?: number;
-  errorCode?: EstateWebErrorCode;
+  notificationType?: NotificationType;
 }

@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { EstateWebErrorCode } from '../constants/estateweb-error-codes';
+import { NotificationType } from 'generated/prisma';
 import { EstateWebException } from '../exceptions/estateweb.exception';
 import {
   EstateWebCreatePropertyPayload,
@@ -18,7 +18,7 @@ export function assertValidPropertyId(
   ) {
     throw new EstateWebException(
       'EstateWeb property id is required',
-      EstateWebErrorCode.INVALID_PROPERTY_ID,
+      NotificationType.ESTATEWEB_INVALID_PROPERTY_ID,
       HttpStatus.BAD_REQUEST,
       { propertyId },
     );
@@ -31,7 +31,7 @@ export function assertValidCreatePayload(
   if (!payload.type_id || !payload.scope_id || !payload.location_id) {
     throw new EstateWebException(
       'EstateWeb create property requires type_id, scope_id, and location_id',
-      EstateWebErrorCode.VALIDATION_FAILED,
+      NotificationType.ESTATEWEB_VALIDATION_FAILED,
       HttpStatus.BAD_REQUEST,
       {
         type_id: payload.type_id,
@@ -46,7 +46,7 @@ export function assertValidListQuery(query: EstateWebPropertyListQuery): void {
   if (query.page !== undefined && query.page < 1) {
     throw new EstateWebException(
       'EstateWeb list properties page must be >= 1',
-      EstateWebErrorCode.VALIDATION_FAILED,
+      NotificationType.ESTATEWEB_VALIDATION_FAILED,
       HttpStatus.BAD_REQUEST,
       { page: query.page },
     );
@@ -55,7 +55,7 @@ export function assertValidListQuery(query: EstateWebPropertyListQuery): void {
   if (query.rpp !== undefined && (query.rpp < 1 || query.rpp > 200)) {
     throw new EstateWebException(
       'EstateWeb list properties rpp must be between 1 and 200',
-      EstateWebErrorCode.VALIDATION_FAILED,
+      NotificationType.ESTATEWEB_VALIDATION_FAILED,
       HttpStatus.BAD_REQUEST,
       { rpp: query.rpp },
     );
@@ -69,7 +69,7 @@ export function assertValidImageUpload(
   if (!image?.length) {
     throw new EstateWebException(
       'EstateWeb image upload requires a non-empty image buffer',
-      EstateWebErrorCode.EMPTY_IMAGE,
+      NotificationType.ESTATEWEB_EMPTY_IMAGE,
       HttpStatus.BAD_REQUEST,
     );
   }
@@ -77,7 +77,7 @@ export function assertValidImageUpload(
   if (!payload.filename?.trim()) {
     throw new EstateWebException(
       'EstateWeb image upload requires a filename',
-      EstateWebErrorCode.VALIDATION_FAILED,
+      NotificationType.ESTATEWEB_VALIDATION_FAILED,
       HttpStatus.BAD_REQUEST,
     );
   }
@@ -95,7 +95,7 @@ export function assertCreatePropertyResponse(
   ) {
     throw new EstateWebException(
       'EstateWeb create property returned an invalid response (missing id)',
-      EstateWebErrorCode.MISSING_PROPERTY_ID,
+      NotificationType.ESTATEWEB_MISSING_PROPERTY_ID,
       HttpStatus.BAD_GATEWAY,
       { response },
     );

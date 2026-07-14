@@ -1,19 +1,19 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { EstateWebErrorCode } from '../constants/estateweb-error-codes';
+import { NotificationType } from 'generated/prisma';
 
 export interface EstateWebExceptionBody {
   message: string;
-  code: EstateWebErrorCode;
+  code: NotificationType;
   details?: Record<string, unknown>;
 }
 
 export class EstateWebException extends HttpException {
-  readonly code: EstateWebErrorCode;
+  readonly code: NotificationType;
   readonly details?: Record<string, unknown>;
 
   constructor(
     message: string,
-    code: EstateWebErrorCode,
+    code: NotificationType,
     status: HttpStatus = HttpStatus.BAD_REQUEST,
     details?: Record<string, unknown>,
   ) {

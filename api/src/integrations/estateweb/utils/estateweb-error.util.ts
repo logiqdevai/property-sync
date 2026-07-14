@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { EstateWebErrorCode } from '../constants/estateweb-error-codes';
+import { NotificationType } from 'generated/prisma';
 import { EstateWebException } from '../exceptions/estateweb.exception';
 
 export function formatEstateWebError(error: unknown): string {
   if (error instanceof EstateWebException) {
-    const parts = [error.message, `code=${error.code}`];
+    const parts = [error.message, `type=${error.code}`];
     if (error.details && Object.keys(error.details).length > 0) {
       parts.push(`details=${JSON.stringify(error.details)}`);
     }
@@ -35,9 +35,9 @@ export function formatEstateWebError(error: unknown): string {
   return String(error);
 }
 
-export function extractEstateWebErrorCode(
+export function extractEstateWebNotificationType(
   error: unknown,
-): EstateWebErrorCode | undefined {
+): NotificationType | undefined {
   if (error instanceof EstateWebException) {
     return error.code;
   }
@@ -57,7 +57,7 @@ export function mapFetchError(
   if (message.includes('timeout') || message.includes('Timeout')) {
     return new EstateWebException(
       `EstateWeb ${context.method} ${context.path} timed out`,
-      EstateWebErrorCode.REQUEST_TIMEOUT,
+      NotificationType.ESTATEWEB_REQUEST_TIMEOUT,
       HttpStatus.REQUEST_TIMEOUT,
       context,
     );
@@ -65,7 +65,7 @@ export function mapFetchError(
 
   return new EstateWebException(
     `EstateWeb ${context.method} ${context.path} network error: ${message}`,
-    EstateWebErrorCode.NETWORK_ERROR,
+    NotificationType.ESTATEWEB_NETWORK_ERROR,
     HttpStatus.BAD_GATEWAY,
     context,
   );
@@ -83,8 +83,8 @@ export function mapHttpStatusToException(
     return new EstateWebException(
       `EstateWeb session is not authorized (${status})`,
       status === 401
-        ? EstateWebErrorCode.SESSION_EXPIRED
-        : EstateWebErrorCode.UNAUTHORIZED,
+        ? NotificationType.ESTATEWEB_SESSION_EXPIRED
+        : NotificationType.ESTATEWEB_UNAUTHORIZED,
       status === 401 ? HttpStatus.UNAUTHORIZED : HttpStatus.FORBIDDEN,
       { ...context, body: truncateBody(errorBody) },
     );
@@ -93,7 +93,7 @@ export function mapHttpStatusToException(
   if (status === 404) {
     return new EstateWebException(
       `EstateWeb resource not found: ${method} ${path}`,
-      EstateWebErrorCode.NOT_FOUND,
+      NotificationType.ESTATEWEB_NOT_FOUND,
       HttpStatus.NOT_FOUND,
       { ...context, body: truncateBody(errorBody) },
     );
@@ -102,7 +102,7 @@ export function mapHttpStatusToException(
   if (status === 408 || status === 504) {
     return new EstateWebException(
       `EstateWeb request timed out (${status})`,
-      EstateWebErrorCode.REQUEST_TIMEOUT,
+      NotificationType.ESTATEWEB_REQUEST_TIMEOUT,
       HttpStatus.REQUEST_TIMEOUT,
       { ...context, body: truncateBody(errorBody) },
     );
@@ -111,7 +111,7 @@ export function mapHttpStatusToException(
   if (status === 429) {
     return new EstateWebException(
       'EstateWeb rate limit exceeded',
-      EstateWebErrorCode.RATE_LIMITED,
+      NotificationType.ESTATEWEB_RATE_LIMITED,
       HttpStatus.TOO_MANY_REQUESTS,
       { ...context, body: truncateBody(errorBody) },
     );
@@ -120,7 +120,7 @@ export function mapHttpStatusToException(
   if (status >= 500) {
     return new EstateWebException(
       `EstateWeb server error (${status})`,
-      EstateWebErrorCode.SERVER_ERROR,
+      NotificationType.ESTATEWEB_SERVER_ERROR,
       HttpStatus.BAD_GATEWAY,
       { ...context, body: truncateBody(errorBody) },
     );
@@ -128,7 +128,7 @@ export function mapHttpStatusToException(
 
   return new EstateWebException(
     `EstateWeb API ${method} ${path} failed with ${status}: ${truncateBody(errorBody)}`,
-    EstateWebErrorCode.API_ERROR,
+    NotificationType.ESTATEWEB_API_ERROR,
     HttpStatus.BAD_REQUEST,
     { ...context, body: truncateBody(errorBody) },
   );
@@ -137,8 +137,8 @@ export function mapHttpStatusToException(
 export function isUnauthorizedEstateWebError(error: unknown): boolean {
   if (error instanceof EstateWebException) {
     return (
-      error.code === EstateWebErrorCode.UNAUTHORIZED ||
-      error.code === EstateWebErrorCode.SESSION_EXPIRED
+      error.code === NotificationType.ESTATEWEB_UNAUTHORIZED ||
+      error.code === NotificationType.ESTATEWEB_SESSION_EXPIRED
     );
   }
 
