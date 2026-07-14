@@ -10,6 +10,7 @@ export const Routes = {
             list: "/dashboard/properties",
             detail: (id: string) => `/dashboard/properties/${id}`,
         },
+        integrations: "/dashboard/integrations",
     },
     admin: {
         root: "/admin",
@@ -38,5 +39,9 @@ export const Routes = {
             detail: (id: string) => `/admin/properties/${id}`,
         },
         notifications: "/admin/notifications",
+        integrationTargets: {
+            list: "/admin/integration-targets",
+            detail: (id: string) => `/admin/integration-targets/${id}`,
+        },
     },
 };

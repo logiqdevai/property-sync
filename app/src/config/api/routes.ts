@@ -68,6 +68,22 @@ export const ApiRoutes = {
             markRead: (id: string) => `/admin/notifications/${id}/read`,
             markAllRead: "/admin/notifications/read-all",
         },
+        integrationTargets: {
+            prefix: "/admin/integration-targets",
+            list: "/admin/integration-targets",
+            detail: (id: string) => `/admin/integration-targets/${id}`,
+            visibility: (id: string) => `/admin/integration-targets/${id}/visibility`,
+            accounts: (id: string) => `/admin/integration-targets/${id}/accounts`,
+            account: (id: string, userIntegrationId: string) =>
+                `/admin/integration-targets/${id}/accounts/${userIntegrationId}`,
+        },
+    },
+    integrations: {
+        prefix: "/integrations",
+        targets: "/integrations/targets",
+        connections: "/integrations/connections",
+        connection: (id: string) => `/integrations/connections/${id}`,
+        connectionStatus: (id: string) => `/integrations/connections/${id}/status`,
     },
     agencies: {
         prefix: "/agencies",

@@ -20,6 +20,7 @@ import { UserIntegrationsModule } from './modules/user-integrations/user-integra
 import { UserTrackedAgenciesModule } from './modules/user-tracked-agencies/user-tracked-agencies.module';
 import { UserPropertiesModule } from './modules/user-properties/user-properties.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { IntegrationTargetsModule } from './modules/integration-targets/integration-targets.module';
 import { QueuesModule } from './core/queues/queues.module';
 import { ConfigModule } from './shared/config/env/env.module';
 
@@ -47,6 +48,7 @@ import { ConfigModule } from './shared/config/env/env.module';
     UserTrackedAgenciesModule,
     UserPropertiesModule,
     NotificationsModule,
+    IntegrationTargetsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -24,6 +24,9 @@ import NotificationsListPage from "@/pages/admin/notifications";
 import DashboardAgenciesPage from "@/pages/dashboard/agencies";
 import DashboardPropertiesListPage from "@/pages/dashboard/properties";
 import DashboardPropertyDetailPage from "@/pages/dashboard/properties/detail";
+import DashboardIntegrationsPage from "@/pages/dashboard/integrations";
+import IntegrationTargetsListPage from "@/pages/admin/integration-targets";
+import IntegrationTargetDetailPage from "@/pages/admin/integration-targets/detail";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
 
 export default function AppRoutes() {
@@ -56,6 +59,7 @@ export default function AppRoutes() {
         <Route path="agencies" element={<DashboardAgenciesPage />} />
         <Route path="properties" element={<DashboardPropertiesListPage />} />
         <Route path="properties/:id" element={<DashboardPropertyDetailPage />} />
+        <Route path="integrations" element={<DashboardIntegrationsPage />} />
       </Route>
 
       {/* Admin routes */}
@@ -86,6 +90,8 @@ export default function AppRoutes() {
         <Route path="properties" element={<PropertiesListPage />} />
         <Route path="properties/:id" element={<PropertyDetailPage />} />
         <Route path="notifications" element={<NotificationsListPage />} />
+        <Route path="integration-targets" element={<IntegrationTargetsListPage />} />
+        <Route path="integration-targets/:id" element={<IntegrationTargetDetailPage />} />
       </Route>
 
       {/* Default redirect */}

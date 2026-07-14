@@ -6,10 +6,10 @@
 > before writing code. Update this file when deliverables are verified.
 
 **Last updated:** 2026-07-14
-**Overall progress:** 70% (Feature 08 tasks 01–02 done — notifications API + triggers + admin UI; smoke test still pending)
-**Current focus:** Feature 09 — `docs/plan/tasks/feature-09-cms-config/01-cms-targets-admin-api.md`
+**Overall progress:** 70% (Feature 09 tasks 01–04 done — integration targets + user connections API/UI; smoke test still pending)
+**Current focus:** Feature 10 — `docs/plan/tasks/feature-10-dashboard-and-users/01-dashboard-and-users-api.md`
 **Path correction:** the reference CLI referenced throughout this file as `scraper-generator/...` actually lives at `scripts/scraper-generator/...` (moved there in commit `363ef61`) — paths below have been corrected. If a future session still can't find it, run `git log --all --diff-filter=A --name-only | grep scraper-generator` to relocate it.
-**Dependency note:** Feature 04 task 01 needed `UserIntegrationsService.resolveActiveApiKey` / `resolveForSourceAgency`, which is formally Feature 09's deliverable but Feature 09 hasn't started yet. A **minimal** `api/src/modules/user-integrations/` module was added out-of-order containing just those two resolver methods (matching the contract in `directions/03-domain-model.md`'s `UserIntegration AI credential rule`) — no controllers/DTOs/CRUD. When Feature 09 is implemented, extend this module in place (add `integration-targets` module + this module's admin/user CRUD endpoints) rather than recreating it.
+**Dependency note:** Feature 04 task 01 needed `UserIntegrationsService.resolveActiveApiKey` / `resolveForSourceAgency`, which was added out-of-order as a minimal resolver-only module before Feature 09 landed. Feature 09 extended that module in place with full user-scoped CRUD + added the separate `integration-targets` admin module — no recreation needed.
 **Local testing gap:** `GCS_PROJECT_ID`/`GCS_BUCKET_NAME` are unset in `api/.env.local`, so `ScreenshotStorageService` (used by the computer-use loop) can't upload screenshots locally, and there's no real `UserIntegration.api_key_secret` for Anthropic (a placeholder key was used for testing — real API calls would 401). Feature 04's happy path (`AWAITING_REVIEW` with a real AI-produced config, all the way through to an approved active `ScraperVersion`) is therefore **not yet verified against a real target site** — the failure path and the full UI flow around it (trigger → live replay → terminal state) are (see Feature 04 checklist). To fully verify, either configure a real GCS bucket + Anthropic key in `.env.local`, or accept this gap and verify later once real credentials exist.
 
 ---
@@ -39,7 +39,7 @@
 | 06 | Property Normalization & Admin Properties | in progress | 90% | 3 files |
 | 07 | User Tracked Agencies & UserProperty | in progress | 90% | 3 files |
 | 08 | Notifications | in progress | 90% | 2 files |
-| 09 | CMS Targets & User Integrations (config only) | not started | 0% | 4 files |
+| 09 | CMS Targets & User Integrations (config only) | in progress | 90% | 4 files |
 | 10 | Dashboard Home & Users Admin | not started | 0% | 2 files |
 
 Overall % = completed features / 10 (a feature counts as complete only when its Definition of done is met).
@@ -447,8 +447,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **Description:** Admins define supported integration targets (CMS + AI providers); users connect/manage their own credentials. AI features bill each user's stored API key. No CMS sync execution.
 
-**Status:** not started
-**Progress:** 0%
+**Status:** in progress
+**Progress:** 90% (tasks 01–04 done — admin targets API + user connections API + frontend data layer + admin/user UI; smoke test still pending)
 
 ### References
 
@@ -462,25 +462,35 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 | File | Status |
 |------|--------|
-| `tasks/feature-09-cms-config/01-cms-targets-admin-api.md` | ready |
-| `tasks/feature-09-cms-config/02-user-cms-api.md` | ready |
-| `tasks/feature-09-cms-config/03-cms-frontend-data.md` | ready |
-| `tasks/feature-09-cms-config/04-cms-admin-and-user-ui.md` | ready |
+| `tasks/feature-09-cms-config/01-cms-targets-admin-api.md` | done |
+| `tasks/feature-09-cms-config/02-user-cms-api.md` | done |
+| `tasks/feature-09-cms-config/03-cms-frontend-data.md` | done |
+| `tasks/feature-09-cms-config/04-cms-admin-and-user-ui.md` | done |
 
 ### Implementation checklist
 
 **API (`api/`)**
-- [ ] `api/src/modules/integration-targets/` (admin CRUD + connected-accounts management)
-- [ ] `api/src/modules/user-integrations/` (user-scoped connect/edit/enable/disable/disconnect + exported `resolveActiveApiKey` / `resolveForSourceAgency` for Features 04/06)
-- [ ] Never create a `CmsSyncRun` row anywhere in this feature
+- [x] `api/src/modules/integration-targets/` — admin CRUD + visibility + connected-accounts management; credential masking (`mask-credentials.util.ts`), auth-type validation (`credential-fields.util.ts`); delete blocked when connections exist; `allow_multiple: false` → 400 on duplicate user connection
+- [x] Admin endpoints: `GET/POST /admin/integration-targets`, `GET/PATCH/DELETE /admin/integration-targets/:id`, `PATCH .../visibility`, `POST .../accounts`, `PATCH .../accounts/:userIntegrationId`
+- [x] `api/src/modules/user-integrations/` — extended in place with user-scoped connect/edit/enable/disable/disconnect; kept exported `resolveActiveApiKey` / `resolveForSourceAgency` for Features 04/06
+- [x] User endpoints: `GET /integrations/targets`, `GET/POST /integrations/connections`, `PATCH /integrations/connections/:id`, `PATCH .../status`, `DELETE .../connections/:id` (204); ownership checks return 404
+- [x] No `CmsSyncRun` create/read/update anywhere in either module (only Prisma generated types reference the model)
+- [x] `IntegrationTargetsModule` registered in `app.module.ts`
+- [x] `tsc --noEmit` passes in `api/`
 
 **App (`app/`)**
-- [ ] `app/src/features/integration-targets/`, `app/src/features/user-integrations/`
-- [ ] `/admin/integration-targets` list/detail (full admin CRUD + connected accounts table with masked credentials) — **not started**
-- [ ] `/integrations` (user) — visible targets, connect form (fields per `auth_type`), connected accounts with enable/disable/edit/disconnect
+- [x] `app/src/features/integration-targets/` — interfaces, services, hooks, `integration-target-form.tsx`
+- [x] `app/src/features/user-integrations/` — interfaces, services, hooks, Zod discriminated-union schema, `integration-credential-fields.tsx`
+- [x] `/admin/integration-targets` list (search + type/auth_type/visibility filters + pagination) + create modal
+- [x] `/admin/integration-targets/:id` detail — edit target, connected accounts table (masked credentials), add/edit account modals (User ID field), delete confirm
+- [x] `/dashboard/integrations` — visible targets card grid, connect/edit/disconnect flows, enable/disable toggle
+- [x] Sidebar nav: admin "Integration Targets", user "Integrations"; routes wired in `routes.ts` + `routes/index.tsx`
+- [x] Bug fixes during build: `password-input.tsx` (HeroUI `Input`), `confirmation-dialog.tsx` (Modal instead of broken AlertDialog `state` prop)
+- [x] `tsc -b` passes in `app/` (zero errors)
 
 **Verification**
 - [ ] Smoke test: admin creates an `IntegrationTarget`, user connects to it, edits credentials, disables, disconnects — no sync job is ever created
+- [ ] Smoke test: `allow_multiple: false` target rejects a second connection with 400
 
 **Definition of done:** Admins and users can fully manage integration connections; confirmed no sync execution occurs anywhere in the codebase.
 

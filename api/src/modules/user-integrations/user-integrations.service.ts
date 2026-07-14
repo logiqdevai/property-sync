@@ -1,18 +1,24 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { AiProvider, IntegrationType } from 'generated/prisma';
+import {
+  applyCredentialFields,
+  validateCredentialsForAuthType,
+} from '@/modules/integration-targets/utils/credential-fields.util';
+import { maskUserIntegration } from '@/modules/integration-targets/utils/mask-credentials.util';
+import {
+  CreateUserIntegrationDto,
+  UpdateUserIntegrationDto,
+} from './dto/user-integration.dto';
 import {
   ResolvedApiKey,
   ResolvedSourceAgencyApiKey,
 } from './interfaces/user-integration.interface';
 
-/**
- * Minimal Feature 09 dependency surface consumed by Feature 04 (AI generation) and
- * Feature 06 (property normalization). Full admin/user CRUD for IntegrationTarget /
- * UserIntegration is built out in Feature 09 — this only implements the credential
- * resolver contract documented in docs/plan/directions/03-domain-model.md so those
- * later features aren't blocked on ordering.
- */
 @Injectable()
 export class UserIntegrationsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -55,7 +61,6 @@ export class UserIntegrationsService {
       orderBy: { created_at: 'asc' },
     });
 
-    // AiProvider and IntegrationType share member names (OPENAI/ANTHROPIC/GEMINI) by design.
     const integrationType = aiProvider as unknown as IntegrationType;
 
     for (const tracker of trackers) {
@@ -78,5 +83,200 @@ export class UserIntegrationsService {
     }
 
     return null;
+  }
+
+  async findVisibleTargets(userId: string) {
+    const [targets, connections] = await Promise.all([
+      this.prisma.integrationTarget.findMany({
+        where: { is_visible: true },
+        orderBy: { integration_type: 'asc' },
+      }),
+      this.prisma.userIntegration.findMany({
+        where: { user_id: userId },
+        select: { integration_target_id: true },
+      }),
+    ]);
+
+    const connectedTargetIds = new Set(
+      connections.map((connection) => connection.integration_target_id),
+    );
+
+    return targets.map((target) => ({
+      ...target,
+      is_connected: connectedTargetIds.has(target.id),
+    }));
+  }
+
+  async findUserConnections(userId: string) {
+    const connections = await this.prisma.userIntegration.findMany({
+      where: { user_id: userId },
+      orderBy: { created_at: 'desc' },
+      include: {
+        integration_target: {
+          select: {
+            id: true,
+            integration_type: true,
+            auth_type: true,
+            base_url: true,
+            allow_multiple: true,
+            is_visible: true,
+          },
+        },
+      },
+    });
+
+    return connections.map((connection) => ({
+      ...maskUserIntegration(connection),
+      integration_target: connection.integration_target,
+    }));
+  }
+
+  async createConnection(userId: string, dto: CreateUserIntegrationDto) {
+    const target = await this.prisma.integrationTarget.findUnique({
+      where: { id: dto.integration_target_id },
+    });
+
+    if (!target || !target.is_visible) {
+      throw new NotFoundException('Integration target not found');
+    }
+
+    if (!target.allow_multiple) {
+      const existing = await this.prisma.userIntegration.findFirst({
+        where: {
+          user_id: userId,
+          integration_target_id: target.id,
+        },
+      });
+
+      if (existing) {
+        throw new BadRequestException(
+          'You already have a connection to this integration target',
+        );
+      }
+    }
+
+    validateCredentialsForAuthType(target.auth_type, dto);
+
+    const connection = await this.prisma.userIntegration.create({
+      data: {
+        user_id: userId,
+        integration_target_id: target.id,
+        ...applyCredentialFields(dto),
+      },
+      include: {
+        integration_target: {
+          select: {
+            id: true,
+            integration_type: true,
+            auth_type: true,
+            base_url: true,
+            allow_multiple: true,
+            is_visible: true,
+          },
+        },
+      },
+    });
+
+    return {
+      ...maskUserIntegration(connection),
+      integration_target: connection.integration_target,
+    };
+  }
+
+  async updateConnection(
+    userId: string,
+    connectionId: string,
+    dto: UpdateUserIntegrationDto,
+  ) {
+    const connection = await this.findOwnedConnection(userId, connectionId);
+    const credentialData = applyCredentialFields(dto);
+
+    if (Object.keys(credentialData).length > 0) {
+      validateCredentialsForAuthType(connection.integration_target.auth_type, {
+        api_key_secret:
+          (dto.api_key_secret ?? connection.api_key_secret) || undefined,
+        email: (dto.email ?? connection.email) || undefined,
+        username: (dto.username ?? connection.username) || undefined,
+        password: (dto.password ?? connection.password) || undefined,
+        config:
+          dto.config ??
+          (connection.config as Record<string, unknown> | undefined),
+      });
+    }
+
+    const updated = await this.prisma.userIntegration.update({
+      where: { id: connectionId },
+      data: credentialData,
+      include: {
+        integration_target: {
+          select: {
+            id: true,
+            integration_type: true,
+            auth_type: true,
+            base_url: true,
+            allow_multiple: true,
+            is_visible: true,
+          },
+        },
+      },
+    });
+
+    return {
+      ...maskUserIntegration(updated),
+      integration_target: updated.integration_target,
+    };
+  }
+
+  async updateConnectionStatus(
+    userId: string,
+    connectionId: string,
+    isActive: boolean,
+  ) {
+    await this.findOwnedConnection(userId, connectionId);
+
+    const updated = await this.prisma.userIntegration.update({
+      where: { id: connectionId },
+      data: { is_active: isActive },
+      include: {
+        integration_target: {
+          select: {
+            id: true,
+            integration_type: true,
+            auth_type: true,
+            base_url: true,
+            allow_multiple: true,
+            is_visible: true,
+          },
+        },
+      },
+    });
+
+    return {
+      ...maskUserIntegration(updated),
+      integration_target: updated.integration_target,
+    };
+  }
+
+  async deleteConnection(userId: string, connectionId: string) {
+    await this.findOwnedConnection(userId, connectionId);
+    await this.prisma.userIntegration.delete({ where: { id: connectionId } });
+  }
+
+  private async findOwnedConnection(userId: string, connectionId: string) {
+    const connection = await this.prisma.userIntegration.findFirst({
+      where: {
+        id: connectionId,
+        user_id: userId,
+      },
+      include: {
+        integration_target: true,
+      },
+    });
+
+    if (!connection) {
+      throw new NotFoundException('Integration connection not found');
+    }
+
+    return connection;
   }
 }

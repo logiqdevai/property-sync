@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { AlertDialog, Button, useOverlayState } from "@heroui/react";
+import { Modal, Button, useOverlayState } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 
 export type ConfirmationDialogState = ReturnType<typeof useOverlayState>;
@@ -33,21 +33,18 @@ export function ConfirmationDialog({
   };
 
   return (
-    <AlertDialog state={state}>
-      <AlertDialog.Backdrop isDismissable={!isPending} />
-      <AlertDialog.Container>
-        <AlertDialog.Dialog>
-          <AlertDialog.Header>
-            <AlertDialog.Icon />
-            <AlertDialog.Heading>{title}</AlertDialog.Heading>
-          </AlertDialog.Header>
-          {description ? <AlertDialog.Body>{description}</AlertDialog.Body> : null}
-          <AlertDialog.Footer>
-            <AlertDialog.CloseTrigger>
-              <Button variant="secondary" isDisabled={isPending}>
-                {cancelLabel}
-              </Button>
-            </AlertDialog.CloseTrigger>
+    <Modal state={state}>
+      <Modal.Backdrop isDismissable={!isPending} />
+      <Modal.Container>
+        <Modal.Dialog>
+          <Modal.Header>
+            <Modal.Heading>{title}</Modal.Heading>
+          </Modal.Header>
+          {description ? <Modal.Body>{description}</Modal.Body> : null}
+          <Modal.Footer>
+            <Button variant="secondary" isDisabled={isPending} onPress={state.close}>
+              {cancelLabel}
+            </Button>
             <ActionButtonWithPending
               variant="danger"
               isPending={isPending}
@@ -56,9 +53,9 @@ export function ConfirmationDialog({
             >
               {confirmLabel}
             </ActionButtonWithPending>
-          </AlertDialog.Footer>
-        </AlertDialog.Dialog>
-      </AlertDialog.Container>
-    </AlertDialog>
+          </Modal.Footer>
+        </Modal.Dialog>
+      </Modal.Container>
+    </Modal>
   );
 }
