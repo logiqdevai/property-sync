@@ -6,8 +6,8 @@
 > before writing code. Update this file when deliverables are verified.
 
 **Last updated:** 2026-07-14
-**Overall progress:** 70% (Feature 09 tasks 01–04 done — integration targets + user connections API/UI; smoke test still pending)
-**Current focus:** Feature 10 — `docs/plan/tasks/feature-10-dashboard-and-users/01-dashboard-and-users-api.md`
+**Overall progress:** 90% (Feature 10 tasks 01–02 done — dashboard KPIs + users admin API/UI; cross-feature smoke tests still pending for Features 05–10)
+**Current focus:** Final verification — exercise Features 02–10 in the running app and close remaining smoke-test checklists
 **Path correction:** the reference CLI referenced throughout this file as `scraper-generator/...` actually lives at `scripts/scraper-generator/...` (moved there in commit `363ef61`) — paths below have been corrected. If a future session still can't find it, run `git log --all --diff-filter=A --name-only | grep scraper-generator` to relocate it.
 **Dependency note:** Feature 04 task 01 needed `UserIntegrationsService.resolveActiveApiKey` / `resolveForSourceAgency`, which was added out-of-order as a minimal resolver-only module before Feature 09 landed. Feature 09 extended that module in place with full user-scoped CRUD + added the separate `integration-targets` admin module — no recreation needed.
 **Local testing gap:** `GCS_PROJECT_ID`/`GCS_BUCKET_NAME` are unset in `api/.env.local`, so `ScreenshotStorageService` (used by the computer-use loop) can't upload screenshots locally, and there's no real `UserIntegration.api_key_secret` for Anthropic (a placeholder key was used for testing — real API calls would 401). Feature 04's happy path (`AWAITING_REVIEW` with a real AI-produced config, all the way through to an approved active `ScraperVersion`) is therefore **not yet verified against a real target site** — the failure path and the full UI flow around it (trigger → live replay → terminal state) are (see Feature 04 checklist). To fully verify, either configure a real GCS bucket + Anthropic key in `.env.local`, or accept this gap and verify later once real credentials exist.
@@ -40,7 +40,7 @@
 | 07 | User Tracked Agencies & UserProperty | in progress | 90% | 3 files |
 | 08 | Notifications | in progress | 90% | 2 files |
 | 09 | CMS Targets & User Integrations (config only) | in progress | 90% | 4 files |
-| 10 | Dashboard Home & Users Admin | not started | 0% | 2 files |
+| 10 | Dashboard Home & Users Admin | in progress | 90% | 2 files |
 
 Overall % = completed features / 10 (a feature counts as complete only when its Definition of done is met).
 
@@ -500,8 +500,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **Description:** The admin dashboard home shows real aggregated KPIs and activity across every feature above, and admins can inspect any user's full footprint.
 
-**Status:** not started
-**Progress:** 0%
+**Status:** in progress
+**Progress:** 90% (tasks 01–02 done — dashboard aggregation API + admin users API + dashboard home UI + users admin UI; smoke test still pending)
 
 ### References
 
@@ -514,22 +514,29 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 | File | Status |
 |------|--------|
-| `tasks/feature-10-dashboard-and-users/01-dashboard-and-users-api.md` | ready |
-| `tasks/feature-10-dashboard-and-users/02-dashboard-and-users-frontend.md` | ready |
+| `tasks/feature-10-dashboard-and-users/01-dashboard-and-users-api.md` | done |
+| `tasks/feature-10-dashboard-and-users/02-dashboard-and-users-frontend.md` | done |
 
 ### Implementation checklist
 
 **API (`api/`)**
-- [ ] `api/src/modules/dashboard/` — single aggregation endpoint (KPIs listed in spec §4.1 + recent activity feed) using `Promise.all()` for independent counts
-- [ ] `api/src/modules/users/` — admin list/detail with tracked agencies, saved properties (+ `is_modified`), `user_integrations`
+- [x] `api/src/modules/dashboard/` — `GET /admin/dashboard` with all spec §4.1 KPIs via parallel `Promise.all()` counts + merged activity feed (crawls, failed crawls, listings created/removed, broken scrapers, generation runs; top 20 by recency)
+- [x] `api/src/modules/users/admin-users.controller.ts` — `GET /admin/users` (paginated, search, role filter) + `GET /admin/users/:id` (tracked agencies, saved properties with `is_modified`, masked `user_integrations`)
+- [x] Extended `UsersService` in place; `UsersController` (`GET /users/me`) unchanged
+- [x] `DashboardModule` registered in `app.module.ts`
+- [x] `tsc --noEmit` passes in `api/`
 
 **App (`app/`)**
-- [ ] `app/src/features/dashboard/`, extend `app/src/features/users/` (interfaces already exist) with admin hooks
-- [ ] `/admin` (Dashboard Home) — KPI cards + deep-linking activity feed
-- [ ] `/admin/users` list + detail
+- [x] `app/src/features/dashboard/` — interfaces, services, `useDashboard()` with 60s refetch
+- [x] `app/src/features/users/` — admin interfaces, services, `useAdminUsers` / `useAdminUser` hooks
+- [x] `/admin` — real KPI dashboard (grouped cards: Scrapers, Agencies, Properties, Queue, AI & Integrations) + deep-linking activity feed
+- [x] `/admin/users` list (search + role filter + pagination) + detail (tracked agencies, saved properties with edited badge, integration connections with enable/disable via Feature 09 admin account mutation)
+- [x] Sidebar nav item "Users"; `ApiRoutes.admin.dashboard` + `ApiRoutes.admin.users` wired
+- [x] `tsc -b` passes in `app/` (zero errors)
 
 **Verification**
-- [ ] Smoke test: dashboard KPI counts match the real data created by exercising Features 02–09
+- [ ] Smoke test: exercise Features 02–09 (create agency, run scraper, generate with AI, track as user, connect integration) and confirm dashboard KPIs + activity feed reflect real data
+- [ ] Smoke test: `/admin/users` lists seed users; user detail shows tracked agencies, properties, and masked integrations
 
 **Definition of done:** Dashboard Home and the Users subpage reflect live platform data, completing the current-phase admin experience end to end.
 

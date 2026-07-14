@@ -1,5 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { maskUserIntegration } from '@/modules/integration-targets/utils/mask-credentials.util';
+import { UserQueryType } from './dto/user-query.schema';
+
+export interface PaginatedUsersResult {
+    data: Array<{
+        id: string;
+        email: string;
+        phone: string | null;
+        role: string;
+        created_at: Date;
+        updated_at: Date;
+    }>;
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        total_pages: number;
+        has_next: boolean;
+        has_prev: boolean;
+    };
+}
 
 @Injectable()
 export class UsersService {
@@ -17,5 +38,109 @@ export class UsersService {
         delete user.password;
 
         return user;
+    }
+
+    async findAllAdmin(query: UserQueryType): Promise<PaginatedUsersResult> {
+        const where = {
+            ...(query.search && {
+                OR: [
+                    { email: { contains: query.search, mode: 'insensitive' as const } },
+                    { phone: { contains: query.search, mode: 'insensitive' as const } },
+                ],
+            }),
+            ...(query.role && { role: query.role }),
+        };
+
+        const [items, total] = await Promise.all([
+            this.prisma.user.findMany({
+                where,
+                skip: (query.page - 1) * query.limit,
+                take: query.limit,
+                orderBy: { created_at: 'desc' },
+                select: {
+                    id: true,
+                    email: true,
+                    phone: true,
+                    role: true,
+                    created_at: true,
+                    updated_at: true,
+                },
+            }),
+            this.prisma.user.count({ where }),
+        ]);
+
+        return {
+            data: items,
+            pagination: {
+                page: query.page,
+                limit: query.limit,
+                total,
+                total_pages: Math.ceil(total / query.limit),
+                has_next: query.page < Math.ceil(total / query.limit),
+                has_prev: query.page > 1,
+            },
+        };
+    }
+
+    async findOneAdmin(id: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                email: true,
+                phone: true,
+                role: true,
+                created_at: true,
+                updated_at: true,
+                tracked_agencies: {
+                    include: {
+                        source_agency: {
+                            select: { id: true, name: true, base_url: true, status: true },
+                        },
+                    },
+                    orderBy: { created_at: 'desc' },
+                },
+                saved_properties: {
+                    select: {
+                        id: true,
+                        property_id: true,
+                        title: true,
+                        city: true,
+                        price: true,
+                        currency: true,
+                        status: true,
+                        is_modified: true,
+                        last_synced_at: true,
+                        created_at: true,
+                        updated_at: true,
+                    },
+                    orderBy: { updated_at: 'desc' },
+                },
+                user_integrations: {
+                    include: {
+                        integration_target: {
+                            select: {
+                                id: true,
+                                integration_type: true,
+                                auth_type: true,
+                                base_url: true,
+                            },
+                        },
+                    },
+                    orderBy: { created_at: 'desc' },
+                },
+            },
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        return {
+            ...user,
+            user_integrations: user.user_integrations.map((integration) =>
+                maskUserIntegration(integration),
+            ),
+        };
     }
 }

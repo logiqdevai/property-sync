@@ -43,5 +43,9 @@ export const Routes = {
             list: "/admin/integration-targets",
             detail: (id: string) => `/admin/integration-targets/${id}`,
         },
+        users: {
+            list: "/admin/users",
+            detail: (id: string) => `/admin/users/${id}`,
+        },
     },
 };

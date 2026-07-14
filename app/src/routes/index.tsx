@@ -7,7 +7,7 @@ import AuthLayout from "@/pages/auth/layout";
 import DashboardLayout from "@/pages/dashboard/layout";
 import DashboardHome from "@/pages/dashboard";
 import AdminLayout from "@/pages/admin/layout";
-import AdminHome from "@/pages/admin";
+import AdminDashboardPage from "@/pages/admin/dashboard";
 import AgenciesListPage from "@/pages/admin/agencies";
 import AgencyDetailPage from "@/pages/admin/agencies/detail";
 import ScrapersListPage from "@/pages/admin/scrapers";
@@ -27,6 +27,8 @@ import DashboardPropertyDetailPage from "@/pages/dashboard/properties/detail";
 import DashboardIntegrationsPage from "@/pages/dashboard/integrations";
 import IntegrationTargetsListPage from "@/pages/admin/integration-targets";
 import IntegrationTargetDetailPage from "@/pages/admin/integration-targets/detail";
+import AdminUsersListPage from "@/pages/admin/users";
+import AdminUserDetailPage from "@/pages/admin/users/detail";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
 
 export default function AppRoutes() {
@@ -76,7 +78,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<AdminHome />} />
+        <Route index element={<AdminDashboardPage />} />
         <Route path="agencies" element={<AgenciesListPage />} />
         <Route path="agencies/:id" element={<AgencyDetailPage />} />
         <Route path="scrapers" element={<ScrapersListPage />} />
@@ -92,6 +94,8 @@ export default function AppRoutes() {
         <Route path="notifications" element={<NotificationsListPage />} />
         <Route path="integration-targets" element={<IntegrationTargetsListPage />} />
         <Route path="integration-targets/:id" element={<IntegrationTargetDetailPage />} />
+        <Route path="users" element={<AdminUsersListPage />} />
+        <Route path="users/:id" element={<AdminUserDetailPage />} />
       </Route>
 
       {/* Default redirect */}

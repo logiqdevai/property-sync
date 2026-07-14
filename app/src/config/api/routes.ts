@@ -77,6 +77,14 @@ export const ApiRoutes = {
             account: (id: string, userIntegrationId: string) =>
                 `/admin/integration-targets/${id}/accounts/${userIntegrationId}`,
         },
+        dashboard: {
+            root: "/admin/dashboard",
+        },
+        users: {
+            prefix: "/admin/users",
+            list: "/admin/users",
+            detail: (id: string) => `/admin/users/${id}`,
+        },
     },
     integrations: {
         prefix: "/integrations",
