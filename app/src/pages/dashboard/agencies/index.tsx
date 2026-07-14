@@ -14,7 +14,7 @@ import { RoleGate } from "@/components/providers/role-gate";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
-import { TrackedAgencyIntegrationLink } from "./components/tracked-agency-integration-link";
+import { TrackedAgencyIntegrationLink } from "@/pages/dashboard/components/tracked-agency-integration-link";
 import {
   useTrackableAgencies,
   useTrackAgency,

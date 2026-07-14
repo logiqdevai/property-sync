@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ListBox, Label, Select, Skeleton, useOverlayState } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { CredentialStatusIndicators } from "./integration-credential-fields";
+import { CredentialStatusIndicators } from "@/pages/dashboard/agencies/components/integration-credential-fields";
 import { useUserIntegrationConnections } from "@/features/user-integrations/hooks/use-user-integrations";
 import {
   useLinkIntegration,
@@ -16,6 +16,7 @@ import {
 import { getIntegrationTypeLabel } from "@/features/integration-targets/utils/integration-type-label.utils";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { Routes } from "@/routes/routes";
+import { CmsIntegrationDescription } from "./cms-integration-description";
 
 type TrackedAgencyIntegrationLinkProps = {
   agencyId: string;
@@ -75,13 +76,7 @@ export function TrackedAgencyIntegrationLink({
 
   return (
     <div className="flex flex-col gap-3 border-t border-border pt-4">
-      <div>
-        <p className="text-sm font-medium text-foreground">CMS integration</p>
-        <p className="text-xs text-muted">
-          Link one {getIntegrationTypeLabel(IntegrationTypes.ESTATEWEB)} connection to this tracked
-          agency for future property sync.
-        </p>
-      </div>
+      <CmsIntegrationDescription context="agency" />
 
       {connectionsPending ? (
         <Skeleton className="h-10 w-full rounded-lg" />

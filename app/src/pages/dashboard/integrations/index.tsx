@@ -25,7 +25,10 @@ import {
   type ConnectCredentialsFormValues,
 } from "@/features/user-integrations/validation-schemas/user-integrations.schema";
 import { getIntegrationTypeLabel } from "@/features/integration-targets/utils/integration-type-label.utils";
+import { getIntegrationTypeDescription } from "@/config/constants/dropdowns/integration-type-description.options";
 import { getAuthTypeLabel } from "@/features/integration-targets/utils/auth-type-label.utils";
+import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
+import { LinkConnectionToAgencyModal } from "./components/link-connection-to-agency-modal";
 
 const VIEW_ONLY_INTEGRATION_MESSAGE =
   "View only — changes are disabled for this integration";
@@ -69,7 +72,10 @@ function TargetCard({
           <h2 className="text-lg font-semibold text-foreground">
             {getIntegrationTypeLabel(target.integration_type)}
           </h2>
-          <p className="text-sm text-muted">{getAuthTypeLabel(target.auth_type)}</p>
+          <p className="text-sm text-muted">
+            {getIntegrationTypeDescription(target.integration_type)}
+          </p>
+          <p className="text-xs text-muted">{getAuthTypeLabel(target.auth_type)}</p>
           {target.base_url && <p className="text-xs text-muted truncate">{target.base_url}</p>}
         </div>
         {(!target.is_connected || target.allow_multiple) ? (
@@ -134,6 +140,7 @@ export default function DashboardIntegrationsPage() {
   const connectModal = useOverlayState();
   const editModal = useOverlayState();
   const disconnectConfirm = useOverlayState();
+  const linkAgencyModal = useOverlayState();
 
   const [selectedTarget, setSelectedTarget] = useState<AvailableIntegrationTarget | null>(null);
   const [editingConnection, setEditingConnection] = useState<MaskedUserIntegrationConnection | null>(
@@ -141,6 +148,7 @@ export default function DashboardIntegrationsPage() {
   );
   const [disconnectingConnection, setDisconnectingConnection] =
     useState<MaskedUserIntegrationConnection | null>(null);
+  const [pendingLinkConnectionId, setPendingLinkConnectionId] = useState<string | null>(null);
 
   const { data: targets = [], isPending: targetsPending } = useAvailableIntegrationTargets();
   const { data: connections = [], isPending: connectionsPending } = useUserIntegrationConnections();
@@ -211,9 +219,14 @@ export default function DashboardIntegrationsPage() {
     });
 
     connectIntegration.mutate(mapConnectFormToPayload(selectedTarget.id, parsed), {
-      onSuccess: () => {
+      onSuccess: (connection) => {
         connectModal.close();
         setSelectedTarget(null);
+
+        if (selectedTarget.integration_type === IntegrationTypes.ESTATEWEB) {
+          setPendingLinkConnectionId(connection.id);
+          linkAgencyModal.open();
+        }
       },
     });
   });
@@ -395,6 +408,12 @@ export default function DashboardIntegrationsPage() {
         confirmLabel="Disconnect"
         onConfirm={handleDisconnect}
         isPending={disconnectIntegration.isPending}
+      />
+
+      <LinkConnectionToAgencyModal
+        state={linkAgencyModal}
+        connectionId={pendingLinkConnectionId}
+        onClose={() => setPendingLinkConnectionId(null)}
       />
     </div>
   );
