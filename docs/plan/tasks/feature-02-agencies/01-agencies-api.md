@@ -75,14 +75,14 @@ Implement the endpoints exactly as specified in
 
 ## Subtasks
 
-- [ ] Scaffold module/controller/service/DTOs
-- [ ] Apply the existing `ZodValidationPipe` (`api/src/shared/pipes/zod.validation.pipe.ts`)
+- [x] Scaffold module/controller/service/DTOs
+- [x] Apply the existing `ZodValidationPipe` (`api/src/shared/pipes/zod.validation.pipe.ts`)
       to the `GET /admin/agencies` query param via
       `@Query(new ZodValidationPipe(AgencyQuerySchema))`
-- [ ] Implement all endpoints from `directions/04-api-design.md` (including tracker crawl-interval PATCH)
-- [ ] Register module in `app.module.ts`
+- [x] Implement all endpoints from `directions/04-api-design.md` (including tracker crawl-interval PATCH)
+- [x] Register module in `app.module.ts`
 - [ ] Manual test every endpoint with curl/Postman using the seeded `ADMIN`
-      token from Feature 01
+      token from Feature 01 — pending: Feature 01's DB migration/seed hasn't been run yet (no local Postgres/Redis provisioned this session)
 
 ## Technical Notes
 

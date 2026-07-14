@@ -124,18 +124,18 @@ the service already handles errors).
 
 ## Subtasks
 
-- [ ] Create `api/.env` with real `DATABASE_URL`/`REDIS_URL`
-- [ ] Run `prisma migrate dev --name init`, confirm client regenerates without errors
-- [ ] Fix `email.service.ts` (`uuid` → `id` in both register and login)
-- [ ] Fix `auth-response.entity.ts`
-- [ ] Fix `jwt.strategy.ts`
-- [ ] Fix `jwt.guard.ts`
-- [ ] Fix empty catch in `email.controller.ts`
-- [ ] Build `UsersModule` with `GET /users/me`
-- [ ] Register `UsersModule` in `app.module.ts`
-- [ ] Write and run `prisma/seed.ts`
-- [ ] `npm run build` (or `nest build`) in `api/` with zero errors
-- [ ] Manually test with curl/Postman: register → login → call `GET /users/me` with the returned bearer token → 200 with correct user, no password field
+- [ ] Create `api/.env` with real `DATABASE_URL`/`REDIS_URL` — **deferred by request; no local Postgres/Redis provisioned in this session**
+- [ ] Run `prisma migrate dev --name init`, confirm client regenerates without errors — blocked on the above (generated client already matches current schema, so no `uuid`-stale-client issue was actually hit)
+- [x] Fix `email.service.ts` (`uuid` → `id` in both register and login)
+- [x] Fix `auth-response.entity.ts`
+- [x] Fix `jwt.strategy.ts`
+- [x] Fix `jwt.guard.ts`
+- [x] Fix empty catch in `email.controller.ts`
+- [x] Build `UsersModule` with `GET /users/me`
+- [x] Register `UsersModule` in `app.module.ts`
+- [x] Write `prisma/seed.ts` (not yet run — needs a migrated DB first)
+- [x] `npm run build` (`nest build`) in `api/` — zero errors in any file touched by this task; 14 pre-existing errors remain in `src/modules/stripe/stripe.service.ts` (references `PrismaService.account`, a model that doesn't exist in the current schema — `StripeModule` isn't imported into `AppModule` either, so this is unrelated dead code, out of scope here)
+- [ ] Manually test with curl/Postman: register → login → call `GET /users/me` with the returned bearer token → 200 with correct user, no password field — pending DB
 
 ## Technical Notes
 

@@ -5,9 +5,9 @@
 > implement next. Open the **References** paths for the active feature
 > before writing code. Update this file when deliverables are verified.
 
-**Last updated:** 2026-07-06
-**Overall progress:** 5% (0.5 / 10 features complete — Feature 01 partially pre-built)
-**Current focus:** Feature 01 — `Platform Foundation` → `tasks/feature-01-foundation/01-foundation-db-and-auth-api.md`
+**Last updated:** 2026-07-13
+**Overall progress:** 5% (0.5 / 10 features complete — Feature 01 and Feature 02 are both code-complete pending DB verification and a manual browser pass)
+**Current focus:** Provision a local Postgres/Redis instance, run `prisma migrate dev` + `prisma db seed`, then smoke-test Feature 01 (auth) and Feature 02 (Admin Shell & Agencies) end-to-end in a browser. No new feature code should be started until this verification pass happens — Features 01 and 02 are unverified against a real DB and real UI.
 
 ---
 
@@ -29,7 +29,7 @@
 | # | Feature | Status | Progress | Task files |
 |---|---------|--------|----------|------------|
 | 01 | Platform Foundation (DB, Auth, Roles) | in progress | 50% | 2 files |
-| 02 | Admin Shell & Agencies | not started | 0% | 3 files |
+| 02 | Admin Shell & Agencies | in progress | 85% | 3 files |
 | 03 | Scraper Management | not started | 0% | 3 files |
 | 04 | AI Computer-Use Scraper Generation | not started | 0% | 4 files |
 | 05 | Crawl Execution Engine & Job Queue | not started | 0% | 4 files |
@@ -70,20 +70,20 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 ### Implementation checklist
 
 **API (`api/`)**
-- [ ] Run initial Prisma migration (`npx prisma migrate dev --name init`) and regenerate client
-- [ ] `api/prisma/seed.ts` — seed `SUPER_ADMIN`, `ADMIN`, `USER`
-- [ ] Verify `POST /auth/email/register`, `POST /auth/email/login`, `GET /users/me` work against the migrated DB
-- [ ] Fix `JwtGuard` (`api/src/shared/guards/jwt.guard.ts`) — it currently wraps requests in `GqlExecutionContext`, which is GraphQL-specific; confirm it correctly resolves the Express `req` for pure REST controllers, fix if not
-- [ ] `RolesGuard` already implemented — confirm `@Roles()` + `SUPPORT` read-only behavior works as intended
+- [ ] Run initial Prisma migration (`npx prisma migrate dev --name init`) and regenerate client — **blocked: no local Postgres/Redis provisioned yet, deferred by request**
+- [x] `api/prisma/seed.ts` — seed `SUPER_ADMIN`, `ADMIN`, `USER`, `SUPPORT` (written, not yet run — needs migration first)
+- [ ] Verify `POST /auth/email/register`, `POST /auth/email/login`, `GET /users/me` work against the migrated DB — pending DB
+- [x] Fix `JwtGuard` (`api/src/shared/guards/jwt.guard.ts`) — removed `GqlExecutionContext` usage (API is pure REST, `GraphQLModule` is commented out); default `AuthGuard('jwt')` REST behavior now used
+- [ ] `RolesGuard` already implemented — confirm `@Roles()` + `SUPPORT` read-only behavior works as intended (pending DB smoke test)
 
 **App (`app/`)**
-- [ ] Confirm `role` is present on the logged-in user shape in `stores/auth.ts`
-- [ ] Add `Routes.admin.root` placeholder key
-- [ ] Extend/duplicate `ProtectedRoute` to support role-based redirect (non-admin roles bounced to `Routes.dashboard.root`)
-- [ ] Smoke test: register → login → land on `/dashboard`; manually set role to `ADMIN` in seed data and confirm an admin-only route is reachable
+- [x] Confirm `role` is present on the logged-in user shape in `stores/auth.ts` — already there, no change needed
+- [x] Add `Routes.admin.root` placeholder key
+- [x] Extend/duplicate `ProtectedRoute` to support role-based redirect (non-admin roles bounced to `Routes.dashboard.root`) — reused `ProtectedRoute` unmodified, nested two layers on the `/admin` route instead (see task 02 subtasks for why)
+- [ ] Smoke test: register → login → land on `/dashboard`; manually set role to `ADMIN` in seed data and confirm an admin-only route is reachable — pending DB
 
 **Verification**
-- [ ] Smoke test: new user can register, login, and reach `/dashboard`; an `ADMIN` seed user can reach a stub admin-only route
+- [ ] Smoke test: new user can register, login, and reach `/dashboard`; an `ADMIN` seed user can reach a stub admin-only route — pending DB
 
 **Definition of done:** A new user can register, log in, and reach `/dashboard`; an admin user is distinguishable by role and can be routed to admin-only pages once Feature 02 adds them.
 
@@ -93,8 +93,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **Description:** Admins have a dashboard shell (sidebar/navbar) and can fully manage `SourceAgency` records — the root entity every later feature depends on.
 
-**Status:** not started
-**Progress:** 0%
+**Status:** in progress
+**Progress:** 85% (API + frontend code complete and typechecked; not yet run against a real DB or exercised in a browser)
 
 ### References
 
@@ -108,25 +108,25 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 | File | Status |
 |------|--------|
-| `tasks/feature-02-agencies/01-agencies-api.md` | ready |
-| `tasks/feature-02-agencies/02-agencies-frontend-data.md` | ready |
-| `tasks/feature-02-agencies/03-admin-shell-and-agencies-ui.md` | ready |
+| `tasks/feature-02-agencies/01-agencies-api.md` | code done, pending DB verification |
+| `tasks/feature-02-agencies/02-agencies-frontend-data.md` | code done |
+| `tasks/feature-02-agencies/03-admin-shell-and-agencies-ui.md` | code done, pending manual browser test |
 
 ### Implementation checklist
 
 **API (`api/`)**
-- [ ] `api/src/modules/agencies/` — module, controller, service, DTOs, entity, interface
-- [ ] CRUD + status endpoints per `directions/04-api-design.md`
-- [ ] Guarded with `JwtGuard` + `RolesGuard` (`ADMIN`, `SUPER_ADMIN`; `SUPPORT` read-only)
+- [x] `api/src/modules/agencies/` — module, controller, service, DTOs, entity, interface
+- [x] CRUD + status endpoints per `directions/04-api-design.md` (create/list/get/update/status/visibility/delete/tracker-crawl-interval)
+- [x] Guarded with `JwtGuard` + `RolesGuard` (`ADMIN`, `SUPER_ADMIN`; `SUPPORT` read-only)
 
 **App (`app/`)**
-- [ ] `app/src/features/agencies/` — services, hooks, interfaces, schemas
-- [ ] `ApiRoutes.admin.agencies` + `Routes.admin.agencies`
-- [ ] `components/layout/admin-layout.tsx`, `admin-sidebar-content.tsx`, `admin-dashboard-navbar.tsx`
-- [ ] `/admin/agencies` list (search/filter by status/country/city/is_visible/is_enabled) + create/edit + enable/disable/archive + visibility toggles + detail stub (linked scrapers/crawl runs sections show empty state until Features 03/05 land)
+- [x] `app/src/features/agencies/` — services, hooks, interfaces, schemas
+- [x] `ApiRoutes.admin.agencies` + `Routes.admin.agencies`
+- [x] `pages/admin/layout.tsx` (sidebar chrome inlined here, see task 03 notes), `components/layout/admin-sidebar-content.tsx`, `admin-dashboard-navbar.tsx`
+- [x] `/admin/agencies` list (search + status filter + pagination, per task 03 requirement 6) + create/edit + enable/disable/archive + visibility toggles + detail page (linked scrapers/crawl runs/tracked-users sections show empty state until Features 03/05/07 land) — `tsc -b` passes with zero new errors
 
 **Verification**
-- [ ] Smoke test: admin logs in, opens Admin Shell, creates an agency, edits it, disables it, sees it reflected in the list
+- [ ] Smoke test: admin logs in, opens Admin Shell, creates an agency, edits it, disables it, sees it reflected in the list — pending: no local DB, and the app hasn't been run/clicked through in a browser this session
 
 **Definition of done:** An admin can fully manage source agencies from a working admin shell.
 

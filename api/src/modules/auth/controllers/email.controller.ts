@@ -24,11 +24,7 @@ export class EmailAuthController {
         description: 'Conflict - User with this email already exists'
     })
     async registerWithEmail(@Body() dto: RegisterEmailDto) {
-        try {
-            return this.authService.registerWithEmail(dto);
-
-        } catch (error) {
-        }
+        return this.authService.registerWithEmail(dto);
     }
 
     @Post('login')

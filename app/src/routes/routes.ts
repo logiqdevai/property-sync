@@ -6,4 +6,11 @@ export const Routes = {
     dashboard: {
         root: "/dashboard",
     },
+    admin: {
+        root: "/admin",
+        agencies: {
+            list: "/admin/agencies",
+            detail: (id: string) => `/admin/agencies/${id}`,
+        },
+    },
 };

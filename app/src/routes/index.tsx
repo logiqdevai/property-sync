@@ -6,6 +6,11 @@ import SignUp from "@/pages/auth/pages/sign-up";
 import AuthLayout from "@/pages/auth/layout";
 import DashboardLayout from "@/pages/dashboard/layout";
 import DashboardHome from "@/pages/dashboard";
+import AdminLayout from "@/pages/admin/layout";
+import AdminHome from "@/pages/admin";
+import AgenciesListPage from "@/pages/admin/agencies";
+import AgencyDetailPage from "@/pages/admin/agencies/detail";
+import { RoleTypes } from "@/features/user/interfaces/user.interface";
 
 export default function AppRoutes() {
   return (
@@ -34,6 +39,25 @@ export default function AppRoutes() {
         }
       >
         <Route index element={<DashboardHome />} />
+      </Route>
+
+      {/* Admin routes */}
+      <Route
+        path="/admin/*"
+        element={
+          <ProtectedRoute loggedIn={true}>
+            <ProtectedRoute
+              requiredRoles={[RoleTypes.ADMIN, RoleTypes.SUPER_ADMIN, RoleTypes.SUPPORT]}
+              fallbackPath={Routes.dashboard.root}
+            >
+              <AdminLayout />
+            </ProtectedRoute>
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminHome />} />
+        <Route path="agencies" element={<AgenciesListPage />} />
+        <Route path="agencies/:id" element={<AgencyDetailPage />} />
       </Route>
 
       {/* Default redirect */}

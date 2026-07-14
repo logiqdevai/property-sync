@@ -18,4 +18,13 @@ export const ApiRoutes = {
     google_maps: {
         timezone: "/google-maps/timezone",
     },
+    admin: {
+        agencies: {
+            prefix: "/admin/agencies",
+            list: "/admin/agencies",
+            detail: (id: string) => `/admin/agencies/${id}`,
+            status: (id: string) => `/admin/agencies/${id}/status`,
+            visibility: (id: string) => `/admin/agencies/${id}/visibility`,
+        },
+    },
 }

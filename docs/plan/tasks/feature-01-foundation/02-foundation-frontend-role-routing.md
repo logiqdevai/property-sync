@@ -55,11 +55,11 @@ not the real admin shell/sidebar (that is Feature 02, task
 
 ## Subtasks
 
-- [ ] Add `Routes.admin.root`
-- [ ] Create placeholder `pages/admin/index.tsx`
-- [ ] Add guarded route in `routes/index.tsx` using existing `ProtectedRoute`
-- [ ] Manual test: log in as the seeded `USER` (from task 01's seed) → confirm navigating to `/admin` redirects away
-- [ ] Manual test: log in as the seeded `ADMIN` → confirm `/admin` renders the placeholder
+- [x] Add `Routes.admin.root`
+- [x] Create placeholder `pages/admin/index.tsx`
+- [x] Add guarded route in `routes/index.tsx` using existing `ProtectedRoute` — nested two `ProtectedRoute` layers (outer `loggedIn={true}` with default `fallbackPath` for the unauthenticated case, inner `requiredRoles={[...]}` with `fallbackPath={Routes.dashboard.root}` for the wrong-role case) since the shared component uses one `fallbackPath` prop for both checks and the two cases need different redirect targets
+- [ ] Manual test: log in as the seeded `USER` (from task 01's seed) → confirm navigating to `/admin` redirects away — pending: task 01's DB/seed hasn't been run yet
+- [ ] Manual test: log in as the seeded `ADMIN` → confirm `/admin` renders the placeholder — pending: same blocker
 
 ## Technical Notes
 
