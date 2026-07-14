@@ -30,7 +30,7 @@ export class ComputerUseOrchestratorService {
     private readonly screenshotStorage: ScreenshotStorageService,
   ) {}
 
-  async run(generationRunId: string, apiKey: string): Promise<void> {
+  async run(generationRunId: string): Promise<void> {
     const run = await this.prisma.scraperGenerationRun.findUniqueOrThrow({
       where: { id: generationRunId },
       include: { source_agency: true },
@@ -82,7 +82,6 @@ export class ComputerUseOrchestratorService {
         });
 
         const { rawText } = await this.computerUseClient.sendStep(
-          apiKey,
           messages,
           GENERATION_SYSTEM_PROMPT,
           model,

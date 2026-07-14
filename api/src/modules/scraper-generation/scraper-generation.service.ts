@@ -6,13 +6,10 @@ import {
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { UserIntegrationsService } from '@/modules/user-integrations/user-integrations.service';
 import { GENERATION_QUEUE } from '@/core/queues/queues.constants';
 import {
-  AiProvider,
   GenerationRunStatus,
   GenerationTrigger,
-  IntegrationType,
   Prisma,
   ScraperStatus,
   ScraperVersionCreatedBy,
@@ -32,7 +29,6 @@ const TERMINAL_STATUSES: GenerationRunStatus[] = [
 export class ScraperGenerationService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly userIntegrationsService: UserIntegrationsService,
     @InjectQueue(GENERATION_QUEUE) private readonly generationQueue: Queue,
   ) {}
 
@@ -116,11 +112,6 @@ export class ScraperGenerationService {
   }
 
   async create(dto: CreateGenerationRunDto, initiatedByUserId: string) {
-    await this.userIntegrationsService.resolveActiveApiKey(
-      initiatedByUserId,
-      IntegrationType.ANTHROPIC,
-    );
-
     const run = await this.prisma.scraperGenerationRun.create({
       data: {
         source_agency_id: dto.source_agency_id,
@@ -133,39 +124,17 @@ export class ScraperGenerationService {
 
     await this.generationQueue.add('generate', {
       runId: run.id,
-      initiatedByUserId,
     });
 
     return run;
   }
 
-  /**
-   * Internal, non-HTTP entry point for Feature 05's broken-scraper self-heal detection.
-   * Non-MANUAL triggers have no admin initiator, so the Anthropic key is resolved from the
-   * agency's own enabled trackers instead of a caller-supplied user id.
-   */
   async trigger(
     sourceAgencyId: string,
     scraperId: string | null,
     trigger: GenerationTrigger,
     prompt?: string,
   ) {
-    let initiatedByUserId: string | undefined;
-
-    if (trigger !== GenerationTrigger.MANUAL) {
-      const resolved = await this.userIntegrationsService.resolveForSourceAgency(
-        sourceAgencyId,
-        AiProvider.ANTHROPIC,
-      );
-
-      if (!resolved) {
-        // TODO(Feature 08): notify that generation could not start (no AI credentials)
-        return null;
-      }
-
-      initiatedByUserId = resolved.userId;
-    }
-
     const run = await this.prisma.scraperGenerationRun.create({
       data: {
         source_agency_id: sourceAgencyId,
@@ -178,7 +147,6 @@ export class ScraperGenerationService {
 
     await this.generationQueue.add('generate', {
       runId: run.id,
-      initiatedByUserId,
     });
 
     return run;

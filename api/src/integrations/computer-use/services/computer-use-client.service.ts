@@ -1,20 +1,30 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 import { ComputerUseStepResult } from '../interfaces/computer-use.interface';
 
 @Injectable()
 export class ComputerUseClientService {
-  createClient(apiKey: string): Anthropic {
-    return new Anthropic({ apiKey });
+  constructor(private readonly configService: ConfigService) {}
+
+  private getApiKey(): string {
+    const apiKey = this.configService.get<string>('ANTHROPIC_API_KEY');
+    if (!apiKey) {
+      throw new Error('ANTHROPIC_API_KEY is not configured');
+    }
+    return apiKey;
+  }
+
+  createClient(): Anthropic {
+    return new Anthropic({ apiKey: this.getApiKey() });
   }
 
   async sendStep(
-    apiKey: string,
     messages: Anthropic.MessageParam[],
     systemPrompt: string,
     model: string,
   ): Promise<ComputerUseStepResult> {
-    const client = this.createClient(apiKey);
+    const client = this.createClient();
 
     // Reference CLI sets thinking: { type: 'adaptive' }, but that isn't a value the
     // Messages API's ThinkingConfigParam accepts (only 'enabled' with a budget_tokens,
