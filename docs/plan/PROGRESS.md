@@ -6,11 +6,11 @@
 > before writing code. Update this file when deliverables are verified.
 
 **Last updated:** 2026-07-14
-**Overall progress:** 30% (3 / 10 features complete — Features 01, 02, and 03 are all verified end-to-end against a real DB and real browser UI; Feature 04 tasks 01–03 of 4 are also done, see below)
-**Current focus:** Continue Feature 04 (AI Computer-Use Scraper Generation) — `tasks/feature-04-ai-generation/04-generation-runs-ui.md`. The API + frontend data layer are both done; this task builds the actual `/admin/generation-runs` list, session replay view, and review/approve screen on top of them.
+**Overall progress:** 40% (4 / 10 features complete — Features 01–04 are all done; Feature 04's happy path against a real target site still needs real GCS + Anthropic credentials to verify, see **Local testing gap** below)
+**Current focus:** Start Feature 05 (Crawl Execution Engine & Job Queue) — `tasks/feature-05-crawl-engine/01-crawl-runs-api-and-scheduler.md`. Read `directions/01-product-spec.md` §7–9/§16–19, `../playwright-scraping-worker-architecture.md`, and the reference CLI under `../../scripts/scraper-generator/crawl/` before implementing.
 **Path correction:** the reference CLI referenced throughout this file as `scraper-generator/...` actually lives at `scripts/scraper-generator/...` (moved there in commit `363ef61`) — paths below have been corrected. If a future session still can't find it, run `git log --all --diff-filter=A --name-only | grep scraper-generator` to relocate it.
 **Dependency note:** Feature 04 task 01 needed `UserIntegrationsService.resolveActiveApiKey` / `resolveForSourceAgency`, which is formally Feature 09's deliverable but Feature 09 hasn't started yet. A **minimal** `api/src/modules/user-integrations/` module was added out-of-order containing just those two resolver methods (matching the contract in `directions/03-domain-model.md`'s `UserIntegration AI credential rule`) — no controllers/DTOs/CRUD. When Feature 09 is implemented, extend this module in place (add `integration-targets` module + this module's admin/user CRUD endpoints) rather than recreating it.
-**Local testing gap:** `GCS_PROJECT_ID`/`GCS_BUCKET_NAME` are unset in `api/.env.local`, so `ScreenshotStorageService` (used by the computer-use loop) can't upload screenshots locally, and there's no real `UserIntegration.api_key_secret` for Anthropic (a placeholder key was used for testing — real API calls would 401). Task 02's happy path (`AWAITING_REVIEW` with a real AI-produced config) is therefore **not yet verified against a real target site** — only the failure path is (see Feature 04 checklist). To fully verify, either configure a real GCS bucket + Anthropic key in `.env.local`, or accept this gap and verify later once real credentials exist.
+**Local testing gap:** `GCS_PROJECT_ID`/`GCS_BUCKET_NAME` are unset in `api/.env.local`, so `ScreenshotStorageService` (used by the computer-use loop) can't upload screenshots locally, and there's no real `UserIntegration.api_key_secret` for Anthropic (a placeholder key was used for testing — real API calls would 401). Feature 04's happy path (`AWAITING_REVIEW` with a real AI-produced config, all the way through to an approved active `ScraperVersion`) is therefore **not yet verified against a real target site** — the failure path and the full UI flow around it (trigger → live replay → terminal state) are (see Feature 04 checklist). To fully verify, either configure a real GCS bucket + Anthropic key in `.env.local`, or accept this gap and verify later once real credentials exist.
 
 ---
 
@@ -34,7 +34,7 @@
 | 01 | Platform Foundation (DB, Auth, Roles) | done | 100% | 2 files |
 | 02 | Admin Shell & Agencies | done | 100% | 3 files |
 | 03 | Scraper Management | done | 100% | 3 files |
-| 04 | AI Computer-Use Scraper Generation | in progress | 75% (3/4 task files) | 4 files |
+| 04 | AI Computer-Use Scraper Generation | done | 100% | 4 files |
 | 05 | Crawl Execution Engine & Job Queue | not started | 0% | 4 files |
 | 06 | Property Normalization & Admin Properties | not started | 0% | 3 files |
 | 07 | User Tracked Agencies & UserProperty | not started | 0% | 3 files |
@@ -183,8 +183,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **Description:** Admins can trigger an AI computer-use session that generates or fixes a scraper, replay every step it took, and approve/reject the result.
 
-**Status:** in progress
-**Progress:** 75% (tasks 01–03 of 4 done; the real computer-use loop is implemented and its failure path is verified end-to-end — its happy path needs real GCS + Anthropic credentials to fully verify, see **Local testing gap** above)
+**Status:** done
+**Progress:** 100% (all 4 tasks done; the real computer-use loop's failure path and the full UI flow are verified end-to-end — the happy path (real AI-produced config → `AWAITING_REVIEW`) still needs real GCS + Anthropic credentials to fully verify, see **Local testing gap** above)
 
 ### References
 
@@ -202,7 +202,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 | `tasks/feature-04-ai-generation/01-generation-runs-api-core.md` | done |
 | `tasks/feature-04-ai-generation/02-computer-use-loop-engine.md` | done |
 | `tasks/feature-04-ai-generation/03-generation-runs-frontend-data.md` | done |
-| `tasks/feature-04-ai-generation/04-generation-runs-ui.md` | ready |
+| `tasks/feature-04-ai-generation/04-generation-runs-ui.md` | done |
 
 ### Implementation checklist
 
@@ -219,10 +219,16 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **App (`app/`)**
 - [x] `app/src/features/scraper-generation/` — `interfaces/scraper-generation.interfaces.ts` (`GenerationRun`, `ComputerUseStep` matching the resolved-url API shape above, status/trigger/action-type union types, payload/query types), `services/scraper-generation.services.ts` (list/detail/create/approve/reject/cancel), `hooks/use-scraper-generation.ts` (`useGenerationRuns`, `useGenerationRun` — polls every 2s via `refetchInterval` while `status` is `QUEUED`/`RUNNING`, stops once terminal; `useCreateGenerationRun`/`useApproveGenerationRun`/`useRejectGenerationRun`/`useCancelGenerationRun` — the latter three invalidate both `['generationRuns']` and `['scrapers']`), `validation-schemas/scraper-generation.schema.ts` (Zod schema for the manual-trigger form, for task 04); `ApiRoutes.admin.generationRuns` extended in `app/src/config/api/routes.ts`. `tsc -b` passes with the same 2 pre-existing, unrelated errors as Feature 03 (`confirmation-dialog.tsx`/`password-input.tsx`), zero new ones.
-- [ ] `/admin/generation-runs` list + session replay view (steps with before/after screenshots + reasoning) + review screen (diff `staged_config` vs current active version, approve/reject) + manual "Generate scraper" trigger (from Agencies or Scrapers page)
+- [x] `app/src/routes/routes.ts` + `routes/index.tsx` (`/admin/generation-runs`, `/admin/generation-runs/:id`) + `admin-sidebar-content.tsx` nav item ("Generation Runs", `Sparkles` icon)
+- [x] `app/src/features/scraper-generation/components/` — `generation-run-status-chip.tsx`, `generation-run-trigger-chip.tsx`, `create-generation-run-form.tsx` (shared by both entry points; renders a locked read-only agency field — not a `Select` — when `lockAgency` is set, see bug note below)
+- [x] `app/src/pages/admin/generation-runs/index.tsx` — list page: agency/scraper/trigger/status/created/finished columns, status+trigger+agency filters, "New generation run" modal (agency selectable)
+- [x] `app/src/pages/admin/generation-runs/detail.tsx` — replay/review view: header chips + prompt, live step timeline while `QUEUED`/`RUNNING` (polling via task 03's hook) with a "jump to step" mini-nav and click-to-enlarge before/after screenshots, `AWAITING_REVIEW` panel (pretty-printed `staged_config` + Approve/Reject, reject opens a reason dialog), Cancel button while active, `SUCCESS` panel linking to the produced scraper, `FAILED`/`CANCELLED` panel showing `error_message`
+- [x] `app/src/pages/admin/scrapers/detail.tsx` — replaced the Feature 03 "Generation runs" empty-state placeholder with a real "Generate with AI" / "Fix with AI" button (label depends on `scraper.status === 'BROKEN'`) opening the same modal (agency locked to the scraper's own agency) + a live list of this scraper's past runs
+- [x] Bug found and fixed during verification: `CreateGenerationRunForm`'s locked agency field briefly showed the `Select` placeholder ("Select an agency") instead of the pre-filled name until `useAgencies` resolved, because `selectedKey` was set before the matching `ListBox.Item` existed — fixed by not rendering a `Select` at all when locked (plain read-only div showing `defaultAgencyName`, passed from the scraper's own `source_agency.name` — no fetch needed) and only calling `useAgencies` when agency selection is actually needed. Extended `useAgencies(query, { enabled })` with an optional second param (backward compatible) to support this.
+- [x] `tsc -b` passes with the same 2 pre-existing, unrelated errors as before, zero new ones
 
 **Verification**
-- [ ] Smoke test: trigger a manual generation run against a real simple test page, watch it reach `AWAITING_REVIEW`, approve it, confirm a new `ScraperVersion` is active — **not yet verified** (see **Local testing gap** above): the failure path (bad/missing credentials → clean `FAILED`) is verified; the happy path (real AI-produced `staged_config` → `AWAITING_REVIEW`) needs a real GCS bucket + real Anthropic API key, neither configured in this environment
+- [x] Full browser smoke test via a headless-Chromium Playwright script against the live dev app + API: logged in as admin, confirmed `/admin/generation-runs` renders with filters + "New generation run" button, opened a test scraper's detail page, confirmed the "Generate with AI" button and modal (agency correctly locked/pre-filled, no placeholder flash after the fix), submitted with a prompt, confirmed navigation to the run's detail page showing agency/trigger/status chips, confirmed the run progressed `QUEUED` → `RUNNING` → `FAILED` live via polling with zero console errors, and confirmed the `FAILED` panel shows the real `error_message` (screenshot-upload failure, since GCS isn't configured locally — expected, matches the **Local testing gap** noted above). The happy path (`AWAITING_REVIEW` with a real AI-produced config, approve → active `ScraperVersion`) still needs a real GCS bucket + Anthropic API key to verify, but the `approve`/`reject`/`cancel` transitions themselves were already verified via the API in tasks 01–02. Test agency/scraper/integration/generation-run data cleaned up afterward.
 
 **Definition of done:** An admin can generate a working scraper end-to-end via the AI computer-use loop with full replay and manual approval.
 

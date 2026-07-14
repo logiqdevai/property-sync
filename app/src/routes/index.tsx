@@ -12,6 +12,8 @@ import AgenciesListPage from "@/pages/admin/agencies";
 import AgencyDetailPage from "@/pages/admin/agencies/detail";
 import ScrapersListPage from "@/pages/admin/scrapers";
 import ScraperDetailPage from "@/pages/admin/scrapers/detail";
+import GenerationRunsListPage from "@/pages/admin/generation-runs";
+import GenerationRunDetailPage from "@/pages/admin/generation-runs/detail";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
 
 export default function AppRoutes() {
@@ -62,6 +64,8 @@ export default function AppRoutes() {
         <Route path="agencies/:id" element={<AgencyDetailPage />} />
         <Route path="scrapers" element={<ScrapersListPage />} />
         <Route path="scrapers/:id" element={<ScraperDetailPage />} />
+        <Route path="generation-runs" element={<GenerationRunsListPage />} />
+        <Route path="generation-runs/:id" element={<GenerationRunDetailPage />} />
       </Route>
 
       {/* Default redirect */}

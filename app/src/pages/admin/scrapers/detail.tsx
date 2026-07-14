@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Modal, Switch, EmptyState, Select, ListBox, useOverlayState } from "@heroui/react";
-import { ArrowLeft, Bot, Activity, History } from "lucide-react";
+import { ArrowLeft, Bot, Activity, History, Sparkles } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -16,22 +16,35 @@ import {
   useScraperVersions,
   useUpdateScraper,
 } from "@/features/scrapers/hooks/use-scrapers";
+import { ScraperStatuses } from "@/features/scrapers/interfaces/scrapers.interfaces";
+import { CreateGenerationRunForm } from "@/features/scraper-generation/components/create-generation-run-form";
+import { GenerationRunStatusChip } from "@/features/scraper-generation/components/generation-run-status-chip";
+import { GenerationRunTriggerChip } from "@/features/scraper-generation/components/generation-run-trigger-chip";
+import {
+  useCreateGenerationRun,
+  useGenerationRuns,
+} from "@/features/scraper-generation/hooks/use-scraper-generation";
 import { formatDateTime } from "@/lib/date";
 
 export default function ScraperDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const newVersionModal = useOverlayState();
+  const generateModal = useOverlayState();
 
   const [compareA, setCompareA] = useState<string | null>(null);
   const [compareB, setCompareB] = useState<string | null>(null);
 
   const { data: scraper, isPending } = useScraper(id!);
   const { data: versions } = useScraperVersions(id!);
+  const { data: generationRunsData } = useGenerationRuns({ scraper_id: id!, limit: 5 });
   const updateScraper = useUpdateScraper();
   const activateVersion = useActivateScraperVersion();
   const createVersion = useCreateScraperVersion();
   const runNow = useRunScraperNow();
+  const createGenerationRun = useCreateGenerationRun();
+
+  const generationRuns = generationRunsData?.data ?? [];
 
   const versionA = useMemo(
     () => versions?.find((v) => v.id === compareA) ?? null,
@@ -62,13 +75,22 @@ export default function ScraperDetailPage() {
           <ScraperStatusChip status={scraper.status} />
           <ScraperHealthChip health={scraper.health} />
         </div>
-        <ActionButtonWithPending
-          isPending={runNow.isPending}
-          isDisabled={runNow.isPending}
-          onPress={() => runNow.mutate(scraper.id)}
-        >
-          Run now
-        </ActionButtonWithPending>
+        <div className="flex items-center gap-2">
+          <ActionButtonWithPending
+            variant="secondary"
+            idleLeading={<Sparkles className="h-4 w-4" />}
+            onPress={generateModal.open}
+          >
+            {scraper.status === ScraperStatuses.BROKEN ? "Fix with AI" : "Generate with AI"}
+          </ActionButtonWithPending>
+          <ActionButtonWithPending
+            isPending={runNow.isPending}
+            isDisabled={runNow.isPending}
+            onPress={() => runNow.mutate(scraper.id)}
+          >
+            Run now
+          </ActionButtonWithPending>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 rounded-xl border border-border bg-surface p-6">
@@ -240,10 +262,28 @@ export default function ScraperDetailPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-border bg-surface p-6">
           <p className="mb-3 text-sm font-medium text-foreground">Generation runs</p>
-          <EmptyState>
-            <Bot className="h-6 w-6 text-muted" />
-            <p className="text-sm text-muted mt-2">AI-assisted generation coming in a later phase</p>
-          </EmptyState>
+          {generationRuns.length === 0 ? (
+            <EmptyState>
+              <Bot className="h-6 w-6 text-muted" />
+              <p className="text-sm text-muted mt-2">No generation runs yet for this scraper</p>
+            </EmptyState>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {generationRuns.map((run) => (
+                <button
+                  key={run.id}
+                  onClick={() => navigate(Routes.admin.generationRuns.detail(run.id))}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-left hover:border-accent/50 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <GenerationRunTriggerChip trigger={run.trigger} />
+                    <span className="text-xs text-muted">{formatDateTime(run.created_at)}</span>
+                  </div>
+                  <GenerationRunStatusChip status={run.status} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="rounded-xl border border-border bg-surface p-6">
           <p className="mb-3 text-sm font-medium text-foreground">Recent crawl runs</p>
@@ -279,6 +319,48 @@ export default function ScraperDetailPage() {
                   createVersion.mutate(
                     { id: scraper.id, payload: { config: JSON.parse(values.config), notes: values.notes } },
                     { onSuccess: () => newVersionModal.close() },
+                  )
+                }
+              />
+            </Modal.Body>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal>
+
+      <Modal state={generateModal}>
+        <Modal.Backdrop isDismissable />
+        <Modal.Container>
+          <Modal.Dialog>
+            <Modal.Header>
+              <Modal.Heading>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  {scraper.status === ScraperStatuses.BROKEN ? "Fix with AI" : "Generate with AI"}
+                </div>
+              </Modal.Heading>
+            </Modal.Header>
+            <Modal.Body>
+              <CreateGenerationRunForm
+                defaultAgencyId={scraper.source_agency_id}
+                defaultAgencyName={scraper.source_agency?.name}
+                lockAgency
+                defaultScraperId={scraper.id}
+                submitLabel="Generate"
+                isPending={createGenerationRun.isPending}
+                onCancel={generateModal.close}
+                onSubmit={(values) =>
+                  createGenerationRun.mutate(
+                    {
+                      source_agency_id: values.source_agency_id,
+                      scraper_id: values.scraper_id,
+                      prompt: values.prompt || undefined,
+                    },
+                    {
+                      onSuccess: (run) => {
+                        generateModal.close();
+                        navigate(Routes.admin.generationRuns.detail(run.id));
+                      },
+                    },
                   )
                 }
               />

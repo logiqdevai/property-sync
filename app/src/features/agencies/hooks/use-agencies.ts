@@ -17,10 +17,11 @@ import type {
   UpdateAgencyVisibilityPayload,
 } from "../interfaces/agencies.interfaces";
 
-export const useAgencies = (query: AgencyListQuery) => {
+export const useAgencies = (query: AgencyListQuery, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ["agencies", "list", query],
     queryFn: () => getAgencies(query),
+    enabled: options?.enabled ?? true,
   });
 };
 
