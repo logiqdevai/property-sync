@@ -295,7 +295,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 ## Feature 06: Property Normalization & Admin Properties
 
-**Description:** Raw `SourceProperty` rows become normalized, deduplicated `Property` records with full history, visible to admins.
+**Description:** Raw `SourceProperty` rows become normalized, deduplicated `Property` records with full history, Visible.
 
 **Status:** done
 **Progress:** 100% (tasks 01–03 done + crawl→property path verified 2026-07-14)

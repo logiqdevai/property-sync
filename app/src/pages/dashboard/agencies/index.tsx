@@ -26,13 +26,8 @@ import {
   type TrackAgencyPayload,
   type TrackableAgency,
 } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
+import { AiProviderFormOptions } from "@/config/constants/dropdowns/ai-provider-form.options";
 import { Routes } from "@/routes/routes";
-
-const aiProviderOptions: { id: AiProvider; label: string }[] = [
-  { id: AiProviders.OPENAI, label: "OpenAI" },
-  { id: AiProviders.ANTHROPIC, label: "Anthropic" },
-  { id: AiProviders.GEMINI, label: "Gemini" },
-];
 
 function AgencyCard({
   agency,
@@ -144,7 +139,7 @@ function AgencyCard({
             </Select.Trigger>
             <Select.Popover>
               <ListBox>
-                {aiProviderOptions.map((option) => (
+                {AiProviderFormOptions.map((option) => (
                   <ListBox.Item key={option.id} id={option.id}>
                     {option.label}
                   </ListBox.Item>

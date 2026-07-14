@@ -26,7 +26,7 @@ export class CreateAgencyDto {
     @IsString()
     notes?: string;
 
-    @ApiProperty({ required: false, default: false, description: 'Visible to admins for scraper/crawl setup' })
+    @ApiProperty({ required: false, default: false, description: 'Visible for scraper/crawl setup' })
     @IsOptional()
     @IsBoolean()
     is_visible?: boolean;

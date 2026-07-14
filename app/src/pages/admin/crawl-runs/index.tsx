@@ -8,21 +8,11 @@ import { useScrapers } from "@/features/scrapers/hooks/use-scrapers";
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import { useCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
 import {
-  CrawlRunStatuses,
   type CrawlRunListQuery,
   type CrawlRunStatus,
 } from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
+import { CrawlRunStatusFilterOptions } from "@/config/constants/dropdowns/crawl-run-status-filter.options";
 import { formatDateTime } from "@/lib/date";
-
-const statusFilterOptions: { id: CrawlRunStatus | "all"; label: string }[] = [
-  { id: "all", label: "All statuses" },
-  { id: CrawlRunStatuses.QUEUED, label: "Queued" },
-  { id: CrawlRunStatuses.RUNNING, label: "Running" },
-  { id: CrawlRunStatuses.SUCCESS, label: "Success" },
-  { id: CrawlRunStatuses.PARTIAL_SUCCESS, label: "Partial success" },
-  { id: CrawlRunStatuses.FAILED, label: "Failed" },
-  { id: CrawlRunStatuses.CANCELLED, label: "Cancelled" },
-];
 
 function toStartOfDayIso(date: string) {
   return new Date(`${date}T00:00:00.000Z`).toISOString();
@@ -87,7 +77,7 @@ export default function CrawlRunsListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {statusFilterOptions.map((option) => (
+              {CrawlRunStatusFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

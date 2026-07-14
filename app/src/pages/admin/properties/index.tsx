@@ -8,38 +8,14 @@ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { PropertyStatusChip } from "./components/property-status-chip";
 import { useMergeProperties, useProperties } from "@/features/properties/hooks/use-properties";
 import {
-  ListingTypes,
-  PropertyStatuses,
-  PropertyTypes,
   type ListingType,
   type PropertyListQuery,
   type PropertyStatus,
   type PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
-
-const statusOptions: { id: PropertyStatus | "all"; label: string }[] = [
-  { id: "all", label: "All statuses" },
-  ...Object.values(PropertyStatuses).map((status) => ({
-    id: status,
-    label: status.replace(/_/g, " "),
-  })),
-];
-
-const listingTypeOptions: { id: ListingType | "all"; label: string }[] = [
-  { id: "all", label: "All listing types" },
-  ...Object.values(ListingTypes).map((type) => ({
-    id: type,
-    label: type.replace(/_/g, " "),
-  })),
-];
-
-const propertyTypeOptions: { id: PropertyType | "all"; label: string }[] = [
-  { id: "all", label: "All property types" },
-  ...Object.values(PropertyTypes).map((type) => ({
-    id: type,
-    label: type.replace(/_/g, " "),
-  })),
-];
+import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
+import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/listing-type-filter.options";
+import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/property-type-filter.options";
 
 export default function PropertiesListPage() {
   const navigate = useNavigate();
@@ -173,7 +149,7 @@ export default function PropertiesListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {statusOptions.map((option) => (
+              {PropertyStatusFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>
@@ -196,7 +172,7 @@ export default function PropertiesListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {listingTypeOptions.map((option) => (
+              {ListingTypeFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>
@@ -219,7 +195,7 @@ export default function PropertiesListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {propertyTypeOptions.map((option) => (
+              {PropertyTypeFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

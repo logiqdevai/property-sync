@@ -20,36 +20,13 @@ import {
   useUpdateIntegrationTargetVisibility,
 } from "@/features/integration-targets/hooks/use-integration-targets";
 import {
-  AuthTypes,
-  IntegrationTypes,
   type AuthType,
   type IntegrationTargetListQuery,
   type IntegrationType,
 } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
-
-const integrationTypeFilterOptions: { id: IntegrationType | "all"; label: string }[] = [
-  { id: "all", label: "All types" },
-  { id: IntegrationTypes.ESTATEWEB, label: "EstateWeb" },
-  { id: IntegrationTypes.OPENAI, label: "OpenAI" },
-  { id: IntegrationTypes.ANTHROPIC, label: "Anthropic" },
-  { id: IntegrationTypes.GEMINI, label: "Gemini" },
-  { id: IntegrationTypes.DEEPSEEK, label: "DeepSeek" },
-];
-
-const authTypeFilterOptions: { id: AuthType | "all"; label: string }[] = [
-  { id: "all", label: "All auth types" },
-  { id: AuthTypes.API_KEY, label: "API key" },
-  { id: AuthTypes.BEARER_TOKEN, label: "Bearer token" },
-  { id: AuthTypes.EMAIL_PASSWORD, label: "Email + password" },
-  { id: AuthTypes.USERNAME_PASSWORD, label: "Username + password" },
-  { id: AuthTypes.OAUTH, label: "OAuth" },
-];
-
-const visibilityFilterOptions = [
-  { id: "all", label: "All visibility" },
-  { id: "true", label: "Visible" },
-  { id: "false", label: "Hidden" },
-];
+import { IntegrationTypeFilterOptions } from "@/config/constants/dropdowns/integration-type-filter.options";
+import { AuthTypeFilterOptions } from "@/config/constants/dropdowns/auth-type-filter.options";
+import { VisibilityFilterOptions } from "@/config/constants/dropdowns/visibility-filter.options";
 
 export default function IntegrationTargetsListPage() {
   const navigate = useNavigate();
@@ -108,7 +85,7 @@ export default function IntegrationTargetsListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {integrationTypeFilterOptions.map((option) => (
+              {IntegrationTypeFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>
@@ -132,7 +109,7 @@ export default function IntegrationTargetsListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {authTypeFilterOptions.map((option) => (
+              {AuthTypeFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>
@@ -156,7 +133,7 @@ export default function IntegrationTargetsListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {visibilityFilterOptions.map((option) => (
+              {VisibilityFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

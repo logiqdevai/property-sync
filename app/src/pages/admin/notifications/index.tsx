@@ -12,35 +12,14 @@ import {
   useNotifications,
 } from "@/features/notifications/hooks/use-notifications";
 import {
-  NotificationSeverities,
-  NotificationTypes,
   type Notification,
   type NotificationListQuery,
   type NotificationSeverity,
   type NotificationType,
 } from "@/features/notifications/interfaces/notifications.interfaces";
-
-const typeFilterOptions: { id: NotificationType | "all"; label: string }[] = [
-  { id: "all", label: "All types" },
-  { id: NotificationTypes.BROKEN_SCRAPER, label: "Broken scraper" },
-  { id: NotificationTypes.PROPERTY_REMOVAL_SPIKE, label: "Removal spike" },
-  { id: NotificationTypes.LARGE_CRAWL_FAILURE, label: "Crawl failure" },
-  { id: NotificationTypes.QUEUE_FAILURE, label: "Queue failure" },
-  { id: NotificationTypes.WEBSITE_UNAVAILABLE, label: "Website unavailable" },
-];
-
-const severityFilterOptions: { id: NotificationSeverity | "all"; label: string }[] = [
-  { id: "all", label: "All severities" },
-  { id: NotificationSeverities.INFO, label: "Info" },
-  { id: NotificationSeverities.WARNING, label: "Warning" },
-  { id: NotificationSeverities.CRITICAL, label: "Critical" },
-];
-
-const readFilterOptions = [
-  { id: "all", label: "All" },
-  { id: "false", label: "Unread" },
-  { id: "true", label: "Read" },
-];
+import { NotificationTypeFilterOptions } from "@/config/constants/dropdowns/notification-type-filter.options";
+import { NotificationSeverityFilterOptions } from "@/config/constants/dropdowns/notification-severity-filter.options";
+import { ReadFilterOptions } from "@/config/constants/dropdowns/read-filter.options";
 
 function resolveNotificationLink(notification: Notification): string | null {
   if (notification.source_agency_id) {
@@ -109,7 +88,7 @@ export default function NotificationsListPage() {
             setPage(1);
             setType(key as NotificationType | "all");
           }}
-          className="w-48"
+          className="w-64"
         >
           <Select.Trigger>
             <Select.Value />
@@ -117,7 +96,7 @@ export default function NotificationsListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {typeFilterOptions.map((option) => (
+              {NotificationTypeFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>
@@ -141,7 +120,7 @@ export default function NotificationsListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {severityFilterOptions.map((option) => (
+              {NotificationSeverityFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>
@@ -165,7 +144,7 @@ export default function NotificationsListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {readFilterOptions.map((option) => (
+              {ReadFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

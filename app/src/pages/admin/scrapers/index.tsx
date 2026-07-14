@@ -11,32 +11,14 @@ import { ScraperStatusChip } from "./components/scraper-status-chip";
 import { ScraperHealthChip } from "./components/scraper-health-chip";
 import { useCreateScraper, useScrapers } from "@/features/scrapers/hooks/use-scrapers";
 import {
-  ScraperHealths,
-  ScraperStatuses,
   type ScraperHealth,
   type ScraperListQuery,
   type ScraperStatus,
 } from "@/features/scrapers/interfaces/scrapers.interfaces";
+import { ScraperStatusFilterOptions } from "@/config/constants/dropdowns/scraper-status-filter.options";
+import { ScraperHealthFilterOptions } from "@/config/constants/dropdowns/scraper-health-filter.options";
 import { formatDate } from "@/lib/date";
 import { useDebouncedValue } from "./hooks/use-debounced-value";
-
-const statusFilterOptions: { id: ScraperStatus | "all"; label: string }[] = [
-  { id: "all", label: "All statuses" },
-  { id: ScraperStatuses.ACTIVE, label: "Active" },
-  { id: ScraperStatuses.TESTING, label: "Testing" },
-  { id: ScraperStatuses.INACTIVE, label: "Inactive" },
-  { id: ScraperStatuses.DEPRECATED, label: "Deprecated" },
-  { id: ScraperStatuses.BROKEN, label: "Broken" },
-];
-
-const healthFilterOptions: { id: ScraperHealth | "all"; label: string }[] = [
-  { id: "all", label: "All health" },
-  { id: ScraperHealths.EXCELLENT, label: "Excellent" },
-  { id: ScraperHealths.GOOD, label: "Good" },
-  { id: ScraperHealths.WARNING, label: "Warning" },
-  { id: ScraperHealths.CRITICAL, label: "Critical" },
-  { id: ScraperHealths.BROKEN, label: "Broken" },
-];
 
 export default function ScrapersListPage() {
   const navigate = useNavigate();
@@ -111,7 +93,7 @@ export default function ScrapersListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {statusFilterOptions.map((option) => (
+              {ScraperStatusFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>
@@ -135,7 +117,7 @@ export default function ScrapersListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {healthFilterOptions.map((option) => (
+              {ScraperHealthFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

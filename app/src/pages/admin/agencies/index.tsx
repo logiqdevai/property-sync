@@ -22,15 +22,9 @@ import {
   type AgencyListQuery,
   type AgencyStatus,
 } from "@/features/agencies/interfaces/agencies.interfaces";
+import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agency-status-filter.options";
 import { formatDate } from "@/lib/date";
 import { useDebouncedValue } from "./hooks/use-debounced-value";
-
-const statusFilterOptions: { id: AgencyStatus | "all"; label: string }[] = [
-  { id: "all", label: "All statuses" },
-  { id: AgencyStatuses.ACTIVE, label: "Active" },
-  { id: AgencyStatuses.DISABLED, label: "Disabled" },
-  { id: AgencyStatuses.ARCHIVED, label: "Archived" },
-];
 
 export default function AgenciesListPage() {
   const navigate = useNavigate();
@@ -100,7 +94,7 @@ export default function AgenciesListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {statusFilterOptions.map((option) => (
+              {AgencyStatusFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

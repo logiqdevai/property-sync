@@ -4,17 +4,10 @@ import { Chip, Input, Pagination, Select, ListBox, Table } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { PropertyStatusChip } from "./components/property-status-chip";
-import { PropertyStatuses, type PropertyStatus } from "@/features/properties/interfaces/properties.interfaces";
+import type { PropertyStatus } from "@/features/properties/interfaces/properties.interfaces";
+import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
 import { useUserProperties } from "@/features/user-properties/hooks/use-user-properties";
 import type { UserPropertyListQuery } from "@/features/user-properties/interfaces/user-properties.interfaces";
-
-const statusOptions: { id: PropertyStatus | "all"; label: string }[] = [
-  { id: "all", label: "All statuses" },
-  ...Object.values(PropertyStatuses).map((status) => ({
-    id: status,
-    label: status.replace(/_/g, " "),
-  })),
-];
 
 export default function DashboardPropertiesListPage() {
   const navigate = useNavigate();
@@ -104,7 +97,7 @@ export default function DashboardPropertiesListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {statusOptions.map((option) => (
+              {PropertyStatusFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

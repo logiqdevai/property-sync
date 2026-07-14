@@ -11,22 +11,8 @@ import {
   type JobLogListQuery,
   type JobStatus,
 } from "@/features/jobs/interfaces/jobs.interfaces";
-
-const statusFilterOptions: { id: JobStatus | "all"; label: string }[] = [
-  { id: "all", label: "All statuses" },
-  { id: JobStatuses.WAITING, label: "Waiting" },
-  { id: JobStatuses.ACTIVE, label: "Active" },
-  { id: JobStatuses.COMPLETED, label: "Completed" },
-  { id: JobStatuses.FAILED, label: "Failed" },
-  { id: JobStatuses.DELAYED, label: "Delayed" },
-  { id: JobStatuses.STALLED, label: "Stalled" },
-];
-
-const queueFilterOptions = [
-  { id: "all", label: "All queues" },
-  { id: "crawl", label: "crawl" },
-  { id: "generation", label: "generation" },
-];
+import { JobStatusFilterOptions } from "@/config/constants/dropdowns/job-status-filter.options";
+import { JobQueueFilterOptions } from "@/config/constants/dropdowns/job-queue-filter.options";
 
 function formatDuration(ms: number | null) {
   if (ms === null) return "—";
@@ -80,7 +66,7 @@ export default function JobsListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {statusFilterOptions.map((option) => (
+              {JobStatusFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>
@@ -104,7 +90,7 @@ export default function JobsListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {queueFilterOptions.map((option) => (
+              {JobQueueFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

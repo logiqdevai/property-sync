@@ -29,6 +29,7 @@ src/
 │   ├── environments/
 │   │   └── index.ts               # Typed and exported env vars
 │   └── constants/                 # Static maps and dropdown options
+│       └── dropdowns/             # Select/ListBox option arrays (one file per type)
 ├── features/                      # Domain modules (see Feature Module Pattern)
 ├── pages/                         # Route-level page components
 ├── components/
@@ -77,6 +78,24 @@ pages/<section>/
 **Do:** Put all data-fetching logic in `features/`. Pages import hooks, services, interfaces, and schemas from features.  
 **Don't:** Put API calls, Zod schemas, or React components inside `features/`.  
 **Don't:** Create `features/<feature-name>/components/` — page-local UI belongs in `pages/<section>/components/`.
+
+### Dropdown and Select Options
+
+Static option arrays for `Select`, `ListBox`, filter toolbars, and form pickers **must not** live in page or component files.
+
+**Do:** Put them in `src/config/constants/dropdowns/` — one file per option set, named `<domain>-<context>.options.ts` (e.g. `agency-status-filter.options.ts`, `auth-type-form.options.ts`).
+
+**Export naming:** `PascalCase` + `Options` suffix (e.g. `AgencyStatusFilterOptions`, `CountryOptions`).
+
+**Shape:**
+
+- Filter/toolbar selects: `{ id: T | "all"; label: string }[]` with a first `{ id: "all", label: "..." }` entry when applicable
+- Form selects (no "all"): `{ id: T; label: string }[]`
+- Reuse existing files when the same options appear on multiple pages (e.g. admin + dashboard property status filters share `property-status-filter.options.ts`)
+
+**Don't:** Define `const statusFilterOptions = [...]` or similar arrays at the top of `pages/**/index.tsx` or form components.
+
+**Exception:** Options derived at runtime from API data (e.g. mapping fetched entities to `{ id, label }`) may stay colocated with the component that owns that data.
 
 ---
 
@@ -423,10 +442,38 @@ When adding a new route, **always add it to `routes.ts` first**, then reference 
 | Nest `Modal.Container` inside `Modal.Backdrop`                 | Use sibling `Backdrop` + `Container` under `Modal`   |
 | Use `Table.ScrollContainer` → `Table.Content` for tables       | Put `Table.Column` directly under `<Table>`          |
 | Put `<Label>` inside `<Select>` or use `aria-label`            | Leave `Select` unlabeled or label as sibling only    |
+| Put static select/filter options in `config/constants/dropdowns/` | Define option arrays inline in pages or form components |
+| Reuse an existing `*.options.ts` when labels match           | Duplicate the same option list in another file         |
 
 ---
 
 ## 13. Examples
+
+### Dropdown Options
+
+```ts
+import { AgencyStatuses, type AgencyStatus } from "@/features/agencies/interfaces/agencies.interfaces";
+
+export const AgencyStatusFilterOptions: { id: AgencyStatus | "all"; label: string }[] = [
+  { id: "all", label: "All statuses" },
+  { id: AgencyStatuses.ACTIVE, label: "Active" },
+  { id: AgencyStatuses.DISABLED, label: "Disabled" },
+  { id: AgencyStatuses.ARCHIVED, label: "Archived" },
+];
+```
+
+```tsx
+import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agency-status-filter.options";
+
+<Select aria-label="Filter by status" selectedKey={status} onSelectionChange={setStatus}>
+  <Select.Trigger>...</Select.Trigger>
+  <Select.Popover>
+    <ListBox items={AgencyStatusFilterOptions}>
+      {(option) => <ListBox.Item id={option.id}>{option.label}</ListBox.Item>}
+    </ListBox>
+  </Select.Popover>
+</Select>
+```
 
 ### Const-Object Enum Pattern
 

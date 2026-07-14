@@ -14,30 +14,13 @@ import {
   useGenerationRuns,
 } from "@/features/scraper-generation/hooks/use-scraper-generation";
 import {
-  GenerationRunStatuses,
-  GenerationTriggers,
   type GenerationRunListQuery,
   type GenerationRunStatus,
   type GenerationTrigger,
 } from "@/features/scraper-generation/interfaces/scraper-generation.interfaces";
+import { GenerationRunStatusFilterOptions } from "@/config/constants/dropdowns/generation-run-status-filter.options";
+import { GenerationTriggerFilterOptions } from "@/config/constants/dropdowns/generation-trigger-filter.options";
 import { formatDateTime } from "@/lib/date";
-
-const statusFilterOptions: { id: GenerationRunStatus | "all"; label: string }[] = [
-  { id: "all", label: "All statuses" },
-  { id: GenerationRunStatuses.QUEUED, label: "Queued" },
-  { id: GenerationRunStatuses.RUNNING, label: "Running" },
-  { id: GenerationRunStatuses.AWAITING_REVIEW, label: "Awaiting review" },
-  { id: GenerationRunStatuses.SUCCESS, label: "Success" },
-  { id: GenerationRunStatuses.FAILED, label: "Failed" },
-  { id: GenerationRunStatuses.CANCELLED, label: "Cancelled" },
-];
-
-const triggerFilterOptions: { id: GenerationTrigger | "all"; label: string }[] = [
-  { id: "all", label: "All triggers" },
-  { id: GenerationTriggers.MANUAL, label: "Manual" },
-  { id: GenerationTriggers.SELF_HEAL, label: "Self-heal" },
-  { id: GenerationTriggers.SCHEDULED, label: "Scheduled" },
-];
 
 export default function GenerationRunsListPage() {
   const navigate = useNavigate();
@@ -95,7 +78,7 @@ export default function GenerationRunsListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {statusFilterOptions.map((option) => (
+              {GenerationRunStatusFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>
@@ -119,7 +102,7 @@ export default function GenerationRunsListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {triggerFilterOptions.map((option) => (
+              {GenerationTriggerFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

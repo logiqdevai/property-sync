@@ -10,6 +10,8 @@ import {
   type CreateIntegrationTargetPayload,
   type IntegrationType,
 } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
+import { IntegrationTypeFormOptions } from "@/config/constants/dropdowns/integration-type-form.options";
+import { AuthTypeFormOptions } from "@/config/constants/dropdowns/auth-type-form.options";
 
 const integrationTargetFormSchema = z.object({
   integration_type: z.enum([
@@ -32,22 +34,6 @@ const integrationTargetFormSchema = z.object({
 });
 
 export type IntegrationTargetFormValues = z.infer<typeof integrationTargetFormSchema>;
-
-const integrationTypeOptions: { id: IntegrationType; label: string }[] = [
-  { id: IntegrationTypes.ESTATEWEB, label: "EstateWeb (CMS)" },
-  { id: IntegrationTypes.OPENAI, label: "OpenAI" },
-  { id: IntegrationTypes.ANTHROPIC, label: "Anthropic" },
-  { id: IntegrationTypes.GEMINI, label: "Gemini" },
-  { id: IntegrationTypes.DEEPSEEK, label: "DeepSeek" },
-];
-
-const authTypeOptions: { id: AuthType; label: string }[] = [
-  { id: AuthTypes.EMAIL_PASSWORD, label: "Email + password" },
-  { id: AuthTypes.USERNAME_PASSWORD, label: "Username + password" },
-  { id: AuthTypes.BEARER_TOKEN, label: "Bearer token" },
-  { id: AuthTypes.API_KEY, label: "API key" },
-  { id: AuthTypes.OAUTH, label: "OAuth" },
-];
 
 interface IntegrationTargetFormProps {
   defaultValues?: Partial<IntegrationTargetFormValues>;
@@ -112,7 +98,7 @@ export function IntegrationTargetForm({
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {integrationTypeOptions.map((option) => (
+              {IntegrationTypeFormOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>
@@ -135,7 +121,7 @@ export function IntegrationTargetForm({
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {authTypeOptions.map((option) => (
+              {AuthTypeFormOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

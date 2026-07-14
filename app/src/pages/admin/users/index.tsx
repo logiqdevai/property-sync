@@ -10,15 +10,8 @@ import {
   type RoleType,
 } from "@/features/user/interfaces/user.interface";
 import type { AdminUserListQuery } from "@/features/users/interfaces/admin-users.interfaces";
+import { RoleTypeFilterOptions } from "@/config/constants/dropdowns/role-type-filter.options";
 import { formatDate } from "@/lib/date";
-
-const roleFilterOptions: { id: RoleType | "all"; label: string }[] = [
-  { id: "all", label: "All roles" },
-  { id: RoleTypes.USER, label: "User" },
-  { id: RoleTypes.ADMIN, label: "Admin" },
-  { id: RoleTypes.SUPER_ADMIN, label: "Super admin" },
-  { id: RoleTypes.SUPPORT, label: "Support" },
-];
 
 function RoleBadge({ role }: { role: RoleType }) {
   const color =
@@ -94,7 +87,7 @@ export default function AdminUsersListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {roleFilterOptions.map((option) => (
+              {RoleTypeFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

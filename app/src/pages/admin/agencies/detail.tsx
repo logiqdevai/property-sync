@@ -123,7 +123,7 @@ export default function AgencyDetailPage() {
             <Switch.Control>
               <Switch.Thumb />
             </Switch.Control>
-            <Switch.Content>Visible to admins</Switch.Content>
+            <Switch.Content>Visible</Switch.Content>
           </Switch>
 
           <Switch
