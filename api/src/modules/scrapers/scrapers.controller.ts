@@ -114,11 +114,8 @@ export class ScrapersController {
 
   @Post(':id/run-now')
   @Roles('ADMIN', 'SUPER_ADMIN')
-  @ApiOperation({ summary: 'Manually trigger a crawl run (not yet available)' })
-  @ApiResponse({
-    status: 501,
-    description: 'Not implemented until crawl engine ships',
-  })
+  @ApiOperation({ summary: 'Manually trigger a crawl run' })
+  @ApiResponse({ status: 201, description: 'Crawl run enqueued' })
   runNow(@Param('id') id: string) {
     return this.scrapersService.runNow(id);
   }

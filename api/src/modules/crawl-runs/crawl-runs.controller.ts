@@ -1,0 +1,54 @@
+import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { JwtGuard } from '@/shared/guards/jwt.guard';
+import { RolesGuard } from '@/shared/guards/roles.guard';
+import { Roles } from '@/shared/decorators/roles.decorator';
+import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
+import { CrawlRunsService } from './crawl-runs.service';
+import {
+  CrawlRunQuerySchema,
+  CrawlRunQueryType,
+} from './dto/crawl-run-query.schema';
+import { CrawlRun } from './entities/crawl-run.entity';
+
+@ApiTags('Crawl Runs')
+@ApiBearerAuth()
+@Controller('admin/crawl-runs')
+@UseGuards(JwtGuard, RolesGuard)
+@Roles('ADMIN', 'SUPER_ADMIN', 'SUPPORT')
+export class CrawlRunsController {
+  constructor(private readonly crawlRunsService: CrawlRunsService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'List crawl runs (paginated, filterable)' })
+  @ApiResponse({ status: 200, description: 'Paginated crawl run list' })
+  findAll(
+    @Query(new ZodValidationPipe(CrawlRunQuerySchema)) query: CrawlRunQueryType,
+  ) {
+    return this.crawlRunsService.findAll(query);
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Get one crawl run with execution traces and job logs',
+  })
+  @ApiResponse({ status: 200, type: CrawlRun })
+  @ApiResponse({ status: 404, description: 'Crawl run not found' })
+  findOne(@Param('id') id: string) {
+    return this.crawlRunsService.findOne(id);
+  }
+
+  @Post(':id/rerun')
+  @Roles('ADMIN', 'SUPER_ADMIN')
+  @ApiOperation({ summary: 'Re-enqueue a crawl run with the same attribution' })
+  @ApiResponse({ status: 201, type: CrawlRun })
+  @ApiResponse({ status: 404, description: 'Crawl run not found' })
+  rerun(@Param('id') id: string) {
+    return this.crawlRunsService.rerun(id);
+  }
+}

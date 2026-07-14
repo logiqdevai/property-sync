@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MailModule } from './modules/internal/mail/mail.module';
@@ -11,6 +12,8 @@ import { UsersModule } from './modules/users/users.module';
 import { AgenciesModule } from './modules/agencies/agencies.module';
 import { ScrapersModule } from './modules/scrapers/scrapers.module';
 import { ScraperGenerationModule } from './modules/scraper-generation/scraper-generation.module';
+import { CrawlRunsModule } from './modules/crawl-runs/crawl-runs.module';
+import { JobsModule } from './modules/jobs/jobs.module';
 import { UserIntegrationsModule } from './modules/user-integrations/user-integrations.module';
 import { QueuesModule } from './core/queues/queues.module';
 import { ConfigModule } from './shared/config/env/env.module';
@@ -18,6 +21,7 @@ import { ConfigModule } from './shared/config/env/env.module';
 @Module({
   imports: [
     ConfigModule,
+    ScheduleModule.forRoot(),
     MailModule,
     SmsModule,
     AiModule,
@@ -31,6 +35,8 @@ import { ConfigModule } from './shared/config/env/env.module';
     ScrapersModule,
     UserIntegrationsModule,
     ScraperGenerationModule,
+    CrawlRunsModule,
+    JobsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

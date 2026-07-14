@@ -1,10 +1,9 @@
 import {
-  HttpException,
-  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { CrawlRunsService } from '@/modules/crawl-runs/crawl-runs.service';
 import {
   Prisma,
   ScraperStatus,
@@ -18,7 +17,10 @@ import { PaginatedResult } from './interfaces/scraper.interface';
 
 @Injectable()
 export class ScrapersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly crawlRunsService: CrawlRunsService,
+  ) {}
 
   async findAll(query: ScraperQueryType): Promise<PaginatedResult<any>> {
     const where = {
@@ -225,14 +227,9 @@ export class ScrapersService {
     });
   }
 
-  async runNow(id: string): Promise<never> {
-    await this.ensureExists(id);
-
-    // TODO(Feature 05): dispatch a real CrawlRun once the crawl engine ships
-    throw new HttpException(
-      'Not implemented until crawl engine ships',
-      HttpStatus.NOT_IMPLEMENTED,
-    );
+  async runNow(id: string) {
+    const scraper = await this.ensureExists(id);
+    return this.crawlRunsService.enqueue(scraper.source_agency_id, scraper.id);
   }
 
   private async ensureExists(id: string) {

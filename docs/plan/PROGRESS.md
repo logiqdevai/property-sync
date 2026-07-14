@@ -6,8 +6,8 @@
 > before writing code. Update this file when deliverables are verified.
 
 **Last updated:** 2026-07-14
-**Overall progress:** 40% (4 / 10 features complete — Features 01–04 are all done; Feature 04's happy path against a real target site still needs real GCS + Anthropic credentials to verify, see **Local testing gap** below)
-**Current focus:** Start Feature 05 (Crawl Execution Engine & Job Queue) — `tasks/feature-05-crawl-engine/01-crawl-runs-api-and-scheduler.md`. Read `directions/01-product-spec.md` §7–9/§16–19, `../playwright-scraping-worker-architecture.md`, and the reference CLI under `../../scripts/scraper-generator/crawl/` before implementing.
+**Overall progress:** 45% (Feature 05 task 01 done — crawl/jobs API + stub processor + scheduler wired; Feature 05 overall ~25%)
+**Current focus:** Continue Feature 05 — `docs/plan/tasks/feature-05-crawl-engine/02-crawl-playwright-pipeline.md`. Read `docs/plan/directions/01-product-spec.md` §7–9/§16–19, `docs/plan/playwright-scraping-worker-architecture.md`, and the reference CLI under `scripts/scraper-generator/crawl/` before implementing.
 **Path correction:** the reference CLI referenced throughout this file as `scraper-generator/...` actually lives at `scripts/scraper-generator/...` (moved there in commit `363ef61`) — paths below have been corrected. If a future session still can't find it, run `git log --all --diff-filter=A --name-only | grep scraper-generator` to relocate it.
 **Dependency note:** Feature 04 task 01 needed `UserIntegrationsService.resolveActiveApiKey` / `resolveForSourceAgency`, which is formally Feature 09's deliverable but Feature 09 hasn't started yet. A **minimal** `api/src/modules/user-integrations/` module was added out-of-order containing just those two resolver methods (matching the contract in `directions/03-domain-model.md`'s `UserIntegration AI credential rule`) — no controllers/DTOs/CRUD. When Feature 09 is implemented, extend this module in place (add `integration-targets` module + this module's admin/user CRUD endpoints) rather than recreating it.
 **Local testing gap:** `GCS_PROJECT_ID`/`GCS_BUCKET_NAME` are unset in `api/.env.local`, so `ScreenshotStorageService` (used by the computer-use loop) can't upload screenshots locally, and there's no real `UserIntegration.api_key_secret` for Anthropic (a placeholder key was used for testing — real API calls would 401). Feature 04's happy path (`AWAITING_REVIEW` with a real AI-produced config, all the way through to an approved active `ScraperVersion`) is therefore **not yet verified against a real target site** — the failure path and the full UI flow around it (trigger → live replay → terminal state) are (see Feature 04 checklist). To fully verify, either configure a real GCS bucket + Anthropic key in `.env.local`, or accept this gap and verify later once real credentials exist.
@@ -35,7 +35,7 @@
 | 02 | Admin Shell & Agencies | done | 100% | 3 files |
 | 03 | Scraper Management | done | 100% | 3 files |
 | 04 | AI Computer-Use Scraper Generation | done | 100% | 4 files |
-| 05 | Crawl Execution Engine & Job Queue | not started | 0% | 4 files |
+| 05 | Crawl Execution Engine & Job Queue | in progress | 25% | 4 files |
 | 06 | Property Normalization & Admin Properties | not started | 0% | 3 files |
 | 07 | User Tracked Agencies & UserProperty | not started | 0% | 3 files |
 | 08 | Notifications | not started | 0% | 2 files |
@@ -238,8 +238,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **Description:** Scrapers actually run — manually or on schedule — against real websites, with full job/queue visibility and automatic broken-scraper self-healing.
 
-**Status:** not started
-**Progress:** 0%
+**Status:** in progress
+**Progress:** 25% (task 01 done — crawl/jobs HTTP surface, BullMQ `crawl` queue + stub processor, cron scheduler, `run-now` wired; Playwright pipeline still stubbed)
 
 ### References
 
@@ -255,7 +255,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 | File | Status |
 |------|--------|
-| `tasks/feature-05-crawl-engine/01-crawl-runs-api-and-scheduler.md` | ready |
+| `tasks/feature-05-crawl-engine/01-crawl-runs-api-and-scheduler.md` | done |
 | `tasks/feature-05-crawl-engine/02-crawl-playwright-pipeline.md` | ready |
 | `tasks/feature-05-crawl-engine/03-crawl-runs-and-jobs-frontend-data.md` | ready |
 | `tasks/feature-05-crawl-engine/04-crawl-runs-and-jobs-ui.md` | ready |
@@ -263,23 +263,29 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 ### Implementation checklist
 
 **API (`api/`)**
-- [ ] `api/src/modules/crawl-runs/`, `api/src/modules/jobs/`
-- [ ] BullMQ `crawl` queue + processor; cron scheduler per enabled `UserTrackedAgency.crawl_interval` → `CrawlRun` with `user_tracked_agency_id` (overlap check per tracker)
-- [ ] `api/src/integrations/crawler/` — port `scripts/scraper-generator/crawl/` (stealth browser, listing extraction, pagination, detail enrichment, execution trace)
-- [ ] `StealthBrowserService` launches **one Chromium instance per worker process** (`OnModuleInit`/`OnModuleDestroy`), not one per job — see `docs/playwright-scraping-worker-architecture.md`; per-job isolation comes from a fresh `BrowserContext`, closed after each job
-- [ ] `crawl` processor has an explicit, env-configurable bounded `concurrency` (`CRAWL_WORKER_CONCURRENCY`) instead of unbounded/default-1 parallelism
-- [ ] Playwright production runner: discover → collect URLs → detail enrich → extract → write `SourceProperty` (normalization into canonical `Property` is Feature 06) → `ScraperExecutionTrace`
-- [ ] Broken-scraper detection (signals per spec §19) → `Scraper.status = BROKEN` + `Notification` (stub call until Feature 08) + calls `triggerGeneration(..., 'SELF_HEAL')` when `self_healing_enabled`
-- [ ] `background/scraper-health.cron.ts` recomputing `health`/`success_rate`/`avg_runtime_ms`/`consecutive_failures`
-- [ ] Wire `Scraper.run-now` (Feature 03 stub) to actually enqueue a `CrawlRun`
+- [x] `api/src/modules/crawl-runs/`, `api/src/modules/jobs/` — modules, controllers, services, DTOs, entities
+- [x] BullMQ `crawl` queue + stub processor (`api/src/background/crawl.processor.ts`): sets `RUNNING` → no-op delay → `SUCCESS`, writes `JobLog` (`ACTIVE` → `COMPLETED`); retry reuses same row via `jobLogId` in payload
+- [x] Cron scheduler (`api/src/background/crawl-scheduler.cron.ts`) — `@Cron(EVERY_MINUTE)`, evaluates each enabled `UserTrackedAgency`'s `crawl_interval` via `cron-parser` `parseExpression`, overlap prevention per tracker (`QUEUED`/`RUNNING` check), enqueues with `user_tracked_agency_id`
+- [x] `ScheduleModule.forRoot()` registered once in `app.module.ts`; `QueuesModule` already present
+- [x] Wire `Scraper.run-now` → `CrawlRunsService.enqueue(source_agency_id, scraper_id)` (no tracker FK)
+- [x] `GET /admin/crawl-runs`, `GET /admin/crawl-runs/:id` (traces + job logs + tracker user email), `POST /admin/crawl-runs/:id/rerun`
+- [x] `GET /admin/jobs`, `GET /admin/jobs/:id`, `POST /admin/jobs/:id/retry` (increments `attempt`, re-enqueues to `generation` or `crawl` by `queue_name`)
+- [x] Prisma schema already had `user_tracked_agency_id` + `ai_*` columns in init migration — no new migration needed
+- [x] `tsc --noEmit` passes in `api/`; API boot confirms routes mapped for crawl-runs + jobs
+- [ ] `api/src/integrations/crawler/` — port `scripts/scraper-generator/crawl/` (task 02)
+- [ ] `StealthBrowserService` one Chromium per worker process (task 02)
+- [ ] `CRAWL_WORKER_CONCURRENCY` bounded concurrency (task 02)
+- [ ] Playwright production runner: discover → collect URLs → detail enrich → extract → write `SourceProperty` → `ScraperExecutionTrace` (task 02)
+- [ ] Broken-scraper detection → `Scraper.status = BROKEN` + notification stub + `triggerGeneration(..., 'SELF_HEAL')` (task 02)
+- [ ] `background/scraper-health.cron.ts` recomputing health stats (task 02)
 
 **App (`app/`)**
-- [ ] `app/src/features/crawl-runs/`, `app/src/features/jobs/`
-- [ ] `/admin/crawl-runs` list + detail (totals, AI cost, error, trace, job logs) + re-run action
-- [ ] `/admin/jobs` list + detail + retry action
+- [ ] `app/src/features/crawl-runs/`, `app/src/features/jobs/` (task 03)
+- [ ] `/admin/crawl-runs` list + detail + re-run action (task 04)
+- [ ] `/admin/jobs` list + detail + retry action (task 04)
 
 **Verification**
-- [ ] Smoke test: manually run a scraper created in Feature 03/04 against a real/test page, see a `CrawlRun` complete with `SourceProperty` rows created and visible in the admin UI
+- [ ] Smoke test: manually run a scraper, see `CrawlRun` reach `SUCCESS` with `JobLog` rows and list/detail endpoints returning real data (API routes boot-verified; live curl test pending)
 
 **Definition of done:** An admin can run scrapers manually or on schedule, see full crawl/job history, and broken scrapers self-heal automatically.
 
