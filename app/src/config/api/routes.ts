@@ -94,6 +94,7 @@ export const ApiRoutes = {
         connections: "/integrations/connections",
         connection: (id: string) => `/integrations/connections/${id}`,
         connectionStatus: (id: string) => `/integrations/connections/${id}/status`,
+        connectionDefault: (id: string) => `/integrations/connections/${id}/default`,
     },
     agencies: {
         prefix: "/agencies",

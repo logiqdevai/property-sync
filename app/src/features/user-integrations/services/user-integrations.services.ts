@@ -68,6 +68,22 @@ export const updateUserIntegrationConnectionStatus = async (
   }
 };
 
+export const updateUserIntegrationConnectionDefault = async (
+  id: string,
+  isDefault: boolean,
+): Promise<MaskedUserIntegrationConnection> => {
+  try {
+    const response = await axiosInstance.patch(ApiRoutes.integrations.connectionDefault(id), {
+      is_default: isDefault,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to update default integration. Please try again.",
+    );
+  }
+};
+
 export const deleteUserIntegrationConnection = async (id: string): Promise<void> => {
   try {
     await axiosInstance.delete(ApiRoutes.integrations.connection(id));

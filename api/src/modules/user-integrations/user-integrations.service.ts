@@ -1,10 +1,11 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { AiProvider, IntegrationType } from 'generated/prisma';
+import { AiProvider, AuthRole, IntegrationType } from 'generated/prisma';
 import {
   applyCredentialFields,
   validateCredentialsForAuthType,
@@ -34,6 +35,7 @@ export class UserIntegrationsService {
         api_key_secret: { not: null },
         integration_target: { integration_type: integrationType },
       },
+      orderBy: [{ is_default: 'desc' }, { created_at: 'asc' }],
     });
 
     if (!userIntegration?.api_key_secret) {
@@ -71,6 +73,7 @@ export class UserIntegrationsService {
           api_key_secret: { not: null },
           integration_target: { integration_type: integrationType },
         },
+        orderBy: [{ is_default: 'desc' }, { created_at: 'asc' }],
       });
 
       if (userIntegration?.api_key_secret) {
@@ -164,10 +167,20 @@ export class UserIntegrationsService {
 
     validateCredentialsForAuthType(target.auth_type, dto);
 
+    const existingCount = target.allow_multiple
+      ? await this.prisma.userIntegration.count({
+          where: {
+            user_id: userId,
+            integration_target_id: target.id,
+          },
+        })
+      : 0;
+
     const connection = await this.prisma.userIntegration.create({
       data: {
         user_id: userId,
         integration_target_id: target.id,
+        is_default: target.allow_multiple && existingCount === 0,
         ...applyCredentialFields(dto),
       },
       include: {
@@ -244,6 +257,7 @@ export class UserIntegrationsService {
 
   async updateConnectionStatus(
     userId: string,
+    userRole: AuthRole,
     connectionId: string,
     isActive: boolean,
   ) {
@@ -252,6 +266,16 @@ export class UserIntegrationsService {
     if (!connection.integration_target.is_enabled) {
       throw new BadRequestException(
         'This integration is not enabled for changes',
+      );
+    }
+
+    if (
+      connection.integration_target.integration_type === IntegrationType.ESTATEWEB &&
+      userRole !== AuthRole.ADMIN &&
+      userRole !== AuthRole.SUPER_ADMIN
+    ) {
+      throw new ForbiddenException(
+        'Only admins can change EstateWeb integration status',
       );
     }
 
@@ -279,6 +303,90 @@ export class UserIntegrationsService {
     };
   }
 
+  async updateConnectionDefault(
+    userId: string,
+    userRole: AuthRole,
+    connectionId: string,
+    isDefault: boolean,
+  ) {
+    if (userRole !== AuthRole.ADMIN && userRole !== AuthRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Only admins can change the default integration');
+    }
+
+    const connection = await this.findOwnedConnection(userId, connectionId);
+
+    if (!connection.integration_target.allow_multiple) {
+      throw new BadRequestException(
+        'Default integration can only be set when multiple connections are allowed',
+      );
+    }
+
+    if (!connection.integration_target.is_enabled) {
+      throw new BadRequestException(
+        'This integration is not enabled for changes',
+      );
+    }
+
+    if (!isDefault) {
+      const updated = await this.prisma.userIntegration.update({
+        where: { id: connectionId },
+        data: { is_default: false },
+        include: {
+          integration_target: {
+            select: {
+              id: true,
+              integration_type: true,
+              auth_type: true,
+              base_url: true,
+              allow_multiple: true,
+              is_visible: true,
+              is_enabled: true,
+            },
+          },
+        },
+      });
+
+      return {
+        ...maskUserIntegration(updated),
+        integration_target: updated.integration_target,
+      };
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.userIntegration.updateMany({
+        where: {
+          user_id: userId,
+          integration_target_id: connection.integration_target_id,
+          id: { not: connectionId },
+        },
+        data: { is_default: false },
+      });
+
+      return tx.userIntegration.update({
+        where: { id: connectionId },
+        data: { is_default: true },
+        include: {
+          integration_target: {
+            select: {
+              id: true,
+              integration_type: true,
+              auth_type: true,
+              base_url: true,
+              allow_multiple: true,
+              is_visible: true,
+              is_enabled: true,
+            },
+          },
+        },
+      });
+    });
+
+    return {
+      ...maskUserIntegration(updated),
+      integration_target: updated.integration_target,
+    };
+  }
+
   async deleteConnection(userId: string, connectionId: string) {
     const connection = await this.findOwnedConnection(userId, connectionId);
 
@@ -288,7 +396,27 @@ export class UserIntegrationsService {
       );
     }
 
+    const wasDefault = connection.is_default;
+    const targetId = connection.integration_target_id;
+
     await this.prisma.userIntegration.delete({ where: { id: connectionId } });
+
+    if (wasDefault && connection.integration_target.allow_multiple) {
+      const nextDefault = await this.prisma.userIntegration.findFirst({
+        where: {
+          user_id: userId,
+          integration_target_id: targetId,
+        },
+        orderBy: { created_at: 'asc' },
+      });
+
+      if (nextDefault) {
+        await this.prisma.userIntegration.update({
+          where: { id: nextDefault.id },
+          data: { is_default: true },
+        });
+      }
+    }
   }
 
   private async findOwnedConnection(userId: string, connectionId: string) {

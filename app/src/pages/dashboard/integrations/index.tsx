@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Form, Modal, Switch, useOverlayState } from "@heroui/react";
+import { Form, Modal, Switch, useOverlayState, Chip } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import { Skeleton } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -11,6 +11,7 @@ import {
   useConnectIntegration,
   useDisconnectIntegration,
   useUpdateUserIntegrationConnection,
+  useUpdateUserIntegrationConnectionDefault,
   useUpdateUserIntegrationConnectionStatus,
   useUserIntegrationConnections,
 } from "@/features/user-integrations/hooks/use-user-integrations";
@@ -29,6 +30,8 @@ import { getIntegrationTypeDescription } from "@/config/constants/dropdowns/inte
 import { getAuthTypeLabel } from "@/config/constants/dropdowns/auth-type-form.options";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { LinkConnectionToAgencyModal } from "./components/link-connection-to-agency-modal";
+import { RoleGate } from "@/components/providers/role-gate";
+import { RoleTypes } from "@/features/user/interfaces/user.interface";
 
 const VIEW_ONLY_INTEGRATION_MESSAGE =
   "View only — changes are disabled for this integration";
@@ -50,6 +53,7 @@ function TargetCard({
   onEdit,
   onDisconnectRequest,
   onToggleActive,
+  onSetDefault,
   isPending,
 }: {
   target: AvailableIntegrationTarget;
@@ -58,6 +62,7 @@ function TargetCard({
   onEdit: (connection: MaskedUserIntegrationConnection) => void;
   onDisconnectRequest: (connection: MaskedUserIntegrationConnection) => void;
   onToggleActive: (connection: MaskedUserIntegrationConnection, next: boolean) => void;
+  onSetDefault: (connection: MaskedUserIntegrationConnection) => void;
   isPending: boolean;
 }) {
   const targetConnections = connections.filter(
@@ -87,7 +92,21 @@ function TargetCard({
 
       {targetConnections.length > 0 && (
         <div className="flex flex-col gap-3 border-t border-border pt-4">
-          {targetConnections.map((connection) => (
+          {targetConnections.map((connection) => {
+            const activeSwitch = (
+              <Switch
+                isSelected={connection.is_active}
+                isDisabled={isReadOnly || isPending}
+                onChange={(next) => onToggleActive(connection, next)}
+              >
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
+                <Switch.Content>{connection.is_active ? "Active" : "Disabled"}</Switch.Content>
+              </Switch>
+            );
+
+            return (
             <div key={connection.id} className="flex flex-col gap-2 rounded-lg bg-surface-secondary p-3">
               <CredentialStatusIndicators
                 hasApiKey={connection.has_api_key_secret}
@@ -96,18 +115,30 @@ function TargetCard({
                 email={connection.email}
                 username={connection.username}
               />
+              {target.allow_multiple && connection.is_default ? (
+                <Chip size="sm" variant="soft" color="accent">
+                  <Chip.Label>Default</Chip.Label>
+                </Chip>
+              ) : null}
               <div className="flex items-center justify-between gap-2">
-                <Switch
-                  isSelected={connection.is_active}
-                  isDisabled={isReadOnly || isPending}
-                  onChange={(next) => onToggleActive(connection, next)}
-                >
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
-                  <Switch.Content>{connection.is_active ? "Active" : "Disabled"}</Switch.Content>
-                </Switch>
-                <div className="flex gap-2">
+                {target.integration_type === IntegrationTypes.ESTATEWEB ? (
+                  <RoleGate roles={[RoleTypes.ADMIN]}>{activeSwitch}</RoleGate>
+                ) : (
+                  activeSwitch
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {target.allow_multiple && !connection.is_default ? (
+                    <RoleGate roles={[RoleTypes.ADMIN]}>
+                      <ActionButtonWithPending
+                        size="sm"
+                        variant="secondary"
+                        onPress={() => onSetDefault(connection)}
+                        isDisabled={isReadOnly || isPending}
+                      >
+                        Set as default
+                      </ActionButtonWithPending>
+                    </RoleGate>
+                  ) : null}
                   <ActionButtonWithPending
                     size="sm"
                     variant="secondary"
@@ -129,7 +160,8 @@ function TargetCard({
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </article>
@@ -156,6 +188,7 @@ export default function DashboardIntegrationsPage() {
   const connectIntegration = useConnectIntegration();
   const updateConnection = useUpdateUserIntegrationConnection();
   const updateStatus = useUpdateUserIntegrationConnectionStatus();
+  const updateDefault = useUpdateUserIntegrationConnectionDefault();
   const disconnectIntegration = useDisconnectIntegration();
 
   const connectForm = useForm<ConnectCredentialsFormValues>();
@@ -165,6 +198,7 @@ export default function DashboardIntegrationsPage() {
     connectIntegration.isPending ||
     updateConnection.isPending ||
     updateStatus.isPending ||
+    updateDefault.isPending ||
     disconnectIntegration.isPending;
 
   const sortedTargets = useMemo(
@@ -293,6 +327,9 @@ export default function DashboardIntegrationsPage() {
               onDisconnectRequest={openDisconnect}
               onToggleActive={(connection, next) =>
                 updateStatus.mutate({ id: connection.id, isActive: next })
+              }
+              onSetDefault={(connection) =>
+                updateDefault.mutate({ id: connection.id, isDefault: true })
               }
               isPending={isPending}
             />

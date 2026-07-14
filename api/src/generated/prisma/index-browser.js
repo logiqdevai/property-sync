@@ -152,6 +152,7 @@ exports.Prisma.UserIntegrationScalarFieldEnum = {
   password: 'password',
   config: 'config',
   is_active: 'is_active',
+  is_default: 'is_default',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };

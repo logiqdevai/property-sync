@@ -27,6 +27,7 @@ export interface MaskedUserIntegrationConnection {
   has_password: boolean;
   has_config: boolean;
   is_active: boolean;
+  is_default: boolean;
   created_at: string;
   updated_at: string;
   integration_target: {

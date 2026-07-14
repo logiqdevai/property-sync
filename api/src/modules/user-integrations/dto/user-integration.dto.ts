@@ -64,3 +64,9 @@ export class UpdateUserIntegrationStatusDto {
   @IsBoolean()
   is_active: boolean;
 }
+
+export class UpdateUserIntegrationDefaultDto {
+  @ApiProperty()
+  @IsBoolean()
+  is_default: boolean;
+}

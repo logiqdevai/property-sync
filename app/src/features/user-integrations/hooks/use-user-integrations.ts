@@ -6,6 +6,7 @@ import {
   getIntegrationTargetsForUser,
   getUserIntegrationConnections,
   updateUserIntegrationConnection,
+  updateUserIntegrationConnectionDefault,
   updateUserIntegrationConnectionStatus,
 } from "../services/user-integrations.services";
 import type {
@@ -80,6 +81,26 @@ export const useUpdateUserIntegrationConnectionStatus = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not update integration status",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useUpdateUserIntegrationConnectionDefault = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, isDefault }: { id: string; isDefault: boolean }) =>
+      updateUserIntegrationConnectionDefault(id, isDefault),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userIntegrationsConnections"] });
+      toast({ title: "Default integration updated", duration: 2000, variant: "success" });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not update default integration",
         description: error.message,
         variant: "error",
       });

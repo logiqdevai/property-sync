@@ -308,6 +308,7 @@ model UserIntegration {
   password       String?
   config         Json?
   is_active      Boolean  @default(true)
+  is_default     Boolean  @default(false)
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
 

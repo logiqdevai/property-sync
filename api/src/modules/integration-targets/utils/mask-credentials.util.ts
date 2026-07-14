@@ -10,6 +10,7 @@ export type UserIntegrationRecord = {
   password: string | null;
   config: Prisma.JsonValue | null;
   is_active: boolean;
+  is_default: boolean;
   created_at: Date;
   updated_at: Date;
 };

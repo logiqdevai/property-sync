@@ -35,6 +35,9 @@ export class MaskedUserIntegrationEntity {
   is_active: boolean;
 
   @ApiProperty()
+  is_default: boolean;
+
+  @ApiProperty()
   created_at: Date;
 
   @ApiProperty()

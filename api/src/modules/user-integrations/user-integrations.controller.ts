@@ -16,11 +16,15 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
+import { RolesGuard } from '@/shared/guards/roles.guard';
+import { Roles } from '@/shared/decorators/roles.decorator';
 import { CurrentUser } from '@/shared/decorators/current-user.decorator';
+import { AuthRole } from 'generated/prisma';
 import { UserIntegrationsService } from './user-integrations.service';
 import {
   CreateUserIntegrationDto,
   UpdateUserIntegrationDto,
+  UpdateUserIntegrationDefaultDto,
   UpdateUserIntegrationStatusDto,
 } from './dto/user-integration.dto';
 import {
@@ -77,13 +81,34 @@ export class UserIntegrationsController {
   @ApiResponse({ status: 200, type: UserIntegrationConnectionEntity })
   updateConnectionStatus(
     @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: AuthRole,
     @Param('id') id: string,
     @Body() dto: UpdateUserIntegrationStatusDto,
   ) {
     return this.userIntegrationsService.updateConnectionStatus(
       userId,
+      role,
       id,
       dto.is_active,
+    );
+  }
+
+  @Patch('connections/:id/default')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN', 'SUPER_ADMIN')
+  @ApiOperation({ summary: 'Set or clear the default integration connection' })
+  @ApiResponse({ status: 200, type: UserIntegrationConnectionEntity })
+  updateConnectionDefault(
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: AuthRole,
+    @Param('id') id: string,
+    @Body() dto: UpdateUserIntegrationDefaultDto,
+  ) {
+    return this.userIntegrationsService.updateConnectionDefault(
+      userId,
+      role,
+      id,
+      dto.is_default,
     );
   }
 

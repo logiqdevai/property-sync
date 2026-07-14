@@ -5925,6 +5925,7 @@ export namespace Prisma {
     username: string | null
     password: string | null
     is_active: boolean | null
+    is_default: boolean | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -5938,6 +5939,7 @@ export namespace Prisma {
     username: string | null
     password: string | null
     is_active: boolean | null
+    is_default: boolean | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -5952,6 +5954,7 @@ export namespace Prisma {
     password: number
     config: number
     is_active: number
+    is_default: number
     created_at: number
     updated_at: number
     _all: number
@@ -5967,6 +5970,7 @@ export namespace Prisma {
     username?: true
     password?: true
     is_active?: true
+    is_default?: true
     created_at?: true
     updated_at?: true
   }
@@ -5980,6 +5984,7 @@ export namespace Prisma {
     username?: true
     password?: true
     is_active?: true
+    is_default?: true
     created_at?: true
     updated_at?: true
   }
@@ -5994,6 +5999,7 @@ export namespace Prisma {
     password?: true
     config?: true
     is_active?: true
+    is_default?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -6081,6 +6087,7 @@ export namespace Prisma {
     password: string | null
     config: JsonValue | null
     is_active: boolean
+    is_default: boolean
     created_at: Date
     updated_at: Date
     _count: UserIntegrationCountAggregateOutputType | null
@@ -6112,6 +6119,7 @@ export namespace Prisma {
     password?: boolean
     config?: boolean
     is_active?: boolean
+    is_default?: boolean
     created_at?: boolean
     updated_at?: boolean
     sync_runs?: boolean | UserIntegration$sync_runsArgs<ExtArgs>
@@ -6131,6 +6139,7 @@ export namespace Prisma {
     password?: boolean
     config?: boolean
     is_active?: boolean
+    is_default?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -6147,6 +6156,7 @@ export namespace Prisma {
     password?: boolean
     config?: boolean
     is_active?: boolean
+    is_default?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -6163,11 +6173,12 @@ export namespace Prisma {
     password?: boolean
     config?: boolean
     is_active?: boolean
+    is_default?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type UserIntegrationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "integration_target_id" | "user_id" | "api_key_secret" | "email" | "username" | "password" | "config" | "is_active" | "created_at" | "updated_at", ExtArgs["result"]["userIntegration"]>
+  export type UserIntegrationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "integration_target_id" | "user_id" | "api_key_secret" | "email" | "username" | "password" | "config" | "is_active" | "is_default" | "created_at" | "updated_at", ExtArgs["result"]["userIntegration"]>
   export type UserIntegrationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sync_runs?: boolean | UserIntegration$sync_runsArgs<ExtArgs>
     tracked_agency_link?: boolean | UserIntegration$tracked_agency_linkArgs<ExtArgs>
@@ -6202,6 +6213,7 @@ export namespace Prisma {
       password: string | null
       config: Prisma.JsonValue | null
       is_active: boolean
+      is_default: boolean
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["userIntegration"]>
@@ -6640,6 +6652,7 @@ export namespace Prisma {
     readonly password: FieldRef<"UserIntegration", 'String'>
     readonly config: FieldRef<"UserIntegration", 'Json'>
     readonly is_active: FieldRef<"UserIntegration", 'Boolean'>
+    readonly is_default: FieldRef<"UserIntegration", 'Boolean'>
     readonly created_at: FieldRef<"UserIntegration", 'DateTime'>
     readonly updated_at: FieldRef<"UserIntegration", 'DateTime'>
   }
@@ -29809,6 +29822,7 @@ export namespace Prisma {
     password: 'password',
     config: 'config',
     is_active: 'is_active',
+    is_default: 'is_default',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -30789,6 +30803,7 @@ export namespace Prisma {
     password?: StringNullableFilter<"UserIntegration"> | string | null
     config?: JsonNullableFilter<"UserIntegration">
     is_active?: BoolFilter<"UserIntegration"> | boolean
+    is_default?: BoolFilter<"UserIntegration"> | boolean
     created_at?: DateTimeFilter<"UserIntegration"> | Date | string
     updated_at?: DateTimeFilter<"UserIntegration"> | Date | string
     sync_runs?: CmsSyncRunListRelationFilter
@@ -30807,6 +30822,7 @@ export namespace Prisma {
     password?: SortOrderInput | SortOrder
     config?: SortOrderInput | SortOrder
     is_active?: SortOrder
+    is_default?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     sync_runs?: CmsSyncRunOrderByRelationAggregateInput
@@ -30828,6 +30844,7 @@ export namespace Prisma {
     password?: StringNullableFilter<"UserIntegration"> | string | null
     config?: JsonNullableFilter<"UserIntegration">
     is_active?: BoolFilter<"UserIntegration"> | boolean
+    is_default?: BoolFilter<"UserIntegration"> | boolean
     created_at?: DateTimeFilter<"UserIntegration"> | Date | string
     updated_at?: DateTimeFilter<"UserIntegration"> | Date | string
     sync_runs?: CmsSyncRunListRelationFilter
@@ -30846,6 +30863,7 @@ export namespace Prisma {
     password?: SortOrderInput | SortOrder
     config?: SortOrderInput | SortOrder
     is_active?: SortOrder
+    is_default?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: UserIntegrationCountOrderByAggregateInput
@@ -30866,6 +30884,7 @@ export namespace Prisma {
     password?: StringNullableWithAggregatesFilter<"UserIntegration"> | string | null
     config?: JsonNullableWithAggregatesFilter<"UserIntegration">
     is_active?: BoolWithAggregatesFilter<"UserIntegration"> | boolean
+    is_default?: BoolWithAggregatesFilter<"UserIntegration"> | boolean
     created_at?: DateTimeWithAggregatesFilter<"UserIntegration"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserIntegration"> | Date | string
   }
@@ -32990,6 +33009,7 @@ export namespace Prisma {
     password?: string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: boolean
+    is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunCreateNestedManyWithoutUser_integrationInput
@@ -33008,6 +33028,7 @@ export namespace Prisma {
     password?: string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: boolean
+    is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutUser_integrationInput
@@ -33022,6 +33043,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUpdateManyWithoutUser_integrationNestedInput
@@ -33040,6 +33062,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutUser_integrationNestedInput
@@ -33056,6 +33079,7 @@ export namespace Prisma {
     password?: string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: boolean
+    is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -33068,6 +33092,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -33082,6 +33107,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -35612,6 +35638,7 @@ export namespace Prisma {
     password?: SortOrder
     config?: SortOrder
     is_active?: SortOrder
+    is_default?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -35625,6 +35652,7 @@ export namespace Prisma {
     username?: SortOrder
     password?: SortOrder
     is_active?: SortOrder
+    is_default?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -35638,6 +35666,7 @@ export namespace Prisma {
     username?: SortOrder
     password?: SortOrder
     is_active?: SortOrder
+    is_default?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -40133,6 +40162,7 @@ export namespace Prisma {
     password?: string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: boolean
+    is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunCreateNestedManyWithoutUser_integrationInput
@@ -40149,6 +40179,7 @@ export namespace Prisma {
     password?: string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: boolean
+    is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutUser_integrationInput
@@ -40284,6 +40315,7 @@ export namespace Prisma {
     password?: StringNullableFilter<"UserIntegration"> | string | null
     config?: JsonNullableFilter<"UserIntegration">
     is_active?: BoolFilter<"UserIntegration"> | boolean
+    is_default?: BoolFilter<"UserIntegration"> | boolean
     created_at?: DateTimeFilter<"UserIntegration"> | Date | string
     updated_at?: DateTimeFilter<"UserIntegration"> | Date | string
   }
@@ -40296,6 +40328,7 @@ export namespace Prisma {
     password?: string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: boolean
+    is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunCreateNestedManyWithoutUser_integrationInput
@@ -40312,6 +40345,7 @@ export namespace Prisma {
     password?: string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: boolean
+    is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutUser_integrationInput
@@ -41445,6 +41479,7 @@ export namespace Prisma {
     password?: string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: boolean
+    is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunCreateNestedManyWithoutUser_integrationInput
@@ -41462,6 +41497,7 @@ export namespace Prisma {
     password?: string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: boolean
+    is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutUser_integrationInput
@@ -41540,6 +41576,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUpdateManyWithoutUser_integrationNestedInput
@@ -41557,6 +41594,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutUser_integrationNestedInput
@@ -44160,6 +44198,7 @@ export namespace Prisma {
     password?: string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: boolean
+    is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
     tracked_agency_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_integrationInput
@@ -44177,6 +44216,7 @@ export namespace Prisma {
     password?: string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: boolean
+    is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
     tracked_agency_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_integrationInput
@@ -44279,6 +44319,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agency_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_integrationNestedInput
@@ -44296,6 +44337,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agency_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_integrationNestedInput
@@ -45666,6 +45708,7 @@ export namespace Prisma {
     password?: string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: boolean
+    is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -45834,6 +45877,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUpdateManyWithoutUser_integrationNestedInput
@@ -45850,6 +45894,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutUser_integrationNestedInput
@@ -45865,6 +45910,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45878,6 +45924,7 @@ export namespace Prisma {
     password?: string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: boolean
+    is_default?: boolean
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -45890,6 +45937,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUpdateManyWithoutUser_integrationNestedInput
@@ -45906,6 +45954,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutUser_integrationNestedInput
@@ -45921,6 +45970,7 @@ export namespace Prisma {
     password?: NullableStringFieldUpdateOperationsInput | string | null
     config?: NullableJsonNullValueInput | InputJsonValue
     is_active?: BoolFieldUpdateOperationsInput | boolean
+    is_default?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
