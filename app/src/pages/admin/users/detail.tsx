@@ -9,6 +9,8 @@ import {
   type RoleType,
 } from "@/features/user/interfaces/user.interface";
 import { CredentialStatusIndicators } from "./components/integration-credential-fields";
+import { getIntegrationTypeLabel } from "@/features/integration-targets/utils/integration-type-label.utils";
+import { getAuthTypeLabel } from "@/features/integration-targets/utils/auth-type-label.utils";
 import { formatDate } from "@/lib/date";
 
 function RoleBadge({ role }: { role: RoleType }) {
@@ -186,9 +188,11 @@ export default function AdminUserDetailPage() {
                             to={Routes.admin.integrationTargets.detail(integration.integration_target_id)}
                             className="text-accent hover:underline"
                           >
-                            {integration.integration_target.integration_type}
+                            {getIntegrationTypeLabel(integration.integration_target.integration_type)}
                           </Link>
-                          <p className="text-xs text-muted">{integration.integration_target.auth_type}</p>
+                          <p className="text-xs text-muted">
+                            {getAuthTypeLabel(integration.integration_target.auth_type)}
+                          </p>
                         </Table.Cell>
                         <Table.Cell>
                           <CredentialStatusIndicators

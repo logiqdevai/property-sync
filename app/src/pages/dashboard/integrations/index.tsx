@@ -24,6 +24,11 @@ import {
   mapEditFormToPayload,
   type ConnectCredentialsFormValues,
 } from "@/features/user-integrations/validation-schemas/user-integrations.schema";
+import { getIntegrationTypeLabel } from "@/features/integration-targets/utils/integration-type-label.utils";
+import { getAuthTypeLabel } from "@/features/integration-targets/utils/auth-type-label.utils";
+
+const VIEW_ONLY_INTEGRATION_MESSAGE =
+  "View only — changes are disabled for this integration";
 
 function IntegrationsCardSkeleton() {
   return (
@@ -61,20 +66,18 @@ function TargetCard({
     <article className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">{target.integration_type}</h2>
-          <p className="text-sm text-muted">{target.auth_type}</p>
+          <h2 className="text-lg font-semibold text-foreground">
+            {getIntegrationTypeLabel(target.integration_type)}
+          </h2>
+          <p className="text-sm text-muted">{getAuthTypeLabel(target.auth_type)}</p>
           {target.base_url && <p className="text-xs text-muted truncate">{target.base_url}</p>}
         </div>
-        {!isReadOnly && (!target.is_connected || target.allow_multiple) ? (
+        {(!target.is_connected || target.allow_multiple) ? (
           <ActionButtonWithPending size="sm" onPress={() => onConnect(target)} isDisabled={isPending}>
             Connect
           </ActionButtonWithPending>
         ) : null}
       </div>
-
-      {isReadOnly && (
-        <p className="text-sm text-muted">View only — changes are disabled for this integration</p>
-      )}
 
       {targetConnections.length > 0 && (
         <div className="flex flex-col gap-3 border-t border-border pt-4">
@@ -98,16 +101,16 @@ function TargetCard({
                   </Switch.Control>
                   <Switch.Content>{connection.is_active ? "Active" : "Disabled"}</Switch.Content>
                 </Switch>
-                {!isReadOnly ? (
-                  <div className="flex gap-2">
-                    <ActionButtonWithPending
-                      size="sm"
-                      variant="secondary"
-                      onPress={() => onEdit(connection)}
-                      isDisabled={isPending}
-                    >
-                      Edit
-                    </ActionButtonWithPending>
+                <div className="flex gap-2">
+                  <ActionButtonWithPending
+                    size="sm"
+                    variant="secondary"
+                    onPress={() => onEdit(connection)}
+                    isDisabled={isPending}
+                  >
+                    {isReadOnly ? "View" : "Edit"}
+                  </ActionButtonWithPending>
+                  {!isReadOnly ? (
                     <ActionButtonWithPending
                       size="sm"
                       variant="danger"
@@ -116,8 +119,8 @@ function TargetCard({
                     >
                       Disconnect
                     </ActionButtonWithPending>
-                  </div>
-                ) : null}
+                  ) : null}
+                </div>
               </div>
             </div>
           ))}
@@ -157,7 +160,12 @@ export default function DashboardIntegrationsPage() {
     disconnectIntegration.isPending;
 
   const sortedTargets = useMemo(
-    () => [...targets].sort((a, b) => a.integration_type.localeCompare(b.integration_type)),
+    () =>
+      [...targets].sort((a, b) =>
+        getIntegrationTypeLabel(a.integration_type).localeCompare(
+          getIntegrationTypeLabel(b.integration_type),
+        ),
+      ),
     [targets],
   );
 
@@ -242,6 +250,8 @@ export default function DashboardIntegrationsPage() {
   };
 
   const loading = targetsPending || connectionsPending;
+  const isConnectReadOnly = selectedTarget ? !selectedTarget.is_enabled : false;
+  const isEditReadOnly = editingConnection ? !editingConnection.integration_target.is_enabled : false;
 
   return (
     <div className="flex flex-col gap-8">
@@ -283,16 +293,23 @@ export default function DashboardIntegrationsPage() {
             <Modal.Dialog className="max-w-lg">
               <Modal.Header>
                 <Modal.Heading>
-                  Connect {selectedTarget?.integration_type ?? "integration"}
+                  Connect{" "}
+                  {selectedTarget
+                    ? getIntegrationTypeLabel(selectedTarget.integration_type)
+                    : "integration"}
                 </Modal.Heading>
               </Modal.Header>
               <Modal.Body>
                 {selectedTarget && (
                   <Form onSubmit={submitConnect} className="grid gap-4">
+                    {isConnectReadOnly && (
+                      <p className="text-sm text-muted">{VIEW_ONLY_INTEGRATION_MESSAGE}</p>
+                    )}
                     <IntegrationCredentialFields
                       authType={selectedTarget.auth_type}
                       register={connectForm.register}
                       errors={connectForm.formState.errors}
+                      isDisabled={isConnectReadOnly}
                     />
                     <div className="flex justify-end gap-2">
                       <ActionButtonWithPending
@@ -303,7 +320,11 @@ export default function DashboardIntegrationsPage() {
                       >
                         Cancel
                       </ActionButtonWithPending>
-                      <ActionButtonWithPending type="submit" isPending={connectIntegration.isPending}>
+                      <ActionButtonWithPending
+                        type="submit"
+                        isPending={connectIntegration.isPending}
+                        isDisabled={isConnectReadOnly}
+                      >
                         Connect
                       </ActionButtonWithPending>
                     </div>
@@ -325,6 +346,9 @@ export default function DashboardIntegrationsPage() {
               <Modal.Body>
                 {editingConnection && (
                   <Form onSubmit={submitEdit} className="grid gap-4">
+                    {isEditReadOnly && (
+                      <p className="text-sm text-muted">{VIEW_ONLY_INTEGRATION_MESSAGE}</p>
+                    )}
                     <CredentialStatusIndicators
                       hasApiKey={editingConnection.has_api_key_secret}
                       hasPassword={editingConnection.has_password}
@@ -337,6 +361,7 @@ export default function DashboardIntegrationsPage() {
                       register={editForm.register}
                       errors={editForm.formState.errors}
                       mode="edit"
+                      isDisabled={isEditReadOnly}
                     />
                     <div className="flex justify-end gap-2">
                       <ActionButtonWithPending
@@ -347,7 +372,11 @@ export default function DashboardIntegrationsPage() {
                       >
                         Cancel
                       </ActionButtonWithPending>
-                      <ActionButtonWithPending type="submit" isPending={updateConnection.isPending}>
+                      <ActionButtonWithPending
+                        type="submit"
+                        isPending={updateConnection.isPending}
+                        isDisabled={isEditReadOnly}
+                      >
                         Save
                       </ActionButtonWithPending>
                     </div>

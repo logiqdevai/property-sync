@@ -1,12 +1,4 @@
-import {
-  AuthTypes,
-  type AuthType,
-} from "@/features/integration-targets/interfaces/integration-targets.interfaces";
+import type { AuthType } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
+import { AuthTypeOptions } from "@/features/integration-targets/utils/auth-type-label.utils";
 
-export const AuthTypeFormOptions: { id: AuthType; label: string }[] = [
-  { id: AuthTypes.EMAIL_PASSWORD, label: "Email + password" },
-  { id: AuthTypes.USERNAME_PASSWORD, label: "Username + password" },
-  { id: AuthTypes.BEARER_TOKEN, label: "Bearer token" },
-  { id: AuthTypes.API_KEY, label: "API key" },
-  { id: AuthTypes.OAUTH, label: "OAuth" },
-];
+export const AuthTypeFormOptions: { id: AuthType; label: string }[] = AuthTypeOptions;

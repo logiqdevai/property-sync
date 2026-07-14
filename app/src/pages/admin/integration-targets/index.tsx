@@ -25,6 +25,8 @@ import {
   type IntegrationType,
 } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { IntegrationTypeFilterOptions } from "@/config/constants/dropdowns/integration-type-filter.options";
+import { getIntegrationTypeLabel } from "@/features/integration-targets/utils/integration-type-label.utils";
+import { getAuthTypeLabel } from "@/features/integration-targets/utils/auth-type-label.utils";
 import { AuthTypeFilterOptions } from "@/config/constants/dropdowns/auth-type-filter.options";
 import { VisibilityFilterOptions } from "@/config/constants/dropdowns/visibility-filter.options";
 
@@ -171,8 +173,8 @@ export default function IntegrationTargetsListPage() {
                       onAction={() => navigate(Routes.admin.integrationTargets.detail(target.id))}
                       className="cursor-pointer"
                     >
-                      <Table.Cell>{target.integration_type}</Table.Cell>
-                      <Table.Cell>{target.auth_type}</Table.Cell>
+                      <Table.Cell>{getIntegrationTypeLabel(target.integration_type)}</Table.Cell>
+                      <Table.Cell>{getAuthTypeLabel(target.auth_type)}</Table.Cell>
                       <Table.Cell>
                         <span className="text-sm text-muted truncate max-w-xs inline-block">
                           {target.base_url ?? "—"}

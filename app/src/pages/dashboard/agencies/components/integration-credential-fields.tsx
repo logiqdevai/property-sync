@@ -127,7 +127,7 @@ export function CredentialStatusIndicators({
       {email && <span>Email: {email}</span>}
       {username && <span>Username: {username}</span>}
       {hasApiKey && <span className="text-success">API key set</span>}
-      {hasPassword && <span className="text-success">Password set</span>}
+      {hasPassword && <span className="text-success"></span>}
       {hasConfig && <span className="text-success">OAuth config set</span>}
     </div>
   );

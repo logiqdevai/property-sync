@@ -27,6 +27,8 @@ import {
   mapEditFormToPayload,
   type ConnectCredentialsFormValues,
 } from "@/features/user-integrations/validation-schemas/user-integrations.schema";
+import { getIntegrationTypeLabel } from "@/features/integration-targets/utils/integration-type-label.utils";
+import { getAuthTypeLabel } from "@/features/integration-targets/utils/auth-type-label.utils";
 
 type AddAccountFormValues = ConnectCredentialsFormValues & { user_id: string };
 
@@ -133,10 +135,10 @@ export default function IntegrationTargetDetailPage() {
             Back to integration targets
           </Link>
           <p className="text-2xl font-semibold tracking-tight text-foreground mt-2">
-            {target.integration_type}
+            {getIntegrationTypeLabel(target.integration_type)}
           </p>
           <p className="text-sm text-muted">
-            {target.auth_type}
+            {getAuthTypeLabel(target.auth_type)}
             {target.base_url ? ` · ${target.base_url}` : ""}
           </p>
         </div>

@@ -17,6 +17,7 @@ interface IntegrationCredentialFieldsProps {
   register: UseFormRegister<any>;
   errors?: CredentialFieldErrors;
   mode?: "create" | "edit";
+  isDisabled?: boolean;
 }
 
 export function IntegrationCredentialFields({
@@ -24,6 +25,7 @@ export function IntegrationCredentialFields({
   register,
   errors = {},
   mode = "create",
+  isDisabled = false,
 }: IntegrationCredentialFieldsProps) {
   const optionalHint =
     mode === "edit" ? "Leave blank to keep the current value" : undefined;
@@ -34,7 +36,13 @@ export function IntegrationCredentialFields({
         <>
           <div className="flex flex-col gap-1">
             <Label htmlFor="credential-email">Email</Label>
-            <Input id="credential-email" {...register("email")} placeholder="user@example.com" fullWidth />
+            <Input
+              id="credential-email"
+              {...register("email")}
+              placeholder="user@example.com"
+              fullWidth
+              disabled={isDisabled}
+            />
             {errors.email && <FieldError>{errors.email.message}</FieldError>}
           </div>
           <div className="flex flex-col gap-1">
@@ -43,6 +51,7 @@ export function IntegrationCredentialFields({
               id="credential-password"
               {...register("password")}
               placeholder={optionalHint ?? "Password"}
+              disabled={isDisabled}
             />
             {errors.password && <FieldError>{errors.password.message}</FieldError>}
           </div>
@@ -53,7 +62,13 @@ export function IntegrationCredentialFields({
         <>
           <div className="flex flex-col gap-1">
             <Label htmlFor="credential-username">Username</Label>
-            <Input id="credential-username" {...register("username")} placeholder="Username" fullWidth />
+            <Input
+              id="credential-username"
+              {...register("username")}
+              placeholder="Username"
+              fullWidth
+              disabled={isDisabled}
+            />
             {errors.username && <FieldError>{errors.username.message}</FieldError>}
           </div>
           <div className="flex flex-col gap-1">
@@ -62,6 +77,7 @@ export function IntegrationCredentialFields({
               id="credential-password"
               {...register("password")}
               placeholder={optionalHint ?? "Password"}
+              disabled={isDisabled}
             />
             {errors.password && <FieldError>{errors.password.message}</FieldError>}
           </div>
@@ -75,6 +91,7 @@ export function IntegrationCredentialFields({
             id="credential-bearer"
             {...register("api_key_secret")}
             placeholder={optionalHint ?? "Bearer token"}
+            disabled={isDisabled}
           />
           {errors.api_key_secret && <FieldError>{errors.api_key_secret.message}</FieldError>}
         </div>
@@ -87,6 +104,7 @@ export function IntegrationCredentialFields({
             id="credential-api-key"
             {...register("api_key_secret")}
             placeholder={optionalHint ?? "API key"}
+            disabled={isDisabled}
           />
           {errors.api_key_secret && <FieldError>{errors.api_key_secret.message}</FieldError>}
         </div>
@@ -100,6 +118,7 @@ export function IntegrationCredentialFields({
             {...register("configJson")}
             placeholder='{"access_token":"..."}'
             fullWidth
+            disabled={isDisabled}
           />
           {errors.configJson && <FieldError>{errors.configJson.message}</FieldError>}
         </div>
@@ -127,7 +146,7 @@ export function CredentialStatusIndicators({
       {email && <span>Email: {email}</span>}
       {username && <span>Username: {username}</span>}
       {hasApiKey && <span className="text-success">API key set</span>}
-      {hasPassword && <span className="text-success">Password set</span>}
+      {hasPassword && <span className="text-success"></span>}
       {hasConfig && <span className="text-success">OAuth config set</span>}
     </div>
   );

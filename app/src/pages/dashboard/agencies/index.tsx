@@ -10,8 +10,10 @@ import {
   useOverlayState,
 } from "@heroui/react";
 import { Search } from "lucide-react";
+import { RoleGate } from "@/components/providers/role-gate";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { RoleTypes } from "@/features/user/interfaces/user.interface";
 import { TrackedAgencyIntegrationLink } from "./components/tracked-agency-integration-link";
 import {
   useTrackableAgencies,
@@ -87,85 +89,114 @@ function AgencyCard({
 
       {agency.is_tracked && prefs && (
         <div className="flex flex-col gap-3 border-t border-border pt-4">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={prefs.track_new_listings}
-              disabled={isPending}
-              onChange={(e) => savePrefs({ track_new_listings: e.target.checked })}
-            />
-            New listings
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={prefs.track_updated_listings}
-              disabled={isPending}
-              onChange={(e) => savePrefs({ track_updated_listings: e.target.checked })}
-            />
-            Updated listings
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={prefs.track_removed_listings}
-              disabled={isPending}
-              onChange={(e) => savePrefs({ track_removed_listings: e.target.checked })}
-            />
-            Removed listings
-          </label>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-sm text-foreground">New listings</span>
+              <span className="text-xs text-muted">Properties newly published by this agency.</span>
+            </div>
+            <Switch
+              isSelected={prefs.track_new_listings}
+              isDisabled={isPending}
+              onChange={(isSelected) => savePrefs({ track_new_listings: isSelected })}
+              aria-label="New listings"
+            >
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-sm text-foreground">Updated listings</span>
+              <span className="text-xs text-muted">Changes to price, status, or listing details.</span>
+            </div>
+            <Switch
+              isSelected={prefs.track_updated_listings}
+              isDisabled={isPending}
+              onChange={(isSelected) => savePrefs({ track_updated_listings: isSelected })}
+              aria-label="Updated listings"
+            >
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-sm text-foreground">Removed listings</span>
+              <span className="text-xs text-muted">Listings taken off the market or no longer available.</span>
+            </div>
+            <Switch
+              isSelected={prefs.track_removed_listings}
+              isDisabled={isPending}
+              onChange={(isSelected) => savePrefs({ track_removed_listings: isSelected })}
+              aria-label="Removed listings"
+            >
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch>
+          </div>
 
-          <Switch
-            isSelected={prefs.use_ai_batching}
-            isDisabled={isPending}
-            onChange={(isSelected) => savePrefs({ use_ai_batching: isSelected })}
-          >
-            <Switch.Control>
-              <Switch.Thumb />
-            </Switch.Control>
-            <Switch.Content>Use AI batching (lower cost, slower updates)</Switch.Content>
-          </Switch>
+          <RoleGate roles={[RoleTypes.ADMIN]}>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="text-sm text-foreground">Use AI batching</span>
+                <span className="text-xs text-muted">Lower cost, slower updates on scheduled crawls.</span>
+              </div>
+              <Switch
+                isSelected={prefs.use_ai_batching}
+                isDisabled={isPending}
+                onChange={(isSelected) => savePrefs({ use_ai_batching: isSelected })}
+                aria-label="Use AI batching"
+              >
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
+              </Switch>
+            </div>
 
-          <Select
-            selectedKey={prefs.ai_provider}
-            isDisabled={isPending}
-            onSelectionChange={(key) => savePrefs({ ai_provider: key as AiProvider })}
-            className="w-full"
-          >
-            <Label>AI provider</Label>
-            <Select.Trigger>
-              <Select.Value />
-              <Select.Indicator />
-            </Select.Trigger>
-            <Select.Popover>
-              <ListBox>
-                {AiProviderFormOptions.map((option) => (
-                  <ListBox.Item key={option.id} id={option.id}>
-                    {option.label}
-                  </ListBox.Item>
-                ))}
-              </ListBox>
-            </Select.Popover>
-          </Select>
+            <Select
+              selectedKey={prefs.ai_provider}
+              isDisabled={isPending}
+              onSelectionChange={(key) => savePrefs({ ai_provider: key as AiProvider })}
+              className="w-full"
+            >
+              <Label>AI provider</Label>
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {AiProviderFormOptions.map((option) => (
+                    <ListBox.Item key={option.id} id={option.id}>
+                      {option.label}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
 
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-muted">AI model (optional)</span>
-            <input
-              className="rounded-lg border border-border bg-background px-3 py-2"
-              value={prefs.ai_model ?? ""}
-              disabled={isPending}
-              onChange={(e) => savePrefs({ ai_model: e.target.value || null })}
-            />
-          </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-muted">AI model (optional)</span>
+              <input
+                className="rounded-lg border border-border bg-background px-3 py-2"
+                value={prefs.ai_model ?? ""}
+                disabled={isPending}
+                onChange={(e) => savePrefs({ ai_model: e.target.value || null })}
+              />
+            </label>
 
-          <p className="text-xs text-muted">
-            Batching applies on scheduled crawls when batching is enabled and provider is OpenAI.
-            Connect your AI key on{" "}
-            <Link to={Routes.dashboard.integrations} className="text-accent hover:underline">
-              Integrations
-            </Link>{" "}
-            before tracking.
-          </p>
+            <p className="text-xs text-muted">
+              Batching applies on scheduled crawls when batching is enabled and provider is OpenAI.
+              Connect your AI key on{" "}
+              <Link to={Routes.dashboard.integrations} className="text-accent hover:underline">
+                Integrations
+              </Link>{" "}
+              before tracking.
+            </p>
+          </RoleGate>
 
           <TrackedAgencyIntegrationLink
             agencyId={agency.id}

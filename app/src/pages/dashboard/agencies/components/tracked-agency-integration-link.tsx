@@ -12,8 +12,9 @@ import {
 import {
   getIntegrationConnectionLabel,
   getLinkableConnections,
-  LINKABLE_INTEGRATION_TYPE,
 } from "@/features/user-tracked-agencies/utils/integration-link.utils";
+import { getIntegrationTypeLabel } from "@/features/integration-targets/utils/integration-type-label.utils";
+import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { Routes } from "@/routes/routes";
 
 type TrackedAgencyIntegrationLinkProps = {
@@ -77,8 +78,8 @@ export function TrackedAgencyIntegrationLink({
       <div>
         <p className="text-sm font-medium text-foreground">CMS integration</p>
         <p className="text-xs text-muted">
-          Link one {LINKABLE_INTEGRATION_TYPE} connection to this tracked agency for future
-          property sync.
+          Link one {getIntegrationTypeLabel(IntegrationTypes.ESTATEWEB)} connection to this tracked
+          agency for future property sync.
         </p>
       </div>
 
@@ -86,7 +87,7 @@ export function TrackedAgencyIntegrationLink({
         <Skeleton className="h-10 w-full rounded-lg" />
       ) : linkableConnections.length === 0 ? (
         <p className="text-sm text-muted">
-          Connect {LINKABLE_INTEGRATION_TYPE} on{" "}
+          Connect {getIntegrationTypeLabel(IntegrationTypes.ESTATEWEB)} on{" "}
           <Link to={Routes.dashboard.integrations} className="text-accent hover:underline">
             Integrations
           </Link>{" "}
