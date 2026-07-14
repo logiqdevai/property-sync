@@ -20,6 +20,7 @@ import JobsListPage from "@/pages/admin/jobs";
 import JobDetailPage from "@/pages/admin/jobs/detail";
 import PropertiesListPage from "@/pages/admin/properties";
 import PropertyDetailPage from "@/pages/admin/properties/detail";
+import NotificationsListPage from "@/pages/admin/notifications";
 import DashboardAgenciesPage from "@/pages/dashboard/agencies";
 import DashboardPropertiesListPage from "@/pages/dashboard/properties";
 import DashboardPropertyDetailPage from "@/pages/dashboard/properties/detail";
@@ -84,6 +85,7 @@ export default function AppRoutes() {
         <Route path="jobs/:id" element={<JobDetailPage />} />
         <Route path="properties" element={<PropertiesListPage />} />
         <Route path="properties/:id" element={<PropertyDetailPage />} />
+        <Route path="notifications" element={<NotificationsListPage />} />
       </Route>
 
       {/* Default redirect */}

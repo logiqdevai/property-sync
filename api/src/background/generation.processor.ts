@@ -4,8 +4,16 @@ import { Job } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { UserIntegrationsService } from '@/modules/user-integrations/user-integrations.service';
 import { ComputerUseOrchestratorService } from '@/integrations/computer-use/computer-use-orchestrator.service';
+import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { GENERATION_QUEUE } from '@/core/queues/queues.constants';
-import { AiProvider, GenerationRunStatus, GenerationTrigger, IntegrationType } from 'generated/prisma';
+import {
+  AiProvider,
+  GenerationRunStatus,
+  GenerationTrigger,
+  IntegrationType,
+  NotificationSeverity,
+  NotificationType,
+} from 'generated/prisma';
 
 interface GenerationJobData {
   runId: string;
@@ -20,11 +28,34 @@ export class GenerationProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     private readonly userIntegrationsService: UserIntegrationsService,
     private readonly orchestrator: ComputerUseOrchestratorService,
+    private readonly notificationsService: NotificationsService,
   ) {
     super();
   }
 
   async process(job: Job<GenerationJobData>): Promise<void> {
+    try {
+      await this.processGenerationJob(job);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const run = await this.prisma.scraperGenerationRun.findUnique({
+        where: { id: job.data.runId },
+      });
+
+      this.notificationsService.create({
+        type: NotificationType.QUEUE_FAILURE,
+        severity: NotificationSeverity.CRITICAL,
+        title: 'Generation queue job failed',
+        message: `Generation job ${job.data.runId} failed: ${message}`,
+        source_agency_id: run?.source_agency_id,
+        scraper_id: run?.scraper_id ?? undefined,
+      });
+
+      throw error;
+    }
+  }
+
+  private async processGenerationJob(job: Job<GenerationJobData>): Promise<void> {
     const { runId, initiatedByUserId } = job.data;
     this.logger.log(`generation job received: ${runId}`);
 
@@ -35,7 +66,6 @@ export class GenerationProcessor extends WorkerHost {
       return;
     }
 
-    // A run cancelled while still QUEUED must not be revived once the job is picked up.
     if (run.status !== GenerationRunStatus.QUEUED) {
       this.logger.warn(`generation job ${runId}: run is ${run.status}, not QUEUED — skipping`);
       return;
@@ -78,10 +108,9 @@ export class GenerationProcessor extends WorkerHost {
     try {
       await this.orchestrator.run(runId, apiKey);
     } catch (error) {
-      // The orchestrator writes its own terminal status in a finally block; this is a
-      // safety-net log only for anything that escapes it (e.g. a DB write failure).
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`generation job ${runId} crashed outside the orchestrator: ${message}`);
+      throw error;
     }
   }
 }

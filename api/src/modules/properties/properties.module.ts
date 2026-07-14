@@ -11,6 +11,7 @@ import { PropertyNormalizationService } from './services/property-normalization.
 import { AnthropicNormalizationService } from './services/anthropic-normalization.service';
 import { AiBatchCompleteProcessor } from '@/background/ai-batch-complete.processor';
 import { UserPropertiesModule } from '@/modules/user-properties/user-properties.module';
+import { NotificationsModule } from '@/modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UserPropertiesModule } from '@/modules/user-properties/user-properties.
     UserIntegrationsModule,
     AiBatchModule,
     UserPropertiesModule,
+    NotificationsModule,
     BullModule.registerQueue({ name: AI_BATCH_COMPLETE_QUEUE }),
   ],
   controllers: [PropertiesController],

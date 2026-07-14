@@ -8,6 +8,7 @@ import { CrawlSchedulerCron } from '@/background/crawl-scheduler.cron';
 import { ScraperHealthCron } from '@/background/scraper-health.cron';
 import { ScraperGenerationModule } from '@/modules/scraper-generation/scraper-generation.module';
 import { PropertiesModule } from '@/modules/properties/properties.module';
+import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { CrawlRunsController } from './crawl-runs.controller';
 import { CrawlRunsService } from './crawl-runs.service';
 
@@ -17,6 +18,7 @@ import { CrawlRunsService } from './crawl-runs.service';
     CrawlerModule,
     ScraperGenerationModule,
     PropertiesModule,
+    NotificationsModule,
     BullModule.registerQueue({ name: CRAWL_QUEUE }),
   ],
   controllers: [CrawlRunsController],

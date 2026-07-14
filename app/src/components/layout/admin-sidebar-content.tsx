@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Building2, Bot, Sparkles, Activity, ListTodo, Home } from 'lucide-react';
+import { LayoutDashboard, Building2, Bot, Sparkles, Activity, ListTodo, Home, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes/routes';
+import { useUnreadNotificationsCount } from '@/features/notifications/hooks/use-notifications';
 
 interface AdminSidebarContentProps {
   collapsed: boolean;
@@ -16,9 +17,7 @@ const navItems = [
   { label: 'Crawl Runs', icon: Activity, href: Routes.admin.crawlRuns.list, end: false },
   { label: 'Job Queue', icon: ListTodo, href: Routes.admin.jobs.list, end: false },
   { label: 'Properties', icon: Home, href: Routes.admin.properties.list, end: false },
-  // CMS Targets (Feature 09)
-  // Notifications (Feature 08)
-  // Users (Feature 10)
+  { label: 'Notifications', icon: Bell, href: Routes.admin.notifications, end: false, showUnreadBadge: true },
 ];
 
 function NavItem({
@@ -28,6 +27,7 @@ function NavItem({
   end,
   collapsed,
   onNavigate,
+  badgeCount,
 }: {
   label: string;
   icon: React.ElementType;
@@ -35,6 +35,7 @@ function NavItem({
   end: boolean;
   collapsed: boolean;
   onNavigate?: () => void;
+  badgeCount?: number;
 }) {
   return (
     <li>
@@ -64,17 +65,31 @@ function NavItem({
       >
         {({ isActive }) => (
           <>
-            <Icon
-              className="shrink-0 transition-transform duration-200 group-hover:scale-[1.07]"
-              style={{ width: 16, height: 16, color: isActive ? 'var(--accent)' : undefined }}
-            />
+            <span className="relative shrink-0">
+              <Icon
+                className="transition-transform duration-200 group-hover:scale-[1.07]"
+                style={{ width: 16, height: 16, color: isActive ? 'var(--accent)' : undefined }}
+              />
+              {collapsed && badgeCount !== undefined && badgeCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-danger text-[10px] font-semibold text-white flex items-center justify-center">
+                  {badgeCount > 99 ? '99+' : badgeCount}
+                </span>
+              )}
+            </span>
             {!collapsed && (
-              <span
-                className="text-[13px] font-medium truncate leading-none"
-                style={{ letterSpacing: '-0.005em' }}
-              >
-                {label}
-              </span>
+              <>
+                <span
+                  className="text-[13px] font-medium truncate leading-none flex-1"
+                  style={{ letterSpacing: '-0.005em' }}
+                >
+                  {label}
+                </span>
+                {badgeCount !== undefined && badgeCount > 0 && (
+                  <span className="min-w-5 h-5 px-1.5 rounded-full bg-danger text-[10px] font-semibold text-white flex items-center justify-center">
+                    {badgeCount > 99 ? '99+' : badgeCount}
+                  </span>
+                )}
+              </>
             )}
           </>
         )}
@@ -84,9 +99,11 @@ function NavItem({
 }
 
 export default function AdminSidebarContent({ collapsed, onNavigate }: AdminSidebarContentProps) {
+  const { data: unreadCount = 0 } = useUnreadNotificationsCount();
+
   return (
     <ul className="space-y-0.5">
-      {navItems.map(({ label, icon, href, end }) => (
+      {navItems.map(({ label, icon, href, end, showUnreadBadge }) => (
         <NavItem
           key={href}
           label={label}
@@ -95,6 +112,7 @@ export default function AdminSidebarContent({ collapsed, onNavigate }: AdminSide
           end={end}
           collapsed={collapsed}
           onNavigate={onNavigate}
+          badgeCount={showUnreadBadge ? unreadCount : undefined}
         />
       ))}
     </ul>

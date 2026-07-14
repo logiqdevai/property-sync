@@ -37,5 +37,6 @@ export const Routes = {
             list: "/admin/properties",
             detail: (id: string) => `/admin/properties/${id}`,
         },
+        notifications: "/admin/notifications",
     },
 };

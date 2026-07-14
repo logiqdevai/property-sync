@@ -6,8 +6,8 @@
 > before writing code. Update this file when deliverables are verified.
 
 **Last updated:** 2026-07-14
-**Overall progress:** 60% (Feature 07 tasks 01–03 done — user tracking API + dashboard UI wired; track→crawl→UserProperty smoke test still pending)
-**Current focus:** Feature 08 — `docs/plan/tasks/feature-08-notifications/01-notifications-api.md`
+**Overall progress:** 70% (Feature 08 tasks 01–02 done — notifications API + triggers + admin UI; smoke test still pending)
+**Current focus:** Feature 09 — `docs/plan/tasks/feature-09-cms-config/01-cms-targets-admin-api.md`
 **Path correction:** the reference CLI referenced throughout this file as `scraper-generator/...` actually lives at `scripts/scraper-generator/...` (moved there in commit `363ef61`) — paths below have been corrected. If a future session still can't find it, run `git log --all --diff-filter=A --name-only | grep scraper-generator` to relocate it.
 **Dependency note:** Feature 04 task 01 needed `UserIntegrationsService.resolveActiveApiKey` / `resolveForSourceAgency`, which is formally Feature 09's deliverable but Feature 09 hasn't started yet. A **minimal** `api/src/modules/user-integrations/` module was added out-of-order containing just those two resolver methods (matching the contract in `directions/03-domain-model.md`'s `UserIntegration AI credential rule`) — no controllers/DTOs/CRUD. When Feature 09 is implemented, extend this module in place (add `integration-targets` module + this module's admin/user CRUD endpoints) rather than recreating it.
 **Local testing gap:** `GCS_PROJECT_ID`/`GCS_BUCKET_NAME` are unset in `api/.env.local`, so `ScreenshotStorageService` (used by the computer-use loop) can't upload screenshots locally, and there's no real `UserIntegration.api_key_secret` for Anthropic (a placeholder key was used for testing — real API calls would 401). Feature 04's happy path (`AWAITING_REVIEW` with a real AI-produced config, all the way through to an approved active `ScraperVersion`) is therefore **not yet verified against a real target site** — the failure path and the full UI flow around it (trigger → live replay → terminal state) are (see Feature 04 checklist). To fully verify, either configure a real GCS bucket + Anthropic key in `.env.local`, or accept this gap and verify later once real credentials exist.
@@ -38,7 +38,7 @@
 | 05 | Crawl Execution Engine & Job Queue | in progress | 90% | 4 files |
 | 06 | Property Normalization & Admin Properties | in progress | 90% | 3 files |
 | 07 | User Tracked Agencies & UserProperty | in progress | 90% | 3 files |
-| 08 | Notifications | not started | 0% | 2 files |
+| 08 | Notifications | in progress | 90% | 2 files |
 | 09 | CMS Targets & User Integrations (config only) | not started | 0% | 4 files |
 | 10 | Dashboard Home & Users Admin | not started | 0% | 2 files |
 
@@ -396,8 +396,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **Description:** Admins see and act on system notifications for the failure/anomaly signals defined in the spec.
 
-**Status:** not started
-**Progress:** 0%
+**Status:** in progress
+**Progress:** 90% (tasks 01–02 done — notifications API + real triggers + admin UI with unread badge; smoke test still pending)
 
 ### References
 
@@ -410,22 +410,34 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 | File | Status |
 |------|--------|
-| `tasks/feature-08-notifications/01-notifications-api.md` | ready |
-| `tasks/feature-08-notifications/02-notifications-frontend.md` | ready |
+| `tasks/feature-08-notifications/01-notifications-api.md` | done |
+| `tasks/feature-08-notifications/02-notifications-frontend.md` | done |
 
 ### Implementation checklist
 
 **API (`api/`)**
-- [ ] `api/src/modules/notifications/`
-- [ ] Replace the stub calls left in Feature 05/06 (broken scraper, property removal spike, large crawl failure, queue failure, website unavailable) with real `Notification` creation (`setImmediate` + `try/catch`)
-- [ ] List/filter/mark-read/mark-all-read endpoints
+- [x] `api/src/modules/notifications/` — module, controller, service, DTOs, entity; list/filter/mark-read/mark-all-read endpoints (`GET /admin/notifications`, `PATCH /admin/notifications/:id/read`, `PATCH /admin/notifications/read-all`); `@Roles('ADMIN','SUPER_ADMIN','SUPPORT')`
+- [x] `NotificationsService.create` — fire-and-forget via `setImmediate` + internal `try/catch`
+- [x] Replaced Feature 05 inline `prisma.notification.create()` stub in `crawl.processor.ts` with real service calls
+- [x] `BROKEN_SCRAPER` — when scraper marked broken (selector/zero-listings/consecutive failures, excluding network errors)
+- [x] `WEBSITE_UNAVAILABLE` — when crawl returns a network-level error (`crawlResult.networkError`)
+- [x] `LARGE_CRAWL_FAILURE` — when a `CrawlRun` ends `FAILED`
+- [x] `PROPERTY_REMOVAL_SPIKE` — after normalization removal detection when count exceeds named thresholds (`PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD=10`, `PROPERTY_REMOVAL_SPIKE_RATIO_THRESHOLD=0.3`); persists `total_removed` on `CrawlRun`
+- [x] `QUEUE_FAILURE` — top-level try/catch in `crawl.processor.ts` and `generation.processor.ts` before rethrow
+- [x] `NotificationsModule` imported in `app.module.ts`, `crawl-runs.module.ts`, `scraper-generation.module.ts`, `properties.module.ts`
+- [x] `tsc --noEmit` passes in `api/`
 
 **App (`app/`)**
-- [ ] `app/src/features/notifications/`
-- [ ] `/admin/notifications` list/filter/mark read, each row deep-links to the source record
+- [x] `app/src/features/notifications/` — interfaces, services, hooks (`useNotifications`, `useUnreadNotificationsCount` with 30s refetch, `useMarkNotificationRead`, `useMarkAllNotificationsRead`), type/severity chips
+- [x] `/admin/notifications` list — type/severity/is_read filters, mark read per row, mark all read, deep-links to agency/scraper/crawl-run source records
+- [x] Sidebar nav item "Notifications" with live unread-count badge via `useUnreadNotificationsCount()`
+- [x] `ApiRoutes.admin.notifications` + `Routes.admin.notifications`; routes wired
+- [x] `tsc -b` passes (only 2 pre-existing unrelated errors in `confirmation-dialog.tsx`/`password-input.tsx`)
 
 **Verification**
 - [ ] Smoke test: force a scraper into `BROKEN`, confirm a notification appears and can be marked read
+- [ ] Smoke test: unreachable host produces `WEBSITE_UNAVAILABLE` (not `BROKEN_SCRAPER`)
+- [ ] Smoke test: large removal count in one crawl produces `PROPERTY_REMOVAL_SPIKE`
 
 **Definition of done:** All five notification types are generated by their real triggers and manageable from the admin UI.
 

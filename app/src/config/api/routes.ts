@@ -62,6 +62,12 @@ export const ApiRoutes = {
             merge: "/admin/properties/merge",
             split: (id: string) => `/admin/properties/${id}/split`,
         },
+        notifications: {
+            prefix: "/admin/notifications",
+            list: "/admin/notifications",
+            markRead: (id: string) => `/admin/notifications/${id}/read`,
+            markAllRead: "/admin/notifications/read-all",
+        },
     },
     agencies: {
         prefix: "/agencies",

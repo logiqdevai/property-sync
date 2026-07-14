@@ -7,6 +7,11 @@ import { AiBatchClientService } from '@/integrations/ai-batch/services/ai-batch-
 import { PropertyAiBatchService } from '@/integrations/ai-batch/services/property-ai-batch.service';
 import { UserIntegrationsService } from '@/modules/user-integrations/user-integrations.service';
 import { UserPropertiesService } from '@/modules/user-properties/user-properties.service';
+import { NotificationsService } from '@/modules/notifications/notifications.service';
+import {
+  PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD,
+  PROPERTY_REMOVAL_SPIKE_RATIO_THRESHOLD,
+} from '@/modules/notifications/constants/notification.constants';
 import {
   DEFAULT_ANTHROPIC_NORMALIZATION_MODEL,
   DEFAULT_OPENAI_NORMALIZATION_MODEL,
@@ -30,6 +35,8 @@ import {
 import {
   AiProvider,
   IntegrationType,
+  NotificationSeverity,
+  NotificationType,
   Prisma,
   PropertyHistoryEventType,
   PropertyStatus,
@@ -58,6 +65,7 @@ export class PropertyNormalizationService {
     private readonly propertyAiBatchService: PropertyAiBatchService,
     private readonly aiBatchClient: AiBatchClientService,
     private readonly userPropertiesService: UserPropertiesService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async normalizeForCrawlRun(crawlRunId: string): Promise<void> {
@@ -120,12 +128,18 @@ export class PropertyNormalizationService {
     });
 
     if (sourceProperties.length === 0) {
-      await this.detectRemovalsAndReappearances(
+      const removalStats = await this.detectRemovalsAndReappearances(
         crawlRunId,
         crawlRun.source_agency_id,
         crawlRun.started_at,
         crawlRun.user_tracked_agency_id ?? undefined,
       );
+      await this.persistRemovalStats({
+        crawlRunId,
+        sourceAgencyId: crawlRun.source_agency_id,
+        scraperId: crawlRun.scraper_id ?? undefined,
+        ...removalStats,
+      });
       return;
     }
 
@@ -301,12 +315,24 @@ export class PropertyNormalizationService {
       });
     }
 
-    await this.detectRemovalsAndReappearances(
+    const removalStats = await this.detectRemovalsAndReappearances(
       params.crawlRunId,
       params.sourceAgencyId,
       params.crawlStartedAt,
       params.userTrackedAgencyId,
     );
+
+    await this.persistRemovalStats({
+      crawlRunId: params.crawlRunId,
+      sourceAgencyId: params.sourceAgencyId,
+      scraperId: (
+        await this.prisma.crawlRun.findUnique({
+          where: { id: params.crawlRunId },
+          select: { scraper_id: true },
+        })
+      )?.scraper_id ?? undefined,
+      ...removalStats,
+    });
 
     await this.persistAiCosts({
       crawlRunId: params.crawlRunId,
@@ -485,7 +511,7 @@ export class PropertyNormalizationService {
     sourceAgencyId: string,
     crawlStartedAt: Date,
     userTrackedAgencyId?: string,
-  ): Promise<void> {
+  ): Promise<{ removedCount: number; totalTracked: number }> {
     const agencyProperties = await this.prisma.property.findMany({
       where: {
         source_links: {
@@ -501,6 +527,8 @@ export class PropertyNormalizationService {
       },
     });
 
+    let removedCount = 0;
+
     for (const property of agencyProperties) {
       const anySeenThisCrawl = property.source_links.some(
         (link) =>
@@ -509,6 +537,7 @@ export class PropertyNormalizationService {
       );
 
       if (!anySeenThisCrawl && property.status !== PropertyStatus.REMOVED) {
+        removedCount++;
         await this.prisma.property.update({
           where: { id: property.id },
           data: { status: PropertyStatus.REMOVED },
@@ -527,6 +556,39 @@ export class PropertyNormalizationService {
         });
       }
     }
+
+    return { removedCount, totalTracked: agencyProperties.length };
+  }
+
+  private async persistRemovalStats(params: {
+    crawlRunId: string;
+    sourceAgencyId: string;
+    scraperId?: string;
+    removedCount: number;
+    totalTracked: number;
+  }): Promise<void> {
+    await this.prisma.crawlRun.update({
+      where: { id: params.crawlRunId },
+      data: { total_removed: params.removedCount },
+    });
+
+    const ratio =
+      params.totalTracked > 0 ? params.removedCount / params.totalTracked : 0;
+    const isSpike =
+      params.removedCount > PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD ||
+      ratio > PROPERTY_REMOVAL_SPIKE_RATIO_THRESHOLD;
+
+    if (!isSpike) return;
+
+    this.notificationsService.create({
+      type: NotificationType.PROPERTY_REMOVAL_SPIKE,
+      severity: NotificationSeverity.WARNING,
+      title: 'Property removal spike detected',
+      message: `${params.removedCount} of ${params.totalTracked} tracked properties were removed in crawl run ${params.crawlRunId}`,
+      source_agency_id: params.sourceAgencyId,
+      scraper_id: params.scraperId,
+      crawl_run_id: params.crawlRunId,
+    });
   }
 
   private async persistAiCosts(params: {

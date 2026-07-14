@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import { UserIntegrationsModule } from '@/modules/user-integrations/user-integrations.module';
+import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { ComputerUseModule } from '@/integrations/computer-use/computer-use.module';
 import { GENERATION_QUEUE } from '@/core/queues/queues.constants';
 import { GenerationProcessor } from '@/background/generation.processor';
@@ -12,6 +13,7 @@ import { ScraperGenerationService } from './scraper-generation.service';
   imports: [
     PrismaModule,
     UserIntegrationsModule,
+    NotificationsModule,
     ComputerUseModule,
     BullModule.registerQueue({ name: GENERATION_QUEUE }),
   ],

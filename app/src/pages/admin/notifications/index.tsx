@@ -1,0 +1,278 @@
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { Table, Select, ListBox, Pagination, Button } from "@heroui/react";
+import { Routes } from "@/routes/routes";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { NotificationSeverityChip } from "@/features/notifications/components/notification-severity-chip";
+import { NotificationTypeChip } from "@/features/notifications/components/notification-type-chip";
+import {
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useNotifications,
+} from "@/features/notifications/hooks/use-notifications";
+import {
+  NotificationSeverities,
+  NotificationTypes,
+  type Notification,
+  type NotificationListQuery,
+  type NotificationSeverity,
+  type NotificationType,
+} from "@/features/notifications/interfaces/notifications.interfaces";
+
+const typeFilterOptions: { id: NotificationType | "all"; label: string }[] = [
+  { id: "all", label: "All types" },
+  { id: NotificationTypes.BROKEN_SCRAPER, label: "Broken scraper" },
+  { id: NotificationTypes.PROPERTY_REMOVAL_SPIKE, label: "Removal spike" },
+  { id: NotificationTypes.LARGE_CRAWL_FAILURE, label: "Crawl failure" },
+  { id: NotificationTypes.QUEUE_FAILURE, label: "Queue failure" },
+  { id: NotificationTypes.WEBSITE_UNAVAILABLE, label: "Website unavailable" },
+];
+
+const severityFilterOptions: { id: NotificationSeverity | "all"; label: string }[] = [
+  { id: "all", label: "All severities" },
+  { id: NotificationSeverities.INFO, label: "Info" },
+  { id: NotificationSeverities.WARNING, label: "Warning" },
+  { id: NotificationSeverities.CRITICAL, label: "Critical" },
+];
+
+const readFilterOptions = [
+  { id: "all", label: "All" },
+  { id: "false", label: "Unread" },
+  { id: "true", label: "Read" },
+];
+
+function resolveNotificationLink(notification: Notification): string | null {
+  if (notification.source_agency_id) {
+    return Routes.admin.agencies.detail(notification.source_agency_id);
+  }
+  if (notification.scraper_id) {
+    return Routes.admin.scrapers.detail(notification.scraper_id);
+  }
+  if (notification.crawl_run_id) {
+    return Routes.admin.crawlRuns.detail(notification.crawl_run_id);
+  }
+  return null;
+}
+
+function formatTimestamp(value: string) {
+  return new Date(value).toLocaleString();
+}
+
+export default function NotificationsListPage() {
+  const [type, setType] = useState<NotificationType | "all">("all");
+  const [severity, setSeverity] = useState<NotificationSeverity | "all">("all");
+  const [readState, setReadState] = useState<"all" | "true" | "false">("all");
+  const [page, setPage] = useState(1);
+
+  const query = useMemo<NotificationListQuery>(
+    () => ({
+      page,
+      limit: 20,
+      ...(type !== "all" && { type }),
+      ...(severity !== "all" && { severity }),
+      ...(readState !== "all" && { is_read: readState === "true" }),
+    }),
+    [page, type, severity, readState],
+  );
+
+  const { data, isPending } = useNotifications(query);
+  const markRead = useMarkNotificationRead();
+  const markAllRead = useMarkAllNotificationsRead();
+
+  const notifications = data?.data ?? [];
+  const pagination = data?.pagination;
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-2xl font-semibold tracking-tight text-foreground">Notifications</p>
+          <p className="text-sm text-muted">
+            System alerts for scraper failures, crawl issues, and property anomalies.
+          </p>
+        </div>
+        <ActionButtonWithPending
+          variant="secondary"
+          onPress={() => markAllRead.mutateAsync()}
+          isPending={markAllRead.isPending}
+        >
+          Mark all read
+        </ActionButtonWithPending>
+      </div>
+
+      <div className="flex items-center gap-3 flex-wrap">
+        <Select
+          selectedKey={type}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setType(key as NotificationType | "all");
+          }}
+          className="w-48"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {typeFilterOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+
+        <Select
+          selectedKey={severity}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setSeverity(key as NotificationSeverity | "all");
+          }}
+          className="w-44"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {severityFilterOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+
+        <Select
+          selectedKey={readState}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setReadState(key as "all" | "true" | "false");
+          }}
+          className="w-36"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {readFilterOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+      </div>
+
+      {isPending ? (
+        <TableSkeleton rows={8} columns={6} />
+      ) : notifications.length === 0 ? (
+        <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
+          No notifications found.
+        </div>
+      ) : (
+        <>
+          <Table aria-label="Notifications">
+            <Table.Header>
+              <Table.Column isRowHeader>Title</Table.Column>
+              <Table.Column>Type</Table.Column>
+              <Table.Column>Severity</Table.Column>
+              <Table.Column>Created</Table.Column>
+              <Table.Column>Status</Table.Column>
+              <Table.Column>Actions</Table.Column>
+            </Table.Header>
+            <Table.Body>
+              {notifications.map((notification) => {
+                const link = resolveNotificationLink(notification);
+
+                return (
+                  <Table.Row key={notification.id}>
+                    <Table.Cell>
+                      <div className="flex flex-col gap-1 max-w-md">
+                        {link ? (
+                          <Link
+                            to={link}
+                            className="font-medium text-foreground hover:text-accent transition-colors"
+                          >
+                            {notification.title}
+                          </Link>
+                        ) : (
+                          <span className="font-medium text-foreground">{notification.title}</span>
+                        )}
+                        <span className="text-xs text-muted line-clamp-2">{notification.message}</span>
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <NotificationTypeChip type={notification.type} />
+                    </Table.Cell>
+                    <Table.Cell>
+                      <NotificationSeverityChip severity={notification.severity} />
+                    </Table.Cell>
+                    <Table.Cell className="text-sm text-muted whitespace-nowrap">
+                      {formatTimestamp(notification.created_at)}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <span className={notification.is_read ? "text-muted" : "text-foreground font-medium"}>
+                        {notification.is_read ? "Read" : "Unread"}
+                      </span>
+                    </Table.Cell>
+                    <Table.Cell>
+                      {!notification.is_read ? (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onPress={() => markRead.mutate(notification.id)}
+                          isDisabled={markRead.isPending}
+                        >
+                          Mark read
+                        </Button>
+                      ) : (
+                        <span className="text-muted text-sm">—</span>
+                      )}
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
+            </Table.Body>
+          </Table>
+
+          {pagination && pagination.total_pages > 1 && (
+            <Pagination>
+              <Pagination.Content>
+                <Pagination.Item>
+                  <Pagination.Previous
+                    isDisabled={!pagination.has_prev}
+                    onPress={() => setPage((p) => Math.max(1, p - 1))}
+                  >
+                    Previous
+                  </Pagination.Previous>
+                </Pagination.Item>
+                <Pagination.Item>
+                  <Pagination.Summary>
+                    Page {pagination.page} of {pagination.total_pages}
+                  </Pagination.Summary>
+                </Pagination.Item>
+                <Pagination.Item>
+                  <Pagination.Next
+                    isDisabled={!pagination.has_next}
+                    onPress={() => setPage((p) => p + 1)}
+                  >
+                    Next
+                  </Pagination.Next>
+                </Pagination.Item>
+              </Pagination.Content>
+            </Pagination>
+          )}
+        </>
+      )}
+    </div>
+  );
+}

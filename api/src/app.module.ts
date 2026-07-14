@@ -19,6 +19,7 @@ import { OpenAiWebhooksModule } from './modules/openai-webhooks/openai-webhooks.
 import { UserIntegrationsModule } from './modules/user-integrations/user-integrations.module';
 import { UserTrackedAgenciesModule } from './modules/user-tracked-agencies/user-tracked-agencies.module';
 import { UserPropertiesModule } from './modules/user-properties/user-properties.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { QueuesModule } from './core/queues/queues.module';
 import { ConfigModule } from './shared/config/env/env.module';
 
@@ -45,6 +46,7 @@ import { ConfigModule } from './shared/config/env/env.module';
     OpenAiWebhooksModule,
     UserTrackedAgenciesModule,
     UserPropertiesModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

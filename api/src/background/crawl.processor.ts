@@ -10,6 +10,7 @@ import { ScraperConfig } from '@/integrations/crawler/interfaces/scraper-config.
 import { contentHash } from '@/integrations/crawler/utils/crawler.utils';
 import { ScraperGenerationService } from '@/modules/scraper-generation/scraper-generation.service';
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
+import { NotificationsService } from '@/modules/notifications/notifications.service';
 import {
   CrawlRunStatus,
   GenerationTrigger,
@@ -36,11 +37,28 @@ export class CrawlProcessor extends WorkerHost {
     private readonly detailEnrichmentService: DetailEnrichmentService,
     private readonly scraperGenerationService: ScraperGenerationService,
     private readonly propertyNormalizationService: PropertyNormalizationService,
+    private readonly notificationsService: NotificationsService,
   ) {
     super();
   }
 
   async process(job: Job<CrawlJobData>): Promise<void> {
+    try {
+      await this.processCrawlJob(job);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.notificationsService.create({
+        type: NotificationType.QUEUE_FAILURE,
+        severity: NotificationSeverity.CRITICAL,
+        title: 'Crawl queue job failed',
+        message: `Crawl job ${job.data.crawlRunId} failed: ${message}`,
+        crawl_run_id: job.data.crawlRunId,
+      });
+      throw error;
+    }
+  }
+
+  private async processCrawlJob(job: Job<CrawlJobData>): Promise<void> {
     const { crawlRunId, jobLogId } = job.data;
     this.logger.log(`crawl job received: ${crawlRunId}`);
 
@@ -198,6 +216,16 @@ export class CrawlProcessor extends WorkerHost {
       });
 
       if (runFailed) {
+        this.notificationsService.create({
+          type: NotificationType.LARGE_CRAWL_FAILURE,
+          severity: NotificationSeverity.CRITICAL,
+          title: 'Crawl run failed',
+          message: crawlResult.errorSummary ?? 'Crawl failed',
+          source_agency_id: run.source_agency_id,
+          scraper_id: scraper.id,
+          crawl_run_id: crawlRunId,
+        });
+
         await this.handleScraperFailure({
           scraper,
           crawlRunId,
@@ -268,6 +296,16 @@ export class CrawlProcessor extends WorkerHost {
             error_message: message,
           },
         });
+
+        this.notificationsService.create({
+          type: NotificationType.LARGE_CRAWL_FAILURE,
+          severity: NotificationSeverity.CRITICAL,
+          title: 'Crawl run failed',
+          message,
+          source_agency_id: currentRun.source_agency_id,
+          scraper_id: currentRun.scraper_id ?? undefined,
+          crawl_run_id: crawlRunId,
+        });
       }
 
       if (currentRun?.scraper) {
@@ -276,7 +314,7 @@ export class CrawlProcessor extends WorkerHost {
           crawlRunId,
           sourceAgencyId: currentRun.source_agency_id,
           zeroListingsPage0: false,
-          networkError: true,
+          networkError: false,
           errorMessage: message,
         });
       }
@@ -362,17 +400,27 @@ export class CrawlProcessor extends WorkerHost {
 
     if (!shouldMarkBroken) return;
 
-    await this.prisma.notification.create({
-      data: {
-        type: NotificationType.BROKEN_SCRAPER,
+    if (params.networkError) {
+      this.notificationsService.create({
+        type: NotificationType.WEBSITE_UNAVAILABLE,
         severity: NotificationSeverity.CRITICAL,
+        title: 'Website unavailable',
+        message: params.errorMessage,
+        source_agency_id: params.sourceAgencyId,
+        scraper_id: params.scraper.id,
+        crawl_run_id: params.crawlRunId,
+      });
+    } else {
+      this.notificationsService.create({
+        type: NotificationType.BROKEN_SCRAPER,
+        severity: NotificationSeverity.WARNING,
         title: 'Scraper marked as broken',
         message: params.errorMessage,
         source_agency_id: params.sourceAgencyId,
         scraper_id: params.scraper.id,
         crawl_run_id: params.crawlRunId,
-      },
-    });
+      });
+    }
 
     if (params.scraper.self_healing_enabled) {
       await this.scraperGenerationService.trigger(
