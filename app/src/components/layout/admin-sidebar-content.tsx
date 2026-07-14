@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Building2 } from 'lucide-react';
+import { LayoutDashboard, Building2, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes/routes';
 
@@ -11,7 +11,7 @@ interface AdminSidebarContentProps {
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: Routes.admin.root, end: true },
   { label: 'Agencies', icon: Building2, href: Routes.admin.agencies.list, end: false },
-  // Scrapers (Feature 03)
+  { label: 'Scrapers', icon: Bot, href: Routes.admin.scrapers.list, end: false },
   // Generation Runs (Feature 04)
   // Crawl Runs (Feature 05)
   // Job Queue (Feature 05)

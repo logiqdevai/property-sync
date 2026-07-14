@@ -12,5 +12,9 @@ export const Routes = {
             list: "/admin/agencies",
             detail: (id: string) => `/admin/agencies/${id}`,
         },
+        scrapers: {
+            list: "/admin/scrapers",
+            detail: (id: string) => `/admin/scrapers/${id}`,
+        },
     },
 };

@@ -9,6 +9,7 @@ import { RedisCacheModule } from './modules/internal/redis-cache/redis-cache.mod
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { AgenciesModule } from './modules/agencies/agencies.module';
+import { ScrapersModule } from './modules/scrapers/scrapers.module';
 import { ConfigModule } from './shared/config/env/env.module';
 
 @Module({
@@ -23,6 +24,7 @@ import { ConfigModule } from './shared/config/env/env.module';
     AuthModule,
     UsersModule,
     AgenciesModule,
+    ScrapersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

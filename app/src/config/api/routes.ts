@@ -26,5 +26,14 @@ export const ApiRoutes = {
             status: (id: string) => `/admin/agencies/${id}/status`,
             visibility: (id: string) => `/admin/agencies/${id}/visibility`,
         },
+        scrapers: {
+            prefix: "/admin/scrapers",
+            list: "/admin/scrapers",
+            detail: (id: string) => `/admin/scrapers/${id}`,
+            versions: (id: string) => `/admin/scrapers/${id}/versions`,
+            activateVersion: (id: string, versionId: string) =>
+                `/admin/scrapers/${id}/versions/${versionId}/activate`,
+            runNow: (id: string) => `/admin/scrapers/${id}/run-now`,
+        },
     },
 }

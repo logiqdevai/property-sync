@@ -6,8 +6,8 @@
 > before writing code. Update this file when deliverables are verified.
 
 **Last updated:** 2026-07-14
-**Overall progress:** 20% (2 / 10 features complete — Feature 01 and Feature 02 are both verified end-to-end against a real DB and real browser UI)
-**Current focus:** Start Feature 03 (Scraper Management) — `tasks/feature-03-scrapers/01-scrapers-api.md`. Read `directions/04-api-design.md` §Feature 03 and the domain model before implementing `Scraper` + `ScraperVersion`.
+**Overall progress:** 30% (3 / 10 features complete — Features 01, 02, and 03 are all verified end-to-end against a real DB and real browser UI)
+**Current focus:** Start Feature 04 (AI Computer-Use Scraper Generation) — `tasks/feature-04-ai-generation/01-generation-runs-api-core.md`. Read `../../scraping-generation-computer-use-architecture.md`, the reference CLI under `../../scraper-generator/`, and `directions/04-api-design.md` §Feature 04 before implementing. This feature adds `@anthropic-ai/sdk` + `playwright` dependencies and needs a `UserIntegration` (Anthropic API key) to actually run — check for one before assuming the full loop is testable end-to-end.
 
 ---
 
@@ -30,7 +30,7 @@
 |---|---------|--------|----------|------------|
 | 01 | Platform Foundation (DB, Auth, Roles) | done | 100% | 2 files |
 | 02 | Admin Shell & Agencies | done | 100% | 3 files |
-| 03 | Scraper Management | not started | 0% | 3 files |
+| 03 | Scraper Management | done | 100% | 3 files |
 | 04 | AI Computer-Use Scraper Generation | not started | 0% | 4 files |
 | 05 | Crawl Execution Engine & Job Queue | not started | 0% | 4 files |
 | 06 | Property Normalization & Admin Properties | not started | 0% | 3 files |
@@ -140,8 +140,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **Description:** Admins can see, create (manually), and version-control scrapers per agency, including rollback.
 
-**Status:** not started
-**Progress:** 0%
+**Status:** done
+**Progress:** 100% (API + frontend verified end-to-end against the live DB and browser UI)
 
 ### References
 
@@ -155,24 +155,24 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 | File | Status |
 |------|--------|
-| `tasks/feature-03-scrapers/01-scrapers-api.md` | ready |
-| `tasks/feature-03-scrapers/02-scrapers-frontend-data.md` | ready |
-| `tasks/feature-03-scrapers/03-scrapers-ui.md` | ready |
+| `tasks/feature-03-scrapers/01-scrapers-api.md` | done |
+| `tasks/feature-03-scrapers/02-scrapers-frontend-data.md` | done |
+| `tasks/feature-03-scrapers/03-scrapers-ui.md` | done |
 
 ### Implementation checklist
 
 **API (`api/`)**
-- [ ] `api/src/modules/scrapers/` — module, controller, service, DTOs
-- [ ] `Scraper` + `ScraperVersion` CRUD, version list, activate/rollback, `run-now` stub (returns `501`/placeholder until Feature 05 implements execution)
+- [x] `api/src/modules/scrapers/` — module, controller, service, DTOs, entities, interface
+- [x] `Scraper` + `ScraperVersion` CRUD, version list, activate/rollback, `run-now` stub (returns `501`/placeholder until Feature 05 implements execution) — verified end-to-end against the live DB: create (version 1 active) → list/detail → create version 2 (active unchanged) → activate v2 → toggle `self_healing_enabled` → update `validation_rules` (clones active config into version 3 and activates it) → `run-now` returns `501` → manually forced `status: BROKEN` then activated v1, confirmed it reset to `ACTIVE` → `SUPPORT` can read (200) but not write (403), `USER` gets 403, unauthenticated gets 401. Test data cleaned up afterward.
 
 **App (`app/`)**
-- [ ] `app/src/features/scrapers/`
-- [ ] `/admin/scrapers` list + detail: health card, version history with diff, rollback, `self_healing_enabled` toggle, validation rules editor
+- [x] `app/src/features/scrapers/` — interfaces, Zod schemas (JSON-textarea validation), services, hooks (`useScrapers`, `useScraper`, `useScraperVersions`, `useCreateScraper`, `useCreateScraperVersion`, `useActivateScraperVersion`, `useUpdateScraper`, `useRunScraperNow`), status/health chip components, create-scraper and create-version form components
+- [x] `/admin/scrapers` list (search + status/health/agency filters + pagination, agency name links to its detail page) + create modal; `/admin/scrapers/:id` detail (health stats, self-heal toggle, run-now with friendly "not available yet" toast on the expected 501, version history with Active marker, side-by-side JSON diff via two version-select dropdowns, rollback button per non-active version, new-version modal) + empty-state panels for Generation Runs / Recent Crawl Runs — nav item + routes wired in; `tsc -b` passes (only 2 pre-existing, unrelated errors in `confirmation-dialog.tsx`/`password-input.tsx` remain, confirmed present on clean `main` before this work)
 
 **Verification**
-- [ ] Smoke test: admin creates a scraper with a manual JSON config, creates a second version, rolls back to the first
+- [x] Smoke test: admin creates a scraper with a manual JSON config, creates a second version, rolls back to the first — done twice: via curl against the live API/DB, and via a Playwright-driven browser session against the real UI (create → list shows it → open detail → toggle self-heal → run-now shows friendly toast → new version → side-by-side diff renders correctly → activate/rollback flips the Active marker) — `SUPPORT` can view the list, `USER` is redirected away from `/admin/scrapers`. Test data cleaned up afterward.
 
-**Definition of done:** An admin can fully manage scraper versions (manually) with working rollback, independent of AI generation.
+**Definition of done:** An admin can fully manage scraper versions (manually) with working rollback, independent of AI generation. **Met.**
 
 ---
 

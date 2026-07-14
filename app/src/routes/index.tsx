@@ -10,6 +10,8 @@ import AdminLayout from "@/pages/admin/layout";
 import AdminHome from "@/pages/admin";
 import AgenciesListPage from "@/pages/admin/agencies";
 import AgencyDetailPage from "@/pages/admin/agencies/detail";
+import ScrapersListPage from "@/pages/admin/scrapers";
+import ScraperDetailPage from "@/pages/admin/scrapers/detail";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
 
 export default function AppRoutes() {
@@ -58,6 +60,8 @@ export default function AppRoutes() {
         <Route index element={<AdminHome />} />
         <Route path="agencies" element={<AgenciesListPage />} />
         <Route path="agencies/:id" element={<AgencyDetailPage />} />
+        <Route path="scrapers" element={<ScrapersListPage />} />
+        <Route path="scrapers/:id" element={<ScraperDetailPage />} />
       </Route>
 
       {/* Default redirect */}
