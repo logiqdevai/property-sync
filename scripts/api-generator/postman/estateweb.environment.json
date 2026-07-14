@@ -27,13 +27,19 @@
     },
     {
       "key": "propertyId",
-      "value": "51700",
+      "value": "51706",
       "type": "default",
       "enabled": true
     },
     {
       "key": "propertyCode",
-      "value": "2193",
+      "value": "2199",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "imageFilename",
+      "value": "20260613231205011285.jpg",
       "type": "default",
       "enabled": true
     }
