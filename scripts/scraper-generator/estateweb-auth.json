@@ -1,0 +1,8 @@
+{
+  "baseUrl": "https://app.estateweb.gr",
+  "url": "https://app.estateweb.gr/app",
+  "csrf": "snaRjEVEozXXai9q7GXpGs4LuU4zgUYGvV5lg1ig",
+  "token": "8fZ92CvGcdgEwM41jsQm133vsGM6u7biabWqiS2R",
+  "estateSession": "eyJpdiI6ImdEd3JXRk92NmZ2ak9BY1J5dG1yc3c9PSIsInZhbHVlIjoiODAwMkNOY0NPRE9RTUdONTlwUUV6SmVYd2tnNVFxYnBXKzQ4Y0ZNZVVBSmZYb1ZFWjhDbUxCeGdsQkJqYU1OeUR0dmpKeUNVSkNhMHpqeHBwV3IrSmc9PSIsIm1hYyI6ImEyY2JjZDliZDAxNDkzYjVjYWNlZWJmMTJmNGQwNmM5NTAyYzBjOGIxNTQwM2FmMmMxMTE2N2IxMDVhNDNlYTkifQ%3D%3D",
+  "generatedAt": "2026-07-13T19:05:09.187Z"
+}

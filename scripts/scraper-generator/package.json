@@ -5,7 +5,8 @@
   "scripts": {
     "generate": "node generate/index.js",
     "crawl": "node crawl/index.js",
-    "promote": "node promote/index.js"
+    "promote": "node promote/index.js",
+    "estateweb:login": "node crawl/estateweb-login.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.55.0",
