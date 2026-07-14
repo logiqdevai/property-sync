@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { parseExpression } from 'cron-parser';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CrawlRunsService } from '@/modules/crawl-runs/crawl-runs.service';
-import { AgencyStatus } from 'generated/prisma';
+import { AgencyStatus, ScraperStatus } from 'generated/prisma';
 
 @Injectable()
 export class CrawlSchedulerCron {
@@ -42,10 +42,26 @@ export class CrawlSchedulerCron {
         continue;
       }
 
+      const scraper = await this.prisma.scraper.findFirst({
+        where: {
+          source_agency_id: tracker.source_agency_id,
+          status: { in: [ScraperStatus.ACTIVE, ScraperStatus.TESTING] },
+        },
+        orderBy: { updated_at: 'desc' },
+        select: { id: true },
+      });
+
+      if (!scraper) {
+        this.logger.warn(
+          `tracker ${tracker.id}: no scraper for agency ${tracker.source_agency_id} — skipping`,
+        );
+        continue;
+      }
+
       try {
         await this.crawlRunsService.enqueue(
           tracker.source_agency_id,
-          undefined,
+          scraper.id,
           tracker.id,
         );
         this.logger.log(

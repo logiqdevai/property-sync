@@ -14,6 +14,7 @@ export interface TrackingPrefs {
   ai_model: string | null;
   crawl_interval: string;
   enabled: boolean;
+  user_integration_id?: string | null;
 }
 
 export interface TrackableAgency {
@@ -69,4 +70,27 @@ export interface UserTrackedAgency {
   use_ai_batching: boolean;
   ai_provider: AiProvider;
   ai_model: string | null;
+}
+
+export interface TrackedAgencyIntegrationLink {
+  id: string;
+  user_tracked_agency_id: string;
+  user_integration_id: string;
+  created_at: string;
+  updated_at: string;
+  user_integration?: {
+    id: string;
+    is_active: boolean;
+    email: string | null;
+    username: string | null;
+    created_at: string;
+    integration_target: {
+      integration_type: string;
+      base_url: string | null;
+    };
+  };
+}
+
+export interface LinkIntegrationPayload {
+  user_integration_id: string;
 }

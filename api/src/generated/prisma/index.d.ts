@@ -41,6 +41,11 @@ export type SourceAgency = $Result.DefaultSelection<Prisma.$SourceAgencyPayload>
  */
 export type UserTrackedAgency = $Result.DefaultSelection<Prisma.$UserTrackedAgencyPayload>
 /**
+ * Model UserTrackedAgencyIntegrationLink
+ * 
+ */
+export type UserTrackedAgencyIntegrationLink = $Result.DefaultSelection<Prisma.$UserTrackedAgencyIntegrationLinkPayload>
+/**
  * Model Scraper
  * A scraper definition for one agency. Holds NO config directly -- config always lives on the
  * active ScraperVersion (see `active_version`). This keeps a single source of truth instead of
@@ -684,6 +689,16 @@ export class PrismaClient<
   get userTrackedAgency(): Prisma.UserTrackedAgencyDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.userTrackedAgencyIntegrationLink`: Exposes CRUD operations for the **UserTrackedAgencyIntegrationLink** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserTrackedAgencyIntegrationLinks
+    * const userTrackedAgencyIntegrationLinks = await prisma.userTrackedAgencyIntegrationLink.findMany()
+    * ```
+    */
+  get userTrackedAgencyIntegrationLink(): Prisma.UserTrackedAgencyIntegrationLinkDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.scraper`: Exposes CRUD operations for the **Scraper** model.
     * Example usage:
     * ```ts
@@ -1271,6 +1286,7 @@ export namespace Prisma {
     UserIntegration: 'UserIntegration',
     SourceAgency: 'SourceAgency',
     UserTrackedAgency: 'UserTrackedAgency',
+    UserTrackedAgencyIntegrationLink: 'UserTrackedAgencyIntegrationLink',
     Scraper: 'Scraper',
     ScraperGenerationRun: 'ScraperGenerationRun',
     ComputerUseStep: 'ComputerUseStep',
@@ -1301,7 +1317,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "integrationTarget" | "userIntegration" | "sourceAgency" | "userTrackedAgency" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "jobLog" | "notification" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "document"
+      modelProps: "user" | "integrationTarget" | "userIntegration" | "sourceAgency" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "jobLog" | "notification" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "document"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1672,6 +1688,80 @@ export namespace Prisma {
           count: {
             args: Prisma.UserTrackedAgencyCountArgs<ExtArgs>
             result: $Utils.Optional<UserTrackedAgencyCountAggregateOutputType> | number
+          }
+        }
+      }
+      UserTrackedAgencyIntegrationLink: {
+        payload: Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>
+        fields: Prisma.UserTrackedAgencyIntegrationLinkFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload>
+          }
+          findFirst: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload>
+          }
+          findMany: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload>[]
+          }
+          create: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload>
+          }
+          createMany: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload>[]
+          }
+          delete: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload>
+          }
+          update: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload>
+          }
+          deleteMany: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload>[]
+          }
+          upsert: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload>
+          }
+          aggregate: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserTrackedAgencyIntegrationLink>
+          }
+          groupBy: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserTrackedAgencyIntegrationLinkGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UserTrackedAgencyIntegrationLinkCountArgs<ExtArgs>
+            result: $Utils.Optional<UserTrackedAgencyIntegrationLinkCountAggregateOutputType> | number
           }
         }
       }
@@ -2898,6 +2988,7 @@ export namespace Prisma {
     userIntegration?: UserIntegrationOmit
     sourceAgency?: SourceAgencyOmit
     userTrackedAgency?: UserTrackedAgencyOmit
+    userTrackedAgencyIntegrationLink?: UserTrackedAgencyIntegrationLinkOmit
     scraper?: ScraperOmit
     scraperGenerationRun?: ScraperGenerationRunOmit
     computerUseStep?: ComputerUseStepOmit
@@ -5987,6 +6078,7 @@ export namespace Prisma {
     created_at?: boolean
     updated_at?: boolean
     sync_runs?: boolean | UserIntegration$sync_runsArgs<ExtArgs>
+    tracked_agency_link?: boolean | UserIntegration$tracked_agency_linkArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     integration_target?: boolean | IntegrationTargetDefaultArgs<ExtArgs>
     _count?: boolean | UserIntegrationCountOutputTypeDefaultArgs<ExtArgs>
@@ -6041,6 +6133,7 @@ export namespace Prisma {
   export type UserIntegrationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "integration_target_id" | "user_id" | "api_key_secret" | "email" | "username" | "password" | "config" | "is_active" | "created_at" | "updated_at", ExtArgs["result"]["userIntegration"]>
   export type UserIntegrationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sync_runs?: boolean | UserIntegration$sync_runsArgs<ExtArgs>
+    tracked_agency_link?: boolean | UserIntegration$tracked_agency_linkArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     integration_target?: boolean | IntegrationTargetDefaultArgs<ExtArgs>
     _count?: boolean | UserIntegrationCountOutputTypeDefaultArgs<ExtArgs>
@@ -6058,6 +6151,7 @@ export namespace Prisma {
     name: "UserIntegration"
     objects: {
       sync_runs: Prisma.$CmsSyncRunPayload<ExtArgs>[]
+      tracked_agency_link: Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs> | null
       user: Prisma.$UserPayload<ExtArgs>
       integration_target: Prisma.$IntegrationTargetPayload<ExtArgs>
     }
@@ -6468,6 +6562,7 @@ export namespace Prisma {
   export interface Prisma__UserIntegrationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     sync_runs<T extends UserIntegration$sync_runsArgs<ExtArgs> = {}>(args?: Subset<T, UserIntegration$sync_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CmsSyncRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    tracked_agency_link<T extends UserIntegration$tracked_agency_linkArgs<ExtArgs> = {}>(args?: Subset<T, UserIntegration$tracked_agency_linkArgs<ExtArgs>>): Prisma__UserTrackedAgencyIntegrationLinkClient<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     integration_target<T extends IntegrationTargetDefaultArgs<ExtArgs> = {}>(args?: Subset<T, IntegrationTargetDefaultArgs<ExtArgs>>): Prisma__IntegrationTargetClient<$Result.GetResult<Prisma.$IntegrationTargetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
@@ -6927,6 +7022,25 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CmsSyncRunScalarFieldEnum | CmsSyncRunScalarFieldEnum[]
+  }
+
+  /**
+   * UserIntegration.tracked_agency_link
+   */
+  export type UserIntegration$tracked_agency_linkArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkInclude<ExtArgs> | null
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
   }
 
   /**
@@ -8515,6 +8629,7 @@ export namespace Prisma {
     user?: boolean | UserDefaultArgs<ExtArgs>
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     crawl_runs?: boolean | UserTrackedAgency$crawl_runsArgs<ExtArgs>
+    integration_link?: boolean | UserTrackedAgency$integration_linkArgs<ExtArgs>
     _count?: boolean | UserTrackedAgencyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userTrackedAgency"]>
 
@@ -8575,6 +8690,7 @@ export namespace Prisma {
     user?: boolean | UserDefaultArgs<ExtArgs>
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     crawl_runs?: boolean | UserTrackedAgency$crawl_runsArgs<ExtArgs>
+    integration_link?: boolean | UserTrackedAgency$integration_linkArgs<ExtArgs>
     _count?: boolean | UserTrackedAgencyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserTrackedAgencyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8592,6 +8708,7 @@ export namespace Prisma {
       user: Prisma.$UserPayload<ExtArgs>
       source_agency: Prisma.$SourceAgencyPayload<ExtArgs>
       crawl_runs: Prisma.$CrawlRunPayload<ExtArgs>[]
+      integration_link: Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -9004,6 +9121,7 @@ export namespace Prisma {
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     source_agency<T extends SourceAgencyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgencyDefaultArgs<ExtArgs>>): Prisma__SourceAgencyClient<$Result.GetResult<Prisma.$SourceAgencyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     crawl_runs<T extends UserTrackedAgency$crawl_runsArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$crawl_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    integration_link<T extends UserTrackedAgency$integration_linkArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$integration_linkArgs<ExtArgs>>): Prisma__UserTrackedAgencyIntegrationLinkClient<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9466,6 +9584,25 @@ export namespace Prisma {
   }
 
   /**
+   * UserTrackedAgency.integration_link
+   */
+  export type UserTrackedAgency$integration_linkArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkInclude<ExtArgs> | null
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
+  }
+
+  /**
    * UserTrackedAgency without action
    */
   export type UserTrackedAgencyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9481,6 +9618,1072 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserTrackedAgencyInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model UserTrackedAgencyIntegrationLink
+   */
+
+  export type AggregateUserTrackedAgencyIntegrationLink = {
+    _count: UserTrackedAgencyIntegrationLinkCountAggregateOutputType | null
+    _min: UserTrackedAgencyIntegrationLinkMinAggregateOutputType | null
+    _max: UserTrackedAgencyIntegrationLinkMaxAggregateOutputType | null
+  }
+
+  export type UserTrackedAgencyIntegrationLinkMinAggregateOutputType = {
+    id: string | null
+    user_tracked_agency_id: string | null
+    user_integration_id: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type UserTrackedAgencyIntegrationLinkMaxAggregateOutputType = {
+    id: string | null
+    user_tracked_agency_id: string | null
+    user_integration_id: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type UserTrackedAgencyIntegrationLinkCountAggregateOutputType = {
+    id: number
+    user_tracked_agency_id: number
+    user_integration_id: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type UserTrackedAgencyIntegrationLinkMinAggregateInputType = {
+    id?: true
+    user_tracked_agency_id?: true
+    user_integration_id?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type UserTrackedAgencyIntegrationLinkMaxAggregateInputType = {
+    id?: true
+    user_tracked_agency_id?: true
+    user_integration_id?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type UserTrackedAgencyIntegrationLinkCountAggregateInputType = {
+    id?: true
+    user_tracked_agency_id?: true
+    user_integration_id?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type UserTrackedAgencyIntegrationLinkAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserTrackedAgencyIntegrationLink to aggregate.
+     */
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserTrackedAgencyIntegrationLinks to fetch.
+     */
+    orderBy?: UserTrackedAgencyIntegrationLinkOrderByWithRelationInput | UserTrackedAgencyIntegrationLinkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserTrackedAgencyIntegrationLinks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserTrackedAgencyIntegrationLinks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserTrackedAgencyIntegrationLinks
+    **/
+    _count?: true | UserTrackedAgencyIntegrationLinkCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserTrackedAgencyIntegrationLinkMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserTrackedAgencyIntegrationLinkMaxAggregateInputType
+  }
+
+  export type GetUserTrackedAgencyIntegrationLinkAggregateType<T extends UserTrackedAgencyIntegrationLinkAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserTrackedAgencyIntegrationLink]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserTrackedAgencyIntegrationLink[P]>
+      : GetScalarType<T[P], AggregateUserTrackedAgencyIntegrationLink[P]>
+  }
+
+
+
+
+  export type UserTrackedAgencyIntegrationLinkGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
+    orderBy?: UserTrackedAgencyIntegrationLinkOrderByWithAggregationInput | UserTrackedAgencyIntegrationLinkOrderByWithAggregationInput[]
+    by: UserTrackedAgencyIntegrationLinkScalarFieldEnum[] | UserTrackedAgencyIntegrationLinkScalarFieldEnum
+    having?: UserTrackedAgencyIntegrationLinkScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserTrackedAgencyIntegrationLinkCountAggregateInputType | true
+    _min?: UserTrackedAgencyIntegrationLinkMinAggregateInputType
+    _max?: UserTrackedAgencyIntegrationLinkMaxAggregateInputType
+  }
+
+  export type UserTrackedAgencyIntegrationLinkGroupByOutputType = {
+    id: string
+    user_tracked_agency_id: string
+    user_integration_id: string
+    created_at: Date
+    updated_at: Date
+    _count: UserTrackedAgencyIntegrationLinkCountAggregateOutputType | null
+    _min: UserTrackedAgencyIntegrationLinkMinAggregateOutputType | null
+    _max: UserTrackedAgencyIntegrationLinkMaxAggregateOutputType | null
+  }
+
+  type GetUserTrackedAgencyIntegrationLinkGroupByPayload<T extends UserTrackedAgencyIntegrationLinkGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserTrackedAgencyIntegrationLinkGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserTrackedAgencyIntegrationLinkGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserTrackedAgencyIntegrationLinkGroupByOutputType[P]>
+            : GetScalarType<T[P], UserTrackedAgencyIntegrationLinkGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserTrackedAgencyIntegrationLinkSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_tracked_agency_id?: boolean
+    user_integration_id?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
+    user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userTrackedAgencyIntegrationLink"]>
+
+  export type UserTrackedAgencyIntegrationLinkSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_tracked_agency_id?: boolean
+    user_integration_id?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
+    user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userTrackedAgencyIntegrationLink"]>
+
+  export type UserTrackedAgencyIntegrationLinkSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_tracked_agency_id?: boolean
+    user_integration_id?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
+    user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userTrackedAgencyIntegrationLink"]>
+
+  export type UserTrackedAgencyIntegrationLinkSelectScalar = {
+    id?: boolean
+    user_tracked_agency_id?: boolean
+    user_integration_id?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type UserTrackedAgencyIntegrationLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_tracked_agency_id" | "user_integration_id" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgencyIntegrationLink"]>
+  export type UserTrackedAgencyIntegrationLinkInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
+    user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
+  }
+  export type UserTrackedAgencyIntegrationLinkIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
+    user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
+  }
+  export type UserTrackedAgencyIntegrationLinkIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
+    user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
+  }
+
+  export type $UserTrackedAgencyIntegrationLinkPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserTrackedAgencyIntegrationLink"
+    objects: {
+      user_tracked_agency: Prisma.$UserTrackedAgencyPayload<ExtArgs>
+      user_integration: Prisma.$UserIntegrationPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      user_tracked_agency_id: string
+      user_integration_id: string
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["userTrackedAgencyIntegrationLink"]>
+    composites: {}
+  }
+
+  type UserTrackedAgencyIntegrationLinkGetPayload<S extends boolean | null | undefined | UserTrackedAgencyIntegrationLinkDefaultArgs> = $Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload, S>
+
+  type UserTrackedAgencyIntegrationLinkCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserTrackedAgencyIntegrationLinkFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserTrackedAgencyIntegrationLinkCountAggregateInputType | true
+    }
+
+  export interface UserTrackedAgencyIntegrationLinkDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserTrackedAgencyIntegrationLink'], meta: { name: 'UserTrackedAgencyIntegrationLink' } }
+    /**
+     * Find zero or one UserTrackedAgencyIntegrationLink that matches the filter.
+     * @param {UserTrackedAgencyIntegrationLinkFindUniqueArgs} args - Arguments to find a UserTrackedAgencyIntegrationLink
+     * @example
+     * // Get one UserTrackedAgencyIntegrationLink
+     * const userTrackedAgencyIntegrationLink = await prisma.userTrackedAgencyIntegrationLink.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserTrackedAgencyIntegrationLinkFindUniqueArgs>(args: SelectSubset<T, UserTrackedAgencyIntegrationLinkFindUniqueArgs<ExtArgs>>): Prisma__UserTrackedAgencyIntegrationLinkClient<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserTrackedAgencyIntegrationLink that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserTrackedAgencyIntegrationLinkFindUniqueOrThrowArgs} args - Arguments to find a UserTrackedAgencyIntegrationLink
+     * @example
+     * // Get one UserTrackedAgencyIntegrationLink
+     * const userTrackedAgencyIntegrationLink = await prisma.userTrackedAgencyIntegrationLink.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserTrackedAgencyIntegrationLinkFindUniqueOrThrowArgs>(args: SelectSubset<T, UserTrackedAgencyIntegrationLinkFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserTrackedAgencyIntegrationLinkClient<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserTrackedAgencyIntegrationLink that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTrackedAgencyIntegrationLinkFindFirstArgs} args - Arguments to find a UserTrackedAgencyIntegrationLink
+     * @example
+     * // Get one UserTrackedAgencyIntegrationLink
+     * const userTrackedAgencyIntegrationLink = await prisma.userTrackedAgencyIntegrationLink.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserTrackedAgencyIntegrationLinkFindFirstArgs>(args?: SelectSubset<T, UserTrackedAgencyIntegrationLinkFindFirstArgs<ExtArgs>>): Prisma__UserTrackedAgencyIntegrationLinkClient<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserTrackedAgencyIntegrationLink that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTrackedAgencyIntegrationLinkFindFirstOrThrowArgs} args - Arguments to find a UserTrackedAgencyIntegrationLink
+     * @example
+     * // Get one UserTrackedAgencyIntegrationLink
+     * const userTrackedAgencyIntegrationLink = await prisma.userTrackedAgencyIntegrationLink.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserTrackedAgencyIntegrationLinkFindFirstOrThrowArgs>(args?: SelectSubset<T, UserTrackedAgencyIntegrationLinkFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserTrackedAgencyIntegrationLinkClient<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserTrackedAgencyIntegrationLinks that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTrackedAgencyIntegrationLinkFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserTrackedAgencyIntegrationLinks
+     * const userTrackedAgencyIntegrationLinks = await prisma.userTrackedAgencyIntegrationLink.findMany()
+     * 
+     * // Get first 10 UserTrackedAgencyIntegrationLinks
+     * const userTrackedAgencyIntegrationLinks = await prisma.userTrackedAgencyIntegrationLink.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userTrackedAgencyIntegrationLinkWithIdOnly = await prisma.userTrackedAgencyIntegrationLink.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserTrackedAgencyIntegrationLinkFindManyArgs>(args?: SelectSubset<T, UserTrackedAgencyIntegrationLinkFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserTrackedAgencyIntegrationLink.
+     * @param {UserTrackedAgencyIntegrationLinkCreateArgs} args - Arguments to create a UserTrackedAgencyIntegrationLink.
+     * @example
+     * // Create one UserTrackedAgencyIntegrationLink
+     * const UserTrackedAgencyIntegrationLink = await prisma.userTrackedAgencyIntegrationLink.create({
+     *   data: {
+     *     // ... data to create a UserTrackedAgencyIntegrationLink
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserTrackedAgencyIntegrationLinkCreateArgs>(args: SelectSubset<T, UserTrackedAgencyIntegrationLinkCreateArgs<ExtArgs>>): Prisma__UserTrackedAgencyIntegrationLinkClient<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserTrackedAgencyIntegrationLinks.
+     * @param {UserTrackedAgencyIntegrationLinkCreateManyArgs} args - Arguments to create many UserTrackedAgencyIntegrationLinks.
+     * @example
+     * // Create many UserTrackedAgencyIntegrationLinks
+     * const userTrackedAgencyIntegrationLink = await prisma.userTrackedAgencyIntegrationLink.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserTrackedAgencyIntegrationLinkCreateManyArgs>(args?: SelectSubset<T, UserTrackedAgencyIntegrationLinkCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UserTrackedAgencyIntegrationLinks and returns the data saved in the database.
+     * @param {UserTrackedAgencyIntegrationLinkCreateManyAndReturnArgs} args - Arguments to create many UserTrackedAgencyIntegrationLinks.
+     * @example
+     * // Create many UserTrackedAgencyIntegrationLinks
+     * const userTrackedAgencyIntegrationLink = await prisma.userTrackedAgencyIntegrationLink.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UserTrackedAgencyIntegrationLinks and only return the `id`
+     * const userTrackedAgencyIntegrationLinkWithIdOnly = await prisma.userTrackedAgencyIntegrationLink.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UserTrackedAgencyIntegrationLinkCreateManyAndReturnArgs>(args?: SelectSubset<T, UserTrackedAgencyIntegrationLinkCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UserTrackedAgencyIntegrationLink.
+     * @param {UserTrackedAgencyIntegrationLinkDeleteArgs} args - Arguments to delete one UserTrackedAgencyIntegrationLink.
+     * @example
+     * // Delete one UserTrackedAgencyIntegrationLink
+     * const UserTrackedAgencyIntegrationLink = await prisma.userTrackedAgencyIntegrationLink.delete({
+     *   where: {
+     *     // ... filter to delete one UserTrackedAgencyIntegrationLink
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserTrackedAgencyIntegrationLinkDeleteArgs>(args: SelectSubset<T, UserTrackedAgencyIntegrationLinkDeleteArgs<ExtArgs>>): Prisma__UserTrackedAgencyIntegrationLinkClient<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserTrackedAgencyIntegrationLink.
+     * @param {UserTrackedAgencyIntegrationLinkUpdateArgs} args - Arguments to update one UserTrackedAgencyIntegrationLink.
+     * @example
+     * // Update one UserTrackedAgencyIntegrationLink
+     * const userTrackedAgencyIntegrationLink = await prisma.userTrackedAgencyIntegrationLink.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserTrackedAgencyIntegrationLinkUpdateArgs>(args: SelectSubset<T, UserTrackedAgencyIntegrationLinkUpdateArgs<ExtArgs>>): Prisma__UserTrackedAgencyIntegrationLinkClient<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserTrackedAgencyIntegrationLinks.
+     * @param {UserTrackedAgencyIntegrationLinkDeleteManyArgs} args - Arguments to filter UserTrackedAgencyIntegrationLinks to delete.
+     * @example
+     * // Delete a few UserTrackedAgencyIntegrationLinks
+     * const { count } = await prisma.userTrackedAgencyIntegrationLink.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserTrackedAgencyIntegrationLinkDeleteManyArgs>(args?: SelectSubset<T, UserTrackedAgencyIntegrationLinkDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserTrackedAgencyIntegrationLinks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTrackedAgencyIntegrationLinkUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserTrackedAgencyIntegrationLinks
+     * const userTrackedAgencyIntegrationLink = await prisma.userTrackedAgencyIntegrationLink.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserTrackedAgencyIntegrationLinkUpdateManyArgs>(args: SelectSubset<T, UserTrackedAgencyIntegrationLinkUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserTrackedAgencyIntegrationLinks and returns the data updated in the database.
+     * @param {UserTrackedAgencyIntegrationLinkUpdateManyAndReturnArgs} args - Arguments to update many UserTrackedAgencyIntegrationLinks.
+     * @example
+     * // Update many UserTrackedAgencyIntegrationLinks
+     * const userTrackedAgencyIntegrationLink = await prisma.userTrackedAgencyIntegrationLink.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UserTrackedAgencyIntegrationLinks and only return the `id`
+     * const userTrackedAgencyIntegrationLinkWithIdOnly = await prisma.userTrackedAgencyIntegrationLink.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UserTrackedAgencyIntegrationLinkUpdateManyAndReturnArgs>(args: SelectSubset<T, UserTrackedAgencyIntegrationLinkUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UserTrackedAgencyIntegrationLink.
+     * @param {UserTrackedAgencyIntegrationLinkUpsertArgs} args - Arguments to update or create a UserTrackedAgencyIntegrationLink.
+     * @example
+     * // Update or create a UserTrackedAgencyIntegrationLink
+     * const userTrackedAgencyIntegrationLink = await prisma.userTrackedAgencyIntegrationLink.upsert({
+     *   create: {
+     *     // ... data to create a UserTrackedAgencyIntegrationLink
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserTrackedAgencyIntegrationLink we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserTrackedAgencyIntegrationLinkUpsertArgs>(args: SelectSubset<T, UserTrackedAgencyIntegrationLinkUpsertArgs<ExtArgs>>): Prisma__UserTrackedAgencyIntegrationLinkClient<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UserTrackedAgencyIntegrationLinks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTrackedAgencyIntegrationLinkCountArgs} args - Arguments to filter UserTrackedAgencyIntegrationLinks to count.
+     * @example
+     * // Count the number of UserTrackedAgencyIntegrationLinks
+     * const count = await prisma.userTrackedAgencyIntegrationLink.count({
+     *   where: {
+     *     // ... the filter for the UserTrackedAgencyIntegrationLinks we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserTrackedAgencyIntegrationLinkCountArgs>(
+      args?: Subset<T, UserTrackedAgencyIntegrationLinkCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserTrackedAgencyIntegrationLinkCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserTrackedAgencyIntegrationLink.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTrackedAgencyIntegrationLinkAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserTrackedAgencyIntegrationLinkAggregateArgs>(args: Subset<T, UserTrackedAgencyIntegrationLinkAggregateArgs>): Prisma.PrismaPromise<GetUserTrackedAgencyIntegrationLinkAggregateType<T>>
+
+    /**
+     * Group by UserTrackedAgencyIntegrationLink.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserTrackedAgencyIntegrationLinkGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserTrackedAgencyIntegrationLinkGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserTrackedAgencyIntegrationLinkGroupByArgs['orderBy'] }
+        : { orderBy?: UserTrackedAgencyIntegrationLinkGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserTrackedAgencyIntegrationLinkGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserTrackedAgencyIntegrationLinkGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserTrackedAgencyIntegrationLink model
+   */
+  readonly fields: UserTrackedAgencyIntegrationLinkFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserTrackedAgencyIntegrationLink.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserTrackedAgencyIntegrationLinkClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user_tracked_agency<T extends UserTrackedAgencyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgencyDefaultArgs<ExtArgs>>): Prisma__UserTrackedAgencyClient<$Result.GetResult<Prisma.$UserTrackedAgencyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user_integration<T extends UserIntegrationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserIntegrationDefaultArgs<ExtArgs>>): Prisma__UserIntegrationClient<$Result.GetResult<Prisma.$UserIntegrationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserTrackedAgencyIntegrationLink model
+   */
+  interface UserTrackedAgencyIntegrationLinkFieldRefs {
+    readonly id: FieldRef<"UserTrackedAgencyIntegrationLink", 'String'>
+    readonly user_tracked_agency_id: FieldRef<"UserTrackedAgencyIntegrationLink", 'String'>
+    readonly user_integration_id: FieldRef<"UserTrackedAgencyIntegrationLink", 'String'>
+    readonly created_at: FieldRef<"UserTrackedAgencyIntegrationLink", 'DateTime'>
+    readonly updated_at: FieldRef<"UserTrackedAgencyIntegrationLink", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserTrackedAgencyIntegrationLink findUnique
+   */
+  export type UserTrackedAgencyIntegrationLinkFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkInclude<ExtArgs> | null
+    /**
+     * Filter, which UserTrackedAgencyIntegrationLink to fetch.
+     */
+    where: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink findUniqueOrThrow
+   */
+  export type UserTrackedAgencyIntegrationLinkFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkInclude<ExtArgs> | null
+    /**
+     * Filter, which UserTrackedAgencyIntegrationLink to fetch.
+     */
+    where: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink findFirst
+   */
+  export type UserTrackedAgencyIntegrationLinkFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkInclude<ExtArgs> | null
+    /**
+     * Filter, which UserTrackedAgencyIntegrationLink to fetch.
+     */
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserTrackedAgencyIntegrationLinks to fetch.
+     */
+    orderBy?: UserTrackedAgencyIntegrationLinkOrderByWithRelationInput | UserTrackedAgencyIntegrationLinkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserTrackedAgencyIntegrationLinks.
+     */
+    cursor?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserTrackedAgencyIntegrationLinks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserTrackedAgencyIntegrationLinks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserTrackedAgencyIntegrationLinks.
+     */
+    distinct?: UserTrackedAgencyIntegrationLinkScalarFieldEnum | UserTrackedAgencyIntegrationLinkScalarFieldEnum[]
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink findFirstOrThrow
+   */
+  export type UserTrackedAgencyIntegrationLinkFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkInclude<ExtArgs> | null
+    /**
+     * Filter, which UserTrackedAgencyIntegrationLink to fetch.
+     */
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserTrackedAgencyIntegrationLinks to fetch.
+     */
+    orderBy?: UserTrackedAgencyIntegrationLinkOrderByWithRelationInput | UserTrackedAgencyIntegrationLinkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserTrackedAgencyIntegrationLinks.
+     */
+    cursor?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserTrackedAgencyIntegrationLinks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserTrackedAgencyIntegrationLinks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserTrackedAgencyIntegrationLinks.
+     */
+    distinct?: UserTrackedAgencyIntegrationLinkScalarFieldEnum | UserTrackedAgencyIntegrationLinkScalarFieldEnum[]
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink findMany
+   */
+  export type UserTrackedAgencyIntegrationLinkFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkInclude<ExtArgs> | null
+    /**
+     * Filter, which UserTrackedAgencyIntegrationLinks to fetch.
+     */
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserTrackedAgencyIntegrationLinks to fetch.
+     */
+    orderBy?: UserTrackedAgencyIntegrationLinkOrderByWithRelationInput | UserTrackedAgencyIntegrationLinkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserTrackedAgencyIntegrationLinks.
+     */
+    cursor?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserTrackedAgencyIntegrationLinks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserTrackedAgencyIntegrationLinks.
+     */
+    skip?: number
+    distinct?: UserTrackedAgencyIntegrationLinkScalarFieldEnum | UserTrackedAgencyIntegrationLinkScalarFieldEnum[]
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink create
+   */
+  export type UserTrackedAgencyIntegrationLinkCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UserTrackedAgencyIntegrationLink.
+     */
+    data: XOR<UserTrackedAgencyIntegrationLinkCreateInput, UserTrackedAgencyIntegrationLinkUncheckedCreateInput>
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink createMany
+   */
+  export type UserTrackedAgencyIntegrationLinkCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserTrackedAgencyIntegrationLinks.
+     */
+    data: UserTrackedAgencyIntegrationLinkCreateManyInput | UserTrackedAgencyIntegrationLinkCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink createManyAndReturn
+   */
+  export type UserTrackedAgencyIntegrationLinkCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * The data used to create many UserTrackedAgencyIntegrationLinks.
+     */
+    data: UserTrackedAgencyIntegrationLinkCreateManyInput | UserTrackedAgencyIntegrationLinkCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink update
+   */
+  export type UserTrackedAgencyIntegrationLinkUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UserTrackedAgencyIntegrationLink.
+     */
+    data: XOR<UserTrackedAgencyIntegrationLinkUpdateInput, UserTrackedAgencyIntegrationLinkUncheckedUpdateInput>
+    /**
+     * Choose, which UserTrackedAgencyIntegrationLink to update.
+     */
+    where: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink updateMany
+   */
+  export type UserTrackedAgencyIntegrationLinkUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserTrackedAgencyIntegrationLinks.
+     */
+    data: XOR<UserTrackedAgencyIntegrationLinkUpdateManyMutationInput, UserTrackedAgencyIntegrationLinkUncheckedUpdateManyInput>
+    /**
+     * Filter which UserTrackedAgencyIntegrationLinks to update
+     */
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
+    /**
+     * Limit how many UserTrackedAgencyIntegrationLinks to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink updateManyAndReturn
+   */
+  export type UserTrackedAgencyIntegrationLinkUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * The data used to update UserTrackedAgencyIntegrationLinks.
+     */
+    data: XOR<UserTrackedAgencyIntegrationLinkUpdateManyMutationInput, UserTrackedAgencyIntegrationLinkUncheckedUpdateManyInput>
+    /**
+     * Filter which UserTrackedAgencyIntegrationLinks to update
+     */
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
+    /**
+     * Limit how many UserTrackedAgencyIntegrationLinks to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink upsert
+   */
+  export type UserTrackedAgencyIntegrationLinkUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UserTrackedAgencyIntegrationLink to update in case it exists.
+     */
+    where: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+    /**
+     * In case the UserTrackedAgencyIntegrationLink found by the `where` argument doesn't exist, create a new UserTrackedAgencyIntegrationLink with this data.
+     */
+    create: XOR<UserTrackedAgencyIntegrationLinkCreateInput, UserTrackedAgencyIntegrationLinkUncheckedCreateInput>
+    /**
+     * In case the UserTrackedAgencyIntegrationLink was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserTrackedAgencyIntegrationLinkUpdateInput, UserTrackedAgencyIntegrationLinkUncheckedUpdateInput>
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink delete
+   */
+  export type UserTrackedAgencyIntegrationLinkDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkInclude<ExtArgs> | null
+    /**
+     * Filter which UserTrackedAgencyIntegrationLink to delete.
+     */
+    where: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink deleteMany
+   */
+  export type UserTrackedAgencyIntegrationLinkDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserTrackedAgencyIntegrationLinks to delete
+     */
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
+    /**
+     * Limit how many UserTrackedAgencyIntegrationLinks to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserTrackedAgencyIntegrationLink without action
+   */
+  export type UserTrackedAgencyIntegrationLinkDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgencyIntegrationLink
+     */
+    select?: UserTrackedAgencyIntegrationLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgencyIntegrationLink
+     */
+    omit?: UserTrackedAgencyIntegrationLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyIntegrationLinkInclude<ExtArgs> | null
   }
 
 
@@ -28551,6 +29754,17 @@ export namespace Prisma {
   export type UserTrackedAgencyScalarFieldEnum = (typeof UserTrackedAgencyScalarFieldEnum)[keyof typeof UserTrackedAgencyScalarFieldEnum]
 
 
+  export const UserTrackedAgencyIntegrationLinkScalarFieldEnum: {
+    id: 'id',
+    user_tracked_agency_id: 'user_tracked_agency_id',
+    user_integration_id: 'user_integration_id',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type UserTrackedAgencyIntegrationLinkScalarFieldEnum = (typeof UserTrackedAgencyIntegrationLinkScalarFieldEnum)[keyof typeof UserTrackedAgencyIntegrationLinkScalarFieldEnum]
+
+
   export const ScraperScalarFieldEnum: {
     id: 'id',
     source_agency_id: 'source_agency_id',
@@ -29469,6 +30683,7 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"UserIntegration"> | Date | string
     updated_at?: DateTimeFilter<"UserIntegration"> | Date | string
     sync_runs?: CmsSyncRunListRelationFilter
+    tracked_agency_link?: XOR<UserTrackedAgencyIntegrationLinkNullableScalarRelationFilter, UserTrackedAgencyIntegrationLinkWhereInput> | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     integration_target?: XOR<IntegrationTargetScalarRelationFilter, IntegrationTargetWhereInput>
   }
@@ -29486,6 +30701,7 @@ export namespace Prisma {
     created_at?: SortOrder
     updated_at?: SortOrder
     sync_runs?: CmsSyncRunOrderByRelationAggregateInput
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
     integration_target?: IntegrationTargetOrderByWithRelationInput
   }
@@ -29506,6 +30722,7 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"UserIntegration"> | Date | string
     updated_at?: DateTimeFilter<"UserIntegration"> | Date | string
     sync_runs?: CmsSyncRunListRelationFilter
+    tracked_agency_link?: XOR<UserTrackedAgencyIntegrationLinkNullableScalarRelationFilter, UserTrackedAgencyIntegrationLinkWhereInput> | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     integration_target?: XOR<IntegrationTargetScalarRelationFilter, IntegrationTargetWhereInput>
   }, "id">
@@ -29684,6 +30901,7 @@ export namespace Prisma {
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     source_agency?: XOR<SourceAgencyScalarRelationFilter, SourceAgencyWhereInput>
     crawl_runs?: CrawlRunListRelationFilter
+    integration_link?: XOR<UserTrackedAgencyIntegrationLinkNullableScalarRelationFilter, UserTrackedAgencyIntegrationLinkWhereInput> | null
   }
 
   export type UserTrackedAgencyOrderByWithRelationInput = {
@@ -29703,6 +30921,7 @@ export namespace Prisma {
     user?: UserOrderByWithRelationInput
     source_agency?: SourceAgencyOrderByWithRelationInput
     crawl_runs?: CrawlRunOrderByRelationAggregateInput
+    integration_link?: UserTrackedAgencyIntegrationLinkOrderByWithRelationInput
   }
 
   export type UserTrackedAgencyWhereUniqueInput = Prisma.AtLeast<{
@@ -29726,6 +30945,7 @@ export namespace Prisma {
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     source_agency?: XOR<SourceAgencyScalarRelationFilter, SourceAgencyWhereInput>
     crawl_runs?: CrawlRunListRelationFilter
+    integration_link?: XOR<UserTrackedAgencyIntegrationLinkNullableScalarRelationFilter, UserTrackedAgencyIntegrationLinkWhereInput> | null
   }, "id" | "user_id_source_agency_id">
 
   export type UserTrackedAgencyOrderByWithAggregationInput = {
@@ -29764,6 +30984,64 @@ export namespace Prisma {
     ai_model?: StringNullableWithAggregatesFilter<"UserTrackedAgency"> | string | null
     created_at?: DateTimeWithAggregatesFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserTrackedAgency"> | Date | string
+  }
+
+  export type UserTrackedAgencyIntegrationLinkWhereInput = {
+    AND?: UserTrackedAgencyIntegrationLinkWhereInput | UserTrackedAgencyIntegrationLinkWhereInput[]
+    OR?: UserTrackedAgencyIntegrationLinkWhereInput[]
+    NOT?: UserTrackedAgencyIntegrationLinkWhereInput | UserTrackedAgencyIntegrationLinkWhereInput[]
+    id?: StringFilter<"UserTrackedAgencyIntegrationLink"> | string
+    user_tracked_agency_id?: StringFilter<"UserTrackedAgencyIntegrationLink"> | string
+    user_integration_id?: StringFilter<"UserTrackedAgencyIntegrationLink"> | string
+    created_at?: DateTimeFilter<"UserTrackedAgencyIntegrationLink"> | Date | string
+    updated_at?: DateTimeFilter<"UserTrackedAgencyIntegrationLink"> | Date | string
+    user_tracked_agency?: XOR<UserTrackedAgencyScalarRelationFilter, UserTrackedAgencyWhereInput>
+    user_integration?: XOR<UserIntegrationScalarRelationFilter, UserIntegrationWhereInput>
+  }
+
+  export type UserTrackedAgencyIntegrationLinkOrderByWithRelationInput = {
+    id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    user_integration_id?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    user_tracked_agency?: UserTrackedAgencyOrderByWithRelationInput
+    user_integration?: UserIntegrationOrderByWithRelationInput
+  }
+
+  export type UserTrackedAgencyIntegrationLinkWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    user_tracked_agency_id?: string
+    user_integration_id?: string
+    AND?: UserTrackedAgencyIntegrationLinkWhereInput | UserTrackedAgencyIntegrationLinkWhereInput[]
+    OR?: UserTrackedAgencyIntegrationLinkWhereInput[]
+    NOT?: UserTrackedAgencyIntegrationLinkWhereInput | UserTrackedAgencyIntegrationLinkWhereInput[]
+    created_at?: DateTimeFilter<"UserTrackedAgencyIntegrationLink"> | Date | string
+    updated_at?: DateTimeFilter<"UserTrackedAgencyIntegrationLink"> | Date | string
+    user_tracked_agency?: XOR<UserTrackedAgencyScalarRelationFilter, UserTrackedAgencyWhereInput>
+    user_integration?: XOR<UserIntegrationScalarRelationFilter, UserIntegrationWhereInput>
+  }, "id" | "user_tracked_agency_id" | "user_integration_id">
+
+  export type UserTrackedAgencyIntegrationLinkOrderByWithAggregationInput = {
+    id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    user_integration_id?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: UserTrackedAgencyIntegrationLinkCountOrderByAggregateInput
+    _max?: UserTrackedAgencyIntegrationLinkMaxOrderByAggregateInput
+    _min?: UserTrackedAgencyIntegrationLinkMinOrderByAggregateInput
+  }
+
+  export type UserTrackedAgencyIntegrationLinkScalarWhereWithAggregatesInput = {
+    AND?: UserTrackedAgencyIntegrationLinkScalarWhereWithAggregatesInput | UserTrackedAgencyIntegrationLinkScalarWhereWithAggregatesInput[]
+    OR?: UserTrackedAgencyIntegrationLinkScalarWhereWithAggregatesInput[]
+    NOT?: UserTrackedAgencyIntegrationLinkScalarWhereWithAggregatesInput | UserTrackedAgencyIntegrationLinkScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"UserTrackedAgencyIntegrationLink"> | string
+    user_tracked_agency_id?: StringWithAggregatesFilter<"UserTrackedAgencyIntegrationLink"> | string
+    user_integration_id?: StringWithAggregatesFilter<"UserTrackedAgencyIntegrationLink"> | string
+    created_at?: DateTimeWithAggregatesFilter<"UserTrackedAgencyIntegrationLink"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"UserTrackedAgencyIntegrationLink"> | Date | string
   }
 
   export type ScraperWhereInput = {
@@ -31587,6 +32865,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunCreateNestedManyWithoutUser_integrationInput
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_integrationInput
     user: UserCreateNestedOneWithoutUser_integrationsInput
     integration_target: IntegrationTargetCreateNestedOneWithoutUser_integrationsInput
   }
@@ -31604,6 +32883,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutUser_integrationInput
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_integrationInput
   }
 
   export type UserIntegrationUpdateInput = {
@@ -31617,6 +32897,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUpdateManyWithoutUser_integrationNestedInput
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_integrationNestedInput
     user?: UserUpdateOneRequiredWithoutUser_integrationsNestedInput
     integration_target?: IntegrationTargetUpdateOneRequiredWithoutUser_integrationsNestedInput
   }
@@ -31634,6 +32915,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutUser_integrationNestedInput
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_integrationNestedInput
   }
 
   export type UserIntegrationCreateManyInput = {
@@ -31841,6 +33123,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutTracked_agenciesInput
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+    integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateInput = {
@@ -31858,6 +33141,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUpdateInput = {
@@ -31875,6 +33159,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateInput = {
@@ -31892,6 +33177,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyCreateManyInput = {
@@ -31936,6 +33222,60 @@ export namespace Prisma {
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
     ai_model?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserTrackedAgencyIntegrationLinkCreateInput = {
+    id?: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    user_tracked_agency: UserTrackedAgencyCreateNestedOneWithoutIntegration_linkInput
+    user_integration: UserIntegrationCreateNestedOneWithoutTracked_agency_linkInput
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUncheckedCreateInput = {
+    id?: string
+    user_tracked_agency_id: string
+    user_integration_id: string
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user_tracked_agency?: UserTrackedAgencyUpdateOneRequiredWithoutIntegration_linkNestedInput
+    user_integration?: UserIntegrationUpdateOneRequiredWithoutTracked_agency_linkNestedInput
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_tracked_agency_id?: StringFieldUpdateOperationsInput | string
+    user_integration_id?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserTrackedAgencyIntegrationLinkCreateManyInput = {
+    id?: string
+    user_tracked_agency_id: string
+    user_integration_id: string
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_tracked_agency_id?: StringFieldUpdateOperationsInput | string
+    user_integration_id?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -34098,6 +35438,11 @@ export namespace Prisma {
     none?: CmsSyncRunWhereInput
   }
 
+  export type UserTrackedAgencyIntegrationLinkNullableScalarRelationFilter = {
+    is?: UserTrackedAgencyIntegrationLinkWhereInput | null
+    isNot?: UserTrackedAgencyIntegrationLinkWhereInput | null
+  }
+
   export type UserScalarRelationFilter = {
     is?: UserWhereInput
     isNot?: UserWhereInput
@@ -34395,6 +35740,40 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumAiProviderFilter<$PrismaModel>
     _max?: NestedEnumAiProviderFilter<$PrismaModel>
+  }
+
+  export type UserTrackedAgencyScalarRelationFilter = {
+    is?: UserTrackedAgencyWhereInput
+    isNot?: UserTrackedAgencyWhereInput
+  }
+
+  export type UserIntegrationScalarRelationFilter = {
+    is?: UserIntegrationWhereInput
+    isNot?: UserIntegrationWhereInput
+  }
+
+  export type UserTrackedAgencyIntegrationLinkCountOrderByAggregateInput = {
+    id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    user_integration_id?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type UserTrackedAgencyIntegrationLinkMaxOrderByAggregateInput = {
+    id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    user_integration_id?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type UserTrackedAgencyIntegrationLinkMinOrderByAggregateInput = {
+    id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    user_integration_id?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -35248,11 +36627,6 @@ export namespace Prisma {
     not?: NestedEnumCmsSyncStatusFilter<$PrismaModel> | $Enums.CmsSyncStatus
   }
 
-  export type UserIntegrationScalarRelationFilter = {
-    is?: UserIntegrationWhereInput
-    isNot?: UserIntegrationWhereInput
-  }
-
   export type UserPropertyNullableScalarRelationFilter = {
     is?: UserPropertyWhereInput | null
     isNot?: UserPropertyWhereInput | null
@@ -36051,6 +37425,12 @@ export namespace Prisma {
     connect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
   }
 
+  export type UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_integrationInput = {
+    create?: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_integrationInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_integrationInput>
+    connectOrCreate?: UserTrackedAgencyIntegrationLinkCreateOrConnectWithoutUser_integrationInput
+    connect?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+  }
+
   export type UserCreateNestedOneWithoutUser_integrationsInput = {
     create?: XOR<UserCreateWithoutUser_integrationsInput, UserUncheckedCreateWithoutUser_integrationsInput>
     connectOrCreate?: UserCreateOrConnectWithoutUser_integrationsInput
@@ -36070,6 +37450,12 @@ export namespace Prisma {
     connect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
   }
 
+  export type UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_integrationInput = {
+    create?: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_integrationInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_integrationInput>
+    connectOrCreate?: UserTrackedAgencyIntegrationLinkCreateOrConnectWithoutUser_integrationInput
+    connect?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+  }
+
   export type CmsSyncRunUpdateManyWithoutUser_integrationNestedInput = {
     create?: XOR<CmsSyncRunCreateWithoutUser_integrationInput, CmsSyncRunUncheckedCreateWithoutUser_integrationInput> | CmsSyncRunCreateWithoutUser_integrationInput[] | CmsSyncRunUncheckedCreateWithoutUser_integrationInput[]
     connectOrCreate?: CmsSyncRunCreateOrConnectWithoutUser_integrationInput | CmsSyncRunCreateOrConnectWithoutUser_integrationInput[]
@@ -36082,6 +37468,16 @@ export namespace Prisma {
     update?: CmsSyncRunUpdateWithWhereUniqueWithoutUser_integrationInput | CmsSyncRunUpdateWithWhereUniqueWithoutUser_integrationInput[]
     updateMany?: CmsSyncRunUpdateManyWithWhereWithoutUser_integrationInput | CmsSyncRunUpdateManyWithWhereWithoutUser_integrationInput[]
     deleteMany?: CmsSyncRunScalarWhereInput | CmsSyncRunScalarWhereInput[]
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_integrationNestedInput = {
+    create?: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_integrationInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_integrationInput>
+    connectOrCreate?: UserTrackedAgencyIntegrationLinkCreateOrConnectWithoutUser_integrationInput
+    upsert?: UserTrackedAgencyIntegrationLinkUpsertWithoutUser_integrationInput
+    disconnect?: UserTrackedAgencyIntegrationLinkWhereInput | boolean
+    delete?: UserTrackedAgencyIntegrationLinkWhereInput | boolean
+    connect?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+    update?: XOR<XOR<UserTrackedAgencyIntegrationLinkUpdateToOneWithWhereWithoutUser_integrationInput, UserTrackedAgencyIntegrationLinkUpdateWithoutUser_integrationInput>, UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_integrationInput>
   }
 
   export type UserUpdateOneRequiredWithoutUser_integrationsNestedInput = {
@@ -36112,6 +37508,16 @@ export namespace Prisma {
     update?: CmsSyncRunUpdateWithWhereUniqueWithoutUser_integrationInput | CmsSyncRunUpdateWithWhereUniqueWithoutUser_integrationInput[]
     updateMany?: CmsSyncRunUpdateManyWithWhereWithoutUser_integrationInput | CmsSyncRunUpdateManyWithWhereWithoutUser_integrationInput[]
     deleteMany?: CmsSyncRunScalarWhereInput | CmsSyncRunScalarWhereInput[]
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_integrationNestedInput = {
+    create?: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_integrationInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_integrationInput>
+    connectOrCreate?: UserTrackedAgencyIntegrationLinkCreateOrConnectWithoutUser_integrationInput
+    upsert?: UserTrackedAgencyIntegrationLinkUpsertWithoutUser_integrationInput
+    disconnect?: UserTrackedAgencyIntegrationLinkWhereInput | boolean
+    delete?: UserTrackedAgencyIntegrationLinkWhereInput | boolean
+    connect?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+    update?: XOR<XOR<UserTrackedAgencyIntegrationLinkUpdateToOneWithWhereWithoutUser_integrationInput, UserTrackedAgencyIntegrationLinkUpdateWithoutUser_integrationInput>, UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_integrationInput>
   }
 
   export type ScraperCreateNestedManyWithoutSource_agencyInput = {
@@ -36393,11 +37799,23 @@ export namespace Prisma {
     connect?: CrawlRunWhereUniqueInput | CrawlRunWhereUniqueInput[]
   }
 
+  export type UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput = {
+    create?: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_tracked_agencyInput>
+    connectOrCreate?: UserTrackedAgencyIntegrationLinkCreateOrConnectWithoutUser_tracked_agencyInput
+    connect?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+  }
+
   export type CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput = {
     create?: XOR<CrawlRunCreateWithoutUser_tracked_agencyInput, CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput> | CrawlRunCreateWithoutUser_tracked_agencyInput[] | CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput[]
     connectOrCreate?: CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput | CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput[]
     createMany?: CrawlRunCreateManyUser_tracked_agencyInputEnvelope
     connect?: CrawlRunWhereUniqueInput | CrawlRunWhereUniqueInput[]
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput = {
+    create?: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_tracked_agencyInput>
+    connectOrCreate?: UserTrackedAgencyIntegrationLinkCreateOrConnectWithoutUser_tracked_agencyInput
+    connect?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
   }
 
   export type EnumAiProviderFieldUpdateOperationsInput = {
@@ -36434,6 +37852,16 @@ export namespace Prisma {
     deleteMany?: CrawlRunScalarWhereInput | CrawlRunScalarWhereInput[]
   }
 
+  export type UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput = {
+    create?: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_tracked_agencyInput>
+    connectOrCreate?: UserTrackedAgencyIntegrationLinkCreateOrConnectWithoutUser_tracked_agencyInput
+    upsert?: UserTrackedAgencyIntegrationLinkUpsertWithoutUser_tracked_agencyInput
+    disconnect?: UserTrackedAgencyIntegrationLinkWhereInput | boolean
+    delete?: UserTrackedAgencyIntegrationLinkWhereInput | boolean
+    connect?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+    update?: XOR<XOR<UserTrackedAgencyIntegrationLinkUpdateToOneWithWhereWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUpdateWithoutUser_tracked_agencyInput>, UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_tracked_agencyInput>
+  }
+
   export type CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput = {
     create?: XOR<CrawlRunCreateWithoutUser_tracked_agencyInput, CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput> | CrawlRunCreateWithoutUser_tracked_agencyInput[] | CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput[]
     connectOrCreate?: CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput | CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput[]
@@ -36446,6 +37874,44 @@ export namespace Prisma {
     update?: CrawlRunUpdateWithWhereUniqueWithoutUser_tracked_agencyInput | CrawlRunUpdateWithWhereUniqueWithoutUser_tracked_agencyInput[]
     updateMany?: CrawlRunUpdateManyWithWhereWithoutUser_tracked_agencyInput | CrawlRunUpdateManyWithWhereWithoutUser_tracked_agencyInput[]
     deleteMany?: CrawlRunScalarWhereInput | CrawlRunScalarWhereInput[]
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput = {
+    create?: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_tracked_agencyInput>
+    connectOrCreate?: UserTrackedAgencyIntegrationLinkCreateOrConnectWithoutUser_tracked_agencyInput
+    upsert?: UserTrackedAgencyIntegrationLinkUpsertWithoutUser_tracked_agencyInput
+    disconnect?: UserTrackedAgencyIntegrationLinkWhereInput | boolean
+    delete?: UserTrackedAgencyIntegrationLinkWhereInput | boolean
+    connect?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+    update?: XOR<XOR<UserTrackedAgencyIntegrationLinkUpdateToOneWithWhereWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUpdateWithoutUser_tracked_agencyInput>, UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_tracked_agencyInput>
+  }
+
+  export type UserTrackedAgencyCreateNestedOneWithoutIntegration_linkInput = {
+    create?: XOR<UserTrackedAgencyCreateWithoutIntegration_linkInput, UserTrackedAgencyUncheckedCreateWithoutIntegration_linkInput>
+    connectOrCreate?: UserTrackedAgencyCreateOrConnectWithoutIntegration_linkInput
+    connect?: UserTrackedAgencyWhereUniqueInput
+  }
+
+  export type UserIntegrationCreateNestedOneWithoutTracked_agency_linkInput = {
+    create?: XOR<UserIntegrationCreateWithoutTracked_agency_linkInput, UserIntegrationUncheckedCreateWithoutTracked_agency_linkInput>
+    connectOrCreate?: UserIntegrationCreateOrConnectWithoutTracked_agency_linkInput
+    connect?: UserIntegrationWhereUniqueInput
+  }
+
+  export type UserTrackedAgencyUpdateOneRequiredWithoutIntegration_linkNestedInput = {
+    create?: XOR<UserTrackedAgencyCreateWithoutIntegration_linkInput, UserTrackedAgencyUncheckedCreateWithoutIntegration_linkInput>
+    connectOrCreate?: UserTrackedAgencyCreateOrConnectWithoutIntegration_linkInput
+    upsert?: UserTrackedAgencyUpsertWithoutIntegration_linkInput
+    connect?: UserTrackedAgencyWhereUniqueInput
+    update?: XOR<XOR<UserTrackedAgencyUpdateToOneWithWhereWithoutIntegration_linkInput, UserTrackedAgencyUpdateWithoutIntegration_linkInput>, UserTrackedAgencyUncheckedUpdateWithoutIntegration_linkInput>
+  }
+
+  export type UserIntegrationUpdateOneRequiredWithoutTracked_agency_linkNestedInput = {
+    create?: XOR<UserIntegrationCreateWithoutTracked_agency_linkInput, UserIntegrationUncheckedCreateWithoutTracked_agency_linkInput>
+    connectOrCreate?: UserIntegrationCreateOrConnectWithoutTracked_agency_linkInput
+    upsert?: UserIntegrationUpsertWithoutTracked_agency_linkInput
+    connect?: UserIntegrationWhereUniqueInput
+    update?: XOR<XOR<UserIntegrationUpdateToOneWithWhereWithoutTracked_agency_linkInput, UserIntegrationUpdateWithoutTracked_agency_linkInput>, UserIntegrationUncheckedUpdateWithoutTracked_agency_linkInput>
   }
 
   export type SourceAgencyCreateNestedOneWithoutScrapersInput = {
@@ -38386,6 +39852,7 @@ export namespace Prisma {
     updated_at?: Date | string
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+    integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateWithoutUserInput = {
@@ -38402,6 +39869,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyCreateOrConnectWithoutUserInput = {
@@ -38503,6 +39971,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunCreateNestedManyWithoutUser_integrationInput
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_integrationInput
     integration_target: IntegrationTargetCreateNestedOneWithoutUser_integrationsInput
   }
 
@@ -38518,6 +39987,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutUser_integrationInput
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_integrationInput
   }
 
   export type UserIntegrationCreateOrConnectWithoutUserInput = {
@@ -38662,6 +40132,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunCreateNestedManyWithoutUser_integrationInput
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_integrationInput
     user: UserCreateNestedOneWithoutUser_integrationsInput
   }
 
@@ -38677,6 +40148,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutUser_integrationInput
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_integrationInput
   }
 
   export type UserIntegrationCreateOrConnectWithoutIntegration_targetInput = {
@@ -38745,6 +40217,25 @@ export namespace Prisma {
   export type CmsSyncRunCreateManyUser_integrationInputEnvelope = {
     data: CmsSyncRunCreateManyUser_integrationInput | CmsSyncRunCreateManyUser_integrationInput[]
     skipDuplicates?: boolean
+  }
+
+  export type UserTrackedAgencyIntegrationLinkCreateWithoutUser_integrationInput = {
+    id?: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    user_tracked_agency: UserTrackedAgencyCreateNestedOneWithoutIntegration_linkInput
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_integrationInput = {
+    id?: string
+    user_tracked_agency_id: string
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserTrackedAgencyIntegrationLinkCreateOrConnectWithoutUser_integrationInput = {
+    where: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+    create: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_integrationInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_integrationInput>
   }
 
   export type UserCreateWithoutUser_integrationsInput = {
@@ -38837,6 +40328,31 @@ export namespace Prisma {
     finished_at?: DateTimeNullableFilter<"CmsSyncRun"> | Date | string | null
     created_at?: DateTimeFilter<"CmsSyncRun"> | Date | string
     updated_at?: DateTimeFilter<"CmsSyncRun"> | Date | string
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUpsertWithoutUser_integrationInput = {
+    update: XOR<UserTrackedAgencyIntegrationLinkUpdateWithoutUser_integrationInput, UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_integrationInput>
+    create: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_integrationInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_integrationInput>
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUpdateToOneWithWhereWithoutUser_integrationInput = {
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
+    data: XOR<UserTrackedAgencyIntegrationLinkUpdateWithoutUser_integrationInput, UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_integrationInput>
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUpdateWithoutUser_integrationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user_tracked_agency?: UserTrackedAgencyUpdateOneRequiredWithoutIntegration_linkNestedInput
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_integrationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_tracked_agency_id?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserUpsertWithoutUser_integrationsInput = {
@@ -38975,6 +40491,7 @@ export namespace Prisma {
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+    integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateWithoutSource_agencyInput = {
@@ -38991,6 +40508,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyCreateOrConnectWithoutSource_agencyInput = {
@@ -39549,6 +41067,25 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type UserTrackedAgencyIntegrationLinkCreateWithoutUser_tracked_agencyInput = {
+    id?: string
+    created_at?: Date | string
+    updated_at?: Date | string
+    user_integration: UserIntegrationCreateNestedOneWithoutTracked_agency_linkInput
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_tracked_agencyInput = {
+    id?: string
+    user_integration_id: string
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserTrackedAgencyIntegrationLinkCreateOrConnectWithoutUser_tracked_agencyInput = {
+    where: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+    create: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_tracked_agencyInput>
+  }
+
   export type UserUpsertWithoutTracked_agenciesInput = {
     update: XOR<UserUpdateWithoutTracked_agenciesInput, UserUncheckedUpdateWithoutTracked_agenciesInput>
     create: XOR<UserCreateWithoutTracked_agenciesInput, UserUncheckedCreateWithoutTracked_agenciesInput>
@@ -39655,6 +41192,191 @@ export namespace Prisma {
   export type CrawlRunUpdateManyWithWhereWithoutUser_tracked_agencyInput = {
     where: CrawlRunScalarWhereInput
     data: XOR<CrawlRunUpdateManyMutationInput, CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyInput>
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUpsertWithoutUser_tracked_agencyInput = {
+    update: XOR<UserTrackedAgencyIntegrationLinkUpdateWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_tracked_agencyInput>
+    create: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_tracked_agencyInput>
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUpdateToOneWithWhereWithoutUser_tracked_agencyInput = {
+    where?: UserTrackedAgencyIntegrationLinkWhereInput
+    data: XOR<UserTrackedAgencyIntegrationLinkUpdateWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_tracked_agencyInput>
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUpdateWithoutUser_tracked_agencyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user_integration?: UserIntegrationUpdateOneRequiredWithoutTracked_agency_linkNestedInput
+  }
+
+  export type UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_tracked_agencyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_integration_id?: StringFieldUpdateOperationsInput | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserTrackedAgencyCreateWithoutIntegration_linkInput = {
+    id?: string
+    enabled?: boolean
+    crawl_interval?: string
+    track_new_listings?: boolean
+    track_removed_listings?: boolean
+    track_updated_listings?: boolean
+    use_ai_batching?: boolean
+    ai_provider?: $Enums.AiProvider
+    ai_model?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutTracked_agenciesInput
+    source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
+    crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+  }
+
+  export type UserTrackedAgencyUncheckedCreateWithoutIntegration_linkInput = {
+    id?: string
+    user_id: string
+    source_agency_id: string
+    enabled?: boolean
+    crawl_interval?: string
+    track_new_listings?: boolean
+    track_removed_listings?: boolean
+    track_updated_listings?: boolean
+    use_ai_batching?: boolean
+    ai_provider?: $Enums.AiProvider
+    ai_model?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+  }
+
+  export type UserTrackedAgencyCreateOrConnectWithoutIntegration_linkInput = {
+    where: UserTrackedAgencyWhereUniqueInput
+    create: XOR<UserTrackedAgencyCreateWithoutIntegration_linkInput, UserTrackedAgencyUncheckedCreateWithoutIntegration_linkInput>
+  }
+
+  export type UserIntegrationCreateWithoutTracked_agency_linkInput = {
+    id?: string
+    api_key_secret?: string | null
+    email?: string | null
+    username?: string | null
+    password?: string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    is_active?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    sync_runs?: CmsSyncRunCreateNestedManyWithoutUser_integrationInput
+    user: UserCreateNestedOneWithoutUser_integrationsInput
+    integration_target: IntegrationTargetCreateNestedOneWithoutUser_integrationsInput
+  }
+
+  export type UserIntegrationUncheckedCreateWithoutTracked_agency_linkInput = {
+    id?: string
+    integration_target_id: string
+    user_id: string
+    api_key_secret?: string | null
+    email?: string | null
+    username?: string | null
+    password?: string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    is_active?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutUser_integrationInput
+  }
+
+  export type UserIntegrationCreateOrConnectWithoutTracked_agency_linkInput = {
+    where: UserIntegrationWhereUniqueInput
+    create: XOR<UserIntegrationCreateWithoutTracked_agency_linkInput, UserIntegrationUncheckedCreateWithoutTracked_agency_linkInput>
+  }
+
+  export type UserTrackedAgencyUpsertWithoutIntegration_linkInput = {
+    update: XOR<UserTrackedAgencyUpdateWithoutIntegration_linkInput, UserTrackedAgencyUncheckedUpdateWithoutIntegration_linkInput>
+    create: XOR<UserTrackedAgencyCreateWithoutIntegration_linkInput, UserTrackedAgencyUncheckedCreateWithoutIntegration_linkInput>
+    where?: UserTrackedAgencyWhereInput
+  }
+
+  export type UserTrackedAgencyUpdateToOneWithWhereWithoutIntegration_linkInput = {
+    where?: UserTrackedAgencyWhereInput
+    data: XOR<UserTrackedAgencyUpdateWithoutIntegration_linkInput, UserTrackedAgencyUncheckedUpdateWithoutIntegration_linkInput>
+  }
+
+  export type UserTrackedAgencyUpdateWithoutIntegration_linkInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
+    track_new_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
+    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
+    source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
+    crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+  }
+
+  export type UserTrackedAgencyUncheckedUpdateWithoutIntegration_linkInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
+    track_new_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
+    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+  }
+
+  export type UserIntegrationUpsertWithoutTracked_agency_linkInput = {
+    update: XOR<UserIntegrationUpdateWithoutTracked_agency_linkInput, UserIntegrationUncheckedUpdateWithoutTracked_agency_linkInput>
+    create: XOR<UserIntegrationCreateWithoutTracked_agency_linkInput, UserIntegrationUncheckedCreateWithoutTracked_agency_linkInput>
+    where?: UserIntegrationWhereInput
+  }
+
+  export type UserIntegrationUpdateToOneWithWhereWithoutTracked_agency_linkInput = {
+    where?: UserIntegrationWhereInput
+    data: XOR<UserIntegrationUpdateWithoutTracked_agency_linkInput, UserIntegrationUncheckedUpdateWithoutTracked_agency_linkInput>
+  }
+
+  export type UserIntegrationUpdateWithoutTracked_agency_linkInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    is_active?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync_runs?: CmsSyncRunUpdateManyWithoutUser_integrationNestedInput
+    user?: UserUpdateOneRequiredWithoutUser_integrationsNestedInput
+    integration_target?: IntegrationTargetUpdateOneRequiredWithoutUser_integrationsNestedInput
+  }
+
+  export type UserIntegrationUncheckedUpdateWithoutTracked_agency_linkInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    integration_target_id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    username?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    config?: NullableJsonNullValueInput | InputJsonValue
+    is_active?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutUser_integrationNestedInput
   }
 
   export type SourceAgencyCreateWithoutScrapersInput = {
@@ -41289,6 +43011,7 @@ export namespace Prisma {
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
+    integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateWithoutCrawl_runsInput = {
@@ -41305,6 +43028,7 @@ export namespace Prisma {
     ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyCreateOrConnectWithoutCrawl_runsInput = {
@@ -41585,6 +43309,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateWithoutCrawl_runsInput = {
@@ -41601,6 +43326,7 @@ export namespace Prisma {
     ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type ScraperUpsertWithoutCrawl_runsInput = {
@@ -42245,6 +43971,7 @@ export namespace Prisma {
     is_active?: boolean
     created_at?: Date | string
     updated_at?: Date | string
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_integrationInput
     user: UserCreateNestedOneWithoutUser_integrationsInput
     integration_target: IntegrationTargetCreateNestedOneWithoutUser_integrationsInput
   }
@@ -42261,6 +43988,7 @@ export namespace Prisma {
     is_active?: boolean
     created_at?: Date | string
     updated_at?: Date | string
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_integrationInput
   }
 
   export type UserIntegrationCreateOrConnectWithoutSync_runsInput = {
@@ -42362,6 +44090,7 @@ export namespace Prisma {
     is_active?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_integrationNestedInput
     user?: UserUpdateOneRequiredWithoutUser_integrationsNestedInput
     integration_target?: IntegrationTargetUpdateOneRequiredWithoutUser_integrationsNestedInput
   }
@@ -42378,6 +44107,7 @@ export namespace Prisma {
     is_active?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_integrationNestedInput
   }
 
   export type UserPropertyUpsertWithoutCms_sync_runsInput = {
@@ -43761,6 +45491,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateWithoutUserInput = {
@@ -43777,6 +45508,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateManyWithoutUserInput = {
@@ -43906,6 +45638,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUpdateManyWithoutUser_integrationNestedInput
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_integrationNestedInput
     integration_target?: IntegrationTargetUpdateOneRequiredWithoutUser_integrationsNestedInput
   }
 
@@ -43921,6 +45654,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutUser_integrationNestedInput
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_integrationNestedInput
   }
 
   export type UserIntegrationUncheckedUpdateManyWithoutUserInput = {
@@ -43960,6 +45694,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUpdateManyWithoutUser_integrationNestedInput
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_integrationNestedInput
     user?: UserUpdateOneRequiredWithoutUser_integrationsNestedInput
   }
 
@@ -43975,6 +45710,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutUser_integrationNestedInput
+    tracked_agency_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_integrationNestedInput
   }
 
   export type UserIntegrationUncheckedUpdateManyWithoutIntegration_targetInput = {
@@ -44232,6 +45968,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateWithoutSource_agencyInput = {
@@ -44248,6 +45985,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateManyWithoutSource_agencyInput = {

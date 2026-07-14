@@ -11,6 +11,7 @@ import {
 import { Search } from "lucide-react";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { TrackedAgencyIntegrationLink } from "@/features/user-tracked-agencies/components/tracked-agency-integration-link";
 import {
   useTrackableAgencies,
   useTrackAgency,
@@ -24,6 +25,7 @@ import {
   type TrackAgencyPayload,
   type TrackableAgency,
 } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
+import { Routes } from "@/routes/routes";
 
 const aiProviderOptions: { id: AiProvider; label: string }[] = [
   { id: AiProviders.OPENAI, label: "OpenAI" },
@@ -161,11 +163,17 @@ function AgencyCard({
           <p className="text-xs text-muted">
             Batching applies on scheduled crawls when batching is enabled and provider is OpenAI.
             Connect your AI key on{" "}
-            <Link to="/integrations" className="text-accent hover:underline">
+            <Link to={Routes.dashboard.integrations} className="text-accent hover:underline">
               Integrations
             </Link>{" "}
             before tracking.
           </p>
+
+          <TrackedAgencyIntegrationLink
+            agencyId={agency.id}
+            linkedIntegrationId={prefs.user_integration_id}
+            disabled={isPending}
+          />
         </div>
       )}
     </article>

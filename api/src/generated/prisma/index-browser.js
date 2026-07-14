@@ -189,6 +189,14 @@ exports.Prisma.UserTrackedAgencyScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.UserTrackedAgencyIntegrationLinkScalarFieldEnum = {
+  id: 'id',
+  user_tracked_agency_id: 'user_tracked_agency_id',
+  user_integration_id: 'user_integration_id',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.ScraperScalarFieldEnum = {
   id: 'id',
   source_agency_id: 'source_agency_id',
@@ -673,6 +681,7 @@ exports.Prisma.ModelName = {
   UserIntegration: 'UserIntegration',
   SourceAgency: 'SourceAgency',
   UserTrackedAgency: 'UserTrackedAgency',
+  UserTrackedAgencyIntegrationLink: 'UserTrackedAgencyIntegrationLink',
   Scraper: 'Scraper',
   ScraperGenerationRun: 'ScraperGenerationRun',
   ComputerUseStep: 'ComputerUseStep',

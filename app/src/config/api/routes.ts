@@ -97,6 +97,7 @@ export const ApiRoutes = {
         prefix: "/agencies",
         list: "/agencies",
         track: (agencyId: string) => `/agencies/${agencyId}/track`,
+        integrationLink: (agencyId: string) => `/agencies/${agencyId}/track/integration`,
     },
     userProperties: {
         prefix: "/properties",

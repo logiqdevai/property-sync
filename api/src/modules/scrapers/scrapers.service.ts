@@ -229,7 +229,19 @@ export class ScrapersService {
 
   async runNow(id: string) {
     const scraper = await this.ensureExists(id);
-    return this.crawlRunsService.enqueue(scraper.source_agency_id, scraper.id);
+    const tracker = await this.prisma.userTrackedAgency.findFirst({
+      where: {
+        source_agency_id: scraper.source_agency_id,
+        enabled: true,
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return this.crawlRunsService.enqueue(
+      scraper.source_agency_id,
+      scraper.id,
+      tracker?.id,
+    );
   }
 
   private async ensureExists(id: string) {

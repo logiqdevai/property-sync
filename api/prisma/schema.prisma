@@ -287,6 +287,7 @@ model UserIntegration {
   updated_at     DateTime @updatedAt
 
   sync_runs CmsSyncRun[]
+  tracked_agency_link UserTrackedAgencyIntegrationLink?
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
   integration_target IntegrationTarget @relation(fields: [integration_target_id], references: [id], onDelete: Cascade)
   @@map("user_integrations")
@@ -346,11 +347,25 @@ model UserTrackedAgency {
   user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
   source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
   crawl_runs CrawlRun[]
+  integration_link UserTrackedAgencyIntegrationLink?
 
   @@unique([user_id, source_agency_id])
   @@index([user_id])
   @@index([source_agency_id])
   @@map("user_tracked_agencies")
+}
+
+model UserTrackedAgencyIntegrationLink {
+  id                     String   @id @default(uuid())
+  user_tracked_agency_id String   @unique
+  user_integration_id    String   @unique
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  user_tracked_agency UserTrackedAgency @relation(fields: [user_tracked_agency_id], references: [id], onDelete: Cascade)
+  user_integration    UserIntegration    @relation(fields: [user_integration_id], references: [id], onDelete: Cascade)
+
+  @@map("user_tracked_agency_integration_links")
 }
 
 // ---------------------------------------------------------------
