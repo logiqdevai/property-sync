@@ -1,4 +1,6 @@
 import { Chip } from "@heroui/react";
+import { JobStatusFilterOptions } from "@/config/constants/dropdowns/job-status-filter.options";
+import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { JobStatuses, type JobStatus } from "@/features/jobs/interfaces/jobs.interfaces";
 
 const statusColor: Record<JobStatus, "success" | "default" | "warning" | "danger"> = {
@@ -11,16 +13,6 @@ const statusColor: Record<JobStatus, "success" | "default" | "warning" | "danger
   [JobStatuses.STALLED]: "danger",
 };
 
-const statusLabel: Record<JobStatus, string> = {
-  [JobStatuses.WAITING]: "Waiting",
-  [JobStatuses.ACTIVE]: "Active",
-  [JobStatuses.COMPLETED]: "Completed",
-  [JobStatuses.FAILED]: "Failed",
-  [JobStatuses.DELAYED]: "Delayed",
-  [JobStatuses.PAUSED]: "Paused",
-  [JobStatuses.STALLED]: "Stalled",
-};
-
 interface JobStatusChipProps {
   status: JobStatus;
 }
@@ -28,7 +20,7 @@ interface JobStatusChipProps {
 export function JobStatusChip({ status }: JobStatusChipProps) {
   return (
     <Chip color={statusColor[status]} size="sm" variant="soft">
-      <Chip.Label>{statusLabel[status]}</Chip.Label>
+      <Chip.Label>{getDropdownOptionLabel(JobStatusFilterOptions, status)}</Chip.Label>
     </Chip>
   );
 }

@@ -1,5 +1,5 @@
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
-import { getIntegrationTypeLabel } from "@/features/integration-targets/utils/integration-type-label.utils";
+import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
 
 type CmsIntegrationDescriptionProps = {
   context?: "agency" | "connection";

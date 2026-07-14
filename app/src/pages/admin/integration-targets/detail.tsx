@@ -27,8 +27,8 @@ import {
   mapEditFormToPayload,
   type ConnectCredentialsFormValues,
 } from "@/features/user-integrations/validation-schemas/user-integrations.schema";
-import { getIntegrationTypeLabel } from "@/features/integration-targets/utils/integration-type-label.utils";
-import { getAuthTypeLabel } from "@/features/integration-targets/utils/auth-type-label.utils";
+import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
+import { getAuthTypeLabel } from "@/config/constants/dropdowns/auth-type-form.options";
 
 type AddAccountFormValues = ConnectCredentialsFormValues & { user_id: string };
 

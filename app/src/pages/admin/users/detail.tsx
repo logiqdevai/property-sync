@@ -8,9 +8,11 @@ import {
   RoleTypes,
   type RoleType,
 } from "@/features/user/interfaces/user.interface";
+import { RoleTypeFilterOptions } from "@/config/constants/dropdowns/role-type-filter.options";
+import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { CredentialStatusIndicators } from "./components/integration-credential-fields";
-import { getIntegrationTypeLabel } from "@/features/integration-targets/utils/integration-type-label.utils";
-import { getAuthTypeLabel } from "@/features/integration-targets/utils/auth-type-label.utils";
+import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
+import { getAuthTypeLabel } from "@/config/constants/dropdowns/auth-type-form.options";
 import { formatDate } from "@/lib/date";
 
 function RoleBadge({ role }: { role: RoleType }) {
@@ -25,7 +27,7 @@ function RoleBadge({ role }: { role: RoleType }) {
 
   return (
     <Chip size="sm" variant="soft" color={color}>
-      {role.replace("_", " ")}
+      {getDropdownOptionLabel(RoleTypeFilterOptions, role)}
     </Chip>
   );
 }

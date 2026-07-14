@@ -1,4 +1,6 @@
 import { Chip } from "@heroui/react";
+import { ScraperStatusFilterOptions } from "@/config/constants/dropdowns/scraper-status-filter.options";
+import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { ScraperStatuses, type ScraperStatus } from "@/features/scrapers/interfaces/scrapers.interfaces";
 
 const statusColor: Record<ScraperStatus, "success" | "default" | "warning" | "danger"> = {
@@ -9,14 +11,6 @@ const statusColor: Record<ScraperStatus, "success" | "default" | "warning" | "da
   [ScraperStatuses.BROKEN]: "danger",
 };
 
-const statusLabel: Record<ScraperStatus, string> = {
-  [ScraperStatuses.ACTIVE]: "Active",
-  [ScraperStatuses.TESTING]: "Testing",
-  [ScraperStatuses.INACTIVE]: "Inactive",
-  [ScraperStatuses.DEPRECATED]: "Deprecated",
-  [ScraperStatuses.BROKEN]: "Broken",
-};
-
 interface ScraperStatusChipProps {
   status: ScraperStatus;
 }
@@ -24,7 +18,7 @@ interface ScraperStatusChipProps {
 export function ScraperStatusChip({ status }: ScraperStatusChipProps) {
   return (
     <Chip color={statusColor[status]} size="sm" variant="soft">
-      <Chip.Label>{statusLabel[status]}</Chip.Label>
+      <Chip.Label>{getDropdownOptionLabel(ScraperStatusFilterOptions, status)}</Chip.Label>
     </Chip>
   );
 }

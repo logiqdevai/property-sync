@@ -1,4 +1,6 @@
 import { Chip } from "@heroui/react";
+import { NotificationSeverityFilterOptions } from "@/config/constants/dropdowns/notification-severity-filter.options";
+import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import {
   NotificationSeverities,
   type NotificationSeverity,
@@ -13,12 +15,6 @@ const severityColor: Record<
   [NotificationSeverities.CRITICAL]: "danger",
 };
 
-const severityLabel: Record<NotificationSeverity, string> = {
-  [NotificationSeverities.INFO]: "Info",
-  [NotificationSeverities.WARNING]: "Warning",
-  [NotificationSeverities.CRITICAL]: "Critical",
-};
-
 interface NotificationSeverityChipProps {
   severity: NotificationSeverity;
 }
@@ -26,7 +22,7 @@ interface NotificationSeverityChipProps {
 export function NotificationSeverityChip({ severity }: NotificationSeverityChipProps) {
   return (
     <Chip color={severityColor[severity]} size="sm" variant="soft">
-      <Chip.Label>{severityLabel[severity]}</Chip.Label>
+      <Chip.Label>{getDropdownOptionLabel(NotificationSeverityFilterOptions, severity)}</Chip.Label>
     </Chip>
   );
 }

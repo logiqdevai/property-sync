@@ -1,5 +1,16 @@
-import type { IntegrationType } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
-import { IntegrationTypeOptions } from "@/features/integration-targets/utils/integration-type-label.utils";
+import {
+  IntegrationTypes,
+  type IntegrationType,
+} from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 
-export const IntegrationTypeFormOptions: { id: IntegrationType; label: string }[] =
-  IntegrationTypeOptions;
+export const IntegrationTypeFormOptions: { id: IntegrationType; label: string }[] = [
+  { id: IntegrationTypes.ESTATEWEB, label: "EstateWeb CMS" },
+  { id: IntegrationTypes.OPENAI, label: "OpenAI" },
+  { id: IntegrationTypes.ANTHROPIC, label: "Anthropic" },
+  { id: IntegrationTypes.GEMINI, label: "Google Gemini" },
+  { id: IntegrationTypes.DEEPSEEK, label: "DeepSeek" },
+];
+
+export function getIntegrationTypeLabel(type: IntegrationType | string): string {
+  return IntegrationTypeFormOptions.find((option) => option.id === type)?.label ?? type;
+}

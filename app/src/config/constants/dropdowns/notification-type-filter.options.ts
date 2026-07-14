@@ -36,6 +36,10 @@ export const NotificationTypeLabels: Record<NotificationType, string> = {
   [NotificationTypes.ESTATEWEB_SESSION_PERSIST_FAILED]: "session persist failed",
 };
 
+export function getNotificationTypeLabel(type: NotificationType | string): string {
+  return NotificationTypeLabels[type as NotificationType] ?? type;
+}
+
 export const NotificationTypeFilterOptions: { id: NotificationType | "all"; label: string }[] = [
   { id: "all", label: "All types" },
   ...Object.values(NotificationTypes).map((notificationType) => ({

@@ -25,8 +25,8 @@ import {
   type IntegrationType,
 } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { IntegrationTypeFilterOptions } from "@/config/constants/dropdowns/integration-type-filter.options";
-import { getIntegrationTypeLabel } from "@/features/integration-targets/utils/integration-type-label.utils";
-import { getAuthTypeLabel } from "@/features/integration-targets/utils/auth-type-label.utils";
+import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
+import { getAuthTypeLabel } from "@/config/constants/dropdowns/auth-type-form.options";
 import { AuthTypeFilterOptions } from "@/config/constants/dropdowns/auth-type-filter.options";
 import { VisibilityFilterOptions } from "@/config/constants/dropdowns/visibility-filter.options";
 

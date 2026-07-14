@@ -24,9 +24,9 @@ import {
   mapEditFormToPayload,
   type ConnectCredentialsFormValues,
 } from "@/features/user-integrations/validation-schemas/user-integrations.schema";
-import { getIntegrationTypeLabel } from "@/features/integration-targets/utils/integration-type-label.utils";
+import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
 import { getIntegrationTypeDescription } from "@/config/constants/dropdowns/integration-type-description.options";
-import { getAuthTypeLabel } from "@/features/integration-targets/utils/auth-type-label.utils";
+import { getAuthTypeLabel } from "@/config/constants/dropdowns/auth-type-form.options";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { LinkConnectionToAgencyModal } from "./components/link-connection-to-agency-modal";
 
