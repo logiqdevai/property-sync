@@ -1,0 +1,5 @@
+-- RenameForeignKey
+ALTER TABLE "user_tracked_agency_integration_links" RENAME CONSTRAINT "user_tracked_agency_integration_links_user_tracked_agency_id_fk" TO "user_tracked_agency_integration_links_user_tracked_agency__fkey";
+
+-- RenameIndex
+ALTER INDEX "user_tracked_agency_integration_links_user_tracked_agency_id_ke" RENAME TO "user_tracked_agency_integration_links_user_tracked_agency_i_key";
