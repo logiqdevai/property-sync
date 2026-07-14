@@ -6,8 +6,9 @@
 > before writing code. Update this file when deliverables are verified.
 
 **Last updated:** 2026-07-14
-**Overall progress:** 30% (3 / 10 features complete — Features 01, 02, and 03 are all verified end-to-end against a real DB and real browser UI)
-**Current focus:** Start Feature 04 (AI Computer-Use Scraper Generation) — `tasks/feature-04-ai-generation/01-generation-runs-api-core.md`. Read `../../scraping-generation-computer-use-architecture.md`, the reference CLI under `../../scraper-generator/`, and `directions/04-api-design.md` §Feature 04 before implementing. This feature adds `@anthropic-ai/sdk` + `playwright` dependencies and needs a `UserIntegration` (Anthropic API key) to actually run — check for one before assuming the full loop is testable end-to-end.
+**Overall progress:** 30% (3 / 10 features complete — Features 01, 02, and 03 are all verified end-to-end against a real DB and real browser UI; Feature 04 task 01 of 4 is also done, see below)
+**Current focus:** Continue Feature 04 (AI Computer-Use Scraper Generation) — `tasks/feature-04-ai-generation/02-computer-use-loop-engine.md`. Read `../../scraping-generation-computer-use-architecture.md`, the reference CLI under `../../scraper-generator/generate/`, and that task file in full before implementing. This task adds `@anthropic-ai/sdk` + `playwright` dependencies and replaces the stub `api/src/background/generation.processor.ts` with the real Anthropic-vision + Playwright loop.
+**Dependency note:** Feature 04 task 01 needed `UserIntegrationsService.resolveActiveApiKey` / `resolveForSourceAgency`, which is formally Feature 09's deliverable but Feature 09 hasn't started yet. A **minimal** `api/src/modules/user-integrations/` module was added out-of-order containing just those two resolver methods (matching the contract in `directions/03-domain-model.md`'s `UserIntegration AI credential rule`) — no controllers/DTOs/CRUD. When Feature 09 is implemented, extend this module in place (add `integration-targets` module + this module's admin/user CRUD endpoints) rather than recreating it.
 
 ---
 
@@ -31,7 +32,7 @@
 | 01 | Platform Foundation (DB, Auth, Roles) | done | 100% | 2 files |
 | 02 | Admin Shell & Agencies | done | 100% | 3 files |
 | 03 | Scraper Management | done | 100% | 3 files |
-| 04 | AI Computer-Use Scraper Generation | not started | 0% | 4 files |
+| 04 | AI Computer-Use Scraper Generation | in progress | 25% (1/4 task files) | 4 files |
 | 05 | Crawl Execution Engine & Job Queue | not started | 0% | 4 files |
 | 06 | Property Normalization & Admin Properties | not started | 0% | 3 files |
 | 07 | User Tracked Agencies & UserProperty | not started | 0% | 3 files |
@@ -180,8 +181,8 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 **Description:** Admins can trigger an AI computer-use session that generates or fixes a scraper, replay every step it took, and approve/reject the result.
 
-**Status:** not started
-**Progress:** 0%
+**Status:** in progress
+**Progress:** 25% (task 01 of 4 done and verified end-to-end against the live DB; the computer-use loop itself is still a stub)
 
 ### References
 
@@ -196,7 +197,7 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 
 | File | Status |
 |------|--------|
-| `tasks/feature-04-ai-generation/01-generation-runs-api-core.md` | ready |
+| `tasks/feature-04-ai-generation/01-generation-runs-api-core.md` | done |
 | `tasks/feature-04-ai-generation/02-computer-use-loop-engine.md` | ready |
 | `tasks/feature-04-ai-generation/03-generation-runs-frontend-data.md` | ready |
 | `tasks/feature-04-ai-generation/04-generation-runs-ui.md` | ready |
@@ -204,18 +205,19 @@ Overall % = completed features / 10 (a feature counts as complete only when its 
 ### Implementation checklist
 
 **API (`api/`)**
-- [ ] Add `@anthropic-ai/sdk` and `playwright` dependencies
-- [ ] `api/src/integrations/computer-use/` — port `scraper-generator/generate/` (Anthropic vision loop + Playwright actions + config verification + screenshot capture → `Document` rows); API key from initiating admin's or self-heal tracker's `UserIntegration`
-- [ ] `api/src/modules/scraper-generation/` — module, controller, service; `ScraperGenerationRun` + `ComputerUseStep` persistence; BullMQ `generation` queue + processor running the loop
-- [ ] Approve/reject/cancel endpoints; approve promotes `staged_config` into a new `ScraperVersion` and activates it
-- [ ] Public service method `triggerGeneration(agencyId, scraperId | null, trigger, prompt?)` for later self-heal wiring (Feature 05)
+- [ ] Add `@anthropic-ai/sdk` and `playwright` dependencies (task 02)
+- [ ] `api/src/integrations/computer-use/` — port `scraper-generator/generate/` (Anthropic vision loop + Playwright actions + config verification + screenshot capture → `Document` rows); API key from initiating admin's or self-heal tracker's `UserIntegration` (task 02)
+- [x] `api/src/modules/scraper-generation/` — module, controller, service; `ScraperGenerationRun` + `ComputerUseStep` persistence (findAll/findOne with steps ordered by `step_index asc`); BullMQ `generation` queue registered + stub processor (`api/src/background/generation.processor.ts`, real loop is task 02) — verified end-to-end against the live DB: `POST /admin/generation-runs` without a connected Anthropic key → `400`; with one connected → creates `QUEUED` run, stub processor flips it `RUNNING` → `FAILED` (`"AI loop not implemented yet"`); `reject`/`cancel`/`approve` all correctly blocked (`400`) on a terminal run; manually staged `AWAITING_REVIEW` rows (new-scraper case and existing-`BROKEN`-scraper case) both `approve` correctly — new `Scraper`+`ScraperVersion` created/activated, `produced_version_id` set, `BROKEN` reset to `ACTIVE`, version_count incremented; `SUPPORT`/`ADMIN` can `GET` (200), `USER` gets `403`, unauthenticated gets `401`. Test agency/scraper/versions/runs/integration cleaned up afterward.
+- [x] Approve/reject/cancel endpoints; approve promotes `staged_config` into a new `ScraperVersion` and activates it (creates the `Scraper` too when `scraper_id` was null)
+- [x] Internal `trigger(sourceAgencyId, scraperId, trigger, prompt?)` method (no HTTP route) for Feature 05's self-heal wiring — resolves Anthropic credentials via `resolveForSourceAgency` for non-`MANUAL` triggers
+- [x] Minimal `api/src/modules/user-integrations/` (Feature 09 dependency, added out-of-order — see **Dependency note** above) with only `resolveActiveApiKey` / `resolveForSourceAgency`
 
 **App (`app/`)**
 - [ ] `app/src/features/scraper-generation/`
 - [ ] `/admin/generation-runs` list + session replay view (steps with before/after screenshots + reasoning) + review screen (diff `staged_config` vs current active version, approve/reject) + manual "Generate scraper" trigger (from Agencies or Scrapers page)
 
 **Verification**
-- [ ] Smoke test: trigger a manual generation run against a real simple test page, watch it reach `AWAITING_REVIEW`, approve it, confirm a new `ScraperVersion` is active
+- [ ] Smoke test: trigger a manual generation run against a real simple test page, watch it reach `AWAITING_REVIEW`, approve it, confirm a new `ScraperVersion` is active — blocked on task 02 (real computer-use loop); task 01's queue wiring + approve/reject/cancel transitions are already verified above using a manually-staged run
 
 **Definition of done:** An admin can generate a working scraper end-to-end via the AI computer-use loop with full replay and manual approval.
 
