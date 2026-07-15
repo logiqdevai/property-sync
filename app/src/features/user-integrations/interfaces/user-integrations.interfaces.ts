@@ -20,10 +20,12 @@ export interface MaskedUserIntegrationConnection {
   integration_target_id: string;
   user_id: string;
   api_key_secret: string | null;
+  webhook_key: string | null;
   email: string | null;
   username: string | null;
   password: string | null;
   has_api_key_secret: boolean;
+  has_webhook_key: boolean;
   has_password: boolean;
   has_config: boolean;
   is_active: boolean;
@@ -44,6 +46,7 @@ export interface MaskedUserIntegrationConnection {
 export interface CreateConnectionPayload {
   integration_target_id: string;
   api_key_secret?: string;
+  webhook_key?: string;
   email?: string;
   username?: string;
   password?: string;
@@ -52,6 +55,7 @@ export interface CreateConnectionPayload {
 
 export interface UpdateConnectionPayload {
   api_key_secret?: string;
+  webhook_key?: string;
   email?: string;
   username?: string;
   password?: string;

@@ -407,7 +407,8 @@ export const NotificationType: {
   ESTATEWEB_EMPTY_IMAGE: 'ESTATEWEB_EMPTY_IMAGE',
   ESTATEWEB_INVALID_PROPERTY_ID: 'ESTATEWEB_INVALID_PROPERTY_ID',
   ESTATEWEB_LINK_NOT_FOUND: 'ESTATEWEB_LINK_NOT_FOUND',
-  ESTATEWEB_SESSION_PERSIST_FAILED: 'ESTATEWEB_SESSION_PERSIST_FAILED'
+  ESTATEWEB_SESSION_PERSIST_FAILED: 'ESTATEWEB_SESSION_PERSIST_FAILED',
+  AI_NORMALIZATION_FAILURE: 'AI_NORMALIZATION_FAILURE'
 };
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
@@ -5908,6 +5909,7 @@ export namespace Prisma {
     integration_target_id: string | null
     user_id: string | null
     api_key_secret: string | null
+    webhook_key: string | null
     email: string | null
     username: string | null
     password: string | null
@@ -5922,6 +5924,7 @@ export namespace Prisma {
     integration_target_id: string | null
     user_id: string | null
     api_key_secret: string | null
+    webhook_key: string | null
     email: string | null
     username: string | null
     password: string | null
@@ -5936,6 +5939,7 @@ export namespace Prisma {
     integration_target_id: number
     user_id: number
     api_key_secret: number
+    webhook_key: number
     email: number
     username: number
     password: number
@@ -5953,6 +5957,7 @@ export namespace Prisma {
     integration_target_id?: true
     user_id?: true
     api_key_secret?: true
+    webhook_key?: true
     email?: true
     username?: true
     password?: true
@@ -5967,6 +5972,7 @@ export namespace Prisma {
     integration_target_id?: true
     user_id?: true
     api_key_secret?: true
+    webhook_key?: true
     email?: true
     username?: true
     password?: true
@@ -5981,6 +5987,7 @@ export namespace Prisma {
     integration_target_id?: true
     user_id?: true
     api_key_secret?: true
+    webhook_key?: true
     email?: true
     username?: true
     password?: true
@@ -6069,6 +6076,7 @@ export namespace Prisma {
     integration_target_id: string
     user_id: string
     api_key_secret: string | null
+    webhook_key: string | null
     email: string | null
     username: string | null
     password: string | null
@@ -6101,6 +6109,7 @@ export namespace Prisma {
     integration_target_id?: boolean
     user_id?: boolean
     api_key_secret?: boolean
+    webhook_key?: boolean
     email?: boolean
     username?: boolean
     password?: boolean
@@ -6121,6 +6130,7 @@ export namespace Prisma {
     integration_target_id?: boolean
     user_id?: boolean
     api_key_secret?: boolean
+    webhook_key?: boolean
     email?: boolean
     username?: boolean
     password?: boolean
@@ -6138,6 +6148,7 @@ export namespace Prisma {
     integration_target_id?: boolean
     user_id?: boolean
     api_key_secret?: boolean
+    webhook_key?: boolean
     email?: boolean
     username?: boolean
     password?: boolean
@@ -6155,6 +6166,7 @@ export namespace Prisma {
     integration_target_id?: boolean
     user_id?: boolean
     api_key_secret?: boolean
+    webhook_key?: boolean
     email?: boolean
     username?: boolean
     password?: boolean
@@ -6165,7 +6177,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type UserIntegrationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "integration_target_id" | "user_id" | "api_key_secret" | "email" | "username" | "password" | "config" | "is_active" | "is_default" | "created_at" | "updated_at", ExtArgs["result"]["userIntegration"]>
+  export type UserIntegrationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "integration_target_id" | "user_id" | "api_key_secret" | "webhook_key" | "email" | "username" | "password" | "config" | "is_active" | "is_default" | "created_at" | "updated_at", ExtArgs["result"]["userIntegration"]>
   export type UserIntegrationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sync_runs?: boolean | UserIntegration$sync_runsArgs<ExtArgs>
     tracked_agency_link?: boolean | UserIntegration$tracked_agency_linkArgs<ExtArgs>
@@ -6195,6 +6207,7 @@ export namespace Prisma {
       integration_target_id: string
       user_id: string
       api_key_secret: string | null
+      webhook_key: string | null
       email: string | null
       username: string | null
       password: string | null
@@ -6634,6 +6647,7 @@ export namespace Prisma {
     readonly integration_target_id: FieldRef<"UserIntegration", 'String'>
     readonly user_id: FieldRef<"UserIntegration", 'String'>
     readonly api_key_secret: FieldRef<"UserIntegration", 'String'>
+    readonly webhook_key: FieldRef<"UserIntegration", 'String'>
     readonly email: FieldRef<"UserIntegration", 'String'>
     readonly username: FieldRef<"UserIntegration", 'String'>
     readonly password: FieldRef<"UserIntegration", 'String'>
@@ -29855,6 +29869,7 @@ export namespace Prisma {
     integration_target_id: 'integration_target_id',
     user_id: 'user_id',
     api_key_secret: 'api_key_secret',
+    webhook_key: 'webhook_key',
     email: 'email',
     username: 'username',
     password: 'password',
@@ -30823,6 +30838,7 @@ export namespace Prisma {
     integration_target_id?: StringFilter<"UserIntegration"> | string
     user_id?: StringFilter<"UserIntegration"> | string
     api_key_secret?: StringNullableFilter<"UserIntegration"> | string | null
+    webhook_key?: StringNullableFilter<"UserIntegration"> | string | null
     email?: StringNullableFilter<"UserIntegration"> | string | null
     username?: StringNullableFilter<"UserIntegration"> | string | null
     password?: StringNullableFilter<"UserIntegration"> | string | null
@@ -30842,6 +30858,7 @@ export namespace Prisma {
     integration_target_id?: SortOrder
     user_id?: SortOrder
     api_key_secret?: SortOrderInput | SortOrder
+    webhook_key?: SortOrderInput | SortOrder
     email?: SortOrderInput | SortOrder
     username?: SortOrderInput | SortOrder
     password?: SortOrderInput | SortOrder
@@ -30864,6 +30881,7 @@ export namespace Prisma {
     integration_target_id?: StringFilter<"UserIntegration"> | string
     user_id?: StringFilter<"UserIntegration"> | string
     api_key_secret?: StringNullableFilter<"UserIntegration"> | string | null
+    webhook_key?: StringNullableFilter<"UserIntegration"> | string | null
     email?: StringNullableFilter<"UserIntegration"> | string | null
     username?: StringNullableFilter<"UserIntegration"> | string | null
     password?: StringNullableFilter<"UserIntegration"> | string | null
@@ -30883,6 +30901,7 @@ export namespace Prisma {
     integration_target_id?: SortOrder
     user_id?: SortOrder
     api_key_secret?: SortOrderInput | SortOrder
+    webhook_key?: SortOrderInput | SortOrder
     email?: SortOrderInput | SortOrder
     username?: SortOrderInput | SortOrder
     password?: SortOrderInput | SortOrder
@@ -30904,6 +30923,7 @@ export namespace Prisma {
     integration_target_id?: StringWithAggregatesFilter<"UserIntegration"> | string
     user_id?: StringWithAggregatesFilter<"UserIntegration"> | string
     api_key_secret?: StringNullableWithAggregatesFilter<"UserIntegration"> | string | null
+    webhook_key?: StringNullableWithAggregatesFilter<"UserIntegration"> | string | null
     email?: StringNullableWithAggregatesFilter<"UserIntegration"> | string | null
     username?: StringNullableWithAggregatesFilter<"UserIntegration"> | string | null
     password?: StringNullableWithAggregatesFilter<"UserIntegration"> | string | null
@@ -33036,6 +33056,7 @@ export namespace Prisma {
   export type UserIntegrationCreateInput = {
     id?: string
     api_key_secret?: string | null
+    webhook_key?: string | null
     email?: string | null
     username?: string | null
     password?: string | null
@@ -33055,6 +33076,7 @@ export namespace Prisma {
     integration_target_id: string
     user_id: string
     api_key_secret?: string | null
+    webhook_key?: string | null
     email?: string | null
     username?: string | null
     password?: string | null
@@ -33070,6 +33092,7 @@ export namespace Prisma {
   export type UserIntegrationUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33089,6 +33112,7 @@ export namespace Prisma {
     integration_target_id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33106,6 +33130,7 @@ export namespace Prisma {
     integration_target_id: string
     user_id: string
     api_key_secret?: string | null
+    webhook_key?: string | null
     email?: string | null
     username?: string | null
     password?: string | null
@@ -33119,6 +33144,7 @@ export namespace Prisma {
   export type UserIntegrationUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33134,6 +33160,7 @@ export namespace Prisma {
     integration_target_id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35672,6 +35699,7 @@ export namespace Prisma {
     integration_target_id?: SortOrder
     user_id?: SortOrder
     api_key_secret?: SortOrder
+    webhook_key?: SortOrder
     email?: SortOrder
     username?: SortOrder
     password?: SortOrder
@@ -35687,6 +35715,7 @@ export namespace Prisma {
     integration_target_id?: SortOrder
     user_id?: SortOrder
     api_key_secret?: SortOrder
+    webhook_key?: SortOrder
     email?: SortOrder
     username?: SortOrder
     password?: SortOrder
@@ -35701,6 +35730,7 @@ export namespace Prisma {
     integration_target_id?: SortOrder
     user_id?: SortOrder
     api_key_secret?: SortOrder
+    webhook_key?: SortOrder
     email?: SortOrder
     username?: SortOrder
     password?: SortOrder
@@ -40171,6 +40201,7 @@ export namespace Prisma {
   export type UserIntegrationCreateWithoutUserInput = {
     id?: string
     api_key_secret?: string | null
+    webhook_key?: string | null
     email?: string | null
     username?: string | null
     password?: string | null
@@ -40188,6 +40219,7 @@ export namespace Prisma {
     id?: string
     integration_target_id: string
     api_key_secret?: string | null
+    webhook_key?: string | null
     email?: string | null
     username?: string | null
     password?: string | null
@@ -40324,6 +40356,7 @@ export namespace Prisma {
     integration_target_id?: StringFilter<"UserIntegration"> | string
     user_id?: StringFilter<"UserIntegration"> | string
     api_key_secret?: StringNullableFilter<"UserIntegration"> | string | null
+    webhook_key?: StringNullableFilter<"UserIntegration"> | string | null
     email?: StringNullableFilter<"UserIntegration"> | string | null
     username?: StringNullableFilter<"UserIntegration"> | string | null
     password?: StringNullableFilter<"UserIntegration"> | string | null
@@ -40337,6 +40370,7 @@ export namespace Prisma {
   export type UserIntegrationCreateWithoutIntegration_targetInput = {
     id?: string
     api_key_secret?: string | null
+    webhook_key?: string | null
     email?: string | null
     username?: string | null
     password?: string | null
@@ -40354,6 +40388,7 @@ export namespace Prisma {
     id?: string
     user_id: string
     api_key_secret?: string | null
+    webhook_key?: string | null
     email?: string | null
     username?: string | null
     password?: string | null
@@ -41492,6 +41527,7 @@ export namespace Prisma {
   export type UserIntegrationCreateWithoutTracked_agency_linkInput = {
     id?: string
     api_key_secret?: string | null
+    webhook_key?: string | null
     email?: string | null
     username?: string | null
     password?: string | null
@@ -41510,6 +41546,7 @@ export namespace Prisma {
     integration_target_id: string
     user_id: string
     api_key_secret?: string | null
+    webhook_key?: string | null
     email?: string | null
     username?: string | null
     password?: string | null
@@ -41589,6 +41626,7 @@ export namespace Prisma {
   export type UserIntegrationUpdateWithoutTracked_agency_linkInput = {
     id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41607,6 +41645,7 @@ export namespace Prisma {
     integration_target_id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44219,6 +44258,7 @@ export namespace Prisma {
   export type UserIntegrationCreateWithoutSync_runsInput = {
     id?: string
     api_key_secret?: string | null
+    webhook_key?: string | null
     email?: string | null
     username?: string | null
     password?: string | null
@@ -44237,6 +44277,7 @@ export namespace Prisma {
     integration_target_id: string
     user_id: string
     api_key_secret?: string | null
+    webhook_key?: string | null
     email?: string | null
     username?: string | null
     password?: string | null
@@ -44340,6 +44381,7 @@ export namespace Prisma {
   export type UserIntegrationUpdateWithoutSync_runsInput = {
     id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44358,6 +44400,7 @@ export namespace Prisma {
     integration_target_id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45729,6 +45772,7 @@ export namespace Prisma {
     id?: string
     integration_target_id: string
     api_key_secret?: string | null
+    webhook_key?: string | null
     email?: string | null
     username?: string | null
     password?: string | null
@@ -45898,6 +45942,7 @@ export namespace Prisma {
   export type UserIntegrationUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45915,6 +45960,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     integration_target_id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45931,6 +45977,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     integration_target_id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45945,6 +45992,7 @@ export namespace Prisma {
     id?: string
     user_id: string
     api_key_secret?: string | null
+    webhook_key?: string | null
     email?: string | null
     username?: string | null
     password?: string | null
@@ -45958,6 +46006,7 @@ export namespace Prisma {
   export type UserIntegrationUpdateWithoutIntegration_targetInput = {
     id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45975,6 +46024,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45991,6 +46041,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     api_key_secret?: NullableStringFieldUpdateOperationsInput | string | null
+    webhook_key?: NullableStringFieldUpdateOperationsInput | string | null
     email?: NullableStringFieldUpdateOperationsInput | string | null
     username?: NullableStringFieldUpdateOperationsInput | string | null
     password?: NullableStringFieldUpdateOperationsInput | string | null

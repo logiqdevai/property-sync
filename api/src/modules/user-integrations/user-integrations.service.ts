@@ -10,6 +10,7 @@ import {
   applyCredentialFields,
   validateCredentialsForAuthType,
 } from '@/modules/integration-targets/utils/credential-fields.util';
+import { assertWebhookKeyAllowed, validateAiIntegrationWebhookKey } from '@/modules/integration-targets/utils/ai-integration.util';
 import { maskUserIntegration } from '@/modules/integration-targets/utils/mask-credentials.util';
 import {
   CreateUserIntegrationDto,
@@ -166,6 +167,10 @@ export class UserIntegrationsService {
     }
 
     validateCredentialsForAuthType(target.auth_type, dto);
+    assertWebhookKeyAllowed(target.integration_type, dto.webhook_key);
+    validateAiIntegrationWebhookKey(target.integration_type, target.auth_type, dto, {
+      requireOnCreate: true,
+    });
 
     const existingCount = target.allow_multiple
       ? await this.prisma.userIntegration.count({
@@ -217,11 +222,16 @@ export class UserIntegrationsService {
       );
     }
     const credentialData = applyCredentialFields(dto);
+    assertWebhookKeyAllowed(
+      connection.integration_target.integration_type,
+      dto.webhook_key,
+    );
 
     if (Object.keys(credentialData).length > 0) {
       validateCredentialsForAuthType(connection.integration_target.auth_type, {
         api_key_secret:
           (dto.api_key_secret ?? connection.api_key_secret) || undefined,
+        webhook_key: (dto.webhook_key ?? connection.webhook_key) || undefined,
         email: (dto.email ?? connection.email) || undefined,
         username: (dto.username ?? connection.username) || undefined,
         password: (dto.password ?? connection.password) || undefined,

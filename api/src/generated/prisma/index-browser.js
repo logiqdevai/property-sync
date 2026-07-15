@@ -147,6 +147,7 @@ exports.Prisma.UserIntegrationScalarFieldEnum = {
   integration_target_id: 'integration_target_id',
   user_id: 'user_id',
   api_key_secret: 'api_key_secret',
+  webhook_key: 'webhook_key',
   email: 'email',
   username: 'username',
   password: 'password',
@@ -623,7 +624,8 @@ exports.NotificationType = exports.$Enums.NotificationType = {
   ESTATEWEB_EMPTY_IMAGE: 'ESTATEWEB_EMPTY_IMAGE',
   ESTATEWEB_INVALID_PROPERTY_ID: 'ESTATEWEB_INVALID_PROPERTY_ID',
   ESTATEWEB_LINK_NOT_FOUND: 'ESTATEWEB_LINK_NOT_FOUND',
-  ESTATEWEB_SESSION_PERSIST_FAILED: 'ESTATEWEB_SESSION_PERSIST_FAILED'
+  ESTATEWEB_SESSION_PERSIST_FAILED: 'ESTATEWEB_SESSION_PERSIST_FAILED',
+  AI_NORMALIZATION_FAILURE: 'AI_NORMALIZATION_FAILURE'
 };
 
 exports.NotificationSeverity = exports.$Enums.NotificationSeverity = {

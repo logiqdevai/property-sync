@@ -2,6 +2,7 @@ import {
   Controller,
   Headers,
   HttpCode,
+  Param,
   Post,
   RawBodyRequest,
   Req,
@@ -15,13 +16,18 @@ import { OpenAiWebhooksService } from './openai-webhooks.service';
 export class OpenAiWebhooksController {
   constructor(private readonly openAiWebhooksService: OpenAiWebhooksService) {}
 
-  @Post()
+  @Post(':userIntegrationId')
   @HttpCode(204)
-  async handleWebhook(
+  async handleIntegrationWebhook(
+    @Param('userIntegrationId') userIntegrationId: string,
     @Req() req: RawBodyRequest<Request>,
     @Headers() headers: Record<string, string | string[] | undefined>,
   ): Promise<void> {
     const rawBody = req.rawBody?.toString('utf-8') ?? '';
-    await this.openAiWebhooksService.handleWebhook(rawBody, headers);
+    await this.openAiWebhooksService.handleWebhook(
+      rawBody,
+      headers,
+      userIntegrationId,
+    );
   }
 }

@@ -3,6 +3,7 @@ import { AuthType } from 'generated/prisma';
 
 export interface CredentialInput {
   api_key_secret?: string;
+  webhook_key?: string;
   email?: string;
   username?: string;
   password?: string;
@@ -16,6 +17,9 @@ export function applyCredentialFields(
 
   if (input.api_key_secret !== undefined && input.api_key_secret !== '') {
     data.api_key_secret = input.api_key_secret;
+  }
+  if (input.webhook_key !== undefined && input.webhook_key !== '') {
+    data.webhook_key = input.webhook_key;
   }
   if (input.email !== undefined && input.email !== '') {
     data.email = input.email;

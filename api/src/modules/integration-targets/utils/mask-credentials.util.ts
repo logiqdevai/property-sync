@@ -5,6 +5,7 @@ export type UserIntegrationRecord = {
   integration_target_id: string;
   user_id: string;
   api_key_secret: string | null;
+  webhook_key: string | null;
   email: string | null;
   username: string | null;
   password: string | null;
@@ -20,6 +21,7 @@ export type MaskedUserIntegration = Omit<
   'config'
 > & {
   has_api_key_secret: boolean;
+  has_webhook_key: boolean;
   has_password: boolean;
   has_config: boolean;
 };
@@ -37,13 +39,15 @@ function maskSecret(value: string | null | undefined): string | null {
 export function maskUserIntegration(
   record: UserIntegrationRecord,
 ): MaskedUserIntegration {
-  const { api_key_secret, password, config, ...rest } = record;
+  const { api_key_secret, webhook_key, password, config, ...rest } = record;
 
   return {
     ...rest,
     api_key_secret: maskSecret(api_key_secret),
+    webhook_key: maskSecret(webhook_key),
     password: maskSecret(password),
     has_api_key_secret: !!api_key_secret,
+    has_webhook_key: !!webhook_key,
     has_password: !!password,
     has_config: config !== null && config !== undefined,
   };

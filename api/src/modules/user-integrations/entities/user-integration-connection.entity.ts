@@ -47,6 +47,9 @@ export class UserIntegrationConnectionEntity {
   api_key_secret: string | null;
 
   @ApiProperty({ nullable: true })
+  webhook_key: string | null;
+
+  @ApiProperty({ nullable: true })
   email: string | null;
 
   @ApiProperty({ nullable: true })
@@ -57,6 +60,9 @@ export class UserIntegrationConnectionEntity {
 
   @ApiProperty()
   has_api_key_secret: boolean;
+
+  @ApiProperty()
+  has_webhook_key: boolean;
 
   @ApiProperty()
   has_password: boolean;

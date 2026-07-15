@@ -45,6 +45,7 @@ export function IntegrationConnectionItem({
     <div className="flex flex-col gap-2 rounded-lg bg-surface-secondary p-3">
       <CredentialStatusIndicators
         hasApiKey={connection.has_api_key_secret}
+        hasWebhookKey={connection.has_webhook_key}
         hasPassword={connection.has_password}
         hasConfig={connection.has_config}
         email={connection.email}

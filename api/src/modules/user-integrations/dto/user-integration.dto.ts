@@ -15,6 +15,12 @@ export class CreateUserIntegrationDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MinLength(1)
+  webhook_key?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   email?: string;
 
   @ApiPropertyOptional()
@@ -38,6 +44,12 @@ export class UpdateUserIntegrationDto {
   @IsString()
   @MinLength(1)
   api_key_secret?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  webhook_key?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

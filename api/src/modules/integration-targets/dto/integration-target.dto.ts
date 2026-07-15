@@ -85,6 +85,12 @@ export class UserIntegrationCredentialsDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MinLength(1)
+  webhook_key?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   email?: string;
 
   @ApiPropertyOptional()

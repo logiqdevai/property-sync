@@ -17,6 +17,7 @@ import {
   applyCredentialFields,
   validateCredentialsForAuthType,
 } from './utils/credential-fields.util';
+import { assertWebhookKeyAllowed, validateAiIntegrationWebhookKey } from './utils/ai-integration.util';
 import { maskUserIntegration } from './utils/mask-credentials.util';
 
 @Injectable()
@@ -136,6 +137,10 @@ export class IntegrationTargetsService {
     await this.ensureAllowMultiple(target, dto.user_id);
 
     validateCredentialsForAuthType(target.auth_type, dto);
+    assertWebhookKeyAllowed(target.integration_type, dto.webhook_key);
+    validateAiIntegrationWebhookKey(target.integration_type, target.auth_type, dto, {
+      requireOnCreate: true,
+    });
 
     const integration = await this.prisma.userIntegration.create({
       data: {
@@ -167,6 +172,7 @@ export class IntegrationTargetsService {
 
     const credentialData = applyCredentialFields(dto);
     const updateData: Record<string, unknown> = { ...credentialData };
+    assertWebhookKeyAllowed(target.integration_type, dto.webhook_key);
 
     if (dto.is_active !== undefined) {
       updateData.is_active = dto.is_active;
@@ -176,6 +182,7 @@ export class IntegrationTargetsService {
       validateCredentialsForAuthType(target.auth_type, {
         api_key_secret:
           (dto.api_key_secret ?? integration.api_key_secret) || undefined,
+        webhook_key: (dto.webhook_key ?? integration.webhook_key) || undefined,
         email: (dto.email ?? integration.email) || undefined,
         username: (dto.username ?? integration.username) || undefined,
         password: (dto.password ?? integration.password) || undefined,

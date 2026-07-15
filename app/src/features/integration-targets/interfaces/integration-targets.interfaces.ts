@@ -8,6 +8,17 @@ export const IntegrationTypes = {
 
 export type IntegrationType = (typeof IntegrationTypes)[keyof typeof IntegrationTypes];
 
+export const AiIntegrationTypeList = [
+  IntegrationTypes.OPENAI,
+  IntegrationTypes.ANTHROPIC,
+  IntegrationTypes.GEMINI,
+  IntegrationTypes.DEEPSEEK,
+] as const satisfies readonly IntegrationType[];
+
+export function isAiIntegrationType(type: IntegrationType | string): boolean {
+  return (AiIntegrationTypeList as readonly string[]).includes(type);
+}
+
 export const AuthTypes = {
   EMAIL_PASSWORD: "EMAIL_PASSWORD",
   USERNAME_PASSWORD: "USERNAME_PASSWORD",
@@ -38,10 +49,12 @@ export interface MaskedUserIntegration {
   integration_target_id: string;
   user_id: string;
   api_key_secret: string | null;
+  webhook_key: string | null;
   email: string | null;
   username: string | null;
   password: string | null;
   has_api_key_secret: boolean;
+  has_webhook_key: boolean;
   has_password: boolean;
   has_config: boolean;
   is_active: boolean;

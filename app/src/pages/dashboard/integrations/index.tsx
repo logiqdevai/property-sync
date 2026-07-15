@@ -199,6 +199,7 @@ export default function DashboardIntegrationsPage() {
         username: editingConnection.username,
         password: editingConnection.password,
         api_key_secret: editingConnection.api_key_secret,
+        webhook_key: editingConnection.webhook_key,
       }),
     );
   }, [editingConnection, editForm]);
@@ -238,7 +239,10 @@ export default function DashboardIntegrationsPage() {
       return;
     }
 
-    const parsed = getConnectCredentialsSchema(selectedTarget.auth_type).parse({
+    const parsed = getConnectCredentialsSchema(
+      selectedTarget.auth_type,
+      selectedTarget.integration_type,
+    ).parse({
       ...values,
       auth_type: selectedTarget.auth_type,
     });
@@ -349,6 +353,7 @@ export default function DashboardIntegrationsPage() {
                     )}
                     <IntegrationCredentialFields
                       authType={selectedTarget.auth_type}
+                      integrationType={selectedTarget.integration_type}
                       register={connectForm.register}
                       errors={connectForm.formState.errors}
                       isDisabled={isConnectReadOnly}
@@ -393,6 +398,7 @@ export default function DashboardIntegrationsPage() {
                     )}
                     <CredentialStatusIndicators
                       hasApiKey={editingConnection.has_api_key_secret}
+                      hasWebhookKey={editingConnection.has_webhook_key}
                       hasPassword={editingConnection.has_password}
                       hasConfig={editingConnection.has_config}
                       email={editingConnection.email}
@@ -400,6 +406,8 @@ export default function DashboardIntegrationsPage() {
                     />
                     <IntegrationCredentialFields
                       authType={editingConnection.integration_target.auth_type}
+                      integrationType={editingConnection.integration_target.integration_type}
+                      connectionId={editingConnection.id}
                       register={editForm.register}
                       watch={editForm.watch}
                       errors={editForm.formState.errors}
@@ -410,6 +418,7 @@ export default function DashboardIntegrationsPage() {
                         username: editingConnection.username,
                         password: editingConnection.password,
                         api_key_secret: editingConnection.api_key_secret,
+                        webhook_key: editingConnection.webhook_key,
                       }}
                     />
                     <div className="flex justify-end gap-2">

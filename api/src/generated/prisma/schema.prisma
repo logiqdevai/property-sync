@@ -230,6 +230,7 @@ enum NotificationType {
   ESTATEWEB_INVALID_PROPERTY_ID
   ESTATEWEB_LINK_NOT_FOUND
   ESTATEWEB_SESSION_PERSIST_FAILED
+  AI_NORMALIZATION_FAILURE
 }
 
 enum NotificationSeverity {
@@ -296,6 +297,7 @@ model UserIntegration {
   integration_target_id String
   user_id               String
   api_key_secret        String?
+  webhook_key           String?
   email                 String?
   username              String?
   password              String?

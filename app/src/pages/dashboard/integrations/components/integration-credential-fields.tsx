@@ -1,20 +1,28 @@
 import { Input, Label, FieldError } from "@heroui/react";
 import type { UseFormRegister, UseFormWatch } from "react-hook-form";
-import type { AuthType } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
-import { AuthTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
+import {
+  AuthTypes,
+  isAiIntegrationType,
+  type AuthType,
+  type IntegrationType,
+} from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import type { MaskedCredentialValues } from "@/features/user-integrations/validation-schemas/user-integrations.schema";
 import { PasswordInput } from "@/components/ui/password-input";
+import { getIntegrationWebhookUrl } from "@/lib/integration-webhook-url";
 
 type CredentialFieldErrors = {
   email?: { message?: string };
   username?: { message?: string };
   password?: { message?: string };
   api_key_secret?: { message?: string };
+  webhook_key?: { message?: string };
   configJson?: { message?: string };
 };
 
 interface IntegrationCredentialFieldsProps {
   authType: AuthType;
+  integrationType?: IntegrationType;
+  connectionId?: string;
   register: UseFormRegister<any>;
   watch?: UseFormWatch<any>;
   errors?: CredentialFieldErrors;
@@ -25,6 +33,8 @@ interface IntegrationCredentialFieldsProps {
 
 export function IntegrationCredentialFields({
   authType,
+  integrationType,
+  connectionId,
   register,
   watch,
   errors = {},
@@ -34,8 +44,17 @@ export function IntegrationCredentialFields({
 }: IntegrationCredentialFieldsProps) {
   const optionalHint =
     mode === "edit" ? "Leave blank to keep the current value" : undefined;
+  const showAiFields = integrationType ? isAiIntegrationType(integrationType) : false;
+  const webhookUrl = connectionId
+    ? getIntegrationWebhookUrl(integrationType ?? "", connectionId)
+    : null;
 
-  const renderPasswordInput = (fieldName: "password" | "api_key_secret", id: string, label: string) => {
+  const renderSecretInput = (
+    fieldName: "password" | "api_key_secret" | "webhook_key",
+    id: string,
+    label: string,
+    placeholder?: string,
+  ) => {
     const registration = register(fieldName);
 
     if (mode === "edit" && watch) {
@@ -52,7 +71,7 @@ export function IntegrationCredentialFields({
             onChange={registration.onChange}
             value={fieldValue}
             maskedPreview={maskedCredentials?.[fieldName]}
-            placeholder={optionalHint ?? label}
+            placeholder={placeholder ?? optionalHint ?? label}
             disabled={isDisabled}
           />
           {errors[fieldName] && <FieldError>{errors[fieldName]?.message}</FieldError>}
@@ -66,11 +85,45 @@ export function IntegrationCredentialFields({
         <PasswordInput
           id={id}
           {...registration}
-          placeholder={optionalHint ?? label}
+          placeholder={placeholder ?? optionalHint ?? label}
           disabled={isDisabled}
         />
         {errors[fieldName] && <FieldError>{errors[fieldName]?.message}</FieldError>}
       </div>
+    );
+  };
+
+  const renderAiWebhookFields = () => {
+    if (!showAiFields) {
+      return null;
+    }
+
+    return (
+      <>
+        {renderSecretInput(
+          "webhook_key",
+          "credential-webhook-key",
+          "Webhook signing secret",
+          mode === "create"
+            ? "From your provider webhook settings"
+            : optionalHint,
+        )}
+        {webhookUrl ? (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="webhook-url">Webhook URL</Label>
+            <Input
+              id="webhook-url"
+              value={webhookUrl}
+              readOnly
+              fullWidth
+              onFocus={(event) => event.currentTarget.select()}
+            />
+            <p className="text-xs text-muted">
+              Register this URL in your provider webhook settings.
+            </p>
+          </div>
+        ) : null}
+      </>
     );
   };
 
@@ -89,7 +142,7 @@ export function IntegrationCredentialFields({
             />
             {errors.email && <FieldError>{errors.email.message}</FieldError>}
           </div>
-          {renderPasswordInput("password", "credential-password", "Password")}
+          {renderSecretInput("password", "credential-password", "Password")}
         </>
       );
     case AuthTypes.USERNAME_PASSWORD:
@@ -106,13 +159,23 @@ export function IntegrationCredentialFields({
             />
             {errors.username && <FieldError>{errors.username.message}</FieldError>}
           </div>
-          {renderPasswordInput("password", "credential-password", "Password")}
+          {renderSecretInput("password", "credential-password", "Password")}
         </>
       );
     case AuthTypes.BEARER_TOKEN:
-      return renderPasswordInput("api_key_secret", "credential-bearer", "Bearer token");
+      return (
+        <>
+          {renderSecretInput("api_key_secret", "credential-bearer", "Bearer token")}
+          {renderAiWebhookFields()}
+        </>
+      );
     case AuthTypes.API_KEY:
-      return renderPasswordInput("api_key_secret", "credential-api-key", "API key");
+      return (
+        <>
+          {renderSecretInput("api_key_secret", "credential-api-key", "API key")}
+          {renderAiWebhookFields()}
+        </>
+      );
     case AuthTypes.OAUTH:
       return (
         <div className="flex flex-col gap-1">
@@ -134,12 +197,14 @@ export function IntegrationCredentialFields({
 
 export function CredentialStatusIndicators({
   hasApiKey,
+  hasWebhookKey,
   hasPassword,
   hasConfig,
   email,
   username,
 }: {
   hasApiKey: boolean;
+  hasWebhookKey: boolean;
   hasPassword: boolean;
   hasConfig: boolean;
   email?: string | null;
@@ -150,7 +215,8 @@ export function CredentialStatusIndicators({
       {email && <span>Email: {email}</span>}
       {username && <span>Username: {username}</span>}
       {hasApiKey && <span className="text-success">API key set</span>}
-      {hasPassword && <span className="text-success"></span>}
+      {hasWebhookKey && <span className="text-success">Webhook secret set</span>}
+      {hasPassword && <span className="text-success">Password set</span>}
       {hasConfig && <span className="text-success">OAuth config set</span>}
     </div>
   );

@@ -269,9 +269,40 @@ export class CrawlProcessor extends WorkerHost {
             normalizationError instanceof Error
               ? normalizationError.message
               : String(normalizationError);
+          const normalizationStack =
+            normalizationError instanceof Error
+              ? normalizationError.stack
+              : undefined;
+
           this.logger.error(
             `Normalization failed for crawl ${crawlRunId}: ${normalizationMessage}`,
           );
+
+          // The crawl itself succeeded, so it's reported as SUCCESS above — without this,
+          // a normalization failure (e.g. the OpenAI batch submission throwing) would be
+          // completely invisible: no JobLog, no notification, nothing but a server log line.
+          await this.prisma.jobLog.create({
+            data: {
+              queue_name: 'openai-batch',
+              job_name: 'normalization',
+              status: JobStatus.FAILED,
+              crawl_run_id: crawlRunId,
+              started_at: finishedAt,
+              finished_at: new Date(),
+              error_message: normalizationMessage,
+              stack_trace: normalizationStack ?? null,
+            },
+          });
+
+          this.notificationsService.create({
+            type: NotificationType.AI_NORMALIZATION_FAILURE,
+            severity: NotificationSeverity.CRITICAL,
+            title: 'Property normalization failed',
+            message: `Crawl ${crawlRunId} scraped successfully but normalization failed: ${normalizationMessage}`,
+            source_agency_id: run.source_agency_id,
+            scraper_id: scraper.id,
+            crawl_run_id: crawlRunId,
+          });
         }
       }
 
