@@ -1,4 +1,4 @@
-import { adminLoginToAccount, refreshAccountToken, signIn, signUp } from "../services/auth";
+import { adminLoginToAccount, forgotPassword, refreshAccountToken, resetPassword, signIn, signUp } from "../services/auth";
 import { useMutation } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth";
 import { useNavigate } from "react-router-dom";
@@ -97,6 +97,52 @@ export function useAdminLoginToAccount() {
         onError: (error: any) => {
             toast({
                 title: "Could not admin login to account",
+                description: error.message,
+                duration: 3000,
+                variant: "error",
+            });
+        },
+    });
+}
+
+export function useForgotPassword() {
+    return useMutation({
+        mutationFn: (email: string) => forgotPassword(email),
+        onSuccess: (data) => {
+            toast({
+                title: "Check your email",
+                description: data.message,
+                duration: 4000,
+            });
+        },
+        onError: (error: Error) => {
+            toast({
+                title: "Could not send reset email",
+                description: error.message,
+                duration: 3000,
+                variant: "error",
+            });
+        },
+    });
+}
+
+export function useResetPassword() {
+    const navigate = useNavigate();
+
+    return useMutation({
+        mutationFn: ({ token, password }: { token: string; password: string }) =>
+            resetPassword(token, password),
+        onSuccess: (data) => {
+            toast({
+                title: "Password updated",
+                description: data.message,
+                duration: 3000,
+            });
+            navigate(Routes.auth.sign_in);
+        },
+        onError: (error: Error) => {
+            toast({
+                title: "Could not update password",
                 description: error.message,
                 duration: 3000,
                 variant: "error",

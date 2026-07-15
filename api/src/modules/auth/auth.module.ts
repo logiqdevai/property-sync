@@ -5,6 +5,7 @@ import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import { CreateJwtServiceModule } from '@/shared/utils/jwt/jwt.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { ResendModule } from '@/integrations/notifications/resend/resend.module';
+import { PasswordResetService } from './services/password-reset.service';
 
 @Module({
   imports: [
@@ -12,7 +13,8 @@ import { ResendModule } from '@/integrations/notifications/resend/resend.module'
     CreateJwtServiceModule,
     ResendModule,
   ],
-  providers: [EmailAuthService, JwtStrategy, Logger],
+  providers: [EmailAuthService, PasswordResetService, JwtStrategy, Logger],
   controllers: [EmailAuthController],
+  exports: [PasswordResetService],
 })
 export class AuthModule { }

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { Drawer, useOverlayState, Chip } from '@heroui/react';
-import { Command, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { environments } from '@/config/environments';
+import { AppLogo } from '@/components/layout/app-logo';
 import { Routes } from '@/routes/routes';
 import AdminSidebarContent from '@/components/layout/admin-sidebar-content';
 import AdminDashboardNavbar from '@/components/layout/admin-dashboard-navbar';
@@ -54,7 +55,7 @@ export default function AdminLayout() {
                 title={`${environments.APP_NAME} Admin`}
                 className="rounded-xl p-1 transition-colors duration-200 hover:bg-surface-secondary"
               >
-                <Command className="h-7 w-7 text-foreground" />
+                <AppLogo className="h-7 w-7" />
               </NavLink>
               <button
                 onClick={() => setCollapsed(false)}
@@ -70,7 +71,7 @@ export default function AdminLayout() {
                 to={Routes.admin.root}
                 className="flex items-center gap-2.5 flex-1 min-w-0 rounded-xl px-2 py-1.5 hover:bg-surface-secondary transition-colors duration-200"
               >
-                <Command className="h-7 w-7 shrink-0 text-foreground" />
+                <AppLogo className="h-7 w-7" />
                 <span className="text-[13px] font-semibold text-foreground truncate tracking-tight">
                   {environments.APP_NAME}
                 </span>
@@ -127,7 +128,7 @@ export default function AdminLayout() {
                 onClick={drawerState.close}
                 className="flex items-center gap-2.5 flex-1 min-w-0 rounded-xl px-2 py-1.5 hover:bg-surface-secondary transition-colors duration-200"
               >
-                <Command className="h-7 w-7 shrink-0 text-foreground" />
+                <AppLogo className="h-7 w-7" />
                 <span className="text-[13px] font-semibold text-foreground truncate tracking-tight">
                   {environments.APP_NAME}
                 </span>

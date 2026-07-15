@@ -2,6 +2,8 @@ export const Routes = {
     auth: {
         sign_in: "/auth/sign-in",
         sign_up: "/auth/sign-up",
+        forgot_password: "/auth/forgot-password",
+        set_password: "/auth/set-password",
     },
     dashboard: {
         root: "/dashboard",

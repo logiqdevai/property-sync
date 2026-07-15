@@ -1,7 +1,7 @@
 import type { FC } from "react";
+import { Link } from "react-router-dom";
 import { Card } from "@heroui/react";
 import { SignInForm } from "./components/sign-in-form";
-import { Link } from "react-router-dom";
 import { Routes } from "@/routes/routes";
 
 const Login: FC = () => {
@@ -17,9 +17,8 @@ const Login: FC = () => {
       <SignInForm />
 
       <div className="text-center text-sm mt-4 text-muted">
-        Don&apos;t have an account?{" "}
-        <Link to={Routes.auth.sign_up} className="underline underline-offset-4 hover:opacity-80">
-          Sign up
+        <Link to={Routes.auth.forgot_password} className="underline underline-offset-4 hover:opacity-80">
+          Forgot password?
         </Link>
       </div>
     </Card>

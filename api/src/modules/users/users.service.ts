@@ -1,7 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    ConflictException,
+    ForbiddenException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { AuthRole } from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { maskUserIntegration } from '@/modules/integration-targets/utils/mask-credentials.util';
 import { UserQueryType } from './dto/user-query.schema';
+import { UpdateAdminUserDto } from './dto/update-admin-user.dto';
 
 export interface PaginatedUsersResult {
     data: Array<{
@@ -142,5 +150,90 @@ export class UsersService {
                 maskUserIntegration(integration),
             ),
         };
+    }
+
+    async updateAdmin(id: string, actorId: string, dto: UpdateAdminUserDto) {
+        const existing = await this.prisma.user.findUnique({ where: { id } });
+
+        if (!existing) {
+            throw new NotFoundException('User not found');
+        }
+
+        if (id === actorId && dto.role !== undefined && dto.role !== existing.role) {
+            throw new ForbiddenException('You cannot change your own role');
+        }
+
+        if (dto.email && dto.email !== existing.email) {
+            const emailTaken = await this.prisma.user.findUnique({ where: { email: dto.email } });
+            if (emailTaken) {
+                throw new ConflictException('User with this email already exists');
+            }
+        }
+
+        const normalizedPhone =
+            dto.phone === undefined ? undefined : dto.phone?.trim() ? dto.phone.trim() : null;
+
+        if (normalizedPhone !== undefined && normalizedPhone !== existing.phone) {
+            if (normalizedPhone) {
+                const phoneTaken = await this.prisma.user.findUnique({ where: { phone: normalizedPhone } });
+                if (phoneTaken) {
+                    throw new ConflictException('User with this phone number already exists');
+                }
+            }
+        }
+
+        const data: {
+            email?: string;
+            phone?: string | null;
+            role?: UpdateAdminUserDto['role'];
+            password?: string;
+        } = {};
+
+        if (dto.email !== undefined) {
+            data.email = dto.email;
+        }
+
+        if (normalizedPhone !== undefined) {
+            data.phone = normalizedPhone;
+        }
+
+        if (dto.role !== undefined) {
+            data.role = dto.role;
+        }
+
+        if (dto.password) {
+            data.password = await bcrypt.hash(dto.password, 10);
+        }
+
+        if (Object.keys(data).length === 0) {
+            return this.findOneAdmin(id);
+        }
+
+        await this.prisma.user.update({
+            where: { id },
+            data,
+        });
+
+        return this.findOneAdmin(id);
+    }
+
+    async deleteAdmin(id: string, actorId: string) {
+        const existing = await this.prisma.user.findUnique({ where: { id } });
+
+        if (!existing) {
+            throw new NotFoundException('User not found');
+        }
+
+        if (id === actorId) {
+            throw new ForbiddenException('You cannot delete your own account');
+        }
+
+        if (existing.role === AuthRole.SUPER_ADMIN) {
+            throw new ForbiddenException('Super admin accounts cannot be deleted');
+        }
+
+        await this.prisma.user.delete({ where: { id } });
+
+        return { message: 'User deleted' };
     }
 }

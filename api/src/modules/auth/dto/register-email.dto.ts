@@ -1,7 +1,7 @@
 // src/modules/auth/dto/register-email.dto.ts
 
-import { IsEmail, IsString, MinLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class RegisterEmailDto {
     @ApiProperty({
@@ -12,13 +12,14 @@ export class RegisterEmailDto {
     @IsEmail()
     email: string;
 
-    @ApiProperty({
-        description: 'User password (minimum 6 characters)',
+    @ApiPropertyOptional({
+        description: 'User password (minimum 6 characters). When omitted, an invite email is sent instead.',
         example: 'password123',
         minLength: 6
     })
+    @IsOptional()
     @IsString()
     @MinLength(6)
-    password: string;
+    password?: string;
 
 }

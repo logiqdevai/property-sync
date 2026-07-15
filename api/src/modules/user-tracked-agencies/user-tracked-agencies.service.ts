@@ -74,9 +74,10 @@ export class UserTrackedAgenciesService {
         const showAdminSettings = canViewAdminTrackerSettings(role);
         return {
           ...agency,
-          is_tracked: Boolean(tracker),
-          tracking_prefs: tracker
-            ? {
+          is_tracked: Boolean(tracker?.enabled),
+          tracking_prefs:
+            tracker?.enabled
+              ? {
                 track_new_listings: tracker.track_new_listings,
                 track_removed_listings: tracker.track_removed_listings,
                 track_updated_listings: tracker.track_updated_listings,
@@ -92,7 +93,7 @@ export class UserTrackedAgenciesService {
                   insertion_interval_minutes: tracker.insertion_interval_minutes,
                 }),
               }
-            : undefined,
+              : undefined,
         };
       }),
       pagination: {
@@ -204,7 +205,10 @@ export class UserTrackedAgenciesService {
       throw new NotFoundException('You are not tracking this agency');
     }
 
-    await this.prisma.userTrackedAgency.delete({ where: { id: existing.id } });
+    await this.prisma.userTrackedAgency.update({
+      where: { id: existing.id },
+      data: { enabled: false },
+    });
   }
 
   async linkIntegration(

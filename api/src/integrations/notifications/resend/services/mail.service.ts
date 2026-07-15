@@ -12,8 +12,13 @@ export class ResendMailService {
     try {
       return await this.resendAdapter.sendEmail(createEmail);
     } catch (error) {
-      this.logger.error(error);
-      throw new InternalServerErrorException('Failed to send email with Resend');
+      this.logger.error(
+        `Failed to send email to="${createEmail.to}" from="${createEmail.from ?? 'default'}" subject="${createEmail.subject}"`,
+        error instanceof Error ? error.stack : error,
+      );
+      throw error instanceof InternalServerErrorException
+        ? error
+        : new InternalServerErrorException('Failed to send email with Resend');
     }
   }
 

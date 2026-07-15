@@ -2,7 +2,8 @@ import { Routes as ReactRoutes, Route, Navigate } from "react-router-dom";
 import { Routes } from "@/routes/routes";
 import ProtectedRoute from "@/routes/protected-route";
 import SignIn from "@/pages/auth/pages/sign-in";
-import SignUp from "@/pages/auth/pages/sign-up";
+import ForgotPassword from "@/pages/auth/pages/forgot-password";
+import SetPassword from "@/pages/auth/pages/set-password";
 import AuthLayout from "@/pages/auth/layout";
 import DashboardLayout from "@/pages/dashboard/layout";
 import DashboardHome from "@/pages/dashboard";
@@ -43,8 +44,10 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route path="sign-up" element={<SignUp />} />
+        <Route path="sign-up" element={<Navigate to={Routes.auth.sign_in} replace />} />
         <Route path="sign-in" element={<SignIn />} />
+        <Route path="forgot-password" element={<ForgotPassword />} />
+        <Route path="set-password" element={<SetPassword />} />
         <Route index element={<Navigate to={Routes.auth.sign_in} replace />} />
       </Route>
 

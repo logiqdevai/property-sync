@@ -1,6 +1,22 @@
 import type { RoleType } from "@/features/user/interfaces/user.interface";
 import type { MaskedUserIntegration } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 
+export interface CreateAdminUserPayload {
+  email: string;
+}
+
+export interface CreateAdminUserResponse {
+  user: AdminUser;
+  invite_sent: boolean;
+}
+
+export interface UpdateAdminUserPayload {
+  email?: string;
+  phone?: string | null;
+  role?: RoleType;
+  password?: string;
+}
+
 export interface AdminUser {
   id: string;
   email: string;

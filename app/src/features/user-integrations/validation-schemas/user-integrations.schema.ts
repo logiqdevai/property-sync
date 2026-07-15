@@ -1,5 +1,13 @@
 import { z } from "zod";
 import { AuthTypes, type AuthType } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
+import { isMaskedSecretValue } from "@/lib/masked-secret.utils";
+
+export type MaskedCredentialValues = {
+  email?: string | null;
+  username?: string | null;
+  password?: string | null;
+  api_key_secret?: string | null;
+};
 
 const emailPasswordSchema = z.object({
   auth_type: z.literal(AuthTypes.EMAIL_PASSWORD),
@@ -47,6 +55,46 @@ export const connectCredentialsSchema = z.discriminatedUnion("auth_type", [
 ]);
 
 export type ConnectCredentialsFormValues = z.infer<typeof connectCredentialsSchema>;
+
+export function getEditFormDefaultValues(
+  authType: AuthType,
+  credentials: MaskedCredentialValues,
+): ConnectCredentialsFormValues {
+  switch (authType) {
+    case AuthTypes.EMAIL_PASSWORD:
+      return {
+        auth_type: AuthTypes.EMAIL_PASSWORD,
+        email: credentials.email ?? "",
+        password: "",
+      };
+    case AuthTypes.USERNAME_PASSWORD:
+      return {
+        auth_type: AuthTypes.USERNAME_PASSWORD,
+        username: credentials.username ?? "",
+        password: "",
+      };
+    case AuthTypes.BEARER_TOKEN:
+      return {
+        auth_type: AuthTypes.BEARER_TOKEN,
+        api_key_secret: "",
+      };
+    case AuthTypes.API_KEY:
+      return {
+        auth_type: AuthTypes.API_KEY,
+        api_key_secret: "",
+      };
+    case AuthTypes.OAUTH:
+      return {
+        auth_type: AuthTypes.OAUTH,
+        configJson: "",
+      };
+    default:
+      return {
+        auth_type: AuthTypes.API_KEY,
+        api_key_secret: "",
+      };
+  }
+}
 
 export function getConnectCredentialsSchema(authType: AuthType) {
   switch (authType) {
@@ -110,16 +158,22 @@ export function mapEditFormToPayload(
     case AuthTypes.EMAIL_PASSWORD:
       return {
         ...(values.email ? { email: values.email } : {}),
-        ...(values.password ? { password: values.password } : {}),
+        ...(values.password && !isMaskedSecretValue(values.password)
+          ? { password: values.password }
+          : {}),
       };
     case AuthTypes.USERNAME_PASSWORD:
       return {
         ...(values.username ? { username: values.username } : {}),
-        ...(values.password ? { password: values.password } : {}),
+        ...(values.password && !isMaskedSecretValue(values.password)
+          ? { password: values.password }
+          : {}),
       };
     case AuthTypes.BEARER_TOKEN:
     case AuthTypes.API_KEY:
-      return values.api_key_secret ? { api_key_secret: values.api_key_secret } : {};
+      return values.api_key_secret && !isMaskedSecretValue(values.api_key_secret)
+        ? { api_key_secret: values.api_key_secret }
+        : {};
     case AuthTypes.OAUTH:
       return values.configJson
         ? { config: JSON.parse(values.configJson) as Record<string, unknown> }

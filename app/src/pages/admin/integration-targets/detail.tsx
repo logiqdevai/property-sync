@@ -23,6 +23,7 @@ import {
 } from "./components/integration-credential-fields";
 import {
   getConnectCredentialsSchema,
+  getEditFormDefaultValues,
   mapConnectFormToPayload,
   mapEditFormToPayload,
   type ConnectCredentialsFormValues,
@@ -67,7 +68,14 @@ export default function IntegrationTargetDetailPage() {
       return;
     }
 
-    editAccountForm.reset({ auth_type: target.auth_type } as ConnectCredentialsFormValues);
+    editAccountForm.reset(
+      getEditFormDefaultValues(target.auth_type, {
+        email: editingAccount.email,
+        username: editingAccount.username,
+        password: editingAccount.password,
+        api_key_secret: editingAccount.api_key_secret,
+      }),
+    );
   }, [target, editingAccount, editAccountForm]);
 
   if (isPending || !target) {
@@ -314,8 +322,15 @@ export default function IntegrationTargetDetailPage() {
                     <IntegrationCredentialFields
                       authType={target.auth_type}
                       register={editAccountForm.register}
+                      watch={editAccountForm.watch}
                       errors={editAccountForm.formState.errors}
                       mode="edit"
+                      maskedCredentials={{
+                        email: editingAccount.email,
+                        username: editingAccount.username,
+                        password: editingAccount.password,
+                        api_key_secret: editingAccount.api_key_secret,
+                      }}
                     />
                     <div className="flex justify-end gap-2">
                       <ActionButtonWithPending

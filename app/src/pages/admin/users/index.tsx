@@ -1,10 +1,13 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, Chip, Select, ListBox, Input, Pagination } from "@heroui/react";
-import { Search } from "lucide-react";
+import { Table, Chip, Select, ListBox, Input, Pagination, Modal, useOverlayState } from "@heroui/react";
+import { Plus, Search } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { useAdminUsers } from "@/features/users/hooks/use-admin-users";
+import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { RoleGate } from "@/components/providers/role-gate";
+import { CreateUserForm } from "./components/create-user-form";
+import { useAdminUsers, useCreateAdminUser } from "@/features/users/hooks/use-admin-users";
 import {
   RoleTypes,
   type RoleType,
@@ -32,6 +35,7 @@ function RoleBadge({ role }: { role: RoleType }) {
 
 export default function AdminUsersListPage() {
   const navigate = useNavigate();
+  const createModal = useOverlayState();
   const [search, setSearch] = useState("");
   const [role, setRole] = useState<RoleType | "all">("all");
   const [page, setPage] = useState(1);
@@ -47,14 +51,22 @@ export default function AdminUsersListPage() {
   );
 
   const { data, isPending } = useAdminUsers(query);
+  const createUser = useCreateAdminUser();
   const users = data?.data ?? [];
   const pagination = data?.pagination;
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-2xl font-semibold tracking-tight text-foreground">Users</p>
-        <p className="text-sm text-muted">Browse user accounts and their platform footprint.</p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-2xl font-semibold tracking-tight text-foreground">Users</p>
+          <p className="text-sm text-muted">Browse user accounts and their platform footprint.</p>
+        </div>
+        <RoleGate roles={[RoleTypes.ADMIN, RoleTypes.SUPER_ADMIN]}>
+          <ActionButtonWithPending onPress={createModal.open} idleLeading={<Plus className="h-4 w-4" />}>
+            Create user
+          </ActionButtonWithPending>
+        </RoleGate>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -164,6 +176,30 @@ export default function AdminUsersListPage() {
           </Pagination.Content>
         </Pagination>
       )}
+
+      <Modal state={createModal}>
+        <Modal.Backdrop isDismissable={!createUser.isPending}>
+          <Modal.Container>
+            <Modal.Dialog className="max-w-lg">
+              <Modal.Header>
+                <Modal.Heading>Create user</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <CreateUserForm
+                  submitLabel="Create"
+                  isPending={createUser.isPending}
+                  onCancel={createModal.close}
+                  onSubmit={(payload) =>
+                    createUser.mutate(payload, {
+                      onSuccess: () => createModal.close(),
+                    })
+                  }
+                />
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
     </div>
   );
 }

@@ -8,6 +8,9 @@ import { AuthRoles } from '../interfaces/auth.interface';
 import { WaitlistDto } from '../dto/waitlist.dto';
 import { ResendMailService } from '@/integrations/notifications/resend/services/mail.service';
 import { EmailConfig } from '@/shared/constants/email';
+import { PasswordResetService } from './password-reset.service';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
 
 @Injectable()
 export class EmailAuthService {
@@ -15,10 +18,10 @@ export class EmailAuthService {
         private readonly prisma: PrismaService,
         private readonly jwtService: CreateJwtService,
         private readonly mailService: ResendMailService,
+        private readonly passwordResetService: PasswordResetService,
     ) { }
 
     async registerWithEmail(dto: RegisterEmailDto) {
-
         try {
             const existingUser = await this.prisma.user.findUnique({
                 where: {
@@ -30,7 +33,9 @@ export class EmailAuthService {
                 throw new ConflictException('User with this email already exists');
             }
 
-            const hashedPassword = await bcrypt.hash(dto.password, 10);
+            const hashedPassword = dto.password
+                ? await bcrypt.hash(dto.password, 10)
+                : await this.passwordResetService.createPlaceholderPasswordHash();
 
             const user = await this.prisma.user.create({
                 data: {
@@ -40,6 +45,17 @@ export class EmailAuthService {
                 },
             });
 
+            delete user.password;
+
+            if (!dto.password) {
+                await this.passwordResetService.sendPasswordResetEmail(user.id, user.email, 'invite');
+
+                return {
+                    user,
+                    invite_sent: true,
+                };
+            }
+
             const token = await this.jwtService.signToken({
                 id: user.id,
                 role: user.role,
@@ -47,11 +63,12 @@ export class EmailAuthService {
 
             const expires_in = this.jwtService.getExpirationTime(token);
 
-            delete user.password;
-
             return { access_token: token, expires_in: expires_in, user: user };
         } catch (error) {
-            console.log(error);
+            if (error instanceof ConflictException) {
+                throw error;
+            }
+
             throw new BadRequestException(error.message);
         }
     }
@@ -125,6 +142,22 @@ export class EmailAuthService {
         } catch (error) {
             throw new BadRequestException('Failed to waitlist user', error.message);
         }
+    }
+
+    async forgotPassword(dto: ForgotPasswordDto) {
+        return this.passwordResetService.requestPasswordReset(dto.email);
+    }
+
+    async resetPassword(dto: ResetPasswordDto) {
+        return this.passwordResetService.resetPassword(dto.token, dto.password);
+    }
+
+    async validatePasswordResetToken(token: string) {
+        return this.passwordResetService.validatePasswordResetToken(token);
+    }
+
+    async sendPasswordResetForUser(userId: string) {
+        return this.passwordResetService.sendPasswordResetForUserId(userId);
     }
 
 }

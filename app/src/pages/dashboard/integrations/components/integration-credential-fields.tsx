@@ -1,7 +1,8 @@
 import { Input, Label, FieldError } from "@heroui/react";
-import type { UseFormRegister } from "react-hook-form";
+import type { UseFormRegister, UseFormWatch } from "react-hook-form";
 import type { AuthType } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { AuthTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
+import type { MaskedCredentialValues } from "@/features/user-integrations/validation-schemas/user-integrations.schema";
 import { PasswordInput } from "@/components/ui/password-input";
 
 type CredentialFieldErrors = {
@@ -15,20 +16,63 @@ type CredentialFieldErrors = {
 interface IntegrationCredentialFieldsProps {
   authType: AuthType;
   register: UseFormRegister<any>;
+  watch?: UseFormWatch<any>;
   errors?: CredentialFieldErrors;
   mode?: "create" | "edit";
   isDisabled?: boolean;
+  maskedCredentials?: MaskedCredentialValues;
 }
 
 export function IntegrationCredentialFields({
   authType,
   register,
+  watch,
   errors = {},
   mode = "create",
   isDisabled = false,
+  maskedCredentials,
 }: IntegrationCredentialFieldsProps) {
   const optionalHint =
     mode === "edit" ? "Leave blank to keep the current value" : undefined;
+
+  const renderPasswordInput = (fieldName: "password" | "api_key_secret", id: string, label: string) => {
+    const registration = register(fieldName);
+
+    if (mode === "edit" && watch) {
+      const fieldValue = watch(fieldName) ?? "";
+
+      return (
+        <div className="flex flex-col gap-1">
+          <Label htmlFor={id}>{label}</Label>
+          <PasswordInput
+            id={id}
+            name={registration.name}
+            ref={registration.ref}
+            onBlur={registration.onBlur}
+            onChange={registration.onChange}
+            value={fieldValue}
+            maskedPreview={maskedCredentials?.[fieldName]}
+            placeholder={optionalHint ?? label}
+            disabled={isDisabled}
+          />
+          {errors[fieldName] && <FieldError>{errors[fieldName]?.message}</FieldError>}
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col gap-1">
+        <Label htmlFor={id}>{label}</Label>
+        <PasswordInput
+          id={id}
+          {...registration}
+          placeholder={optionalHint ?? label}
+          disabled={isDisabled}
+        />
+        {errors[fieldName] && <FieldError>{errors[fieldName]?.message}</FieldError>}
+      </div>
+    );
+  };
 
   switch (authType) {
     case AuthTypes.EMAIL_PASSWORD:
@@ -45,16 +89,7 @@ export function IntegrationCredentialFields({
             />
             {errors.email && <FieldError>{errors.email.message}</FieldError>}
           </div>
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="credential-password">Password</Label>
-            <PasswordInput
-              id="credential-password"
-              {...register("password")}
-              placeholder={optionalHint ?? "Password"}
-              disabled={isDisabled}
-            />
-            {errors.password && <FieldError>{errors.password.message}</FieldError>}
-          </div>
+          {renderPasswordInput("password", "credential-password", "Password")}
         </>
       );
     case AuthTypes.USERNAME_PASSWORD:
@@ -71,44 +106,13 @@ export function IntegrationCredentialFields({
             />
             {errors.username && <FieldError>{errors.username.message}</FieldError>}
           </div>
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="credential-password">Password</Label>
-            <PasswordInput
-              id="credential-password"
-              {...register("password")}
-              placeholder={optionalHint ?? "Password"}
-              disabled={isDisabled}
-            />
-            {errors.password && <FieldError>{errors.password.message}</FieldError>}
-          </div>
+          {renderPasswordInput("password", "credential-password", "Password")}
         </>
       );
     case AuthTypes.BEARER_TOKEN:
-      return (
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="credential-bearer">Bearer token</Label>
-          <PasswordInput
-            id="credential-bearer"
-            {...register("api_key_secret")}
-            placeholder={optionalHint ?? "Bearer token"}
-            disabled={isDisabled}
-          />
-          {errors.api_key_secret && <FieldError>{errors.api_key_secret.message}</FieldError>}
-        </div>
-      );
+      return renderPasswordInput("api_key_secret", "credential-bearer", "Bearer token");
     case AuthTypes.API_KEY:
-      return (
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="credential-api-key">API key</Label>
-          <PasswordInput
-            id="credential-api-key"
-            {...register("api_key_secret")}
-            placeholder={optionalHint ?? "API key"}
-            disabled={isDisabled}
-          />
-          {errors.api_key_secret && <FieldError>{errors.api_key_secret.message}</FieldError>}
-        </div>
-      );
+      return renderPasswordInput("api_key_secret", "credential-api-key", "API key");
     case AuthTypes.OAUTH:
       return (
         <div className="flex flex-col gap-1">

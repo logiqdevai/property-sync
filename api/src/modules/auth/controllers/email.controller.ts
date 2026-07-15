@@ -1,17 +1,24 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { EmailAuthService } from '../services/email.service';
 import { RegisterEmailDto } from '../dto/register-email.dto';
 import { LoginEmailDto } from '../dto/login-email.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AuthResponse } from '../entities/auth-response.entity';
 import { WaitlistDto } from '../dto/waitlist.dto';
-
+import { JwtGuard } from '@/shared/guards/jwt.guard';
+import { RolesGuard } from '@/shared/guards/roles.guard';
+import { Roles } from '@/shared/decorators/roles.decorator';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
 @ApiTags('Email Authentication')
 @Controller('auth/email')
 export class EmailAuthController {
     constructor(private readonly authService: EmailAuthService) { }
 
     @Post('register')
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles('ADMIN')
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Register a new user with email and password' })
     @ApiBody({ type: RegisterEmailDto })
     @ApiResponse({
@@ -49,5 +56,35 @@ export class EmailAuthController {
     })
     async waitlist(@Body() dto: WaitlistDto) {
         return this.authService.waitlist(dto);
+    }
+
+    @Post('forgot-password')
+    @ApiOperation({ summary: 'Request a password reset email' })
+    @ApiBody({ type: ForgotPasswordDto })
+    async forgotPassword(@Body() dto: ForgotPasswordDto) {
+        return this.authService.forgotPassword(dto);
+    }
+
+    @Post('reset-password')
+    @ApiOperation({ summary: 'Set a new password using a reset token' })
+    @ApiBody({ type: ResetPasswordDto })
+    async resetPassword(@Body() dto: ResetPasswordDto) {
+        return this.authService.resetPassword(dto);
+    }
+
+    @Get('reset-password/validate')
+    @ApiOperation({ summary: 'Validate a password reset token' })
+    @ApiQuery({ name: 'token', required: true })
+    async validatePasswordResetToken(@Query('token') token: string) {
+        return this.authService.validatePasswordResetToken(token);
+    }
+
+    @Post('users/:userId/password-reset')
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles('ADMIN')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Send a password reset link to a user' })
+    async sendPasswordResetToUser(@Param('userId') userId: string) {
+        return this.authService.sendPasswordResetForUser(userId);
     }
 }

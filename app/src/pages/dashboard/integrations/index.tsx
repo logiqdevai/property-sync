@@ -21,6 +21,7 @@ import {
 } from "./components/integration-credential-fields";
 import {
   getConnectCredentialsSchema,
+  getEditFormDefaultValues,
   mapConnectFormToPayload,
   mapEditFormToPayload,
   type ConnectCredentialsFormValues,
@@ -222,9 +223,14 @@ export default function DashboardIntegrationsPage() {
     if (!editingConnection) {
       return;
     }
-    editForm.reset({
-      auth_type: editingConnection.integration_target.auth_type,
-    } as ConnectCredentialsFormValues);
+    editForm.reset(
+      getEditFormDefaultValues(editingConnection.integration_target.auth_type, {
+        email: editingConnection.email,
+        username: editingConnection.username,
+        password: editingConnection.password,
+        api_key_secret: editingConnection.api_key_secret,
+      }),
+    );
   }, [editingConnection, editForm]);
 
   const openConnect = (target: AvailableIntegrationTarget) => {
@@ -409,9 +415,16 @@ export default function DashboardIntegrationsPage() {
                     <IntegrationCredentialFields
                       authType={editingConnection.integration_target.auth_type}
                       register={editForm.register}
+                      watch={editForm.watch}
                       errors={editForm.formState.errors}
                       mode="edit"
                       isDisabled={isEditReadOnly}
+                      maskedCredentials={{
+                        email: editingConnection.email,
+                        username: editingConnection.username,
+                        password: editingConnection.password,
+                        api_key_secret: editingConnection.api_key_secret,
+                      }}
                     />
                     <div className="flex justify-end gap-2">
                       <ActionButtonWithPending

@@ -1,8 +1,16 @@
-import { Link, useParams } from "react-router-dom";
-import { Chip, Switch, Table } from "@heroui/react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { Chip, Modal, Switch, Table, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
-import { useAdminUser } from "@/features/users/hooks/use-admin-users";
+import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { RoleGate } from "@/components/providers/role-gate";
+import {
+  useAdminUser,
+  useDeleteAdminUser,
+  useSendAdminUserPasswordReset,
+  useUpdateAdminUser,
+} from "@/features/users/hooks/use-admin-users";
 import { useUpdateIntegrationTargetAccount } from "@/features/integration-targets/hooks/use-integration-targets";
 import {
   RoleTypes,
@@ -12,6 +20,7 @@ import { useAuthStore } from "@/stores/auth";
 import { RoleTypeFilterOptions } from "@/config/constants/dropdowns/role-type-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { CredentialStatusIndicators } from "./components/integration-credential-fields";
+import { EditUserForm } from "./components/edit-user-form";
 import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
 import { getAuthTypeLabel } from "@/config/constants/dropdowns/auth-type-form.options";
 import { formatDate } from "@/lib/date";
@@ -35,15 +44,31 @@ function RoleBadge({ role }: { role: RoleType }) {
 
 export default function AdminUserDetailPage() {
   const { id = "" } = useParams();
+  const navigate = useNavigate();
+  const editModal = useOverlayState();
+  const deleteConfirm = useOverlayState();
   const { data: user, isPending, refetch } = useAdminUser(id);
+  const updateUser = useUpdateAdminUser();
+  const deleteUser = useDeleteAdminUser();
   const updateIntegrationAccount = useUpdateIntegrationTargetAccount();
+  const sendPasswordReset = useSendAdminUserPasswordReset();
+  const currentUserId = useAuthStore((state) => state.user_uuid);
   const role = useAuthStore((state) => state.role);
+  const isSelf = currentUserId === user?.id;
   const showAdminTrackerSettings =
     role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN;
 
   if (isPending || !user) {
     return <DetailSkeleton fieldCount={6} showSubTable subTableRows={5} />;
   }
+
+  const isSuperAdmin = user.role === RoleTypes.SUPER_ADMIN;
+  const canDelete = !isSelf && !isSuperAdmin;
+  const deleteDisabledReason = isSelf
+    ? "You cannot delete your own account"
+    : isSuperAdmin
+      ? "Super admin accounts cannot be deleted"
+      : null;
 
   const handleToggleIntegration = async (
     targetId: string,
@@ -64,11 +89,45 @@ export default function AdminUserDetailPage() {
         <Link to={Routes.admin.users.list} className="text-sm text-muted hover:text-foreground">
           ← Users
         </Link>
-        <p className="text-2xl font-semibold tracking-tight text-foreground mt-2">{user.email}</p>
-        <div className="flex items-center gap-3 mt-2 flex-wrap">
-          <RoleBadge role={user.role} />
-          <span className="text-sm text-muted">Joined {formatDate(user.created_at)}</span>
-          {user.phone && <span className="text-sm text-muted">{user.phone}</span>}
+        <div className="flex items-start justify-between gap-4 mt-2 flex-wrap">
+          <div>
+            <p className="text-2xl font-semibold tracking-tight text-foreground">{user.email}</p>
+            <div className="flex items-center gap-3 mt-2 flex-wrap">
+              <RoleBadge role={user.role} />
+              <span className="text-sm text-muted">Joined {formatDate(user.created_at)}</span>
+              {user.phone && <span className="text-sm text-muted">{user.phone}</span>}
+              <RoleGate roles={[RoleTypes.ADMIN, RoleTypes.SUPER_ADMIN]}>
+                <ActionButtonWithPending
+                  size="sm"
+                  variant="secondary"
+                  isPending={sendPasswordReset.isPending}
+                  isDisabled={sendPasswordReset.isPending}
+                  onPress={() => sendPasswordReset.mutate(user.id)}
+                >
+                  Send password reset
+                </ActionButtonWithPending>
+              </RoleGate>
+            </div>
+          </div>
+          <RoleGate roles={[RoleTypes.ADMIN, RoleTypes.SUPER_ADMIN]}>
+            <div className="flex items-center gap-2">
+              <ActionButtonWithPending variant="secondary" onPress={editModal.open}>
+                Edit
+              </ActionButtonWithPending>
+              <div className="flex flex-col items-end gap-1">
+                <ActionButtonWithPending
+                  variant="danger"
+                  isDisabled={!canDelete}
+                  onPress={deleteConfirm.open}
+                >
+                  Delete
+                </ActionButtonWithPending>
+                {deleteDisabledReason && (
+                  <span className="text-xs text-muted">{deleteDisabledReason}</span>
+                )}
+              </div>
+            </div>
+          </RoleGate>
         </div>
       </div>
 
@@ -247,6 +306,56 @@ export default function AdminUserDetailPage() {
           </div>
         )}
       </section>
+
+      <RoleGate roles={[RoleTypes.ADMIN, RoleTypes.SUPER_ADMIN]}>
+        <Modal state={editModal}>
+          <Modal.Backdrop isDismissable={!updateUser.isPending}>
+            <Modal.Container>
+              <Modal.Dialog className="max-w-lg">
+                <Modal.Header>
+                  <Modal.Heading>Edit user</Modal.Heading>
+                </Modal.Header>
+                <Modal.Body>
+                  <EditUserForm
+                    isSelf={isSelf}
+                    submitLabel="Save changes"
+                    isPending={updateUser.isPending}
+                    onCancel={editModal.close}
+                    defaultValues={{
+                      email: user.email,
+                      phone: user.phone ?? "",
+                      role: user.role,
+                      password: "",
+                    }}
+                    onSubmit={(payload) =>
+                      updateUser.mutate(
+                        { id: user.id, payload },
+                        {
+                          onSuccess: () => {
+                            editModal.close();
+                            void refetch();
+                          },
+                        },
+                      )
+                    }
+                  />
+                </Modal.Body>
+              </Modal.Dialog>
+            </Modal.Container>
+          </Modal.Backdrop>
+        </Modal>
+
+        <ConfirmationDialog
+          state={deleteConfirm}
+          title="Delete this user?"
+          description="This will permanently remove the user and all related tracked agencies, saved properties, and integration connections."
+          confirmLabel="Delete"
+          isPending={deleteUser.isPending}
+          onConfirm={() =>
+            deleteUser.mutateAsync(user.id).then(() => navigate(Routes.admin.users.list))
+          }
+        />
+      </RoleGate>
     </div>
   );
 }

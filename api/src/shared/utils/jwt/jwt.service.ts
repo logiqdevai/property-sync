@@ -1,6 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import {
+    PASSWORD_RESET_EXPIRATION,
+    PASSWORD_RESET_PURPOSE,
+} from '@/modules/auth/constants/password-reset.constants';
 
 @Injectable()
 export class CreateJwtService {
@@ -26,12 +30,32 @@ export class CreateJwtService {
         return token;
     }
 
+    async signPasswordResetToken(userId: string): Promise<string> {
+        return this.jwt.signAsync(
+            { id: userId, purpose: PASSWORD_RESET_PURPOSE },
+            {
+                expiresIn: PASSWORD_RESET_EXPIRATION,
+                secret: this.secret,
+            },
+        );
+    }
+
     async verifyToken(token: string): Promise<any> {
         try {
             return this.jwt.verifyAsync(token, { secret: this.secret });
         } catch (error) {
             throw new UnauthorizedException('Invalid token');
         }
+    }
+
+    async verifyPasswordResetToken(token: string): Promise<{ id: string }> {
+        const payload = await this.verifyToken(token);
+
+        if (payload?.purpose !== PASSWORD_RESET_PURPOSE || !payload?.id) {
+            throw new UnauthorizedException('Invalid token');
+        }
+
+        return { id: payload.id };
     }
 
     getExpirationTime(token: string): number {

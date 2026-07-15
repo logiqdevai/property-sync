@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Accordion,
+  EmptyState,
   Input,
   Label,
   Pagination,
@@ -10,7 +11,7 @@ import {
   Switch,
   useOverlayState,
 } from "@heroui/react";
-import { Search } from "lucide-react";
+import { BellOff, Search } from "lucide-react";
 import { RoleGate } from "@/components/providers/role-gate";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
@@ -97,6 +98,17 @@ function AgencyCard({
 
       {!agency.is_enabled && (
         <p className="text-sm text-muted">Not available for tracking</p>
+      )}
+
+      {agency.is_enabled && !agency.is_tracked && (
+        <div className="border-t border-border pt-4">
+          <EmptyState>
+            <BellOff className="h-5 w-5 text-muted" />
+            <p className="text-sm text-muted mt-2">
+              Turn on Track to choose which listing changes you want to follow.
+            </p>
+          </EmptyState>
+        </div>
       )}
 
       {agency.is_tracked && prefs && (
