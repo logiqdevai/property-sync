@@ -2,7 +2,6 @@ import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
 import type {
   AgencyListQuery,
-  AgencyStatus,
   CreateAgencyPayload,
   PaginatedResponse,
   SourceAgency,
@@ -49,18 +48,6 @@ export const updateAgency = async (
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to update agency. Please try again.");
-  }
-};
-
-export const updateAgencyStatus = async (
-  id: string,
-  status: AgencyStatus,
-): Promise<SourceAgency> => {
-  try {
-    const response = await axiosInstance.patch(ApiRoutes.admin.agencies.status(id), { status });
-    return response.data;
-  } catch (error: any) {
-    throw new Error(error?.response?.data?.message || "Failed to update agency status. Please try again.");
   }
 };
 

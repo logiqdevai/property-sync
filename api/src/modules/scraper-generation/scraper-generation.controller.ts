@@ -22,6 +22,7 @@ import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { ScraperGenerationService } from './scraper-generation.service';
 import { CreateGenerationRunDto } from './dto/create-generation-run.dto';
 import { RejectGenerationRunDto } from './dto/reject-generation-run.dto';
+import { RetryGenerationRunDto } from './dto/retry-generation-run.dto';
 import {
   GenerationRunQuerySchema,
   GenerationRunQueryType,
@@ -106,6 +107,20 @@ export class ScraperGenerationController {
   })
   cancel(@Param('id') id: string) {
     return this.scraperGenerationService.cancel(id);
+  }
+
+  @Post(':id/retry')
+  @Roles('ADMIN', 'SUPER_ADMIN')
+  @ApiOperation({
+    summary: 'Retry a failed or cancelled generation run from its last recorded step',
+  })
+  @ApiResponse({ status: 200, type: ScraperGenerationRun })
+  @ApiResponse({
+    status: 400,
+    description: 'Run is not FAILED or CANCELLED, or self-healing is disabled',
+  })
+  retry(@Param('id') id: string, @Body() dto: RetryGenerationRunDto) {
+    return this.scraperGenerationService.retry(id, dto);
   }
 
   @Delete(':id')

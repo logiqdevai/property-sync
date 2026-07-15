@@ -9,7 +9,6 @@ import { UserIntegrationsService } from '@/modules/user-integrations/user-integr
 import { BrowseAgencyQueryType } from './dto/agency-query.schema';
 import { TrackAgencyDto } from './dto/track-agency.dto';
 import {
-  AgencyStatus,
   AiProvider,
   AuthRole,
   IntegrationType,
@@ -31,8 +30,8 @@ export class UserTrackedAgenciesService {
 
   async findAll(userId: string, query: BrowseAgencyQueryType, role?: AuthRole) {
     const where: Prisma.SourceAgencyWhereInput = {
-      status: AgencyStatus.ACTIVE,
       is_visible: true,
+      is_enabled: true,
       ...(query.search && {
         OR: [
           { name: { contains: query.search, mode: 'insensitive' } },
@@ -357,10 +356,6 @@ export class UserTrackedAgenciesService {
       throw new BadRequestException(
         'This agency is not enabled for tracking yet',
       );
-    }
-
-    if (agency.status !== AgencyStatus.ACTIVE) {
-      throw new BadRequestException('This agency is not active');
     }
 
     return agency;

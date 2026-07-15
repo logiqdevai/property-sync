@@ -50,13 +50,6 @@ enum PaginationType {
   UNKNOWN
 }
 
-// Lifecycle state of a SourceAgency (spec section 5: enable / disable / archive).
-enum AgencyStatus {
-  ACTIVE
-  DISABLED
-  ARCHIVED
-}
-
 // Added BROKEN to support spec section 19 (Broken Scraper Detection).
 enum ScraperStatus {
   ACTIVE
@@ -328,21 +321,20 @@ model UserIntegration {
 /// SourceAgency -> ScraperGenerationRun (AI builds a scraper) -> Scraper -> CrawlRun (production run)
 /// -> SourceProperty -> Property.
 model SourceAgency {
-  id                 String       @id @default(uuid())
+  id                 String    @id @default(uuid())
   name               String
-  base_url           String       @unique
+  base_url           String    @unique
   country            String?
   city               String?
-  status             AgencyStatus @default(ACTIVE)
-  is_visible         Boolean      @default(false) // not displayed to the user, only to the admin
-  is_enabled         Boolean      @default(false) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin
+  is_visible         Boolean   @default(false) // not displayed to the user, only to the admin
+  is_enabled         Boolean   @default(false) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin
   notes              String?
   last_success_at    DateTime?
   last_failure_at    DateTime?
   last_error_message String?
   metadata           Json?
-  created_at         DateTime     @default(now())
-  updated_at         DateTime     @updatedAt
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
 
   scrapers                Scraper[]
   user_tracked_agencies   UserTrackedAgency[]
@@ -351,7 +343,8 @@ model SourceAgency {
   source_properties       SourceProperty[]
   notifications           Notification[]
 
-  @@index([status])
+  @@index([is_visible])
+  @@index([is_enabled])
   @@map("source_agencies")
 }
 

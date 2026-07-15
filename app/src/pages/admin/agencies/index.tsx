@@ -10,7 +10,7 @@ import {
   Pagination,
   useOverlayState,
 } from "@heroui/react";
-import { Archive, Ban, CheckCircle, Plus, Search } from "lucide-react";
+import { Ban, CheckCircle, Eye, EyeOff, Plus, Search, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -20,32 +20,46 @@ import {
   type TableRowAction,
 } from "@/components/ui/table-row-actions-menu";
 import { AgencyForm } from "./components/agency-form";
-import { AgencyStatusChip } from "./components/agency-status-chip";
-import { useAgencies, useCreateAgency, useUpdateAgencyStatus } from "@/features/agencies/hooks/use-agencies";
 import {
-  AgencyStatuses,
-  type AgencyListQuery,
-  type AgencyStatus,
-  type SourceAgency,
-} from "@/features/agencies/interfaces/agencies.interfaces";
-import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agency-status-filter.options";
+  useAgencies,
+  useCreateAgency,
+  useDeleteAgency,
+  useUpdateAgencyVisibility,
+} from "@/features/agencies/hooks/use-agencies";
+import type { AgencyListQuery, SourceAgency } from "@/features/agencies/interfaces/agencies.interfaces";
+import {
+  AgencyVisibilityFilterOptions,
+  agencyVisibilityFilterToQuery,
+  type AgencyVisibilityFilter,
+} from "@/config/constants/dropdowns/agency-visibility-filter.options";
 import { formatDate } from "@/lib/date";
 import { useDebouncedValue } from "./hooks/use-debounced-value";
 
 function getAgencyActions(agency: SourceAgency): TableRowAction[] {
   const actions: TableRowAction[] = [];
+  const dependentCount = (agency._count?.scrapers ?? 0) + (agency._count?.crawl_runs ?? 0);
 
-  if (agency.status !== AgencyStatuses.ACTIVE) {
-    actions.push({ id: "activate", label: "Activate", icon: CheckCircle });
+  if (!agency.is_visible) {
+    actions.push({ id: "show", label: "Show", icon: Eye });
+  } else {
+    actions.push({ id: "hide", label: "Hide", variant: "danger", icon: EyeOff });
   }
 
-  if (agency.status === AgencyStatuses.ACTIVE) {
-    actions.push({ id: "disable", label: "Disable", icon: Ban });
+  if (agency.is_visible && !agency.is_enabled) {
+    actions.push({ id: "enable", label: "Enable tracking", icon: CheckCircle });
   }
 
-  if (agency.status !== AgencyStatuses.ARCHIVED) {
-    actions.push({ id: "archive", label: "Archive", variant: "danger", icon: Archive });
+  if (agency.is_enabled) {
+    actions.push({ id: "disable", label: "Disable tracking", icon: Ban });
   }
+
+  actions.push({
+    id: "delete",
+    label: "Delete",
+    variant: "danger",
+    icon: Trash2,
+    isDisabled: dependentCount > 0,
+  });
 
   return actions;
 }
@@ -53,12 +67,12 @@ function getAgencyActions(agency: SourceAgency): TableRowAction[] {
 export default function AgenciesListPage() {
   const navigate = useNavigate();
   const createModal = useOverlayState();
-  const archiveConfirm = useOverlayState();
+  const deleteConfirm = useOverlayState();
 
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<AgencyStatus | "all">("all");
+  const [visibilityFilter, setVisibilityFilter] = useState<AgencyVisibilityFilter>("all");
   const [page, setPage] = useState(1);
-  const [archiveAgencyId, setArchiveAgencyId] = useState<string | null>(null);
+  const [deleteAgencyId, setDeleteAgencyId] = useState<string | null>(null);
   const debouncedSearch = useDebouncedValue(search, 300);
 
   const query = useMemo<AgencyListQuery>(
@@ -66,32 +80,55 @@ export default function AgenciesListPage() {
       page,
       limit: 20,
       ...(debouncedSearch && { search: debouncedSearch }),
-      ...(status !== "all" && { status }),
+      ...agencyVisibilityFilterToQuery(visibilityFilter),
     }),
-    [page, debouncedSearch, status],
+    [page, debouncedSearch, visibilityFilter],
   );
 
   const { data, isPending } = useAgencies(query);
   const createAgency = useCreateAgency();
-  const updateStatus = useUpdateAgencyStatus();
+  const updateVisibility = useUpdateAgencyVisibility();
+  const deleteAgency = useDeleteAgency();
 
   const agencies = data?.data ?? [];
   const pagination = data?.pagination;
 
-  const handleAgencyAction = (agencyId: string, actionId: string) => {
-    if (actionId === "activate") {
-      updateStatus.mutate({ id: agencyId, status: AgencyStatuses.ACTIVE });
+  const handleAgencyAction = (agency: SourceAgency, actionId: string) => {
+    if (actionId === "show") {
+      updateVisibility.mutate({
+        id: agency.id,
+        payload: { is_visible: true, is_enabled: agency.is_enabled },
+      });
+      return;
+    }
+
+    if (actionId === "hide") {
+      updateVisibility.mutate({
+        id: agency.id,
+        payload: { is_visible: false, is_enabled: false },
+      });
+      return;
+    }
+
+    if (actionId === "enable") {
+      updateVisibility.mutate({
+        id: agency.id,
+        payload: { is_visible: true, is_enabled: true },
+      });
       return;
     }
 
     if (actionId === "disable") {
-      updateStatus.mutate({ id: agencyId, status: AgencyStatuses.DISABLED });
+      updateVisibility.mutate({
+        id: agency.id,
+        payload: { is_visible: agency.is_visible, is_enabled: false },
+      });
       return;
     }
 
-    if (actionId === "archive") {
-      setArchiveAgencyId(agencyId);
-      archiveConfirm.open();
+    if (actionId === "delete") {
+      setDeleteAgencyId(agency.id);
+      deleteConfirm.open();
     }
   };
 
@@ -123,13 +160,13 @@ export default function AgenciesListPage() {
         </div>
 
         <Select
-          aria-label="Filter by status"
-          selectedKey={status}
+          aria-label="Filter by visibility"
+          selectedKey={visibilityFilter}
           onSelectionChange={(key) => {
             setPage(1);
-            setStatus(key as AgencyStatus | "all");
+            setVisibilityFilter(key as AgencyVisibilityFilter);
           }}
-          className="w-44"
+          className="w-52"
         >
           <Select.Trigger>
             <Select.Value />
@@ -137,7 +174,7 @@ export default function AgenciesListPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {AgencyStatusFilterOptions.map((option) => (
+              {AgencyVisibilityFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>
@@ -148,7 +185,7 @@ export default function AgenciesListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={7} />
+        <TableSkeleton rows={8} columns={6} />
       ) : agencies.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No agencies found.
@@ -160,7 +197,6 @@ export default function AgenciesListPage() {
               <Table.Content aria-label="Agencies">
                 <Table.Header>
                   <Table.Column isRowHeader>Name</Table.Column>
-                  <Table.Column>Status</Table.Column>
                   <Table.Column>Visibility</Table.Column>
                   <Table.Column>Location</Table.Column>
                   <Table.Column>Last success</Table.Column>
@@ -182,15 +218,12 @@ export default function AgenciesListPage() {
                         </div>
                       </Table.Cell>
                       <Table.Cell>
-                        <AgencyStatusChip status={agency.status} />
-                      </Table.Cell>
-                      <Table.Cell>
                         <div className="flex gap-1.5">
                           <Chip color={agency.is_visible ? "success" : "default"} size="sm" variant="soft">
                             <Chip.Label>{agency.is_visible ? "Visible" : "Hidden"}</Chip.Label>
                           </Chip>
                           <Chip color={agency.is_enabled ? "success" : "default"} size="sm" variant="soft">
-                            <Chip.Label>{agency.is_enabled ? "Enabled" : "Disabled"}</Chip.Label>
+                            <Chip.Label>{agency.is_enabled ? "Trackable" : "Not trackable"}</Chip.Label>
                           </Chip>
                         </div>
                       </Table.Cell>
@@ -202,7 +235,7 @@ export default function AgenciesListPage() {
                       <Table.Cell>
                         <TableRowActionsMenu
                           actions={getAgencyActions(agency)}
-                          onAction={(actionId) => handleAgencyAction(agency.id, actionId)}
+                          onAction={(actionId) => handleAgencyAction(agency, actionId)}
                           ariaLabel={`Actions for ${agency.name}`}
                         />
                       </Table.Cell>
@@ -244,19 +277,16 @@ export default function AgenciesListPage() {
       )}
 
       <ConfirmationDialog
-        state={archiveConfirm}
-        title="Archive this agency?"
-        description="Archived agencies are hidden from active operations."
-        confirmLabel="Archive"
-        isPending={updateStatus.isPending}
+        state={deleteConfirm}
+        title="Delete this agency?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        isPending={deleteAgency.isPending}
         onConfirm={() => {
-          if (!archiveAgencyId) return;
-          updateStatus.mutate(
-            { id: archiveAgencyId, status: AgencyStatuses.ARCHIVED },
-            {
-              onSuccess: () => setArchiveAgencyId(null),
-            },
-          );
+          if (!deleteAgencyId) return;
+          deleteAgency.mutate(deleteAgencyId, {
+            onSuccess: () => setDeleteAgencyId(null),
+          });
         }}
       />
 

@@ -18,6 +18,7 @@ import {
 } from 'generated/prisma';
 import { CreateGenerationRunDto } from './dto/create-generation-run.dto';
 import { RejectGenerationRunDto } from './dto/reject-generation-run.dto';
+import { RetryGenerationRunDto } from './dto/retry-generation-run.dto';
 import { GenerationRunQueryType } from './dto/generation-run-query.schema';
 import { PaginatedResult } from './interfaces/generation-run.interface';
 
@@ -30,6 +31,11 @@ const TERMINAL_STATUSES: GenerationRunStatus[] = [
 const ACTIVE_STATUSES: GenerationRunStatus[] = [
   GenerationRunStatus.QUEUED,
   GenerationRunStatus.RUNNING,
+];
+
+const RETRYABLE_STATUSES: GenerationRunStatus[] = [
+  GenerationRunStatus.FAILED,
+  GenerationRunStatus.CANCELLED,
 ];
 
 @Injectable()
@@ -267,6 +273,84 @@ export class ScraperGenerationService {
       where: { id },
       data: { status: GenerationRunStatus.CANCELLED, finished_at: new Date() },
     });
+  }
+
+  async retry(id: string, dto: RetryGenerationRunDto) {
+    const run = await this.prisma.scraperGenerationRun.findUnique({
+      where: { id },
+      include: {
+        steps: { select: { id: true } },
+        scraper: { select: { self_healing_enabled: true } },
+      },
+    });
+
+    if (!run) {
+      throw new NotFoundException('Generation run not found');
+    }
+
+    if (!RETRYABLE_STATUSES.includes(run.status)) {
+      throw new BadRequestException(
+        'Only FAILED or CANCELLED runs can be retried',
+      );
+    }
+
+    if (
+      run.scraper_id &&
+      run.trigger === GenerationTrigger.SELF_HEAL &&
+      run.scraper &&
+      !run.scraper.self_healing_enabled
+    ) {
+      throw new BadRequestException(
+        'Self-healing is disabled for this scraper',
+      );
+    }
+
+    const retryError = dto.error?.trim() || run.error_message || undefined;
+    const retryPrompt = dto.prompt?.trim();
+    const mergedPrompt = retryPrompt
+      ? [run.prompt?.trim(), retryPrompt].filter(Boolean).join('\n\n')
+      : run.prompt;
+
+    const updated = await this.prisma.scraperGenerationRun.update({
+      where: { id },
+      data: {
+        status: GenerationRunStatus.QUEUED,
+        error_message: null,
+        finished_at: null,
+        staged_config: null,
+        prompt: mergedPrompt,
+      },
+    });
+
+    await this.generationQueue.add('generate', {
+      runId: id,
+      resume: run.steps.length > 0,
+      retryError,
+      retryPrompt,
+    });
+
+    return updated;
+  }
+
+  async retryLatestForScraper(
+    scraperId: string,
+    error: string,
+    prompt?: string,
+  ) {
+    const run = await this.prisma.scraperGenerationRun.findFirst({
+      where: {
+        scraper_id: scraperId,
+        status: { in: RETRYABLE_STATUSES },
+        steps: { some: {} },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    if (!run) {
+      return null;
+    }
+
+    return this.retry(run.id, { error, prompt });
   }
 
   async remove(id: string) {

@@ -1,4 +1,5 @@
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
+import { API_SCREENSHOT_JPEG_QUALITY } from '../constants/generation.constants';
 import { GenerationAction } from '../interfaces/computer-use.interface';
 
 /**
@@ -36,7 +37,15 @@ export class PlaywrightDriverService {
     return this.context;
   }
 
-  async screenshot(): Promise<Buffer> {
+  async screenshot(forApi = false): Promise<Buffer> {
+    if (forApi) {
+      return this.currentPage.screenshot({
+        fullPage: false,
+        type: 'jpeg',
+        quality: API_SCREENSHOT_JPEG_QUALITY,
+      });
+    }
+
     return this.currentPage.screenshot({ fullPage: false });
   }
 

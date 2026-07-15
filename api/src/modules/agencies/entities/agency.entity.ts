@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AgencyStatus } from 'generated/prisma';
 
 export class Agency {
     @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
@@ -16,9 +15,6 @@ export class Agency {
 
     @ApiProperty({ nullable: true, example: 'Athens' })
     city: string | null;
-
-    @ApiProperty({ enum: AgencyStatus, example: AgencyStatus.ACTIVE })
-    status: AgencyStatus;
 
     @ApiProperty()
     is_visible: boolean;

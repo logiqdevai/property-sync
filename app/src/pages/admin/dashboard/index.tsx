@@ -82,9 +82,9 @@ export default function AdminDashboardPage() {
 
       <KpiSection title="Agencies">
         <KpiCard label="Total" value={kpis.agencies_total} />
-        <KpiCard label="Active" value={kpis.agencies_active} />
-        <KpiCard label="Disabled" value={kpis.agencies_disabled} />
-        <KpiCard label="Archived" value={kpis.agencies_archived} />
+        <KpiCard label="Visible & trackable" value={kpis.agencies_active} />
+        <KpiCard label="Visible only" value={kpis.agencies_disabled} />
+        <KpiCard label="Hidden" value={kpis.agencies_archived} />
       </KpiSection>
 
       <KpiSection title="Properties">

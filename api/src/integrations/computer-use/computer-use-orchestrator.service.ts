@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { ComputerActionType, GenerationRunStatus, Prisma } from 'generated/prisma';
+import {
+  GenerationRunStatus,
+  Prisma,
+} from 'generated/prisma';
 import { ComputerUseClientService } from './services/computer-use-client.service';
 import { PlaywrightDriverService } from './services/playwright-driver.service';
 import { ScraperConfigVerificationService } from './services/scraper-config-verification.service';
@@ -10,10 +13,17 @@ import { ScreenshotStorageService } from './services/screenshot-storage.service'
 import { GENERATION_SYSTEM_PROMPT } from './constants/generation-prompt';
 import {
   DEFAULT_GENERATION_MODEL,
-  MAX_GENERATION_STEPS,
+  MAX_IMAGE_TURNS_IN_CONTEXT,
 } from './constants/generation.constants';
 import { extractJSON } from './utils/extract-json.util';
 import { GenerationAction } from './interfaces/computer-use.interface';
+import { GenerationRunOptions } from './interfaces/generation-run-options.interface';
+import { mapActionType } from './utils/generation-action.util';
+import {
+  buildStepsSummaryText,
+  compactImageMessages,
+  extractResumeUrl,
+} from './utils/generation-message.util';
 
 const INITIAL_STEP_HINT =
   'Initial page. Follow the mandatory workflow: find the listings page, inspect cards, visit a detail page, test pagination, then call done.';
@@ -30,10 +40,15 @@ export class ComputerUseOrchestratorService {
     private readonly screenshotStorage: ScreenshotStorageService,
   ) {}
 
-  async run(generationRunId: string): Promise<void> {
+  async run(generationRunId: string, options: GenerationRunOptions = {}): Promise<void> {
     const run = await this.prisma.scraperGenerationRun.findUniqueOrThrow({
       where: { id: generationRunId },
-      include: { source_agency: true },
+      include: {
+        source_agency: true,
+        steps: {
+          orderBy: { step_index: 'asc' },
+        },
+      },
     });
 
     await this.prisma.scraperGenerationRun.update({
@@ -44,25 +59,46 @@ export class ComputerUseOrchestratorService {
     const model =
       this.configService.get<string>('SCRAPER_GENERATION_MODEL') ?? DEFAULT_GENERATION_MODEL;
     const targetUrl = run.source_agency.base_url;
+    const systemPrompt = this.buildSystemPrompt(run.prompt);
 
     const driver = new PlaywrightDriverService();
     const messages: Anthropic.MessageParam[] = [];
     let finalConfig: Record<string, unknown> | null = null;
     let failureReason: string | null = null;
     let stepIndex = 0;
+    const shouldResume = options.resume === true && run.steps.length > 0;
 
     try {
       await driver.launch(targetUrl);
 
-      for (stepIndex = 0; stepIndex < MAX_GENERATION_STEPS; stepIndex++) {
-        const screenshotBefore = await driver.screenshot();
+      if (shouldResume) {
+        const resumeUrl = extractResumeUrl(run.steps, targetUrl);
+        if (resumeUrl !== targetUrl) {
+          await driver.executeAction({ action: 'navigate', url: resumeUrl });
+        }
+
+        const resumeParts = [
+          buildStepsSummaryText(run.steps),
+          this.buildRetryContext(options.retryError ?? run.error_message, options.retryPrompt),
+        ].filter(Boolean);
+
+        messages.push({
+          role: 'user',
+          content: resumeParts.join('\n\n'),
+        });
+
+        stepIndex = run.steps.length;
+      }
+
+      while (!finalConfig && !failureReason) {
+        const screenshotBefore = await driver.screenshot(true);
         const screenshotBeforeId = await this.screenshotStorage.store(
           screenshotBefore,
-          `generation-${generationRunId}-step-${stepIndex}-before.png`,
+          `generation-${generationRunId}-step-${stepIndex}-before.jpg`,
         );
 
         const stepHint =
-          stepIndex === 0
+          stepIndex === 0 && !shouldResume
             ? INITIAL_STEP_HINT
             : `Step ${stepIndex}. URL: ${driver.currentPage.url()}.`;
 
@@ -73,7 +109,7 @@ export class ComputerUseOrchestratorService {
               type: 'image',
               source: {
                 type: 'base64',
-                media_type: 'image/png',
+                media_type: 'image/jpeg',
                 data: screenshotBefore.toString('base64'),
               },
             },
@@ -81,9 +117,10 @@ export class ComputerUseOrchestratorService {
           ],
         });
 
+        const requestMessages = compactImageMessages(messages, MAX_IMAGE_TURNS_IN_CONTEXT);
         const { rawText } = await this.computerUseClient.sendStep(
-          messages,
-          GENERATION_SYSTEM_PROMPT,
+          requestMessages,
+          systemPrompt,
           model,
         );
         messages.push({ role: 'assistant', content: rawText });
@@ -96,6 +133,7 @@ export class ComputerUseOrchestratorService {
             role: 'user',
             content: 'Your response was not valid JSON. Return ONLY a JSON object, no other text.',
           });
+          stepIndex += 1;
           continue;
         }
 
@@ -137,6 +175,7 @@ export class ComputerUseOrchestratorService {
               'Return to the listings page, inspect the actual elements, and return a corrected config.',
             ].join('\n');
             messages.push({ role: 'user', content: feedback });
+            stepIndex += 1;
             continue;
           }
 
@@ -166,10 +205,8 @@ export class ComputerUseOrchestratorService {
           where: { id: step.id },
           data: { screenshot_after_id: screenshotAfterId },
         });
-      }
 
-      if (!finalConfig && stepIndex >= MAX_GENERATION_STEPS) {
-        failureReason = `Exceeded ${MAX_GENERATION_STEPS} steps without producing a verified config`;
+        stepIndex += 1;
       }
     } catch (error) {
       failureReason = error instanceof Error ? error.message : 'Unknown error during generation run';
@@ -193,8 +230,31 @@ export class ComputerUseOrchestratorService {
           },
     });
   }
-}
 
-function mapActionType(action: GenerationAction['action']): ComputerActionType {
-  return ComputerActionType[action.toUpperCase() as keyof typeof ComputerActionType];
+  private buildSystemPrompt(prompt: string | null): string {
+    if (!prompt?.trim()) {
+      return GENERATION_SYSTEM_PROMPT;
+    }
+
+    return `${GENERATION_SYSTEM_PROMPT}\n\n## Additional instructions:\n${prompt.trim()}`;
+  }
+
+  private buildRetryContext(retryError?: string | null, retryPrompt?: string): string | null {
+    const parts: string[] = [];
+
+    if (retryError?.trim()) {
+      parts.push(`The previous attempt failed with this error:\n${retryError.trim()}`);
+    }
+
+    if (retryPrompt?.trim()) {
+      parts.push(`Additional instructions:\n${retryPrompt.trim()}`);
+    }
+
+    if (parts.length === 0) {
+      return 'Continue the generation from the current browser state. Do not restart from scratch.';
+    }
+
+    parts.push('Continue from the current browser state. Do not restart from scratch.');
+    return parts.join('\n\n');
+  }
 }

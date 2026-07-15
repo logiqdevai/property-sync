@@ -177,7 +177,13 @@ export class UsersService {
                 tracked_agencies: {
                     include: {
                         source_agency: {
-                            select: { id: true, name: true, base_url: true, status: true },
+                            select: {
+                                id: true,
+                                name: true,
+                                base_url: true,
+                                is_visible: true,
+                                is_enabled: true,
+                            },
                         },
                     },
                     orderBy: { created_at: 'desc' },

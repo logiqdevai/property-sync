@@ -7,7 +7,6 @@ import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { AgenciesService } from './agencies.service';
 import { CreateAgencyDto } from './dto/create-agency.dto';
 import { UpdateAgencyDto } from './dto/update-agency.dto';
-import { UpdateAgencyStatusDto } from './dto/update-agency-status.dto';
 import { UpdateAgencyVisibilityDto } from './dto/update-agency-visibility.dto';
 import { UpdateTrackerAdminSettingsDto } from './dto/update-tracker-admin-settings.dto';
 import { AgencyQuerySchema, AgencyQueryType } from './dto/agency-query.schema';
@@ -65,14 +64,6 @@ export class AgenciesController {
     @ApiResponse({ status: 404, description: 'Agency not found' })
     update(@Param('id') id: string, @Body() dto: UpdateAgencyDto) {
         return this.agenciesService.update(id, dto);
-    }
-
-    @Patch(':id/status')
-    @Roles('ADMIN', 'SUPER_ADMIN')
-    @ApiOperation({ summary: 'Transition agency status (enable/disable/archive)' })
-    @ApiResponse({ status: 200, type: Agency })
-    updateStatus(@Param('id') id: string, @Body() dto: UpdateAgencyStatusDto) {
-        return this.agenciesService.updateStatus(id, dto.status);
     }
 
     @Patch(':id/visibility')

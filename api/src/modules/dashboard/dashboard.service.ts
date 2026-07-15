@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
-  AgencyStatus,
   CrawlRunStatus,
   GenerationRunStatus,
   JobStatus,
@@ -61,9 +60,9 @@ export class DashboardService {
       this.prisma.scraper.count({ where: { status: ScraperStatus.ACTIVE } }),
       this.prisma.scraper.count({ where: { status: ScraperStatus.BROKEN } }),
       this.prisma.sourceAgency.count(),
-      this.prisma.sourceAgency.count({ where: { status: AgencyStatus.ACTIVE } }),
-      this.prisma.sourceAgency.count({ where: { status: AgencyStatus.DISABLED } }),
-      this.prisma.sourceAgency.count({ where: { status: AgencyStatus.ARCHIVED } }),
+      this.prisma.sourceAgency.count({ where: { is_visible: true, is_enabled: true } }),
+      this.prisma.sourceAgency.count({ where: { is_visible: true, is_enabled: false } }),
+      this.prisma.sourceAgency.count({ where: { is_visible: false } }),
       this.prisma.crawlRun.count({ where: { status: CrawlRunStatus.RUNNING } }),
       this.prisma.crawlRun.count({
         where: {

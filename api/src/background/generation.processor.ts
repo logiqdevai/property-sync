@@ -5,6 +5,7 @@ import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { ComputerUseOrchestratorService } from '@/integrations/computer-use/computer-use-orchestrator.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { GENERATION_QUEUE } from '@/core/queues/queues.constants';
+import { GENERATION_JOB_LOCK_DURATION_MS } from '@/integrations/computer-use/constants/generation.constants';
 import {
   GenerationRunStatus,
   NotificationSeverity,
@@ -13,9 +14,12 @@ import {
 
 interface GenerationJobData {
   runId: string;
+  resume?: boolean;
+  retryError?: string;
+  retryPrompt?: string;
 }
 
-@Processor(GENERATION_QUEUE)
+@Processor(GENERATION_QUEUE, { lockDuration: GENERATION_JOB_LOCK_DURATION_MS })
 export class GenerationProcessor extends WorkerHost {
   private readonly logger = new Logger(GenerationProcessor.name);
 
@@ -66,7 +70,11 @@ export class GenerationProcessor extends WorkerHost {
     }
 
     try {
-      await this.orchestrator.run(runId);
+      await this.orchestrator.run(runId, {
+        resume: job.data.resume,
+        retryError: job.data.retryError,
+        retryPrompt: job.data.retryPrompt,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`generation job ${runId} crashed outside the orchestrator: ${message}`);

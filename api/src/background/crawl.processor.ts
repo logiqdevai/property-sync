@@ -423,12 +423,21 @@ export class CrawlProcessor extends WorkerHost {
     }
 
     if (params.scraper.self_healing_enabled) {
-      await this.scraperGenerationService.trigger(
-        params.sourceAgencyId,
+      const selfHealPrompt = `Self-heal triggered after crawl failure: ${params.errorMessage}`;
+      const retried = await this.scraperGenerationService.retryLatestForScraper(
         params.scraper.id,
-        GenerationTrigger.SELF_HEAL,
-        `Self-heal triggered after crawl failure: ${params.errorMessage}`,
+        params.errorMessage,
+        selfHealPrompt,
       );
+
+      if (!retried) {
+        await this.scraperGenerationService.trigger(
+          params.sourceAgencyId,
+          params.scraper.id,
+          GenerationTrigger.SELF_HEAL,
+          selfHealPrompt,
+        );
+      }
     }
   }
 }

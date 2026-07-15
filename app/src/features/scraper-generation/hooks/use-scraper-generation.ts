@@ -8,12 +8,14 @@ import {
   getGenerationRun,
   getGenerationRuns,
   rejectGenerationRun,
+  retryGenerationRun,
 } from "../services/scraper-generation.services";
 import type {
   CreateGenerationRunPayload,
   GenerationRun,
   GenerationRunListQuery,
   RejectGenerationRunPayload,
+  RetryGenerationRunPayload,
 } from "../interfaces/scraper-generation.interfaces";
 
 const ACTIVE_STATUSES: GenerationRun["status"][] = ["QUEUED", "RUNNING"];
@@ -113,6 +115,27 @@ export const useCancelGenerationRun = () => {
     onError: (error: any) => {
       toast({
         title: "Could not cancel generation run",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useRetryGenerationRun = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload?: RetryGenerationRunPayload }) =>
+      retryGenerationRun(id, payload),
+    onSuccess: (_data, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ["generationRuns"] });
+      queryClient.invalidateQueries({ queryKey: ["generationRuns", "detail", id] });
+      toast({ title: "Generation run retry queued", duration: 2000, variant: "success" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Could not retry generation run",
         description: error.message,
         variant: "error",
       });

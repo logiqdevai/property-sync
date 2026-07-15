@@ -65,7 +65,8 @@ export interface AdminUserTrackedAgency {
     id: string;
     name: string;
     base_url: string;
-    status: string;
+    is_visible: boolean;
+    is_enabled: boolean;
   };
 }
 

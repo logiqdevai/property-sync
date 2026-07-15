@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { parseExpression } from 'cron-parser';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CrawlRunsService } from '@/modules/crawl-runs/crawl-runs.service';
-import { AgencyStatus, ScraperStatus } from 'generated/prisma';
+import { ScraperStatus } from 'generated/prisma';
 
 @Injectable()
 export class CrawlSchedulerCron {
@@ -21,7 +21,7 @@ export class CrawlSchedulerCron {
     const trackers = await this.prisma.userTrackedAgency.findMany({
       where: {
         enabled: true,
-        source_agency: { status: AgencyStatus.ACTIVE },
+        source_agency: { is_visible: true, is_enabled: true },
       },
       select: {
         id: true,

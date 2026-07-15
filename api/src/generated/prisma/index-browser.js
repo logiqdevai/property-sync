@@ -163,7 +163,6 @@ exports.Prisma.SourceAgencyScalarFieldEnum = {
   base_url: 'base_url',
   country: 'country',
   city: 'city',
-  status: 'status',
   is_visible: 'is_visible',
   is_enabled: 'is_enabled',
   notes: 'notes',
@@ -512,12 +511,6 @@ exports.AuthType = exports.$Enums.AuthType = {
   BEARER_TOKEN: 'BEARER_TOKEN',
   API_KEY: 'API_KEY',
   OAUTH: 'OAUTH'
-};
-
-exports.AgencyStatus = exports.$Enums.AgencyStatus = {
-  ACTIVE: 'ACTIVE',
-  DISABLED: 'DISABLED',
-  ARCHIVED: 'ARCHIVED'
 };
 
 exports.AiProvider = exports.$Enums.AiProvider = {

@@ -78,6 +78,11 @@ export interface RejectGenerationRunPayload {
   reason?: string;
 }
 
+export interface RetryGenerationRunPayload {
+  error?: string;
+  prompt?: string;
+}
+
 export interface GenerationRunListQuery {
   page?: number;
   limit?: number;

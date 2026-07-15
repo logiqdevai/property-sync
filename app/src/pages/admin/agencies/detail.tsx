@@ -6,7 +6,6 @@ import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { AgencyForm } from "./components/agency-form";
-import { AgencyStatusChip } from "./components/agency-status-chip";
 import {
   useAgency,
   useDeleteAgency,
@@ -51,7 +50,6 @@ export default function AgencyDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <p className="text-2xl font-semibold tracking-tight text-foreground">{agency.name}</p>
-          <AgencyStatusChip status={agency.status} />
         </div>
         <div className="flex items-center gap-2">
           <ActionButtonWithPending variant="secondary" onPress={editModal.open}>
@@ -67,7 +65,7 @@ export default function AgencyDetailPage() {
             </ActionButtonWithPending>
             {!canDelete && (
               <span className="text-xs text-muted">
-                Has {dependentCount} dependent record{dependentCount === 1 ? "" : "s"} — archive instead
+                Has {dependentCount} dependent record{dependentCount === 1 ? "" : "s"} — remove them before deleting
               </span>
             )}
           </div>

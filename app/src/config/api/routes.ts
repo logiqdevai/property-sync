@@ -26,7 +26,6 @@ export const ApiRoutes = {
             prefix: "/admin/agencies",
             list: "/admin/agencies",
             detail: (id: string) => `/admin/agencies/${id}`,
-            status: (id: string) => `/admin/agencies/${id}/status`,
             visibility: (id: string) => `/admin/agencies/${id}/visibility`,
             trackerSettings: (agencyId: string, userId: string) =>
                 `/admin/agencies/${agencyId}/trackers/${userId}`,
@@ -47,6 +46,7 @@ export const ApiRoutes = {
             approve: (id: string) => `/admin/generation-runs/${id}/approve`,
             reject: (id: string) => `/admin/generation-runs/${id}/reject`,
             cancel: (id: string) => `/admin/generation-runs/${id}/cancel`,
+            retry: (id: string) => `/admin/generation-runs/${id}/retry`,
             delete: (id: string) => `/admin/generation-runs/${id}`,
         },
         crawlRuns: {

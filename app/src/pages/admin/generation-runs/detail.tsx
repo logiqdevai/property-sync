@@ -14,6 +14,7 @@ import {
   useDeleteGenerationRun,
   useGenerationRun,
   useRejectGenerationRun,
+  useRetryGenerationRun,
 } from "@/features/scraper-generation/hooks/use-scraper-generation";
 import {
   GenerationRunStatuses,
@@ -30,10 +31,13 @@ export default function GenerationRunDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const rejectModal = useOverlayState();
+  const retryModal = useOverlayState();
   const cancelConfirm = useOverlayState();
   const deleteConfirm = useOverlayState();
 
   const [rejectReason, setRejectReason] = useState("");
+  const [retryError, setRetryError] = useState("");
+  const [retryPrompt, setRetryPrompt] = useState("");
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   const { data: run, isPending } = useGenerationRun(id!);
@@ -41,12 +45,16 @@ export default function GenerationRunDetailPage() {
   const rejectRun = useRejectGenerationRun();
   const cancelRun = useCancelGenerationRun();
   const deleteRun = useDeleteGenerationRun();
+  const retryRun = useRetryGenerationRun();
 
   if (isPending || !run) {
     return <DetailSkeleton fieldCount={4} showSubTable subTableRows={3} />;
   }
 
   const isActive = ACTIVE_STATUSES.includes(run.status);
+  const canRetry =
+    run.status === GenerationRunStatuses.FAILED ||
+    run.status === GenerationRunStatuses.CANCELLED;
   const steps = run.steps ?? [];
 
   return (
@@ -79,14 +87,29 @@ export default function GenerationRunDetailPage() {
             Cancel
           </ActionButtonWithPending>
         ) : (
-          <ActionButtonWithPending
-            variant="danger"
-            isPending={deleteRun.isPending}
-            isDisabled={deleteRun.isPending}
-            onPress={deleteConfirm.open}
-          >
-            Delete
-          </ActionButtonWithPending>
+          <div className="flex items-center gap-2 flex-wrap">
+            {canRetry && (
+              <ActionButtonWithPending
+                isPending={retryRun.isPending}
+                isDisabled={retryRun.isPending}
+                onPress={() => {
+                  setRetryError(run.error_message ?? "");
+                  setRetryPrompt("");
+                  retryModal.open();
+                }}
+              >
+                Retry
+              </ActionButtonWithPending>
+            )}
+            <ActionButtonWithPending
+              variant="danger"
+              isPending={deleteRun.isPending}
+              isDisabled={deleteRun.isPending}
+              onPress={deleteConfirm.open}
+            >
+              Delete
+            </ActionButtonWithPending>
+          </div>
         )}
       </div>
 
@@ -299,13 +322,89 @@ export default function GenerationRunDetailPage() {
         </Modal.Backdrop>
       </Modal>
 
+      <Modal state={retryModal}>
+        <Modal.Backdrop isDismissable={!retryRun.isPending}>
+          <Modal.Container>
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Heading>Retry this run</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <div className="flex flex-col gap-4">
+                  <p className="text-sm text-muted">
+                    {steps.length > 0
+                      ? `Resumes from step ${steps.length} using the recorded browser actions and conversation history.`
+                      : "No recorded steps yet — this will restart the generation loop."}
+                  </p>
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="retry-error">Error context (optional)</Label>
+                    <TextArea
+                      id="retry-error"
+                      value={retryError}
+                      onChange={(e) => setRetryError(e.target.value)}
+                      rows={3}
+                      fullWidth
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="retry-prompt">Additional prompt (optional)</Label>
+                    <TextArea
+                      id="retry-prompt"
+                      value={retryPrompt}
+                      onChange={(e) => setRetryPrompt(e.target.value)}
+                      rows={3}
+                      fullWidth
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <ActionButtonWithPending
+                      variant="secondary"
+                      isDisabled={retryRun.isPending}
+                      onPress={retryModal.close}
+                    >
+                      Cancel
+                    </ActionButtonWithPending>
+                    <ActionButtonWithPending
+                      isPending={retryRun.isPending}
+                      isDisabled={retryRun.isPending}
+                      onPress={() =>
+                        retryRun.mutate(
+                          {
+                            id: run.id,
+                            payload: {
+                              error: retryError.trim() || undefined,
+                              prompt: retryPrompt.trim() || undefined,
+                            },
+                          },
+                          {
+                            onSuccess: () => {
+                              retryModal.close();
+                              setRetryError("");
+                              setRetryPrompt("");
+                            },
+                          },
+                        )
+                      }
+                    >
+                      Retry run
+                    </ActionButtonWithPending>
+                  </div>
+                </div>
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
+
       <ConfirmationDialog
         state={cancelConfirm}
         title="Cancel this generation run?"
         description="The run will stop and no further steps will be recorded. You can delete it afterward."
         confirmLabel="Cancel run"
         isPending={cancelRun.isPending}
-        onConfirm={() => cancelRun.mutateAsync(run.id)}
+        onConfirm={async () => {
+          await cancelRun.mutateAsync(run.id);
+        }}
       />
 
       <ConfirmationDialog

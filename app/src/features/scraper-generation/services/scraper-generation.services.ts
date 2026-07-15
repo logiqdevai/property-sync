@@ -6,6 +6,7 @@ import type {
   GenerationRunListQuery,
   PaginatedResponse,
   RejectGenerationRunPayload,
+  RetryGenerationRunPayload,
 } from "../interfaces/scraper-generation.interfaces";
 
 export const getGenerationRuns = async (
@@ -75,6 +76,20 @@ export const cancelGenerationRun = async (id: string): Promise<GenerationRun> =>
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to cancel generation run. Please try again.",
+    );
+  }
+};
+
+export const retryGenerationRun = async (
+  id: string,
+  payload?: RetryGenerationRunPayload,
+): Promise<GenerationRun> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.generationRuns.retry(id), payload);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to retry generation run. Please try again.",
     );
   }
 };

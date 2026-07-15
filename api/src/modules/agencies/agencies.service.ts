@@ -1,6 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { AgencyStatus } from 'generated/prisma';
 import { CreateAgencyDto } from './dto/create-agency.dto';
 import { UpdateAgencyDto } from './dto/update-agency.dto';
 import { UpdateAgencyVisibilityDto } from './dto/update-agency-visibility.dto';
@@ -20,7 +19,6 @@ export class AgenciesService {
                     { base_url: { contains: query.search, mode: 'insensitive' as const } },
                 ],
             }),
-            ...(query.status && { status: query.status }),
             ...(query.country && { country: query.country }),
             ...(query.city && { city: query.city }),
             ...(query.is_visible !== undefined && { is_visible: query.is_visible }),
@@ -33,6 +31,11 @@ export class AgenciesService {
                 skip: (query.page - 1) * query.limit,
                 take: query.limit,
                 orderBy: { created_at: 'desc' },
+                include: {
+                    _count: {
+                        select: { scrapers: true, crawl_runs: true, notifications: true },
+                    },
+                },
             }),
             this.prisma.sourceAgency.count({ where }),
         ]);
@@ -88,17 +91,6 @@ export class AgenciesService {
         });
     }
 
-    // Any AgencyStatus transition is allowed for now. Revisit once the product
-    // spec defines legal transitions (e.g. blocking ARCHIVED -> DISABLED).
-    async updateStatus(id: string, status: AgencyStatus) {
-        await this.ensureExists(id);
-
-        return this.prisma.sourceAgency.update({
-            where: { id },
-            data: { status },
-        });
-    }
-
     async updateVisibility(id: string, dto: UpdateAgencyVisibilityDto) {
         await this.ensureExists(id);
 
@@ -117,7 +109,7 @@ export class AgenciesService {
         ]);
 
         if (scraperCount > 0 || crawlRunCount > 0) {
-            throw new ConflictException('Agency has scrapers or crawl runs — archive it instead of deleting');
+            throw new ConflictException('Agency has scrapers or crawl runs and cannot be deleted');
         }
 
         await this.prisma.sourceAgency.delete({ where: { id } });

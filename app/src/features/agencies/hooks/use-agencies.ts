@@ -6,13 +6,11 @@ import {
   getAgencies,
   getAgency,
   updateAgency,
-  updateAgencyStatus,
   updateAgencyVisibility,
   updateTrackerAdminSettings,
 } from "../services/agencies.services";
 import type {
   AgencyListQuery,
-  AgencyStatus,
   CreateAgencyPayload,
   UpdateAgencyPayload,
   UpdateAgencyVisibilityPayload,
@@ -62,22 +60,6 @@ export const useUpdateAgency = () => {
     },
     onError: (error: any) => {
       toast({ title: "Could not update agency", description: error.message, variant: "error" });
-    },
-  });
-};
-
-export const useUpdateAgencyStatus = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: AgencyStatus }) =>
-      updateAgencyStatus(id, status),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["agencies"] });
-      toast({ title: "Agency status updated", duration: 2000, variant: "success" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Could not update agency status", description: error.message, variant: "error" });
     },
   });
 };

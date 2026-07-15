@@ -194,15 +194,6 @@ export const PaginationType: {
 export type PaginationType = (typeof PaginationType)[keyof typeof PaginationType]
 
 
-export const AgencyStatus: {
-  ACTIVE: 'ACTIVE',
-  DISABLED: 'DISABLED',
-  ARCHIVED: 'ARCHIVED'
-};
-
-export type AgencyStatus = (typeof AgencyStatus)[keyof typeof AgencyStatus]
-
-
 export const ScraperStatus: {
   ACTIVE: 'ACTIVE',
   INACTIVE: 'INACTIVE',
@@ -464,10 +455,6 @@ export const CrawlType: typeof $Enums.CrawlType
 export type PaginationType = $Enums.PaginationType
 
 export const PaginationType: typeof $Enums.PaginationType
-
-export type AgencyStatus = $Enums.AgencyStatus
-
-export const AgencyStatus: typeof $Enums.AgencyStatus
 
 export type ScraperStatus = $Enums.ScraperStatus
 
@@ -7128,7 +7115,6 @@ export namespace Prisma {
     base_url: string | null
     country: string | null
     city: string | null
-    status: $Enums.AgencyStatus | null
     is_visible: boolean | null
     is_enabled: boolean | null
     notes: string | null
@@ -7145,7 +7131,6 @@ export namespace Prisma {
     base_url: string | null
     country: string | null
     city: string | null
-    status: $Enums.AgencyStatus | null
     is_visible: boolean | null
     is_enabled: boolean | null
     notes: string | null
@@ -7162,7 +7147,6 @@ export namespace Prisma {
     base_url: number
     country: number
     city: number
-    status: number
     is_visible: number
     is_enabled: number
     notes: number
@@ -7182,7 +7166,6 @@ export namespace Prisma {
     base_url?: true
     country?: true
     city?: true
-    status?: true
     is_visible?: true
     is_enabled?: true
     notes?: true
@@ -7199,7 +7182,6 @@ export namespace Prisma {
     base_url?: true
     country?: true
     city?: true
-    status?: true
     is_visible?: true
     is_enabled?: true
     notes?: true
@@ -7216,7 +7198,6 @@ export namespace Prisma {
     base_url?: true
     country?: true
     city?: true
-    status?: true
     is_visible?: true
     is_enabled?: true
     notes?: true
@@ -7307,7 +7288,6 @@ export namespace Prisma {
     base_url: string
     country: string | null
     city: string | null
-    status: $Enums.AgencyStatus
     is_visible: boolean
     is_enabled: boolean
     notes: string | null
@@ -7342,7 +7322,6 @@ export namespace Prisma {
     base_url?: boolean
     country?: boolean
     city?: boolean
-    status?: boolean
     is_visible?: boolean
     is_enabled?: boolean
     notes?: boolean
@@ -7367,7 +7346,6 @@ export namespace Prisma {
     base_url?: boolean
     country?: boolean
     city?: boolean
-    status?: boolean
     is_visible?: boolean
     is_enabled?: boolean
     notes?: boolean
@@ -7385,7 +7363,6 @@ export namespace Prisma {
     base_url?: boolean
     country?: boolean
     city?: boolean
-    status?: boolean
     is_visible?: boolean
     is_enabled?: boolean
     notes?: boolean
@@ -7403,7 +7380,6 @@ export namespace Prisma {
     base_url?: boolean
     country?: boolean
     city?: boolean
-    status?: boolean
     is_visible?: boolean
     is_enabled?: boolean
     notes?: boolean
@@ -7415,7 +7391,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type SourceAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "base_url" | "country" | "city" | "status" | "is_visible" | "is_enabled" | "notes" | "last_success_at" | "last_failure_at" | "last_error_message" | "metadata" | "created_at" | "updated_at", ExtArgs["result"]["sourceAgency"]>
+  export type SourceAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "base_url" | "country" | "city" | "is_visible" | "is_enabled" | "notes" | "last_success_at" | "last_failure_at" | "last_error_message" | "metadata" | "created_at" | "updated_at", ExtArgs["result"]["sourceAgency"]>
   export type SourceAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     scrapers?: boolean | SourceAgency$scrapersArgs<ExtArgs>
     user_tracked_agencies?: boolean | SourceAgency$user_tracked_agenciesArgs<ExtArgs>
@@ -7444,7 +7420,6 @@ export namespace Prisma {
       base_url: string
       country: string | null
       city: string | null
-      status: $Enums.AgencyStatus
       is_visible: boolean
       is_enabled: boolean
       notes: string | null
@@ -7888,7 +7863,6 @@ export namespace Prisma {
     readonly base_url: FieldRef<"SourceAgency", 'String'>
     readonly country: FieldRef<"SourceAgency", 'String'>
     readonly city: FieldRef<"SourceAgency", 'String'>
-    readonly status: FieldRef<"SourceAgency", 'AgencyStatus'>
     readonly is_visible: FieldRef<"SourceAgency", 'Boolean'>
     readonly is_enabled: FieldRef<"SourceAgency", 'Boolean'>
     readonly notes: FieldRef<"SourceAgency", 'String'>
@@ -29836,7 +29810,6 @@ export namespace Prisma {
     base_url: 'base_url',
     country: 'country',
     city: 'city',
-    status: 'status',
     is_visible: 'is_visible',
     is_enabled: 'is_enabled',
     notes: 'notes',
@@ -30330,20 +30303,6 @@ export namespace Prisma {
    * Reference to a field of type 'QueryMode'
    */
   export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
-    
-
-
-  /**
-   * Reference to a field of type 'AgencyStatus'
-   */
-  export type EnumAgencyStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AgencyStatus'>
-    
-
-
-  /**
-   * Reference to a field of type 'AgencyStatus[]'
-   */
-  export type ListEnumAgencyStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AgencyStatus[]'>
     
 
 
@@ -30898,7 +30857,6 @@ export namespace Prisma {
     base_url?: StringFilter<"SourceAgency"> | string
     country?: StringNullableFilter<"SourceAgency"> | string | null
     city?: StringNullableFilter<"SourceAgency"> | string | null
-    status?: EnumAgencyStatusFilter<"SourceAgency"> | $Enums.AgencyStatus
     is_visible?: BoolFilter<"SourceAgency"> | boolean
     is_enabled?: BoolFilter<"SourceAgency"> | boolean
     notes?: StringNullableFilter<"SourceAgency"> | string | null
@@ -30922,7 +30880,6 @@ export namespace Prisma {
     base_url?: SortOrder
     country?: SortOrderInput | SortOrder
     city?: SortOrderInput | SortOrder
-    status?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
     notes?: SortOrderInput | SortOrder
@@ -30949,7 +30906,6 @@ export namespace Prisma {
     name?: StringFilter<"SourceAgency"> | string
     country?: StringNullableFilter<"SourceAgency"> | string | null
     city?: StringNullableFilter<"SourceAgency"> | string | null
-    status?: EnumAgencyStatusFilter<"SourceAgency"> | $Enums.AgencyStatus
     is_visible?: BoolFilter<"SourceAgency"> | boolean
     is_enabled?: BoolFilter<"SourceAgency"> | boolean
     notes?: StringNullableFilter<"SourceAgency"> | string | null
@@ -30973,7 +30929,6 @@ export namespace Prisma {
     base_url?: SortOrder
     country?: SortOrderInput | SortOrder
     city?: SortOrderInput | SortOrder
-    status?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
     notes?: SortOrderInput | SortOrder
@@ -30997,7 +30952,6 @@ export namespace Prisma {
     base_url?: StringWithAggregatesFilter<"SourceAgency"> | string
     country?: StringNullableWithAggregatesFilter<"SourceAgency"> | string | null
     city?: StringNullableWithAggregatesFilter<"SourceAgency"> | string | null
-    status?: EnumAgencyStatusWithAggregatesFilter<"SourceAgency"> | $Enums.AgencyStatus
     is_visible?: BoolWithAggregatesFilter<"SourceAgency"> | boolean
     is_enabled?: BoolWithAggregatesFilter<"SourceAgency"> | boolean
     notes?: StringNullableWithAggregatesFilter<"SourceAgency"> | string | null
@@ -33118,7 +33072,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -33142,7 +33095,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -33166,7 +33118,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33190,7 +33141,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33214,7 +33164,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -33232,7 +33181,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33250,7 +33198,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35697,13 +35644,6 @@ export namespace Prisma {
     _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
-  export type EnumAgencyStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.AgencyStatus | EnumAgencyStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.AgencyStatus[] | ListEnumAgencyStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AgencyStatus[] | ListEnumAgencyStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumAgencyStatusFilter<$PrismaModel> | $Enums.AgencyStatus
-  }
-
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -35771,7 +35711,6 @@ export namespace Prisma {
     base_url?: SortOrder
     country?: SortOrder
     city?: SortOrder
-    status?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
     notes?: SortOrder
@@ -35789,7 +35728,6 @@ export namespace Prisma {
     base_url?: SortOrder
     country?: SortOrder
     city?: SortOrder
-    status?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
     notes?: SortOrder
@@ -35806,7 +35744,6 @@ export namespace Prisma {
     base_url?: SortOrder
     country?: SortOrder
     city?: SortOrder
-    status?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
     notes?: SortOrder
@@ -35815,16 +35752,6 @@ export namespace Prisma {
     last_error_message?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
-  }
-
-  export type EnumAgencyStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.AgencyStatus | EnumAgencyStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.AgencyStatus[] | ListEnumAgencyStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AgencyStatus[] | ListEnumAgencyStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumAgencyStatusWithAggregatesFilter<$PrismaModel> | $Enums.AgencyStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumAgencyStatusFilter<$PrismaModel>
-    _max?: NestedEnumAgencyStatusFilter<$PrismaModel>
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -37794,10 +37721,6 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
-  export type EnumAgencyStatusFieldUpdateOperationsInput = {
-    set?: $Enums.AgencyStatus
-  }
-
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
   }
@@ -39576,13 +39499,6 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
-  export type NestedEnumAgencyStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.AgencyStatus | EnumAgencyStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.AgencyStatus[] | ListEnumAgencyStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AgencyStatus[] | ListEnumAgencyStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumAgencyStatusFilter<$PrismaModel> | $Enums.AgencyStatus
-  }
-
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -39592,16 +39508,6 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
-  export type NestedEnumAgencyStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.AgencyStatus | EnumAgencyStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.AgencyStatus[] | ListEnumAgencyStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AgencyStatus[] | ListEnumAgencyStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumAgencyStatusWithAggregatesFilter<$PrismaModel> | $Enums.AgencyStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumAgencyStatusFilter<$PrismaModel>
-    _max?: NestedEnumAgencyStatusFilter<$PrismaModel>
   }
 
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -41163,7 +41069,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -41186,7 +41091,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -41347,7 +41251,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41370,7 +41273,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41606,7 +41508,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -41629,7 +41530,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -41905,7 +41805,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41928,7 +41827,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42094,7 +41992,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -42117,7 +42014,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -42266,7 +42162,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42289,7 +42184,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43173,7 +43067,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -43196,7 +43089,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -43469,7 +43361,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43492,7 +43383,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43852,7 +43742,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -43875,7 +43764,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -44026,7 +43914,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44049,7 +43936,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44428,7 +44314,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -44451,7 +44336,6 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
-    status?: $Enums.AgencyStatus
     is_visible?: boolean
     is_enabled?: boolean
     notes?: string | null
@@ -44518,7 +44402,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44541,7 +44424,6 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumAgencyStatusFieldUpdateOperationsInput | $Enums.AgencyStatus
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     notes?: NullableStringFieldUpdateOperationsInput | string | null
