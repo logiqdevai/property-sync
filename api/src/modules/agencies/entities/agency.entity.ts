@@ -50,4 +50,32 @@ export class Agency {
         crawl_runs: number;
         notifications: number;
     };
+
+    @ApiProperty({
+        required: false,
+        description: 'Present on GET /admin/agencies/:id',
+        type: 'array',
+    })
+    user_tracked_agencies?: Array<{
+        id: string;
+        user_id: string;
+        source_agency_id: string;
+        enabled: boolean;
+        crawl_interval: string;
+        concurrent_insertions: number;
+        insertion_interval_minutes: number;
+        track_new_listings: boolean;
+        track_removed_listings: boolean;
+        track_updated_listings: boolean;
+        use_ai_batching: boolean;
+        ai_provider: string;
+        ai_model: string | null;
+        created_at: Date;
+        updated_at: Date;
+        user: {
+            id: string;
+            email: string;
+            role: string;
+        };
+    }>;
 }

@@ -69,6 +69,7 @@ export interface CreateScraperVersionPayload {
 }
 
 export interface UpdateScraperPayload {
+  status?: ScraperStatus;
   self_healing_enabled?: boolean;
   validation_rules?: Record<string, unknown>;
 }

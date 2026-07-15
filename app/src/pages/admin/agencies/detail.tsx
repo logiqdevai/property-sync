@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { Modal, Switch, EmptyState, useOverlayState } from "@heroui/react";
+import { Chip, Modal, Switch, EmptyState, useOverlayState } from "@heroui/react";
 import { ArrowLeft, Users, Wrench, Activity } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
@@ -11,24 +11,37 @@ import {
   useDeleteAgency,
   useUpdateAgency,
   useUpdateAgencyVisibility,
+  useUpdateTrackerAdminSettings,
 } from "@/features/agencies/hooks/use-agencies";
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
+import { ScraperStatusChip } from "./components/scraper-status-chip";
 import { useCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
+import { useScrapers } from "@/features/scrapers/hooks/use-scrapers";
+import { RoleTypes } from "@/features/user/interfaces/user.interface";
+import { useAuthStore } from "@/stores/auth";
 import { formatDateTime } from "@/lib/date";
+import type { UpdateTrackerAdminSettingsPayload } from "@/features/agencies/interfaces/agencies.interfaces";
 
 export default function AgencyDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const editModal = useOverlayState();
   const deleteConfirm = useOverlayState();
+  const role = useAuthStore((state) => state.role);
+  const canEditTrackerSettings =
+    role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN;
 
   const { data: agency, isPending } = useAgency(id!);
   const { data: crawlRunsData } = useCrawlRuns({ agency_id: id!, limit: 5 });
+  const { data: scrapersData } = useScrapers({ source_agency_id: id!, limit: 5 });
   const updateAgency = useUpdateAgency();
   const updateVisibility = useUpdateAgencyVisibility();
   const deleteAgency = useDeleteAgency();
+  const updateTrackerAdminSettings = useUpdateTrackerAdminSettings();
 
   const crawlRuns = crawlRunsData?.data ?? [];
+  const scrapers = scrapersData?.data ?? [];
+  const trackedUsers = agency?.user_tracked_agencies ?? [];
 
   if (isPending || !agency) {
     return <DetailSkeleton fieldCount={6} showSubTable />;
@@ -36,6 +49,10 @@ export default function AgencyDetailPage() {
 
   const dependentCount = (agency._count?.scrapers ?? 0) + (agency._count?.crawl_runs ?? 0);
   const canDelete = dependentCount === 0;
+
+  const saveTrackerSettings = (userId: string, payload: UpdateTrackerAdminSettingsPayload) => {
+    updateTrackerAdminSettings.mutate({ agencyId: agency.id, userId, payload });
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -144,17 +161,74 @@ export default function AgencyDetailPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-border bg-surface p-6">
           <p className="mb-3 text-sm font-medium text-foreground">Tracked users</p>
-          <EmptyState>
-            <Users className="h-6 w-6 text-muted" />
-            <p className="text-sm text-muted mt-2">Coming in a later phase</p>
-          </EmptyState>
+          {trackedUsers.length === 0 ? (
+            <EmptyState>
+              <Users className="h-6 w-6 text-muted" />
+              <p className="text-sm text-muted mt-2">No users track this agency yet</p>
+            </EmptyState>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {trackedUsers.map((tracker) => (
+                <div
+                  key={tracker.id}
+                  className="flex flex-col gap-2 rounded-lg border border-border p-3"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      onClick={() => navigate(Routes.admin.users.detail(tracker.user.id))}
+                      className="text-sm text-accent hover:underline truncate text-left"
+                    >
+                      {tracker.user.email}
+                    </button>
+                    <Chip size="sm" variant="soft" color={tracker.enabled ? "success" : "default"}>
+                      {tracker.enabled ? "Enabled" : "Disabled"}
+                    </Chip>
+                  </div>
+                  {canEditTrackerSettings ? (
+                    <label className="flex flex-col gap-1">
+                      <span className="text-xs text-muted">Crawl interval</span>
+                      <input
+                        key={`${tracker.id}-${tracker.crawl_interval}`}
+                        className="rounded-lg border border-border bg-background px-2 py-1.5 font-mono text-xs"
+                        defaultValue={tracker.crawl_interval}
+                        disabled={updateTrackerAdminSettings.isPending}
+                        onBlur={(e) => {
+                          const value = e.target.value.trim();
+                          if (value && value !== tracker.crawl_interval) {
+                            saveTrackerSettings(tracker.user_id, { crawl_interval: value });
+                          }
+                        }}
+                      />
+                    </label>
+                  ) : (
+                    <span className="font-mono text-xs text-muted">{tracker.crawl_interval}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="rounded-xl border border-border bg-surface p-6">
           <p className="mb-3 text-sm font-medium text-foreground">Scrapers</p>
-          <EmptyState>
-            <Wrench className="h-6 w-6 text-muted" />
-            <p className="text-sm text-muted mt-2">Coming in a later phase</p>
-          </EmptyState>
+          {scrapers.length === 0 ? (
+            <EmptyState>
+              <Wrench className="h-6 w-6 text-muted" />
+              <p className="text-sm text-muted mt-2">No scrapers for this agency</p>
+            </EmptyState>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {scrapers.map((scraper) => (
+                <button
+                  key={scraper.id}
+                  onClick={() => navigate(Routes.admin.scrapers.detail(scraper.id))}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-left hover:border-accent/50 transition-colors"
+                >
+                  <span className="text-xs text-muted truncate">{scraper.name}</span>
+                  <ScraperStatusChip status={scraper.status} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="rounded-xl border border-border bg-surface p-6">
           <p className="mb-3 text-sm font-medium text-foreground">Recent crawl runs</p>

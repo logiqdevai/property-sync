@@ -60,6 +60,18 @@ export class AgenciesService {
                 _count: {
                     select: { scrapers: true, crawl_runs: true, notifications: true },
                 },
+                user_tracked_agencies: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                email: true,
+                                role: true,
+                            },
+                        },
+                    },
+                    orderBy: { created_at: 'desc' },
+                },
             },
         });
 

@@ -111,6 +111,7 @@ export const useUpdateTrackerAdminSettings = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["trackableAgencies"] });
       queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+      queryClient.invalidateQueries({ queryKey: ["agencies"] });
       toast({ title: "Tracker settings saved", duration: 2000, variant: "success" });
     },
     onError: (error: Error) => {

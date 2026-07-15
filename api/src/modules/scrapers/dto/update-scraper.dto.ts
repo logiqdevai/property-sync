@@ -1,7 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsObject, IsOptional } from 'class-validator';
+import { IsBoolean, IsEnum, IsObject, IsOptional } from 'class-validator';
+import { ScraperStatus } from 'generated/prisma';
 
 export class UpdateScraperDto {
+  @ApiProperty({
+    required: false,
+    enum: ScraperStatus,
+    description: 'Operational status of the scraper',
+  })
+  @IsOptional()
+  @IsEnum(ScraperStatus)
+  status?: ScraperStatus;
+
   @ApiProperty({
     required: false,
     description: 'Whether self-heal is allowed to auto-apply fixes',

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Modal, Switch, EmptyState, Select, ListBox, useOverlayState } from "@heroui/react";
+import { Modal, Switch, EmptyState, Select, ListBox, Label, useOverlayState } from "@heroui/react";
 import { ArrowLeft, Bot, Activity, History, Sparkles } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
@@ -17,7 +17,11 @@ import {
   useUpdateScraper,
 } from "@/features/scrapers/hooks/use-scrapers";
 import { parseOptionalJsonConfig } from "@/features/scrapers/validation-schemas/scrapers.schema";
-import { ScraperStatuses } from "@/features/scrapers/interfaces/scrapers.interfaces";
+import {
+  ScraperStatuses,
+  type ScraperStatus,
+} from "@/features/scrapers/interfaces/scrapers.interfaces";
+import { ScraperStatusFormOptions } from "@/config/constants/dropdowns/scraper-status-form.options";
 import { CreateGenerationRunForm } from "./components/create-generation-run-form";
 import { GenerationRunStatusChip } from "./components/generation-run-status-chip";
 import { GenerationRunTriggerChip } from "./components/generation-run-trigger-chip";
@@ -28,6 +32,7 @@ import {
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import { useCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
 import { formatDateTime } from "@/lib/date";
+import { formatDuration } from "@/lib/duration";
 
 export default function ScraperDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -112,6 +117,33 @@ export default function ScraperDetailPage() {
             {scraper.source_agency?.name ?? scraper.source_agency_id}
           </button>
         </div>
+        <Select
+          selectedKey={scraper.status}
+          isDisabled={updateScraper.isPending}
+          onSelectionChange={(key) => {
+            if (!key || key === scraper.status) return;
+            updateScraper.mutate({
+              id: scraper.id,
+              payload: { status: key as ScraperStatus },
+            });
+          }}
+          className="w-full"
+        >
+          <Label>Status</Label>
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {ScraperStatusFormOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
         <div className="flex flex-col gap-1">
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Active version</span>
           <span className="text-sm text-foreground">v{scraper.active_version?.version ?? "—"}</span>
@@ -125,7 +157,7 @@ export default function ScraperDetailPage() {
         <div className="flex flex-col gap-1">
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Avg runtime</span>
           <span className="text-sm text-foreground">
-            {scraper.avg_runtime_ms !== null ? `${scraper.avg_runtime_ms}ms` : "—"}
+            {formatDuration(scraper.avg_runtime_ms)}
           </span>
         </div>
         <div className="flex flex-col gap-1">

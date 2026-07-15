@@ -1,3 +1,26 @@
+export interface AgencyTrackedUser {
+  id: string;
+  user_id: string;
+  source_agency_id: string;
+  enabled: boolean;
+  crawl_interval: string;
+  concurrent_insertions: number;
+  insertion_interval_minutes: number;
+  track_new_listings: boolean;
+  track_removed_listings: boolean;
+  track_updated_listings: boolean;
+  use_ai_batching: boolean;
+  ai_provider: string;
+  ai_model: string | null;
+  created_at: string;
+  updated_at: string;
+  user: {
+    id: string;
+    email: string;
+    role: string;
+  };
+}
+
 export interface SourceAgency {
   id: string;
   name: string;
@@ -17,6 +40,7 @@ export interface SourceAgency {
     crawl_runs: number;
     notifications: number;
   };
+  user_tracked_agencies?: AgencyTrackedUser[];
 }
 
 export interface CreateAgencyPayload {

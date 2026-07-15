@@ -188,6 +188,7 @@ export class ScrapersService {
       return this.prisma.scraper.update({
         where: { id },
         data: {
+          ...(dto.status !== undefined && { status: dto.status }),
           ...(dto.self_healing_enabled !== undefined && {
             self_healing_enabled: dto.self_healing_enabled,
           }),
@@ -229,6 +230,7 @@ export class ScrapersService {
         data: {
           active_version_id: newVersion.id,
           version_count: { increment: 1 },
+          ...(dto.status !== undefined && { status: dto.status }),
           ...(dto.self_healing_enabled !== undefined && {
             self_healing_enabled: dto.self_healing_enabled,
           }),
