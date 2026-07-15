@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+test
+.env*
+!.env.template
+*.log
+.git
+.gitignore
+.cursor
+.vscode
+README.md
+**/*.md
+**/*.spec.ts
+**/__tests__
