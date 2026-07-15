@@ -62,7 +62,7 @@ export default function CrawlRunDetailPage() {
         <ActionButtonWithPending
           variant="secondary"
           isPending={rerun.isPending}
-          isDisabled={rerun.isPending}
+          isDisabled={rerun.isPending || isActive}
           onPress={() =>
             rerun.mutate(run.id, {
               onSuccess: (newRun) => navigate(Routes.admin.crawlRuns.detail(newRun.id)),
@@ -71,6 +71,37 @@ export default function CrawlRunDetailPage() {
         >
           Rerun
         </ActionButtonWithPending>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Found</span>
+          <span className="font-mono text-2xl font-bold text-foreground">{run.total_found}</span>
+        </div>
+        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Created</span>
+          <span className="font-mono text-2xl font-bold text-success">{run.total_created}</span>
+        </div>
+        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Updated</span>
+          <span className="font-mono text-2xl font-bold text-foreground">{run.total_updated}</span>
+        </div>
+        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Removed</span>
+          <span
+            className={`font-mono text-2xl font-bold ${run.total_removed > 0 ? "text-warning" : "text-foreground"}`}
+          >
+            {run.total_removed}
+          </span>
+        </div>
+        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Failed</span>
+          <span
+            className={`font-mono text-2xl font-bold ${run.total_failed > 0 ? "text-danger" : "text-foreground"}`}
+          >
+            {run.total_failed}
+          </span>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 rounded-xl border border-border bg-surface p-6">
@@ -112,13 +143,6 @@ export default function CrawlRunDetailPage() {
             {formatDateTime(run.started_at)} / {formatDateTime(run.finished_at)}
           </span>
         </div>
-        <div className="flex flex-col gap-1 sm:col-span-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted">Totals</span>
-          <span className="text-sm text-foreground font-mono">
-            found {run.total_found} · created {run.total_created} · updated {run.total_updated} ·
-            removed {run.total_removed} · failed {run.total_failed}
-          </span>
-        </div>
         {run.error_message && (
           <div className="flex flex-col gap-1 sm:col-span-2 lg:col-span-3">
             <span className="text-xs font-medium uppercase tracking-wide text-muted">Error</span>
@@ -134,14 +158,6 @@ export default function CrawlRunDetailPage() {
             <div>
               <span className="text-muted">Model</span>
               <p className="text-foreground">{run.ai_model ?? "—"}</p>
-            </div>
-            <div>
-              <span className="text-muted">Input tokens</span>
-              <p className="text-foreground">{run.ai_input_tokens ?? "—"}</p>
-            </div>
-            <div>
-              <span className="text-muted">Output tokens</span>
-              <p className="text-foreground">{run.ai_output_tokens ?? "—"}</p>
             </div>
             <div>
               <span className="text-muted">Input cost</span>

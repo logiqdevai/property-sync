@@ -22,6 +22,7 @@ import { UserPropertiesModule } from './modules/user-properties/user-properties.
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { IntegrationTargetsModule } from './modules/integration-targets/integration-targets.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { UserDashboardModule } from './modules/user-dashboard/user-dashboard.module';
 import { QueuesModule } from './core/queues/queues.module';
 import { ConfigModule } from './shared/config/env/env.module';
 
@@ -51,6 +52,7 @@ import { ConfigModule } from './shared/config/env/env.module';
     NotificationsModule,
     IntegrationTargetsModule,
     DashboardModule,
+    UserDashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

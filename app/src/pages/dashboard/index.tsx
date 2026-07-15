@@ -1,15 +1,19 @@
 import { useAuthStore } from "@/stores/auth";
-
-const stats = [
-  { label: "Total Properties", value: "—", accent: false },
-  { label: "Active Scrapers", value: "—", accent: false },
-  { label: "Imported Today", value: "—", accent: true },
-  { label: "Running Crawls", value: "—", accent: false },
-];
+import { useUserDashboard } from "@/features/user-dashboard/hooks/use-user-dashboard";
+import { formatPropertyHistoryLabel } from "@/features/properties/utils/format-property-history";
+import { formatDateTime } from "@/lib/date";
 
 export default function DashboardHome() {
   const { full_name, email } = useAuthStore();
   const displayName = full_name || email || "there";
+  const { data: dashboard, isPending } = useUserDashboard();
+
+  const stats = [
+    { label: "Total Properties", value: dashboard?.stats.total_properties, accent: false },
+    { label: "Active Listings", value: dashboard?.stats.active_properties, accent: false },
+    { label: "Added This Week", value: dashboard?.stats.properties_added_this_week, accent: true },
+    { label: "Tracked Agencies", value: dashboard?.stats.tracked_agencies, accent: false },
+  ];
 
   return (
     <div className="space-y-6">
@@ -39,7 +43,7 @@ export default function DashboardHome() {
               className="font-mono text-3xl font-bold"
               style={{ color: stat.accent ? "var(--tertiary)" : "var(--foreground)" }}
             >
-              {stat.value}
+              {isPending || stat.value == null ? "—" : stat.value}
             </p>
           </div>
         ))}
@@ -50,14 +54,32 @@ export default function DashboardHome() {
         style={{ boxShadow: "var(--shadow-1)" }}
       >
         <p className="mb-4 text-sm font-medium text-foreground">Recent Activity</p>
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-10 animate-pulse rounded-lg bg-surface-secondary"
-            />
-          ))}
-        </div>
+        {isPending ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-10 animate-pulse rounded-lg bg-surface-secondary" />
+            ))}
+          </div>
+        ) : !dashboard || dashboard.activity.length === 0 ? (
+          <p className="text-sm text-muted">No recent activity yet.</p>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {dashboard.activity.map((entry) => (
+              <li
+                key={entry.id}
+                className="flex items-start justify-between gap-3 text-sm border border-border rounded-lg p-3"
+              >
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium text-foreground">{entry.property_title}</span>
+                  <span className="text-muted">{formatPropertyHistoryLabel(entry)}</span>
+                </div>
+                <span className="text-xs text-muted whitespace-nowrap">
+                  {formatDateTime(entry.created_at)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

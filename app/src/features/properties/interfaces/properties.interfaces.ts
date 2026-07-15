@@ -63,6 +63,8 @@ export interface Property {
   floor: string | null;
   construction_year: number | null;
   duplicate_group_id: string | null;
+  features: string[] | null;
+  images: string[] | null;
   created_at: string;
   updated_at: string;
 }

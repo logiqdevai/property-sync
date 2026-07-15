@@ -15,10 +15,17 @@ interface DetailPageDef {
   external_id_selector?: string;
 }
 
+interface PaginationDef {
+  type?: string;
+  selector?: string;
+  url_param?: string;
+}
+
 interface ScraperDraftConfig {
   start_url: string;
   listing_selector: string;
   fields?: Record<string, string | FieldDef>;
+  pagination?: PaginationDef;
   detail_page?: DetailPageDef;
 }
 
@@ -121,6 +128,75 @@ export class ScraperConfigVerificationService {
         errors.push(
           `field "${field}": selector "${selector}" not found in first card — ${(e as Error).message.slice(0, 120)}`,
         );
+      }
+    }
+
+    const pagination = config.pagination;
+    if (
+      pagination &&
+      (pagination.type === 'next_button' || pagination.type === 'NEXT_BUTTON')
+    ) {
+      const sel = pagination.selector;
+      if (!sel) {
+        errors.push(
+          `pagination.type is "next_button" but pagination.selector is missing`,
+        );
+      } else {
+        try {
+          const beforeFirstHref = await firstCard
+            .locator('a')
+            .first()
+            .getAttribute('href')
+            .catch(() => null);
+
+          const nextControl = page.locator(sel).first();
+          const existsBefore = await nextControl.count().catch(() => 0);
+
+          if (!existsBefore) {
+            errors.push(
+              `pagination.selector "${sel}" matched 0 elements on the listings page`,
+            );
+          } else {
+            await nextControl.click({ timeout: 8000 });
+            await page
+              .waitForLoadState('domcontentloaded', { timeout: 20000 })
+              .catch(() => undefined);
+            await page.waitForTimeout(1500);
+
+            const afterFirstHref = await page
+              .locator(config.listing_selector)
+              .first()
+              .locator('a')
+              .first()
+              .getAttribute('href')
+              .catch(() => null);
+
+            if (afterFirstHref && afterFirstHref === beforeFirstHref) {
+              errors.push(
+                `pagination.selector "${sel}" was clicked but the listings did not change — it is not a working "next page" control`,
+              );
+            } else {
+              // The runtime crawler re-uses this exact selector to click through every
+              // remaining page, so it must still resolve after advancing once — this
+              // catches selectors tied to one specific page number (e.g. :has-text('2'))
+              // instead of a persistent "next" control.
+              const existsAfter = await page
+                .locator(sel)
+                .first()
+                .count()
+                .catch(() => 0);
+              if (!existsAfter) {
+                errors.push(
+                  `pagination.selector "${sel}" advanced to the next page but no longer matches anything there — it must be a persistent "next" control reusable on every page, not a link tied to one specific page number`,
+                );
+              }
+            }
+          }
+        } catch (e) {
+          errors.push(
+            `pagination.selector "${sel}" could not be clicked — ${(e as Error).message.slice(0, 120)}`,
+          );
+        }
       }
     }
 

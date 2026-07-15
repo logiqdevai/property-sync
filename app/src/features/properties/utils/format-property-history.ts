@@ -1,5 +1,10 @@
 import type { PropertyHistoryEntry } from "../interfaces/properties.interfaces";
 
+type PropertyHistoryLabelInput = Pick<
+  PropertyHistoryEntry,
+  "event_type" | "old_value" | "new_value"
+>;
+
 function formatValue(value: unknown): string {
   if (value == null) return "—";
   if (typeof value === "string" || typeof value === "number") return String(value);
@@ -7,7 +12,7 @@ function formatValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
-export function formatPropertyHistoryLabel(entry: PropertyHistoryEntry): string {
+export function formatPropertyHistoryLabel(entry: PropertyHistoryLabelInput): string {
   switch (entry.event_type) {
     case "CREATED":
       return "Property created from crawl";

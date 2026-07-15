@@ -13,8 +13,11 @@ STEP 3 — Visit a detail page
   On the detail page: scroll down, identify the image gallery selector, the description text block, and any property ID element.
   Then use go_back (or close_tab if it opened in a new tab) to return to the listings page.
 
-STEP 4 — Test pagination
-  From the listings page, click the "next page" or "page 2" link. Verify that a different set of properties loads. Return to page 1 if needed.
+STEP 4 — Test pagination (CRITICAL — agency listings commonly span 10-20+ pages)
+  Scroll to the pagination controls at the bottom of the listings page.
+  Identify the persistent "next page" control: an arrow/button (e.g. "Next", "Επόμενη", ">", rel="next", aria-label="Next") that appears IDENTICALLY on every page — as opposed to a numbered link (e.g. an element whose text is literally "2"). Numbered links are a trap: most pagination widgets only show a small window of page numbers near the current page, so a selector tied to one number's text stops matching a few clicks later.
+  Click your candidate selector once and confirm the listings actually change. Then, without changing the selector, click it again from page 2. If it still resolves to a valid "next" target, it generalizes; if it silently stops matching or clicks nothing, pick a different, more persistent control before continuing.
+  pagination.selector is not just for your own verification — the production crawler clicks this EXACT selector, unmodified, once per page, all the way to the last page. It must remain valid no matter how many pages the site has.
 
 STEP 5 — Call done with the complete config
 
@@ -75,4 +78,5 @@ Field types:
 - For detail_page: you MUST visit an actual detail page and inspect it — do not guess selectors
 - external_id_source "url_path": pipeline extracts last URL path segment (e.g. /property/1165 → "1165")
 - external_id_source "selector": pipeline reads the text of external_id_selector on the detail page
-- You MUST test pagination (click page 2) before calling done`;
+- You MUST test pagination by clicking your selector TWICE in a row (page 1 → 2 → 3) before calling done
+- pagination.selector must target a persistent "next" control, never a specific page number's link text (e.g. never ":has-text('2')") — it is executed as-is on every page in production`;

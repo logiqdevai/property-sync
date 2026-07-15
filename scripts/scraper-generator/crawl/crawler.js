@@ -107,24 +107,47 @@ export async function runCrawl(config) {
       let advanced = false;
 
       if (pagination.type === 'next_button' || pagination.type === 'NEXT_BUTTON') {
-        const activePage = await page.evaluate(() => {
-          const el = document.querySelector('.page-item.active .page-link, .pagination .active a, .page-item.active a');
-          return el ? parseInt(el.textContent.trim(), 10) : 1;
-        });
-        const nextPageNum = isNaN(activePage) ? null : activePage + 1;
+        // Prefer the AI-verified selector for the persistent "next" control. It was
+        // confirmed during generation to still resolve after advancing at least once,
+        // so it generalizes to sites with many pages (unlike matching page numbers by
+        // literal text, which breaks once the current page scrolls out of a windowed
+        // pagination widget).
+        if (pagination.selector) {
+          const nextControl = page.locator(pagination.selector).first();
+          const exists = await nextControl.count().catch(() => 0);
+          if (!exists) { log('pagination_end', { reason: 'next_selector_not_found' }); break; }
+          const visible = await nextControl.isVisible().catch(() => false);
+          const disabled = await nextControl.isDisabled().catch(() => false);
+          if (!visible || disabled) { log('pagination_end', { reason: 'next_selector_not_clickable' }); break; }
 
-        if (!nextPageNum) { log('pagination_end', { reason: 'cannot_detect_active_page' }); break; }
+          await nextControl.click({ timeout: 8000 });
+          await page.waitForLoadState('domcontentloaded', { timeout: PAGE_TIMEOUT_MS }).catch(() => {});
+          await page.waitForTimeout(2000);
 
-        const nextPageLink = page.locator('.page-item .page-link, .pagination a').filter({ hasText: new RegExp(`^${nextPageNum}$`) }).first();
-        const exists = await nextPageLink.count().catch(() => 0);
-        if (!exists) { log('pagination_end', { reason: `no_page_link_for_page_${nextPageNum}` }); break; }
+          log('clicked_next', { url: page.url() });
+          advanced = true;
+        } else {
+          // Legacy fallback for configs generated before pagination.selector was
+          // required: guess a Bootstrap-style numbered pagination widget.
+          const activePage = await page.evaluate(() => {
+            const el = document.querySelector('.page-item.active .page-link, .pagination .active a, .page-item.active a');
+            return el ? parseInt(el.textContent.trim(), 10) : 1;
+          });
+          const nextPageNum = isNaN(activePage) ? null : activePage + 1;
 
-        await nextPageLink.click({ timeout: 8000 });
-        await page.waitForLoadState('domcontentloaded', { timeout: PAGE_TIMEOUT_MS }).catch(() => {});
-        await page.waitForTimeout(2000);
+          if (!nextPageNum) { log('pagination_end', { reason: 'cannot_detect_active_page' }); break; }
 
-        log('clicked_page', { page: nextPageNum, url: page.url() });
-        advanced = true;
+          const nextPageLink = page.locator('.page-item .page-link, .pagination a').filter({ hasText: new RegExp(`^${nextPageNum}$`) }).first();
+          const exists = await nextPageLink.count().catch(() => 0);
+          if (!exists) { log('pagination_end', { reason: `no_page_link_for_page_${nextPageNum}` }); break; }
+
+          await nextPageLink.click({ timeout: 8000 });
+          await page.waitForLoadState('domcontentloaded', { timeout: PAGE_TIMEOUT_MS }).catch(() => {});
+          await page.waitForTimeout(2000);
+
+          log('clicked_page', { page: nextPageNum, url: page.url() });
+          advanced = true;
+        }
       } else if (pagination.type === 'load_more' || pagination.type === 'LOAD_MORE') {
         const btn = page.locator(pagination.selector).first();
         const visible = await btn.isVisible().catch(() => false);

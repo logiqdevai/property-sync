@@ -189,6 +189,47 @@ export default function DashboardPropertyDetailPage() {
       </form>
 
       <section className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
+        <h2 className="text-sm font-semibold text-foreground">Images</h2>
+        {!property.images || property.images.length === 0 ? (
+          <p className="text-sm text-muted">No images yet.</p>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {property.images.map((src, index) => (
+              <a
+                key={src}
+                href={src}
+                target="_blank"
+                rel="noreferrer"
+                className="block aspect-square overflow-hidden rounded-lg border border-border"
+              >
+                <img
+                  src={src}
+                  alt={`${property.title} photo ${index + 1}`}
+                  loading="lazy"
+                  className="size-full object-cover"
+                />
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
+        <h2 className="text-sm font-semibold text-foreground">Features</h2>
+        {!property.features || property.features.length === 0 ? (
+          <p className="text-sm text-muted">No features listed.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {property.features.map((feature) => (
+              <Chip key={feature} size="sm" variant="soft">
+                <Chip.Label>{feature}</Chip.Label>
+              </Chip>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
         <h2 className="text-sm font-semibold text-foreground">History</h2>
         {property.history.length === 0 ? (
           <p className="text-sm text-muted">No history yet.</p>

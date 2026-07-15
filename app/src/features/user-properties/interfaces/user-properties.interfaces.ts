@@ -24,6 +24,8 @@ export interface UserProperty {
   bathrooms: number | null;
   floor: string | null;
   construction_year: number | null;
+  features: string[] | null;
+  images: string[] | null;
   is_modified: boolean;
   last_synced_at: string | null;
   created_at: string;

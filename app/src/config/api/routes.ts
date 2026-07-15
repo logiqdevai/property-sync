@@ -112,4 +112,7 @@ export const ApiRoutes = {
         detail: (id: string) => `/properties/${id}`,
         resync: (id: string) => `/properties/${id}/resync`,
     },
+    dashboard: {
+        root: "/dashboard",
+    },
 }

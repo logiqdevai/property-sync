@@ -198,6 +198,35 @@ export class CrawlerService {
       pagination.type === 'next_button' ||
       pagination.type === 'NEXT_BUTTON'
     ) {
+      // Prefer the AI-verified selector for the persistent "next" control. It was
+      // confirmed during generation to still resolve after advancing at least once,
+      // so it generalizes to sites with many pages (unlike matching page numbers by
+      // literal text, which breaks once the current page scrolls out of a windowed
+      // pagination widget).
+      if (pagination.selector) {
+        const nextControl = page.locator(pagination.selector).first();
+        const exists = await nextControl.count().catch(() => 0);
+        if (!exists) {
+          log('pagination_end', { reason: 'next_selector_not_found' });
+          return false;
+        }
+        const visible = await nextControl.isVisible().catch(() => false);
+        const disabled = await nextControl.isDisabled().catch(() => false);
+        if (!visible || disabled) {
+          log('pagination_end', { reason: 'next_selector_not_clickable' });
+          return false;
+        }
+        await nextControl.click({ timeout: 8000 });
+        await page
+          .waitForLoadState('domcontentloaded', { timeout: PAGE_TIMEOUT_MS })
+          .catch(() => undefined);
+        await page.waitForTimeout(2000);
+        log('clicked_next', { url: page.url() });
+        return true;
+      }
+
+      // Legacy fallback for configs generated before pagination.selector was
+      // required: guess a Bootstrap-style numbered pagination widget.
       const activePage = await page.evaluate(() => {
         const el = document.querySelector(
           '.page-item.active .page-link, .pagination .active a, .page-item.active a',
