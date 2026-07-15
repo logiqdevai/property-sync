@@ -106,6 +106,10 @@ export const ApiRoutes = {
         track: (agencyId: string) => `/agencies/${agencyId}/track`,
         integrationLink: (agencyId: string) => `/agencies/${agencyId}/track/integration`,
     },
+    crawlRuns: {
+        prefix: "/crawl-runs",
+        list: "/crawl-runs",
+    },
     userProperties: {
         prefix: "/properties",
         list: "/properties",

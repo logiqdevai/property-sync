@@ -99,3 +99,12 @@ export interface PaginatedResponse<T> {
 export interface CrawlRunListResponse extends PaginatedResponse<CrawlRun> {
   total_cost: string | null;
 }
+
+export interface UserCrawlRunListQuery {
+  page?: number;
+  limit?: number;
+  status?: CrawlRunStatus;
+  user_tracked_agency_id?: string;
+  date_from?: string;
+  date_to?: string;
+}

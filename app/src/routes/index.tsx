@@ -26,6 +26,7 @@ import DashboardAgenciesPage from "@/pages/dashboard/agencies";
 import DashboardPropertiesListPage from "@/pages/dashboard/properties";
 import DashboardPropertyDetailPage from "@/pages/dashboard/properties/detail";
 import DashboardIntegrationsPage from "@/pages/dashboard/integrations";
+import DashboardCrawlRunsPage from "@/pages/dashboard/crawl-runs";
 import DashboardAccountPage from "@/pages/dashboard/account";
 import IntegrationTargetsListPage from "@/pages/admin/integration-targets";
 import IntegrationTargetDetailPage from "@/pages/admin/integration-targets/detail";
@@ -66,6 +67,7 @@ export default function AppRoutes() {
         <Route path="properties" element={<DashboardPropertiesListPage />} />
         <Route path="properties/:id" element={<DashboardPropertyDetailPage />} />
         <Route path="integrations" element={<DashboardIntegrationsPage />} />
+        <Route path="crawl-runs" element={<DashboardCrawlRunsPage />} />
         <Route path="account" element={<DashboardAccountPage />} />
       </Route>
 

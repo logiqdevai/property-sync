@@ -28,3 +28,14 @@ export const CrawlRunQuerySchema = z.object({
 });
 
 export type CrawlRunQueryType = z.infer<typeof CrawlRunQuerySchema>;
+
+export const UserCrawlRunQuerySchema = CrawlRunQuerySchema.pick({
+  page: true,
+  limit: true,
+  status: true,
+  user_tracked_agency_id: true,
+  date_from: true,
+  date_to: true,
+});
+
+export type UserCrawlRunQueryType = z.infer<typeof UserCrawlRunQuerySchema>;
