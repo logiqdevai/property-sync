@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Form, Modal, Switch, useOverlayState, Chip } from "@heroui/react";
+import { Form, Modal, useOverlayState } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import { Skeleton } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -31,8 +31,9 @@ import { getIntegrationTypeDescription } from "@/config/constants/dropdowns/inte
 import { getAuthTypeLabel } from "@/config/constants/dropdowns/auth-type-form.options";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { LinkConnectionToAgencyModal } from "./components/link-connection-to-agency-modal";
-import { RoleGate } from "@/components/providers/role-gate";
-import { RoleTypes } from "@/features/user/interfaces/user.interface";
+import { AllConnectionsModal } from "./components/all-connections-modal";
+import { IntegrationConnectionItem } from "./components/integration-connection-item";
+import { cn } from "@/lib/utils";
 
 const VIEW_ONLY_INTEGRATION_MESSAGE =
   "View only — changes are disabled for this integration";
@@ -55,6 +56,7 @@ function TargetCard({
   onDisconnectRequest,
   onToggleActive,
   onSetDefault,
+  onShowAll,
   isPending,
 }: {
   target: AvailableIntegrationTarget;
@@ -64,6 +66,7 @@ function TargetCard({
   onDisconnectRequest: (connection: MaskedUserIntegrationConnection) => void;
   onToggleActive: (connection: MaskedUserIntegrationConnection, next: boolean) => void;
   onSetDefault: (connection: MaskedUserIntegrationConnection) => void;
+  onShowAll: (target: AvailableIntegrationTarget) => void;
   isPending: boolean;
 }) {
   const targetConnections = connections.filter(
@@ -93,76 +96,41 @@ function TargetCard({
 
       {targetConnections.length > 0 && (
         <div className="flex flex-col gap-3 border-t border-border pt-4">
-          {targetConnections.map((connection) => {
-            const activeSwitch = (
-              <Switch
-                isSelected={connection.is_active}
-                isDisabled={isReadOnly || isPending}
-                onChange={(next) => onToggleActive(connection, next)}
+          {target.allow_multiple ? (
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm text-muted">
+                {targetConnections.length} connected account{targetConnections.length === 1 ? "" : "s"}
+              </p>
+              <ActionButtonWithPending
+                size="sm"
+                variant="secondary"
+                onPress={() => onShowAll(target)}
+                isDisabled={isPending}
               >
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
-                <Switch.Content>{connection.is_active ? "Active" : "Disabled"}</Switch.Content>
-              </Switch>
-            );
-
-            return (
-            <div key={connection.id} className="flex flex-col gap-2 rounded-lg bg-surface-secondary p-3">
-              <CredentialStatusIndicators
-                hasApiKey={connection.has_api_key_secret}
-                hasPassword={connection.has_password}
-                hasConfig={connection.has_config}
-                email={connection.email}
-                username={connection.username}
-              />
-              {target.allow_multiple && connection.is_default ? (
-                <Chip size="sm" variant="soft" color="accent">
-                  <Chip.Label>Default</Chip.Label>
-                </Chip>
-              ) : null}
-              <div className="flex items-center justify-between gap-2">
-                {target.integration_type === IntegrationTypes.ESTATEWEB ? (
-                  <RoleGate roles={[RoleTypes.ADMIN]}>{activeSwitch}</RoleGate>
-                ) : (
-                  activeSwitch
-                )}
-                <div className="flex flex-wrap gap-2">
-                  {target.allow_multiple && !connection.is_default ? (
-                    <RoleGate roles={[RoleTypes.ADMIN]}>
-                      <ActionButtonWithPending
-                        size="sm"
-                        variant="secondary"
-                        onPress={() => onSetDefault(connection)}
-                        isDisabled={isReadOnly || isPending}
-                      >
-                        Set as default
-                      </ActionButtonWithPending>
-                    </RoleGate>
-                  ) : null}
-                  <ActionButtonWithPending
-                    size="sm"
-                    variant="secondary"
-                    onPress={() => onEdit(connection)}
-                    isDisabled={isPending}
-                  >
-                    {isReadOnly ? "View" : "Edit"}
-                  </ActionButtonWithPending>
-                  {!isReadOnly ? (
-                    <ActionButtonWithPending
-                      size="sm"
-                      variant="danger"
-                      onPress={() => onDisconnectRequest(connection)}
-                      isDisabled={isPending}
-                    >
-                      Disconnect
-                    </ActionButtonWithPending>
-                  ) : null}
-                </div>
-              </div>
+                Show all
+              </ActionButtonWithPending>
             </div>
-            );
-          })}
+          ) : null}
+          <div
+            className={cn(
+              "flex flex-col gap-3",
+              target.allow_multiple && "max-h-72 min-h-0 overflow-y-auto pr-1",
+            )}
+          >
+            {targetConnections.map((connection) => (
+              <IntegrationConnectionItem
+                key={connection.id}
+                connection={connection}
+                target={target}
+                isReadOnly={isReadOnly}
+                isPending={isPending}
+                onEdit={onEdit}
+                onDisconnectRequest={onDisconnectRequest}
+                onToggleActive={onToggleActive}
+                onSetDefault={onSetDefault}
+              />
+            ))}
+          </div>
         </div>
       )}
     </article>
@@ -174,8 +142,10 @@ export default function DashboardIntegrationsPage() {
   const editModal = useOverlayState();
   const disconnectConfirm = useOverlayState();
   const linkAgencyModal = useOverlayState();
+  const showAllModal = useOverlayState();
 
   const [selectedTarget, setSelectedTarget] = useState<AvailableIntegrationTarget | null>(null);
+  const [showAllTarget, setShowAllTarget] = useState<AvailableIntegrationTarget | null>(null);
   const [editingConnection, setEditingConnection] = useState<MaskedUserIntegrationConnection | null>(
     null,
   );
@@ -247,6 +217,21 @@ export default function DashboardIntegrationsPage() {
     setDisconnectingConnection(connection);
     disconnectConfirm.open();
   };
+
+  const openShowAll = (target: AvailableIntegrationTarget) => {
+    setShowAllTarget(target);
+    showAllModal.open();
+  };
+
+  const showAllConnections = useMemo(() => {
+    if (!showAllTarget) {
+      return [];
+    }
+
+    return connections.filter(
+      (connection) => connection.integration_target_id === showAllTarget.id,
+    );
+  }, [connections, showAllTarget]);
 
   const submitConnect = connectForm.handleSubmit((values) => {
     if (!selectedTarget) {
@@ -337,6 +322,7 @@ export default function DashboardIntegrationsPage() {
               onSetDefault={(connection) =>
                 updateDefault.mutate({ id: connection.id, isDefault: true })
               }
+              onShowAll={openShowAll}
               isPending={isPending}
             />
           ))}
@@ -464,6 +450,21 @@ export default function DashboardIntegrationsPage() {
         state={linkAgencyModal}
         connectionId={pendingLinkConnectionId}
         onClose={() => setPendingLinkConnectionId(null)}
+      />
+
+      <AllConnectionsModal
+        state={showAllModal}
+        target={showAllTarget}
+        connections={showAllConnections}
+        isPending={isPending}
+        onEdit={openEdit}
+        onDisconnectRequest={openDisconnect}
+        onToggleActive={(connection, next) =>
+          updateStatus.mutate({ id: connection.id, isActive: next })
+        }
+        onSetDefault={(connection) =>
+          updateDefault.mutate({ id: connection.id, isDefault: true })
+        }
       />
     </div>
   );
