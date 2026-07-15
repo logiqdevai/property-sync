@@ -29,6 +29,7 @@ export interface TrackableAgency {
   is_visible: boolean;
   is_enabled: boolean;
   is_tracked: boolean;
+  user_tracked_agency_id: string | null;
   tracking_prefs?: TrackingPrefs;
 }
 

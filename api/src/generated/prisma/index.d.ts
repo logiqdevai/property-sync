@@ -16967,6 +16967,7 @@ export namespace Prisma {
   }
 
   export type CrawlRunAvgAggregateOutputType = {
+    duration_ms: number | null
     total_found: number | null
     total_created: number | null
     total_updated: number | null
@@ -16981,6 +16982,7 @@ export namespace Prisma {
   }
 
   export type CrawlRunSumAggregateOutputType = {
+    duration_ms: number | null
     total_found: number | null
     total_created: number | null
     total_updated: number | null
@@ -17002,6 +17004,7 @@ export namespace Prisma {
     status: $Enums.CrawlRunStatus | null
     started_at: Date | null
     finished_at: Date | null
+    duration_ms: number | null
     total_found: number | null
     total_created: number | null
     total_updated: number | null
@@ -17027,6 +17030,7 @@ export namespace Prisma {
     status: $Enums.CrawlRunStatus | null
     started_at: Date | null
     finished_at: Date | null
+    duration_ms: number | null
     total_found: number | null
     total_created: number | null
     total_updated: number | null
@@ -17052,6 +17056,7 @@ export namespace Prisma {
     status: number
     started_at: number
     finished_at: number
+    duration_ms: number
     total_found: number
     total_created: number
     total_updated: number
@@ -17073,6 +17078,7 @@ export namespace Prisma {
 
 
   export type CrawlRunAvgAggregateInputType = {
+    duration_ms?: true
     total_found?: true
     total_created?: true
     total_updated?: true
@@ -17087,6 +17093,7 @@ export namespace Prisma {
   }
 
   export type CrawlRunSumAggregateInputType = {
+    duration_ms?: true
     total_found?: true
     total_created?: true
     total_updated?: true
@@ -17108,6 +17115,7 @@ export namespace Prisma {
     status?: true
     started_at?: true
     finished_at?: true
+    duration_ms?: true
     total_found?: true
     total_created?: true
     total_updated?: true
@@ -17133,6 +17141,7 @@ export namespace Prisma {
     status?: true
     started_at?: true
     finished_at?: true
+    duration_ms?: true
     total_found?: true
     total_created?: true
     total_updated?: true
@@ -17158,6 +17167,7 @@ export namespace Prisma {
     status?: true
     started_at?: true
     finished_at?: true
+    duration_ms?: true
     total_found?: true
     total_created?: true
     total_updated?: true
@@ -17271,6 +17281,7 @@ export namespace Prisma {
     status: $Enums.CrawlRunStatus
     started_at: Date | null
     finished_at: Date | null
+    duration_ms: number | null
     total_found: number
     total_created: number
     total_updated: number
@@ -17316,6 +17327,7 @@ export namespace Prisma {
     status?: boolean
     started_at?: boolean
     finished_at?: boolean
+    duration_ms?: boolean
     total_found?: boolean
     total_created?: boolean
     total_updated?: boolean
@@ -17350,6 +17362,7 @@ export namespace Prisma {
     status?: boolean
     started_at?: boolean
     finished_at?: boolean
+    duration_ms?: boolean
     total_found?: boolean
     total_created?: boolean
     total_updated?: boolean
@@ -17379,6 +17392,7 @@ export namespace Prisma {
     status?: boolean
     started_at?: boolean
     finished_at?: boolean
+    duration_ms?: boolean
     total_found?: boolean
     total_created?: boolean
     total_updated?: boolean
@@ -17408,6 +17422,7 @@ export namespace Prisma {
     status?: boolean
     started_at?: boolean
     finished_at?: boolean
+    duration_ms?: boolean
     total_found?: boolean
     total_created?: boolean
     total_updated?: boolean
@@ -17426,7 +17441,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type CrawlRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "scraper_id" | "user_tracked_agency_id" | "status" | "started_at" | "finished_at" | "total_found" | "total_created" | "total_updated" | "total_removed" | "total_failed" | "error_message" | "metadata" | "ai_model" | "ai_input_tokens" | "ai_output_tokens" | "ai_input_cost" | "ai_output_cost" | "ai_total_cost" | "ai_average_cost_per_property" | "created_at" | "updated_at", ExtArgs["result"]["crawlRun"]>
+  export type CrawlRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "scraper_id" | "user_tracked_agency_id" | "status" | "started_at" | "finished_at" | "duration_ms" | "total_found" | "total_created" | "total_updated" | "total_removed" | "total_failed" | "error_message" | "metadata" | "ai_model" | "ai_input_tokens" | "ai_output_tokens" | "ai_input_cost" | "ai_output_cost" | "ai_total_cost" | "ai_average_cost_per_property" | "created_at" | "updated_at", ExtArgs["result"]["crawlRun"]>
   export type CrawlRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     user_tracked_agency?: boolean | CrawlRun$user_tracked_agencyArgs<ExtArgs>
@@ -17467,6 +17482,7 @@ export namespace Prisma {
       status: $Enums.CrawlRunStatus
       started_at: Date | null
       finished_at: Date | null
+      duration_ms: number | null
       total_found: number
       total_created: number
       total_updated: number
@@ -17920,6 +17936,7 @@ export namespace Prisma {
     readonly status: FieldRef<"CrawlRun", 'CrawlRunStatus'>
     readonly started_at: FieldRef<"CrawlRun", 'DateTime'>
     readonly finished_at: FieldRef<"CrawlRun", 'DateTime'>
+    readonly duration_ms: FieldRef<"CrawlRun", 'Int'>
     readonly total_found: FieldRef<"CrawlRun", 'Int'>
     readonly total_created: FieldRef<"CrawlRun", 'Int'>
     readonly total_updated: FieldRef<"CrawlRun", 'Int'>
@@ -29995,6 +30012,7 @@ export namespace Prisma {
     status: 'status',
     started_at: 'started_at',
     finished_at: 'finished_at',
+    duration_ms: 'duration_ms',
     total_found: 'total_found',
     total_created: 'total_created',
     total_updated: 'total_updated',
@@ -31668,6 +31686,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFilter<"CrawlRun"> | $Enums.CrawlRunStatus
     started_at?: DateTimeNullableFilter<"CrawlRun"> | Date | string | null
     finished_at?: DateTimeNullableFilter<"CrawlRun"> | Date | string | null
+    duration_ms?: IntNullableFilter<"CrawlRun"> | number | null
     total_found?: IntFilter<"CrawlRun"> | number
     total_created?: IntFilter<"CrawlRun"> | number
     total_updated?: IntFilter<"CrawlRun"> | number
@@ -31701,6 +31720,7 @@ export namespace Prisma {
     status?: SortOrder
     started_at?: SortOrderInput | SortOrder
     finished_at?: SortOrderInput | SortOrder
+    duration_ms?: SortOrderInput | SortOrder
     total_found?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
@@ -31737,6 +31757,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFilter<"CrawlRun"> | $Enums.CrawlRunStatus
     started_at?: DateTimeNullableFilter<"CrawlRun"> | Date | string | null
     finished_at?: DateTimeNullableFilter<"CrawlRun"> | Date | string | null
+    duration_ms?: IntNullableFilter<"CrawlRun"> | number | null
     total_found?: IntFilter<"CrawlRun"> | number
     total_created?: IntFilter<"CrawlRun"> | number
     total_updated?: IntFilter<"CrawlRun"> | number
@@ -31770,6 +31791,7 @@ export namespace Prisma {
     status?: SortOrder
     started_at?: SortOrderInput | SortOrder
     finished_at?: SortOrderInput | SortOrder
+    duration_ms?: SortOrderInput | SortOrder
     total_found?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
@@ -31804,6 +31826,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusWithAggregatesFilter<"CrawlRun"> | $Enums.CrawlRunStatus
     started_at?: DateTimeNullableWithAggregatesFilter<"CrawlRun"> | Date | string | null
     finished_at?: DateTimeNullableWithAggregatesFilter<"CrawlRun"> | Date | string | null
+    duration_ms?: IntNullableWithAggregatesFilter<"CrawlRun"> | number | null
     total_found?: IntWithAggregatesFilter<"CrawlRun"> | number
     total_created?: IntWithAggregatesFilter<"CrawlRun"> | number
     total_updated?: IntWithAggregatesFilter<"CrawlRun"> | number
@@ -33959,6 +33982,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -33992,6 +34016,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -34019,6 +34044,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -34052,6 +34078,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -34082,6 +34109,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -34105,6 +34133,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -34131,6 +34160,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -36534,6 +36564,7 @@ export namespace Prisma {
     status?: SortOrder
     started_at?: SortOrder
     finished_at?: SortOrder
+    duration_ms?: SortOrder
     total_found?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
@@ -36553,6 +36584,7 @@ export namespace Prisma {
   }
 
   export type CrawlRunAvgOrderByAggregateInput = {
+    duration_ms?: SortOrder
     total_found?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
@@ -36574,6 +36606,7 @@ export namespace Prisma {
     status?: SortOrder
     started_at?: SortOrder
     finished_at?: SortOrder
+    duration_ms?: SortOrder
     total_found?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
@@ -36599,6 +36632,7 @@ export namespace Prisma {
     status?: SortOrder
     started_at?: SortOrder
     finished_at?: SortOrder
+    duration_ms?: SortOrder
     total_found?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
@@ -36617,6 +36651,7 @@ export namespace Prisma {
   }
 
   export type CrawlRunSumOrderByAggregateInput = {
+    duration_ms?: SortOrder
     total_found?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
@@ -40758,6 +40793,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -40789,6 +40825,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -41021,6 +41058,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFilter<"CrawlRun"> | $Enums.CrawlRunStatus
     started_at?: DateTimeNullableFilter<"CrawlRun"> | Date | string | null
     finished_at?: DateTimeNullableFilter<"CrawlRun"> | Date | string | null
+    duration_ms?: IntNullableFilter<"CrawlRun"> | number | null
     total_found?: IntFilter<"CrawlRun"> | number
     total_created?: IntFilter<"CrawlRun"> | number
     total_updated?: IntFilter<"CrawlRun"> | number
@@ -41193,6 +41231,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -41224,6 +41263,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -41661,6 +41701,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -41692,6 +41733,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -42965,6 +43007,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -42997,6 +43040,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -43094,6 +43138,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -43126,6 +43171,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -43695,6 +43741,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -43727,6 +43774,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -43769,6 +43817,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -43801,6 +43850,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -43925,6 +43975,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -43957,6 +44008,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -44109,6 +44161,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -44141,6 +44194,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -45053,6 +45107,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -45085,6 +45140,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -45202,6 +45258,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -45234,6 +45291,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -46064,6 +46122,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -46284,6 +46343,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -46315,6 +46375,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -46344,6 +46405,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -46464,6 +46526,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -46487,6 +46550,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -46518,6 +46582,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -46547,6 +46612,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -46572,6 +46638,7 @@ export namespace Prisma {
     status?: $Enums.CrawlRunStatus
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     total_found?: number
     total_created?: number
     total_updated?: number
@@ -46643,6 +46710,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -46674,6 +46742,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
@@ -46703,6 +46772,7 @@ export namespace Prisma {
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number

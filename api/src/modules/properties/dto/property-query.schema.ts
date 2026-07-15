@@ -24,6 +24,7 @@ export const PropertyQuerySchema = z.object({
     .transform((v) => (v ? parseFloat(v) : undefined)),
   duplicate_group_id: z.string().uuid().optional(),
   search: z.string().optional(),
+  agency_id: z.string().uuid().optional(),
 });
 
 export type PropertyQueryType = z.infer<typeof PropertyQuerySchema>;

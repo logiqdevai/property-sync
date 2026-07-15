@@ -115,6 +115,7 @@ export interface PropertyListQuery {
   price_max?: number;
   duplicate_group_id?: string;
   search?: string;
+  agency_id?: string;
 }
 
 export interface PaginatedResponse<T> {

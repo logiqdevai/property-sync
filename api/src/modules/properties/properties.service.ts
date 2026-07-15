@@ -37,6 +37,13 @@ export class PropertiesService {
             },
           }
         : {}),
+      ...(query.agency_id && {
+        source_links: {
+          some: {
+            source_property: { source_agency_id: query.agency_id },
+          },
+        },
+      }),
     };
 
     const [items, total] = await Promise.all([

@@ -27,8 +27,6 @@ import DashboardPropertiesListPage from "@/pages/dashboard/properties";
 import DashboardPropertyDetailPage from "@/pages/dashboard/properties/detail";
 import DashboardIntegrationsPage from "@/pages/dashboard/integrations";
 import DashboardAccountPage from "@/pages/dashboard/account";
-import DashboardUsagePage from "@/pages/dashboard/usage";
-import AdminUsagePage from "@/pages/admin/usage";
 import IntegrationTargetsListPage from "@/pages/admin/integration-targets";
 import IntegrationTargetDetailPage from "@/pages/admin/integration-targets/detail";
 import AdminUsersListPage from "@/pages/admin/users";
@@ -68,7 +66,6 @@ export default function AppRoutes() {
         <Route path="properties" element={<DashboardPropertiesListPage />} />
         <Route path="properties/:id" element={<DashboardPropertyDetailPage />} />
         <Route path="integrations" element={<DashboardIntegrationsPage />} />
-        <Route path="usage" element={<DashboardUsagePage />} />
         <Route path="account" element={<DashboardAccountPage />} />
       </Route>
 
@@ -104,7 +101,6 @@ export default function AppRoutes() {
         <Route path="integration-targets/:id" element={<IntegrationTargetDetailPage />} />
         <Route path="users" element={<AdminUsersListPage />} />
         <Route path="users/:id" element={<AdminUserDetailPage />} />
-        <Route path="usage" element={<AdminUsagePage />} />
       </Route>
 
       {/* Default redirect */}

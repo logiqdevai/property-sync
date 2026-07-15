@@ -12,6 +12,7 @@ import {
 import { JobStatusChip } from "./components/job-status-chip";
 import type { JobStatus } from "@/features/jobs/interfaces/jobs.interfaces";
 import { formatDateTime } from "@/lib/date";
+import { formatDuration } from "@/lib/duration";
 
 const ACTIVE_STATUSES: CrawlRunStatus[] = [
   CrawlRunStatuses.QUEUED,
@@ -143,6 +144,10 @@ export default function CrawlRunDetailPage() {
             {formatDateTime(run.started_at)} / {formatDateTime(run.finished_at)}
           </span>
         </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Duration</span>
+          <span className="text-sm text-foreground">{formatDuration(run.duration_ms)}</span>
+        </div>
         {run.error_message && (
           <div className="flex flex-col gap-1 sm:col-span-2 lg:col-span-3">
             <span className="text-xs font-medium uppercase tracking-wide text-muted">Error</span>
@@ -220,7 +225,7 @@ export default function CrawlRunDetailPage() {
                   <span className="text-xs text-muted">
                     attempt {job.attempt}
                     {job.max_attempts !== null ? ` / ${job.max_attempts}` : ""}
-                    {job.duration_ms !== null ? ` · ${job.duration_ms}ms` : ""}
+                    {job.duration_ms !== null ? ` · ${formatDuration(job.duration_ms)}` : ""}
                   </span>
                 </div>
                 <JobStatusChip status={job.status as JobStatus} />

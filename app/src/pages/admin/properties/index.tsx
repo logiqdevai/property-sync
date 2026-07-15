@@ -16,6 +16,7 @@ import {
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
 import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/listing-type-filter.options";
 import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/property-type-filter.options";
+import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 
 export default function PropertiesListPage() {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export default function PropertiesListPage() {
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [search, setSearch] = useState("");
+  const [agencyId, setAgencyId] = useState<string | "all">("all");
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -42,15 +44,18 @@ export default function PropertiesListPage() {
       ...(priceMin && { price_min: Number(priceMin) }),
       ...(priceMax && { price_max: Number(priceMax) }),
       ...(search.trim() && { search: search.trim() }),
+      ...(agencyId !== "all" && { agency_id: agencyId }),
     }),
-    [page, status, listingType, propertyType, city, priceMin, priceMax, search],
+    [page, status, listingType, propertyType, city, priceMin, priceMax, search, agencyId],
   );
 
   const { data, isPending } = useProperties(query);
+  const { data: agenciesData } = useAgencies({ limit: 100 });
   const mergeProperties = useMergeProperties();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
+  const agencies = agenciesData?.data ?? [];
   const selectedCount = selectedIds.size;
 
   const toggleSelection = (id: string) => {
@@ -198,6 +203,32 @@ export default function PropertiesListPage() {
               {PropertyTypeFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+        <Select
+          aria-label="Filter by agency"
+          selectedKey={agencyId}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setAgencyId(key as string | "all");
+          }}
+          className="w-48"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              <ListBox.Item key="all" id="all">
+                All agencies
+              </ListBox.Item>
+              {agencies.map((agency) => (
+                <ListBox.Item key={agency.id} id={agency.id}>
+                  {agency.name}
                 </ListBox.Item>
               ))}
             </ListBox>

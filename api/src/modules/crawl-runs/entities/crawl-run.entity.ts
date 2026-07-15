@@ -23,6 +23,9 @@ export class CrawlRun {
   @ApiProperty({ nullable: true })
   finished_at: Date | null;
 
+  @ApiProperty({ nullable: true })
+  duration_ms: number | null;
+
   @ApiProperty()
   total_found: number;
 

@@ -21,6 +21,7 @@ export const UserPropertyQuerySchema = z.object({
     .optional()
     .transform((v) => (v ? parseFloat(v) : undefined)),
   agency_id: z.string().uuid().optional(),
+  user_tracked_agency_id: z.string().uuid().optional(),
 });
 
 export type UserPropertyQueryType = z.infer<typeof UserPropertyQuerySchema>;

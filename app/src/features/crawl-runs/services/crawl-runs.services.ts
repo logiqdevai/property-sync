@@ -4,12 +4,12 @@ import type {
   CrawlRun,
   CrawlRunDetail,
   CrawlRunListQuery,
-  PaginatedResponse,
+  CrawlRunListResponse,
 } from "../interfaces/crawl-runs.interfaces";
 
 export const getCrawlRuns = async (
   query?: CrawlRunListQuery,
-): Promise<PaginatedResponse<CrawlRun>> => {
+): Promise<CrawlRunListResponse> => {
   try {
     const response = await axiosInstance.get(ApiRoutes.admin.crawlRuns.list, { params: query });
     return response.data;

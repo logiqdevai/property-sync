@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Building2, Home, Plug, Shield, User, DollarSign } from 'lucide-react';
+import { LayoutDashboard, Building2, Home, Plug, Shield, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes/routes';
 import { useAuthStore } from '@/stores/auth';
@@ -15,7 +15,6 @@ const navItems = [
   { label: 'Agencies', icon: Building2, href: Routes.dashboard.agencies, end: true },
   { label: 'My Properties', icon: Home, href: Routes.dashboard.properties.list, end: true },
   { label: 'Integrations', icon: Plug, href: Routes.dashboard.integrations, end: true },
-  { label: 'Usage', icon: DollarSign, href: Routes.dashboard.usage, end: true },
   { label: 'Account', icon: User, href: Routes.dashboard.account, end: true },
 ];
 

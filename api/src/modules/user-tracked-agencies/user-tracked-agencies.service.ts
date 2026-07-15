@@ -74,6 +74,7 @@ export class UserTrackedAgenciesService {
         return {
           ...agency,
           is_tracked: Boolean(tracker?.enabled),
+          user_tracked_agency_id: tracker?.id ?? null,
           tracking_prefs:
             tracker?.enabled
               ? {

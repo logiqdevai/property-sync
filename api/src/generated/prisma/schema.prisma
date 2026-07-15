@@ -544,6 +544,7 @@ model CrawlRun {
   status                       CrawlRunStatus @default(QUEUED)
   started_at                   DateTime?
   finished_at                  DateTime?
+  duration_ms                  Int?
   total_found                  Int            @default(0)
   total_created                Int            @default(0)
   total_updated                Int            @default(0)

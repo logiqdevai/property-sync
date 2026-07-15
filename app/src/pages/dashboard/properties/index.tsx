@@ -8,6 +8,8 @@ import type { PropertyStatus } from "@/features/properties/interfaces/properties
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
 import { useUserProperties } from "@/features/user-properties/hooks/use-user-properties";
 import type { UserPropertyListQuery } from "@/features/user-properties/interfaces/user-properties.interfaces";
+import { useTrackableAgencies } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
+import { getTrackableAgencyLabel } from "@/features/user-tracked-agencies/utils/integration-link.utils";
 
 export default function DashboardPropertiesListPage() {
   const navigate = useNavigate();
@@ -15,6 +17,7 @@ export default function DashboardPropertiesListPage() {
   const [city, setCity] = useState("");
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
+  const [trackedAgencyId, setTrackedAgencyId] = useState<string | "all">("all");
   const [page, setPage] = useState(1);
 
   const query = useMemo<UserPropertyListQuery>(
@@ -25,13 +28,18 @@ export default function DashboardPropertiesListPage() {
       ...(city.trim() && { city: city.trim() }),
       ...(priceMin && { price_min: Number(priceMin) }),
       ...(priceMax && { price_max: Number(priceMax) }),
+      ...(trackedAgencyId !== "all" && { user_tracked_agency_id: trackedAgencyId }),
     }),
-    [page, status, city, priceMin, priceMax],
+    [page, status, city, priceMin, priceMax, trackedAgencyId],
   );
 
   const { data, isPending } = useUserProperties(query);
+  const { data: agenciesData } = useTrackableAgencies({ limit: 100 });
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
+  const trackedAgencies = (agenciesData?.data ?? []).filter(
+    (agency) => agency.is_tracked && agency.user_tracked_agency_id,
+  );
 
   if (isPending) {
     return (
@@ -100,6 +108,35 @@ export default function DashboardPropertiesListPage() {
               {PropertyStatusFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+        <Select
+          aria-label="Filter by tracked agency"
+          selectedKey={trackedAgencyId}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setTrackedAgencyId(key as string | "all");
+          }}
+          className="w-56"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              <ListBox.Item key="all" id="all">
+                All tracked agencies
+              </ListBox.Item>
+              {trackedAgencies.map((agency) => (
+                <ListBox.Item
+                  key={agency.user_tracked_agency_id!}
+                  id={agency.user_tracked_agency_id!}
+                >
+                  {getTrackableAgencyLabel(agency)}
                 </ListBox.Item>
               ))}
             </ListBox>

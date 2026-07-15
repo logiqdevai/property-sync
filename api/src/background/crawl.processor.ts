@@ -208,6 +208,7 @@ export class CrawlProcessor extends WorkerHost {
         data: {
           status: runFailed ? CrawlRunStatus.FAILED : CrawlRunStatus.SUCCESS,
           finished_at: finishedAt,
+          duration_ms: finishedAt.getTime() - startedAt.getTime(),
           total_found: crawlResult.items.length,
           total_created: totalCreated,
           total_updated: totalUpdated,
@@ -293,6 +294,7 @@ export class CrawlProcessor extends WorkerHost {
           data: {
             status: CrawlRunStatus.FAILED,
             finished_at: finishedAt,
+            duration_ms: finishedAt.getTime() - startedAt.getTime(),
             error_message: message,
           },
         });

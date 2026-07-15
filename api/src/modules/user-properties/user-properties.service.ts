@@ -21,15 +21,43 @@ export class UserPropertiesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(userId: string, query: UserPropertyQueryType) {
+    let sourceAgencyId = query.agency_id;
+
+    if (query.user_tracked_agency_id) {
+      const tracker = await this.prisma.userTrackedAgency.findFirst({
+        where: {
+          id: query.user_tracked_agency_id,
+          user_id: userId,
+        },
+        select: { source_agency_id: true },
+      });
+
+      if (!tracker) {
+        return {
+          data: [],
+          pagination: {
+            page: query.page,
+            limit: query.limit,
+            total: 0,
+            total_pages: 0,
+            has_next: false,
+            has_prev: false,
+          },
+        };
+      }
+
+      sourceAgencyId = tracker.source_agency_id;
+    }
+
     const where: Prisma.UserPropertyWhereInput = {
       user_id: userId,
       ...(query.status && { status: query.status }),
       ...(query.city && { city: { contains: query.city, mode: 'insensitive' } }),
-      ...(query.agency_id && {
+      ...(sourceAgencyId && {
         canonical_property: {
           source_links: {
             some: {
-              source_property: { source_agency_id: query.agency_id },
+              source_property: { source_agency_id: sourceAgencyId },
             },
           },
         },

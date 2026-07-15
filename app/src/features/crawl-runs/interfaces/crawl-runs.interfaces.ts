@@ -41,6 +41,7 @@ export interface CrawlRun {
   status: CrawlRunStatus;
   started_at: string | null;
   finished_at: string | null;
+  duration_ms: number | null;
   total_found: number;
   total_created: number;
   total_updated: number;
@@ -59,12 +60,12 @@ export interface CrawlRun {
   updated_at: string;
   source_agency?: { name: string };
   scraper?: { name: string } | null;
-}
-
-export interface CrawlRunDetail extends CrawlRun {
   user_tracked_agency?: {
     user: { email: string };
   } | null;
+}
+
+export interface CrawlRunDetail extends CrawlRun {
   execution_traces: ScraperExecutionTrace[];
   job_logs: CrawlRunJobLogSummary[];
 }
@@ -76,6 +77,7 @@ export interface CrawlRunListQuery {
   agency_id?: string;
   scraper_id?: string;
   user_tracked_agency_id?: string;
+  user_id?: string;
   date_from?: string;
   date_to?: string;
 }
@@ -92,4 +94,8 @@ export interface PaginationMeta {
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: PaginationMeta;
+}
+
+export interface CrawlRunListResponse extends PaginatedResponse<CrawlRun> {
+  total_cost: string | null;
 }

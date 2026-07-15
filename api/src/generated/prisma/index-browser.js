@@ -277,6 +277,7 @@ exports.Prisma.CrawlRunScalarFieldEnum = {
   status: 'status',
   started_at: 'started_at',
   finished_at: 'finished_at',
+  duration_ms: 'duration_ms',
   total_found: 'total_found',
   total_created: 'total_created',
   total_updated: 'total_updated',

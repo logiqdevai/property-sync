@@ -5,6 +5,7 @@ import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { useScrapers } from "@/features/scrapers/hooks/use-scrapers";
+import { useAdminUsers } from "@/features/users/hooks/use-admin-users";
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import { useCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
 import {
@@ -13,6 +14,7 @@ import {
 } from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
 import { CrawlRunStatusFilterOptions } from "@/config/constants/dropdowns/crawl-run-status-filter.options";
 import { formatDateTime } from "@/lib/date";
+import { formatDuration } from "@/lib/duration";
 
 function toStartOfDayIso(date: string) {
   return new Date(`${date}T00:00:00.000Z`).toISOString();
@@ -22,12 +24,20 @@ function toEndOfDayIso(date: string) {
   return new Date(`${date}T23:59:59.999Z`).toISOString();
 }
 
+function formatUsd(value: string | null) {
+  if (!value) return "$0.000000";
+  const num = Number(value);
+  if (Number.isNaN(num)) return value;
+  return `$${num.toFixed(6)}`;
+}
+
 export default function CrawlRunsListPage() {
   const navigate = useNavigate();
 
   const [status, setStatus] = useState<CrawlRunStatus | "all">("all");
   const [agencyId, setAgencyId] = useState<string | "all">("all");
   const [scraperId, setScraperId] = useState<string | "all">("all");
+  const [userId, setUserId] = useState<string | "all">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
@@ -39,26 +49,38 @@ export default function CrawlRunsListPage() {
       ...(status !== "all" && { status }),
       ...(agencyId !== "all" && { agency_id: agencyId }),
       ...(scraperId !== "all" && { scraper_id: scraperId }),
+      ...(userId !== "all" && { user_id: userId }),
       ...(dateFrom && { date_from: toStartOfDayIso(dateFrom) }),
       ...(dateTo && { date_to: toEndOfDayIso(dateTo) }),
     }),
-    [page, status, agencyId, scraperId, dateFrom, dateTo],
+    [page, status, agencyId, scraperId, userId, dateFrom, dateTo],
   );
 
   const { data, isPending } = useCrawlRuns(query);
   const { data: agenciesData } = useAgencies({ limit: 100 });
   const { data: scrapersData } = useScrapers({ limit: 100 });
+  const { data: usersData } = useAdminUsers({ limit: 100 });
 
   const runs = data?.data ?? [];
   const pagination = data?.pagination;
   const agencies = agenciesData?.data ?? [];
   const scrapers = scrapersData?.data ?? [];
+  const users = usersData?.data ?? [];
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <p className="text-2xl font-semibold tracking-tight text-foreground">Crawl runs</p>
         <p className="text-sm text-muted">Production Playwright executions against source agencies.</p>
+      </div>
+
+      <div className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-2 w-fit">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted">
+          Total AI cost (filtered)
+        </p>
+        <p className="font-mono text-3xl font-bold text-foreground">
+          {isPending ? "—" : formatUsd(data?.total_cost ?? null)}
+        </p>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -140,6 +162,33 @@ export default function CrawlRunsListPage() {
           </Select.Popover>
         </Select>
 
+        <Select
+          aria-label="Filter by user"
+          selectedKey={userId}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setUserId(key as string | "all");
+          }}
+          className="w-56"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              <ListBox.Item key="all" id="all">
+                All users
+              </ListBox.Item>
+              {users.map((user) => (
+                <ListBox.Item key={user.id} id={user.id}>
+                  {user.email}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+
         <input
           type="date"
           value={dateFrom}
@@ -163,7 +212,7 @@ export default function CrawlRunsListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={7} />
+        <TableSkeleton rows={8} columns={9} />
       ) : runs.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No crawl runs found.
@@ -175,11 +224,13 @@ export default function CrawlRunsListPage() {
               <Table.Content aria-label="Crawl runs">
                 <Table.Header>
                   <Table.Column isRowHeader>Agency</Table.Column>
+                  <Table.Column>User</Table.Column>
                   <Table.Column>Scraper</Table.Column>
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Totals</Table.Column>
+                  <Table.Column>AI cost</Table.Column>
                   <Table.Column>Started</Table.Column>
-                  <Table.Column>Finished</Table.Column>
+                  <Table.Column>Duration</Table.Column>
                 </Table.Header>
                 <Table.Body>
                   {runs.map((run) => (
@@ -194,6 +245,11 @@ export default function CrawlRunsListPage() {
                           {run.source_agency?.name ?? "—"}
                         </span>
                       </Table.Cell>
+                      <Table.Cell>
+                        <span className="text-foreground">
+                          {run.user_tracked_agency?.user?.email ?? "—"}
+                        </span>
+                      </Table.Cell>
                       <Table.Cell>{run.scraper?.name ?? "—"}</Table.Cell>
                       <Table.Cell>
                         <CrawlRunStatusChip status={run.status} />
@@ -204,8 +260,13 @@ export default function CrawlRunsListPage() {
                           {run.total_removed}/{run.total_failed}
                         </span>
                       </Table.Cell>
+                      <Table.Cell>
+                        <span className="font-mono text-sm text-foreground">
+                          {formatUsd(run.ai_total_cost)}
+                        </span>
+                      </Table.Cell>
                       <Table.Cell>{formatDateTime(run.started_at)}</Table.Cell>
-                      <Table.Cell>{formatDateTime(run.finished_at)}</Table.Cell>
+                      <Table.Cell>{formatDuration(run.duration_ms)}</Table.Cell>
                     </Table.Row>
                   ))}
                 </Table.Body>

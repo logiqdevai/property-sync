@@ -6,8 +6,8 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CRAWL_QUEUE } from '@/core/queues/queues.constants';
-import { AuthRole, CrawlRunStatus, Prisma } from 'generated/prisma';
-import { CrawlRunQueryType, UsageQueryType } from './dto/crawl-run-query.schema';
+import { CrawlRunStatus, Prisma } from 'generated/prisma';
+import { CrawlRunQueryType } from './dto/crawl-run-query.schema';
 import { PaginatedResult } from './interfaces/crawl-run.interface';
 
 interface CrawlJobData {
@@ -40,8 +40,10 @@ export class CrawlRunsService {
     return run;
   }
 
-  private buildWhere(query: CrawlRunQueryType): Prisma.CrawlRunWhereInput {
-    return {
+  async findAll(
+    query: CrawlRunQueryType,
+  ): Promise<PaginatedResult<any> & { total_cost: string | null }> {
+    const where: Prisma.CrawlRunWhereInput = {
       ...(query.status && { status: query.status }),
       ...(query.agency_id && { source_agency_id: query.agency_id }),
       ...(query.scraper_id && { scraper_id: query.scraper_id }),
@@ -57,49 +59,10 @@ export class CrawlRunsService {
           }
         : {}),
     };
-  }
 
-  async findAll(query: CrawlRunQueryType): Promise<PaginatedResult<any>> {
-    const where = this.buildWhere(query);
-
-    const [items, total] = await Promise.all([
-      this.prisma.crawlRun.findMany({
-        where,
-        include: {
-          source_agency: { select: { name: true } },
-          scraper: { select: { name: true } },
-        },
-        skip: (query.page - 1) * query.limit,
-        take: query.limit,
-        orderBy: { created_at: 'desc' },
-      }),
-      this.prisma.crawlRun.count({ where }),
-    ]);
-
-    return {
-      data: items,
-      pagination: {
-        page: query.page,
-        limit: query.limit,
-        total,
-        total_pages: Math.ceil(total / query.limit),
-        has_next: query.page < Math.ceil(total / query.limit),
-        has_prev: query.page > 1,
-      },
-    };
-  }
-
-  async getUsage(
-    query: UsageQueryType,
-    currentUser: { id: string; role: AuthRole },
-  ): Promise<PaginatedResult<any> & { total_cost: string | null }> {
-    const where = this.buildWhere(query);
-    const isAdmin = currentUser.role !== AuthRole.USER;
-    const targetUserId = isAdmin ? query.user_id : currentUser.id;
-
-    if (targetUserId) {
+    if (query.user_id) {
       const trackedAgencies = await this.prisma.userTrackedAgency.findMany({
-        where: { user_id: targetUserId },
+        where: { user_id: query.user_id },
         select: { id: true },
       });
       where.user_tracked_agency_id = {

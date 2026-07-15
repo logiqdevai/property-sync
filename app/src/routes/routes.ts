@@ -14,7 +14,6 @@ export const Routes = {
         },
         integrations: "/dashboard/integrations",
         account: "/dashboard/account",
-        usage: "/dashboard/usage",
     },
     admin: {
         root: "/admin",
@@ -51,6 +50,5 @@ export const Routes = {
             list: "/admin/users",
             detail: (id: string) => `/admin/users/${id}`,
         },
-        usage: "/admin/usage",
     },
 };

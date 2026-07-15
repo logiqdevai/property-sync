@@ -62,6 +62,7 @@ export interface UserPropertyListQuery {
   price_min?: number;
   price_max?: number;
   agency_id?: string;
+  user_tracked_agency_id?: string;
 }
 
 export interface PaginatedResponse<T> {

@@ -14,6 +14,7 @@ export const CrawlRunQuerySchema = z.object({
   agency_id: z.string().uuid().optional(),
   scraper_id: z.string().uuid().optional(),
   user_tracked_agency_id: z.string().uuid().optional(),
+  user_id: z.string().uuid().optional(),
   date_from: z
     .string()
     .datetime()
@@ -27,9 +28,3 @@ export const CrawlRunQuerySchema = z.object({
 });
 
 export type CrawlRunQueryType = z.infer<typeof CrawlRunQuerySchema>;
-
-export const UsageQuerySchema = CrawlRunQuerySchema.extend({
-  user_id: z.string().uuid().optional(),
-});
-
-export type UsageQueryType = z.infer<typeof UsageQuerySchema>;
