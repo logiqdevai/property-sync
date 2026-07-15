@@ -56,5 +56,4 @@ export interface GcsConfig {
     project_id: string;
     bucket_name: string;
     credentials?: object;
-    folder_name?: string;
 }

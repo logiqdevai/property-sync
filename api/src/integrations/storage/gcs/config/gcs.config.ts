@@ -35,7 +35,6 @@ export class GcsConfig {
             const bucketName = this.configService.get('GCS_BUCKET_NAME');
             const credentialsJsonBase64 = this.configService.get('GCS_CREDENTIALS_JSON_BASE64');
             const credentialsJson = this.configService.get('GCS_CREDENTIALS');
-            const folderName = this.configService.get('GCS_FOLDER_NAME');
 
             if (!projectId || !bucketName) {
                 this.logger.error('GCS_PROJECT_ID and GCS_BUCKET_NAME are required');
@@ -48,7 +47,6 @@ export class GcsConfig {
                 project_id: projectId,
                 bucket_name: bucketName,
                 credentials,
-                folder_name: folderName || 'documents',
             };
 
             const storageOptions: { projectId: string; credentials?: object } = {

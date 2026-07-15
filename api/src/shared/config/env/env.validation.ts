@@ -17,7 +17,6 @@ const EnvSchema = z.object({
     GOOGLE_MAPS_API_KEY: z.string().optional(),
     GCS_PROJECT_ID: z.string().optional(),
     GCS_BUCKET_NAME: z.string().optional(),
-    GCS_FOLDER_NAME: z.string().optional(),
     GCS_CREDENTIALS_JSON_BASE64: z.string().optional(),
     GCS_CREDENTIALS: z.string().optional(),
     STRIPE_PUBLISHABLE_KEY: z.string().optional(),

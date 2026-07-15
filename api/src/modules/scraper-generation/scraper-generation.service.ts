@@ -1,11 +1,13 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
 import { GENERATION_QUEUE } from '@/core/queues/queues.constants';
 import {
   GenerationRunStatus,
@@ -25,10 +27,18 @@ const TERMINAL_STATUSES: GenerationRunStatus[] = [
   GenerationRunStatus.CANCELLED,
 ];
 
+const ACTIVE_STATUSES: GenerationRunStatus[] = [
+  GenerationRunStatus.QUEUED,
+  GenerationRunStatus.RUNNING,
+];
+
 @Injectable()
 export class ScraperGenerationService {
+  private readonly logger = new Logger(ScraperGenerationService.name);
+
   constructor(
     private readonly prisma: PrismaService,
+    private readonly gcsService: GcsService,
     @InjectQueue(GENERATION_QUEUE) private readonly generationQueue: Queue,
   ) {}
 
@@ -257,6 +267,82 @@ export class ScraperGenerationService {
       where: { id },
       data: { status: GenerationRunStatus.CANCELLED, finished_at: new Date() },
     });
+  }
+
+  async remove(id: string) {
+    const run = await this.prisma.scraperGenerationRun.findUnique({
+      where: { id },
+      include: {
+        steps: {
+          select: {
+            screenshot_before_id: true,
+            screenshot_after_id: true,
+          },
+        },
+      },
+    });
+
+    if (!run) {
+      throw new NotFoundException('Generation run not found');
+    }
+
+    if (ACTIVE_STATUSES.includes(run.status)) {
+      throw new BadRequestException(
+        'Cancel the generation run before deleting it',
+      );
+    }
+
+    const documentIds = this.collectScreenshotDocumentIds(run.steps);
+
+    const documents =
+      documentIds.length > 0
+        ? await this.prisma.document.findMany({
+            where: { id: { in: documentIds } },
+            select: { id: true, path: true },
+          })
+        : [];
+
+    await Promise.all(
+      documents.map(async (document) => {
+        try {
+          await this.gcsService.deleteImageByPath(document.path);
+        } catch (error) {
+          this.logger.warn(
+            `Failed to delete GCS object for document ${document.id}: ${error instanceof Error ? error.message : error}`,
+          );
+        }
+      }),
+    );
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.scraperGenerationRun.delete({ where: { id } });
+
+      if (documents.length > 0) {
+        await tx.document.deleteMany({
+          where: { id: { in: documents.map((document) => document.id) } },
+        });
+      }
+    });
+  }
+
+  private collectScreenshotDocumentIds(
+    steps: {
+      screenshot_before_id: string | null;
+      screenshot_after_id: string | null;
+    }[],
+  ): string[] {
+    const ids = new Set<string>();
+
+    for (const step of steps) {
+      if (step.screenshot_before_id) {
+        ids.add(step.screenshot_before_id);
+      }
+      if (step.screenshot_after_id) {
+        ids.add(step.screenshot_after_id);
+      }
+    }
+
+    return [...ids];
   }
 
   private async ensureExists(id: string) {

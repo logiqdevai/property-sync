@@ -4,6 +4,7 @@ import {
   approveGenerationRun,
   cancelGenerationRun,
   createGenerationRun,
+  deleteGenerationRun,
   getGenerationRun,
   getGenerationRuns,
   rejectGenerationRun,
@@ -112,6 +113,26 @@ export const useCancelGenerationRun = () => {
     onError: (error: any) => {
       toast({
         title: "Could not cancel generation run",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDeleteGenerationRun = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteGenerationRun(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["generationRuns"] });
+      queryClient.invalidateQueries({ queryKey: ["scrapers"] });
+      toast({ title: "Generation run deleted", duration: 2000, variant: "success" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Could not delete generation run",
         description: error.message,
         variant: "error",
       });

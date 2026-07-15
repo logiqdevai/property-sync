@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
+import { GcsFolders } from '@/shared/config/gcs-folders';
 import { DocumentType } from 'generated/prisma';
-
-const SCREENSHOT_FOLDER = 'generation-screenshots';
 // Document.user_uuid has no FK relation to User; generation-run screenshots aren't tied
 // to an end user, so a placeholder is used per docs/plan/tasks/feature-04-ai-generation/02-computer-use-loop-engine.md.
 const SCREENSHOT_UPLOADER_PLACEHOLDER = 'scraper-generation';
@@ -20,7 +19,7 @@ export class ScreenshotStorageService {
       buffer,
       filename,
       'image/png',
-      SCREENSHOT_FOLDER,
+      GcsFolders.generationRunScreenshots,
     );
 
     const document = await this.prisma.document.create({

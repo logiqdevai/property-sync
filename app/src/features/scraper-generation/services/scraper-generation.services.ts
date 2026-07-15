@@ -78,3 +78,13 @@ export const cancelGenerationRun = async (id: string): Promise<GenerationRun> =>
     );
   }
 };
+
+export const deleteGenerationRun = async (id: string): Promise<void> => {
+  try {
+    await axiosInstance.delete(ApiRoutes.admin.generationRuns.delete(id));
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to delete generation run. Please try again.",
+    );
+  }
+};

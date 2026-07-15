@@ -37,6 +37,15 @@ export class GcsService {
         }
     }
 
+    public async deleteImageByPath(path: string): Promise<void> {
+        try {
+            await this.gcsAdapter.deleteImage({ filename: path });
+        } catch (error) {
+            this.logger.error(`Delete image error for path ${path}:`, error);
+            throw new Error(`Failed to delete image: ${error.message}`);
+        }
+    }
+
     public async listImages(request?: ListImagesRequest): Promise<ListImagesResponse> {
         try {
             return await this.gcsAdapter.listImages(request);

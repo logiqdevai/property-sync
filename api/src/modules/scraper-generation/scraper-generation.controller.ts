@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -105,5 +106,20 @@ export class ScraperGenerationController {
   })
   cancel(@Param('id') id: string) {
     return this.scraperGenerationService.cancel(id);
+  }
+
+  @Delete(':id')
+  @Roles('ADMIN', 'SUPER_ADMIN')
+  @ApiOperation({
+    summary: 'Delete a generation run and its screenshot files from storage',
+  })
+  @ApiResponse({ status: 200, description: 'Deleted' })
+  @ApiResponse({
+    status: 400,
+    description: 'Run is still QUEUED or RUNNING',
+  })
+  @ApiResponse({ status: 404, description: 'Generation run not found' })
+  remove(@Param('id') id: string) {
+    return this.scraperGenerationService.remove(id);
   }
 }

@@ -47,6 +47,7 @@ export const ApiRoutes = {
             approve: (id: string) => `/admin/generation-runs/${id}/approve`,
             reject: (id: string) => `/admin/generation-runs/${id}/reject`,
             cancel: (id: string) => `/admin/generation-runs/${id}/cancel`,
+            delete: (id: string) => `/admin/generation-runs/${id}`,
         },
         crawlRuns: {
             prefix: "/admin/crawl-runs",

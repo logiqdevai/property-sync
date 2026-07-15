@@ -9,6 +9,7 @@ import {
     DownloadImageRequest,
     DownloadImageResponse
 } from './interfaces/gcs.interfaces';
+import { GcsFolders } from '@/shared/config/gcs-folders';
 import { GcsConfig } from './config/gcs.config';
 
 @Injectable()
@@ -19,7 +20,7 @@ export class GcsAdapter {
     constructor(
         private gcsConfig: GcsConfig,
     ) {
-        this.folder = this.gcsConfig.getConfig()?.folder_name ?? 'documents';
+        this.folder = GcsFolders.propertyImages;
     }
 
     public async uploadImage(request: UploadImageRequest): Promise<UploadImageResponse> {

@@ -5,11 +5,13 @@ import { ArrowLeft, Loader2, ImageOff, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { GenerationRunStatusChip } from "./components/generation-run-status-chip";
 import { GenerationRunTriggerChip } from "./components/generation-run-trigger-chip";
 import {
   useApproveGenerationRun,
   useCancelGenerationRun,
+  useDeleteGenerationRun,
   useGenerationRun,
   useRejectGenerationRun,
 } from "@/features/scraper-generation/hooks/use-scraper-generation";
@@ -28,6 +30,8 @@ export default function GenerationRunDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const rejectModal = useOverlayState();
+  const cancelConfirm = useOverlayState();
+  const deleteConfirm = useOverlayState();
 
   const [rejectReason, setRejectReason] = useState("");
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -36,6 +40,7 @@ export default function GenerationRunDetailPage() {
   const approveRun = useApproveGenerationRun();
   const rejectRun = useRejectGenerationRun();
   const cancelRun = useCancelGenerationRun();
+  const deleteRun = useDeleteGenerationRun();
 
   if (isPending || !run) {
     return <DetailSkeleton fieldCount={4} showSubTable subTableRows={3} />;
@@ -64,14 +69,23 @@ export default function GenerationRunDetailPage() {
           {isActive && <Loader2 className="h-4 w-4 animate-spin text-muted" />}
         </div>
 
-        {isActive && (
+        {isActive ? (
           <ActionButtonWithPending
             variant="danger"
             isPending={cancelRun.isPending}
             isDisabled={cancelRun.isPending}
-            onPress={() => cancelRun.mutate(run.id)}
+            onPress={cancelConfirm.open}
           >
             Cancel
+          </ActionButtonWithPending>
+        ) : (
+          <ActionButtonWithPending
+            variant="danger"
+            isPending={deleteRun.isPending}
+            isDisabled={deleteRun.isPending}
+            onPress={deleteConfirm.open}
+          >
+            Delete
           </ActionButtonWithPending>
         )}
       </div>
@@ -284,6 +298,26 @@ export default function GenerationRunDetailPage() {
           </Modal.Container>
         </Modal.Backdrop>
       </Modal>
+
+      <ConfirmationDialog
+        state={cancelConfirm}
+        title="Cancel this generation run?"
+        description="The run will stop and no further steps will be recorded. You can delete it afterward."
+        confirmLabel="Cancel run"
+        isPending={cancelRun.isPending}
+        onConfirm={() => cancelRun.mutateAsync(run.id)}
+      />
+
+      <ConfirmationDialog
+        state={deleteConfirm}
+        title="Delete this generation run?"
+        description="This permanently removes the run, its steps, and all screenshot files from storage."
+        confirmLabel="Delete"
+        isPending={deleteRun.isPending}
+        onConfirm={() =>
+          deleteRun.mutateAsync(run.id).then(() => navigate(Routes.admin.generationRuns.list))
+        }
+      />
     </div>
   );
 }
