@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Modal, Switch, EmptyState, Select, ListBox, Label, useOverlayState } from "@heroui/react";
+import { Modal, Switch, EmptyState, Select, ListBox, Label, Input, useOverlayState } from "@heroui/react";
 import { ArrowLeft, Bot, Activity, History, Sparkles } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
@@ -42,6 +42,7 @@ export default function ScraperDetailPage() {
 
   const [compareA, setCompareA] = useState<string | null>(null);
   const [compareB, setCompareB] = useState<string | null>(null);
+  const [normalizeLimitDraft, setNormalizeLimitDraft] = useState<string | null>(null);
 
   const { data: scraper, isPending } = useScraper(id!);
   const { data: versions } = useScraperVersions(id!);
@@ -163,6 +164,40 @@ export default function ScraperDetailPage() {
         <div className="flex flex-col gap-1">
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Consecutive failures</span>
           <span className="text-sm text-foreground">{scraper.consecutive_failures}</span>
+        </div>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="scraper-normalize-limit">Normalize limit</Label>
+          <Input
+            id="scraper-normalize-limit"
+            type="number"
+            min={1}
+            step={1}
+            value={
+              normalizeLimitDraft ??
+              (scraper.normalize_limit !== null ? String(scraper.normalize_limit) : "")
+            }
+            onChange={(e) => setNormalizeLimitDraft(e.target.value)}
+            onBlur={() => {
+              if (normalizeLimitDraft === null) return;
+              const raw = normalizeLimitDraft.trim();
+              const next = raw === "" ? null : Number(raw);
+              setNormalizeLimitDraft(null);
+              if (raw !== "" && (!Number.isInteger(next) || (next as number) < 1)) {
+                return;
+              }
+              if (next === scraper.normalize_limit) return;
+              updateScraper.mutate({
+                id: scraper.id,
+                payload: { normalize_limit: next },
+              });
+            }}
+            placeholder="Unlimited"
+            isDisabled={updateScraper.isPending}
+            fullWidth
+          />
+          <span className="text-xs text-muted">
+            Max listings AI-normalized per crawl. Empty = unlimited.
+          </span>
         </div>
         <div className="flex flex-col gap-1">
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Last success / failure</span>

@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
+import { AuthRole } from 'generated/prisma';
 import { DashboardService } from './dashboard.service';
 import { DashboardResponse } from './entities/dashboard.entity';
 
@@ -10,7 +11,7 @@ import { DashboardResponse } from './entities/dashboard.entity';
 @ApiBearerAuth()
 @Controller('admin/dashboard')
 @UseGuards(JwtGuard, RolesGuard)
-@Roles('ADMIN', 'SUPER_ADMIN', 'SUPPORT')
+@Roles(AuthRole.ADMIN, AuthRole.SUPPORT)
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 

@@ -1,20 +1,28 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table, Chip, Select, ListBox, Input, Pagination, Modal, useOverlayState } from "@heroui/react";
-import { Plus, Search } from "lucide-react";
+import { LogIn, Plus, Search } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import {
+  TableRowActionsMenu,
+  type TableRowAction,
+} from "@/components/ui/table-row-actions-menu";
 import { RoleGate } from "@/components/providers/role-gate";
 import { CreateUserForm } from "./components/create-user-form";
 import { useAdminUsers, useCreateAdminUser } from "@/features/users/hooks/use-admin-users";
+import { useAdminLoginToAccount } from "@/features/auth/hooks/use-auth";
 import {
   RoleTypes,
   type RoleType,
 } from "@/features/user/interfaces/user.interface";
-import type { AdminUserListQuery } from "@/features/users/interfaces/admin-users.interfaces";
+import type { AdminUser, AdminUserListQuery } from "@/features/users/interfaces/admin-users.interfaces";
 import { RoleTypeFilterOptions } from "@/config/constants/dropdowns/role-type-filter.options";
 import { formatDate } from "@/lib/date";
+import { useAuthStore } from "@/stores/auth";
+import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 
 function RoleBadge({ role }: { role: RoleType }) {
   const color =
@@ -28,17 +36,31 @@ function RoleBadge({ role }: { role: RoleType }) {
 
   return (
     <Chip size="sm" variant="soft" color={color}>
-      {role.replace("_", " ")}
+      <Chip.Label>{getDropdownOptionLabel(RoleTypeFilterOptions, role)}</Chip.Label>
     </Chip>
   );
+}
+
+function getUserActions(user: AdminUser, currentUserId: string | null): TableRowAction[] {
+  return [
+    {
+      id: "login-as",
+      label: "Login as user",
+      icon: LogIn,
+      isDisabled: user.id === currentUserId,
+    },
+  ];
 }
 
 export default function AdminUsersListPage() {
   const navigate = useNavigate();
   const createModal = useOverlayState();
+  const loginAsConfirm = useOverlayState();
+  const currentUserId = useAuthStore((state) => state.user_uuid);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState<RoleType | "all">("all");
   const [page, setPage] = useState(1);
+  const [loginAsUser, setLoginAsUser] = useState<AdminUser | null>(null);
 
   const query = useMemo<AdminUserListQuery>(
     () => ({
@@ -52,8 +74,16 @@ export default function AdminUsersListPage() {
 
   const { data, isPending } = useAdminUsers(query);
   const createUser = useCreateAdminUser();
+  const loginAs = useAdminLoginToAccount();
   const users = data?.data ?? [];
   const pagination = data?.pagination;
+
+  const handleUserAction = (user: AdminUser, actionId: string) => {
+    if (actionId === "login-as") {
+      setLoginAsUser(user);
+      loginAsConfirm.open();
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -110,7 +140,7 @@ export default function AdminUsersListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton columns={4} rows={8} />
+        <TableSkeleton columns={5} rows={8} />
       ) : users.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No users found.
@@ -125,6 +155,7 @@ export default function AdminUsersListPage() {
                   <Table.Column>Role</Table.Column>
                   <Table.Column>Phone</Table.Column>
                   <Table.Column>Joined</Table.Column>
+                  <Table.Column>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
                   {users.map((user) => (
@@ -140,6 +171,15 @@ export default function AdminUsersListPage() {
                       </Table.Cell>
                       <Table.Cell>{user.phone ?? "—"}</Table.Cell>
                       <Table.Cell>{formatDate(user.created_at)}</Table.Cell>
+                      <Table.Cell>
+                        <RoleGate roles={[RoleTypes.ADMIN, RoleTypes.SUPER_ADMIN]}>
+                          <TableRowActionsMenu
+                            actions={getUserActions(user, currentUserId)}
+                            onAction={(actionId) => handleUserAction(user, actionId)}
+                            ariaLabel={`Actions for ${user.email}`}
+                          />
+                        </RoleGate>
+                      </Table.Cell>
                     </Table.Row>
                   ))}
                 </Table.Body>
@@ -176,6 +216,23 @@ export default function AdminUsersListPage() {
           </Pagination.Content>
         </Pagination>
       )}
+
+      <ConfirmationDialog
+        state={loginAsConfirm}
+        title="Login as this user?"
+        description={
+          loginAsUser
+            ? `You will browse the app as ${loginAsUser.email}. Your admin role stays on the session token.`
+            : undefined
+        }
+        confirmLabel="Login as user"
+        isPending={loginAs.isPending}
+        onConfirm={async () => {
+          if (!loginAsUser) return;
+          await loginAs.mutateAsync(loginAsUser.id);
+          setLoginAsUser(null);
+        }}
+      />
 
       <Modal state={createModal}>
         <Modal.Backdrop isDismissable={!createUser.isPending}>

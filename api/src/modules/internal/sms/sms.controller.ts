@@ -5,11 +5,11 @@ import { UpdateSmDto } from './dto/update-sm.dto';
 import { JwtGuard } from 'src/shared/guards/jwt.guard';
 import { Roles } from 'src/shared/decorators/roles.decorator';
 import { RolesGuard } from 'src/shared/guards/roles.guard';
-import { AuthRoles } from 'src/modules/auth/interfaces/auth.interface';
+import { AuthRole } from 'generated/prisma';
 
 @Controller('sms')
 @UseGuards(JwtGuard, RolesGuard)
-@Roles(AuthRoles.ADMIN)
+@Roles(AuthRole.ADMIN)
 export class SmsController {
   constructor(private readonly smsService: SmsService) { }
 

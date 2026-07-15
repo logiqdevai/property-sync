@@ -17,6 +17,7 @@ import {
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
+import { AuthRole } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { ScrapersService } from './scrapers.service';
 import { CreateScraperDto } from './dto/create-scraper.dto';
@@ -33,7 +34,7 @@ import { ScraperVersion } from './entities/scraper-version.entity';
 @ApiBearerAuth()
 @Controller('admin/scrapers')
 @UseGuards(JwtGuard, RolesGuard)
-@Roles('ADMIN', 'SUPER_ADMIN', 'SUPPORT')
+@Roles(AuthRole.ADMIN, AuthRole.SUPPORT)
 export class ScrapersController {
   constructor(private readonly scrapersService: ScrapersService) {}
 
@@ -57,7 +58,7 @@ export class ScrapersController {
   }
 
   @Post()
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary: 'Create a scraper with an initial active version (version 1)',
   })
@@ -74,7 +75,7 @@ export class ScrapersController {
   }
 
   @Post(':id/versions')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary: 'Create a new scraper version (does not activate it)',
   })
@@ -84,7 +85,7 @@ export class ScrapersController {
   }
 
   @Post(':id/versions/:versionId/activate')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary:
       'Activate a version (rollback or promote); un-breaks a BROKEN scraper',
@@ -102,7 +103,7 @@ export class ScrapersController {
   }
 
   @Patch(':id')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary:
       'Toggle self_healing_enabled and/or update validation_rules (creates a new version)',
@@ -113,7 +114,7 @@ export class ScrapersController {
   }
 
   @Post(':id/run-now')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Manually trigger a crawl run' })
   @ApiResponse({ status: 201, description: 'Crawl run enqueued' })
   runNow(@Param('id') id: string) {

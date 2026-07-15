@@ -81,6 +81,9 @@ export class ScrapersService {
           source_agency_id: dto.source_agency_id,
           name: dto.name,
           status: ScraperStatus.TESTING,
+          ...(dto.normalize_limit !== undefined && {
+            normalize_limit: dto.normalize_limit,
+          }),
         },
         include: {
           active_version: true,
@@ -95,6 +98,9 @@ export class ScrapersService {
           source_agency_id: dto.source_agency_id,
           name: dto.name,
           status: ScraperStatus.TESTING,
+          ...(dto.normalize_limit !== undefined && {
+            normalize_limit: dto.normalize_limit,
+          }),
         },
       });
 
@@ -192,6 +198,9 @@ export class ScrapersService {
           ...(dto.self_healing_enabled !== undefined && {
             self_healing_enabled: dto.self_healing_enabled,
           }),
+          ...(dto.normalize_limit !== undefined && {
+            normalize_limit: dto.normalize_limit,
+          }),
         },
         include: {
           active_version: true,
@@ -233,6 +242,9 @@ export class ScrapersService {
           ...(dto.status !== undefined && { status: dto.status }),
           ...(dto.self_healing_enabled !== undefined && {
             self_healing_enabled: dto.self_healing_enabled,
+          }),
+          ...(dto.normalize_limit !== undefined && {
+            normalize_limit: dto.normalize_limit,
           }),
         },
         include: {

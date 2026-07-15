@@ -95,7 +95,7 @@ export class UserIntegrationsController {
 
   @Patch('connections/:id/default')
   @UseGuards(RolesGuard)
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Set or clear the default integration connection' })
   @ApiResponse({ status: 200, type: UserIntegrationConnectionEntity })
   updateConnectionDefault(

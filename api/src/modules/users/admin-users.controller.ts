@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
+import { AuthRole } from 'generated/prisma';
 import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { UsersService } from './users.service';
@@ -14,7 +15,7 @@ import { User } from './entities/user.entity';
 @ApiBearerAuth()
 @Controller('admin/users')
 @UseGuards(JwtGuard, RolesGuard)
-@Roles('ADMIN', 'SUPER_ADMIN', 'SUPPORT')
+@Roles(AuthRole.ADMIN, AuthRole.SUPPORT)
 export class AdminUsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -34,7 +35,7 @@ export class AdminUsersController {
   }
 
   @Patch(':id')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Update a user' })
   @ApiResponse({ status: 200, type: User })
   @ApiResponse({ status: 403, description: 'Cannot modify your own role' })
@@ -49,7 +50,7 @@ export class AdminUsersController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 200, description: 'User deleted' })
   @ApiResponse({ status: 403, description: 'Cannot delete your own account or a super admin account' })

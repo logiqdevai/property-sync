@@ -30,6 +30,7 @@ export function ScraperForm({ defaultAgencyId, submitLabel, isPending, onSubmit,
     defaultValues: {
       source_agency_id: defaultAgencyId ?? "",
       name: "",
+      normalize_limit: "",
       config: "",
     },
   });
@@ -70,6 +71,23 @@ export function ScraperForm({ defaultAgencyId, submitLabel, isPending, onSubmit,
         <Label htmlFor="scraper-name">Name</Label>
         <Input id="scraper-name" {...register("name")} placeholder="Acme listing scraper" fullWidth />
         {errors.name && <FieldError>{errors.name.message}</FieldError>}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <Label htmlFor="scraper-normalize-limit">Normalize limit (optional)</Label>
+        <Input
+          id="scraper-normalize-limit"
+          type="number"
+          min={1}
+          step={1}
+          {...register("normalize_limit")}
+          placeholder="Unlimited"
+          fullWidth
+        />
+        {errors.normalize_limit && <FieldError>{errors.normalize_limit.message}</FieldError>}
+        <span className="text-xs text-muted">
+          Cap how many listings get AI-normalized per crawl. Leave blank for unlimited.
+        </span>
       </div>
 
       <div className="flex flex-col gap-1">

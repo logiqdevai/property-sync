@@ -10,7 +10,7 @@ import { ScraperForm } from "./components/scraper-form";
 import { ScraperStatusChip } from "./components/scraper-status-chip";
 import { ScraperHealthChip } from "./components/scraper-health-chip";
 import { useCreateScraper, useScrapers } from "@/features/scrapers/hooks/use-scrapers";
-import { parseOptionalJsonConfig } from "@/features/scrapers/validation-schemas/scrapers.schema";
+import { parseOptionalJsonConfig, parseOptionalNormalizeLimit } from "@/features/scrapers/validation-schemas/scrapers.schema";
 import {
   type ScraperHealth,
   type ScraperListQuery,
@@ -262,10 +262,12 @@ export default function ScrapersListPage() {
                   onCancel={createModal.close}
                   onSubmit={(values) => {
                     const config = parseOptionalJsonConfig(values.config);
+                    const normalizeLimit = parseOptionalNormalizeLimit(values.normalize_limit ?? "");
                     createScraper.mutate(
                       {
                         source_agency_id: values.source_agency_id,
                         name: values.name,
+                        ...(normalizeLimit !== undefined && { normalize_limit: normalizeLimit }),
                         ...(config && { config }),
                       },
                       { onSuccess: () => createModal.close() },

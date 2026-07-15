@@ -8,6 +8,7 @@ import {
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
+import { AuthRole } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { JobsService } from './jobs.service';
 import {
@@ -20,7 +21,7 @@ import { JobLog } from './entities/job-log.entity';
 @ApiBearerAuth()
 @Controller('admin/jobs')
 @UseGuards(JwtGuard, RolesGuard)
-@Roles('ADMIN', 'SUPER_ADMIN', 'SUPPORT')
+@Roles(AuthRole.ADMIN, AuthRole.SUPPORT)
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
@@ -42,7 +43,7 @@ export class JobsController {
   }
 
   @Post(':id/retry')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Retry a failed or completed job' })
   @ApiResponse({ status: 200, type: JobLog })
   @ApiResponse({ status: 404, description: 'Job log not found' })

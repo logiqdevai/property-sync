@@ -36,6 +36,13 @@ export class Scraper {
   @ApiProperty()
   consecutive_failures: number;
 
+  @ApiProperty({
+    nullable: true,
+    description:
+      'Max SourceProperties to AI-normalize per crawl. Null = unlimited.',
+  })
+  normalize_limit: number | null;
+
   @ApiProperty({ nullable: true })
   last_success_at: Date | null;
 

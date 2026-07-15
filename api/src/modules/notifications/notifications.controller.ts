@@ -8,6 +8,7 @@ import {
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
+import { AuthRole } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { NotificationsService } from './notifications.service';
 import {
@@ -20,7 +21,7 @@ import { Notification } from './entities/notification.entity';
 @ApiBearerAuth()
 @Controller('admin/notifications')
 @UseGuards(JwtGuard, RolesGuard)
-@Roles('ADMIN', 'SUPER_ADMIN', 'SUPPORT')
+@Roles(AuthRole.ADMIN, AuthRole.SUPPORT)
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 

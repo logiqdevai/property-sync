@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsObject, IsOptional } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsObject,
+  IsOptional,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 import { ScraperStatus } from 'generated/prisma';
 
 export class UpdateScraperDto {
@@ -19,6 +27,19 @@ export class UpdateScraperDto {
   @IsOptional()
   @IsBoolean()
   self_healing_enabled?: boolean;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      'Max SourceProperties to AI-normalize per crawl. Null = unlimited.',
+    example: 50,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsInt()
+  @Min(1)
+  normalize_limit?: number | null;
 
   @ApiProperty({
     required: false,

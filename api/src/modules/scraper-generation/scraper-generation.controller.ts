@@ -17,6 +17,7 @@ import {
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
+import { AuthRole } from 'generated/prisma';
 import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { ScraperGenerationService } from './scraper-generation.service';
@@ -33,7 +34,7 @@ import { ScraperGenerationRun } from './entities/generation-run.entity';
 @ApiBearerAuth()
 @Controller('admin/generation-runs')
 @UseGuards(JwtGuard, RolesGuard)
-@Roles('ADMIN', 'SUPER_ADMIN', 'SUPPORT')
+@Roles(AuthRole.ADMIN, AuthRole.SUPPORT)
 export class ScraperGenerationController {
   constructor(
     private readonly scraperGenerationService: ScraperGenerationService,
@@ -58,7 +59,7 @@ export class ScraperGenerationController {
   }
 
   @Post()
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary: 'Trigger a manual AI computer-use generation run',
   })
@@ -75,7 +76,7 @@ export class ScraperGenerationController {
   }
 
   @Post(':id/approve')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary: 'Approve a staged config, promoting it into a new ScraperVersion',
   })
@@ -89,7 +90,7 @@ export class ScraperGenerationController {
   }
 
   @Post(':id/reject')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Reject a generation run' })
   @ApiResponse({ status: 200, type: ScraperGenerationRun })
   @ApiResponse({ status: 400, description: 'Run has already finished' })
@@ -98,7 +99,7 @@ export class ScraperGenerationController {
   }
 
   @Post(':id/cancel')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Cancel a QUEUED or RUNNING generation run' })
   @ApiResponse({ status: 200, type: ScraperGenerationRun })
   @ApiResponse({
@@ -110,7 +111,7 @@ export class ScraperGenerationController {
   }
 
   @Post(':id/retry')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary: 'Retry a failed or cancelled generation run from its last recorded step',
   })
@@ -124,7 +125,7 @@ export class ScraperGenerationController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary: 'Delete a generation run and its screenshot files from storage',
   })

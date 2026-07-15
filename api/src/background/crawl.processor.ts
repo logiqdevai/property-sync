@@ -236,13 +236,22 @@ export class CrawlProcessor extends WorkerHost {
           errorMessage: crawlResult.errorSummary ?? 'Crawl failed',
         });
       } else {
-        await this.prisma.scraper.update({
-          where: { id: scraper.id },
-          data: {
-            consecutive_failures: 0,
-            last_success_at: finishedAt,
-          },
-        });
+        await Promise.all([
+          this.prisma.scraper.update({
+            where: { id: scraper.id },
+            data: {
+              consecutive_failures: 0,
+              last_success_at: finishedAt,
+            },
+          }),
+          this.prisma.sourceAgency.update({
+            where: { id: run.source_agency_id },
+            data: {
+              last_success_at: finishedAt,
+              last_error_message: null,
+            },
+          }),
+        ]);
       }
 
       await this.prisma.jobLog.update({
@@ -422,14 +431,25 @@ export class CrawlProcessor extends WorkerHost {
       params.networkError ||
       nextFailures >= 3;
 
-    await this.prisma.scraper.update({
-      where: { id: params.scraper.id },
-      data: {
-        consecutive_failures: nextFailures,
-        last_failure_at: new Date(),
-        ...(shouldMarkBroken ? { status: ScraperStatus.BROKEN } : {}),
-      },
-    });
+    const failedAt = new Date();
+
+    await Promise.all([
+      this.prisma.scraper.update({
+        where: { id: params.scraper.id },
+        data: {
+          consecutive_failures: nextFailures,
+          last_failure_at: failedAt,
+          ...(shouldMarkBroken ? { status: ScraperStatus.BROKEN } : {}),
+        },
+      }),
+      this.prisma.sourceAgency.update({
+        where: { id: params.sourceAgencyId },
+        data: {
+          last_failure_at: failedAt,
+          last_error_message: params.errorMessage,
+        },
+      }),
+    ]);
 
     if (!shouldMarkBroken) return;
 

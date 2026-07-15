@@ -1,10 +1,10 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { RegisterEmailDto } from '../dto/register-email.dto';
 import { LoginEmailDto } from '../dto/login-email.dto';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateJwtService } from '@/shared/utils/jwt/jwt.service';
-import { AuthRoles } from '../interfaces/auth.interface';
+import { AuthRole } from 'generated/prisma';
 import { WaitlistDto } from '../dto/waitlist.dto';
 import { ResendMailService } from '@/integrations/notifications/resend/services/mail.service';
 import { EmailConfig } from '@/shared/constants/email';
@@ -41,7 +41,7 @@ export class EmailAuthService {
                 data: {
                     email: dto.email,
                     password: hashedPassword,
-                    role: AuthRoles.USER,
+                    role: AuthRole.USER,
                 },
             });
 
@@ -125,7 +125,7 @@ export class EmailAuthService {
                 data: {
                     email: dto.email,
                     password: '',
-                    role: AuthRoles.USER,
+                    role: AuthRole.USER,
                 },
             });
 
@@ -158,6 +158,38 @@ export class EmailAuthService {
 
     async sendPasswordResetForUser(userId: string) {
         return this.passwordResetService.sendPasswordResetForUserId(userId);
+    }
+
+    async adminLoginToAccount(userId: string, actorId: string, actorRole: AuthRole) {
+        if (userId === actorId) {
+            throw new ForbiddenException('You cannot login as yourself');
+        }
+
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        const token = await this.jwtService.signToken({
+            id: user.id,
+            role: actorRole,
+        });
+
+        const expires_in = this.jwtService.getExpirationTime(token);
+
+        delete user.password;
+
+        return {
+            access_token: token,
+            expires_in,
+            user: {
+                ...user,
+                role: actorRole,
+            },
+        };
     }
 
 }

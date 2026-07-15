@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsObject, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
+import {
+  IsInt,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class CreateScraperDto {
   @ApiProperty({ description: 'Source agency this scraper belongs to' })
@@ -13,6 +21,18 @@ export class CreateScraperDto {
   @IsString()
   @MinLength(1)
   name: string;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      'Max SourceProperties to AI-normalize per crawl. Null/omit = unlimited.',
+    example: 50,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  normalize_limit?: number | null;
 
   @ApiProperty({
     required: false,

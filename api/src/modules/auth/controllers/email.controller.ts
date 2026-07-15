@@ -8,8 +8,11 @@ import { WaitlistDto } from '../dto/waitlist.dto';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
+import { AuthRole } from 'generated/prisma';
+import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
+
 @ApiTags('Email Authentication')
 @Controller('auth/email')
 export class EmailAuthController {
@@ -17,7 +20,7 @@ export class EmailAuthController {
 
     @Post('register')
     @UseGuards(JwtGuard, RolesGuard)
-    @Roles('ADMIN')
+    @Roles(AuthRole.ADMIN)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Register a new user with email and password' })
     @ApiBody({ type: RegisterEmailDto })
@@ -81,10 +84,26 @@ export class EmailAuthController {
 
     @Post('users/:userId/password-reset')
     @UseGuards(JwtGuard, RolesGuard)
-    @Roles('ADMIN')
+    @Roles(AuthRole.ADMIN)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Send a password reset link to a user' })
     async sendPasswordResetToUser(@Param('userId') userId: string) {
         return this.authService.sendPasswordResetForUser(userId);
+    }
+
+    @Post(':userId/admin-login')
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles(AuthRole.ADMIN)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Login as a user while retaining the actor role in the token' })
+    @ApiResponse({ status: 200, type: AuthResponse })
+    @ApiResponse({ status: 403, description: 'Cannot login as yourself' })
+    @ApiResponse({ status: 404, description: 'User not found' })
+    async adminLoginToAccount(
+        @Param('userId') userId: string,
+        @CurrentUser('id') actorId: string,
+        @CurrentUser('role') actorRole: AuthRole,
+    ) {
+        return this.authService.adminLoginToAccount(userId, actorId, actorRole);
     }
 }

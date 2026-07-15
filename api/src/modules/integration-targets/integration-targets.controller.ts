@@ -18,6 +18,7 @@ import {
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
+import { AuthRole } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { IntegrationTargetsService } from './integration-targets.service';
 import {
@@ -38,7 +39,7 @@ import { MaskedUserIntegrationEntity } from './entities/user-integration.entity'
 @ApiBearerAuth()
 @Controller('admin/integration-targets')
 @UseGuards(JwtGuard, RolesGuard)
-@Roles('ADMIN', 'SUPER_ADMIN', 'SUPPORT')
+@Roles(AuthRole.ADMIN, AuthRole.SUPPORT)
 export class IntegrationTargetsController {
   constructor(
     private readonly integrationTargetsService: IntegrationTargetsService,
@@ -62,7 +63,7 @@ export class IntegrationTargetsController {
   }
 
   @Post()
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Create an integration target' })
   @ApiResponse({ status: 201, type: IntegrationTarget })
   create(@Body() dto: CreateIntegrationTargetDto) {
@@ -70,7 +71,7 @@ export class IntegrationTargetsController {
   }
 
   @Patch(':id')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Update an integration target' })
   @ApiResponse({ status: 200, type: IntegrationTarget })
   update(@Param('id') id: string, @Body() dto: UpdateIntegrationTargetDto) {
@@ -78,7 +79,7 @@ export class IntegrationTargetsController {
   }
 
   @Patch(':id/visibility')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Toggle integration target visibility' })
   @ApiResponse({ status: 200, type: IntegrationTarget })
   updateVisibility(
@@ -89,7 +90,7 @@ export class IntegrationTargetsController {
   }
 
   @Post(':id/accounts')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Create a user connection on behalf of a user' })
   @ApiResponse({ status: 201, type: MaskedUserIntegrationEntity })
   createAccount(
@@ -100,7 +101,7 @@ export class IntegrationTargetsController {
   }
 
   @Patch(':id/accounts/:userIntegrationId')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Update a user connection on behalf of a user' })
   @ApiResponse({ status: 200, type: MaskedUserIntegrationEntity })
   updateAccount(
@@ -112,7 +113,7 @@ export class IntegrationTargetsController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete an integration target without connections' })
   @ApiResponse({ status: 200, description: 'Deleted' })
   remove(@Param('id') id: string) {

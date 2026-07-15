@@ -80,23 +80,25 @@ export function useRefreshAccountToken() {
 
 export function useAdminLoginToAccount() {
     const { login } = useAuthStore((state) => state);
+    const navigate = useNavigate();
 
     return useMutation({
         mutationFn: (account_uuid: string) => adminLoginToAccount(account_uuid),
         onSuccess: (data: LoggedInUser) => {
-            toast({
-                title: "Admin login successful",
-                description: "You have successfully logged in as admin",
-                duration: 2000,
-            });
             login({
                 ...data,
                 isLoggedIn: true,
             });
+            toast({
+                title: "Logged in as user",
+                description: "You are now viewing the app as this user",
+                duration: 2000,
+            });
+            navigate(Routes.dashboard.root);
         },
         onError: (error: any) => {
             toast({
-                title: "Could not admin login to account",
+                title: "Could not login as user",
                 description: error.message,
                 duration: 3000,
                 variant: "error",

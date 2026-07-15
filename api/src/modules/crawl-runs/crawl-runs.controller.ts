@@ -8,6 +8,7 @@ import {
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
+import { AuthRole } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { CrawlRunsService } from './crawl-runs.service';
 import {
@@ -20,7 +21,7 @@ import { CrawlRun } from './entities/crawl-run.entity';
 @ApiBearerAuth()
 @Controller('admin/crawl-runs')
 @UseGuards(JwtGuard, RolesGuard)
-@Roles('ADMIN', 'SUPER_ADMIN', 'SUPPORT')
+@Roles(AuthRole.ADMIN, AuthRole.SUPPORT)
 export class CrawlRunsController {
   constructor(private readonly crawlRunsService: CrawlRunsService) {}
 
@@ -44,7 +45,7 @@ export class CrawlRunsController {
   }
 
   @Post(':id/rerun')
-  @Roles('ADMIN', 'SUPER_ADMIN')
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Re-enqueue a crawl run with the same attribution' })
   @ApiResponse({ status: 201, type: CrawlRun })
   @ApiResponse({ status: 404, description: 'Crawl run not found' })

@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
+import { AuthRole } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { AgenciesService } from './agencies.service';
 import { CreateAgencyDto } from './dto/create-agency.dto';
@@ -16,7 +17,7 @@ import { Agency } from './entities/agency.entity';
 @ApiBearerAuth()
 @Controller('admin/agencies')
 @UseGuards(JwtGuard, RolesGuard)
-@Roles('ADMIN', 'SUPER_ADMIN', 'SUPPORT')
+@Roles(AuthRole.ADMIN, AuthRole.SUPPORT)
 export class AgenciesController {
     constructor(private readonly agenciesService: AgenciesService) { }
 
@@ -36,7 +37,7 @@ export class AgenciesController {
     }
 
     @Post()
-    @Roles('ADMIN', 'SUPER_ADMIN')
+    @Roles(AuthRole.ADMIN)
     @ApiOperation({ summary: 'Create an agency' })
     @ApiResponse({ status: 201, type: Agency })
     @ApiResponse({ status: 409, description: 'base_url already exists' })
@@ -45,7 +46,7 @@ export class AgenciesController {
     }
 
     @Patch(':id/trackers/:userId')
-    @Roles('ADMIN', 'SUPER_ADMIN')
+    @Roles(AuthRole.ADMIN)
     @ApiOperation({ summary: "Update admin-only tracker settings for a user's tracked agency" })
     @ApiResponse({ status: 200, description: 'Updated UserTrackedAgency' })
     @ApiResponse({ status: 404, description: 'User does not track this agency' })
@@ -58,7 +59,7 @@ export class AgenciesController {
     }
 
     @Patch(':id')
-    @Roles('ADMIN', 'SUPER_ADMIN')
+    @Roles(AuthRole.ADMIN)
     @ApiOperation({ summary: 'Update an agency' })
     @ApiResponse({ status: 200, type: Agency })
     @ApiResponse({ status: 404, description: 'Agency not found' })
@@ -67,7 +68,7 @@ export class AgenciesController {
     }
 
     @Patch(':id/visibility')
-    @Roles('ADMIN', 'SUPER_ADMIN')
+    @Roles(AuthRole.ADMIN)
     @ApiOperation({ summary: 'Update agency visibility flags' })
     @ApiResponse({ status: 200, type: Agency })
     updateVisibility(@Param('id') id: string, @Body() dto: UpdateAgencyVisibilityDto) {
@@ -75,7 +76,7 @@ export class AgenciesController {
     }
 
     @Delete(':id')
-    @Roles('ADMIN', 'SUPER_ADMIN')
+    @Roles(AuthRole.ADMIN)
     @ApiOperation({ summary: 'Delete an agency (only if no scrapers/crawl runs exist)' })
     @ApiResponse({ status: 200, description: 'Deleted' })
     @ApiResponse({ status: 409, description: 'Agency has dependent scrapers or crawl runs' })

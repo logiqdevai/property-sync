@@ -10806,6 +10806,7 @@ export namespace Prisma {
     success_rate: Decimal | null
     avg_runtime_ms: number | null
     consecutive_failures: number | null
+    normalize_limit: number | null
   }
 
   export type ScraperSumAggregateOutputType = {
@@ -10813,6 +10814,7 @@ export namespace Prisma {
     success_rate: Decimal | null
     avg_runtime_ms: number | null
     consecutive_failures: number | null
+    normalize_limit: number | null
   }
 
   export type ScraperMinAggregateOutputType = {
@@ -10827,6 +10829,7 @@ export namespace Prisma {
     success_rate: Decimal | null
     avg_runtime_ms: number | null
     consecutive_failures: number | null
+    normalize_limit: number | null
     last_success_at: Date | null
     last_failure_at: Date | null
     created_at: Date | null
@@ -10845,6 +10848,7 @@ export namespace Prisma {
     success_rate: Decimal | null
     avg_runtime_ms: number | null
     consecutive_failures: number | null
+    normalize_limit: number | null
     last_success_at: Date | null
     last_failure_at: Date | null
     created_at: Date | null
@@ -10863,6 +10867,7 @@ export namespace Prisma {
     success_rate: number
     avg_runtime_ms: number
     consecutive_failures: number
+    normalize_limit: number
     last_success_at: number
     last_failure_at: number
     created_at: number
@@ -10876,6 +10881,7 @@ export namespace Prisma {
     success_rate?: true
     avg_runtime_ms?: true
     consecutive_failures?: true
+    normalize_limit?: true
   }
 
   export type ScraperSumAggregateInputType = {
@@ -10883,6 +10889,7 @@ export namespace Prisma {
     success_rate?: true
     avg_runtime_ms?: true
     consecutive_failures?: true
+    normalize_limit?: true
   }
 
   export type ScraperMinAggregateInputType = {
@@ -10897,6 +10904,7 @@ export namespace Prisma {
     success_rate?: true
     avg_runtime_ms?: true
     consecutive_failures?: true
+    normalize_limit?: true
     last_success_at?: true
     last_failure_at?: true
     created_at?: true
@@ -10915,6 +10923,7 @@ export namespace Prisma {
     success_rate?: true
     avg_runtime_ms?: true
     consecutive_failures?: true
+    normalize_limit?: true
     last_success_at?: true
     last_failure_at?: true
     created_at?: true
@@ -10933,6 +10942,7 @@ export namespace Prisma {
     success_rate?: true
     avg_runtime_ms?: true
     consecutive_failures?: true
+    normalize_limit?: true
     last_success_at?: true
     last_failure_at?: true
     created_at?: true
@@ -11038,6 +11048,7 @@ export namespace Prisma {
     success_rate: Decimal | null
     avg_runtime_ms: number | null
     consecutive_failures: number
+    normalize_limit: number | null
     last_success_at: Date | null
     last_failure_at: Date | null
     created_at: Date
@@ -11075,6 +11086,7 @@ export namespace Prisma {
     success_rate?: boolean
     avg_runtime_ms?: boolean
     consecutive_failures?: boolean
+    normalize_limit?: boolean
     last_success_at?: boolean
     last_failure_at?: boolean
     created_at?: boolean
@@ -11101,6 +11113,7 @@ export namespace Prisma {
     success_rate?: boolean
     avg_runtime_ms?: boolean
     consecutive_failures?: boolean
+    normalize_limit?: boolean
     last_success_at?: boolean
     last_failure_at?: boolean
     created_at?: boolean
@@ -11121,6 +11134,7 @@ export namespace Prisma {
     success_rate?: boolean
     avg_runtime_ms?: boolean
     consecutive_failures?: boolean
+    normalize_limit?: boolean
     last_success_at?: boolean
     last_failure_at?: boolean
     created_at?: boolean
@@ -11141,13 +11155,14 @@ export namespace Prisma {
     success_rate?: boolean
     avg_runtime_ms?: boolean
     consecutive_failures?: boolean
+    normalize_limit?: boolean
     last_success_at?: boolean
     last_failure_at?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type ScraperOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "name" | "active_version_id" | "version_count" | "status" | "self_healing_enabled" | "health" | "success_rate" | "avg_runtime_ms" | "consecutive_failures" | "last_success_at" | "last_failure_at" | "created_at" | "updated_at", ExtArgs["result"]["scraper"]>
+  export type ScraperOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "name" | "active_version_id" | "version_count" | "status" | "self_healing_enabled" | "health" | "success_rate" | "avg_runtime_ms" | "consecutive_failures" | "normalize_limit" | "last_success_at" | "last_failure_at" | "created_at" | "updated_at", ExtArgs["result"]["scraper"]>
   export type ScraperInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     active_version?: boolean | Scraper$active_versionArgs<ExtArgs>
@@ -11190,6 +11205,7 @@ export namespace Prisma {
       success_rate: Prisma.Decimal | null
       avg_runtime_ms: number | null
       consecutive_failures: number
+      normalize_limit: number | null
       last_success_at: Date | null
       last_failure_at: Date | null
       created_at: Date
@@ -11635,6 +11651,7 @@ export namespace Prisma {
     readonly success_rate: FieldRef<"Scraper", 'Decimal'>
     readonly avg_runtime_ms: FieldRef<"Scraper", 'Int'>
     readonly consecutive_failures: FieldRef<"Scraper", 'Int'>
+    readonly normalize_limit: FieldRef<"Scraper", 'Int'>
     readonly last_success_at: FieldRef<"Scraper", 'DateTime'>
     readonly last_failure_at: FieldRef<"Scraper", 'DateTime'>
     readonly created_at: FieldRef<"Scraper", 'DateTime'>
@@ -29947,6 +29964,7 @@ export namespace Prisma {
     success_rate: 'success_rate',
     avg_runtime_ms: 'avg_runtime_ms',
     consecutive_failures: 'consecutive_failures',
+    normalize_limit: 'normalize_limit',
     last_success_at: 'last_success_at',
     last_failure_at: 'last_failure_at',
     created_at: 'created_at',
@@ -31239,6 +31257,7 @@ export namespace Prisma {
     success_rate?: DecimalNullableFilter<"Scraper"> | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: IntNullableFilter<"Scraper"> | number | null
     consecutive_failures?: IntFilter<"Scraper"> | number
+    normalize_limit?: IntNullableFilter<"Scraper"> | number | null
     last_success_at?: DateTimeNullableFilter<"Scraper"> | Date | string | null
     last_failure_at?: DateTimeNullableFilter<"Scraper"> | Date | string | null
     created_at?: DateTimeFilter<"Scraper"> | Date | string
@@ -31264,6 +31283,7 @@ export namespace Prisma {
     success_rate?: SortOrderInput | SortOrder
     avg_runtime_ms?: SortOrderInput | SortOrder
     consecutive_failures?: SortOrder
+    normalize_limit?: SortOrderInput | SortOrder
     last_success_at?: SortOrderInput | SortOrder
     last_failure_at?: SortOrderInput | SortOrder
     created_at?: SortOrder
@@ -31292,6 +31312,7 @@ export namespace Prisma {
     success_rate?: DecimalNullableFilter<"Scraper"> | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: IntNullableFilter<"Scraper"> | number | null
     consecutive_failures?: IntFilter<"Scraper"> | number
+    normalize_limit?: IntNullableFilter<"Scraper"> | number | null
     last_success_at?: DateTimeNullableFilter<"Scraper"> | Date | string | null
     last_failure_at?: DateTimeNullableFilter<"Scraper"> | Date | string | null
     created_at?: DateTimeFilter<"Scraper"> | Date | string
@@ -31317,6 +31338,7 @@ export namespace Prisma {
     success_rate?: SortOrderInput | SortOrder
     avg_runtime_ms?: SortOrderInput | SortOrder
     consecutive_failures?: SortOrder
+    normalize_limit?: SortOrderInput | SortOrder
     last_success_at?: SortOrderInput | SortOrder
     last_failure_at?: SortOrderInput | SortOrder
     created_at?: SortOrder
@@ -31343,6 +31365,7 @@ export namespace Prisma {
     success_rate?: DecimalNullableWithAggregatesFilter<"Scraper"> | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: IntNullableWithAggregatesFilter<"Scraper"> | number | null
     consecutive_failures?: IntWithAggregatesFilter<"Scraper"> | number
+    normalize_limit?: IntNullableWithAggregatesFilter<"Scraper"> | number | null
     last_success_at?: DateTimeNullableWithAggregatesFilter<"Scraper"> | Date | string | null
     last_failure_at?: DateTimeNullableWithAggregatesFilter<"Scraper"> | Date | string | null
     created_at?: DateTimeWithAggregatesFilter<"Scraper"> | Date | string
@@ -33510,6 +33533,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -33535,6 +33559,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -33556,6 +33581,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33581,6 +33607,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33604,6 +33631,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -33620,6 +33648,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33638,6 +33667,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36115,6 +36145,7 @@ export namespace Prisma {
     success_rate?: SortOrder
     avg_runtime_ms?: SortOrder
     consecutive_failures?: SortOrder
+    normalize_limit?: SortOrder
     last_success_at?: SortOrder
     last_failure_at?: SortOrder
     created_at?: SortOrder
@@ -36126,6 +36157,7 @@ export namespace Prisma {
     success_rate?: SortOrder
     avg_runtime_ms?: SortOrder
     consecutive_failures?: SortOrder
+    normalize_limit?: SortOrder
   }
 
   export type ScraperMaxOrderByAggregateInput = {
@@ -36140,6 +36172,7 @@ export namespace Prisma {
     success_rate?: SortOrder
     avg_runtime_ms?: SortOrder
     consecutive_failures?: SortOrder
+    normalize_limit?: SortOrder
     last_success_at?: SortOrder
     last_failure_at?: SortOrder
     created_at?: SortOrder
@@ -36158,6 +36191,7 @@ export namespace Prisma {
     success_rate?: SortOrder
     avg_runtime_ms?: SortOrder
     consecutive_failures?: SortOrder
+    normalize_limit?: SortOrder
     last_success_at?: SortOrder
     last_failure_at?: SortOrder
     created_at?: SortOrder
@@ -36169,6 +36203,7 @@ export namespace Prisma {
     success_rate?: SortOrder
     avg_runtime_ms?: SortOrder
     consecutive_failures?: SortOrder
+    normalize_limit?: SortOrder
   }
 
   export type EnumScraperStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -40687,6 +40722,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -40710,6 +40746,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -41008,6 +41045,7 @@ export namespace Prisma {
     success_rate?: DecimalNullableFilter<"Scraper"> | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: IntNullableFilter<"Scraper"> | number | null
     consecutive_failures?: IntFilter<"Scraper"> | number
+    normalize_limit?: IntNullableFilter<"Scraper"> | number | null
     last_success_at?: DateTimeNullableFilter<"Scraper"> | Date | string | null
     last_failure_at?: DateTimeNullableFilter<"Scraper"> | Date | string | null
     created_at?: DateTimeFilter<"Scraper"> | Date | string
@@ -42204,6 +42242,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -42228,6 +42267,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -42380,6 +42420,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42404,6 +42445,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42710,6 +42752,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -42734,6 +42777,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -42759,6 +42803,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -42782,6 +42827,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -42858,6 +42904,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42882,6 +42929,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42913,6 +42961,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42936,6 +42985,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43002,6 +43052,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -43026,6 +43077,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -43127,6 +43179,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43151,6 +43204,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43334,6 +43388,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -43358,6 +43413,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -43640,6 +43696,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43664,6 +43721,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43970,6 +44028,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -43994,6 +44053,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -44150,6 +44210,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44174,6 +44235,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -46127,6 +46189,7 @@ export namespace Prisma {
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
     consecutive_failures?: number
+    normalize_limit?: number | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
     created_at?: Date | string
@@ -46233,6 +46296,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -46256,6 +46320,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -46278,6 +46343,7 @@ export namespace Prisma {
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
     consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string

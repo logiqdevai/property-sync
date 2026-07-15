@@ -71,7 +71,7 @@ export class PropertyNormalizationService {
   async normalizeForCrawlRun(crawlRunId: string): Promise<void> {
     const crawlRun = await this.prisma.crawlRun.findUnique({
       where: { id: crawlRunId },
-      include: { user_tracked_agency: true },
+      include: { user_tracked_agency: true, scraper: true },
     });
 
     if (!crawlRun?.started_at) {
@@ -100,12 +100,12 @@ export class PropertyNormalizationService {
       return;
     }
 
-    const sourceProperties = await this.prisma.sourceProperty.findMany({
-      where: {
-        source_agency_id: crawlRun.source_agency_id,
-        last_seen_at: { gte: crawlRun.started_at },
-      },
-    });
+    const normalizeLimit = crawlRun.scraper?.normalize_limit ?? null;
+    const sourceProperties = await this.loadSourcePropertiesForNormalization(
+      crawlRun.source_agency_id,
+      crawlRun.started_at,
+      normalizeLimit,
+    );
 
     const model =
       tracker.ai_model ??
@@ -123,6 +123,7 @@ export class PropertyNormalizationService {
           user_integration_id: resolvedKey.userIntegrationId,
           ai_provider: tracker.ai_provider,
           ai_model: model,
+          ...(normalizeLimit !== null && { normalize_limit: normalizeLimit }),
         },
       },
     });
@@ -389,12 +390,20 @@ export class PropertyNormalizationService {
     }
 
     const output = await this.aiBatchClient.downloadOutputFile(client, batch.output_file_id);
-    const sourceProperties = await this.prisma.sourceProperty.findMany({
-      where: {
-        source_agency_id: crawlRun.source_agency_id,
-        last_seen_at: { gte: crawlRun.started_at },
-      },
-    });
+    let normalizeLimit: number | null =
+      typeof metadata.normalize_limit === 'number' ? metadata.normalize_limit : null;
+    if (normalizeLimit === null && crawlRun.scraper_id) {
+      const scraper = await this.prisma.scraper.findUnique({
+        where: { id: crawlRun.scraper_id },
+        select: { normalize_limit: true },
+      });
+      normalizeLimit = scraper?.normalize_limit ?? null;
+    }
+    const sourceProperties = await this.loadSourcePropertiesForNormalization(
+      crawlRun.source_agency_id,
+      crawlRun.started_at,
+      normalizeLimit,
+    );
 
     const normalizedBySourceId = new Map<string, NormalizedAiRow | null>();
     let inputTokens = 0;
@@ -440,6 +449,31 @@ export class PropertyNormalizationService {
         },
       },
     });
+  }
+
+  private async loadSourcePropertiesForNormalization(
+    sourceAgencyId: string,
+    crawlStartedAt: Date,
+    normalizeLimit: number | null,
+  ): Promise<SourcePropertyRow[]> {
+    const sourceProperties = await this.prisma.sourceProperty.findMany({
+      where: {
+        source_agency_id: sourceAgencyId,
+        last_seen_at: { gte: crawlStartedAt },
+      },
+      orderBy: { last_seen_at: 'asc' },
+      ...(normalizeLimit !== null && normalizeLimit > 0
+        ? { take: normalizeLimit }
+        : {}),
+    });
+
+    if (normalizeLimit !== null && normalizeLimit > 0) {
+      this.logger.log(
+        `Normalize limit ${normalizeLimit}: selected ${sourceProperties.length} source properties`,
+      );
+    }
+
+    return sourceProperties;
   }
 
   private async normalizeSync(

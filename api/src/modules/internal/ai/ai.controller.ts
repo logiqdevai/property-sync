@@ -4,11 +4,11 @@ import { CreateAiDto } from './dto/create-ai.dto';
 import { Roles } from '@/shared/decorators/roles.decorator';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
-import { AuthRoles } from 'src/modules/auth/interfaces/auth.interface';
+import { AuthRole } from 'generated/prisma';
 
 @Controller('ai')
 @UseGuards(JwtGuard, RolesGuard)
-@Roles(AuthRoles.ADMIN)
+@Roles(AuthRole.ADMIN)
 export class AiController {
   constructor(private readonly aiService: InternalAiService) { }
 
