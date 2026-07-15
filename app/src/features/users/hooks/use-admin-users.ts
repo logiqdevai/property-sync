@@ -69,7 +69,7 @@ export const useUpdateAdminUser = () => {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateAdminUserPayload }) =>
       updateAdminUser(id, payload),
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
       toast({
         title: "User updated",
