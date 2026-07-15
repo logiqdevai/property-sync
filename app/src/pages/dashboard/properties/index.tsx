@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Chip, Input, Pagination, Select, ListBox, Table } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { PropertyStatusChip } from "./components/property-status-chip";
+import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import type { PropertyStatus } from "@/features/properties/interfaces/properties.interfaces";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
 import { useUserProperties } from "@/features/user-properties/hooks/use-user-properties";

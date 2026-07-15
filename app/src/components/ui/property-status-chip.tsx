@@ -1,7 +1,10 @@
 import { Chip } from "@heroui/react";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
-import { PropertyStatuses, type PropertyStatus } from "@/features/properties/interfaces/properties.interfaces";
+import {
+  PropertyStatuses,
+  type PropertyStatus,
+} from "@/features/properties/interfaces/properties.interfaces";
 
 const statusColor: Record<PropertyStatus, "success" | "default" | "warning" | "danger"> = {
   [PropertyStatuses.ACTIVE]: "success",

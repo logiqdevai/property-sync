@@ -5,7 +5,7 @@ import { Layers } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { PropertyStatusChip } from "./components/property-status-chip";
+import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { useMergeProperties, useProperties } from "@/features/properties/hooks/use-properties";
 import {
   type ListingType,

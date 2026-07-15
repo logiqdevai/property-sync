@@ -1,6 +1,7 @@
 import type {
   ListingType,
   PropertyHistoryEntry,
+  PropertySourceLink,
   PropertyStatus,
   PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
@@ -33,6 +34,8 @@ export interface UserProperty {
 }
 
 export interface UserPropertyDetail extends UserProperty {
+  duplicate_group_id: string | null;
+  source_links: PropertySourceLink[];
   history: PropertyHistoryEntry[];
 }
 

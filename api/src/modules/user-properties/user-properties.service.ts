@@ -101,6 +101,21 @@ export class UserPropertiesService {
       include: {
         canonical_property: {
           include: {
+            source_links: {
+              include: {
+                source_property: {
+                  select: {
+                    id: true,
+                    source_url: true,
+                    external_id: true,
+                    raw_title: true,
+                    raw_price: true,
+                    last_seen_at: true,
+                    status: true,
+                  },
+                },
+              },
+            },
             history: {
               orderBy: { created_at: 'desc' },
             },
@@ -117,6 +132,8 @@ export class UserPropertiesService {
 
     return {
       ...rest,
+      duplicate_group_id: canonical_property.duplicate_group_id,
+      source_links: canonical_property.source_links,
       history: canonical_property.history,
     };
   }
