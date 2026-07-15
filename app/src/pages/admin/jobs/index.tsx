@@ -14,12 +14,7 @@ import {
 } from "@/features/jobs/interfaces/jobs.interfaces";
 import { JobStatusFilterOptions } from "@/config/constants/dropdowns/job-status-filter.options";
 import { JobQueueFilterOptions } from "@/config/constants/dropdowns/job-queue-filter.options";
-
-function formatDuration(ms: number | null) {
-  if (ms === null) return "—";
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-}
+import { formatDuration } from "@/lib/duration";
 
 function getJobActions(job: { id: string; status: JobStatus }): TableRowAction[] {
   const actions: TableRowAction[] = [{ id: "details", label: "Details", icon: Eye }];

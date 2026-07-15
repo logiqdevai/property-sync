@@ -115,4 +115,7 @@ export const ApiRoutes = {
     dashboard: {
         root: "/dashboard",
     },
+    usage: {
+        crawlRuns: "/usage/crawl-runs",
+    },
 }

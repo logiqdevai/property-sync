@@ -226,13 +226,17 @@ export class ScraperGenerationService {
         },
       });
 
+      const finishedAt = new Date();
       return tx.scraperGenerationRun.update({
         where: { id },
         data: {
           scraper_id: scraperId,
           produced_version_id: version.id,
           status: GenerationRunStatus.SUCCESS,
-          finished_at: new Date(),
+          finished_at: finishedAt,
+          duration_ms: run.started_at
+            ? finishedAt.getTime() - run.started_at.getTime()
+            : null,
         },
         include: { steps: { orderBy: { step_index: 'asc' } } },
       });
@@ -246,12 +250,16 @@ export class ScraperGenerationService {
       throw new BadRequestException('Run has already finished');
     }
 
+    const finishedAt = new Date();
     return this.prisma.scraperGenerationRun.update({
       where: { id },
       data: {
         status: GenerationRunStatus.FAILED,
         error_message: dto.reason ?? 'Rejected by admin',
-        finished_at: new Date(),
+        finished_at: finishedAt,
+        duration_ms: run.started_at
+          ? finishedAt.getTime() - run.started_at.getTime()
+          : null,
       },
     });
   }
@@ -268,10 +276,17 @@ export class ScraperGenerationService {
       );
     }
 
+    const finishedAt = new Date();
     // TODO(next task): signal the running BullMQ job/loop to stop
     return this.prisma.scraperGenerationRun.update({
       where: { id },
-      data: { status: GenerationRunStatus.CANCELLED, finished_at: new Date() },
+      data: {
+        status: GenerationRunStatus.CANCELLED,
+        finished_at: finishedAt,
+        duration_ms: run.started_at
+          ? finishedAt.getTime() - run.started_at.getTime()
+          : null,
+      },
     });
   }
 
@@ -317,6 +332,7 @@ export class ScraperGenerationService {
         status: GenerationRunStatus.QUEUED,
         error_message: null,
         finished_at: null,
+        duration_ms: null,
         staged_config: null,
         prompt: mergedPrompt,
       },

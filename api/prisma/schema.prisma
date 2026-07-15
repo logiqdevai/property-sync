@@ -443,6 +443,7 @@ model ScraperGenerationRun {
   error_message       String?
   started_at          DateTime?
   finished_at         DateTime?
+  duration_ms         Int?
   created_at          DateTime            @default(now())
   updated_at          DateTime            @updatedAt
 

@@ -51,9 +51,10 @@ export class ComputerUseOrchestratorService {
       },
     });
 
+    const startedAt = new Date();
     await this.prisma.scraperGenerationRun.update({
       where: { id: generationRunId },
-      data: { status: GenerationRunStatus.RUNNING, started_at: new Date() },
+      data: { status: GenerationRunStatus.RUNNING, started_at: startedAt },
     });
 
     const model =
@@ -215,18 +216,21 @@ export class ComputerUseOrchestratorService {
       await driver.close();
     }
 
+    const finishedAt = new Date();
     await this.prisma.scraperGenerationRun.update({
       where: { id: generationRunId },
       data: finalConfig
         ? {
             status: GenerationRunStatus.AWAITING_REVIEW,
             staged_config: finalConfig as Prisma.InputJsonValue,
-            finished_at: new Date(),
+            finished_at: finishedAt,
+            duration_ms: finishedAt.getTime() - startedAt.getTime(),
           }
         : {
             status: GenerationRunStatus.FAILED,
             error_message: failureReason ?? 'Generation did not converge',
-            finished_at: new Date(),
+            finished_at: finishedAt,
+            duration_ms: finishedAt.getTime() - startedAt.getTime(),
           },
     });
   }

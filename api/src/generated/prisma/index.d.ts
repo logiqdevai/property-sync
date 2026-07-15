@@ -12184,8 +12184,18 @@ export namespace Prisma {
 
   export type AggregateScraperGenerationRun = {
     _count: ScraperGenerationRunCountAggregateOutputType | null
+    _avg: ScraperGenerationRunAvgAggregateOutputType | null
+    _sum: ScraperGenerationRunSumAggregateOutputType | null
     _min: ScraperGenerationRunMinAggregateOutputType | null
     _max: ScraperGenerationRunMaxAggregateOutputType | null
+  }
+
+  export type ScraperGenerationRunAvgAggregateOutputType = {
+    duration_ms: number | null
+  }
+
+  export type ScraperGenerationRunSumAggregateOutputType = {
+    duration_ms: number | null
   }
 
   export type ScraperGenerationRunMinAggregateOutputType = {
@@ -12199,6 +12209,7 @@ export namespace Prisma {
     error_message: string | null
     started_at: Date | null
     finished_at: Date | null
+    duration_ms: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -12214,6 +12225,7 @@ export namespace Prisma {
     error_message: string | null
     started_at: Date | null
     finished_at: Date | null
+    duration_ms: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -12230,11 +12242,20 @@ export namespace Prisma {
     error_message: number
     started_at: number
     finished_at: number
+    duration_ms: number
     created_at: number
     updated_at: number
     _all: number
   }
 
+
+  export type ScraperGenerationRunAvgAggregateInputType = {
+    duration_ms?: true
+  }
+
+  export type ScraperGenerationRunSumAggregateInputType = {
+    duration_ms?: true
+  }
 
   export type ScraperGenerationRunMinAggregateInputType = {
     id?: true
@@ -12247,6 +12268,7 @@ export namespace Prisma {
     error_message?: true
     started_at?: true
     finished_at?: true
+    duration_ms?: true
     created_at?: true
     updated_at?: true
   }
@@ -12262,6 +12284,7 @@ export namespace Prisma {
     error_message?: true
     started_at?: true
     finished_at?: true
+    duration_ms?: true
     created_at?: true
     updated_at?: true
   }
@@ -12278,6 +12301,7 @@ export namespace Prisma {
     error_message?: true
     started_at?: true
     finished_at?: true
+    duration_ms?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -12321,6 +12345,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: ScraperGenerationRunAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ScraperGenerationRunSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: ScraperGenerationRunMinAggregateInputType
@@ -12351,6 +12387,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: ScraperGenerationRunCountAggregateInputType | true
+    _avg?: ScraperGenerationRunAvgAggregateInputType
+    _sum?: ScraperGenerationRunSumAggregateInputType
     _min?: ScraperGenerationRunMinAggregateInputType
     _max?: ScraperGenerationRunMaxAggregateInputType
   }
@@ -12367,9 +12405,12 @@ export namespace Prisma {
     error_message: string | null
     started_at: Date | null
     finished_at: Date | null
+    duration_ms: number | null
     created_at: Date
     updated_at: Date
     _count: ScraperGenerationRunCountAggregateOutputType | null
+    _avg: ScraperGenerationRunAvgAggregateOutputType | null
+    _sum: ScraperGenerationRunSumAggregateOutputType | null
     _min: ScraperGenerationRunMinAggregateOutputType | null
     _max: ScraperGenerationRunMaxAggregateOutputType | null
   }
@@ -12400,6 +12441,7 @@ export namespace Prisma {
     error_message?: boolean
     started_at?: boolean
     finished_at?: boolean
+    duration_ms?: boolean
     created_at?: boolean
     updated_at?: boolean
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
@@ -12421,6 +12463,7 @@ export namespace Prisma {
     error_message?: boolean
     started_at?: boolean
     finished_at?: boolean
+    duration_ms?: boolean
     created_at?: boolean
     updated_at?: boolean
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
@@ -12440,6 +12483,7 @@ export namespace Prisma {
     error_message?: boolean
     started_at?: boolean
     finished_at?: boolean
+    duration_ms?: boolean
     created_at?: boolean
     updated_at?: boolean
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
@@ -12459,11 +12503,12 @@ export namespace Prisma {
     error_message?: boolean
     started_at?: boolean
     finished_at?: boolean
+    duration_ms?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type ScraperGenerationRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "scraper_id" | "trigger" | "status" | "prompt" | "staged_config" | "produced_version_id" | "error_message" | "started_at" | "finished_at" | "created_at" | "updated_at", ExtArgs["result"]["scraperGenerationRun"]>
+  export type ScraperGenerationRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "scraper_id" | "trigger" | "status" | "prompt" | "staged_config" | "produced_version_id" | "error_message" | "started_at" | "finished_at" | "duration_ms" | "created_at" | "updated_at", ExtArgs["result"]["scraperGenerationRun"]>
   export type ScraperGenerationRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     scraper?: boolean | ScraperGenerationRun$scraperArgs<ExtArgs>
@@ -12502,6 +12547,7 @@ export namespace Prisma {
       error_message: string | null
       started_at: Date | null
       finished_at: Date | null
+      duration_ms: number | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["scraperGenerationRun"]>
@@ -12942,6 +12988,7 @@ export namespace Prisma {
     readonly error_message: FieldRef<"ScraperGenerationRun", 'String'>
     readonly started_at: FieldRef<"ScraperGenerationRun", 'DateTime'>
     readonly finished_at: FieldRef<"ScraperGenerationRun", 'DateTime'>
+    readonly duration_ms: FieldRef<"ScraperGenerationRun", 'Int'>
     readonly created_at: FieldRef<"ScraperGenerationRun", 'DateTime'>
     readonly updated_at: FieldRef<"ScraperGenerationRun", 'DateTime'>
   }
@@ -29889,6 +29936,7 @@ export namespace Prisma {
     error_message: 'error_message',
     started_at: 'started_at',
     finished_at: 'finished_at',
+    duration_ms: 'duration_ms',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -31278,6 +31326,7 @@ export namespace Prisma {
     error_message?: StringNullableFilter<"ScraperGenerationRun"> | string | null
     started_at?: DateTimeNullableFilter<"ScraperGenerationRun"> | Date | string | null
     finished_at?: DateTimeNullableFilter<"ScraperGenerationRun"> | Date | string | null
+    duration_ms?: IntNullableFilter<"ScraperGenerationRun"> | number | null
     created_at?: DateTimeFilter<"ScraperGenerationRun"> | Date | string
     updated_at?: DateTimeFilter<"ScraperGenerationRun"> | Date | string
     source_agency?: XOR<SourceAgencyScalarRelationFilter, SourceAgencyWhereInput>
@@ -31298,6 +31347,7 @@ export namespace Prisma {
     error_message?: SortOrderInput | SortOrder
     started_at?: SortOrderInput | SortOrder
     finished_at?: SortOrderInput | SortOrder
+    duration_ms?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     source_agency?: SourceAgencyOrderByWithRelationInput
@@ -31321,6 +31371,7 @@ export namespace Prisma {
     error_message?: StringNullableFilter<"ScraperGenerationRun"> | string | null
     started_at?: DateTimeNullableFilter<"ScraperGenerationRun"> | Date | string | null
     finished_at?: DateTimeNullableFilter<"ScraperGenerationRun"> | Date | string | null
+    duration_ms?: IntNullableFilter<"ScraperGenerationRun"> | number | null
     created_at?: DateTimeFilter<"ScraperGenerationRun"> | Date | string
     updated_at?: DateTimeFilter<"ScraperGenerationRun"> | Date | string
     source_agency?: XOR<SourceAgencyScalarRelationFilter, SourceAgencyWhereInput>
@@ -31341,11 +31392,14 @@ export namespace Prisma {
     error_message?: SortOrderInput | SortOrder
     started_at?: SortOrderInput | SortOrder
     finished_at?: SortOrderInput | SortOrder
+    duration_ms?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: ScraperGenerationRunCountOrderByAggregateInput
+    _avg?: ScraperGenerationRunAvgOrderByAggregateInput
     _max?: ScraperGenerationRunMaxOrderByAggregateInput
     _min?: ScraperGenerationRunMinOrderByAggregateInput
+    _sum?: ScraperGenerationRunSumOrderByAggregateInput
   }
 
   export type ScraperGenerationRunScalarWhereWithAggregatesInput = {
@@ -31363,6 +31417,7 @@ export namespace Prisma {
     error_message?: StringNullableWithAggregatesFilter<"ScraperGenerationRun"> | string | null
     started_at?: DateTimeNullableWithAggregatesFilter<"ScraperGenerationRun"> | Date | string | null
     finished_at?: DateTimeNullableWithAggregatesFilter<"ScraperGenerationRun"> | Date | string | null
+    duration_ms?: IntNullableWithAggregatesFilter<"ScraperGenerationRun"> | number | null
     created_at?: DateTimeWithAggregatesFilter<"ScraperGenerationRun"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"ScraperGenerationRun"> | Date | string
   }
@@ -33548,6 +33603,7 @@ export namespace Prisma {
     error_message?: string | null
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     source_agency: SourceAgencyCreateNestedOneWithoutScraper_generation_runsInput
@@ -33568,6 +33624,7 @@ export namespace Prisma {
     error_message?: string | null
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     steps?: ComputerUseStepUncheckedCreateNestedManyWithoutScraper_generation_runInput
@@ -33582,6 +33639,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_agency?: SourceAgencyUpdateOneRequiredWithoutScraper_generation_runsNestedInput
@@ -33602,6 +33660,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     steps?: ComputerUseStepUncheckedUpdateManyWithoutScraper_generation_runNestedInput
@@ -33619,6 +33678,7 @@ export namespace Prisma {
     error_message?: string | null
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -33632,6 +33692,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -33648,6 +33709,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -36142,8 +36204,13 @@ export namespace Prisma {
     error_message?: SortOrder
     started_at?: SortOrder
     finished_at?: SortOrder
+    duration_ms?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+  }
+
+  export type ScraperGenerationRunAvgOrderByAggregateInput = {
+    duration_ms?: SortOrder
   }
 
   export type ScraperGenerationRunMaxOrderByAggregateInput = {
@@ -36157,6 +36224,7 @@ export namespace Prisma {
     error_message?: SortOrder
     started_at?: SortOrder
     finished_at?: SortOrder
+    duration_ms?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -36172,8 +36240,13 @@ export namespace Prisma {
     error_message?: SortOrder
     started_at?: SortOrder
     finished_at?: SortOrder
+    duration_ms?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+  }
+
+  export type ScraperGenerationRunSumOrderByAggregateInput = {
+    duration_ms?: SortOrder
   }
 
   export type EnumGenerationTriggerWithAggregatesFilter<$PrismaModel = never> = {
@@ -40645,6 +40718,7 @@ export namespace Prisma {
     error_message?: string | null
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     scraper?: ScraperCreateNestedOneWithoutScraper_generation_runsInput
@@ -40663,6 +40737,7 @@ export namespace Prisma {
     error_message?: string | null
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     steps?: ComputerUseStepUncheckedCreateNestedManyWithoutScraper_generation_runInput
@@ -40914,6 +40989,7 @@ export namespace Prisma {
     error_message?: StringNullableFilter<"ScraperGenerationRun"> | string | null
     started_at?: DateTimeNullableFilter<"ScraperGenerationRun"> | Date | string | null
     finished_at?: DateTimeNullableFilter<"ScraperGenerationRun"> | Date | string | null
+    duration_ms?: IntNullableFilter<"ScraperGenerationRun"> | number | null
     created_at?: DateTimeFilter<"ScraperGenerationRun"> | Date | string
     updated_at?: DateTimeFilter<"ScraperGenerationRun"> | Date | string
   }
@@ -41721,6 +41797,7 @@ export namespace Prisma {
     error_message?: string | null
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     source_agency: SourceAgencyCreateNestedOneWithoutScraper_generation_runsInput
@@ -41739,6 +41816,7 @@ export namespace Prisma {
     error_message?: string | null
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     steps?: ComputerUseStepUncheckedCreateNestedManyWithoutScraper_generation_runInput
@@ -42330,6 +42408,7 @@ export namespace Prisma {
     error_message?: string | null
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     source_agency: SourceAgencyCreateNestedOneWithoutScraper_generation_runsInput
@@ -42349,6 +42428,7 @@ export namespace Prisma {
     error_message?: string | null
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -42440,6 +42520,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_agency?: SourceAgencyUpdateOneRequiredWithoutScraper_generation_runsNestedInput
@@ -42459,6 +42540,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -42644,6 +42726,7 @@ export namespace Prisma {
     error_message?: string | null
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     source_agency: SourceAgencyCreateNestedOneWithoutScraper_generation_runsInput
@@ -42662,6 +42745,7 @@ export namespace Prisma {
     error_message?: string | null
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     steps?: ComputerUseStepUncheckedCreateNestedManyWithoutScraper_generation_runInput
@@ -42802,6 +42886,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_agency?: SourceAgencyUpdateOneRequiredWithoutScraper_generation_runsNestedInput
@@ -42820,6 +42905,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     steps?: ComputerUseStepUncheckedUpdateManyWithoutScraper_generation_runNestedInput
@@ -45966,6 +46052,7 @@ export namespace Prisma {
     error_message?: string | null
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -46151,6 +46238,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scraper?: ScraperUpdateOneWithoutScraper_generation_runsNestedInput
@@ -46169,6 +46257,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     steps?: ComputerUseStepUncheckedUpdateManyWithoutScraper_generation_runNestedInput
@@ -46185,6 +46274,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46531,6 +46621,7 @@ export namespace Prisma {
     error_message?: string | null
     started_at?: Date | string | null
     finished_at?: Date | string | null
+    duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -46703,6 +46794,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_agency?: SourceAgencyUpdateOneRequiredWithoutScraper_generation_runsNestedInput
@@ -46721,6 +46813,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     steps?: ComputerUseStepUncheckedUpdateManyWithoutScraper_generation_runNestedInput
@@ -46737,6 +46830,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }

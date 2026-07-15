@@ -6,8 +6,8 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CRAWL_QUEUE } from '@/core/queues/queues.constants';
-import { CrawlRunStatus, Prisma } from 'generated/prisma';
-import { CrawlRunQueryType } from './dto/crawl-run-query.schema';
+import { AuthRole, CrawlRunStatus, Prisma } from 'generated/prisma';
+import { CrawlRunQueryType, UsageQueryType } from './dto/crawl-run-query.schema';
 import { PaginatedResult } from './interfaces/crawl-run.interface';
 
 interface CrawlJobData {
@@ -40,8 +40,8 @@ export class CrawlRunsService {
     return run;
   }
 
-  async findAll(query: CrawlRunQueryType): Promise<PaginatedResult<any>> {
-    const where: Prisma.CrawlRunWhereInput = {
+  private buildWhere(query: CrawlRunQueryType): Prisma.CrawlRunWhereInput {
+    return {
       ...(query.status && { status: query.status }),
       ...(query.agency_id && { source_agency_id: query.agency_id }),
       ...(query.scraper_id && { scraper_id: query.scraper_id }),
@@ -57,6 +57,10 @@ export class CrawlRunsService {
           }
         : {}),
     };
+  }
+
+  async findAll(query: CrawlRunQueryType): Promise<PaginatedResult<any>> {
+    const where = this.buildWhere(query);
 
     const [items, total] = await Promise.all([
       this.prisma.crawlRun.findMany({
@@ -82,6 +86,59 @@ export class CrawlRunsService {
         has_next: query.page < Math.ceil(total / query.limit),
         has_prev: query.page > 1,
       },
+    };
+  }
+
+  async getUsage(
+    query: UsageQueryType,
+    currentUser: { id: string; role: AuthRole },
+  ): Promise<PaginatedResult<any> & { total_cost: string | null }> {
+    const where = this.buildWhere(query);
+    const isAdmin = currentUser.role !== AuthRole.USER;
+    const targetUserId = isAdmin ? query.user_id : currentUser.id;
+
+    if (targetUserId) {
+      const trackedAgencies = await this.prisma.userTrackedAgency.findMany({
+        where: { user_id: targetUserId },
+        select: { id: true },
+      });
+      where.user_tracked_agency_id = {
+        in: trackedAgencies.map((tracked) => tracked.id),
+      };
+    }
+
+    const [items, total, aggregate] = await Promise.all([
+      this.prisma.crawlRun.findMany({
+        where,
+        include: {
+          source_agency: { select: { name: true } },
+          scraper: { select: { name: true } },
+          user_tracked_agency: {
+            select: { user: { select: { email: true } } },
+          },
+        },
+        skip: (query.page - 1) * query.limit,
+        take: query.limit,
+        orderBy: { created_at: 'desc' },
+      }),
+      this.prisma.crawlRun.count({ where }),
+      this.prisma.crawlRun.aggregate({
+        where,
+        _sum: { ai_total_cost: true },
+      }),
+    ]);
+
+    return {
+      data: items,
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        total_pages: Math.ceil(total / query.limit),
+        has_next: query.page < Math.ceil(total / query.limit),
+        has_prev: query.page > 1,
+      },
+      total_cost: aggregate._sum.ai_total_cost?.toString() ?? null,
     };
   }
 

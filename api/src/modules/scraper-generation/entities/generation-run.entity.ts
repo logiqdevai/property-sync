@@ -42,6 +42,9 @@ export class ScraperGenerationRun {
   @ApiProperty({ nullable: true })
   finished_at: Date | null;
 
+  @ApiProperty({ nullable: true })
+  duration_ms: number | null;
+
   @ApiProperty()
   created_at: Date;
 

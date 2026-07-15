@@ -27,3 +27,9 @@ export const CrawlRunQuerySchema = z.object({
 });
 
 export type CrawlRunQueryType = z.infer<typeof CrawlRunQuerySchema>;
+
+export const UsageQuerySchema = CrawlRunQuerySchema.extend({
+  user_id: z.string().uuid().optional(),
+});
+
+export type UsageQueryType = z.infer<typeof UsageQuerySchema>;

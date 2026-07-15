@@ -21,6 +21,7 @@ import {
 import { GenerationRunStatusFilterOptions } from "@/config/constants/dropdowns/generation-run-status-filter.options";
 import { GenerationTriggerFilterOptions } from "@/config/constants/dropdowns/generation-trigger-filter.options";
 import { formatDateTime } from "@/lib/date";
+import { formatDuration } from "@/lib/duration";
 
 export default function GenerationRunsListPage() {
   const navigate = useNavigate();
@@ -140,7 +141,7 @@ export default function GenerationRunsListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={6} />
+        <TableSkeleton rows={8} columns={7} />
       ) : runs.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No generation runs found.
@@ -157,6 +158,7 @@ export default function GenerationRunsListPage() {
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Created</Table.Column>
                   <Table.Column>Finished</Table.Column>
+                  <Table.Column>Duration</Table.Column>
                 </Table.Header>
                 <Table.Body>
                   {runs.map((run) => (
@@ -180,6 +182,7 @@ export default function GenerationRunsListPage() {
                       </Table.Cell>
                       <Table.Cell>{formatDateTime(run.created_at)}</Table.Cell>
                       <Table.Cell>{formatDateTime(run.finished_at)}</Table.Cell>
+                      <Table.Cell>{formatDuration(run.duration_ms)}</Table.Cell>
                     </Table.Row>
                   ))}
                 </Table.Body>

@@ -61,6 +61,7 @@ export interface GenerationRun {
   error_message: string | null;
   started_at: string | null;
   finished_at: string | null;
+  duration_ms: number | null;
   created_at: string;
   updated_at: string;
   source_agency?: { name: string };

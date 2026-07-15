@@ -7,12 +7,7 @@ import { JobStatusChip } from "./components/job-status-chip";
 import { useJob, useRetryJob } from "@/features/jobs/hooks/use-jobs";
 import { JobStatuses } from "@/features/jobs/interfaces/jobs.interfaces";
 import { formatDateTime } from "@/lib/date";
-
-function formatDuration(ms: number | null) {
-  if (ms === null) return "—";
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-}
+import { formatDuration } from "@/lib/duration";
 
 function JsonBlock({ value }: { value: unknown }) {
   if (value === null || value === undefined) {

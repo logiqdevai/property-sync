@@ -230,6 +230,7 @@ exports.Prisma.ScraperGenerationRunScalarFieldEnum = {
   error_message: 'error_message',
   started_at: 'started_at',
   finished_at: 'finished_at',
+  duration_ms: 'duration_ms',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };

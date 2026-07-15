@@ -21,6 +21,7 @@ import {
   type GenerationRunStatus,
 } from "@/features/scraper-generation/interfaces/scraper-generation.interfaces";
 import { formatDateTime } from "@/lib/date";
+import { formatDuration } from "@/lib/duration";
 
 const ACTIVE_STATUSES: GenerationRunStatus[] = [
   GenerationRunStatuses.QUEUED,
@@ -134,6 +135,10 @@ export default function GenerationRunDetailPage() {
           <span className="text-sm text-foreground">
             {formatDateTime(run.created_at)} / {formatDateTime(run.finished_at)}
           </span>
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Duration</span>
+          <span className="text-sm text-foreground">{formatDuration(run.duration_ms)}</span>
         </div>
         {run.prompt && (
           <div className="flex flex-col gap-1 sm:col-span-2">
