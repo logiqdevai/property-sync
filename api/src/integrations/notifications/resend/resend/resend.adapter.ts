@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { EmailConfig } from '@/shared/constants/email';
 import { CreateEmail, EmailFromAddress, EmailTemplate } from '../interfaces/mail.interfaces';
 import { ResendConfig } from './resend.config';
@@ -6,7 +6,6 @@ import { TemplateService } from '../utils/templates.utils';
 
 @Injectable()
 export class ResendAdapter {
-  private readonly logger = new Logger(ResendAdapter.name);
   private readonly emailFromAddresses: EmailFromAddress;
 
   constructor(
@@ -30,10 +29,6 @@ export class ResendAdapter {
         );
       }
 
-      this.logger.log(
-        `Sending email via Resend: from="${from}" to="${createEmail.to}" subject="${createEmail.subject}" template="${createEmail.template_id ?? 'none'}"`,
-      );
-
       const result = await resendClient.emails.send({
         from,
         to: createEmail.to,
@@ -47,17 +42,10 @@ export class ResendAdapter {
       });
 
       if (result.error) {
-        this.logger.error(
-          `Resend rejected email: from="${from}" to="${createEmail.to}" subject="${createEmail.subject}" error=${JSON.stringify(result.error)}`,
-        );
         throw new InternalServerErrorException(
           result.error.message || 'Failed to send email with Resend',
         );
       }
-
-      this.logger.log(
-        `Resend accepted email: id="${result.data?.id ?? 'unknown'}" from="${from}" to="${createEmail.to}"`,
-      );
 
       return result;
     } catch (error) {
@@ -65,10 +53,6 @@ export class ResendAdapter {
         throw error;
       }
 
-      this.logger.error(
-        `Resend send failed: from="${from}" to="${createEmail.to}" subject="${createEmail.subject}"`,
-        error instanceof Error ? error.stack : error,
-      );
       throw new InternalServerErrorException('Failed to send email with Resend');
     }
   }

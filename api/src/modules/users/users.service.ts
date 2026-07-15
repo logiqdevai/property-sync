@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ConflictException,
     ForbiddenException,
     Injectable,
@@ -10,6 +11,8 @@ import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { maskUserIntegration } from '@/modules/integration-targets/utils/mask-credentials.util';
 import { UserQueryType } from './dto/user-query.schema';
 import { UpdateAdminUserDto } from './dto/update-admin-user.dto';
+import { UpdateMeDto } from './dto/update-me.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 export interface PaginatedUsersResult {
     data: Array<{
@@ -46,6 +49,77 @@ export class UsersService {
         delete user.password;
 
         return user;
+    }
+
+    async updateMe(id: string, dto: UpdateMeDto) {
+        const existing = await this.prisma.user.findUnique({ where: { id } });
+
+        if (!existing) {
+            throw new NotFoundException('User not found');
+        }
+
+        if (dto.email && dto.email !== existing.email) {
+            const emailTaken = await this.prisma.user.findUnique({ where: { email: dto.email } });
+            if (emailTaken) {
+                throw new ConflictException('User with this email already exists');
+            }
+        }
+
+        const normalizedPhone =
+            dto.phone === undefined ? undefined : dto.phone?.trim() ? dto.phone.trim() : null;
+
+        if (normalizedPhone !== undefined && normalizedPhone !== existing.phone) {
+            if (normalizedPhone) {
+                const phoneTaken = await this.prisma.user.findUnique({ where: { phone: normalizedPhone } });
+                if (phoneTaken) {
+                    throw new ConflictException('User with this phone number already exists');
+                }
+            }
+        }
+
+        const data: { email?: string; phone?: string | null } = {};
+
+        if (dto.email !== undefined) {
+            data.email = dto.email;
+        }
+
+        if (normalizedPhone !== undefined) {
+            data.phone = normalizedPhone;
+        }
+
+        if (Object.keys(data).length === 0) {
+            return this.findById(id);
+        }
+
+        await this.prisma.user.update({
+            where: { id },
+            data,
+        });
+
+        return this.findById(id);
+    }
+
+    async changePassword(id: string, dto: ChangePasswordDto) {
+        const user = await this.prisma.user.findUnique({ where: { id } });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        const isCurrentPasswordValid = await bcrypt.compare(dto.current_password, user.password);
+
+        if (!isCurrentPasswordValid) {
+            throw new BadRequestException('Current password is incorrect');
+        }
+
+        const password = await bcrypt.hash(dto.new_password, 10);
+
+        await this.prisma.user.update({
+            where: { id },
+            data: { password },
+        });
+
+        return { message: 'Password changed successfully' };
     }
 
     async findAllAdmin(query: UserQueryType): Promise<PaginatedUsersResult> {

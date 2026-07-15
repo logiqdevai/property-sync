@@ -1,5 +1,5 @@
 import { Popover } from '@heroui/react';
-import { User, CreditCard, LogOut, ChevronsUpDown, Shield } from 'lucide-react';
+import { User, LogOut, ChevronsUpDown, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
 import { cn } from '@/lib/utils';
@@ -31,8 +31,7 @@ export default function UserMenuPopover({ collapsed = false, placement = 'top' }
     ...(canAccessAdmin(role)
       ? [{ label: 'Admin Panel', icon: Shield, onClick: () => navigate(Routes.admin.root) }]
       : []),
-    { label: 'Account', icon: User, onClick: () => {} },
-    { label: 'Billing', icon: CreditCard, onClick: () => {} },
+    { label: 'Account', icon: User, onClick: () => navigate(Routes.dashboard.account) },
   ];
 
   const Avatar = ({ size = 'md' }: { size?: 'sm' | 'md' }) => (

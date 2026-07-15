@@ -1,6 +1,5 @@
 import {
     Injectable,
-    Logger,
     NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common';
@@ -16,8 +15,6 @@ export type PasswordResetReason = 'invite' | 'forgot';
 
 @Injectable()
 export class PasswordResetService {
-    private readonly logger = new Logger(PasswordResetService.name);
-
     constructor(
         private readonly prisma: PrismaService,
         private readonly jwtService: CreateJwtService,
@@ -30,10 +27,7 @@ export class PasswordResetService {
         });
 
         if (user) {
-            this.logger.log(`Password reset requested for existing user: ${email}`);
             await this.sendPasswordResetEmail(user.id, user.email, 'forgot');
-        } else {
-            this.logger.warn(`Password reset requested for unknown email: ${email}`);
         }
 
         return {
@@ -93,39 +87,22 @@ export class PasswordResetService {
         const token = await this.jwtService.signPasswordResetToken(userId);
         const resetLink = `${AppUrls.setPassword}?token=${encodeURIComponent(token)}`;
         const isInvite = reason === 'invite';
-        const from = EmailConfig.email_addresses.alert;
-        const subject = isInvite
-            ? 'Set up your Property Sync password'
-            : EmailConfig.templates.password_reset.subject;
-
-        this.logger.log(
-            `Preparing password reset email: reason="${reason}" from="${from}" to="${email}" appUrl="${AppUrls.setPassword}"`,
-        );
-
-        try {
-            await this.mailService.sendEmail({
-                to: email,
-                from,
-                subject,
-                template_id: EmailConfig.templates.password_reset.template_id,
-                dynamic_template_data: {
-                    resetLink,
-                    headline: isInvite ? 'Welcome to Property Sync' : 'Reset your password',
-                    intro: isInvite
-                        ? 'An account was created for you. Use the button below to choose your password and sign in.'
-                        : 'We received a request to reset your password. Use the button below to choose a new one.',
-                    buttonLabel: isInvite ? 'Set password' : 'Reset password',
-                },
-            });
-
-            this.logger.log(`Password reset email queued successfully for ${email}`);
-        } catch (error) {
-            this.logger.error(
-                `Password reset email failed for ${email} from="${from}" reason="${reason}"`,
-                error instanceof Error ? error.stack : error,
-            );
-            throw error;
-        }
+        await this.mailService.sendEmail({
+            to: email,
+            from: EmailConfig.email_addresses.alert,
+            subject: isInvite
+                ? 'Set up your Property Sync password'
+                : EmailConfig.templates.password_reset.subject,
+            template_id: EmailConfig.templates.password_reset.template_id,
+            dynamic_template_data: {
+                resetLink,
+                headline: isInvite ? 'Welcome to Property Sync' : 'Reset your password',
+                intro: isInvite
+                    ? 'An account was created for you. Use the button below to choose your password and sign in.'
+                    : 'We received a request to reset your password. Use the button below to choose a new one.',
+                buttonLabel: isInvite ? 'Set password' : 'Reset password',
+            },
+        });
     }
 
     async createPlaceholderPasswordHash() {

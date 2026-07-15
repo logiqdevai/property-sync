@@ -13,6 +13,7 @@ export const Routes = {
             detail: (id: string) => `/dashboard/properties/${id}`,
         },
         integrations: "/dashboard/integrations",
+        account: "/dashboard/account",
     },
     admin: {
         root: "/admin",
