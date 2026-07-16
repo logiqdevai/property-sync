@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "capture": "tsx src/index.ts",
+    "postman": "tsx src/postman/generate-collection.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc"
   },

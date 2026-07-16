@@ -21,7 +21,8 @@ estateweb-api/
 │   ├── browser/                 # Playwright persistent-context launcher
 │   ├── capture/                 # the recorder: filtering, correlation, body/response parsing
 │   ├── session/                 # "wait for the user to finish" controller
-│   └── output/                  # session.json / summary.json writers
+│   ├── output/                  # session.json / summary.json writers
+│   └── postman/                 # session-*.json -> Postman v2.1 collection generator
 └── package.json
 ```
 
@@ -56,6 +57,31 @@ npm run capture -- --config ./config/my-session.config.json
 
 The `{{index}}` placeholder in `outputFile` auto-increments so repeated runs never overwrite a
 previous capture.
+
+## Generating a Postman collection
+
+Once you have one or more `session-*.json` files under `captures/`, turn them into a single
+importable Postman collection:
+
+```bash
+npm run postman
+# or with custom paths/name:
+npm run postman -- --input ./captures --output ./captures/estateweb.postman_collection.json --name "EstateWeb API"
+```
+
+This reads every `session-*.json` in `--input` (or a single file if you point it at one), and:
+
+- Keeps only API-shaped traffic (`xhr`, `fetch`, `document` resource types — static assets are dropped).
+- Deduplicates by `METHOD + path`, keeping the chronologically latest capture (freshest auth/example).
+- Groups requests into folders by their first path segment (e.g. everything under `/api/property`
+  goes in a `property` folder).
+- Extracts the most common origin, any `Authorization: Bearer <token>` token, and the session
+  cookie into collection-level variables (`baseUrl`, `bearerToken`, `<cookie-name>`), and
+  templatizes those values in every request's headers — so the collection isn't full of duplicated
+  literal secrets.
+- Attaches the captured response (status, headers, body) as a saved example on each request.
+
+The result is a single self-contained `.postman_collection.json` file, ready to import into Postman.
 
 ## Configuration (`config/default.config.json`)
 
