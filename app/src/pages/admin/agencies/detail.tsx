@@ -5,6 +5,7 @@ import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { TrackerAdminOptionsPanel } from "@/components/ui/tracker-admin-options-panel";
 import { AgencyForm } from "./components/agency-form";
 import {
   useAgency,
@@ -21,6 +22,7 @@ import { RoleTypes } from "@/features/user/interfaces/user.interface";
 import { useAuthStore } from "@/stores/auth";
 import { formatDateTime } from "@/lib/date";
 import type { UpdateTrackerAdminSettingsPayload } from "@/features/agencies/interfaces/agencies.interfaces";
+import type { AiProvider } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
 
 export default function AgencyDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -185,21 +187,29 @@ export default function AgencyDetailPage() {
                     </Chip>
                   </div>
                   {canEditTrackerSettings ? (
-                    <label className="flex flex-col gap-1">
-                      <span className="text-xs text-muted">Crawl interval</span>
-                      <input
-                        key={`${tracker.id}-${tracker.crawl_interval}`}
-                        className="rounded-lg border border-border bg-background px-2 py-1.5 font-mono text-xs"
-                        defaultValue={tracker.crawl_interval}
-                        disabled={updateTrackerAdminSettings.isPending}
-                        onBlur={(e) => {
-                          const value = e.target.value.trim();
-                          if (value && value !== tracker.crawl_interval) {
-                            saveTrackerSettings(tracker.user_id, { crawl_interval: value });
-                          }
-                        }}
-                      />
-                    </label>
+                    <TrackerAdminOptionsPanel
+                      accordionId={`${tracker.id}-admin-options`}
+                      values={{
+                        use_ai_batching: tracker.use_ai_batching,
+                        ai_provider: tracker.ai_provider as AiProvider,
+                        ai_model: tracker.ai_model,
+                        crawl_interval: tracker.crawl_interval,
+                        concurrent_insertions: tracker.concurrent_insertions,
+                        insertion_interval_minutes: tracker.insertion_interval_minutes,
+                      }}
+                      disabled={updateTrackerAdminSettings.isPending}
+                      showIntegrationsHint={false}
+                      onPrefsChange={(payload) =>
+                        saveTrackerSettings(tracker.user_id, {
+                          use_ai_batching: payload.use_ai_batching,
+                          ai_provider: payload.ai_provider,
+                          ai_model: payload.ai_model,
+                        })
+                      }
+                      onAdminSettingsChange={(payload) =>
+                        saveTrackerSettings(tracker.user_id, payload)
+                      }
+                    />
                   ) : (
                     <span className="font-mono text-xs text-muted">{tracker.crawl_interval}</span>
                   )}

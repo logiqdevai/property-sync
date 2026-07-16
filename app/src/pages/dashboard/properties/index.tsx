@@ -46,7 +46,7 @@ export default function DashboardPropertiesListPage() {
       <div className="flex flex-col gap-6">
         <div>
           <p className="text-2xl font-semibold tracking-tight text-foreground">My Properties</p>
-          <p className="text-sm text-muted">Your saved copies of tracked listings.</p>
+          <p className="text-sm text-muted">Your tracked listings.</p>
         </div>
         <TableSkeleton rows={8} columns={5} />
       </div>
@@ -57,7 +57,7 @@ export default function DashboardPropertiesListPage() {
     <div className="flex flex-col gap-6">
       <div>
         <p className="text-2xl font-semibold tracking-tight text-foreground">My Properties</p>
-        <p className="text-sm text-muted">Your saved copies of tracked listings.</p>
+        <p className="text-sm text-muted">Your tracked listings.</p>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">

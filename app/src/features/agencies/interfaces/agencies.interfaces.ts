@@ -64,6 +64,9 @@ export interface UpdateTrackerAdminSettingsPayload {
   crawl_interval?: string;
   concurrent_insertions?: number;
   insertion_interval_minutes?: number;
+  use_ai_batching?: boolean;
+  ai_provider?: string;
+  ai_model?: string | null;
 }
 
 export interface AgencyListQuery {

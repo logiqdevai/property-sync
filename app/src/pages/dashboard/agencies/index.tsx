@@ -1,20 +1,16 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import {
-  Accordion,
   EmptyState,
   Input,
-  Label,
   Pagination,
-  Select,
-  ListBox,
   Switch,
   useOverlayState,
 } from "@heroui/react";
-import { BellOff, Search } from "lucide-react";
+import { BellOff, ExternalLink, Search } from "lucide-react";
 import { RoleGate } from "@/components/providers/role-gate";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { TrackerAdminOptionsPanel } from "@/components/ui/tracker-admin-options-panel";
 import { useUpdateTrackerAdminSettings } from "@/features/agencies/hooks/use-agencies";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
 import { useAuthStore } from "@/stores/auth";
@@ -27,14 +23,11 @@ import {
 } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
 import {
   AiProviders,
-  type AiProvider,
   type AgencyListQuery,
   type TrackAgencyPayload,
   type TrackableAgency,
 } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
 import type { UpdateTrackerAdminSettingsPayload } from "@/features/agencies/interfaces/agencies.interfaces";
-import { AiProviderFormOptions } from "@/config/constants/dropdowns/ai-provider-form.options";
-import { Routes } from "@/routes/routes";
 
 function AgencyCard({
   agency,
@@ -48,21 +41,23 @@ function AgencyCard({
   const updateTrackerAdminSettings = useUpdateTrackerAdminSettings();
   const userId = useAuthStore((state) => state.user_uuid);
   const prefs = agency.tracking_prefs;
+  const isAgencyDisabled = !agency.is_enabled;
   const isPending =
     trackAgency.isPending || updateTracking.isPending || updateTrackerAdminSettings.isPending;
+  const isControlsDisabled = isAgencyDisabled || isPending;
 
   const savePrefs = (payload: TrackAgencyPayload) => {
-    if (!agency.is_tracked) return;
+    if (!agency.is_tracked || isAgencyDisabled) return;
     updateTracking.mutate({ agencyId: agency.id, payload });
   };
 
   const saveAdminSettings = (payload: UpdateTrackerAdminSettingsPayload) => {
-    if (!agency.is_tracked || !userId) return;
+    if (!agency.is_tracked || !userId || isAgencyDisabled) return;
     updateTrackerAdminSettings.mutate({ agencyId: agency.id, userId, payload });
   };
 
   const handleTrackToggle = (next: boolean) => {
-    if (!agency.is_enabled) return;
+    if (isAgencyDisabled) return;
     if (next) {
       trackAgency.mutate({
         agencyId: agency.id,
@@ -78,15 +73,26 @@ function AgencyCard({
   return (
     <article className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h2 className="text-lg font-semibold text-foreground truncate">{agency.name}</h2>
-          <p className="text-sm text-muted truncate">
-            {[agency.city, agency.country].filter(Boolean).join(", ") || agency.base_url}
-          </p>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <p className="text-sm text-muted truncate">
+              {[agency.city, agency.country].filter(Boolean).join(", ") || agency.base_url}
+            </p>
+            <a
+              href={agency.base_url}
+              target="_blank"
+              rel="noreferrer"
+              className="shrink-0 text-muted hover:text-accent"
+              aria-label={`Open ${agency.name} website`}
+            >
+              <ExternalLink className="size-4" />
+            </a>
+          </div>
         </div>
         <Switch
           isSelected={agency.is_tracked}
-          isDisabled={!agency.is_enabled || isPending}
+          isDisabled={isControlsDisabled}
           onChange={handleTrackToggle}
         >
           <Switch.Control>
@@ -96,11 +102,13 @@ function AgencyCard({
         </Switch>
       </div>
 
-      {!agency.is_enabled && (
-        <p className="text-sm text-muted">Not available for tracking</p>
-      )}
+      {isAgencyDisabled ? (
+        <p className="text-sm text-muted">
+          This agency is not currently available for connecting
+        </p>
+      ) : null}
 
-      {agency.is_enabled && !agency.is_tracked && (
+      {!isAgencyDisabled && !agency.is_tracked ? (
         <div className="border-t border-border pt-4">
           <EmptyState>
             <BellOff className="h-5 w-5 text-muted" />
@@ -109,9 +117,9 @@ function AgencyCard({
             </p>
           </EmptyState>
         </div>
-      )}
+      ) : null}
 
-      {agency.is_tracked && prefs && (
+      {agency.is_tracked && prefs ? (
         <div className="flex flex-col gap-3 border-t border-border pt-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 flex-col gap-0.5">
@@ -120,7 +128,7 @@ function AgencyCard({
             </div>
             <Switch
               isSelected={prefs.track_new_listings}
-              isDisabled={isPending}
+              isDisabled={isControlsDisabled}
               onChange={(isSelected) => savePrefs({ track_new_listings: isSelected })}
               aria-label="New listings"
             >
@@ -136,7 +144,7 @@ function AgencyCard({
             </div>
             <Switch
               isSelected={prefs.track_updated_listings}
-              isDisabled={isPending}
+              isDisabled={isControlsDisabled}
               onChange={(isSelected) => savePrefs({ track_updated_listings: isSelected })}
               aria-label="Updated listings"
             >
@@ -152,7 +160,7 @@ function AgencyCard({
             </div>
             <Switch
               isSelected={prefs.track_removed_listings}
-              isDisabled={isPending}
+              isDisabled={isControlsDisabled}
               onChange={(isSelected) => savePrefs({ track_removed_listings: isSelected })}
               aria-label="Removed listings"
             >
@@ -163,153 +171,29 @@ function AgencyCard({
           </div>
 
           <RoleGate roles={[RoleTypes.ADMIN]}>
-            <Accordion defaultExpandedKeys={[]} hideSeparator>
-              <Accordion.Item id="admin-options">
-                <Accordion.Heading>
-                  <Accordion.Trigger className="text-sm font-medium text-foreground">
-                    Admin options
-                    <Accordion.Indicator />
-                  </Accordion.Trigger>
-                </Accordion.Heading>
-                <Accordion.Panel>
-                  <Accordion.Body>
-                    <div
-                      className="flex flex-col gap-3 pt-1"
-                      key={`${agency.id}-admin-${prefs.crawl_interval}-${prefs.concurrent_insertions}-${prefs.insertion_interval_minutes}`}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex min-w-0 flex-col gap-0.5">
-                          <span className="text-sm text-foreground">Use AI batching</span>
-                          <span className="text-xs text-muted">
-                            Lower cost, slower updates on scheduled crawls.
-                          </span>
-                        </div>
-                        <Switch
-                          isSelected={prefs.use_ai_batching}
-                          isDisabled={isPending}
-                          onChange={(isSelected) => savePrefs({ use_ai_batching: isSelected })}
-                          aria-label="Use AI batching"
-                        >
-                          <Switch.Control>
-                            <Switch.Thumb />
-                          </Switch.Control>
-                        </Switch>
-                      </div>
-
-                      <Select
-                        selectedKey={prefs.ai_provider}
-                        isDisabled={isPending}
-                        onSelectionChange={(key) => savePrefs({ ai_provider: key as AiProvider })}
-                        className="w-full"
-                      >
-                        <Label>AI provider</Label>
-                        <Select.Trigger>
-                          <Select.Value />
-                          <Select.Indicator />
-                        </Select.Trigger>
-                        <Select.Popover>
-                          <ListBox>
-                            {AiProviderFormOptions.map((option) => (
-                              <ListBox.Item key={option.id} id={option.id}>
-                                {option.label}
-                              </ListBox.Item>
-                            ))}
-                          </ListBox>
-                        </Select.Popover>
-                      </Select>
-
-                      <label className="flex flex-col gap-1 text-sm">
-                        <span className="text-muted">AI model (optional)</span>
-                        <input
-                          className="rounded-lg border border-border bg-background px-3 py-2"
-                          value={prefs.ai_model ?? ""}
-                          disabled={isPending}
-                          onChange={(e) => savePrefs({ ai_model: e.target.value || null })}
-                        />
-                      </label>
-
-                      <label className="flex flex-col gap-1 text-sm">
-                        <span className="text-muted">Crawl interval (cron)</span>
-                        <input
-                          className="rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs"
-                          defaultValue={prefs.crawl_interval ?? ""}
-                          disabled={isPending}
-                          onBlur={(e) => {
-                            const value = e.target.value.trim();
-                            if (value && value !== prefs.crawl_interval) {
-                              saveAdminSettings({ crawl_interval: value });
-                            }
-                          }}
-                        />
-                      </label>
-
-                      <label className="flex flex-col gap-1 text-sm">
-                        <span className="text-muted">Concurrent insertions</span>
-                        <input
-                          type="number"
-                          min={1}
-                          className="rounded-lg border border-border bg-background px-3 py-2"
-                          defaultValue={prefs.concurrent_insertions ?? 1}
-                          disabled={isPending}
-                          onBlur={(e) => {
-                            const value = Number.parseInt(e.target.value, 10);
-                            if (
-                              Number.isFinite(value) &&
-                              value >= 1 &&
-                              value !== prefs.concurrent_insertions
-                            ) {
-                              saveAdminSettings({ concurrent_insertions: value });
-                            }
-                          }}
-                        />
-                      </label>
-
-                      <label className="flex flex-col gap-1 text-sm">
-                        <span className="text-muted">Insertion interval (minutes)</span>
-                        <input
-                          type="number"
-                          min={1}
-                          className="rounded-lg border border-border bg-background px-3 py-2"
-                          defaultValue={prefs.insertion_interval_minutes ?? 5}
-                          disabled={isPending}
-                          onBlur={(e) => {
-                            const value = Number.parseInt(e.target.value, 10);
-                            if (
-                              Number.isFinite(value) &&
-                              value >= 1 &&
-                              value !== prefs.insertion_interval_minutes
-                            ) {
-                              saveAdminSettings({ insertion_interval_minutes: value });
-                            }
-                          }}
-                        />
-                      </label>
-
-                      <p className="text-xs text-muted">
-                        Batching applies on scheduled crawls when batching is enabled and provider is
-                        OpenAI. Connect your AI key on{" "}
-                        <Link
-                          to={Routes.dashboard.integrations}
-                          className="text-accent hover:underline"
-                        >
-                          Integrations
-                        </Link>{" "}
-                        before tracking.
-                      </p>
-                    </div>
-                  </Accordion.Body>
-                </Accordion.Panel>
-              </Accordion.Item>
-            </Accordion>
+            <TrackerAdminOptionsPanel
+              accordionId={`${agency.id}-admin-options`}
+              values={{
+                use_ai_batching: prefs.use_ai_batching,
+                ai_provider: prefs.ai_provider,
+                ai_model: prefs.ai_model,
+                crawl_interval: prefs.crawl_interval ?? "",
+                concurrent_insertions: prefs.concurrent_insertions ?? 1,
+                insertion_interval_minutes: prefs.insertion_interval_minutes ?? 5,
+              }}
+              disabled={isControlsDisabled}
+              onPrefsChange={savePrefs}
+              onAdminSettingsChange={saveAdminSettings}
+            />
           </RoleGate>
 
           <TrackedAgencyIntegrationLink
             agencyId={agency.id}
             linkedIntegrationId={prefs.user_integration_id}
-            disabled={isPending}
+            disabled={isControlsDisabled}
           />
         </div>
-      )}
+      ) : null}
     </article>
   );
 }

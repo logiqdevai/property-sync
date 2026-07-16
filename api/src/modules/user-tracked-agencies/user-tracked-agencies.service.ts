@@ -31,7 +31,6 @@ export class UserTrackedAgenciesService {
   async findAll(userId: string, query: BrowseAgencyQueryType, role?: AuthRole) {
     const where: Prisma.SourceAgencyWhereInput = {
       is_visible: true,
-      is_enabled: true,
       ...(query.search && {
         OR: [
           { name: { contains: query.search, mode: 'insensitive' } },
@@ -355,7 +354,7 @@ export class UserTrackedAgenciesService {
 
     if (!agency.is_enabled) {
       throw new BadRequestException(
-        'This agency is not enabled for tracking yet',
+        'This agency is not currently available for connecting',
       );
     }
 

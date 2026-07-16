@@ -31,6 +31,7 @@ export function ConnectionAgencyLinkForm({
     () =>
       (data?.data ?? []).filter(
         (agency) =>
+          agency.is_enabled &&
           agency.is_tracked &&
           !agency.tracking_prefs?.user_integration_id,
       ),
