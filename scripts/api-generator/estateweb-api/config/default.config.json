@@ -1,0 +1,34 @@
+{
+  "startUrl": "https://app.estateweb.gr/login",
+  "headless": false,
+  "outputFile": "./captures/session-{{index}}.json",
+  "userDataDir": "./captures/.browser-profile",
+  "captureImages": false,
+  "captureFonts": false,
+  "captureStylesheets": false,
+  "captureScripts": true,
+  "captureXHR": true,
+  "captureFetch": true,
+  "captureWebSockets": true,
+  "maxBodySizeBytes": 5242880,
+  "ignore": {
+    "hostnames": [
+      "*.google-analytics.com",
+      "*.googletagmanager.com",
+      "*.doubleclick.net",
+      "*.google.com",
+      "*.hotjar.com",
+      "connect.facebook.net",
+      "*.facebook.com",
+      "*.facebook.net",
+      "*.segment.io",
+      "*.mixpanel.com",
+      "*.sentry.io",
+      "*.intercom.io",
+      "*.clarity.ms",
+      "*.newrelic.com",
+      "*.bugsnag.com"
+    ],
+    "resourceTypes": []
+  }
+}

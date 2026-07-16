@@ -1,0 +1,5 @@
+node_modules/
+dist/
+captures/*.json
+captures/.browser-profile/
+!captures/.gitkeep

@@ -1,0 +1,19 @@
+{
+  "name": "estateweb-api-capturer",
+  "version": "1.0.0",
+  "description": "Playwright-based HTTP traffic recorder for reverse-engineering the EstateWeb private API",
+  "type": "module",
+  "scripts": {
+    "capture": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "playwright": "^1.50.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

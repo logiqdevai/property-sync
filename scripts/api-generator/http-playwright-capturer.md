@@ -1,363 +1,294 @@
-# AI Coding Task: Production Playwright Scraping Worker Architecture
+# AI Coding Task: Playwright Network Traffic Recorder
 
 ## Objective
 
-Design and implement a scalable browser scraping infrastructure using Playwright, BullMQ, Redis, and Docker.
+Create a standalone Node.js script using Playwright that records all HTTP/HTTPS network traffic generated while a user manually interacts with a web application.
 
-The system should support concurrent scraping jobs across multiple websites while efficiently managing Chromium browser resources.
-
-The implementation must integrate with the existing codebase architecture, naming conventions, dependency injection patterns, logging system, configuration system, and database layer.
-
-Do not blindly copy the example code provided in this document. The examples are only architectural references. Adapt the implementation to match the existing project structure and coding standards.
+The goal is to reverse engineer private web APIs by capturing every request and response made by the application. The recorded data will later be analyzed to build a custom API client for systems that do not provide an official API.
 
 ---
 
-# High-Level Architecture
+# Workflow
 
-The scraping system should be separated into independent services:
+1. Launch a Chromium browser using Playwright.
+2. Navigate to a configurable starting URL.
+3. Wait for the user to manually:
+   - Log in
+   - Navigate through the application
+   - Perform any desired actions
 
-```
-                    API Service
-                        |
-                        |
-                  Create Scrape Jobs
-                        |
-                        ▼
-                    Redis Queue
-                    (BullMQ)
-                        |
-        ┌───────────────┴───────────────┐
-        ▼                               ▼
- Scraper Worker Instance          Scraper Worker Instance
-        |                               |
-        |                               |
- Playwright + Chromium            Playwright + Chromium
-        |                               |
- Browser Context Pool             Browser Context Pool
-        |                               |
- Website A/B/C                    Website D/E/F
+4. Record every network request and response during the session.
+5. When the user indicates recording is complete (for example by pressing Enter in the terminal or closing the browser), export all captured traffic into a JSON file.
 
-
-                        |
-                        ▼
-
-                 Result Processing
-                        |
-                        ▼
-
-             Database / Storage / AI Pipeline
-```
+No automated interaction with the website is required beyond opening the initial URL.
 
 ---
 
-# Core Design Principles
+# Configuration
 
-## 1. Do not launch a browser for every job
-
-Avoid:
-
-```
-Job 1 → Launch Chromium → Scrape → Close
-Job 2 → Launch Chromium → Scrape → Close
-Job 3 → Launch Chromium → Scrape → Close
-```
-
-This wastes CPU and memory.
-
-Instead:
-
-```
-Chromium Process
-        |
-        |
-        ├── Browser Context 1
-        │       └── Website A
-        |
-        ├── Browser Context 2
-        │       └── Website B
-        |
-        └── Browser Context 3
-                └── Website C
-```
-
-A single Chromium instance should serve multiple isolated browser contexts.
-
----
-
-# Browser Lifecycle
-
-The worker should:
-
-1. Start.
-2. Launch one Chromium instance.
-3. Keep Chromium alive.
-4. Create browser contexts per scraping task.
-5. Close contexts after each job.
-6. Gracefully close Chromium when the worker shuts down.
-
----
-
-# Browser Context Isolation
-
-Each scraping job must use a separate browser context.
-
-A context provides isolated:
-
-* Cookies
-* Local storage
-* Session storage
-* Cache
-* Permissions
-* Authentication state
-
-Example concept:
-
-```ts
-// Example only.
-// Adapt to the existing project structure.
-
-const context = await browser.newContext();
-
-const page = await context.newPage();
-
-await page.goto(url);
-
-const data = await page.content();
-
-await context.close();
-```
-
-Do not reuse contexts between unrelated scraping jobs.
-
----
-
-# BullMQ Worker Design
-
-The worker should:
-
-* Receive jobs from Redis.
-* Control concurrency.
-* Manage browser resources.
-* Handle retries.
-* Handle failures.
-* Store execution metadata.
-* Report scraping status.
+The script should load its configuration from a JSON file.
 
 Example:
 
-```ts
-// Example only.
-// Modify according to existing queue implementation.
-
-new Worker(
-    "scraping",
-    async job => {
-
-        const result = await scraperService.execute(
-            job.data
-        );
-
-        return result;
-
-    },
-    {
-        concurrency: 10
-    }
-);
-```
-
----
-
-# Concurrency Management
-
-Concurrency should not be unlimited.
-
-The worker must consider:
-
-* Available RAM
-* CPU usage
-* Browser memory consumption
-* Network bandwidth
-
-Recommended approach:
-
-Start with:
-
-```
-1 Chromium process
-5-10 concurrent browser contexts
-```
-
-Increase gradually.
-
----
-
-# Horizontal Scaling
-
-When one worker instance reaches capacity, add more worker containers.
-
-Example:
-
-```
-                Redis Queue
-
-                    |
-        ┌───────────┼───────────┐
-        ▼           ▼           ▼
-
-    Worker 1    Worker 2    Worker 3
-
-    Chromium    Chromium    Chromium
-
-    Contexts    Contexts    Contexts
-```
-
-BullMQ automatically distributes jobs.
-
-Do not manually assign jobs to workers.
-
----
-
-# Docker Deployment
-
-Use a Playwright-compatible Docker image.
-
-Example:
-
-```dockerfile
-# Example only.
-# Adapt versions and build process to the existing project.
-
-FROM mcr.microsoft.com/playwright:<version>
-
-WORKDIR /app
-
-COPY package*.json .
-
-RUN npm install
-
-COPY . .
-
-CMD ["node", "dist/worker.js"]
-```
-
-The container should include:
-
-* Chromium
-* Browser dependencies
-* Required fonts
-* Linux libraries
-
----
-
-# Browser Manager Responsibilities
-
-The browser manager should:
-
-* Initialize Chromium.
-* Maintain browser lifecycle.
-* Provide browser access.
-* Handle shutdown signals.
-
-Example:
-
-```ts
-// Example only.
-
-class BrowserManager {
-
-    private browser;
-
-    async initialize() {
-        this.browser = await chromium.launch();
-    }
-
-    async getBrowser() {
-        return this.browser;
-    }
-
-    async shutdown() {
-        await this.browser.close();
-    }
+```json
+{
+  "startUrl": "https://example-crm.com/login",
+  "headless": false,
+  "outputFile": "./captures/session-{{index}}.json",
+  "captureImages": false,
+  "captureFonts": false,
+  "captureStylesheets": false,
+  "captureScripts": true,
+  "captureXHR": true,
+  "captureFetch": true,
+  "captureWebSockets": true
 }
 ```
 
 ---
 
-# Scraping Job Flow
+# Browser Requirements
 
-A complete job lifecycle:
+- Chromium
+- Headed mode by default
+- Support persistent browser context
+- Preserve cookies
+- Preserve session storage
+- Preserve local storage
+- Allow login with MFA if necessary
+- User performs all navigation manually
+
+---
+
+# Capture Requirements
+
+Record every network event generated by the browser.
+
+Capture:
+
+- Request URL
+- HTTP Method
+- Query parameters
+- Full request headers
+- Cookies
+- POST body
+- FormData
+- JSON payload
+- Multipart payload
+- Timestamp
+- Resource type
+- Initiator (if available)
+
+Also capture:
+
+- Response status
+- Response headers
+- Response body
+- Response size
+- MIME type
+- Response time
+- Redirect chain
+- Error information (if request failed)
+
+---
+
+# Resource Filtering
+
+Allow filtering by resource type.
+
+Supported resource types:
+
+- document
+- xhr
+- fetch
+- script
+- image
+- media
+- manifest
+- other
+
+The configuration file should allow enabling/disabling each type.
+
+---
+
+# Response Parsing
+
+Automatically detect response format.
+
+Supported formats:
+
+- JSON
+- Text
+- HTML
+- XML
+- Binary (store as Base64)
+- Unknown
+
+Never crash if parsing fails.
+
+---
+
+# Request Correlation
+
+Each request should receive a unique ID.
+
+A request and its corresponding response should be linked together.
+
+Example:
+
+```text
+Request
+   ↓
+Unique ID
+   ↓
+Response
+```
+
+---
+
+# Output JSON Structure
+
+Produce a well-structured JSON document.
+
+Each captured request should include:
+
+```json
+{
+  "id": "...",
+  "timestamp": "...",
+  "duration": 120,
+  "request": {
+    "method": "POST",
+    "url": "...",
+    "path": "...",
+    "query": {},
+    "headers": {},
+    "cookies": {},
+    "body": {},
+    "resourceType": "xhr"
+  },
+  "response": {
+    "status": 200,
+    "headers": {},
+    "mimeType": "application/json",
+    "body": {},
+    "size": 18234
+  }
+}
+```
+
+---
+
+# Session Metadata
+
+Include metadata at the top level.
+
+Example:
+
+```json
+{
+  "capturedAt": "...",
+  "startUrl": "...",
+  "browser": "Chromium",
+  "playwrightVersion": "...",
+  "duration": "...",
+  "entries": []
+}
+```
+
+---
+
+# Advanced Features
+
+Implement the following:
+
+- Detect duplicate requests.
+- Track redirects.
+- Capture failed requests.
+- Capture aborted requests.
+- Capture request timing.
+- Capture cookies sent and received.
+- Preserve request order.
+- Track concurrent requests.
+- Support very large response bodies without excessive memory usage.
+- Gracefully handle binary responses.
+
+---
+
+# Ignored Traffic
+
+Provide configuration options to ignore:
+
+- Analytics services
+- Google Analytics
+- Hotjar
+- Facebook Pixel
+- Tracking scripts
+- Advertising requests
+- Static assets (optional)
+- Browser extension traffic
+
+Filtering should be configurable using hostname patterns and resource types.
+
+---
+
+# Output Files
+
+Generate:
 
 ```
-1. API receives scraping request
-
-2. Create BullMQ job
-
-3. Worker receives job
-
-4. Create browser context
-
-5. Create page
-
-6. Navigate website
-
-7. Execute scraper logic
-
-8. Extract data
-
-9. Save result
-
-10. Close context
-
-11. Mark job completed
+captures/
+    session.json
+    summary.json
 ```
 
----
+`session.json`
 
-# Error Handling
+Contains every recorded request and response.
 
-The system must handle:
+`summary.json`
 
-* Navigation timeout
-* Browser crashes
-* Invalid pages
-* Network errors
-* Blocked requests
-* Unexpected HTML
-* JavaScript errors
+Contains useful statistics:
 
-Failed jobs should:
-
-* Capture error details.
-* Save debugging metadata.
-* Retry according to queue configuration.
+- Total requests
+- Successful requests
+- Failed requests
+- HTTP methods
+- Domains
+- API endpoints
+- Response codes
+- Largest responses
+- Slowest requests
 
 ---
 
-# Observability
+# Code Quality
 
-Track:
+Requirements:
 
-* Job ID
-* Website URL
-* Start time
-* End time
-* Duration
-* Browser errors
-* Navigation errors
-* Number of requests
-* Success/failure status
-
-Store logs in the existing application logging system.
+- TypeScript
+- Modern ES Modules
+- Well-structured architecture
+- Strong typing
+- Async/await throughout
+- Modular code organization
+- Robust error handling
+- Production-ready quality
+- Clear logging
+- Easily extensible
 
 ---
 
-# Implementation Rules
+# Future Extensibility
 
-* Follow the existing codebase architecture.
-* Do not introduce unnecessary frameworks.
-* Reuse existing configuration, logging, and dependency injection systems.
-* Keep browser management separate from scraping logic.
-* Keep queue management separate from extraction logic.
-* Keep website-specific scraping logic modular.
-* Treat provided code snippets as examples only, not final implementation.
+The architecture should make it easy to add:
+
+- Automatic endpoint classification
+- OpenAPI specification generation
+- Request replay
+- API client generation
+- Authentication detection
+- Automatic schema inference
+- Endpoint grouping by resource type
+
+The recorder should be designed as a reusable foundation for an AI-powered API reverse-engineering toolkit.
