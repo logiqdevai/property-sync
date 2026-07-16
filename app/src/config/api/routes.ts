@@ -61,6 +61,11 @@ export const ApiRoutes = {
             detail: (id: string) => `/admin/jobs/${id}`,
             retry: (id: string) => `/admin/jobs/${id}/retry`,
         },
+        diagnostics: {
+            prefix: "/admin/diagnostics",
+            list: "/admin/diagnostics",
+            detail: (id: string) => `/admin/diagnostics/${id}`,
+        },
         properties: {
             prefix: "/admin/properties",
             list: "/admin/properties",

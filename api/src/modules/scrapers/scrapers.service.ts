@@ -198,6 +198,9 @@ export class ScrapersService {
           ...(dto.self_healing_enabled !== undefined && {
             self_healing_enabled: dto.self_healing_enabled,
           }),
+          ...(dto.diagnostics_mode !== undefined && {
+            diagnostics_mode: dto.diagnostics_mode,
+          }),
           ...(dto.normalize_limit !== undefined && {
             normalize_limit: dto.normalize_limit,
           }),
@@ -242,6 +245,9 @@ export class ScrapersService {
           ...(dto.status !== undefined && { status: dto.status }),
           ...(dto.self_healing_enabled !== undefined && {
             self_healing_enabled: dto.self_healing_enabled,
+          }),
+          ...(dto.diagnostics_mode !== undefined && {
+            diagnostics_mode: dto.diagnostics_mode,
           }),
           ...(dto.normalize_limit !== undefined && {
             normalize_limit: dto.normalize_limit,

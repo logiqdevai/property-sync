@@ -4,7 +4,7 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import { Browser, BrowserContext, chromium, Page } from 'playwright';
+import { Browser, BrowserContext, BrowserContextOptions, chromium, Page } from 'playwright';
 
 const STEALTH_UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
@@ -30,7 +30,9 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async newStealthPage(): Promise<StealthPageSession> {
+  async newStealthPage(
+    contextOptions?: Partial<BrowserContextOptions>,
+  ): Promise<StealthPageSession> {
     const browser = await this.ensureBrowser();
     const context = await browser.newContext({
       userAgent: STEALTH_UA,
@@ -40,6 +42,7 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
         Accept:
           'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
       },
+      ...contextOptions,
     });
     await context.addInitScript(() => {
       Object.defineProperty(navigator, 'webdriver', {

@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Page } from 'playwright';
+import { DiagnosticsCaptureService } from '@/integrations/diagnostics/services/diagnostics-capture.service';
+import { DiagnosticsRunContext } from '@/integrations/diagnostics/interfaces/diagnostics.interfaces';
 import {
   MAX_PAGES,
   PAGE_TIMEOUT_MS,
@@ -15,28 +17,36 @@ import {
 import { crawlTimestamp } from '../utils/crawler.utils';
 import { CrawlerDebugService } from './crawler-debug.service';
 import { FieldExtractionService } from './field-extraction.service';
-import { StealthBrowserService } from './stealth-browser.service';
 
 @Injectable()
 export class CrawlerService {
   private readonly logger = new Logger(CrawlerService.name);
 
   constructor(
-    private readonly stealthBrowserService: StealthBrowserService,
+    private readonly diagnosticsCaptureService: DiagnosticsCaptureService,
     private readonly fieldExtractionService: FieldExtractionService,
     private readonly crawlerDebugService: CrawlerDebugService,
   ) {}
 
-  async runCrawl(config: ScraperConfig): Promise<CrawlResult> {
+  async runCrawl(
+    config: ScraperConfig,
+    diagnosticsCtx: DiagnosticsRunContext,
+  ): Promise<CrawlResult> {
+    return this.diagnosticsCaptureService.run(diagnosticsCtx, (page) =>
+      this.scrapeListingPages(page, config),
+    );
+  }
+
+  private async scrapeListingPages(
+    page: Page,
+    config: ScraperConfig,
+  ): Promise<CrawlResult> {
     const steps: CrawlStep[] = [];
     const items: CrawlItem[] = [];
     let success = false;
     let errorSummary: string | null = null;
     let networkError = false;
     let zeroListingsPage0 = false;
-
-    const { context, page } =
-      await this.stealthBrowserService.newStealthPage();
 
     const log = (msg: string, data: Record<string, unknown> = {}) => {
       steps.push({ ts: crawlTimestamp(), msg, ...data });
@@ -174,8 +184,6 @@ export class CrawlerService {
       errorSummary = message;
       networkError = true;
       log('error', { message });
-    } finally {
-      await context.close().catch(() => undefined);
     }
 
     return {

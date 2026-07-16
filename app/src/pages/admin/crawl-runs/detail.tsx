@@ -185,7 +185,17 @@ export default function CrawlRunDetailPage() {
       )}
 
       <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-4">
-        <p className="text-sm font-medium text-foreground">Execution traces</p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-foreground">Execution traces</p>
+          {run.diagnostics_package && (
+            <button
+              className="text-sm text-accent hover:underline"
+              onClick={() => navigate(Routes.admin.diagnostics.detail(run.diagnostics_package!.id))}
+            >
+              View diagnostics
+            </button>
+          )}
+        </div>
         {traces.length === 0 ? (
           <p className="text-sm text-muted">No execution traces recorded.</p>
         ) : (

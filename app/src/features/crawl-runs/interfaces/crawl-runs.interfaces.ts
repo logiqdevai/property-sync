@@ -68,6 +68,7 @@ export interface CrawlRun {
 export interface CrawlRunDetail extends CrawlRun {
   execution_traces: ScraperExecutionTrace[];
   job_logs: CrawlRunJobLogSummary[];
+  diagnostics_package?: { id: string; mode: string } | null;
 }
 
 export interface CrawlRunListQuery {

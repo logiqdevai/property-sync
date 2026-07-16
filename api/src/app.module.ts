@@ -14,6 +14,7 @@ import { ScrapersModule } from './modules/scrapers/scrapers.module';
 import { ScraperGenerationModule } from './modules/scraper-generation/scraper-generation.module';
 import { CrawlRunsModule } from './modules/crawl-runs/crawl-runs.module';
 import { JobsModule } from './modules/jobs/jobs.module';
+import { DiagnosticsModule } from './modules/diagnostics/diagnostics.module';
 import { PropertiesModule } from './modules/properties/properties.module';
 import { OpenAiWebhooksModule } from './modules/openai-webhooks/openai-webhooks.module';
 import { UserIntegrationsModule } from './modules/user-integrations/user-integrations.module';
@@ -45,6 +46,7 @@ import { ConfigModule } from './shared/config/env/env.module';
     ScraperGenerationModule,
     CrawlRunsModule,
     JobsModule,
+    DiagnosticsModule,
     PropertiesModule,
     OpenAiWebhooksModule,
     UserTrackedAgenciesModule,

@@ -8,7 +8,7 @@ import {
   Min,
   ValidateIf,
 } from 'class-validator';
-import { ScraperStatus } from 'generated/prisma';
+import { DiagnosticsMode, ScraperStatus } from 'generated/prisma';
 
 export class UpdateScraperDto {
   @ApiProperty({
@@ -27,6 +27,15 @@ export class UpdateScraperDto {
   @IsOptional()
   @IsBoolean()
   self_healing_enabled?: boolean;
+
+  @ApiProperty({
+    required: false,
+    enum: DiagnosticsMode,
+    description: "Debugging depth for this scraper's crawl runs",
+  })
+  @IsOptional()
+  @IsEnum(DiagnosticsMode)
+  diagnostics_mode?: DiagnosticsMode;
 
   @ApiProperty({
     required: false,

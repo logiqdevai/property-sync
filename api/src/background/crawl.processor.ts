@@ -7,6 +7,7 @@ import { CRAWL_WORKER_CONCURRENCY } from '@/integrations/crawler/constants/crawl
 import { CrawlerService } from '@/integrations/crawler/services/crawler.service';
 import { DetailEnrichmentService } from '@/integrations/crawler/services/detail-enrichment.service';
 import { ScraperConfig } from '@/integrations/crawler/interfaces/scraper-config.interface';
+import { DiagnosticsRunContext } from '@/integrations/diagnostics/interfaces/diagnostics.interfaces';
 import { contentHash } from '@/integrations/crawler/utils/crawler.utils';
 import { ScraperGenerationService } from '@/modules/scraper-generation/scraper-generation.service';
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
@@ -116,7 +117,20 @@ export class CrawlProcessor extends WorkerHost {
         );
       }
 
-      const crawlResult = await this.crawlerService.runCrawl(config);
+      const diagnosticsCtx: DiagnosticsRunContext = {
+        crawlRunId,
+        scraperId: scraper.id,
+        scraperVersion: activeVersion.version,
+        url: config.start_url,
+        mode: scraper.diagnostics_mode,
+        retryNumber: attempt - 1,
+        workerId: job.id ? String(job.id) : undefined,
+      };
+
+      const crawlResult = await this.crawlerService.runCrawl(
+        config,
+        diagnosticsCtx,
+      );
       await this.detailEnrichmentService.enrichDetailPages(
         crawlResult.items,
         config.detail_page,

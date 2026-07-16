@@ -20,8 +20,10 @@ import { parseOptionalJsonConfig } from "@/features/scrapers/validation-schemas/
 import {
   ScraperStatuses,
   type ScraperStatus,
+  type DiagnosticsMode,
 } from "@/features/scrapers/interfaces/scrapers.interfaces";
 import { ScraperStatusFormOptions } from "@/config/constants/dropdowns/scraper-status-form.options";
+import { DiagnosticsModeFormOptions } from "@/config/constants/dropdowns/diagnostics-mode-form.options";
 import { CreateGenerationRunForm } from "./components/create-generation-run-form";
 import { GenerationRunStatusChip } from "./components/generation-run-status-chip";
 import { GenerationRunTriggerChip } from "./components/generation-run-trigger-chip";
@@ -206,7 +208,7 @@ export default function ScraperDetailPage() {
           </span>
         </div>
 
-        <div className="flex items-center gap-6 sm:col-span-2 pt-2 border-t border-border">
+        <div className="flex items-center gap-6 sm:col-span-2 pt-2 border-t border-border flex-wrap">
           <Switch
             isSelected={scraper.self_healing_enabled}
             onChange={(isSelected) =>
@@ -218,6 +220,35 @@ export default function ScraperDetailPage() {
             </Switch.Control>
             <Switch.Content>Self-healing enabled</Switch.Content>
           </Switch>
+
+          <Select
+            aria-label="Diagnostics mode"
+            selectedKey={scraper.diagnostics_mode}
+            isDisabled={updateScraper.isPending}
+            onSelectionChange={(key) => {
+              if (!key || key === scraper.diagnostics_mode) return;
+              updateScraper.mutate({
+                id: scraper.id,
+                payload: { diagnostics_mode: key as DiagnosticsMode },
+              });
+            }}
+            className="w-72"
+          >
+            <Label>Diagnostics mode</Label>
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {DiagnosticsModeFormOptions.map((option) => (
+                  <ListBox.Item key={option.id} id={option.id}>
+                    {option.label}
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
         </div>
       </div>
 

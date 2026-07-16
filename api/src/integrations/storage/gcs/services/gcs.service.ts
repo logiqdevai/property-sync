@@ -64,6 +64,15 @@ export class GcsService {
         }
     }
 
+    public async getSignedUrlForPath(fullPath: string, expiresInMinutes: number = 60): Promise<string> {
+        try {
+            return await this.gcsAdapter.getSignedUrlForPath(fullPath, expiresInMinutes);
+        } catch (error) {
+            this.logger.error('Get signed URL error:', error);
+            throw new Error(`Failed to get signed URL: ${error.message}`);
+        }
+    }
+
     public async uploadImageFromBuffer(
         buffer: Buffer,
         filename: string,

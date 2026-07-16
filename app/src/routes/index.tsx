@@ -19,6 +19,8 @@ import CrawlRunsListPage from "@/pages/admin/crawl-runs";
 import CrawlRunDetailPage from "@/pages/admin/crawl-runs/detail";
 import JobsListPage from "@/pages/admin/jobs";
 import JobDetailPage from "@/pages/admin/jobs/detail";
+import DiagnosticsListPage from "@/pages/admin/diagnostics";
+import DiagnosticsDetailPage from "@/pages/admin/diagnostics/detail";
 import PropertiesListPage from "@/pages/admin/properties";
 import PropertyDetailPage from "@/pages/admin/properties/detail";
 import NotificationsListPage from "@/pages/admin/notifications";
@@ -96,6 +98,8 @@ export default function AppRoutes() {
         <Route path="crawl-runs/:id" element={<CrawlRunDetailPage />} />
         <Route path="jobs" element={<JobsListPage />} />
         <Route path="jobs/:id" element={<JobDetailPage />} />
+        <Route path="diagnostics" element={<DiagnosticsListPage />} />
+        <Route path="diagnostics/:id" element={<DiagnosticsDetailPage />} />
         <Route path="properties" element={<PropertiesListPage />} />
         <Route path="properties/:id" element={<PropertyDetailPage />} />
         <Route path="notifications" element={<NotificationsListPage />} />

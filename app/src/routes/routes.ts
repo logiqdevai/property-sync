@@ -38,6 +38,10 @@ export const Routes = {
             list: "/admin/jobs",
             detail: (id: string) => `/admin/jobs/${id}`,
         },
+        diagnostics: {
+            list: "/admin/diagnostics",
+            detail: (id: string) => `/admin/diagnostics/${id}`,
+        },
         properties: {
             list: "/admin/properties",
             detail: (id: string) => `/admin/properties/${id}`,

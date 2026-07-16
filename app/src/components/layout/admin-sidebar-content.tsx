@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Building2, Bot, Sparkles, Activity, ListTodo, Home, Bell, Plug, Users, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Building2, Bot, Sparkles, Activity, ListTodo, Home, Bell, Plug, Users, ArrowLeft, FileSearch } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes/routes';
 import { useUnreadNotificationsCount } from '@/features/notifications/hooks/use-notifications';
@@ -16,6 +16,7 @@ const navItems = [
   { label: 'Generation Runs', icon: Sparkles, href: Routes.admin.generationRuns.list, end: false },
   { label: 'Crawl Runs', icon: Activity, href: Routes.admin.crawlRuns.list, end: false },
   { label: 'Job Queue', icon: ListTodo, href: Routes.admin.jobs.list, end: false },
+  { label: 'Diagnostics', icon: FileSearch, href: Routes.admin.diagnostics.list, end: false },
   { label: 'Properties', icon: Home, href: Routes.admin.properties.list, end: false },
   { label: 'Notifications', icon: Bell, href: Routes.admin.notifications, end: false, showUnreadBadge: true },
   { label: 'Integration Targets', icon: Plug, href: Routes.admin.integrationTargets.list, end: false },

@@ -18,6 +18,14 @@ export const ScraperHealths = {
 
 export type ScraperHealth = (typeof ScraperHealths)[keyof typeof ScraperHealths];
 
+export const DiagnosticsModes = {
+  PRODUCTION: "PRODUCTION",
+  TRACE: "TRACE",
+  FULL_DEBUG: "FULL_DEBUG",
+} as const;
+
+export type DiagnosticsMode = (typeof DiagnosticsModes)[keyof typeof DiagnosticsModes];
+
 export const ScraperVersionCreatedBys = {
   AI: "AI",
   USER: "USER",
@@ -45,6 +53,7 @@ export interface Scraper {
   version_count: number;
   status: ScraperStatus;
   self_healing_enabled: boolean;
+  diagnostics_mode: DiagnosticsMode;
   normalize_limit: number | null;
   health: ScraperHealth;
   success_rate: number | null;
@@ -73,6 +82,7 @@ export interface CreateScraperVersionPayload {
 export interface UpdateScraperPayload {
   status?: ScraperStatus;
   self_healing_enabled?: boolean;
+  diagnostics_mode?: DiagnosticsMode;
   normalize_limit?: number | null;
   validation_rules?: Record<string, unknown>;
 }

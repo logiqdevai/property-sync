@@ -179,6 +179,9 @@ export class CrawlRunsService {
         job_logs: {
           orderBy: { created_at: 'asc' },
         },
+        diagnostics_package: {
+          select: { id: true, mode: true },
+        },
       },
     });
 
