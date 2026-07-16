@@ -78,6 +78,23 @@ enum CrawlRunStatus {
   CANCELLED
 }
 
+// Debugging depth for the diagnostics subsystem (docs/playwright-debug.md). Determined per
+// Scraper, before browser context creation -- Playwright tracing cannot be enabled retroactively.
+enum DiagnosticsMode {
+  PRODUCTION // logs/timings/errors/metrics only, no tracing -- the default, smallest overhead
+  TRACE // Playwright trace (screenshots, DOM snapshots, console, actions, timings)
+  FULL_DEBUG // trace + video + HTML snapshot + network HAR -- development / hard production bugs
+}
+
+enum DiagnosticsArtifactKind {
+  TRACE
+  SCREENSHOT
+  HTML_SNAPSHOT
+  CONSOLE_LOG
+  NETWORK_HAR
+  VIDEO
+}
+
 // Separate from CrawlRunStatus: an AI generation/self-heal session has different
 // terminal states than a production crawl (e.g. AWAITING_REVIEW has no crawl equivalent).
 enum GenerationRunStatus {
@@ -245,12 +262,6 @@ enum ScraperVersionCreatedBy {
   USER
 }
 
-enum AiProvider {
-  OPENAI
-  ANTHROPIC
-  GEMINI
-}
-
 // ---------------------------------------------------------------
 // USERS & CMS
 // ---------------------------------------------------------------
@@ -352,21 +363,19 @@ model SourceAgency {
 
 /// Which SourceAgencies a user follows/monitors, and which kinds of change notify them.
 model UserTrackedAgency {
-  id                         String     @id @default(uuid())
+  id                         String   @id @default(uuid())
   user_id                    String
   source_agency_id           String
-  enabled                    Boolean    @default(true)
-  crawl_interval             String     @default("0 */6 * * *")
-  concurrent_insertions      Int        @default(1)
-  insertion_interval_minutes Int        @default(5)
-  track_new_listings         Boolean    @default(true)
-  track_removed_listings     Boolean    @default(true)
-  track_updated_listings     Boolean    @default(true)
-  use_ai_batching            Boolean    @default(false)
-  ai_provider                AiProvider @default(OPENAI)
-  ai_model                   String?
-  created_at                 DateTime   @default(now())
-  updated_at                 DateTime   @updatedAt
+  enabled                    Boolean  @default(true)
+  crawl_interval             String   @default("0 */6 * * *")
+  concurrent_insertions      Int      @default(1) // the number of properties to insert concurrently to the EstateWeb integration
+  insertion_interval_minutes Int      @default(5) // the interval between concurrent insertions to the EstateWeb integration
+  track_new_listings         Boolean  @default(true)
+  track_removed_listings     Boolean  @default(true)
+  track_updated_listings     Boolean  @default(true)
+  use_ai_batching            Boolean  @default(false)
+  created_at                 DateTime @default(now())
+  updated_at                 DateTime @updatedAt
 
   user             User                              @relation(fields: [user_id], references: [id], onDelete: Cascade)
   source_agency    SourceAgency                      @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
@@ -400,22 +409,23 @@ model UserTrackedAgencyIntegrationLink {
 /// active ScraperVersion (see `active_version`). This keeps a single source of truth instead of
 /// letting Scraper.config and ScraperVersion.config drift out of sync.
 model Scraper {
-  id                   String        @id @default(uuid())
+  id                   String          @id @default(uuid())
   source_agency_id     String
   name                 String
-  active_version_id    String?       @unique // FK to the ScraperVersion currently in use
-  version_count        Int           @default(0) // convenience counter, incremented on new versions
-  status               ScraperStatus @default(TESTING)
-  self_healing_enabled Boolean       @default(true) // whether self-heal is allowed to auto-apply fixes
-  health               ScraperHealth @default(GOOD) // cached rollup, recomputed by a background job (spec section 18)
-  success_rate         Decimal?      @db.Decimal(5, 2) // cached % over trailing window
+  active_version_id    String?         @unique // FK to the ScraperVersion currently in use
+  version_count        Int             @default(0) // convenience counter, incremented on new versions
+  status               ScraperStatus   @default(TESTING)
+  self_healing_enabled Boolean         @default(true) // whether self-heal is allowed to auto-apply fixes
+  diagnostics_mode     DiagnosticsMode @default(PRODUCTION) // debugging depth for this scraper's crawl runs
+  health               ScraperHealth   @default(GOOD) // cached rollup, recomputed by a background job (spec section 18)
+  success_rate         Decimal?        @db.Decimal(5, 2) // cached % over trailing window
   avg_runtime_ms       Int? // cached average CrawlRun duration
-  consecutive_failures Int           @default(0) // reset to 0 on any SUCCESS CrawlRun
+  consecutive_failures Int             @default(0) // reset to 0 on any SUCCESS CrawlRun
   normalize_limit      Int? // max SourceProperties to AI-normalize per crawl; null = unlimited
   last_success_at      DateTime?
   last_failure_at      DateTime?
-  created_at           DateTime      @default(now())
-  updated_at           DateTime      @updatedAt
+  created_at           DateTime        @default(now())
+  updated_at           DateTime        @updatedAt
 
   source_agency  SourceAgency    @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
   active_version ScraperVersion? @relation("ActiveVersion", fields: [active_version_id], references: [id], onDelete: SetNull)
@@ -425,6 +435,7 @@ model Scraper {
   execution_traces        ScraperExecutionTrace[]
   scraper_generation_runs ScraperGenerationRun[]
   notifications           Notification[]
+  diagnostics_packages    DiagnosticsPackage[]
 
   @@index([source_agency_id])
   @@index([status])
@@ -572,12 +583,61 @@ model CrawlRun {
   execution_traces    ScraperExecutionTrace[]
   property_history    PropertyHistory[]
   notifications       Notification[]
+  diagnostics_package DiagnosticsPackage?
 
   @@index([source_agency_id])
   @@index([scraper_id])
   @@index([status])
   @@index([created_at])
   @@map("crawl_runs")
+}
+
+/// Failure diagnostics package for a crawl run's main listing scrape. Only created when the run
+/// fails AND Scraper.diagnostics_mode is TRACE/FULL_DEBUG -- successful runs discard whatever was
+/// collected without persisting anything (see DiagnosticsCaptureService).
+model DiagnosticsPackage {
+  id                 String          @id @default(uuid())
+  crawl_run_id       String          @unique
+  scraper_id         String
+  mode               DiagnosticsMode
+  url                String
+  worker_id          String?
+  browser_version    String?
+  playwright_version String?
+  scraper_version    Int?
+  retry_number       Int?
+  started_at         DateTime
+  finished_at        DateTime
+  duration_ms        Int
+  failure_reason     String?
+  exception          String?
+  created_at         DateTime        @default(now())
+
+  crawl_run CrawlRun              @relation(fields: [crawl_run_id], references: [id], onDelete: Cascade)
+  scraper   Scraper               @relation(fields: [scraper_id], references: [id], onDelete: Cascade)
+  artifacts DiagnosticsArtifact[]
+
+  @@index([scraper_id])
+  @@map("diagnostics_packages")
+}
+
+/// One stored blob (trace/screenshot/HTML/console/HAR/video) belonging to a DiagnosticsPackage,
+/// uploaded to GCS. Only `path` (the GCS object path) is persisted -- URLs are signed on demand
+/// at read time (see DiagnosticsService.findOne) since the bucket is private and a stored URL
+/// would go stale.
+model DiagnosticsArtifact {
+  id                     String                  @id @default(uuid())
+  diagnostics_package_id String
+  kind                   DiagnosticsArtifactKind
+  path                   String
+  content_type           String
+  size_bytes             Int
+  created_at             DateTime                @default(now())
+
+  diagnostics_package DiagnosticsPackage @relation(fields: [diagnostics_package_id], references: [id], onDelete: Cascade)
+
+  @@index([diagnostics_package_id])
+  @@map("diagnostics_artifacts")
 }
 
 /// Generic queue/job execution log (e.g. BullMQ), optionally tied to a CrawlRun. Useful for

@@ -10,8 +10,6 @@ export interface AgencyTrackedUser {
   track_removed_listings: boolean;
   track_updated_listings: boolean;
   use_ai_batching: boolean;
-  ai_provider: string;
-  ai_model: string | null;
   created_at: string;
   updated_at: string;
   user: {
@@ -65,8 +63,6 @@ export interface UpdateTrackerAdminSettingsPayload {
   concurrent_insertions?: number;
   insertion_interval_minutes?: number;
   use_ai_batching?: boolean;
-  ai_provider?: string;
-  ai_model?: string | null;
 }
 
 export interface AgencyListQuery {

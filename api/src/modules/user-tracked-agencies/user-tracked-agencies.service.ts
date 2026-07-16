@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { UserIntegrationsService } from '@/modules/user-integrations/user-integrations.service';
+import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import { BrowseAgencyQueryType } from './dto/agency-query.schema';
 import { TrackAgencyDto } from './dto/track-agency.dto';
 import {
-  AiProvider,
   AuthRole,
   IntegrationType,
   Prisma,
@@ -81,8 +81,6 @@ export class UserTrackedAgenciesService {
                 track_removed_listings: tracker.track_removed_listings,
                 track_updated_listings: tracker.track_updated_listings,
                 use_ai_batching: tracker.use_ai_batching,
-                ai_provider: tracker.ai_provider,
-                ai_model: tracker.ai_model,
                 enabled: tracker.enabled,
                 user_integration_id:
                   tracker.integration_link?.user_integration_id ?? null,
@@ -108,8 +106,7 @@ export class UserTrackedAgenciesService {
 
   async track(userId: string, agencyId: string, dto: TrackAgencyDto) {
     const agency = await this.requireTrackableAgency(agencyId);
-    const aiProvider = dto.ai_provider ?? AiProvider.OPENAI;
-    await this.assertUserHasIntegration(userId, aiProvider);
+    await this.assertUserHasDefaultAiIntegration(userId);
 
     return this.prisma.userTrackedAgency.upsert({
       where: {
@@ -126,8 +123,6 @@ export class UserTrackedAgenciesService {
         track_removed_listings: dto.track_removed_listings ?? true,
         track_updated_listings: dto.track_updated_listings ?? true,
         use_ai_batching: dto.use_ai_batching ?? false,
-        ai_provider: aiProvider,
-        ai_model: dto.ai_model ?? null,
       },
       update: {
         enabled: true,
@@ -143,8 +138,6 @@ export class UserTrackedAgenciesService {
         ...(dto.use_ai_batching !== undefined && {
           use_ai_batching: dto.use_ai_batching,
         }),
-        ai_provider: aiProvider,
-        ...(dto.ai_model !== undefined && { ai_model: dto.ai_model }),
       },
     });
   }
@@ -163,11 +156,6 @@ export class UserTrackedAgenciesService {
       throw new NotFoundException('You are not tracking this agency');
     }
 
-    const aiProvider = dto.ai_provider ?? existing.ai_provider;
-    if (dto.ai_provider !== undefined || dto.ai_model !== undefined) {
-      await this.assertUserHasIntegration(userId, aiProvider);
-    }
-
     return this.prisma.userTrackedAgency.update({
       where: { id: existing.id },
       data: {
@@ -184,8 +172,6 @@ export class UserTrackedAgenciesService {
           use_ai_batching: dto.use_ai_batching,
         }),
         ...(dto.enabled !== undefined && { enabled: dto.enabled }),
-        ...(dto.ai_provider !== undefined && { ai_provider: dto.ai_provider }),
-        ...(dto.ai_model !== undefined && { ai_model: dto.ai_model }),
       },
     });
   }
@@ -361,21 +347,16 @@ export class UserTrackedAgenciesService {
     return agency;
   }
 
-  private async assertUserHasIntegration(
-    userId: string,
-    aiProvider: AiProvider,
-  ): Promise<void> {
-    const integrationType = aiProvider as unknown as IntegrationType;
+  private async assertUserHasDefaultAiIntegration(userId: string): Promise<void> {
     try {
       await this.userIntegrationsService.resolveActiveApiKey(
         userId,
-        integrationType,
+        AiDefaults.provider,
       );
     } catch {
       throw new BadRequestException(
-        `Connect ${aiProvider} on the Integrations page before tracking agencies with this provider`,
+        `Connect ${AiDefaults.provider} on the Integrations page before tracking agencies`,
       );
     }
   }
 }
-

@@ -89,6 +89,21 @@ export type ScraperExecutionTrace = $Result.DefaultSelection<Prisma.$ScraperExec
  */
 export type CrawlRun = $Result.DefaultSelection<Prisma.$CrawlRunPayload>
 /**
+ * Model DiagnosticsPackage
+ * Failure diagnostics package for a crawl run's main listing scrape. Only created when the run
+ * fails AND Scraper.diagnostics_mode is TRACE/FULL_DEBUG -- successful runs discard whatever was
+ * collected without persisting anything (see DiagnosticsCaptureService).
+ */
+export type DiagnosticsPackage = $Result.DefaultSelection<Prisma.$DiagnosticsPackagePayload>
+/**
+ * Model DiagnosticsArtifact
+ * One stored blob (trace/screenshot/HTML/console/HAR/video) belonging to a DiagnosticsPackage,
+ * uploaded to GCS. Only `path` (the GCS object path) is persisted -- URLs are signed on demand
+ * at read time (see DiagnosticsService.findOne) since the bucket is private and a stored URL
+ * would go stale.
+ */
+export type DiagnosticsArtifact = $Result.DefaultSelection<Prisma.$DiagnosticsArtifactPayload>
+/**
  * Model JobLog
  * Generic queue/job execution log (e.g. BullMQ), optionally tied to a CrawlRun. Useful for
  * ops/debugging independent of the scraping domain model.
@@ -226,6 +241,27 @@ export const CrawlRunStatus: {
 };
 
 export type CrawlRunStatus = (typeof CrawlRunStatus)[keyof typeof CrawlRunStatus]
+
+
+export const DiagnosticsMode: {
+  PRODUCTION: 'PRODUCTION',
+  TRACE: 'TRACE',
+  FULL_DEBUG: 'FULL_DEBUG'
+};
+
+export type DiagnosticsMode = (typeof DiagnosticsMode)[keyof typeof DiagnosticsMode]
+
+
+export const DiagnosticsArtifactKind: {
+  TRACE: 'TRACE',
+  SCREENSHOT: 'SCREENSHOT',
+  HTML_SNAPSHOT: 'HTML_SNAPSHOT',
+  CONSOLE_LOG: 'CONSOLE_LOG',
+  NETWORK_HAR: 'NETWORK_HAR',
+  VIDEO: 'VIDEO'
+};
+
+export type DiagnosticsArtifactKind = (typeof DiagnosticsArtifactKind)[keyof typeof DiagnosticsArtifactKind]
 
 
 export const GenerationRunStatus: {
@@ -430,15 +466,6 @@ export const ScraperVersionCreatedBy: {
 
 export type ScraperVersionCreatedBy = (typeof ScraperVersionCreatedBy)[keyof typeof ScraperVersionCreatedBy]
 
-
-export const AiProvider: {
-  OPENAI: 'OPENAI',
-  ANTHROPIC: 'ANTHROPIC',
-  GEMINI: 'GEMINI'
-};
-
-export type AiProvider = (typeof AiProvider)[keyof typeof AiProvider]
-
 }
 
 export type AuthRole = $Enums.AuthRole
@@ -468,6 +495,14 @@ export const ScraperHealth: typeof $Enums.ScraperHealth
 export type CrawlRunStatus = $Enums.CrawlRunStatus
 
 export const CrawlRunStatus: typeof $Enums.CrawlRunStatus
+
+export type DiagnosticsMode = $Enums.DiagnosticsMode
+
+export const DiagnosticsMode: typeof $Enums.DiagnosticsMode
+
+export type DiagnosticsArtifactKind = $Enums.DiagnosticsArtifactKind
+
+export const DiagnosticsArtifactKind: typeof $Enums.DiagnosticsArtifactKind
 
 export type GenerationRunStatus = $Enums.GenerationRunStatus
 
@@ -528,10 +563,6 @@ export const NotificationSeverity: typeof $Enums.NotificationSeverity
 export type ScraperVersionCreatedBy = $Enums.ScraperVersionCreatedBy
 
 export const ScraperVersionCreatedBy: typeof $Enums.ScraperVersionCreatedBy
-
-export type AiProvider = $Enums.AiProvider
-
-export const AiProvider: typeof $Enums.AiProvider
 
 /**
  * ##  Prisma Client ʲˢ
@@ -769,6 +800,26 @@ export class PrismaClient<
     * ```
     */
   get crawlRun(): Prisma.CrawlRunDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.diagnosticsPackage`: Exposes CRUD operations for the **DiagnosticsPackage** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DiagnosticsPackages
+    * const diagnosticsPackages = await prisma.diagnosticsPackage.findMany()
+    * ```
+    */
+  get diagnosticsPackage(): Prisma.DiagnosticsPackageDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.diagnosticsArtifact`: Exposes CRUD operations for the **DiagnosticsArtifact** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DiagnosticsArtifacts
+    * const diagnosticsArtifacts = await prisma.diagnosticsArtifact.findMany()
+    * ```
+    */
+  get diagnosticsArtifact(): Prisma.DiagnosticsArtifactDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.jobLog`: Exposes CRUD operations for the **JobLog** model.
@@ -1305,6 +1356,8 @@ export namespace Prisma {
     ScraperVersion: 'ScraperVersion',
     ScraperExecutionTrace: 'ScraperExecutionTrace',
     CrawlRun: 'CrawlRun',
+    DiagnosticsPackage: 'DiagnosticsPackage',
+    DiagnosticsArtifact: 'DiagnosticsArtifact',
     JobLog: 'JobLog',
     Notification: 'Notification',
     CmsSyncRun: 'CmsSyncRun',
@@ -1329,7 +1382,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "integrationTarget" | "userIntegration" | "sourceAgency" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "jobLog" | "notification" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "document"
+      modelProps: "user" | "integrationTarget" | "userIntegration" | "sourceAgency" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "notification" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "document"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2221,6 +2274,154 @@ export namespace Prisma {
           }
         }
       }
+      DiagnosticsPackage: {
+        payload: Prisma.$DiagnosticsPackagePayload<ExtArgs>
+        fields: Prisma.DiagnosticsPackageFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DiagnosticsPackageFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsPackagePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DiagnosticsPackageFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsPackagePayload>
+          }
+          findFirst: {
+            args: Prisma.DiagnosticsPackageFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsPackagePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DiagnosticsPackageFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsPackagePayload>
+          }
+          findMany: {
+            args: Prisma.DiagnosticsPackageFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsPackagePayload>[]
+          }
+          create: {
+            args: Prisma.DiagnosticsPackageCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsPackagePayload>
+          }
+          createMany: {
+            args: Prisma.DiagnosticsPackageCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DiagnosticsPackageCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsPackagePayload>[]
+          }
+          delete: {
+            args: Prisma.DiagnosticsPackageDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsPackagePayload>
+          }
+          update: {
+            args: Prisma.DiagnosticsPackageUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsPackagePayload>
+          }
+          deleteMany: {
+            args: Prisma.DiagnosticsPackageDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DiagnosticsPackageUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.DiagnosticsPackageUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsPackagePayload>[]
+          }
+          upsert: {
+            args: Prisma.DiagnosticsPackageUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsPackagePayload>
+          }
+          aggregate: {
+            args: Prisma.DiagnosticsPackageAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDiagnosticsPackage>
+          }
+          groupBy: {
+            args: Prisma.DiagnosticsPackageGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DiagnosticsPackageGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DiagnosticsPackageCountArgs<ExtArgs>
+            result: $Utils.Optional<DiagnosticsPackageCountAggregateOutputType> | number
+          }
+        }
+      }
+      DiagnosticsArtifact: {
+        payload: Prisma.$DiagnosticsArtifactPayload<ExtArgs>
+        fields: Prisma.DiagnosticsArtifactFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DiagnosticsArtifactFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsArtifactPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DiagnosticsArtifactFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsArtifactPayload>
+          }
+          findFirst: {
+            args: Prisma.DiagnosticsArtifactFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsArtifactPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DiagnosticsArtifactFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsArtifactPayload>
+          }
+          findMany: {
+            args: Prisma.DiagnosticsArtifactFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsArtifactPayload>[]
+          }
+          create: {
+            args: Prisma.DiagnosticsArtifactCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsArtifactPayload>
+          }
+          createMany: {
+            args: Prisma.DiagnosticsArtifactCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DiagnosticsArtifactCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsArtifactPayload>[]
+          }
+          delete: {
+            args: Prisma.DiagnosticsArtifactDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsArtifactPayload>
+          }
+          update: {
+            args: Prisma.DiagnosticsArtifactUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsArtifactPayload>
+          }
+          deleteMany: {
+            args: Prisma.DiagnosticsArtifactDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DiagnosticsArtifactUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.DiagnosticsArtifactUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsArtifactPayload>[]
+          }
+          upsert: {
+            args: Prisma.DiagnosticsArtifactUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DiagnosticsArtifactPayload>
+          }
+          aggregate: {
+            args: Prisma.DiagnosticsArtifactAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDiagnosticsArtifact>
+          }
+          groupBy: {
+            args: Prisma.DiagnosticsArtifactGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DiagnosticsArtifactGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DiagnosticsArtifactCountArgs<ExtArgs>
+            result: $Utils.Optional<DiagnosticsArtifactCountAggregateOutputType> | number
+          }
+        }
+      }
       JobLog: {
         payload: Prisma.$JobLogPayload<ExtArgs>
         fields: Prisma.JobLogFieldRefs
@@ -3007,6 +3208,8 @@ export namespace Prisma {
     scraperVersion?: ScraperVersionOmit
     scraperExecutionTrace?: ScraperExecutionTraceOmit
     crawlRun?: CrawlRunOmit
+    diagnosticsPackage?: DiagnosticsPackageOmit
+    diagnosticsArtifact?: DiagnosticsArtifactOmit
     jobLog?: JobLogOmit
     notification?: NotificationOmit
     cmsSyncRun?: CmsSyncRunOmit
@@ -3319,6 +3522,7 @@ export namespace Prisma {
     execution_traces: number
     scraper_generation_runs: number
     notifications: number
+    diagnostics_packages: number
   }
 
   export type ScraperCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3327,6 +3531,7 @@ export namespace Prisma {
     execution_traces?: boolean | ScraperCountOutputTypeCountExecution_tracesArgs
     scraper_generation_runs?: boolean | ScraperCountOutputTypeCountScraper_generation_runsArgs
     notifications?: boolean | ScraperCountOutputTypeCountNotificationsArgs
+    diagnostics_packages?: boolean | ScraperCountOutputTypeCountDiagnostics_packagesArgs
   }
 
   // Custom InputTypes
@@ -3373,6 +3578,13 @@ export namespace Prisma {
    */
   export type ScraperCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: NotificationWhereInput
+  }
+
+  /**
+   * ScraperCountOutputType without action
+   */
+  export type ScraperCountOutputTypeCountDiagnostics_packagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DiagnosticsPackageWhereInput
   }
 
 
@@ -3462,6 +3674,37 @@ export namespace Prisma {
    */
   export type CrawlRunCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: NotificationWhereInput
+  }
+
+
+  /**
+   * Count Type DiagnosticsPackageCountOutputType
+   */
+
+  export type DiagnosticsPackageCountOutputType = {
+    artifacts: number
+  }
+
+  export type DiagnosticsPackageCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    artifacts?: boolean | DiagnosticsPackageCountOutputTypeCountArtifactsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * DiagnosticsPackageCountOutputType without action
+   */
+  export type DiagnosticsPackageCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackageCountOutputType
+     */
+    select?: DiagnosticsPackageCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * DiagnosticsPackageCountOutputType without action
+   */
+  export type DiagnosticsPackageCountOutputTypeCountArtifactsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DiagnosticsArtifactWhereInput
   }
 
 
@@ -8470,8 +8713,6 @@ export namespace Prisma {
     track_removed_listings: boolean | null
     track_updated_listings: boolean | null
     use_ai_batching: boolean | null
-    ai_provider: $Enums.AiProvider | null
-    ai_model: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -8488,8 +8729,6 @@ export namespace Prisma {
     track_removed_listings: boolean | null
     track_updated_listings: boolean | null
     use_ai_batching: boolean | null
-    ai_provider: $Enums.AiProvider | null
-    ai_model: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -8506,8 +8745,6 @@ export namespace Prisma {
     track_removed_listings: number
     track_updated_listings: number
     use_ai_batching: number
-    ai_provider: number
-    ai_model: number
     created_at: number
     updated_at: number
     _all: number
@@ -8536,8 +8773,6 @@ export namespace Prisma {
     track_removed_listings?: true
     track_updated_listings?: true
     use_ai_batching?: true
-    ai_provider?: true
-    ai_model?: true
     created_at?: true
     updated_at?: true
   }
@@ -8554,8 +8789,6 @@ export namespace Prisma {
     track_removed_listings?: true
     track_updated_listings?: true
     use_ai_batching?: true
-    ai_provider?: true
-    ai_model?: true
     created_at?: true
     updated_at?: true
   }
@@ -8572,8 +8805,6 @@ export namespace Prisma {
     track_removed_listings?: true
     track_updated_listings?: true
     use_ai_batching?: true
-    ai_provider?: true
-    ai_model?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -8677,8 +8908,6 @@ export namespace Prisma {
     track_removed_listings: boolean
     track_updated_listings: boolean
     use_ai_batching: boolean
-    ai_provider: $Enums.AiProvider
-    ai_model: string | null
     created_at: Date
     updated_at: Date
     _count: UserTrackedAgencyCountAggregateOutputType | null
@@ -8714,8 +8943,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: boolean
-    ai_model?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -8737,8 +8964,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: boolean
-    ai_model?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -8757,8 +8982,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: boolean
-    ai_model?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -8777,13 +9000,11 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: boolean
-    ai_model?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "crawl_interval" | "concurrent_insertions" | "insertion_interval_minutes" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "use_ai_batching" | "ai_provider" | "ai_model" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
+  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "crawl_interval" | "concurrent_insertions" | "insertion_interval_minutes" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "use_ai_batching" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
   export type UserTrackedAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
@@ -8820,8 +9041,6 @@ export namespace Prisma {
       track_removed_listings: boolean
       track_updated_listings: boolean
       use_ai_batching: boolean
-      ai_provider: $Enums.AiProvider
-      ai_model: string | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["userTrackedAgency"]>
@@ -9262,8 +9481,6 @@ export namespace Prisma {
     readonly track_removed_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly track_updated_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly use_ai_batching: FieldRef<"UserTrackedAgency", 'Boolean'>
-    readonly ai_provider: FieldRef<"UserTrackedAgency", 'AiProvider'>
-    readonly ai_model: FieldRef<"UserTrackedAgency", 'String'>
     readonly created_at: FieldRef<"UserTrackedAgency", 'DateTime'>
     readonly updated_at: FieldRef<"UserTrackedAgency", 'DateTime'>
   }
@@ -10825,6 +11042,7 @@ export namespace Prisma {
     version_count: number | null
     status: $Enums.ScraperStatus | null
     self_healing_enabled: boolean | null
+    diagnostics_mode: $Enums.DiagnosticsMode | null
     health: $Enums.ScraperHealth | null
     success_rate: Decimal | null
     avg_runtime_ms: number | null
@@ -10844,6 +11062,7 @@ export namespace Prisma {
     version_count: number | null
     status: $Enums.ScraperStatus | null
     self_healing_enabled: boolean | null
+    diagnostics_mode: $Enums.DiagnosticsMode | null
     health: $Enums.ScraperHealth | null
     success_rate: Decimal | null
     avg_runtime_ms: number | null
@@ -10863,6 +11082,7 @@ export namespace Prisma {
     version_count: number
     status: number
     self_healing_enabled: number
+    diagnostics_mode: number
     health: number
     success_rate: number
     avg_runtime_ms: number
@@ -10900,6 +11120,7 @@ export namespace Prisma {
     version_count?: true
     status?: true
     self_healing_enabled?: true
+    diagnostics_mode?: true
     health?: true
     success_rate?: true
     avg_runtime_ms?: true
@@ -10919,6 +11140,7 @@ export namespace Prisma {
     version_count?: true
     status?: true
     self_healing_enabled?: true
+    diagnostics_mode?: true
     health?: true
     success_rate?: true
     avg_runtime_ms?: true
@@ -10938,6 +11160,7 @@ export namespace Prisma {
     version_count?: true
     status?: true
     self_healing_enabled?: true
+    diagnostics_mode?: true
     health?: true
     success_rate?: true
     avg_runtime_ms?: true
@@ -11044,6 +11267,7 @@ export namespace Prisma {
     version_count: number
     status: $Enums.ScraperStatus
     self_healing_enabled: boolean
+    diagnostics_mode: $Enums.DiagnosticsMode
     health: $Enums.ScraperHealth
     success_rate: Decimal | null
     avg_runtime_ms: number | null
@@ -11082,6 +11306,7 @@ export namespace Prisma {
     version_count?: boolean
     status?: boolean
     self_healing_enabled?: boolean
+    diagnostics_mode?: boolean
     health?: boolean
     success_rate?: boolean
     avg_runtime_ms?: boolean
@@ -11098,6 +11323,7 @@ export namespace Prisma {
     execution_traces?: boolean | Scraper$execution_tracesArgs<ExtArgs>
     scraper_generation_runs?: boolean | Scraper$scraper_generation_runsArgs<ExtArgs>
     notifications?: boolean | Scraper$notificationsArgs<ExtArgs>
+    diagnostics_packages?: boolean | Scraper$diagnostics_packagesArgs<ExtArgs>
     _count?: boolean | ScraperCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["scraper"]>
 
@@ -11109,6 +11335,7 @@ export namespace Prisma {
     version_count?: boolean
     status?: boolean
     self_healing_enabled?: boolean
+    diagnostics_mode?: boolean
     health?: boolean
     success_rate?: boolean
     avg_runtime_ms?: boolean
@@ -11130,6 +11357,7 @@ export namespace Prisma {
     version_count?: boolean
     status?: boolean
     self_healing_enabled?: boolean
+    diagnostics_mode?: boolean
     health?: boolean
     success_rate?: boolean
     avg_runtime_ms?: boolean
@@ -11151,6 +11379,7 @@ export namespace Prisma {
     version_count?: boolean
     status?: boolean
     self_healing_enabled?: boolean
+    diagnostics_mode?: boolean
     health?: boolean
     success_rate?: boolean
     avg_runtime_ms?: boolean
@@ -11162,7 +11391,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type ScraperOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "name" | "active_version_id" | "version_count" | "status" | "self_healing_enabled" | "health" | "success_rate" | "avg_runtime_ms" | "consecutive_failures" | "normalize_limit" | "last_success_at" | "last_failure_at" | "created_at" | "updated_at", ExtArgs["result"]["scraper"]>
+  export type ScraperOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "name" | "active_version_id" | "version_count" | "status" | "self_healing_enabled" | "diagnostics_mode" | "health" | "success_rate" | "avg_runtime_ms" | "consecutive_failures" | "normalize_limit" | "last_success_at" | "last_failure_at" | "created_at" | "updated_at", ExtArgs["result"]["scraper"]>
   export type ScraperInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     active_version?: boolean | Scraper$active_versionArgs<ExtArgs>
@@ -11171,6 +11400,7 @@ export namespace Prisma {
     execution_traces?: boolean | Scraper$execution_tracesArgs<ExtArgs>
     scraper_generation_runs?: boolean | Scraper$scraper_generation_runsArgs<ExtArgs>
     notifications?: boolean | Scraper$notificationsArgs<ExtArgs>
+    diagnostics_packages?: boolean | Scraper$diagnostics_packagesArgs<ExtArgs>
     _count?: boolean | ScraperCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ScraperIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11192,6 +11422,7 @@ export namespace Prisma {
       execution_traces: Prisma.$ScraperExecutionTracePayload<ExtArgs>[]
       scraper_generation_runs: Prisma.$ScraperGenerationRunPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
+      diagnostics_packages: Prisma.$DiagnosticsPackagePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -11201,6 +11432,7 @@ export namespace Prisma {
       version_count: number
       status: $Enums.ScraperStatus
       self_healing_enabled: boolean
+      diagnostics_mode: $Enums.DiagnosticsMode
       health: $Enums.ScraperHealth
       success_rate: Prisma.Decimal | null
       avg_runtime_ms: number | null
@@ -11611,6 +11843,7 @@ export namespace Prisma {
     execution_traces<T extends Scraper$execution_tracesArgs<ExtArgs> = {}>(args?: Subset<T, Scraper$execution_tracesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScraperExecutionTracePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     scraper_generation_runs<T extends Scraper$scraper_generation_runsArgs<ExtArgs> = {}>(args?: Subset<T, Scraper$scraper_generation_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends Scraper$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, Scraper$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    diagnostics_packages<T extends Scraper$diagnostics_packagesArgs<ExtArgs> = {}>(args?: Subset<T, Scraper$diagnostics_packagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11647,6 +11880,7 @@ export namespace Prisma {
     readonly version_count: FieldRef<"Scraper", 'Int'>
     readonly status: FieldRef<"Scraper", 'ScraperStatus'>
     readonly self_healing_enabled: FieldRef<"Scraper", 'Boolean'>
+    readonly diagnostics_mode: FieldRef<"Scraper", 'DiagnosticsMode'>
     readonly health: FieldRef<"Scraper", 'ScraperHealth'>
     readonly success_rate: FieldRef<"Scraper", 'Decimal'>
     readonly avg_runtime_ms: FieldRef<"Scraper", 'Int'>
@@ -12188,6 +12422,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Scraper.diagnostics_packages
+   */
+  export type Scraper$diagnostics_packagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageInclude<ExtArgs> | null
+    where?: DiagnosticsPackageWhereInput
+    orderBy?: DiagnosticsPackageOrderByWithRelationInput | DiagnosticsPackageOrderByWithRelationInput[]
+    cursor?: DiagnosticsPackageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DiagnosticsPackageScalarFieldEnum | DiagnosticsPackageScalarFieldEnum[]
   }
 
   /**
@@ -17382,6 +17640,7 @@ export namespace Prisma {
     execution_traces?: boolean | CrawlRun$execution_tracesArgs<ExtArgs>
     property_history?: boolean | CrawlRun$property_historyArgs<ExtArgs>
     notifications?: boolean | CrawlRun$notificationsArgs<ExtArgs>
+    diagnostics_package?: boolean | CrawlRun$diagnostics_packageArgs<ExtArgs>
     _count?: boolean | CrawlRunCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["crawlRun"]>
 
@@ -17481,6 +17740,7 @@ export namespace Prisma {
     execution_traces?: boolean | CrawlRun$execution_tracesArgs<ExtArgs>
     property_history?: boolean | CrawlRun$property_historyArgs<ExtArgs>
     notifications?: boolean | CrawlRun$notificationsArgs<ExtArgs>
+    diagnostics_package?: boolean | CrawlRun$diagnostics_packageArgs<ExtArgs>
     _count?: boolean | CrawlRunCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type CrawlRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -17504,6 +17764,7 @@ export namespace Prisma {
       execution_traces: Prisma.$ScraperExecutionTracePayload<ExtArgs>[]
       property_history: Prisma.$PropertyHistoryPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
+      diagnostics_package: Prisma.$DiagnosticsPackagePayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -17931,6 +18192,7 @@ export namespace Prisma {
     execution_traces<T extends CrawlRun$execution_tracesArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$execution_tracesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScraperExecutionTracePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     property_history<T extends CrawlRun$property_historyArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$property_historyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends CrawlRun$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    diagnostics_package<T extends CrawlRun$diagnostics_packageArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$diagnostics_packageArgs<ExtArgs>>): Prisma__DiagnosticsPackageClient<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18514,6 +18776,25 @@ export namespace Prisma {
   }
 
   /**
+   * CrawlRun.diagnostics_package
+   */
+  export type CrawlRun$diagnostics_packageArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageInclude<ExtArgs> | null
+    where?: DiagnosticsPackageWhereInput
+  }
+
+  /**
    * CrawlRun without action
    */
   export type CrawlRunDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -18529,6 +18810,2405 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: CrawlRunInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model DiagnosticsPackage
+   */
+
+  export type AggregateDiagnosticsPackage = {
+    _count: DiagnosticsPackageCountAggregateOutputType | null
+    _avg: DiagnosticsPackageAvgAggregateOutputType | null
+    _sum: DiagnosticsPackageSumAggregateOutputType | null
+    _min: DiagnosticsPackageMinAggregateOutputType | null
+    _max: DiagnosticsPackageMaxAggregateOutputType | null
+  }
+
+  export type DiagnosticsPackageAvgAggregateOutputType = {
+    scraper_version: number | null
+    retry_number: number | null
+    duration_ms: number | null
+  }
+
+  export type DiagnosticsPackageSumAggregateOutputType = {
+    scraper_version: number | null
+    retry_number: number | null
+    duration_ms: number | null
+  }
+
+  export type DiagnosticsPackageMinAggregateOutputType = {
+    id: string | null
+    crawl_run_id: string | null
+    scraper_id: string | null
+    mode: $Enums.DiagnosticsMode | null
+    url: string | null
+    worker_id: string | null
+    browser_version: string | null
+    playwright_version: string | null
+    scraper_version: number | null
+    retry_number: number | null
+    started_at: Date | null
+    finished_at: Date | null
+    duration_ms: number | null
+    failure_reason: string | null
+    exception: string | null
+    created_at: Date | null
+  }
+
+  export type DiagnosticsPackageMaxAggregateOutputType = {
+    id: string | null
+    crawl_run_id: string | null
+    scraper_id: string | null
+    mode: $Enums.DiagnosticsMode | null
+    url: string | null
+    worker_id: string | null
+    browser_version: string | null
+    playwright_version: string | null
+    scraper_version: number | null
+    retry_number: number | null
+    started_at: Date | null
+    finished_at: Date | null
+    duration_ms: number | null
+    failure_reason: string | null
+    exception: string | null
+    created_at: Date | null
+  }
+
+  export type DiagnosticsPackageCountAggregateOutputType = {
+    id: number
+    crawl_run_id: number
+    scraper_id: number
+    mode: number
+    url: number
+    worker_id: number
+    browser_version: number
+    playwright_version: number
+    scraper_version: number
+    retry_number: number
+    started_at: number
+    finished_at: number
+    duration_ms: number
+    failure_reason: number
+    exception: number
+    created_at: number
+    _all: number
+  }
+
+
+  export type DiagnosticsPackageAvgAggregateInputType = {
+    scraper_version?: true
+    retry_number?: true
+    duration_ms?: true
+  }
+
+  export type DiagnosticsPackageSumAggregateInputType = {
+    scraper_version?: true
+    retry_number?: true
+    duration_ms?: true
+  }
+
+  export type DiagnosticsPackageMinAggregateInputType = {
+    id?: true
+    crawl_run_id?: true
+    scraper_id?: true
+    mode?: true
+    url?: true
+    worker_id?: true
+    browser_version?: true
+    playwright_version?: true
+    scraper_version?: true
+    retry_number?: true
+    started_at?: true
+    finished_at?: true
+    duration_ms?: true
+    failure_reason?: true
+    exception?: true
+    created_at?: true
+  }
+
+  export type DiagnosticsPackageMaxAggregateInputType = {
+    id?: true
+    crawl_run_id?: true
+    scraper_id?: true
+    mode?: true
+    url?: true
+    worker_id?: true
+    browser_version?: true
+    playwright_version?: true
+    scraper_version?: true
+    retry_number?: true
+    started_at?: true
+    finished_at?: true
+    duration_ms?: true
+    failure_reason?: true
+    exception?: true
+    created_at?: true
+  }
+
+  export type DiagnosticsPackageCountAggregateInputType = {
+    id?: true
+    crawl_run_id?: true
+    scraper_id?: true
+    mode?: true
+    url?: true
+    worker_id?: true
+    browser_version?: true
+    playwright_version?: true
+    scraper_version?: true
+    retry_number?: true
+    started_at?: true
+    finished_at?: true
+    duration_ms?: true
+    failure_reason?: true
+    exception?: true
+    created_at?: true
+    _all?: true
+  }
+
+  export type DiagnosticsPackageAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DiagnosticsPackage to aggregate.
+     */
+    where?: DiagnosticsPackageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DiagnosticsPackages to fetch.
+     */
+    orderBy?: DiagnosticsPackageOrderByWithRelationInput | DiagnosticsPackageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DiagnosticsPackageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DiagnosticsPackages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DiagnosticsPackages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DiagnosticsPackages
+    **/
+    _count?: true | DiagnosticsPackageCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: DiagnosticsPackageAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: DiagnosticsPackageSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DiagnosticsPackageMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DiagnosticsPackageMaxAggregateInputType
+  }
+
+  export type GetDiagnosticsPackageAggregateType<T extends DiagnosticsPackageAggregateArgs> = {
+        [P in keyof T & keyof AggregateDiagnosticsPackage]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDiagnosticsPackage[P]>
+      : GetScalarType<T[P], AggregateDiagnosticsPackage[P]>
+  }
+
+
+
+
+  export type DiagnosticsPackageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DiagnosticsPackageWhereInput
+    orderBy?: DiagnosticsPackageOrderByWithAggregationInput | DiagnosticsPackageOrderByWithAggregationInput[]
+    by: DiagnosticsPackageScalarFieldEnum[] | DiagnosticsPackageScalarFieldEnum
+    having?: DiagnosticsPackageScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DiagnosticsPackageCountAggregateInputType | true
+    _avg?: DiagnosticsPackageAvgAggregateInputType
+    _sum?: DiagnosticsPackageSumAggregateInputType
+    _min?: DiagnosticsPackageMinAggregateInputType
+    _max?: DiagnosticsPackageMaxAggregateInputType
+  }
+
+  export type DiagnosticsPackageGroupByOutputType = {
+    id: string
+    crawl_run_id: string
+    scraper_id: string
+    mode: $Enums.DiagnosticsMode
+    url: string
+    worker_id: string | null
+    browser_version: string | null
+    playwright_version: string | null
+    scraper_version: number | null
+    retry_number: number | null
+    started_at: Date
+    finished_at: Date
+    duration_ms: number
+    failure_reason: string | null
+    exception: string | null
+    created_at: Date
+    _count: DiagnosticsPackageCountAggregateOutputType | null
+    _avg: DiagnosticsPackageAvgAggregateOutputType | null
+    _sum: DiagnosticsPackageSumAggregateOutputType | null
+    _min: DiagnosticsPackageMinAggregateOutputType | null
+    _max: DiagnosticsPackageMaxAggregateOutputType | null
+  }
+
+  type GetDiagnosticsPackageGroupByPayload<T extends DiagnosticsPackageGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DiagnosticsPackageGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DiagnosticsPackageGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DiagnosticsPackageGroupByOutputType[P]>
+            : GetScalarType<T[P], DiagnosticsPackageGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DiagnosticsPackageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    crawl_run_id?: boolean
+    scraper_id?: boolean
+    mode?: boolean
+    url?: boolean
+    worker_id?: boolean
+    browser_version?: boolean
+    playwright_version?: boolean
+    scraper_version?: boolean
+    retry_number?: boolean
+    started_at?: boolean
+    finished_at?: boolean
+    duration_ms?: boolean
+    failure_reason?: boolean
+    exception?: boolean
+    created_at?: boolean
+    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
+    scraper?: boolean | ScraperDefaultArgs<ExtArgs>
+    artifacts?: boolean | DiagnosticsPackage$artifactsArgs<ExtArgs>
+    _count?: boolean | DiagnosticsPackageCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["diagnosticsPackage"]>
+
+  export type DiagnosticsPackageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    crawl_run_id?: boolean
+    scraper_id?: boolean
+    mode?: boolean
+    url?: boolean
+    worker_id?: boolean
+    browser_version?: boolean
+    playwright_version?: boolean
+    scraper_version?: boolean
+    retry_number?: boolean
+    started_at?: boolean
+    finished_at?: boolean
+    duration_ms?: boolean
+    failure_reason?: boolean
+    exception?: boolean
+    created_at?: boolean
+    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
+    scraper?: boolean | ScraperDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["diagnosticsPackage"]>
+
+  export type DiagnosticsPackageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    crawl_run_id?: boolean
+    scraper_id?: boolean
+    mode?: boolean
+    url?: boolean
+    worker_id?: boolean
+    browser_version?: boolean
+    playwright_version?: boolean
+    scraper_version?: boolean
+    retry_number?: boolean
+    started_at?: boolean
+    finished_at?: boolean
+    duration_ms?: boolean
+    failure_reason?: boolean
+    exception?: boolean
+    created_at?: boolean
+    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
+    scraper?: boolean | ScraperDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["diagnosticsPackage"]>
+
+  export type DiagnosticsPackageSelectScalar = {
+    id?: boolean
+    crawl_run_id?: boolean
+    scraper_id?: boolean
+    mode?: boolean
+    url?: boolean
+    worker_id?: boolean
+    browser_version?: boolean
+    playwright_version?: boolean
+    scraper_version?: boolean
+    retry_number?: boolean
+    started_at?: boolean
+    finished_at?: boolean
+    duration_ms?: boolean
+    failure_reason?: boolean
+    exception?: boolean
+    created_at?: boolean
+  }
+
+  export type DiagnosticsPackageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawl_run_id" | "scraper_id" | "mode" | "url" | "worker_id" | "browser_version" | "playwright_version" | "scraper_version" | "retry_number" | "started_at" | "finished_at" | "duration_ms" | "failure_reason" | "exception" | "created_at", ExtArgs["result"]["diagnosticsPackage"]>
+  export type DiagnosticsPackageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
+    scraper?: boolean | ScraperDefaultArgs<ExtArgs>
+    artifacts?: boolean | DiagnosticsPackage$artifactsArgs<ExtArgs>
+    _count?: boolean | DiagnosticsPackageCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type DiagnosticsPackageIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
+    scraper?: boolean | ScraperDefaultArgs<ExtArgs>
+  }
+  export type DiagnosticsPackageIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
+    scraper?: boolean | ScraperDefaultArgs<ExtArgs>
+  }
+
+  export type $DiagnosticsPackagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DiagnosticsPackage"
+    objects: {
+      crawl_run: Prisma.$CrawlRunPayload<ExtArgs>
+      scraper: Prisma.$ScraperPayload<ExtArgs>
+      artifacts: Prisma.$DiagnosticsArtifactPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      crawl_run_id: string
+      scraper_id: string
+      mode: $Enums.DiagnosticsMode
+      url: string
+      worker_id: string | null
+      browser_version: string | null
+      playwright_version: string | null
+      scraper_version: number | null
+      retry_number: number | null
+      started_at: Date
+      finished_at: Date
+      duration_ms: number
+      failure_reason: string | null
+      exception: string | null
+      created_at: Date
+    }, ExtArgs["result"]["diagnosticsPackage"]>
+    composites: {}
+  }
+
+  type DiagnosticsPackageGetPayload<S extends boolean | null | undefined | DiagnosticsPackageDefaultArgs> = $Result.GetResult<Prisma.$DiagnosticsPackagePayload, S>
+
+  type DiagnosticsPackageCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<DiagnosticsPackageFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: DiagnosticsPackageCountAggregateInputType | true
+    }
+
+  export interface DiagnosticsPackageDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DiagnosticsPackage'], meta: { name: 'DiagnosticsPackage' } }
+    /**
+     * Find zero or one DiagnosticsPackage that matches the filter.
+     * @param {DiagnosticsPackageFindUniqueArgs} args - Arguments to find a DiagnosticsPackage
+     * @example
+     * // Get one DiagnosticsPackage
+     * const diagnosticsPackage = await prisma.diagnosticsPackage.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DiagnosticsPackageFindUniqueArgs>(args: SelectSubset<T, DiagnosticsPackageFindUniqueArgs<ExtArgs>>): Prisma__DiagnosticsPackageClient<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one DiagnosticsPackage that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {DiagnosticsPackageFindUniqueOrThrowArgs} args - Arguments to find a DiagnosticsPackage
+     * @example
+     * // Get one DiagnosticsPackage
+     * const diagnosticsPackage = await prisma.diagnosticsPackage.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DiagnosticsPackageFindUniqueOrThrowArgs>(args: SelectSubset<T, DiagnosticsPackageFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DiagnosticsPackageClient<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DiagnosticsPackage that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsPackageFindFirstArgs} args - Arguments to find a DiagnosticsPackage
+     * @example
+     * // Get one DiagnosticsPackage
+     * const diagnosticsPackage = await prisma.diagnosticsPackage.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DiagnosticsPackageFindFirstArgs>(args?: SelectSubset<T, DiagnosticsPackageFindFirstArgs<ExtArgs>>): Prisma__DiagnosticsPackageClient<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DiagnosticsPackage that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsPackageFindFirstOrThrowArgs} args - Arguments to find a DiagnosticsPackage
+     * @example
+     * // Get one DiagnosticsPackage
+     * const diagnosticsPackage = await prisma.diagnosticsPackage.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DiagnosticsPackageFindFirstOrThrowArgs>(args?: SelectSubset<T, DiagnosticsPackageFindFirstOrThrowArgs<ExtArgs>>): Prisma__DiagnosticsPackageClient<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more DiagnosticsPackages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsPackageFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DiagnosticsPackages
+     * const diagnosticsPackages = await prisma.diagnosticsPackage.findMany()
+     * 
+     * // Get first 10 DiagnosticsPackages
+     * const diagnosticsPackages = await prisma.diagnosticsPackage.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const diagnosticsPackageWithIdOnly = await prisma.diagnosticsPackage.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DiagnosticsPackageFindManyArgs>(args?: SelectSubset<T, DiagnosticsPackageFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a DiagnosticsPackage.
+     * @param {DiagnosticsPackageCreateArgs} args - Arguments to create a DiagnosticsPackage.
+     * @example
+     * // Create one DiagnosticsPackage
+     * const DiagnosticsPackage = await prisma.diagnosticsPackage.create({
+     *   data: {
+     *     // ... data to create a DiagnosticsPackage
+     *   }
+     * })
+     * 
+     */
+    create<T extends DiagnosticsPackageCreateArgs>(args: SelectSubset<T, DiagnosticsPackageCreateArgs<ExtArgs>>): Prisma__DiagnosticsPackageClient<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many DiagnosticsPackages.
+     * @param {DiagnosticsPackageCreateManyArgs} args - Arguments to create many DiagnosticsPackages.
+     * @example
+     * // Create many DiagnosticsPackages
+     * const diagnosticsPackage = await prisma.diagnosticsPackage.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DiagnosticsPackageCreateManyArgs>(args?: SelectSubset<T, DiagnosticsPackageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DiagnosticsPackages and returns the data saved in the database.
+     * @param {DiagnosticsPackageCreateManyAndReturnArgs} args - Arguments to create many DiagnosticsPackages.
+     * @example
+     * // Create many DiagnosticsPackages
+     * const diagnosticsPackage = await prisma.diagnosticsPackage.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DiagnosticsPackages and only return the `id`
+     * const diagnosticsPackageWithIdOnly = await prisma.diagnosticsPackage.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DiagnosticsPackageCreateManyAndReturnArgs>(args?: SelectSubset<T, DiagnosticsPackageCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a DiagnosticsPackage.
+     * @param {DiagnosticsPackageDeleteArgs} args - Arguments to delete one DiagnosticsPackage.
+     * @example
+     * // Delete one DiagnosticsPackage
+     * const DiagnosticsPackage = await prisma.diagnosticsPackage.delete({
+     *   where: {
+     *     // ... filter to delete one DiagnosticsPackage
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DiagnosticsPackageDeleteArgs>(args: SelectSubset<T, DiagnosticsPackageDeleteArgs<ExtArgs>>): Prisma__DiagnosticsPackageClient<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one DiagnosticsPackage.
+     * @param {DiagnosticsPackageUpdateArgs} args - Arguments to update one DiagnosticsPackage.
+     * @example
+     * // Update one DiagnosticsPackage
+     * const diagnosticsPackage = await prisma.diagnosticsPackage.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DiagnosticsPackageUpdateArgs>(args: SelectSubset<T, DiagnosticsPackageUpdateArgs<ExtArgs>>): Prisma__DiagnosticsPackageClient<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more DiagnosticsPackages.
+     * @param {DiagnosticsPackageDeleteManyArgs} args - Arguments to filter DiagnosticsPackages to delete.
+     * @example
+     * // Delete a few DiagnosticsPackages
+     * const { count } = await prisma.diagnosticsPackage.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DiagnosticsPackageDeleteManyArgs>(args?: SelectSubset<T, DiagnosticsPackageDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DiagnosticsPackages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsPackageUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DiagnosticsPackages
+     * const diagnosticsPackage = await prisma.diagnosticsPackage.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DiagnosticsPackageUpdateManyArgs>(args: SelectSubset<T, DiagnosticsPackageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DiagnosticsPackages and returns the data updated in the database.
+     * @param {DiagnosticsPackageUpdateManyAndReturnArgs} args - Arguments to update many DiagnosticsPackages.
+     * @example
+     * // Update many DiagnosticsPackages
+     * const diagnosticsPackage = await prisma.diagnosticsPackage.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more DiagnosticsPackages and only return the `id`
+     * const diagnosticsPackageWithIdOnly = await prisma.diagnosticsPackage.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends DiagnosticsPackageUpdateManyAndReturnArgs>(args: SelectSubset<T, DiagnosticsPackageUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one DiagnosticsPackage.
+     * @param {DiagnosticsPackageUpsertArgs} args - Arguments to update or create a DiagnosticsPackage.
+     * @example
+     * // Update or create a DiagnosticsPackage
+     * const diagnosticsPackage = await prisma.diagnosticsPackage.upsert({
+     *   create: {
+     *     // ... data to create a DiagnosticsPackage
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DiagnosticsPackage we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DiagnosticsPackageUpsertArgs>(args: SelectSubset<T, DiagnosticsPackageUpsertArgs<ExtArgs>>): Prisma__DiagnosticsPackageClient<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of DiagnosticsPackages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsPackageCountArgs} args - Arguments to filter DiagnosticsPackages to count.
+     * @example
+     * // Count the number of DiagnosticsPackages
+     * const count = await prisma.diagnosticsPackage.count({
+     *   where: {
+     *     // ... the filter for the DiagnosticsPackages we want to count
+     *   }
+     * })
+    **/
+    count<T extends DiagnosticsPackageCountArgs>(
+      args?: Subset<T, DiagnosticsPackageCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DiagnosticsPackageCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DiagnosticsPackage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsPackageAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DiagnosticsPackageAggregateArgs>(args: Subset<T, DiagnosticsPackageAggregateArgs>): Prisma.PrismaPromise<GetDiagnosticsPackageAggregateType<T>>
+
+    /**
+     * Group by DiagnosticsPackage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsPackageGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DiagnosticsPackageGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DiagnosticsPackageGroupByArgs['orderBy'] }
+        : { orderBy?: DiagnosticsPackageGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DiagnosticsPackageGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDiagnosticsPackageGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DiagnosticsPackage model
+   */
+  readonly fields: DiagnosticsPackageFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DiagnosticsPackage.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DiagnosticsPackageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    crawl_run<T extends CrawlRunDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRunDefaultArgs<ExtArgs>>): Prisma__CrawlRunClient<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    scraper<T extends ScraperDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ScraperDefaultArgs<ExtArgs>>): Prisma__ScraperClient<$Result.GetResult<Prisma.$ScraperPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    artifacts<T extends DiagnosticsPackage$artifactsArgs<ExtArgs> = {}>(args?: Subset<T, DiagnosticsPackage$artifactsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DiagnosticsArtifactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DiagnosticsPackage model
+   */
+  interface DiagnosticsPackageFieldRefs {
+    readonly id: FieldRef<"DiagnosticsPackage", 'String'>
+    readonly crawl_run_id: FieldRef<"DiagnosticsPackage", 'String'>
+    readonly scraper_id: FieldRef<"DiagnosticsPackage", 'String'>
+    readonly mode: FieldRef<"DiagnosticsPackage", 'DiagnosticsMode'>
+    readonly url: FieldRef<"DiagnosticsPackage", 'String'>
+    readonly worker_id: FieldRef<"DiagnosticsPackage", 'String'>
+    readonly browser_version: FieldRef<"DiagnosticsPackage", 'String'>
+    readonly playwright_version: FieldRef<"DiagnosticsPackage", 'String'>
+    readonly scraper_version: FieldRef<"DiagnosticsPackage", 'Int'>
+    readonly retry_number: FieldRef<"DiagnosticsPackage", 'Int'>
+    readonly started_at: FieldRef<"DiagnosticsPackage", 'DateTime'>
+    readonly finished_at: FieldRef<"DiagnosticsPackage", 'DateTime'>
+    readonly duration_ms: FieldRef<"DiagnosticsPackage", 'Int'>
+    readonly failure_reason: FieldRef<"DiagnosticsPackage", 'String'>
+    readonly exception: FieldRef<"DiagnosticsPackage", 'String'>
+    readonly created_at: FieldRef<"DiagnosticsPackage", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DiagnosticsPackage findUnique
+   */
+  export type DiagnosticsPackageFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageInclude<ExtArgs> | null
+    /**
+     * Filter, which DiagnosticsPackage to fetch.
+     */
+    where: DiagnosticsPackageWhereUniqueInput
+  }
+
+  /**
+   * DiagnosticsPackage findUniqueOrThrow
+   */
+  export type DiagnosticsPackageFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageInclude<ExtArgs> | null
+    /**
+     * Filter, which DiagnosticsPackage to fetch.
+     */
+    where: DiagnosticsPackageWhereUniqueInput
+  }
+
+  /**
+   * DiagnosticsPackage findFirst
+   */
+  export type DiagnosticsPackageFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageInclude<ExtArgs> | null
+    /**
+     * Filter, which DiagnosticsPackage to fetch.
+     */
+    where?: DiagnosticsPackageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DiagnosticsPackages to fetch.
+     */
+    orderBy?: DiagnosticsPackageOrderByWithRelationInput | DiagnosticsPackageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DiagnosticsPackages.
+     */
+    cursor?: DiagnosticsPackageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DiagnosticsPackages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DiagnosticsPackages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DiagnosticsPackages.
+     */
+    distinct?: DiagnosticsPackageScalarFieldEnum | DiagnosticsPackageScalarFieldEnum[]
+  }
+
+  /**
+   * DiagnosticsPackage findFirstOrThrow
+   */
+  export type DiagnosticsPackageFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageInclude<ExtArgs> | null
+    /**
+     * Filter, which DiagnosticsPackage to fetch.
+     */
+    where?: DiagnosticsPackageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DiagnosticsPackages to fetch.
+     */
+    orderBy?: DiagnosticsPackageOrderByWithRelationInput | DiagnosticsPackageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DiagnosticsPackages.
+     */
+    cursor?: DiagnosticsPackageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DiagnosticsPackages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DiagnosticsPackages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DiagnosticsPackages.
+     */
+    distinct?: DiagnosticsPackageScalarFieldEnum | DiagnosticsPackageScalarFieldEnum[]
+  }
+
+  /**
+   * DiagnosticsPackage findMany
+   */
+  export type DiagnosticsPackageFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageInclude<ExtArgs> | null
+    /**
+     * Filter, which DiagnosticsPackages to fetch.
+     */
+    where?: DiagnosticsPackageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DiagnosticsPackages to fetch.
+     */
+    orderBy?: DiagnosticsPackageOrderByWithRelationInput | DiagnosticsPackageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DiagnosticsPackages.
+     */
+    cursor?: DiagnosticsPackageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DiagnosticsPackages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DiagnosticsPackages.
+     */
+    skip?: number
+    distinct?: DiagnosticsPackageScalarFieldEnum | DiagnosticsPackageScalarFieldEnum[]
+  }
+
+  /**
+   * DiagnosticsPackage create
+   */
+  export type DiagnosticsPackageCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageInclude<ExtArgs> | null
+    /**
+     * The data needed to create a DiagnosticsPackage.
+     */
+    data: XOR<DiagnosticsPackageCreateInput, DiagnosticsPackageUncheckedCreateInput>
+  }
+
+  /**
+   * DiagnosticsPackage createMany
+   */
+  export type DiagnosticsPackageCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DiagnosticsPackages.
+     */
+    data: DiagnosticsPackageCreateManyInput | DiagnosticsPackageCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DiagnosticsPackage createManyAndReturn
+   */
+  export type DiagnosticsPackageCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * The data used to create many DiagnosticsPackages.
+     */
+    data: DiagnosticsPackageCreateManyInput | DiagnosticsPackageCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DiagnosticsPackage update
+   */
+  export type DiagnosticsPackageUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageInclude<ExtArgs> | null
+    /**
+     * The data needed to update a DiagnosticsPackage.
+     */
+    data: XOR<DiagnosticsPackageUpdateInput, DiagnosticsPackageUncheckedUpdateInput>
+    /**
+     * Choose, which DiagnosticsPackage to update.
+     */
+    where: DiagnosticsPackageWhereUniqueInput
+  }
+
+  /**
+   * DiagnosticsPackage updateMany
+   */
+  export type DiagnosticsPackageUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DiagnosticsPackages.
+     */
+    data: XOR<DiagnosticsPackageUpdateManyMutationInput, DiagnosticsPackageUncheckedUpdateManyInput>
+    /**
+     * Filter which DiagnosticsPackages to update
+     */
+    where?: DiagnosticsPackageWhereInput
+    /**
+     * Limit how many DiagnosticsPackages to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * DiagnosticsPackage updateManyAndReturn
+   */
+  export type DiagnosticsPackageUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * The data used to update DiagnosticsPackages.
+     */
+    data: XOR<DiagnosticsPackageUpdateManyMutationInput, DiagnosticsPackageUncheckedUpdateManyInput>
+    /**
+     * Filter which DiagnosticsPackages to update
+     */
+    where?: DiagnosticsPackageWhereInput
+    /**
+     * Limit how many DiagnosticsPackages to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DiagnosticsPackage upsert
+   */
+  export type DiagnosticsPackageUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageInclude<ExtArgs> | null
+    /**
+     * The filter to search for the DiagnosticsPackage to update in case it exists.
+     */
+    where: DiagnosticsPackageWhereUniqueInput
+    /**
+     * In case the DiagnosticsPackage found by the `where` argument doesn't exist, create a new DiagnosticsPackage with this data.
+     */
+    create: XOR<DiagnosticsPackageCreateInput, DiagnosticsPackageUncheckedCreateInput>
+    /**
+     * In case the DiagnosticsPackage was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DiagnosticsPackageUpdateInput, DiagnosticsPackageUncheckedUpdateInput>
+  }
+
+  /**
+   * DiagnosticsPackage delete
+   */
+  export type DiagnosticsPackageDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageInclude<ExtArgs> | null
+    /**
+     * Filter which DiagnosticsPackage to delete.
+     */
+    where: DiagnosticsPackageWhereUniqueInput
+  }
+
+  /**
+   * DiagnosticsPackage deleteMany
+   */
+  export type DiagnosticsPackageDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DiagnosticsPackages to delete
+     */
+    where?: DiagnosticsPackageWhereInput
+    /**
+     * Limit how many DiagnosticsPackages to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * DiagnosticsPackage.artifacts
+   */
+  export type DiagnosticsPackage$artifactsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsArtifact
+     */
+    select?: DiagnosticsArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsArtifact
+     */
+    omit?: DiagnosticsArtifactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsArtifactInclude<ExtArgs> | null
+    where?: DiagnosticsArtifactWhereInput
+    orderBy?: DiagnosticsArtifactOrderByWithRelationInput | DiagnosticsArtifactOrderByWithRelationInput[]
+    cursor?: DiagnosticsArtifactWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DiagnosticsArtifactScalarFieldEnum | DiagnosticsArtifactScalarFieldEnum[]
+  }
+
+  /**
+   * DiagnosticsPackage without action
+   */
+  export type DiagnosticsPackageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsPackage
+     */
+    select?: DiagnosticsPackageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsPackage
+     */
+    omit?: DiagnosticsPackageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsPackageInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model DiagnosticsArtifact
+   */
+
+  export type AggregateDiagnosticsArtifact = {
+    _count: DiagnosticsArtifactCountAggregateOutputType | null
+    _avg: DiagnosticsArtifactAvgAggregateOutputType | null
+    _sum: DiagnosticsArtifactSumAggregateOutputType | null
+    _min: DiagnosticsArtifactMinAggregateOutputType | null
+    _max: DiagnosticsArtifactMaxAggregateOutputType | null
+  }
+
+  export type DiagnosticsArtifactAvgAggregateOutputType = {
+    size_bytes: number | null
+  }
+
+  export type DiagnosticsArtifactSumAggregateOutputType = {
+    size_bytes: number | null
+  }
+
+  export type DiagnosticsArtifactMinAggregateOutputType = {
+    id: string | null
+    diagnostics_package_id: string | null
+    kind: $Enums.DiagnosticsArtifactKind | null
+    path: string | null
+    content_type: string | null
+    size_bytes: number | null
+    created_at: Date | null
+  }
+
+  export type DiagnosticsArtifactMaxAggregateOutputType = {
+    id: string | null
+    diagnostics_package_id: string | null
+    kind: $Enums.DiagnosticsArtifactKind | null
+    path: string | null
+    content_type: string | null
+    size_bytes: number | null
+    created_at: Date | null
+  }
+
+  export type DiagnosticsArtifactCountAggregateOutputType = {
+    id: number
+    diagnostics_package_id: number
+    kind: number
+    path: number
+    content_type: number
+    size_bytes: number
+    created_at: number
+    _all: number
+  }
+
+
+  export type DiagnosticsArtifactAvgAggregateInputType = {
+    size_bytes?: true
+  }
+
+  export type DiagnosticsArtifactSumAggregateInputType = {
+    size_bytes?: true
+  }
+
+  export type DiagnosticsArtifactMinAggregateInputType = {
+    id?: true
+    diagnostics_package_id?: true
+    kind?: true
+    path?: true
+    content_type?: true
+    size_bytes?: true
+    created_at?: true
+  }
+
+  export type DiagnosticsArtifactMaxAggregateInputType = {
+    id?: true
+    diagnostics_package_id?: true
+    kind?: true
+    path?: true
+    content_type?: true
+    size_bytes?: true
+    created_at?: true
+  }
+
+  export type DiagnosticsArtifactCountAggregateInputType = {
+    id?: true
+    diagnostics_package_id?: true
+    kind?: true
+    path?: true
+    content_type?: true
+    size_bytes?: true
+    created_at?: true
+    _all?: true
+  }
+
+  export type DiagnosticsArtifactAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DiagnosticsArtifact to aggregate.
+     */
+    where?: DiagnosticsArtifactWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DiagnosticsArtifacts to fetch.
+     */
+    orderBy?: DiagnosticsArtifactOrderByWithRelationInput | DiagnosticsArtifactOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DiagnosticsArtifactWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DiagnosticsArtifacts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DiagnosticsArtifacts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DiagnosticsArtifacts
+    **/
+    _count?: true | DiagnosticsArtifactCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: DiagnosticsArtifactAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: DiagnosticsArtifactSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DiagnosticsArtifactMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DiagnosticsArtifactMaxAggregateInputType
+  }
+
+  export type GetDiagnosticsArtifactAggregateType<T extends DiagnosticsArtifactAggregateArgs> = {
+        [P in keyof T & keyof AggregateDiagnosticsArtifact]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDiagnosticsArtifact[P]>
+      : GetScalarType<T[P], AggregateDiagnosticsArtifact[P]>
+  }
+
+
+
+
+  export type DiagnosticsArtifactGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DiagnosticsArtifactWhereInput
+    orderBy?: DiagnosticsArtifactOrderByWithAggregationInput | DiagnosticsArtifactOrderByWithAggregationInput[]
+    by: DiagnosticsArtifactScalarFieldEnum[] | DiagnosticsArtifactScalarFieldEnum
+    having?: DiagnosticsArtifactScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DiagnosticsArtifactCountAggregateInputType | true
+    _avg?: DiagnosticsArtifactAvgAggregateInputType
+    _sum?: DiagnosticsArtifactSumAggregateInputType
+    _min?: DiagnosticsArtifactMinAggregateInputType
+    _max?: DiagnosticsArtifactMaxAggregateInputType
+  }
+
+  export type DiagnosticsArtifactGroupByOutputType = {
+    id: string
+    diagnostics_package_id: string
+    kind: $Enums.DiagnosticsArtifactKind
+    path: string
+    content_type: string
+    size_bytes: number
+    created_at: Date
+    _count: DiagnosticsArtifactCountAggregateOutputType | null
+    _avg: DiagnosticsArtifactAvgAggregateOutputType | null
+    _sum: DiagnosticsArtifactSumAggregateOutputType | null
+    _min: DiagnosticsArtifactMinAggregateOutputType | null
+    _max: DiagnosticsArtifactMaxAggregateOutputType | null
+  }
+
+  type GetDiagnosticsArtifactGroupByPayload<T extends DiagnosticsArtifactGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DiagnosticsArtifactGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DiagnosticsArtifactGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DiagnosticsArtifactGroupByOutputType[P]>
+            : GetScalarType<T[P], DiagnosticsArtifactGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DiagnosticsArtifactSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    diagnostics_package_id?: boolean
+    kind?: boolean
+    path?: boolean
+    content_type?: boolean
+    size_bytes?: boolean
+    created_at?: boolean
+    diagnostics_package?: boolean | DiagnosticsPackageDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["diagnosticsArtifact"]>
+
+  export type DiagnosticsArtifactSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    diagnostics_package_id?: boolean
+    kind?: boolean
+    path?: boolean
+    content_type?: boolean
+    size_bytes?: boolean
+    created_at?: boolean
+    diagnostics_package?: boolean | DiagnosticsPackageDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["diagnosticsArtifact"]>
+
+  export type DiagnosticsArtifactSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    diagnostics_package_id?: boolean
+    kind?: boolean
+    path?: boolean
+    content_type?: boolean
+    size_bytes?: boolean
+    created_at?: boolean
+    diagnostics_package?: boolean | DiagnosticsPackageDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["diagnosticsArtifact"]>
+
+  export type DiagnosticsArtifactSelectScalar = {
+    id?: boolean
+    diagnostics_package_id?: boolean
+    kind?: boolean
+    path?: boolean
+    content_type?: boolean
+    size_bytes?: boolean
+    created_at?: boolean
+  }
+
+  export type DiagnosticsArtifactOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "diagnostics_package_id" | "kind" | "path" | "content_type" | "size_bytes" | "created_at", ExtArgs["result"]["diagnosticsArtifact"]>
+  export type DiagnosticsArtifactInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    diagnostics_package?: boolean | DiagnosticsPackageDefaultArgs<ExtArgs>
+  }
+  export type DiagnosticsArtifactIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    diagnostics_package?: boolean | DiagnosticsPackageDefaultArgs<ExtArgs>
+  }
+  export type DiagnosticsArtifactIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    diagnostics_package?: boolean | DiagnosticsPackageDefaultArgs<ExtArgs>
+  }
+
+  export type $DiagnosticsArtifactPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DiagnosticsArtifact"
+    objects: {
+      diagnostics_package: Prisma.$DiagnosticsPackagePayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      diagnostics_package_id: string
+      kind: $Enums.DiagnosticsArtifactKind
+      path: string
+      content_type: string
+      size_bytes: number
+      created_at: Date
+    }, ExtArgs["result"]["diagnosticsArtifact"]>
+    composites: {}
+  }
+
+  type DiagnosticsArtifactGetPayload<S extends boolean | null | undefined | DiagnosticsArtifactDefaultArgs> = $Result.GetResult<Prisma.$DiagnosticsArtifactPayload, S>
+
+  type DiagnosticsArtifactCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<DiagnosticsArtifactFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: DiagnosticsArtifactCountAggregateInputType | true
+    }
+
+  export interface DiagnosticsArtifactDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DiagnosticsArtifact'], meta: { name: 'DiagnosticsArtifact' } }
+    /**
+     * Find zero or one DiagnosticsArtifact that matches the filter.
+     * @param {DiagnosticsArtifactFindUniqueArgs} args - Arguments to find a DiagnosticsArtifact
+     * @example
+     * // Get one DiagnosticsArtifact
+     * const diagnosticsArtifact = await prisma.diagnosticsArtifact.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DiagnosticsArtifactFindUniqueArgs>(args: SelectSubset<T, DiagnosticsArtifactFindUniqueArgs<ExtArgs>>): Prisma__DiagnosticsArtifactClient<$Result.GetResult<Prisma.$DiagnosticsArtifactPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one DiagnosticsArtifact that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {DiagnosticsArtifactFindUniqueOrThrowArgs} args - Arguments to find a DiagnosticsArtifact
+     * @example
+     * // Get one DiagnosticsArtifact
+     * const diagnosticsArtifact = await prisma.diagnosticsArtifact.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DiagnosticsArtifactFindUniqueOrThrowArgs>(args: SelectSubset<T, DiagnosticsArtifactFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DiagnosticsArtifactClient<$Result.GetResult<Prisma.$DiagnosticsArtifactPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DiagnosticsArtifact that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsArtifactFindFirstArgs} args - Arguments to find a DiagnosticsArtifact
+     * @example
+     * // Get one DiagnosticsArtifact
+     * const diagnosticsArtifact = await prisma.diagnosticsArtifact.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DiagnosticsArtifactFindFirstArgs>(args?: SelectSubset<T, DiagnosticsArtifactFindFirstArgs<ExtArgs>>): Prisma__DiagnosticsArtifactClient<$Result.GetResult<Prisma.$DiagnosticsArtifactPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DiagnosticsArtifact that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsArtifactFindFirstOrThrowArgs} args - Arguments to find a DiagnosticsArtifact
+     * @example
+     * // Get one DiagnosticsArtifact
+     * const diagnosticsArtifact = await prisma.diagnosticsArtifact.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DiagnosticsArtifactFindFirstOrThrowArgs>(args?: SelectSubset<T, DiagnosticsArtifactFindFirstOrThrowArgs<ExtArgs>>): Prisma__DiagnosticsArtifactClient<$Result.GetResult<Prisma.$DiagnosticsArtifactPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more DiagnosticsArtifacts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsArtifactFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DiagnosticsArtifacts
+     * const diagnosticsArtifacts = await prisma.diagnosticsArtifact.findMany()
+     * 
+     * // Get first 10 DiagnosticsArtifacts
+     * const diagnosticsArtifacts = await prisma.diagnosticsArtifact.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const diagnosticsArtifactWithIdOnly = await prisma.diagnosticsArtifact.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DiagnosticsArtifactFindManyArgs>(args?: SelectSubset<T, DiagnosticsArtifactFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DiagnosticsArtifactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a DiagnosticsArtifact.
+     * @param {DiagnosticsArtifactCreateArgs} args - Arguments to create a DiagnosticsArtifact.
+     * @example
+     * // Create one DiagnosticsArtifact
+     * const DiagnosticsArtifact = await prisma.diagnosticsArtifact.create({
+     *   data: {
+     *     // ... data to create a DiagnosticsArtifact
+     *   }
+     * })
+     * 
+     */
+    create<T extends DiagnosticsArtifactCreateArgs>(args: SelectSubset<T, DiagnosticsArtifactCreateArgs<ExtArgs>>): Prisma__DiagnosticsArtifactClient<$Result.GetResult<Prisma.$DiagnosticsArtifactPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many DiagnosticsArtifacts.
+     * @param {DiagnosticsArtifactCreateManyArgs} args - Arguments to create many DiagnosticsArtifacts.
+     * @example
+     * // Create many DiagnosticsArtifacts
+     * const diagnosticsArtifact = await prisma.diagnosticsArtifact.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DiagnosticsArtifactCreateManyArgs>(args?: SelectSubset<T, DiagnosticsArtifactCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DiagnosticsArtifacts and returns the data saved in the database.
+     * @param {DiagnosticsArtifactCreateManyAndReturnArgs} args - Arguments to create many DiagnosticsArtifacts.
+     * @example
+     * // Create many DiagnosticsArtifacts
+     * const diagnosticsArtifact = await prisma.diagnosticsArtifact.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DiagnosticsArtifacts and only return the `id`
+     * const diagnosticsArtifactWithIdOnly = await prisma.diagnosticsArtifact.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DiagnosticsArtifactCreateManyAndReturnArgs>(args?: SelectSubset<T, DiagnosticsArtifactCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DiagnosticsArtifactPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a DiagnosticsArtifact.
+     * @param {DiagnosticsArtifactDeleteArgs} args - Arguments to delete one DiagnosticsArtifact.
+     * @example
+     * // Delete one DiagnosticsArtifact
+     * const DiagnosticsArtifact = await prisma.diagnosticsArtifact.delete({
+     *   where: {
+     *     // ... filter to delete one DiagnosticsArtifact
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DiagnosticsArtifactDeleteArgs>(args: SelectSubset<T, DiagnosticsArtifactDeleteArgs<ExtArgs>>): Prisma__DiagnosticsArtifactClient<$Result.GetResult<Prisma.$DiagnosticsArtifactPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one DiagnosticsArtifact.
+     * @param {DiagnosticsArtifactUpdateArgs} args - Arguments to update one DiagnosticsArtifact.
+     * @example
+     * // Update one DiagnosticsArtifact
+     * const diagnosticsArtifact = await prisma.diagnosticsArtifact.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DiagnosticsArtifactUpdateArgs>(args: SelectSubset<T, DiagnosticsArtifactUpdateArgs<ExtArgs>>): Prisma__DiagnosticsArtifactClient<$Result.GetResult<Prisma.$DiagnosticsArtifactPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more DiagnosticsArtifacts.
+     * @param {DiagnosticsArtifactDeleteManyArgs} args - Arguments to filter DiagnosticsArtifacts to delete.
+     * @example
+     * // Delete a few DiagnosticsArtifacts
+     * const { count } = await prisma.diagnosticsArtifact.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DiagnosticsArtifactDeleteManyArgs>(args?: SelectSubset<T, DiagnosticsArtifactDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DiagnosticsArtifacts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsArtifactUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DiagnosticsArtifacts
+     * const diagnosticsArtifact = await prisma.diagnosticsArtifact.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DiagnosticsArtifactUpdateManyArgs>(args: SelectSubset<T, DiagnosticsArtifactUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DiagnosticsArtifacts and returns the data updated in the database.
+     * @param {DiagnosticsArtifactUpdateManyAndReturnArgs} args - Arguments to update many DiagnosticsArtifacts.
+     * @example
+     * // Update many DiagnosticsArtifacts
+     * const diagnosticsArtifact = await prisma.diagnosticsArtifact.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more DiagnosticsArtifacts and only return the `id`
+     * const diagnosticsArtifactWithIdOnly = await prisma.diagnosticsArtifact.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends DiagnosticsArtifactUpdateManyAndReturnArgs>(args: SelectSubset<T, DiagnosticsArtifactUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DiagnosticsArtifactPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one DiagnosticsArtifact.
+     * @param {DiagnosticsArtifactUpsertArgs} args - Arguments to update or create a DiagnosticsArtifact.
+     * @example
+     * // Update or create a DiagnosticsArtifact
+     * const diagnosticsArtifact = await prisma.diagnosticsArtifact.upsert({
+     *   create: {
+     *     // ... data to create a DiagnosticsArtifact
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DiagnosticsArtifact we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DiagnosticsArtifactUpsertArgs>(args: SelectSubset<T, DiagnosticsArtifactUpsertArgs<ExtArgs>>): Prisma__DiagnosticsArtifactClient<$Result.GetResult<Prisma.$DiagnosticsArtifactPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of DiagnosticsArtifacts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsArtifactCountArgs} args - Arguments to filter DiagnosticsArtifacts to count.
+     * @example
+     * // Count the number of DiagnosticsArtifacts
+     * const count = await prisma.diagnosticsArtifact.count({
+     *   where: {
+     *     // ... the filter for the DiagnosticsArtifacts we want to count
+     *   }
+     * })
+    **/
+    count<T extends DiagnosticsArtifactCountArgs>(
+      args?: Subset<T, DiagnosticsArtifactCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DiagnosticsArtifactCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DiagnosticsArtifact.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsArtifactAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DiagnosticsArtifactAggregateArgs>(args: Subset<T, DiagnosticsArtifactAggregateArgs>): Prisma.PrismaPromise<GetDiagnosticsArtifactAggregateType<T>>
+
+    /**
+     * Group by DiagnosticsArtifact.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DiagnosticsArtifactGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DiagnosticsArtifactGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DiagnosticsArtifactGroupByArgs['orderBy'] }
+        : { orderBy?: DiagnosticsArtifactGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DiagnosticsArtifactGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDiagnosticsArtifactGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DiagnosticsArtifact model
+   */
+  readonly fields: DiagnosticsArtifactFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DiagnosticsArtifact.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DiagnosticsArtifactClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    diagnostics_package<T extends DiagnosticsPackageDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DiagnosticsPackageDefaultArgs<ExtArgs>>): Prisma__DiagnosticsPackageClient<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DiagnosticsArtifact model
+   */
+  interface DiagnosticsArtifactFieldRefs {
+    readonly id: FieldRef<"DiagnosticsArtifact", 'String'>
+    readonly diagnostics_package_id: FieldRef<"DiagnosticsArtifact", 'String'>
+    readonly kind: FieldRef<"DiagnosticsArtifact", 'DiagnosticsArtifactKind'>
+    readonly path: FieldRef<"DiagnosticsArtifact", 'String'>
+    readonly content_type: FieldRef<"DiagnosticsArtifact", 'String'>
+    readonly size_bytes: FieldRef<"DiagnosticsArtifact", 'Int'>
+    readonly created_at: FieldRef<"DiagnosticsArtifact", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DiagnosticsArtifact findUnique
+   */
+  export type DiagnosticsArtifactFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsArtifact
+     */
+    select?: DiagnosticsArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsArtifact
+     */
+    omit?: DiagnosticsArtifactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsArtifactInclude<ExtArgs> | null
+    /**
+     * Filter, which DiagnosticsArtifact to fetch.
+     */
+    where: DiagnosticsArtifactWhereUniqueInput
+  }
+
+  /**
+   * DiagnosticsArtifact findUniqueOrThrow
+   */
+  export type DiagnosticsArtifactFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsArtifact
+     */
+    select?: DiagnosticsArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsArtifact
+     */
+    omit?: DiagnosticsArtifactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsArtifactInclude<ExtArgs> | null
+    /**
+     * Filter, which DiagnosticsArtifact to fetch.
+     */
+    where: DiagnosticsArtifactWhereUniqueInput
+  }
+
+  /**
+   * DiagnosticsArtifact findFirst
+   */
+  export type DiagnosticsArtifactFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsArtifact
+     */
+    select?: DiagnosticsArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsArtifact
+     */
+    omit?: DiagnosticsArtifactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsArtifactInclude<ExtArgs> | null
+    /**
+     * Filter, which DiagnosticsArtifact to fetch.
+     */
+    where?: DiagnosticsArtifactWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DiagnosticsArtifacts to fetch.
+     */
+    orderBy?: DiagnosticsArtifactOrderByWithRelationInput | DiagnosticsArtifactOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DiagnosticsArtifacts.
+     */
+    cursor?: DiagnosticsArtifactWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DiagnosticsArtifacts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DiagnosticsArtifacts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DiagnosticsArtifacts.
+     */
+    distinct?: DiagnosticsArtifactScalarFieldEnum | DiagnosticsArtifactScalarFieldEnum[]
+  }
+
+  /**
+   * DiagnosticsArtifact findFirstOrThrow
+   */
+  export type DiagnosticsArtifactFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsArtifact
+     */
+    select?: DiagnosticsArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsArtifact
+     */
+    omit?: DiagnosticsArtifactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsArtifactInclude<ExtArgs> | null
+    /**
+     * Filter, which DiagnosticsArtifact to fetch.
+     */
+    where?: DiagnosticsArtifactWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DiagnosticsArtifacts to fetch.
+     */
+    orderBy?: DiagnosticsArtifactOrderByWithRelationInput | DiagnosticsArtifactOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DiagnosticsArtifacts.
+     */
+    cursor?: DiagnosticsArtifactWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DiagnosticsArtifacts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DiagnosticsArtifacts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DiagnosticsArtifacts.
+     */
+    distinct?: DiagnosticsArtifactScalarFieldEnum | DiagnosticsArtifactScalarFieldEnum[]
+  }
+
+  /**
+   * DiagnosticsArtifact findMany
+   */
+  export type DiagnosticsArtifactFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsArtifact
+     */
+    select?: DiagnosticsArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsArtifact
+     */
+    omit?: DiagnosticsArtifactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsArtifactInclude<ExtArgs> | null
+    /**
+     * Filter, which DiagnosticsArtifacts to fetch.
+     */
+    where?: DiagnosticsArtifactWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DiagnosticsArtifacts to fetch.
+     */
+    orderBy?: DiagnosticsArtifactOrderByWithRelationInput | DiagnosticsArtifactOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DiagnosticsArtifacts.
+     */
+    cursor?: DiagnosticsArtifactWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DiagnosticsArtifacts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DiagnosticsArtifacts.
+     */
+    skip?: number
+    distinct?: DiagnosticsArtifactScalarFieldEnum | DiagnosticsArtifactScalarFieldEnum[]
+  }
+
+  /**
+   * DiagnosticsArtifact create
+   */
+  export type DiagnosticsArtifactCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsArtifact
+     */
+    select?: DiagnosticsArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsArtifact
+     */
+    omit?: DiagnosticsArtifactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsArtifactInclude<ExtArgs> | null
+    /**
+     * The data needed to create a DiagnosticsArtifact.
+     */
+    data: XOR<DiagnosticsArtifactCreateInput, DiagnosticsArtifactUncheckedCreateInput>
+  }
+
+  /**
+   * DiagnosticsArtifact createMany
+   */
+  export type DiagnosticsArtifactCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DiagnosticsArtifacts.
+     */
+    data: DiagnosticsArtifactCreateManyInput | DiagnosticsArtifactCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DiagnosticsArtifact createManyAndReturn
+   */
+  export type DiagnosticsArtifactCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsArtifact
+     */
+    select?: DiagnosticsArtifactSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsArtifact
+     */
+    omit?: DiagnosticsArtifactOmit<ExtArgs> | null
+    /**
+     * The data used to create many DiagnosticsArtifacts.
+     */
+    data: DiagnosticsArtifactCreateManyInput | DiagnosticsArtifactCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsArtifactIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DiagnosticsArtifact update
+   */
+  export type DiagnosticsArtifactUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsArtifact
+     */
+    select?: DiagnosticsArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsArtifact
+     */
+    omit?: DiagnosticsArtifactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsArtifactInclude<ExtArgs> | null
+    /**
+     * The data needed to update a DiagnosticsArtifact.
+     */
+    data: XOR<DiagnosticsArtifactUpdateInput, DiagnosticsArtifactUncheckedUpdateInput>
+    /**
+     * Choose, which DiagnosticsArtifact to update.
+     */
+    where: DiagnosticsArtifactWhereUniqueInput
+  }
+
+  /**
+   * DiagnosticsArtifact updateMany
+   */
+  export type DiagnosticsArtifactUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DiagnosticsArtifacts.
+     */
+    data: XOR<DiagnosticsArtifactUpdateManyMutationInput, DiagnosticsArtifactUncheckedUpdateManyInput>
+    /**
+     * Filter which DiagnosticsArtifacts to update
+     */
+    where?: DiagnosticsArtifactWhereInput
+    /**
+     * Limit how many DiagnosticsArtifacts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * DiagnosticsArtifact updateManyAndReturn
+   */
+  export type DiagnosticsArtifactUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsArtifact
+     */
+    select?: DiagnosticsArtifactSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsArtifact
+     */
+    omit?: DiagnosticsArtifactOmit<ExtArgs> | null
+    /**
+     * The data used to update DiagnosticsArtifacts.
+     */
+    data: XOR<DiagnosticsArtifactUpdateManyMutationInput, DiagnosticsArtifactUncheckedUpdateManyInput>
+    /**
+     * Filter which DiagnosticsArtifacts to update
+     */
+    where?: DiagnosticsArtifactWhereInput
+    /**
+     * Limit how many DiagnosticsArtifacts to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsArtifactIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DiagnosticsArtifact upsert
+   */
+  export type DiagnosticsArtifactUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsArtifact
+     */
+    select?: DiagnosticsArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsArtifact
+     */
+    omit?: DiagnosticsArtifactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsArtifactInclude<ExtArgs> | null
+    /**
+     * The filter to search for the DiagnosticsArtifact to update in case it exists.
+     */
+    where: DiagnosticsArtifactWhereUniqueInput
+    /**
+     * In case the DiagnosticsArtifact found by the `where` argument doesn't exist, create a new DiagnosticsArtifact with this data.
+     */
+    create: XOR<DiagnosticsArtifactCreateInput, DiagnosticsArtifactUncheckedCreateInput>
+    /**
+     * In case the DiagnosticsArtifact was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DiagnosticsArtifactUpdateInput, DiagnosticsArtifactUncheckedUpdateInput>
+  }
+
+  /**
+   * DiagnosticsArtifact delete
+   */
+  export type DiagnosticsArtifactDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsArtifact
+     */
+    select?: DiagnosticsArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsArtifact
+     */
+    omit?: DiagnosticsArtifactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsArtifactInclude<ExtArgs> | null
+    /**
+     * Filter which DiagnosticsArtifact to delete.
+     */
+    where: DiagnosticsArtifactWhereUniqueInput
+  }
+
+  /**
+   * DiagnosticsArtifact deleteMany
+   */
+  export type DiagnosticsArtifactDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DiagnosticsArtifacts to delete
+     */
+    where?: DiagnosticsArtifactWhereInput
+    /**
+     * Limit how many DiagnosticsArtifacts to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * DiagnosticsArtifact without action
+   */
+  export type DiagnosticsArtifactDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DiagnosticsArtifact
+     */
+    select?: DiagnosticsArtifactSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DiagnosticsArtifact
+     */
+    omit?: DiagnosticsArtifactOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DiagnosticsArtifactInclude<ExtArgs> | null
   }
 
 
@@ -29932,8 +32612,6 @@ export namespace Prisma {
     track_removed_listings: 'track_removed_listings',
     track_updated_listings: 'track_updated_listings',
     use_ai_batching: 'use_ai_batching',
-    ai_provider: 'ai_provider',
-    ai_model: 'ai_model',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -29960,6 +32638,7 @@ export namespace Prisma {
     version_count: 'version_count',
     status: 'status',
     self_healing_enabled: 'self_healing_enabled',
+    diagnostics_mode: 'diagnostics_mode',
     health: 'health',
     success_rate: 'success_rate',
     avg_runtime_ms: 'avg_runtime_ms',
@@ -30065,6 +32744,41 @@ export namespace Prisma {
   };
 
   export type CrawlRunScalarFieldEnum = (typeof CrawlRunScalarFieldEnum)[keyof typeof CrawlRunScalarFieldEnum]
+
+
+  export const DiagnosticsPackageScalarFieldEnum: {
+    id: 'id',
+    crawl_run_id: 'crawl_run_id',
+    scraper_id: 'scraper_id',
+    mode: 'mode',
+    url: 'url',
+    worker_id: 'worker_id',
+    browser_version: 'browser_version',
+    playwright_version: 'playwright_version',
+    scraper_version: 'scraper_version',
+    retry_number: 'retry_number',
+    started_at: 'started_at',
+    finished_at: 'finished_at',
+    duration_ms: 'duration_ms',
+    failure_reason: 'failure_reason',
+    exception: 'exception',
+    created_at: 'created_at'
+  };
+
+  export type DiagnosticsPackageScalarFieldEnum = (typeof DiagnosticsPackageScalarFieldEnum)[keyof typeof DiagnosticsPackageScalarFieldEnum]
+
+
+  export const DiagnosticsArtifactScalarFieldEnum: {
+    id: 'id',
+    diagnostics_package_id: 'diagnostics_package_id',
+    kind: 'kind',
+    path: 'path',
+    content_type: 'content_type',
+    size_bytes: 'size_bytes',
+    created_at: 'created_at'
+  };
+
+  export type DiagnosticsArtifactScalarFieldEnum = (typeof DiagnosticsArtifactScalarFieldEnum)[keyof typeof DiagnosticsArtifactScalarFieldEnum]
 
 
   export const JobLogScalarFieldEnum: {
@@ -30420,20 +33134,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'AiProvider'
-   */
-  export type EnumAiProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiProvider'>
-    
-
-
-  /**
-   * Reference to a field of type 'AiProvider[]'
-   */
-  export type ListEnumAiProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiProvider[]'>
-    
-
-
-  /**
    * Reference to a field of type 'ScraperStatus'
    */
   export type EnumScraperStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScraperStatus'>
@@ -30444,6 +33144,20 @@ export namespace Prisma {
    * Reference to a field of type 'ScraperStatus[]'
    */
   export type ListEnumScraperStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScraperStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'DiagnosticsMode'
+   */
+  export type EnumDiagnosticsModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DiagnosticsMode'>
+    
+
+
+  /**
+   * Reference to a field of type 'DiagnosticsMode[]'
+   */
+  export type ListEnumDiagnosticsModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DiagnosticsMode[]'>
     
 
 
@@ -30542,6 +33256,20 @@ export namespace Prisma {
    * Reference to a field of type 'CrawlRunStatus[]'
    */
   export type ListEnumCrawlRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CrawlRunStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'DiagnosticsArtifactKind'
+   */
+  export type EnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DiagnosticsArtifactKind'>
+    
+
+
+  /**
+   * Reference to a field of type 'DiagnosticsArtifactKind[]'
+   */
+  export type ListEnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DiagnosticsArtifactKind[]'>
     
 
 
@@ -31082,8 +33810,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     use_ai_batching?: BoolFilter<"UserTrackedAgency"> | boolean
-    ai_provider?: EnumAiProviderFilter<"UserTrackedAgency"> | $Enums.AiProvider
-    ai_model?: StringNullableFilter<"UserTrackedAgency"> | string | null
     created_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -31104,8 +33830,6 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     use_ai_batching?: SortOrder
-    ai_provider?: SortOrder
-    ai_model?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -31130,8 +33854,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     use_ai_batching?: BoolFilter<"UserTrackedAgency"> | boolean
-    ai_provider?: EnumAiProviderFilter<"UserTrackedAgency"> | $Enums.AiProvider
-    ai_model?: StringNullableFilter<"UserTrackedAgency"> | string | null
     created_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -31152,8 +33874,6 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     use_ai_batching?: SortOrder
-    ai_provider?: SortOrder
-    ai_model?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: UserTrackedAgencyCountOrderByAggregateInput
@@ -31178,8 +33898,6 @@ export namespace Prisma {
     track_removed_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     use_ai_batching?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
-    ai_provider?: EnumAiProviderWithAggregatesFilter<"UserTrackedAgency"> | $Enums.AiProvider
-    ai_model?: StringNullableWithAggregatesFilter<"UserTrackedAgency"> | string | null
     created_at?: DateTimeWithAggregatesFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserTrackedAgency"> | Date | string
   }
@@ -31253,6 +33971,7 @@ export namespace Prisma {
     version_count?: IntFilter<"Scraper"> | number
     status?: EnumScraperStatusFilter<"Scraper"> | $Enums.ScraperStatus
     self_healing_enabled?: BoolFilter<"Scraper"> | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFilter<"Scraper"> | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFilter<"Scraper"> | $Enums.ScraperHealth
     success_rate?: DecimalNullableFilter<"Scraper"> | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: IntNullableFilter<"Scraper"> | number | null
@@ -31269,6 +33988,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceListRelationFilter
     scraper_generation_runs?: ScraperGenerationRunListRelationFilter
     notifications?: NotificationListRelationFilter
+    diagnostics_packages?: DiagnosticsPackageListRelationFilter
   }
 
   export type ScraperOrderByWithRelationInput = {
@@ -31279,6 +33999,7 @@ export namespace Prisma {
     version_count?: SortOrder
     status?: SortOrder
     self_healing_enabled?: SortOrder
+    diagnostics_mode?: SortOrder
     health?: SortOrder
     success_rate?: SortOrderInput | SortOrder
     avg_runtime_ms?: SortOrderInput | SortOrder
@@ -31295,6 +34016,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceOrderByRelationAggregateInput
     scraper_generation_runs?: ScraperGenerationRunOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
+    diagnostics_packages?: DiagnosticsPackageOrderByRelationAggregateInput
   }
 
   export type ScraperWhereUniqueInput = Prisma.AtLeast<{
@@ -31308,6 +34030,7 @@ export namespace Prisma {
     version_count?: IntFilter<"Scraper"> | number
     status?: EnumScraperStatusFilter<"Scraper"> | $Enums.ScraperStatus
     self_healing_enabled?: BoolFilter<"Scraper"> | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFilter<"Scraper"> | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFilter<"Scraper"> | $Enums.ScraperHealth
     success_rate?: DecimalNullableFilter<"Scraper"> | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: IntNullableFilter<"Scraper"> | number | null
@@ -31324,6 +34047,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceListRelationFilter
     scraper_generation_runs?: ScraperGenerationRunListRelationFilter
     notifications?: NotificationListRelationFilter
+    diagnostics_packages?: DiagnosticsPackageListRelationFilter
   }, "id" | "active_version_id">
 
   export type ScraperOrderByWithAggregationInput = {
@@ -31334,6 +34058,7 @@ export namespace Prisma {
     version_count?: SortOrder
     status?: SortOrder
     self_healing_enabled?: SortOrder
+    diagnostics_mode?: SortOrder
     health?: SortOrder
     success_rate?: SortOrderInput | SortOrder
     avg_runtime_ms?: SortOrderInput | SortOrder
@@ -31361,6 +34086,7 @@ export namespace Prisma {
     version_count?: IntWithAggregatesFilter<"Scraper"> | number
     status?: EnumScraperStatusWithAggregatesFilter<"Scraper"> | $Enums.ScraperStatus
     self_healing_enabled?: BoolWithAggregatesFilter<"Scraper"> | boolean
+    diagnostics_mode?: EnumDiagnosticsModeWithAggregatesFilter<"Scraper"> | $Enums.DiagnosticsMode
     health?: EnumScraperHealthWithAggregatesFilter<"Scraper"> | $Enums.ScraperHealth
     success_rate?: DecimalNullableWithAggregatesFilter<"Scraper"> | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: IntNullableWithAggregatesFilter<"Scraper"> | number | null
@@ -31753,6 +34479,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceListRelationFilter
     property_history?: PropertyHistoryListRelationFilter
     notifications?: NotificationListRelationFilter
+    diagnostics_package?: XOR<DiagnosticsPackageNullableScalarRelationFilter, DiagnosticsPackageWhereInput> | null
   }
 
   export type CrawlRunOrderByWithRelationInput = {
@@ -31787,6 +34514,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceOrderByRelationAggregateInput
     property_history?: PropertyHistoryOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
+    diagnostics_package?: DiagnosticsPackageOrderByWithRelationInput
   }
 
   export type CrawlRunWhereUniqueInput = Prisma.AtLeast<{
@@ -31824,6 +34552,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceListRelationFilter
     property_history?: PropertyHistoryListRelationFilter
     notifications?: NotificationListRelationFilter
+    diagnostics_package?: XOR<DiagnosticsPackageNullableScalarRelationFilter, DiagnosticsPackageWhereInput> | null
   }, "id">
 
   export type CrawlRunOrderByWithAggregationInput = {
@@ -31886,6 +34615,191 @@ export namespace Prisma {
     ai_average_cost_per_property?: DecimalNullableWithAggregatesFilter<"CrawlRun"> | Decimal | DecimalJsLike | number | string | null
     created_at?: DateTimeWithAggregatesFilter<"CrawlRun"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"CrawlRun"> | Date | string
+  }
+
+  export type DiagnosticsPackageWhereInput = {
+    AND?: DiagnosticsPackageWhereInput | DiagnosticsPackageWhereInput[]
+    OR?: DiagnosticsPackageWhereInput[]
+    NOT?: DiagnosticsPackageWhereInput | DiagnosticsPackageWhereInput[]
+    id?: StringFilter<"DiagnosticsPackage"> | string
+    crawl_run_id?: StringFilter<"DiagnosticsPackage"> | string
+    scraper_id?: StringFilter<"DiagnosticsPackage"> | string
+    mode?: EnumDiagnosticsModeFilter<"DiagnosticsPackage"> | $Enums.DiagnosticsMode
+    url?: StringFilter<"DiagnosticsPackage"> | string
+    worker_id?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    browser_version?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    playwright_version?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    scraper_version?: IntNullableFilter<"DiagnosticsPackage"> | number | null
+    retry_number?: IntNullableFilter<"DiagnosticsPackage"> | number | null
+    started_at?: DateTimeFilter<"DiagnosticsPackage"> | Date | string
+    finished_at?: DateTimeFilter<"DiagnosticsPackage"> | Date | string
+    duration_ms?: IntFilter<"DiagnosticsPackage"> | number
+    failure_reason?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    exception?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    created_at?: DateTimeFilter<"DiagnosticsPackage"> | Date | string
+    crawl_run?: XOR<CrawlRunScalarRelationFilter, CrawlRunWhereInput>
+    scraper?: XOR<ScraperScalarRelationFilter, ScraperWhereInput>
+    artifacts?: DiagnosticsArtifactListRelationFilter
+  }
+
+  export type DiagnosticsPackageOrderByWithRelationInput = {
+    id?: SortOrder
+    crawl_run_id?: SortOrder
+    scraper_id?: SortOrder
+    mode?: SortOrder
+    url?: SortOrder
+    worker_id?: SortOrderInput | SortOrder
+    browser_version?: SortOrderInput | SortOrder
+    playwright_version?: SortOrderInput | SortOrder
+    scraper_version?: SortOrderInput | SortOrder
+    retry_number?: SortOrderInput | SortOrder
+    started_at?: SortOrder
+    finished_at?: SortOrder
+    duration_ms?: SortOrder
+    failure_reason?: SortOrderInput | SortOrder
+    exception?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    crawl_run?: CrawlRunOrderByWithRelationInput
+    scraper?: ScraperOrderByWithRelationInput
+    artifacts?: DiagnosticsArtifactOrderByRelationAggregateInput
+  }
+
+  export type DiagnosticsPackageWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    crawl_run_id?: string
+    AND?: DiagnosticsPackageWhereInput | DiagnosticsPackageWhereInput[]
+    OR?: DiagnosticsPackageWhereInput[]
+    NOT?: DiagnosticsPackageWhereInput | DiagnosticsPackageWhereInput[]
+    scraper_id?: StringFilter<"DiagnosticsPackage"> | string
+    mode?: EnumDiagnosticsModeFilter<"DiagnosticsPackage"> | $Enums.DiagnosticsMode
+    url?: StringFilter<"DiagnosticsPackage"> | string
+    worker_id?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    browser_version?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    playwright_version?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    scraper_version?: IntNullableFilter<"DiagnosticsPackage"> | number | null
+    retry_number?: IntNullableFilter<"DiagnosticsPackage"> | number | null
+    started_at?: DateTimeFilter<"DiagnosticsPackage"> | Date | string
+    finished_at?: DateTimeFilter<"DiagnosticsPackage"> | Date | string
+    duration_ms?: IntFilter<"DiagnosticsPackage"> | number
+    failure_reason?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    exception?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    created_at?: DateTimeFilter<"DiagnosticsPackage"> | Date | string
+    crawl_run?: XOR<CrawlRunScalarRelationFilter, CrawlRunWhereInput>
+    scraper?: XOR<ScraperScalarRelationFilter, ScraperWhereInput>
+    artifacts?: DiagnosticsArtifactListRelationFilter
+  }, "id" | "crawl_run_id">
+
+  export type DiagnosticsPackageOrderByWithAggregationInput = {
+    id?: SortOrder
+    crawl_run_id?: SortOrder
+    scraper_id?: SortOrder
+    mode?: SortOrder
+    url?: SortOrder
+    worker_id?: SortOrderInput | SortOrder
+    browser_version?: SortOrderInput | SortOrder
+    playwright_version?: SortOrderInput | SortOrder
+    scraper_version?: SortOrderInput | SortOrder
+    retry_number?: SortOrderInput | SortOrder
+    started_at?: SortOrder
+    finished_at?: SortOrder
+    duration_ms?: SortOrder
+    failure_reason?: SortOrderInput | SortOrder
+    exception?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    _count?: DiagnosticsPackageCountOrderByAggregateInput
+    _avg?: DiagnosticsPackageAvgOrderByAggregateInput
+    _max?: DiagnosticsPackageMaxOrderByAggregateInput
+    _min?: DiagnosticsPackageMinOrderByAggregateInput
+    _sum?: DiagnosticsPackageSumOrderByAggregateInput
+  }
+
+  export type DiagnosticsPackageScalarWhereWithAggregatesInput = {
+    AND?: DiagnosticsPackageScalarWhereWithAggregatesInput | DiagnosticsPackageScalarWhereWithAggregatesInput[]
+    OR?: DiagnosticsPackageScalarWhereWithAggregatesInput[]
+    NOT?: DiagnosticsPackageScalarWhereWithAggregatesInput | DiagnosticsPackageScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"DiagnosticsPackage"> | string
+    crawl_run_id?: StringWithAggregatesFilter<"DiagnosticsPackage"> | string
+    scraper_id?: StringWithAggregatesFilter<"DiagnosticsPackage"> | string
+    mode?: EnumDiagnosticsModeWithAggregatesFilter<"DiagnosticsPackage"> | $Enums.DiagnosticsMode
+    url?: StringWithAggregatesFilter<"DiagnosticsPackage"> | string
+    worker_id?: StringNullableWithAggregatesFilter<"DiagnosticsPackage"> | string | null
+    browser_version?: StringNullableWithAggregatesFilter<"DiagnosticsPackage"> | string | null
+    playwright_version?: StringNullableWithAggregatesFilter<"DiagnosticsPackage"> | string | null
+    scraper_version?: IntNullableWithAggregatesFilter<"DiagnosticsPackage"> | number | null
+    retry_number?: IntNullableWithAggregatesFilter<"DiagnosticsPackage"> | number | null
+    started_at?: DateTimeWithAggregatesFilter<"DiagnosticsPackage"> | Date | string
+    finished_at?: DateTimeWithAggregatesFilter<"DiagnosticsPackage"> | Date | string
+    duration_ms?: IntWithAggregatesFilter<"DiagnosticsPackage"> | number
+    failure_reason?: StringNullableWithAggregatesFilter<"DiagnosticsPackage"> | string | null
+    exception?: StringNullableWithAggregatesFilter<"DiagnosticsPackage"> | string | null
+    created_at?: DateTimeWithAggregatesFilter<"DiagnosticsPackage"> | Date | string
+  }
+
+  export type DiagnosticsArtifactWhereInput = {
+    AND?: DiagnosticsArtifactWhereInput | DiagnosticsArtifactWhereInput[]
+    OR?: DiagnosticsArtifactWhereInput[]
+    NOT?: DiagnosticsArtifactWhereInput | DiagnosticsArtifactWhereInput[]
+    id?: StringFilter<"DiagnosticsArtifact"> | string
+    diagnostics_package_id?: StringFilter<"DiagnosticsArtifact"> | string
+    kind?: EnumDiagnosticsArtifactKindFilter<"DiagnosticsArtifact"> | $Enums.DiagnosticsArtifactKind
+    path?: StringFilter<"DiagnosticsArtifact"> | string
+    content_type?: StringFilter<"DiagnosticsArtifact"> | string
+    size_bytes?: IntFilter<"DiagnosticsArtifact"> | number
+    created_at?: DateTimeFilter<"DiagnosticsArtifact"> | Date | string
+    diagnostics_package?: XOR<DiagnosticsPackageScalarRelationFilter, DiagnosticsPackageWhereInput>
+  }
+
+  export type DiagnosticsArtifactOrderByWithRelationInput = {
+    id?: SortOrder
+    diagnostics_package_id?: SortOrder
+    kind?: SortOrder
+    path?: SortOrder
+    content_type?: SortOrder
+    size_bytes?: SortOrder
+    created_at?: SortOrder
+    diagnostics_package?: DiagnosticsPackageOrderByWithRelationInput
+  }
+
+  export type DiagnosticsArtifactWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: DiagnosticsArtifactWhereInput | DiagnosticsArtifactWhereInput[]
+    OR?: DiagnosticsArtifactWhereInput[]
+    NOT?: DiagnosticsArtifactWhereInput | DiagnosticsArtifactWhereInput[]
+    diagnostics_package_id?: StringFilter<"DiagnosticsArtifact"> | string
+    kind?: EnumDiagnosticsArtifactKindFilter<"DiagnosticsArtifact"> | $Enums.DiagnosticsArtifactKind
+    path?: StringFilter<"DiagnosticsArtifact"> | string
+    content_type?: StringFilter<"DiagnosticsArtifact"> | string
+    size_bytes?: IntFilter<"DiagnosticsArtifact"> | number
+    created_at?: DateTimeFilter<"DiagnosticsArtifact"> | Date | string
+    diagnostics_package?: XOR<DiagnosticsPackageScalarRelationFilter, DiagnosticsPackageWhereInput>
+  }, "id">
+
+  export type DiagnosticsArtifactOrderByWithAggregationInput = {
+    id?: SortOrder
+    diagnostics_package_id?: SortOrder
+    kind?: SortOrder
+    path?: SortOrder
+    content_type?: SortOrder
+    size_bytes?: SortOrder
+    created_at?: SortOrder
+    _count?: DiagnosticsArtifactCountOrderByAggregateInput
+    _avg?: DiagnosticsArtifactAvgOrderByAggregateInput
+    _max?: DiagnosticsArtifactMaxOrderByAggregateInput
+    _min?: DiagnosticsArtifactMinOrderByAggregateInput
+    _sum?: DiagnosticsArtifactSumOrderByAggregateInput
+  }
+
+  export type DiagnosticsArtifactScalarWhereWithAggregatesInput = {
+    AND?: DiagnosticsArtifactScalarWhereWithAggregatesInput | DiagnosticsArtifactScalarWhereWithAggregatesInput[]
+    OR?: DiagnosticsArtifactScalarWhereWithAggregatesInput[]
+    NOT?: DiagnosticsArtifactScalarWhereWithAggregatesInput | DiagnosticsArtifactScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"DiagnosticsArtifact"> | string
+    diagnostics_package_id?: StringWithAggregatesFilter<"DiagnosticsArtifact"> | string
+    kind?: EnumDiagnosticsArtifactKindWithAggregatesFilter<"DiagnosticsArtifact"> | $Enums.DiagnosticsArtifactKind
+    path?: StringWithAggregatesFilter<"DiagnosticsArtifact"> | string
+    content_type?: StringWithAggregatesFilter<"DiagnosticsArtifact"> | string
+    size_bytes?: IntWithAggregatesFilter<"DiagnosticsArtifact"> | number
+    created_at?: DateTimeWithAggregatesFilter<"DiagnosticsArtifact"> | Date | string
   }
 
   export type JobLogWhereInput = {
@@ -33347,8 +36261,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: $Enums.AiProvider
-    ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -33369,8 +36281,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: $Enums.AiProvider
-    ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -33387,8 +36297,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -33409,8 +36317,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -33429,8 +36335,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: $Enums.AiProvider
-    ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -33445,8 +36349,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -33463,8 +36365,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -33529,6 +36429,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -33545,6 +36446,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperUncheckedCreateInput = {
@@ -33555,6 +36457,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -33569,6 +36472,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperUpdateInput = {
@@ -33577,6 +36481,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -33593,6 +36498,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
 
   export type ScraperUncheckedUpdateInput = {
@@ -33603,6 +36509,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -33617,6 +36524,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
 
   export type ScraperCreateManyInput = {
@@ -33627,6 +36535,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -33644,6 +36553,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -33663,6 +36573,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -34063,6 +36974,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateInput = {
@@ -34094,6 +37006,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunUpdateInput = {
@@ -34125,6 +37038,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateInput = {
@@ -34156,6 +37070,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunCreateManyInput = {
@@ -34234,6 +37149,210 @@ export namespace Prisma {
     ai_average_cost_per_property?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DiagnosticsPackageCreateInput = {
+    id?: string
+    mode: $Enums.DiagnosticsMode
+    url: string
+    worker_id?: string | null
+    browser_version?: string | null
+    playwright_version?: string | null
+    scraper_version?: number | null
+    retry_number?: number | null
+    started_at: Date | string
+    finished_at: Date | string
+    duration_ms: number
+    failure_reason?: string | null
+    exception?: string | null
+    created_at?: Date | string
+    crawl_run: CrawlRunCreateNestedOneWithoutDiagnostics_packageInput
+    scraper: ScraperCreateNestedOneWithoutDiagnostics_packagesInput
+    artifacts?: DiagnosticsArtifactCreateNestedManyWithoutDiagnostics_packageInput
+  }
+
+  export type DiagnosticsPackageUncheckedCreateInput = {
+    id?: string
+    crawl_run_id: string
+    scraper_id: string
+    mode: $Enums.DiagnosticsMode
+    url: string
+    worker_id?: string | null
+    browser_version?: string | null
+    playwright_version?: string | null
+    scraper_version?: number | null
+    retry_number?: number | null
+    started_at: Date | string
+    finished_at: Date | string
+    duration_ms: number
+    failure_reason?: string | null
+    exception?: string | null
+    created_at?: Date | string
+    artifacts?: DiagnosticsArtifactUncheckedCreateNestedManyWithoutDiagnostics_packageInput
+  }
+
+  export type DiagnosticsPackageUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
+    url?: StringFieldUpdateOperationsInput | string
+    worker_id?: NullableStringFieldUpdateOperationsInput | string | null
+    browser_version?: NullableStringFieldUpdateOperationsInput | string | null
+    playwright_version?: NullableStringFieldUpdateOperationsInput | string | null
+    scraper_version?: NullableIntFieldUpdateOperationsInput | number | null
+    retry_number?: NullableIntFieldUpdateOperationsInput | number | null
+    started_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    finished_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration_ms?: IntFieldUpdateOperationsInput | number
+    failure_reason?: NullableStringFieldUpdateOperationsInput | string | null
+    exception?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    crawl_run?: CrawlRunUpdateOneRequiredWithoutDiagnostics_packageNestedInput
+    scraper?: ScraperUpdateOneRequiredWithoutDiagnostics_packagesNestedInput
+    artifacts?: DiagnosticsArtifactUpdateManyWithoutDiagnostics_packageNestedInput
+  }
+
+  export type DiagnosticsPackageUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: StringFieldUpdateOperationsInput | string
+    scraper_id?: StringFieldUpdateOperationsInput | string
+    mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
+    url?: StringFieldUpdateOperationsInput | string
+    worker_id?: NullableStringFieldUpdateOperationsInput | string | null
+    browser_version?: NullableStringFieldUpdateOperationsInput | string | null
+    playwright_version?: NullableStringFieldUpdateOperationsInput | string | null
+    scraper_version?: NullableIntFieldUpdateOperationsInput | number | null
+    retry_number?: NullableIntFieldUpdateOperationsInput | number | null
+    started_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    finished_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration_ms?: IntFieldUpdateOperationsInput | number
+    failure_reason?: NullableStringFieldUpdateOperationsInput | string | null
+    exception?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    artifacts?: DiagnosticsArtifactUncheckedUpdateManyWithoutDiagnostics_packageNestedInput
+  }
+
+  export type DiagnosticsPackageCreateManyInput = {
+    id?: string
+    crawl_run_id: string
+    scraper_id: string
+    mode: $Enums.DiagnosticsMode
+    url: string
+    worker_id?: string | null
+    browser_version?: string | null
+    playwright_version?: string | null
+    scraper_version?: number | null
+    retry_number?: number | null
+    started_at: Date | string
+    finished_at: Date | string
+    duration_ms: number
+    failure_reason?: string | null
+    exception?: string | null
+    created_at?: Date | string
+  }
+
+  export type DiagnosticsPackageUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
+    url?: StringFieldUpdateOperationsInput | string
+    worker_id?: NullableStringFieldUpdateOperationsInput | string | null
+    browser_version?: NullableStringFieldUpdateOperationsInput | string | null
+    playwright_version?: NullableStringFieldUpdateOperationsInput | string | null
+    scraper_version?: NullableIntFieldUpdateOperationsInput | number | null
+    retry_number?: NullableIntFieldUpdateOperationsInput | number | null
+    started_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    finished_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration_ms?: IntFieldUpdateOperationsInput | number
+    failure_reason?: NullableStringFieldUpdateOperationsInput | string | null
+    exception?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DiagnosticsPackageUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: StringFieldUpdateOperationsInput | string
+    scraper_id?: StringFieldUpdateOperationsInput | string
+    mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
+    url?: StringFieldUpdateOperationsInput | string
+    worker_id?: NullableStringFieldUpdateOperationsInput | string | null
+    browser_version?: NullableStringFieldUpdateOperationsInput | string | null
+    playwright_version?: NullableStringFieldUpdateOperationsInput | string | null
+    scraper_version?: NullableIntFieldUpdateOperationsInput | number | null
+    retry_number?: NullableIntFieldUpdateOperationsInput | number | null
+    started_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    finished_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration_ms?: IntFieldUpdateOperationsInput | number
+    failure_reason?: NullableStringFieldUpdateOperationsInput | string | null
+    exception?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DiagnosticsArtifactCreateInput = {
+    id?: string
+    kind: $Enums.DiagnosticsArtifactKind
+    path: string
+    content_type: string
+    size_bytes: number
+    created_at?: Date | string
+    diagnostics_package: DiagnosticsPackageCreateNestedOneWithoutArtifactsInput
+  }
+
+  export type DiagnosticsArtifactUncheckedCreateInput = {
+    id?: string
+    diagnostics_package_id: string
+    kind: $Enums.DiagnosticsArtifactKind
+    path: string
+    content_type: string
+    size_bytes: number
+    created_at?: Date | string
+  }
+
+  export type DiagnosticsArtifactUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumDiagnosticsArtifactKindFieldUpdateOperationsInput | $Enums.DiagnosticsArtifactKind
+    path?: StringFieldUpdateOperationsInput | string
+    content_type?: StringFieldUpdateOperationsInput | string
+    size_bytes?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    diagnostics_package?: DiagnosticsPackageUpdateOneRequiredWithoutArtifactsNestedInput
+  }
+
+  export type DiagnosticsArtifactUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    diagnostics_package_id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumDiagnosticsArtifactKindFieldUpdateOperationsInput | $Enums.DiagnosticsArtifactKind
+    path?: StringFieldUpdateOperationsInput | string
+    content_type?: StringFieldUpdateOperationsInput | string
+    size_bytes?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DiagnosticsArtifactCreateManyInput = {
+    id?: string
+    diagnostics_package_id: string
+    kind: $Enums.DiagnosticsArtifactKind
+    path: string
+    content_type: string
+    size_bytes: number
+    created_at?: Date | string
+  }
+
+  export type DiagnosticsArtifactUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumDiagnosticsArtifactKindFieldUpdateOperationsInput | $Enums.DiagnosticsArtifactKind
+    path?: StringFieldUpdateOperationsInput | string
+    content_type?: StringFieldUpdateOperationsInput | string
+    size_bytes?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DiagnosticsArtifactUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    diagnostics_package_id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumDiagnosticsArtifactKindFieldUpdateOperationsInput | $Enums.DiagnosticsArtifactKind
+    path?: StringFieldUpdateOperationsInput | string
+    content_type?: StringFieldUpdateOperationsInput | string
+    size_bytes?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type JobLogCreateInput = {
@@ -35931,13 +39050,6 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
-  export type EnumAiProviderFilter<$PrismaModel = never> = {
-    equals?: $Enums.AiProvider | EnumAiProviderFieldRefInput<$PrismaModel>
-    in?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
-    not?: NestedEnumAiProviderFilter<$PrismaModel> | $Enums.AiProvider
-  }
-
   export type SourceAgencyScalarRelationFilter = {
     is?: SourceAgencyWhereInput
     isNot?: SourceAgencyWhereInput
@@ -35960,8 +39072,6 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     use_ai_batching?: SortOrder
-    ai_provider?: SortOrder
-    ai_model?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -35983,8 +39093,6 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     use_ai_batching?: SortOrder
-    ai_provider?: SortOrder
-    ai_model?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -36001,8 +39109,6 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     use_ai_batching?: SortOrder
-    ai_provider?: SortOrder
-    ai_model?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -36026,16 +39132,6 @@ export namespace Prisma {
     _sum?: NestedIntFilter<$PrismaModel>
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type EnumAiProviderWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.AiProvider | EnumAiProviderFieldRefInput<$PrismaModel>
-    in?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
-    not?: NestedEnumAiProviderWithAggregatesFilter<$PrismaModel> | $Enums.AiProvider
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumAiProviderFilter<$PrismaModel>
-    _max?: NestedEnumAiProviderFilter<$PrismaModel>
   }
 
   export type UserTrackedAgencyScalarRelationFilter = {
@@ -36077,6 +39173,13 @@ export namespace Prisma {
     in?: $Enums.ScraperStatus[] | ListEnumScraperStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.ScraperStatus[] | ListEnumScraperStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumScraperStatusFilter<$PrismaModel> | $Enums.ScraperStatus
+  }
+
+  export type EnumDiagnosticsModeFilter<$PrismaModel = never> = {
+    equals?: $Enums.DiagnosticsMode | EnumDiagnosticsModeFieldRefInput<$PrismaModel>
+    in?: $Enums.DiagnosticsMode[] | ListEnumDiagnosticsModeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DiagnosticsMode[] | ListEnumDiagnosticsModeFieldRefInput<$PrismaModel>
+    not?: NestedEnumDiagnosticsModeFilter<$PrismaModel> | $Enums.DiagnosticsMode
   }
 
   export type EnumScraperHealthFilter<$PrismaModel = never> = {
@@ -36125,11 +39228,21 @@ export namespace Prisma {
     none?: ScraperExecutionTraceWhereInput
   }
 
+  export type DiagnosticsPackageListRelationFilter = {
+    every?: DiagnosticsPackageWhereInput
+    some?: DiagnosticsPackageWhereInput
+    none?: DiagnosticsPackageWhereInput
+  }
+
   export type ScraperVersionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type ScraperExecutionTraceOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type DiagnosticsPackageOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -36141,6 +39254,7 @@ export namespace Prisma {
     version_count?: SortOrder
     status?: SortOrder
     self_healing_enabled?: SortOrder
+    diagnostics_mode?: SortOrder
     health?: SortOrder
     success_rate?: SortOrder
     avg_runtime_ms?: SortOrder
@@ -36168,6 +39282,7 @@ export namespace Prisma {
     version_count?: SortOrder
     status?: SortOrder
     self_healing_enabled?: SortOrder
+    diagnostics_mode?: SortOrder
     health?: SortOrder
     success_rate?: SortOrder
     avg_runtime_ms?: SortOrder
@@ -36187,6 +39302,7 @@ export namespace Prisma {
     version_count?: SortOrder
     status?: SortOrder
     self_healing_enabled?: SortOrder
+    diagnostics_mode?: SortOrder
     health?: SortOrder
     success_rate?: SortOrder
     avg_runtime_ms?: SortOrder
@@ -36214,6 +39330,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumScraperStatusFilter<$PrismaModel>
     _max?: NestedEnumScraperStatusFilter<$PrismaModel>
+  }
+
+  export type EnumDiagnosticsModeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DiagnosticsMode | EnumDiagnosticsModeFieldRefInput<$PrismaModel>
+    in?: $Enums.DiagnosticsMode[] | ListEnumDiagnosticsModeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DiagnosticsMode[] | ListEnumDiagnosticsModeFieldRefInput<$PrismaModel>
+    not?: NestedEnumDiagnosticsModeWithAggregatesFilter<$PrismaModel> | $Enums.DiagnosticsMode
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDiagnosticsModeFilter<$PrismaModel>
+    _max?: NestedEnumDiagnosticsModeFilter<$PrismaModel>
   }
 
   export type EnumScraperHealthWithAggregatesFilter<$PrismaModel = never> = {
@@ -36613,6 +39739,11 @@ export namespace Prisma {
     none?: PropertyHistoryWhereInput
   }
 
+  export type DiagnosticsPackageNullableScalarRelationFilter = {
+    is?: DiagnosticsPackageWhereInput | null
+    isNot?: DiagnosticsPackageWhereInput | null
+  }
+
   export type JobLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -36738,6 +39869,150 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumCrawlRunStatusFilter<$PrismaModel>
     _max?: NestedEnumCrawlRunStatusFilter<$PrismaModel>
+  }
+
+  export type CrawlRunScalarRelationFilter = {
+    is?: CrawlRunWhereInput
+    isNot?: CrawlRunWhereInput
+  }
+
+  export type DiagnosticsArtifactListRelationFilter = {
+    every?: DiagnosticsArtifactWhereInput
+    some?: DiagnosticsArtifactWhereInput
+    none?: DiagnosticsArtifactWhereInput
+  }
+
+  export type DiagnosticsArtifactOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type DiagnosticsPackageCountOrderByAggregateInput = {
+    id?: SortOrder
+    crawl_run_id?: SortOrder
+    scraper_id?: SortOrder
+    mode?: SortOrder
+    url?: SortOrder
+    worker_id?: SortOrder
+    browser_version?: SortOrder
+    playwright_version?: SortOrder
+    scraper_version?: SortOrder
+    retry_number?: SortOrder
+    started_at?: SortOrder
+    finished_at?: SortOrder
+    duration_ms?: SortOrder
+    failure_reason?: SortOrder
+    exception?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type DiagnosticsPackageAvgOrderByAggregateInput = {
+    scraper_version?: SortOrder
+    retry_number?: SortOrder
+    duration_ms?: SortOrder
+  }
+
+  export type DiagnosticsPackageMaxOrderByAggregateInput = {
+    id?: SortOrder
+    crawl_run_id?: SortOrder
+    scraper_id?: SortOrder
+    mode?: SortOrder
+    url?: SortOrder
+    worker_id?: SortOrder
+    browser_version?: SortOrder
+    playwright_version?: SortOrder
+    scraper_version?: SortOrder
+    retry_number?: SortOrder
+    started_at?: SortOrder
+    finished_at?: SortOrder
+    duration_ms?: SortOrder
+    failure_reason?: SortOrder
+    exception?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type DiagnosticsPackageMinOrderByAggregateInput = {
+    id?: SortOrder
+    crawl_run_id?: SortOrder
+    scraper_id?: SortOrder
+    mode?: SortOrder
+    url?: SortOrder
+    worker_id?: SortOrder
+    browser_version?: SortOrder
+    playwright_version?: SortOrder
+    scraper_version?: SortOrder
+    retry_number?: SortOrder
+    started_at?: SortOrder
+    finished_at?: SortOrder
+    duration_ms?: SortOrder
+    failure_reason?: SortOrder
+    exception?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type DiagnosticsPackageSumOrderByAggregateInput = {
+    scraper_version?: SortOrder
+    retry_number?: SortOrder
+    duration_ms?: SortOrder
+  }
+
+  export type EnumDiagnosticsArtifactKindFilter<$PrismaModel = never> = {
+    equals?: $Enums.DiagnosticsArtifactKind | EnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel>
+    in?: $Enums.DiagnosticsArtifactKind[] | ListEnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DiagnosticsArtifactKind[] | ListEnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumDiagnosticsArtifactKindFilter<$PrismaModel> | $Enums.DiagnosticsArtifactKind
+  }
+
+  export type DiagnosticsPackageScalarRelationFilter = {
+    is?: DiagnosticsPackageWhereInput
+    isNot?: DiagnosticsPackageWhereInput
+  }
+
+  export type DiagnosticsArtifactCountOrderByAggregateInput = {
+    id?: SortOrder
+    diagnostics_package_id?: SortOrder
+    kind?: SortOrder
+    path?: SortOrder
+    content_type?: SortOrder
+    size_bytes?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type DiagnosticsArtifactAvgOrderByAggregateInput = {
+    size_bytes?: SortOrder
+  }
+
+  export type DiagnosticsArtifactMaxOrderByAggregateInput = {
+    id?: SortOrder
+    diagnostics_package_id?: SortOrder
+    kind?: SortOrder
+    path?: SortOrder
+    content_type?: SortOrder
+    size_bytes?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type DiagnosticsArtifactMinOrderByAggregateInput = {
+    id?: SortOrder
+    diagnostics_package_id?: SortOrder
+    kind?: SortOrder
+    path?: SortOrder
+    content_type?: SortOrder
+    size_bytes?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type DiagnosticsArtifactSumOrderByAggregateInput = {
+    size_bytes?: SortOrder
+  }
+
+  export type EnumDiagnosticsArtifactKindWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DiagnosticsArtifactKind | EnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel>
+    in?: $Enums.DiagnosticsArtifactKind[] | ListEnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DiagnosticsArtifactKind[] | ListEnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumDiagnosticsArtifactKindWithAggregatesFilter<$PrismaModel> | $Enums.DiagnosticsArtifactKind
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDiagnosticsArtifactKindFilter<$PrismaModel>
+    _max?: NestedEnumDiagnosticsArtifactKindFilter<$PrismaModel>
   }
 
   export type EnumJobStatusFilter<$PrismaModel = never> = {
@@ -38112,10 +41387,6 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type EnumAiProviderFieldUpdateOperationsInput = {
-    set?: $Enums.AiProvider
-  }
-
   export type UserUpdateOneRequiredWithoutTracked_agenciesNestedInput = {
     create?: XOR<UserCreateWithoutTracked_agenciesInput, UserUncheckedCreateWithoutTracked_agenciesInput>
     connectOrCreate?: UserCreateOrConnectWithoutTracked_agenciesInput
@@ -38255,6 +41526,13 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type DiagnosticsPackageCreateNestedManyWithoutScraperInput = {
+    create?: XOR<DiagnosticsPackageCreateWithoutScraperInput, DiagnosticsPackageUncheckedCreateWithoutScraperInput> | DiagnosticsPackageCreateWithoutScraperInput[] | DiagnosticsPackageUncheckedCreateWithoutScraperInput[]
+    connectOrCreate?: DiagnosticsPackageCreateOrConnectWithoutScraperInput | DiagnosticsPackageCreateOrConnectWithoutScraperInput[]
+    createMany?: DiagnosticsPackageCreateManyScraperInputEnvelope
+    connect?: DiagnosticsPackageWhereUniqueInput | DiagnosticsPackageWhereUniqueInput[]
+  }
+
   export type CrawlRunUncheckedCreateNestedManyWithoutScraperInput = {
     create?: XOR<CrawlRunCreateWithoutScraperInput, CrawlRunUncheckedCreateWithoutScraperInput> | CrawlRunCreateWithoutScraperInput[] | CrawlRunUncheckedCreateWithoutScraperInput[]
     connectOrCreate?: CrawlRunCreateOrConnectWithoutScraperInput | CrawlRunCreateOrConnectWithoutScraperInput[]
@@ -38290,8 +41568,19 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput = {
+    create?: XOR<DiagnosticsPackageCreateWithoutScraperInput, DiagnosticsPackageUncheckedCreateWithoutScraperInput> | DiagnosticsPackageCreateWithoutScraperInput[] | DiagnosticsPackageUncheckedCreateWithoutScraperInput[]
+    connectOrCreate?: DiagnosticsPackageCreateOrConnectWithoutScraperInput | DiagnosticsPackageCreateOrConnectWithoutScraperInput[]
+    createMany?: DiagnosticsPackageCreateManyScraperInputEnvelope
+    connect?: DiagnosticsPackageWhereUniqueInput | DiagnosticsPackageWhereUniqueInput[]
+  }
+
   export type EnumScraperStatusFieldUpdateOperationsInput = {
     set?: $Enums.ScraperStatus
+  }
+
+  export type EnumDiagnosticsModeFieldUpdateOperationsInput = {
+    set?: $Enums.DiagnosticsMode
   }
 
   export type EnumScraperHealthFieldUpdateOperationsInput = {
@@ -38402,6 +41691,20 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type DiagnosticsPackageUpdateManyWithoutScraperNestedInput = {
+    create?: XOR<DiagnosticsPackageCreateWithoutScraperInput, DiagnosticsPackageUncheckedCreateWithoutScraperInput> | DiagnosticsPackageCreateWithoutScraperInput[] | DiagnosticsPackageUncheckedCreateWithoutScraperInput[]
+    connectOrCreate?: DiagnosticsPackageCreateOrConnectWithoutScraperInput | DiagnosticsPackageCreateOrConnectWithoutScraperInput[]
+    upsert?: DiagnosticsPackageUpsertWithWhereUniqueWithoutScraperInput | DiagnosticsPackageUpsertWithWhereUniqueWithoutScraperInput[]
+    createMany?: DiagnosticsPackageCreateManyScraperInputEnvelope
+    set?: DiagnosticsPackageWhereUniqueInput | DiagnosticsPackageWhereUniqueInput[]
+    disconnect?: DiagnosticsPackageWhereUniqueInput | DiagnosticsPackageWhereUniqueInput[]
+    delete?: DiagnosticsPackageWhereUniqueInput | DiagnosticsPackageWhereUniqueInput[]
+    connect?: DiagnosticsPackageWhereUniqueInput | DiagnosticsPackageWhereUniqueInput[]
+    update?: DiagnosticsPackageUpdateWithWhereUniqueWithoutScraperInput | DiagnosticsPackageUpdateWithWhereUniqueWithoutScraperInput[]
+    updateMany?: DiagnosticsPackageUpdateManyWithWhereWithoutScraperInput | DiagnosticsPackageUpdateManyWithWhereWithoutScraperInput[]
+    deleteMany?: DiagnosticsPackageScalarWhereInput | DiagnosticsPackageScalarWhereInput[]
+  }
+
   export type CrawlRunUncheckedUpdateManyWithoutScraperNestedInput = {
     create?: XOR<CrawlRunCreateWithoutScraperInput, CrawlRunUncheckedCreateWithoutScraperInput> | CrawlRunCreateWithoutScraperInput[] | CrawlRunUncheckedCreateWithoutScraperInput[]
     connectOrCreate?: CrawlRunCreateOrConnectWithoutScraperInput | CrawlRunCreateOrConnectWithoutScraperInput[]
@@ -38470,6 +41773,20 @@ export namespace Prisma {
     update?: NotificationUpdateWithWhereUniqueWithoutScraperInput | NotificationUpdateWithWhereUniqueWithoutScraperInput[]
     updateMany?: NotificationUpdateManyWithWhereWithoutScraperInput | NotificationUpdateManyWithWhereWithoutScraperInput[]
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
+  export type DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput = {
+    create?: XOR<DiagnosticsPackageCreateWithoutScraperInput, DiagnosticsPackageUncheckedCreateWithoutScraperInput> | DiagnosticsPackageCreateWithoutScraperInput[] | DiagnosticsPackageUncheckedCreateWithoutScraperInput[]
+    connectOrCreate?: DiagnosticsPackageCreateOrConnectWithoutScraperInput | DiagnosticsPackageCreateOrConnectWithoutScraperInput[]
+    upsert?: DiagnosticsPackageUpsertWithWhereUniqueWithoutScraperInput | DiagnosticsPackageUpsertWithWhereUniqueWithoutScraperInput[]
+    createMany?: DiagnosticsPackageCreateManyScraperInputEnvelope
+    set?: DiagnosticsPackageWhereUniqueInput | DiagnosticsPackageWhereUniqueInput[]
+    disconnect?: DiagnosticsPackageWhereUniqueInput | DiagnosticsPackageWhereUniqueInput[]
+    delete?: DiagnosticsPackageWhereUniqueInput | DiagnosticsPackageWhereUniqueInput[]
+    connect?: DiagnosticsPackageWhereUniqueInput | DiagnosticsPackageWhereUniqueInput[]
+    update?: DiagnosticsPackageUpdateWithWhereUniqueWithoutScraperInput | DiagnosticsPackageUpdateWithWhereUniqueWithoutScraperInput[]
+    updateMany?: DiagnosticsPackageUpdateManyWithWhereWithoutScraperInput | DiagnosticsPackageUpdateManyWithWhereWithoutScraperInput[]
+    deleteMany?: DiagnosticsPackageScalarWhereInput | DiagnosticsPackageScalarWhereInput[]
   }
 
   export type SourceAgencyCreateNestedOneWithoutScraper_generation_runsInput = {
@@ -38776,6 +42093,12 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput = {
+    create?: XOR<DiagnosticsPackageCreateWithoutCrawl_runInput, DiagnosticsPackageUncheckedCreateWithoutCrawl_runInput>
+    connectOrCreate?: DiagnosticsPackageCreateOrConnectWithoutCrawl_runInput
+    connect?: DiagnosticsPackageWhereUniqueInput
+  }
+
   export type JobLogUncheckedCreateNestedManyWithoutCrawl_runInput = {
     create?: XOR<JobLogCreateWithoutCrawl_runInput, JobLogUncheckedCreateWithoutCrawl_runInput> | JobLogCreateWithoutCrawl_runInput[] | JobLogUncheckedCreateWithoutCrawl_runInput[]
     connectOrCreate?: JobLogCreateOrConnectWithoutCrawl_runInput | JobLogCreateOrConnectWithoutCrawl_runInput[]
@@ -38802,6 +42125,12 @@ export namespace Prisma {
     connectOrCreate?: NotificationCreateOrConnectWithoutCrawl_runInput | NotificationCreateOrConnectWithoutCrawl_runInput[]
     createMany?: NotificationCreateManyCrawl_runInputEnvelope
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
+  export type DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput = {
+    create?: XOR<DiagnosticsPackageCreateWithoutCrawl_runInput, DiagnosticsPackageUncheckedCreateWithoutCrawl_runInput>
+    connectOrCreate?: DiagnosticsPackageCreateOrConnectWithoutCrawl_runInput
+    connect?: DiagnosticsPackageWhereUniqueInput
   }
 
   export type EnumCrawlRunStatusFieldUpdateOperationsInput = {
@@ -38892,6 +42221,16 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput = {
+    create?: XOR<DiagnosticsPackageCreateWithoutCrawl_runInput, DiagnosticsPackageUncheckedCreateWithoutCrawl_runInput>
+    connectOrCreate?: DiagnosticsPackageCreateOrConnectWithoutCrawl_runInput
+    upsert?: DiagnosticsPackageUpsertWithoutCrawl_runInput
+    disconnect?: DiagnosticsPackageWhereInput | boolean
+    delete?: DiagnosticsPackageWhereInput | boolean
+    connect?: DiagnosticsPackageWhereUniqueInput
+    update?: XOR<XOR<DiagnosticsPackageUpdateToOneWithWhereWithoutCrawl_runInput, DiagnosticsPackageUpdateWithoutCrawl_runInput>, DiagnosticsPackageUncheckedUpdateWithoutCrawl_runInput>
+  }
+
   export type JobLogUncheckedUpdateManyWithoutCrawl_runNestedInput = {
     create?: XOR<JobLogCreateWithoutCrawl_runInput, JobLogUncheckedCreateWithoutCrawl_runInput> | JobLogCreateWithoutCrawl_runInput[] | JobLogUncheckedCreateWithoutCrawl_runInput[]
     connectOrCreate?: JobLogCreateOrConnectWithoutCrawl_runInput | JobLogCreateOrConnectWithoutCrawl_runInput[]
@@ -38946,6 +42285,104 @@ export namespace Prisma {
     update?: NotificationUpdateWithWhereUniqueWithoutCrawl_runInput | NotificationUpdateWithWhereUniqueWithoutCrawl_runInput[]
     updateMany?: NotificationUpdateManyWithWhereWithoutCrawl_runInput | NotificationUpdateManyWithWhereWithoutCrawl_runInput[]
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
+  export type DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput = {
+    create?: XOR<DiagnosticsPackageCreateWithoutCrawl_runInput, DiagnosticsPackageUncheckedCreateWithoutCrawl_runInput>
+    connectOrCreate?: DiagnosticsPackageCreateOrConnectWithoutCrawl_runInput
+    upsert?: DiagnosticsPackageUpsertWithoutCrawl_runInput
+    disconnect?: DiagnosticsPackageWhereInput | boolean
+    delete?: DiagnosticsPackageWhereInput | boolean
+    connect?: DiagnosticsPackageWhereUniqueInput
+    update?: XOR<XOR<DiagnosticsPackageUpdateToOneWithWhereWithoutCrawl_runInput, DiagnosticsPackageUpdateWithoutCrawl_runInput>, DiagnosticsPackageUncheckedUpdateWithoutCrawl_runInput>
+  }
+
+  export type CrawlRunCreateNestedOneWithoutDiagnostics_packageInput = {
+    create?: XOR<CrawlRunCreateWithoutDiagnostics_packageInput, CrawlRunUncheckedCreateWithoutDiagnostics_packageInput>
+    connectOrCreate?: CrawlRunCreateOrConnectWithoutDiagnostics_packageInput
+    connect?: CrawlRunWhereUniqueInput
+  }
+
+  export type ScraperCreateNestedOneWithoutDiagnostics_packagesInput = {
+    create?: XOR<ScraperCreateWithoutDiagnostics_packagesInput, ScraperUncheckedCreateWithoutDiagnostics_packagesInput>
+    connectOrCreate?: ScraperCreateOrConnectWithoutDiagnostics_packagesInput
+    connect?: ScraperWhereUniqueInput
+  }
+
+  export type DiagnosticsArtifactCreateNestedManyWithoutDiagnostics_packageInput = {
+    create?: XOR<DiagnosticsArtifactCreateWithoutDiagnostics_packageInput, DiagnosticsArtifactUncheckedCreateWithoutDiagnostics_packageInput> | DiagnosticsArtifactCreateWithoutDiagnostics_packageInput[] | DiagnosticsArtifactUncheckedCreateWithoutDiagnostics_packageInput[]
+    connectOrCreate?: DiagnosticsArtifactCreateOrConnectWithoutDiagnostics_packageInput | DiagnosticsArtifactCreateOrConnectWithoutDiagnostics_packageInput[]
+    createMany?: DiagnosticsArtifactCreateManyDiagnostics_packageInputEnvelope
+    connect?: DiagnosticsArtifactWhereUniqueInput | DiagnosticsArtifactWhereUniqueInput[]
+  }
+
+  export type DiagnosticsArtifactUncheckedCreateNestedManyWithoutDiagnostics_packageInput = {
+    create?: XOR<DiagnosticsArtifactCreateWithoutDiagnostics_packageInput, DiagnosticsArtifactUncheckedCreateWithoutDiagnostics_packageInput> | DiagnosticsArtifactCreateWithoutDiagnostics_packageInput[] | DiagnosticsArtifactUncheckedCreateWithoutDiagnostics_packageInput[]
+    connectOrCreate?: DiagnosticsArtifactCreateOrConnectWithoutDiagnostics_packageInput | DiagnosticsArtifactCreateOrConnectWithoutDiagnostics_packageInput[]
+    createMany?: DiagnosticsArtifactCreateManyDiagnostics_packageInputEnvelope
+    connect?: DiagnosticsArtifactWhereUniqueInput | DiagnosticsArtifactWhereUniqueInput[]
+  }
+
+  export type CrawlRunUpdateOneRequiredWithoutDiagnostics_packageNestedInput = {
+    create?: XOR<CrawlRunCreateWithoutDiagnostics_packageInput, CrawlRunUncheckedCreateWithoutDiagnostics_packageInput>
+    connectOrCreate?: CrawlRunCreateOrConnectWithoutDiagnostics_packageInput
+    upsert?: CrawlRunUpsertWithoutDiagnostics_packageInput
+    connect?: CrawlRunWhereUniqueInput
+    update?: XOR<XOR<CrawlRunUpdateToOneWithWhereWithoutDiagnostics_packageInput, CrawlRunUpdateWithoutDiagnostics_packageInput>, CrawlRunUncheckedUpdateWithoutDiagnostics_packageInput>
+  }
+
+  export type ScraperUpdateOneRequiredWithoutDiagnostics_packagesNestedInput = {
+    create?: XOR<ScraperCreateWithoutDiagnostics_packagesInput, ScraperUncheckedCreateWithoutDiagnostics_packagesInput>
+    connectOrCreate?: ScraperCreateOrConnectWithoutDiagnostics_packagesInput
+    upsert?: ScraperUpsertWithoutDiagnostics_packagesInput
+    connect?: ScraperWhereUniqueInput
+    update?: XOR<XOR<ScraperUpdateToOneWithWhereWithoutDiagnostics_packagesInput, ScraperUpdateWithoutDiagnostics_packagesInput>, ScraperUncheckedUpdateWithoutDiagnostics_packagesInput>
+  }
+
+  export type DiagnosticsArtifactUpdateManyWithoutDiagnostics_packageNestedInput = {
+    create?: XOR<DiagnosticsArtifactCreateWithoutDiagnostics_packageInput, DiagnosticsArtifactUncheckedCreateWithoutDiagnostics_packageInput> | DiagnosticsArtifactCreateWithoutDiagnostics_packageInput[] | DiagnosticsArtifactUncheckedCreateWithoutDiagnostics_packageInput[]
+    connectOrCreate?: DiagnosticsArtifactCreateOrConnectWithoutDiagnostics_packageInput | DiagnosticsArtifactCreateOrConnectWithoutDiagnostics_packageInput[]
+    upsert?: DiagnosticsArtifactUpsertWithWhereUniqueWithoutDiagnostics_packageInput | DiagnosticsArtifactUpsertWithWhereUniqueWithoutDiagnostics_packageInput[]
+    createMany?: DiagnosticsArtifactCreateManyDiagnostics_packageInputEnvelope
+    set?: DiagnosticsArtifactWhereUniqueInput | DiagnosticsArtifactWhereUniqueInput[]
+    disconnect?: DiagnosticsArtifactWhereUniqueInput | DiagnosticsArtifactWhereUniqueInput[]
+    delete?: DiagnosticsArtifactWhereUniqueInput | DiagnosticsArtifactWhereUniqueInput[]
+    connect?: DiagnosticsArtifactWhereUniqueInput | DiagnosticsArtifactWhereUniqueInput[]
+    update?: DiagnosticsArtifactUpdateWithWhereUniqueWithoutDiagnostics_packageInput | DiagnosticsArtifactUpdateWithWhereUniqueWithoutDiagnostics_packageInput[]
+    updateMany?: DiagnosticsArtifactUpdateManyWithWhereWithoutDiagnostics_packageInput | DiagnosticsArtifactUpdateManyWithWhereWithoutDiagnostics_packageInput[]
+    deleteMany?: DiagnosticsArtifactScalarWhereInput | DiagnosticsArtifactScalarWhereInput[]
+  }
+
+  export type DiagnosticsArtifactUncheckedUpdateManyWithoutDiagnostics_packageNestedInput = {
+    create?: XOR<DiagnosticsArtifactCreateWithoutDiagnostics_packageInput, DiagnosticsArtifactUncheckedCreateWithoutDiagnostics_packageInput> | DiagnosticsArtifactCreateWithoutDiagnostics_packageInput[] | DiagnosticsArtifactUncheckedCreateWithoutDiagnostics_packageInput[]
+    connectOrCreate?: DiagnosticsArtifactCreateOrConnectWithoutDiagnostics_packageInput | DiagnosticsArtifactCreateOrConnectWithoutDiagnostics_packageInput[]
+    upsert?: DiagnosticsArtifactUpsertWithWhereUniqueWithoutDiagnostics_packageInput | DiagnosticsArtifactUpsertWithWhereUniqueWithoutDiagnostics_packageInput[]
+    createMany?: DiagnosticsArtifactCreateManyDiagnostics_packageInputEnvelope
+    set?: DiagnosticsArtifactWhereUniqueInput | DiagnosticsArtifactWhereUniqueInput[]
+    disconnect?: DiagnosticsArtifactWhereUniqueInput | DiagnosticsArtifactWhereUniqueInput[]
+    delete?: DiagnosticsArtifactWhereUniqueInput | DiagnosticsArtifactWhereUniqueInput[]
+    connect?: DiagnosticsArtifactWhereUniqueInput | DiagnosticsArtifactWhereUniqueInput[]
+    update?: DiagnosticsArtifactUpdateWithWhereUniqueWithoutDiagnostics_packageInput | DiagnosticsArtifactUpdateWithWhereUniqueWithoutDiagnostics_packageInput[]
+    updateMany?: DiagnosticsArtifactUpdateManyWithWhereWithoutDiagnostics_packageInput | DiagnosticsArtifactUpdateManyWithWhereWithoutDiagnostics_packageInput[]
+    deleteMany?: DiagnosticsArtifactScalarWhereInput | DiagnosticsArtifactScalarWhereInput[]
+  }
+
+  export type DiagnosticsPackageCreateNestedOneWithoutArtifactsInput = {
+    create?: XOR<DiagnosticsPackageCreateWithoutArtifactsInput, DiagnosticsPackageUncheckedCreateWithoutArtifactsInput>
+    connectOrCreate?: DiagnosticsPackageCreateOrConnectWithoutArtifactsInput
+    connect?: DiagnosticsPackageWhereUniqueInput
+  }
+
+  export type EnumDiagnosticsArtifactKindFieldUpdateOperationsInput = {
+    set?: $Enums.DiagnosticsArtifactKind
+  }
+
+  export type DiagnosticsPackageUpdateOneRequiredWithoutArtifactsNestedInput = {
+    create?: XOR<DiagnosticsPackageCreateWithoutArtifactsInput, DiagnosticsPackageUncheckedCreateWithoutArtifactsInput>
+    connectOrCreate?: DiagnosticsPackageCreateOrConnectWithoutArtifactsInput
+    upsert?: DiagnosticsPackageUpsertWithoutArtifactsInput
+    connect?: DiagnosticsPackageWhereUniqueInput
+    update?: XOR<XOR<DiagnosticsPackageUpdateToOneWithWhereWithoutArtifactsInput, DiagnosticsPackageUpdateWithoutArtifactsInput>, DiagnosticsPackageUncheckedUpdateWithoutArtifactsInput>
   }
 
   export type CrawlRunCreateNestedOneWithoutJob_logsInput = {
@@ -39697,13 +43134,6 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
-  export type NestedEnumAiProviderFilter<$PrismaModel = never> = {
-    equals?: $Enums.AiProvider | EnumAiProviderFieldRefInput<$PrismaModel>
-    in?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
-    not?: NestedEnumAiProviderFilter<$PrismaModel> | $Enums.AiProvider
-  }
-
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -39731,21 +43161,18 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
-  export type NestedEnumAiProviderWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.AiProvider | EnumAiProviderFieldRefInput<$PrismaModel>
-    in?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
-    notIn?: $Enums.AiProvider[] | ListEnumAiProviderFieldRefInput<$PrismaModel>
-    not?: NestedEnumAiProviderWithAggregatesFilter<$PrismaModel> | $Enums.AiProvider
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumAiProviderFilter<$PrismaModel>
-    _max?: NestedEnumAiProviderFilter<$PrismaModel>
-  }
-
   export type NestedEnumScraperStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.ScraperStatus | EnumScraperStatusFieldRefInput<$PrismaModel>
     in?: $Enums.ScraperStatus[] | ListEnumScraperStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.ScraperStatus[] | ListEnumScraperStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumScraperStatusFilter<$PrismaModel> | $Enums.ScraperStatus
+  }
+
+  export type NestedEnumDiagnosticsModeFilter<$PrismaModel = never> = {
+    equals?: $Enums.DiagnosticsMode | EnumDiagnosticsModeFieldRefInput<$PrismaModel>
+    in?: $Enums.DiagnosticsMode[] | ListEnumDiagnosticsModeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DiagnosticsMode[] | ListEnumDiagnosticsModeFieldRefInput<$PrismaModel>
+    not?: NestedEnumDiagnosticsModeFilter<$PrismaModel> | $Enums.DiagnosticsMode
   }
 
   export type NestedEnumScraperHealthFilter<$PrismaModel = never> = {
@@ -39774,6 +43201,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumScraperStatusFilter<$PrismaModel>
     _max?: NestedEnumScraperStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumDiagnosticsModeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DiagnosticsMode | EnumDiagnosticsModeFieldRefInput<$PrismaModel>
+    in?: $Enums.DiagnosticsMode[] | ListEnumDiagnosticsModeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DiagnosticsMode[] | ListEnumDiagnosticsModeFieldRefInput<$PrismaModel>
+    not?: NestedEnumDiagnosticsModeWithAggregatesFilter<$PrismaModel> | $Enums.DiagnosticsMode
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDiagnosticsModeFilter<$PrismaModel>
+    _max?: NestedEnumDiagnosticsModeFilter<$PrismaModel>
   }
 
   export type NestedEnumScraperHealthWithAggregatesFilter<$PrismaModel = never> = {
@@ -39935,6 +43372,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumCrawlRunStatusFilter<$PrismaModel>
     _max?: NestedEnumCrawlRunStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumDiagnosticsArtifactKindFilter<$PrismaModel = never> = {
+    equals?: $Enums.DiagnosticsArtifactKind | EnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel>
+    in?: $Enums.DiagnosticsArtifactKind[] | ListEnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DiagnosticsArtifactKind[] | ListEnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumDiagnosticsArtifactKindFilter<$PrismaModel> | $Enums.DiagnosticsArtifactKind
+  }
+
+  export type NestedEnumDiagnosticsArtifactKindWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DiagnosticsArtifactKind | EnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel>
+    in?: $Enums.DiagnosticsArtifactKind[] | ListEnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DiagnosticsArtifactKind[] | ListEnumDiagnosticsArtifactKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumDiagnosticsArtifactKindWithAggregatesFilter<$PrismaModel> | $Enums.DiagnosticsArtifactKind
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDiagnosticsArtifactKindFilter<$PrismaModel>
+    _max?: NestedEnumDiagnosticsArtifactKindFilter<$PrismaModel>
   }
 
   export type NestedEnumJobStatusFilter<$PrismaModel = never> = {
@@ -40117,8 +43571,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: $Enums.AiProvider
-    ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
@@ -40137,8 +43589,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: $Enums.AiProvider
-    ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -40308,8 +43758,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     use_ai_batching?: BoolFilter<"UserTrackedAgency"> | boolean
-    ai_provider?: EnumAiProviderFilter<"UserTrackedAgency"> | $Enums.AiProvider
-    ai_model?: StringNullableFilter<"UserTrackedAgency"> | string | null
     created_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
   }
@@ -40718,6 +44166,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -40733,6 +44182,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperUncheckedCreateWithoutSource_agencyInput = {
@@ -40742,6 +44192,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -40756,6 +44207,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperCreateOrConnectWithoutSource_agencyInput = {
@@ -40778,8 +44230,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: $Enums.AiProvider
-    ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -40798,8 +44248,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: $Enums.AiProvider
-    ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -40888,6 +44336,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutSource_agencyInput = {
@@ -40918,6 +44367,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutSource_agencyInput = {
@@ -41041,6 +44491,7 @@ export namespace Prisma {
     version_count?: IntFilter<"Scraper"> | number
     status?: EnumScraperStatusFilter<"Scraper"> | $Enums.ScraperStatus
     self_healing_enabled?: BoolFilter<"Scraper"> | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFilter<"Scraper"> | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFilter<"Scraper"> | $Enums.ScraperHealth
     success_rate?: DecimalNullableFilter<"Scraper"> | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: IntNullableFilter<"Scraper"> | number | null
@@ -41327,6 +44778,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput = {
@@ -41357,6 +44809,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput = {
@@ -41529,8 +44982,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: $Enums.AiProvider
-    ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -41550,8 +45001,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: $Enums.AiProvider
-    ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -41622,8 +45071,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -41643,8 +45090,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -41801,6 +45246,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutScraperInput = {
@@ -41831,6 +45277,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutScraperInput = {
@@ -41982,6 +45429,54 @@ export namespace Prisma {
 
   export type NotificationCreateManyScraperInputEnvelope = {
     data: NotificationCreateManyScraperInput | NotificationCreateManyScraperInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DiagnosticsPackageCreateWithoutScraperInput = {
+    id?: string
+    mode: $Enums.DiagnosticsMode
+    url: string
+    worker_id?: string | null
+    browser_version?: string | null
+    playwright_version?: string | null
+    scraper_version?: number | null
+    retry_number?: number | null
+    started_at: Date | string
+    finished_at: Date | string
+    duration_ms: number
+    failure_reason?: string | null
+    exception?: string | null
+    created_at?: Date | string
+    crawl_run: CrawlRunCreateNestedOneWithoutDiagnostics_packageInput
+    artifacts?: DiagnosticsArtifactCreateNestedManyWithoutDiagnostics_packageInput
+  }
+
+  export type DiagnosticsPackageUncheckedCreateWithoutScraperInput = {
+    id?: string
+    crawl_run_id: string
+    mode: $Enums.DiagnosticsMode
+    url: string
+    worker_id?: string | null
+    browser_version?: string | null
+    playwright_version?: string | null
+    scraper_version?: number | null
+    retry_number?: number | null
+    started_at: Date | string
+    finished_at: Date | string
+    duration_ms: number
+    failure_reason?: string | null
+    exception?: string | null
+    created_at?: Date | string
+    artifacts?: DiagnosticsArtifactUncheckedCreateNestedManyWithoutDiagnostics_packageInput
+  }
+
+  export type DiagnosticsPackageCreateOrConnectWithoutScraperInput = {
+    where: DiagnosticsPackageWhereUniqueInput
+    create: XOR<DiagnosticsPackageCreateWithoutScraperInput, DiagnosticsPackageUncheckedCreateWithoutScraperInput>
+  }
+
+  export type DiagnosticsPackageCreateManyScraperInputEnvelope = {
+    data: DiagnosticsPackageCreateManyScraperInput | DiagnosticsPackageCreateManyScraperInput[]
     skipDuplicates?: boolean
   }
 
@@ -42183,6 +45678,44 @@ export namespace Prisma {
     data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyWithoutScraperInput>
   }
 
+  export type DiagnosticsPackageUpsertWithWhereUniqueWithoutScraperInput = {
+    where: DiagnosticsPackageWhereUniqueInput
+    update: XOR<DiagnosticsPackageUpdateWithoutScraperInput, DiagnosticsPackageUncheckedUpdateWithoutScraperInput>
+    create: XOR<DiagnosticsPackageCreateWithoutScraperInput, DiagnosticsPackageUncheckedCreateWithoutScraperInput>
+  }
+
+  export type DiagnosticsPackageUpdateWithWhereUniqueWithoutScraperInput = {
+    where: DiagnosticsPackageWhereUniqueInput
+    data: XOR<DiagnosticsPackageUpdateWithoutScraperInput, DiagnosticsPackageUncheckedUpdateWithoutScraperInput>
+  }
+
+  export type DiagnosticsPackageUpdateManyWithWhereWithoutScraperInput = {
+    where: DiagnosticsPackageScalarWhereInput
+    data: XOR<DiagnosticsPackageUpdateManyMutationInput, DiagnosticsPackageUncheckedUpdateManyWithoutScraperInput>
+  }
+
+  export type DiagnosticsPackageScalarWhereInput = {
+    AND?: DiagnosticsPackageScalarWhereInput | DiagnosticsPackageScalarWhereInput[]
+    OR?: DiagnosticsPackageScalarWhereInput[]
+    NOT?: DiagnosticsPackageScalarWhereInput | DiagnosticsPackageScalarWhereInput[]
+    id?: StringFilter<"DiagnosticsPackage"> | string
+    crawl_run_id?: StringFilter<"DiagnosticsPackage"> | string
+    scraper_id?: StringFilter<"DiagnosticsPackage"> | string
+    mode?: EnumDiagnosticsModeFilter<"DiagnosticsPackage"> | $Enums.DiagnosticsMode
+    url?: StringFilter<"DiagnosticsPackage"> | string
+    worker_id?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    browser_version?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    playwright_version?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    scraper_version?: IntNullableFilter<"DiagnosticsPackage"> | number | null
+    retry_number?: IntNullableFilter<"DiagnosticsPackage"> | number | null
+    started_at?: DateTimeFilter<"DiagnosticsPackage"> | Date | string
+    finished_at?: DateTimeFilter<"DiagnosticsPackage"> | Date | string
+    duration_ms?: IntFilter<"DiagnosticsPackage"> | number
+    failure_reason?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    exception?: StringNullableFilter<"DiagnosticsPackage"> | string | null
+    created_at?: DateTimeFilter<"DiagnosticsPackage"> | Date | string
+  }
+
   export type SourceAgencyCreateWithoutScraper_generation_runsInput = {
     id?: string
     name: string
@@ -42238,6 +45771,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -42253,6 +45787,7 @@ export namespace Prisma {
     versions?: ScraperVersionCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperUncheckedCreateWithoutScraper_generation_runsInput = {
@@ -42263,6 +45798,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -42276,6 +45812,7 @@ export namespace Prisma {
     versions?: ScraperVersionUncheckedCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperCreateOrConnectWithoutScraper_generation_runsInput = {
@@ -42416,6 +45953,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -42431,6 +45969,7 @@ export namespace Prisma {
     versions?: ScraperVersionUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
 
   export type ScraperUncheckedUpdateWithoutScraper_generation_runsInput = {
@@ -42441,6 +45980,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -42454,6 +45994,7 @@ export namespace Prisma {
     versions?: ScraperVersionUncheckedUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
 
   export type ScraperVersionUpsertWithoutProduced_by_runInput = {
@@ -42748,6 +46289,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -42763,6 +46305,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperUncheckedCreateWithoutVersionsInput = {
@@ -42773,6 +46316,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -42786,6 +46330,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperCreateOrConnectWithoutVersionsInput = {
@@ -42799,6 +46344,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -42814,6 +46360,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperUncheckedCreateWithoutActive_versionInput = {
@@ -42823,6 +46370,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -42837,6 +46385,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperCreateOrConnectWithoutActive_versionInput = {
@@ -42900,6 +46449,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -42915,6 +46465,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
 
   export type ScraperUncheckedUpdateWithoutVersionsInput = {
@@ -42925,6 +46476,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -42938,6 +46490,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
 
   export type ScraperUpsertWithoutActive_versionInput = {
@@ -42957,6 +46510,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -42972,6 +46526,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
 
   export type ScraperUncheckedUpdateWithoutActive_versionInput = {
@@ -42981,6 +46536,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -42995,6 +46551,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
 
   export type ScraperGenerationRunUpsertWithoutProduced_versionInput = {
@@ -43048,6 +46605,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -43063,6 +46621,7 @@ export namespace Prisma {
     versions?: ScraperVersionCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperUncheckedCreateWithoutExecution_tracesInput = {
@@ -43073,6 +46632,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -43086,6 +46646,7 @@ export namespace Prisma {
     versions?: ScraperVersionUncheckedCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperCreateOrConnectWithoutExecution_tracesInput = {
@@ -43121,6 +46682,7 @@ export namespace Prisma {
     job_logs?: JobLogCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutExecution_tracesInput = {
@@ -43151,6 +46713,7 @@ export namespace Prisma {
     job_logs?: JobLogUncheckedCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutExecution_tracesInput = {
@@ -43175,6 +46738,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -43190,6 +46754,7 @@ export namespace Prisma {
     versions?: ScraperVersionUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
 
   export type ScraperUncheckedUpdateWithoutExecution_tracesInput = {
@@ -43200,6 +46765,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -43213,6 +46779,7 @@ export namespace Prisma {
     versions?: ScraperVersionUncheckedUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
 
   export type CrawlRunUpsertWithoutExecution_tracesInput = {
@@ -43254,6 +46821,7 @@ export namespace Prisma {
     job_logs?: JobLogUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutExecution_tracesInput = {
@@ -43284,6 +46852,7 @@ export namespace Prisma {
     job_logs?: JobLogUncheckedUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type SourceAgencyCreateWithoutCrawl_runsInput = {
@@ -43345,8 +46914,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: $Enums.AiProvider
-    ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -43366,8 +46933,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: $Enums.AiProvider
-    ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
@@ -43384,6 +46949,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -43399,6 +46965,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperUncheckedCreateWithoutCrawl_runsInput = {
@@ -43409,6 +46976,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -43422,6 +46990,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperCreateOrConnectWithoutCrawl_runsInput = {
@@ -43571,6 +47140,49 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type DiagnosticsPackageCreateWithoutCrawl_runInput = {
+    id?: string
+    mode: $Enums.DiagnosticsMode
+    url: string
+    worker_id?: string | null
+    browser_version?: string | null
+    playwright_version?: string | null
+    scraper_version?: number | null
+    retry_number?: number | null
+    started_at: Date | string
+    finished_at: Date | string
+    duration_ms: number
+    failure_reason?: string | null
+    exception?: string | null
+    created_at?: Date | string
+    scraper: ScraperCreateNestedOneWithoutDiagnostics_packagesInput
+    artifacts?: DiagnosticsArtifactCreateNestedManyWithoutDiagnostics_packageInput
+  }
+
+  export type DiagnosticsPackageUncheckedCreateWithoutCrawl_runInput = {
+    id?: string
+    scraper_id: string
+    mode: $Enums.DiagnosticsMode
+    url: string
+    worker_id?: string | null
+    browser_version?: string | null
+    playwright_version?: string | null
+    scraper_version?: number | null
+    retry_number?: number | null
+    started_at: Date | string
+    finished_at: Date | string
+    duration_ms: number
+    failure_reason?: string | null
+    exception?: string | null
+    created_at?: Date | string
+    artifacts?: DiagnosticsArtifactUncheckedCreateNestedManyWithoutDiagnostics_packageInput
+  }
+
+  export type DiagnosticsPackageCreateOrConnectWithoutCrawl_runInput = {
+    where: DiagnosticsPackageWhereUniqueInput
+    create: XOR<DiagnosticsPackageCreateWithoutCrawl_runInput, DiagnosticsPackageUncheckedCreateWithoutCrawl_runInput>
+  }
+
   export type SourceAgencyUpsertWithoutCrawl_runsInput = {
     update: XOR<SourceAgencyUpdateWithoutCrawl_runsInput, SourceAgencyUncheckedUpdateWithoutCrawl_runsInput>
     create: XOR<SourceAgencyCreateWithoutCrawl_runsInput, SourceAgencyUncheckedCreateWithoutCrawl_runsInput>
@@ -43647,8 +47259,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -43668,8 +47278,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
@@ -43692,6 +47300,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -43707,6 +47316,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
 
   export type ScraperUncheckedUpdateWithoutCrawl_runsInput = {
@@ -43717,6 +47327,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -43730,6 +47341,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
 
   export type JobLogUpsertWithWhereUniqueWithoutCrawl_runInput = {
@@ -43833,6 +47445,460 @@ export namespace Prisma {
     data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyWithoutCrawl_runInput>
   }
 
+  export type DiagnosticsPackageUpsertWithoutCrawl_runInput = {
+    update: XOR<DiagnosticsPackageUpdateWithoutCrawl_runInput, DiagnosticsPackageUncheckedUpdateWithoutCrawl_runInput>
+    create: XOR<DiagnosticsPackageCreateWithoutCrawl_runInput, DiagnosticsPackageUncheckedCreateWithoutCrawl_runInput>
+    where?: DiagnosticsPackageWhereInput
+  }
+
+  export type DiagnosticsPackageUpdateToOneWithWhereWithoutCrawl_runInput = {
+    where?: DiagnosticsPackageWhereInput
+    data: XOR<DiagnosticsPackageUpdateWithoutCrawl_runInput, DiagnosticsPackageUncheckedUpdateWithoutCrawl_runInput>
+  }
+
+  export type DiagnosticsPackageUpdateWithoutCrawl_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
+    url?: StringFieldUpdateOperationsInput | string
+    worker_id?: NullableStringFieldUpdateOperationsInput | string | null
+    browser_version?: NullableStringFieldUpdateOperationsInput | string | null
+    playwright_version?: NullableStringFieldUpdateOperationsInput | string | null
+    scraper_version?: NullableIntFieldUpdateOperationsInput | number | null
+    retry_number?: NullableIntFieldUpdateOperationsInput | number | null
+    started_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    finished_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration_ms?: IntFieldUpdateOperationsInput | number
+    failure_reason?: NullableStringFieldUpdateOperationsInput | string | null
+    exception?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scraper?: ScraperUpdateOneRequiredWithoutDiagnostics_packagesNestedInput
+    artifacts?: DiagnosticsArtifactUpdateManyWithoutDiagnostics_packageNestedInput
+  }
+
+  export type DiagnosticsPackageUncheckedUpdateWithoutCrawl_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    scraper_id?: StringFieldUpdateOperationsInput | string
+    mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
+    url?: StringFieldUpdateOperationsInput | string
+    worker_id?: NullableStringFieldUpdateOperationsInput | string | null
+    browser_version?: NullableStringFieldUpdateOperationsInput | string | null
+    playwright_version?: NullableStringFieldUpdateOperationsInput | string | null
+    scraper_version?: NullableIntFieldUpdateOperationsInput | number | null
+    retry_number?: NullableIntFieldUpdateOperationsInput | number | null
+    started_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    finished_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration_ms?: IntFieldUpdateOperationsInput | number
+    failure_reason?: NullableStringFieldUpdateOperationsInput | string | null
+    exception?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    artifacts?: DiagnosticsArtifactUncheckedUpdateManyWithoutDiagnostics_packageNestedInput
+  }
+
+  export type CrawlRunCreateWithoutDiagnostics_packageInput = {
+    id?: string
+    status?: $Enums.CrawlRunStatus
+    started_at?: Date | string | null
+    finished_at?: Date | string | null
+    duration_ms?: number | null
+    total_found?: number
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_failed?: number
+    error_message?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: string | null
+    ai_input_tokens?: number | null
+    ai_output_tokens?: number | null
+    ai_input_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: Decimal | DecimalJsLike | number | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    source_agency: SourceAgencyCreateNestedOneWithoutCrawl_runsInput
+    user_tracked_agency?: UserTrackedAgencyCreateNestedOneWithoutCrawl_runsInput
+    scraper?: ScraperCreateNestedOneWithoutCrawl_runsInput
+    job_logs?: JobLogCreateNestedManyWithoutCrawl_runInput
+    execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
+    property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
+    notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
+  }
+
+  export type CrawlRunUncheckedCreateWithoutDiagnostics_packageInput = {
+    id?: string
+    source_agency_id: string
+    scraper_id?: string | null
+    user_tracked_agency_id?: string | null
+    status?: $Enums.CrawlRunStatus
+    started_at?: Date | string | null
+    finished_at?: Date | string | null
+    duration_ms?: number | null
+    total_found?: number
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_failed?: number
+    error_message?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: string | null
+    ai_input_tokens?: number | null
+    ai_output_tokens?: number | null
+    ai_input_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: Decimal | DecimalJsLike | number | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    job_logs?: JobLogUncheckedCreateNestedManyWithoutCrawl_runInput
+    execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
+    property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
+  }
+
+  export type CrawlRunCreateOrConnectWithoutDiagnostics_packageInput = {
+    where: CrawlRunWhereUniqueInput
+    create: XOR<CrawlRunCreateWithoutDiagnostics_packageInput, CrawlRunUncheckedCreateWithoutDiagnostics_packageInput>
+  }
+
+  export type ScraperCreateWithoutDiagnostics_packagesInput = {
+    id?: string
+    name: string
+    version_count?: number
+    status?: $Enums.ScraperStatus
+    self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
+    health?: $Enums.ScraperHealth
+    success_rate?: Decimal | DecimalJsLike | number | string | null
+    avg_runtime_ms?: number | null
+    consecutive_failures?: number
+    normalize_limit?: number | null
+    last_success_at?: Date | string | null
+    last_failure_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    source_agency: SourceAgencyCreateNestedOneWithoutScrapersInput
+    active_version?: ScraperVersionCreateNestedOneWithoutActive_for_scraperInput
+    crawl_runs?: CrawlRunCreateNestedManyWithoutScraperInput
+    versions?: ScraperVersionCreateNestedManyWithoutScraperInput
+    execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
+    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
+    notifications?: NotificationCreateNestedManyWithoutScraperInput
+  }
+
+  export type ScraperUncheckedCreateWithoutDiagnostics_packagesInput = {
+    id?: string
+    source_agency_id: string
+    name: string
+    active_version_id?: string | null
+    version_count?: number
+    status?: $Enums.ScraperStatus
+    self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
+    health?: $Enums.ScraperHealth
+    success_rate?: Decimal | DecimalJsLike | number | string | null
+    avg_runtime_ms?: number | null
+    consecutive_failures?: number
+    normalize_limit?: number | null
+    last_success_at?: Date | string | null
+    last_failure_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutScraperInput
+    versions?: ScraperVersionUncheckedCreateNestedManyWithoutScraperInput
+    execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
+    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
+  }
+
+  export type ScraperCreateOrConnectWithoutDiagnostics_packagesInput = {
+    where: ScraperWhereUniqueInput
+    create: XOR<ScraperCreateWithoutDiagnostics_packagesInput, ScraperUncheckedCreateWithoutDiagnostics_packagesInput>
+  }
+
+  export type DiagnosticsArtifactCreateWithoutDiagnostics_packageInput = {
+    id?: string
+    kind: $Enums.DiagnosticsArtifactKind
+    path: string
+    content_type: string
+    size_bytes: number
+    created_at?: Date | string
+  }
+
+  export type DiagnosticsArtifactUncheckedCreateWithoutDiagnostics_packageInput = {
+    id?: string
+    kind: $Enums.DiagnosticsArtifactKind
+    path: string
+    content_type: string
+    size_bytes: number
+    created_at?: Date | string
+  }
+
+  export type DiagnosticsArtifactCreateOrConnectWithoutDiagnostics_packageInput = {
+    where: DiagnosticsArtifactWhereUniqueInput
+    create: XOR<DiagnosticsArtifactCreateWithoutDiagnostics_packageInput, DiagnosticsArtifactUncheckedCreateWithoutDiagnostics_packageInput>
+  }
+
+  export type DiagnosticsArtifactCreateManyDiagnostics_packageInputEnvelope = {
+    data: DiagnosticsArtifactCreateManyDiagnostics_packageInput | DiagnosticsArtifactCreateManyDiagnostics_packageInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CrawlRunUpsertWithoutDiagnostics_packageInput = {
+    update: XOR<CrawlRunUpdateWithoutDiagnostics_packageInput, CrawlRunUncheckedUpdateWithoutDiagnostics_packageInput>
+    create: XOR<CrawlRunCreateWithoutDiagnostics_packageInput, CrawlRunUncheckedCreateWithoutDiagnostics_packageInput>
+    where?: CrawlRunWhereInput
+  }
+
+  export type CrawlRunUpdateToOneWithWhereWithoutDiagnostics_packageInput = {
+    where?: CrawlRunWhereInput
+    data: XOR<CrawlRunUpdateWithoutDiagnostics_packageInput, CrawlRunUncheckedUpdateWithoutDiagnostics_packageInput>
+  }
+
+  export type CrawlRunUpdateWithoutDiagnostics_packageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
+    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    total_found?: IntFieldUpdateOperationsInput | number
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_input_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_output_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    source_agency?: SourceAgencyUpdateOneRequiredWithoutCrawl_runsNestedInput
+    user_tracked_agency?: UserTrackedAgencyUpdateOneWithoutCrawl_runsNestedInput
+    scraper?: ScraperUpdateOneWithoutCrawl_runsNestedInput
+    job_logs?: JobLogUpdateManyWithoutCrawl_runNestedInput
+    execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
+    property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
+    notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
+  }
+
+  export type CrawlRunUncheckedUpdateWithoutDiagnostics_packageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: StringFieldUpdateOperationsInput | string
+    scraper_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
+    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    total_found?: IntFieldUpdateOperationsInput | number
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_input_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_output_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    job_logs?: JobLogUncheckedUpdateManyWithoutCrawl_runNestedInput
+    execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
+    property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
+  }
+
+  export type ScraperUpsertWithoutDiagnostics_packagesInput = {
+    update: XOR<ScraperUpdateWithoutDiagnostics_packagesInput, ScraperUncheckedUpdateWithoutDiagnostics_packagesInput>
+    create: XOR<ScraperCreateWithoutDiagnostics_packagesInput, ScraperUncheckedCreateWithoutDiagnostics_packagesInput>
+    where?: ScraperWhereInput
+  }
+
+  export type ScraperUpdateToOneWithWhereWithoutDiagnostics_packagesInput = {
+    where?: ScraperWhereInput
+    data: XOR<ScraperUpdateWithoutDiagnostics_packagesInput, ScraperUncheckedUpdateWithoutDiagnostics_packagesInput>
+  }
+
+  export type ScraperUpdateWithoutDiagnostics_packagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    version_count?: IntFieldUpdateOperationsInput | number
+    status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
+    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
+    health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
+    success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
+    last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    source_agency?: SourceAgencyUpdateOneRequiredWithoutScrapersNestedInput
+    active_version?: ScraperVersionUpdateOneWithoutActive_for_scraperNestedInput
+    crawl_runs?: CrawlRunUpdateManyWithoutScraperNestedInput
+    versions?: ScraperVersionUpdateManyWithoutScraperNestedInput
+    execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
+    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
+    notifications?: NotificationUpdateManyWithoutScraperNestedInput
+  }
+
+  export type ScraperUncheckedUpdateWithoutDiagnostics_packagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    active_version_id?: NullableStringFieldUpdateOperationsInput | string | null
+    version_count?: IntFieldUpdateOperationsInput | number
+    status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
+    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
+    health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
+    success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    consecutive_failures?: IntFieldUpdateOperationsInput | number
+    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
+    last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    crawl_runs?: CrawlRunUncheckedUpdateManyWithoutScraperNestedInput
+    versions?: ScraperVersionUncheckedUpdateManyWithoutScraperNestedInput
+    execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
+    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
+  }
+
+  export type DiagnosticsArtifactUpsertWithWhereUniqueWithoutDiagnostics_packageInput = {
+    where: DiagnosticsArtifactWhereUniqueInput
+    update: XOR<DiagnosticsArtifactUpdateWithoutDiagnostics_packageInput, DiagnosticsArtifactUncheckedUpdateWithoutDiagnostics_packageInput>
+    create: XOR<DiagnosticsArtifactCreateWithoutDiagnostics_packageInput, DiagnosticsArtifactUncheckedCreateWithoutDiagnostics_packageInput>
+  }
+
+  export type DiagnosticsArtifactUpdateWithWhereUniqueWithoutDiagnostics_packageInput = {
+    where: DiagnosticsArtifactWhereUniqueInput
+    data: XOR<DiagnosticsArtifactUpdateWithoutDiagnostics_packageInput, DiagnosticsArtifactUncheckedUpdateWithoutDiagnostics_packageInput>
+  }
+
+  export type DiagnosticsArtifactUpdateManyWithWhereWithoutDiagnostics_packageInput = {
+    where: DiagnosticsArtifactScalarWhereInput
+    data: XOR<DiagnosticsArtifactUpdateManyMutationInput, DiagnosticsArtifactUncheckedUpdateManyWithoutDiagnostics_packageInput>
+  }
+
+  export type DiagnosticsArtifactScalarWhereInput = {
+    AND?: DiagnosticsArtifactScalarWhereInput | DiagnosticsArtifactScalarWhereInput[]
+    OR?: DiagnosticsArtifactScalarWhereInput[]
+    NOT?: DiagnosticsArtifactScalarWhereInput | DiagnosticsArtifactScalarWhereInput[]
+    id?: StringFilter<"DiagnosticsArtifact"> | string
+    diagnostics_package_id?: StringFilter<"DiagnosticsArtifact"> | string
+    kind?: EnumDiagnosticsArtifactKindFilter<"DiagnosticsArtifact"> | $Enums.DiagnosticsArtifactKind
+    path?: StringFilter<"DiagnosticsArtifact"> | string
+    content_type?: StringFilter<"DiagnosticsArtifact"> | string
+    size_bytes?: IntFilter<"DiagnosticsArtifact"> | number
+    created_at?: DateTimeFilter<"DiagnosticsArtifact"> | Date | string
+  }
+
+  export type DiagnosticsPackageCreateWithoutArtifactsInput = {
+    id?: string
+    mode: $Enums.DiagnosticsMode
+    url: string
+    worker_id?: string | null
+    browser_version?: string | null
+    playwright_version?: string | null
+    scraper_version?: number | null
+    retry_number?: number | null
+    started_at: Date | string
+    finished_at: Date | string
+    duration_ms: number
+    failure_reason?: string | null
+    exception?: string | null
+    created_at?: Date | string
+    crawl_run: CrawlRunCreateNestedOneWithoutDiagnostics_packageInput
+    scraper: ScraperCreateNestedOneWithoutDiagnostics_packagesInput
+  }
+
+  export type DiagnosticsPackageUncheckedCreateWithoutArtifactsInput = {
+    id?: string
+    crawl_run_id: string
+    scraper_id: string
+    mode: $Enums.DiagnosticsMode
+    url: string
+    worker_id?: string | null
+    browser_version?: string | null
+    playwright_version?: string | null
+    scraper_version?: number | null
+    retry_number?: number | null
+    started_at: Date | string
+    finished_at: Date | string
+    duration_ms: number
+    failure_reason?: string | null
+    exception?: string | null
+    created_at?: Date | string
+  }
+
+  export type DiagnosticsPackageCreateOrConnectWithoutArtifactsInput = {
+    where: DiagnosticsPackageWhereUniqueInput
+    create: XOR<DiagnosticsPackageCreateWithoutArtifactsInput, DiagnosticsPackageUncheckedCreateWithoutArtifactsInput>
+  }
+
+  export type DiagnosticsPackageUpsertWithoutArtifactsInput = {
+    update: XOR<DiagnosticsPackageUpdateWithoutArtifactsInput, DiagnosticsPackageUncheckedUpdateWithoutArtifactsInput>
+    create: XOR<DiagnosticsPackageCreateWithoutArtifactsInput, DiagnosticsPackageUncheckedCreateWithoutArtifactsInput>
+    where?: DiagnosticsPackageWhereInput
+  }
+
+  export type DiagnosticsPackageUpdateToOneWithWhereWithoutArtifactsInput = {
+    where?: DiagnosticsPackageWhereInput
+    data: XOR<DiagnosticsPackageUpdateWithoutArtifactsInput, DiagnosticsPackageUncheckedUpdateWithoutArtifactsInput>
+  }
+
+  export type DiagnosticsPackageUpdateWithoutArtifactsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
+    url?: StringFieldUpdateOperationsInput | string
+    worker_id?: NullableStringFieldUpdateOperationsInput | string | null
+    browser_version?: NullableStringFieldUpdateOperationsInput | string | null
+    playwright_version?: NullableStringFieldUpdateOperationsInput | string | null
+    scraper_version?: NullableIntFieldUpdateOperationsInput | number | null
+    retry_number?: NullableIntFieldUpdateOperationsInput | number | null
+    started_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    finished_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration_ms?: IntFieldUpdateOperationsInput | number
+    failure_reason?: NullableStringFieldUpdateOperationsInput | string | null
+    exception?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    crawl_run?: CrawlRunUpdateOneRequiredWithoutDiagnostics_packageNestedInput
+    scraper?: ScraperUpdateOneRequiredWithoutDiagnostics_packagesNestedInput
+  }
+
+  export type DiagnosticsPackageUncheckedUpdateWithoutArtifactsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: StringFieldUpdateOperationsInput | string
+    scraper_id?: StringFieldUpdateOperationsInput | string
+    mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
+    url?: StringFieldUpdateOperationsInput | string
+    worker_id?: NullableStringFieldUpdateOperationsInput | string | null
+    browser_version?: NullableStringFieldUpdateOperationsInput | string | null
+    playwright_version?: NullableStringFieldUpdateOperationsInput | string | null
+    scraper_version?: NullableIntFieldUpdateOperationsInput | number | null
+    retry_number?: NullableIntFieldUpdateOperationsInput | number | null
+    started_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    finished_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration_ms?: IntFieldUpdateOperationsInput | number
+    failure_reason?: NullableStringFieldUpdateOperationsInput | string | null
+    exception?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CrawlRunCreateWithoutJob_logsInput = {
     id?: string
     status?: $Enums.CrawlRunStatus
@@ -43861,6 +47927,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutJob_logsInput = {
@@ -43891,6 +47958,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutJob_logsInput = {
@@ -43937,6 +48005,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutJob_logsInput = {
@@ -43967,6 +48036,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type SourceAgencyCreateWithoutNotificationsInput = {
@@ -44024,6 +48094,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -44039,6 +48110,7 @@ export namespace Prisma {
     versions?: ScraperVersionCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperUncheckedCreateWithoutNotificationsInput = {
@@ -44049,6 +48121,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -44062,6 +48135,7 @@ export namespace Prisma {
     versions?: ScraperVersionUncheckedCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
 
   export type ScraperCreateOrConnectWithoutNotificationsInput = {
@@ -44097,6 +48171,7 @@ export namespace Prisma {
     job_logs?: JobLogCreateNestedManyWithoutCrawl_runInput
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutNotificationsInput = {
@@ -44127,6 +48202,7 @@ export namespace Prisma {
     job_logs?: JobLogUncheckedCreateNestedManyWithoutCrawl_runInput
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutNotificationsInput = {
@@ -44206,6 +48282,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -44221,6 +48298,7 @@ export namespace Prisma {
     versions?: ScraperVersionUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
 
   export type ScraperUncheckedUpdateWithoutNotificationsInput = {
@@ -44231,6 +48309,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -44244,6 +48323,7 @@ export namespace Prisma {
     versions?: ScraperVersionUncheckedUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
 
   export type CrawlRunUpsertWithoutNotificationsInput = {
@@ -44285,6 +48365,7 @@ export namespace Prisma {
     job_logs?: JobLogUpdateManyWithoutCrawl_runNestedInput
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutNotificationsInput = {
@@ -44315,6 +48396,7 @@ export namespace Prisma {
     job_logs?: JobLogUncheckedUpdateManyWithoutCrawl_runNestedInput
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type UserIntegrationCreateWithoutSync_runsInput = {
@@ -45235,6 +49317,7 @@ export namespace Prisma {
     job_logs?: JobLogCreateNestedManyWithoutCrawl_runInput
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutProperty_historyInput = {
@@ -45265,6 +49348,7 @@ export namespace Prisma {
     job_logs?: JobLogUncheckedCreateNestedManyWithoutCrawl_runInput
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutProperty_historyInput = {
@@ -45386,6 +49470,7 @@ export namespace Prisma {
     job_logs?: JobLogUpdateManyWithoutCrawl_runNestedInput
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutProperty_historyInput = {
@@ -45416,6 +49501,7 @@ export namespace Prisma {
     job_logs?: JobLogUncheckedUpdateManyWithoutCrawl_runNestedInput
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type UserCreateWithoutSaved_propertiesInput = {
@@ -45791,8 +49877,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: $Enums.AiProvider
-    ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -45855,8 +49939,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
@@ -45875,8 +49957,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -45894,8 +49974,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46185,6 +50263,7 @@ export namespace Prisma {
     version_count?: number
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
+    diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: number | null
@@ -46207,8 +50286,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     use_ai_batching?: boolean
-    ai_provider?: $Enums.AiProvider
-    ai_model?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -46292,6 +50369,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -46307,6 +50385,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
 
   export type ScraperUncheckedUpdateWithoutSource_agencyInput = {
@@ -46316,6 +50395,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -46330,6 +50410,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
     scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
+    diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
 
   export type ScraperUncheckedUpdateManyWithoutSource_agencyInput = {
@@ -46339,6 +50420,7 @@ export namespace Prisma {
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
+    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
@@ -46360,8 +50442,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -46380,8 +50460,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -46399,8 +50477,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    ai_provider?: EnumAiProviderFieldUpdateOperationsInput | $Enums.AiProvider
-    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46483,6 +50559,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutSource_agencyInput = {
@@ -46513,6 +50590,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateManyWithoutSource_agencyInput = {
@@ -46690,6 +50768,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutUser_tracked_agencyInput = {
@@ -46720,6 +50799,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyInput = {
@@ -46822,6 +50902,24 @@ export namespace Prisma {
     created_at?: Date | string
   }
 
+  export type DiagnosticsPackageCreateManyScraperInput = {
+    id?: string
+    crawl_run_id: string
+    mode: $Enums.DiagnosticsMode
+    url: string
+    worker_id?: string | null
+    browser_version?: string | null
+    playwright_version?: string | null
+    scraper_version?: number | null
+    retry_number?: number | null
+    started_at: Date | string
+    finished_at: Date | string
+    duration_ms: number
+    failure_reason?: string | null
+    exception?: string | null
+    created_at?: Date | string
+  }
+
   export type CrawlRunUpdateWithoutScraperInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
@@ -46850,6 +50948,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutScraperInput = {
@@ -46880,6 +50979,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateManyWithoutScraperInput = {
@@ -47055,6 +51155,62 @@ export namespace Prisma {
     source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
     crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_read?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DiagnosticsPackageUpdateWithoutScraperInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
+    url?: StringFieldUpdateOperationsInput | string
+    worker_id?: NullableStringFieldUpdateOperationsInput | string | null
+    browser_version?: NullableStringFieldUpdateOperationsInput | string | null
+    playwright_version?: NullableStringFieldUpdateOperationsInput | string | null
+    scraper_version?: NullableIntFieldUpdateOperationsInput | number | null
+    retry_number?: NullableIntFieldUpdateOperationsInput | number | null
+    started_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    finished_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration_ms?: IntFieldUpdateOperationsInput | number
+    failure_reason?: NullableStringFieldUpdateOperationsInput | string | null
+    exception?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    crawl_run?: CrawlRunUpdateOneRequiredWithoutDiagnostics_packageNestedInput
+    artifacts?: DiagnosticsArtifactUpdateManyWithoutDiagnostics_packageNestedInput
+  }
+
+  export type DiagnosticsPackageUncheckedUpdateWithoutScraperInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: StringFieldUpdateOperationsInput | string
+    mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
+    url?: StringFieldUpdateOperationsInput | string
+    worker_id?: NullableStringFieldUpdateOperationsInput | string | null
+    browser_version?: NullableStringFieldUpdateOperationsInput | string | null
+    playwright_version?: NullableStringFieldUpdateOperationsInput | string | null
+    scraper_version?: NullableIntFieldUpdateOperationsInput | number | null
+    retry_number?: NullableIntFieldUpdateOperationsInput | number | null
+    started_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    finished_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration_ms?: IntFieldUpdateOperationsInput | number
+    failure_reason?: NullableStringFieldUpdateOperationsInput | string | null
+    exception?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    artifacts?: DiagnosticsArtifactUncheckedUpdateManyWithoutDiagnostics_packageNestedInput
+  }
+
+  export type DiagnosticsPackageUncheckedUpdateManyWithoutScraperInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: StringFieldUpdateOperationsInput | string
+    mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
+    url?: StringFieldUpdateOperationsInput | string
+    worker_id?: NullableStringFieldUpdateOperationsInput | string | null
+    browser_version?: NullableStringFieldUpdateOperationsInput | string | null
+    playwright_version?: NullableStringFieldUpdateOperationsInput | string | null
+    scraper_version?: NullableIntFieldUpdateOperationsInput | number | null
+    retry_number?: NullableIntFieldUpdateOperationsInput | number | null
+    started_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    finished_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    duration_ms?: IntFieldUpdateOperationsInput | number
+    failure_reason?: NullableStringFieldUpdateOperationsInput | string | null
+    exception?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -47303,6 +51459,42 @@ export namespace Prisma {
     source_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
     scraper_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_read?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DiagnosticsArtifactCreateManyDiagnostics_packageInput = {
+    id?: string
+    kind: $Enums.DiagnosticsArtifactKind
+    path: string
+    content_type: string
+    size_bytes: number
+    created_at?: Date | string
+  }
+
+  export type DiagnosticsArtifactUpdateWithoutDiagnostics_packageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumDiagnosticsArtifactKindFieldUpdateOperationsInput | $Enums.DiagnosticsArtifactKind
+    path?: StringFieldUpdateOperationsInput | string
+    content_type?: StringFieldUpdateOperationsInput | string
+    size_bytes?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DiagnosticsArtifactUncheckedUpdateWithoutDiagnostics_packageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumDiagnosticsArtifactKindFieldUpdateOperationsInput | $Enums.DiagnosticsArtifactKind
+    path?: StringFieldUpdateOperationsInput | string
+    content_type?: StringFieldUpdateOperationsInput | string
+    size_bytes?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DiagnosticsArtifactUncheckedUpdateManyWithoutDiagnostics_packageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumDiagnosticsArtifactKindFieldUpdateOperationsInput | $Enums.DiagnosticsArtifactKind
+    path?: StringFieldUpdateOperationsInput | string
+    content_type?: StringFieldUpdateOperationsInput | string
+    size_bytes?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

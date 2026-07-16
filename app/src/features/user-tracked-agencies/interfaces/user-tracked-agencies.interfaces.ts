@@ -1,17 +1,8 @@
-export const AiProviders = {
-  OPENAI: "OPENAI",
-  ANTHROPIC: "ANTHROPIC",
-  GEMINI: "GEMINI",
-} as const;
-export type AiProvider = (typeof AiProviders)[keyof typeof AiProviders];
-
 export interface TrackingPrefs {
   track_new_listings: boolean;
   track_removed_listings: boolean;
   track_updated_listings: boolean;
   use_ai_batching: boolean;
-  ai_provider: AiProvider;
-  ai_model: string | null;
   enabled: boolean;
   user_integration_id?: string | null;
   crawl_interval?: string;
@@ -38,8 +29,6 @@ export interface TrackAgencyPayload {
   track_removed_listings?: boolean;
   track_updated_listings?: boolean;
   use_ai_batching?: boolean;
-  ai_provider?: AiProvider;
-  ai_model?: string | null;
   enabled?: boolean;
 }
 
@@ -73,8 +62,6 @@ export interface UserTrackedAgency {
   track_removed_listings: boolean;
   track_updated_listings: boolean;
   use_ai_batching: boolean;
-  ai_provider: AiProvider;
-  ai_model: string | null;
 }
 
 export interface TrackedAgencyIntegrationLink {

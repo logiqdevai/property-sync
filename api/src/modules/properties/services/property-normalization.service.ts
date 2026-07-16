@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { AiService } from '@/integrations/ai/services/ai.service';
 import { AiProviders } from '@/integrations/ai/interfaces/ai.interface';
+import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import { calculateAiCost } from '@/integrations/ai/utils/ai-cost';
 import { AiBatchClientService } from '@/integrations/ai-batch/services/ai-batch-client.service';
 import { PropertyAiBatchService } from '@/integrations/ai-batch/services/property-ai-batch.service';
@@ -13,8 +14,6 @@ import {
   PROPERTY_REMOVAL_SPIKE_RATIO_THRESHOLD,
 } from '@/modules/notifications/constants/notification.constants';
 import {
-  DEFAULT_ANTHROPIC_NORMALIZATION_MODEL,
-  DEFAULT_OPENAI_NORMALIZATION_MODEL,
   NormalizationUsage,
   buildAnthropicCostReport,
 } from '../constants/normalization.constants';
@@ -33,7 +32,6 @@ import {
   matchExistingDuplicateGroup,
 } from '../utils/property-normalization.utils';
 import {
-  AiProvider,
   IntegrationType,
   NotificationSeverity,
   NotificationType,
@@ -85,17 +83,18 @@ export class PropertyNormalizationService {
     }
 
     const tracker = crawlRun.user_tracked_agency;
-    const integrationType = tracker.ai_provider as unknown as IntegrationType;
+    const aiProvider = AiDefaults.provider;
+    const model = AiDefaults.model;
 
     let resolvedKey: { userIntegrationId: string; apiKey: string };
     try {
       resolvedKey = await this.userIntegrationsService.resolveActiveApiKey(
         tracker.user_id,
-        integrationType,
+        aiProvider,
       );
     } catch {
       this.logger.warn(
-        `Crawl run ${crawlRunId}: no active ${tracker.ai_provider} key — skipping normalization`,
+        `Crawl run ${crawlRunId}: no active ${aiProvider} key — skipping normalization`,
       );
       return;
     }
@@ -107,12 +106,6 @@ export class PropertyNormalizationService {
       normalizeLimit,
     );
 
-    const model =
-      tracker.ai_model ??
-      (tracker.ai_provider === AiProvider.ANTHROPIC
-        ? DEFAULT_ANTHROPIC_NORMALIZATION_MODEL
-        : DEFAULT_OPENAI_NORMALIZATION_MODEL);
-
     await this.prisma.crawlRun.update({
       where: { id: crawlRunId },
       data: {
@@ -121,7 +114,7 @@ export class PropertyNormalizationService {
             ? crawlRun.metadata
             : {}),
           user_integration_id: resolvedKey.userIntegrationId,
-          ai_provider: tracker.ai_provider,
+          ai_provider: aiProvider,
           ai_model: model,
           ...(normalizeLimit !== null && { normalize_limit: normalizeLimit }),
         },
@@ -145,7 +138,7 @@ export class PropertyNormalizationService {
     }
 
     const useBatch =
-      tracker.use_ai_batching && tracker.ai_provider === AiProvider.OPENAI;
+      tracker.use_ai_batching && aiProvider === IntegrationType.OPENAI;
 
     if (useBatch) {
       await this.propertyAiBatchService.submitForCrawlRun({
@@ -161,7 +154,7 @@ export class PropertyNormalizationService {
 
     const syncResult = await this.normalizeSync(
       sourceProperties,
-      tracker.ai_provider,
+      aiProvider,
       model,
       resolvedKey.apiKey,
     );
@@ -173,7 +166,7 @@ export class PropertyNormalizationService {
       sourceProperties,
       normalizedBySourceId: syncResult.normalizedBySourceId,
       model,
-      provider: tracker.ai_provider,
+      provider: aiProvider,
       anthropicUsage: syncResult.anthropicUsage,
       openAiUsage: syncResult.openAiUsage,
       userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
@@ -187,7 +180,7 @@ export class PropertyNormalizationService {
     sourceProperties: SourcePropertyRow[];
     normalizedBySourceId: Map<string, NormalizedAiRow | null>;
     model: string;
-    provider: AiProvider;
+    provider: IntegrationType;
     anthropicUsage?: NormalizationUsage;
     openAiUsage?: { inputTokens: number; outputTokens: number };
     userTrackedAgencyId?: string;
@@ -420,7 +413,7 @@ export class PropertyNormalizationService {
     const model =
       (metadata.ai_model as string) ??
       crawlRun.ai_model ??
-      DEFAULT_OPENAI_NORMALIZATION_MODEL;
+      AiDefaults.model;
 
     await this.applyNormalizedResults({
       crawlRunId,
@@ -429,7 +422,7 @@ export class PropertyNormalizationService {
       sourceProperties,
       normalizedBySourceId,
       model,
-      provider: AiProvider.OPENAI,
+      provider: IntegrationType.OPENAI,
       openAiUsage: { inputTokens, outputTokens },
       userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
     });
@@ -478,7 +471,7 @@ export class PropertyNormalizationService {
 
   private async normalizeSync(
     sourceProperties: SourcePropertyRow[],
-    provider: AiProvider,
+    provider: IntegrationType,
     model: string,
     apiKey: string,
   ): Promise<{
@@ -488,7 +481,7 @@ export class PropertyNormalizationService {
   }> {
     const normalizedBySourceId = new Map<string, NormalizedAiRow | null>();
 
-    if (provider === AiProvider.ANTHROPIC) {
+    if (provider === IntegrationType.ANTHROPIC) {
       const { results, usage } =
         await this.anthropicNormalizationService.normalizeSourceProperties(
           sourceProperties,
@@ -502,7 +495,7 @@ export class PropertyNormalizationService {
     }
 
     const providerKey =
-      provider === AiProvider.OPENAI ? AiProviders.openai : AiProviders.gemini;
+      provider === IntegrationType.OPENAI ? AiProviders.openai : AiProviders.gemini;
 
     let inputTokens = 0;
     let outputTokens = 0;
@@ -628,12 +621,12 @@ export class PropertyNormalizationService {
   private async persistAiCosts(params: {
     crawlRunId: string;
     model: string;
-    provider: AiProvider;
+    provider: IntegrationType;
     createdCount: number;
     anthropicUsage?: NormalizationUsage;
     openAiUsage?: { inputTokens: number; outputTokens: number };
   }): Promise<void> {
-    if (params.provider === AiProvider.ANTHROPIC && params.anthropicUsage) {
+    if (params.provider === IntegrationType.ANTHROPIC && params.anthropicUsage) {
       const report = buildAnthropicCostReport(params.anthropicUsage, params.model, {
         aiNormalizedCount: params.createdCount,
       });

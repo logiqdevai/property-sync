@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { IntegrationType } from 'generated/prisma';
 import { AIModelInfo, AiModels, AiProvider, AiProviders } from '../interfaces/ai.interface';
 import { createOpenAI, openai } from '@ai-sdk/openai';
+
+export const AiDefaults = {
+    provider: IntegrationType.OPENAI,
+    model: AiModels.openai.gpt4oMini,
+} as const;
 
 @Injectable()
 export class AiConfig {
@@ -20,7 +26,7 @@ export class AiConfig {
 
     getModelAdapter(
         provider: AiProvider = AiProviders.openai,
-        model: string = AiModels.openai.gpt4o,
+        model: string = AiDefaults.model,
         apiKey?: string,
     ) {
         switch (provider) {

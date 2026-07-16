@@ -57,8 +57,6 @@ export interface AdminUserTrackedAgency {
   track_removed_listings: boolean;
   track_updated_listings: boolean;
   use_ai_batching: boolean;
-  ai_provider: string;
-  ai_model: string | null;
   created_at: string;
   updated_at: string;
   source_agency: {

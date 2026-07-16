@@ -5,7 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { AiProvider, AuthRole, IntegrationType } from 'generated/prisma';
+import { AuthRole, IntegrationType } from 'generated/prisma';
+import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import {
   applyCredentialFields,
   validateCredentialsForAuthType,
@@ -53,18 +54,14 @@ export class UserIntegrationsService {
 
   async resolveForSourceAgency(
     sourceAgencyId: string,
-    aiProvider: AiProvider,
   ): Promise<ResolvedSourceAgencyApiKey | null> {
     const trackers = await this.prisma.userTrackedAgency.findMany({
       where: {
         source_agency_id: sourceAgencyId,
         enabled: true,
-        ai_provider: aiProvider,
       },
       orderBy: { created_at: 'asc' },
     });
-
-    const integrationType = aiProvider as unknown as IntegrationType;
 
     for (const tracker of trackers) {
       const userIntegration = await this.prisma.userIntegration.findFirst({
@@ -72,7 +69,7 @@ export class UserIntegrationsService {
           user_id: tracker.user_id,
           is_active: true,
           api_key_secret: { not: null },
-          integration_target: { integration_type: integrationType },
+          integration_target: { integration_type: AiDefaults.provider },
         },
         orderBy: [{ is_default: 'desc' }, { created_at: 'asc' }],
       });

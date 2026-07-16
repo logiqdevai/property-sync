@@ -22,7 +22,6 @@ import { RoleTypes } from "@/features/user/interfaces/user.interface";
 import { useAuthStore } from "@/stores/auth";
 import { formatDateTime } from "@/lib/date";
 import type { UpdateTrackerAdminSettingsPayload } from "@/features/agencies/interfaces/agencies.interfaces";
-import type { AiProvider } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
 
 export default function AgencyDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -191,8 +190,6 @@ export default function AgencyDetailPage() {
                       accordionId={`${tracker.id}-admin-options`}
                       values={{
                         use_ai_batching: tracker.use_ai_batching,
-                        ai_provider: tracker.ai_provider as AiProvider,
-                        ai_model: tracker.ai_model,
                         crawl_interval: tracker.crawl_interval,
                         concurrent_insertions: tracker.concurrent_insertions,
                         insertion_interval_minutes: tracker.insertion_interval_minutes,
@@ -202,8 +199,6 @@ export default function AgencyDetailPage() {
                       onPrefsChange={(payload) =>
                         saveTrackerSettings(tracker.user_id, {
                           use_ai_batching: payload.use_ai_batching,
-                          ai_provider: payload.ai_provider,
-                          ai_model: payload.ai_model,
                         })
                       }
                       onAdminSettingsChange={(payload) =>

@@ -262,12 +262,6 @@ enum ScraperVersionCreatedBy {
   USER
 }
 
-enum AiProvider {
-  OPENAI
-  ANTHROPIC
-  GEMINI
-}
-
 // ---------------------------------------------------------------
 // USERS & CMS
 // ---------------------------------------------------------------
@@ -373,14 +367,12 @@ model UserTrackedAgency {
   source_agency_id       String
   enabled                Boolean  @default(true)
   crawl_interval              String @default("0 */6 * * *")
-  concurrent_insertions       Int    @default(1)
-  insertion_interval_minutes  Int    @default(5)
+  concurrent_insertions       Int    @default(1) // the number of properties to insert concurrently to the EstateWeb integration
+  insertion_interval_minutes  Int    @default(5) // the interval between concurrent insertions to the EstateWeb integration
   track_new_listings     Boolean  @default(true)
   track_removed_listings Boolean  @default(true)
   track_updated_listings Boolean  @default(true)
   use_ai_batching        Boolean    @default(false)
-  ai_provider            AiProvider @default(OPENAI)
-  ai_model               String?
   created_at             DateTime @default(now())
   updated_at             DateTime @updatedAt
 

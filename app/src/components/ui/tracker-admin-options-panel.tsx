@@ -1,18 +1,12 @@
 import { Link } from "react-router-dom";
-import { Accordion, Label, ListBox, Select, Switch } from "@heroui/react";
-import { AiProviderFormOptions } from "@/config/constants/dropdowns/ai-provider-form.options";
+import { Accordion, Switch } from "@heroui/react";
 import { CrawlIntervalField } from "@/components/ui/crawl-interval-field";
 import type { UpdateTrackerAdminSettingsPayload } from "@/features/agencies/interfaces/agencies.interfaces";
-import type {
-  AiProvider,
-  TrackAgencyPayload,
-} from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
+import type { TrackAgencyPayload } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
 import { Routes } from "@/routes/routes";
 
 export interface TrackerAdminOptionsValues {
   use_ai_batching: boolean;
-  ai_provider: AiProvider;
-  ai_model: string | null;
   crawl_interval: string;
   concurrent_insertions: number;
   insertion_interval_minutes: number;
@@ -69,38 +63,6 @@ export function TrackerAdminOptionsPanel({
                 </Switch>
               </div>
 
-              <Select
-                selectedKey={values.ai_provider}
-                isDisabled={disabled}
-                onSelectionChange={(key) => onPrefsChange({ ai_provider: key as AiProvider })}
-                className="w-full"
-              >
-                <Label>AI provider</Label>
-                <Select.Trigger>
-                  <Select.Value />
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    {AiProviderFormOptions.map((option) => (
-                      <ListBox.Item key={option.id} id={option.id}>
-                        {option.label}
-                      </ListBox.Item>
-                    ))}
-                  </ListBox>
-                </Select.Popover>
-              </Select>
-
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">AI model (optional)</span>
-                <input
-                  className="rounded-lg border border-border bg-background px-3 py-2"
-                  value={values.ai_model ?? ""}
-                  disabled={disabled}
-                  onChange={(e) => onPrefsChange({ ai_model: e.target.value || null })}
-                />
-              </label>
-
               <CrawlIntervalField
                 value={values.crawl_interval ?? ""}
                 disabled={disabled}
@@ -151,8 +113,8 @@ export function TrackerAdminOptionsPanel({
 
               {showIntegrationsHint ? (
                 <p className="text-xs text-muted">
-                  Batching applies on scheduled crawls when batching is enabled and provider is
-                  OpenAI. Connect your AI key on{" "}
+                  Batching applies on scheduled crawls when batching is enabled. Connect your AI
+                  key on{" "}
                   <Link
                     to={Routes.dashboard.integrations}
                     className="text-accent hover:underline"

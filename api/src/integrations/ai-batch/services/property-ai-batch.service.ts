@@ -9,7 +9,7 @@ import {
   buildNormalizationDynamicPrompt,
   buildNormalizationInput,
 } from '@/modules/properties/constants/normalization-prompt';
-import { DEFAULT_OPENAI_NORMALIZATION_MODEL } from '@/modules/properties/constants/normalization.constants';
+import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import { NormalizedAiRow } from '@/modules/properties/utils/property-normalization.utils';
 import { JobStatus } from 'generated/prisma';
 
@@ -50,7 +50,7 @@ export class PropertyAiBatchService {
     model: string;
   }): Promise<void> {
     const client = this.aiBatchClient.createClient(params.apiKey);
-    const model = params.model || DEFAULT_OPENAI_NORMALIZATION_MODEL;
+    const model = params.model || AiDefaults.model;
 
     const lines = params.sourceProperties.map((sp) => {
       const input = buildNormalizationInput([sp])[0];
@@ -84,7 +84,7 @@ export class PropertyAiBatchService {
       ai_batch_status: 'pending',
       pending_source_property_ids: params.sourceProperties.map((sp) => sp.id),
       user_integration_id: params.userIntegrationId,
-      ai_provider: 'OPENAI',
+      ai_provider: AiDefaults.provider,
       ai_model: model,
     };
 

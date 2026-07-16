@@ -22,9 +22,6 @@ export const PROPERTY_TYPES = [
   'UNKNOWN',
 ] as const;
 
-export const DEFAULT_ANTHROPIC_NORMALIZATION_MODEL = 'claude-haiku-4-5-20251001';
-export const DEFAULT_OPENAI_NORMALIZATION_MODEL = 'gpt-4o-mini';
-
 export const ANTHROPIC_MODEL_PRICING = {
   input_per_million: 1.0,
   output_per_million: 5.0,

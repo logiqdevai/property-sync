@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Matches, Min } from 'class-validator';
-import { AiProvider } from 'generated/prisma';
+import { IsBoolean, IsInt, IsOptional, IsString, Matches, Min } from 'class-validator';
 
 export class UpdateTrackerAdminSettingsDto {
     @ApiProperty({ required: false, description: 'Cron expression (5 space-separated fields)', example: '0 */6 * * *' })
@@ -25,14 +24,4 @@ export class UpdateTrackerAdminSettingsDto {
     @IsOptional()
     @IsBoolean()
     use_ai_batching?: boolean;
-
-    @ApiProperty({ required: false, enum: AiProvider })
-    @IsOptional()
-    @IsEnum(AiProvider)
-    ai_provider?: AiProvider;
-
-    @ApiProperty({ required: false, nullable: true })
-    @IsOptional()
-    @IsString()
-    ai_model?: string | null;
 }

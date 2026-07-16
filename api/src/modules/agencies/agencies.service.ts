@@ -151,8 +151,6 @@ export class AgenciesService {
                     insertion_interval_minutes: dto.insertion_interval_minutes,
                 }),
                 ...(dto.use_ai_batching !== undefined && { use_ai_batching: dto.use_ai_batching }),
-                ...(dto.ai_provider !== undefined && { ai_provider: dto.ai_provider }),
-                ...(dto.ai_model !== undefined && { ai_model: dto.ai_model }),
             },
         });
     }

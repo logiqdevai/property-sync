@@ -21,11 +21,10 @@ import {
   useUntrackAgency,
   useUpdateAgencyTracking,
 } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
-import {
-  AiProviders,
-  type AgencyListQuery,
-  type TrackAgencyPayload,
-  type TrackableAgency,
+import type {
+  AgencyListQuery,
+  TrackAgencyPayload,
+  TrackableAgency,
 } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
 import type { UpdateTrackerAdminSettingsPayload } from "@/features/agencies/interfaces/agencies.interfaces";
 
@@ -61,9 +60,7 @@ function AgencyCard({
     if (next) {
       trackAgency.mutate({
         agencyId: agency.id,
-        payload: {
-          ai_provider: AiProviders.OPENAI,
-        },
+        payload: {},
       });
       return;
     }
@@ -175,8 +172,6 @@ function AgencyCard({
               accordionId={`${agency.id}-admin-options`}
               values={{
                 use_ai_batching: prefs.use_ai_batching,
-                ai_provider: prefs.ai_provider,
-                ai_model: prefs.ai_model,
                 crawl_interval: prefs.crawl_interval ?? "",
                 concurrent_insertions: prefs.concurrent_insertions ?? 1,
                 insertion_interval_minutes: prefs.insertion_interval_minutes ?? 5,

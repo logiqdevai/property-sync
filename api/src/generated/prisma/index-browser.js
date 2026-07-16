@@ -187,8 +187,6 @@ exports.Prisma.UserTrackedAgencyScalarFieldEnum = {
   track_removed_listings: 'track_removed_listings',
   track_updated_listings: 'track_updated_listings',
   use_ai_batching: 'use_ai_batching',
-  ai_provider: 'ai_provider',
-  ai_model: 'ai_model',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };
@@ -209,6 +207,7 @@ exports.Prisma.ScraperScalarFieldEnum = {
   version_count: 'version_count',
   status: 'status',
   self_healing_enabled: 'self_healing_enabled',
+  diagnostics_mode: 'diagnostics_mode',
   health: 'health',
   success_rate: 'success_rate',
   avg_runtime_ms: 'avg_runtime_ms',
@@ -296,6 +295,35 @@ exports.Prisma.CrawlRunScalarFieldEnum = {
   ai_average_cost_per_property: 'ai_average_cost_per_property',
   created_at: 'created_at',
   updated_at: 'updated_at'
+};
+
+exports.Prisma.DiagnosticsPackageScalarFieldEnum = {
+  id: 'id',
+  crawl_run_id: 'crawl_run_id',
+  scraper_id: 'scraper_id',
+  mode: 'mode',
+  url: 'url',
+  worker_id: 'worker_id',
+  browser_version: 'browser_version',
+  playwright_version: 'playwright_version',
+  scraper_version: 'scraper_version',
+  retry_number: 'retry_number',
+  started_at: 'started_at',
+  finished_at: 'finished_at',
+  duration_ms: 'duration_ms',
+  failure_reason: 'failure_reason',
+  exception: 'exception',
+  created_at: 'created_at'
+};
+
+exports.Prisma.DiagnosticsArtifactScalarFieldEnum = {
+  id: 'id',
+  diagnostics_package_id: 'diagnostics_package_id',
+  kind: 'kind',
+  path: 'path',
+  content_type: 'content_type',
+  size_bytes: 'size_bytes',
+  created_at: 'created_at'
 };
 
 exports.Prisma.JobLogScalarFieldEnum = {
@@ -517,18 +545,18 @@ exports.AuthType = exports.$Enums.AuthType = {
   OAUTH: 'OAUTH'
 };
 
-exports.AiProvider = exports.$Enums.AiProvider = {
-  OPENAI: 'OPENAI',
-  ANTHROPIC: 'ANTHROPIC',
-  GEMINI: 'GEMINI'
-};
-
 exports.ScraperStatus = exports.$Enums.ScraperStatus = {
   ACTIVE: 'ACTIVE',
   INACTIVE: 'INACTIVE',
   DEPRECATED: 'DEPRECATED',
   TESTING: 'TESTING',
   BROKEN: 'BROKEN'
+};
+
+exports.DiagnosticsMode = exports.$Enums.DiagnosticsMode = {
+  PRODUCTION: 'PRODUCTION',
+  TRACE: 'TRACE',
+  FULL_DEBUG: 'FULL_DEBUG'
 };
 
 exports.ScraperHealth = exports.$Enums.ScraperHealth = {
@@ -583,6 +611,15 @@ exports.CrawlRunStatus = exports.$Enums.CrawlRunStatus = {
   PARTIAL_SUCCESS: 'PARTIAL_SUCCESS',
   FAILED: 'FAILED',
   CANCELLED: 'CANCELLED'
+};
+
+exports.DiagnosticsArtifactKind = exports.$Enums.DiagnosticsArtifactKind = {
+  TRACE: 'TRACE',
+  SCREENSHOT: 'SCREENSHOT',
+  HTML_SNAPSHOT: 'HTML_SNAPSHOT',
+  CONSOLE_LOG: 'CONSOLE_LOG',
+  NETWORK_HAR: 'NETWORK_HAR',
+  VIDEO: 'VIDEO'
 };
 
 exports.JobStatus = exports.$Enums.JobStatus = {
@@ -714,6 +751,8 @@ exports.Prisma.ModelName = {
   ScraperVersion: 'ScraperVersion',
   ScraperExecutionTrace: 'ScraperExecutionTrace',
   CrawlRun: 'CrawlRun',
+  DiagnosticsPackage: 'DiagnosticsPackage',
+  DiagnosticsArtifact: 'DiagnosticsArtifact',
   JobLog: 'JobLog',
   Notification: 'Notification',
   CmsSyncRun: 'CmsSyncRun',

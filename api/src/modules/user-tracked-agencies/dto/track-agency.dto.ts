@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
-import { AiProvider } from 'generated/prisma';
+import { IsBoolean, IsOptional } from 'class-validator';
 
 export class TrackAgencyDto {
   @ApiProperty({ required: false, default: true })
@@ -22,16 +21,6 @@ export class TrackAgencyDto {
   @IsOptional()
   @IsBoolean()
   use_ai_batching?: boolean;
-
-  @ApiProperty({ required: false, enum: AiProvider, default: AiProvider.OPENAI })
-  @IsOptional()
-  @IsEnum(AiProvider)
-  ai_provider?: AiProvider;
-
-  @ApiProperty({ required: false, nullable: true })
-  @IsOptional()
-  @IsString()
-  ai_model?: string | null;
 
   @ApiProperty({ required: false, description: 'PATCH only' })
   @IsOptional()

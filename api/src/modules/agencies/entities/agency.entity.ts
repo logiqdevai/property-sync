@@ -68,8 +68,6 @@ export class Agency {
         track_removed_listings: boolean;
         track_updated_listings: boolean;
         use_ai_batching: boolean;
-        ai_provider: string;
-        ai_model: string | null;
         created_at: Date;
         updated_at: Date;
         user: {
