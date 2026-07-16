@@ -1,24 +1,48 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Chip, Input, Pagination, Select, ListBox, Table } from "@heroui/react";
+import { Button, Chip, Input, Pagination, Select, ListBox, Table, useOverlayState } from "@heroui/react";
+import { Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
+import { RoleGate } from "@/components/providers/role-gate";
+import {
+  TableRowActionsMenu,
+  type TableRowAction,
+} from "@/components/ui/table-row-actions-menu";
 import type { PropertyStatus } from "@/features/properties/interfaces/properties.interfaces";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
-import { useUserProperties } from "@/features/user-properties/hooks/use-user-properties";
+import {
+  useDeleteUserProperties,
+  useDeleteUserProperty,
+  useUserProperties,
+} from "@/features/user-properties/hooks/use-user-properties";
 import type { UserPropertyListQuery } from "@/features/user-properties/interfaces/user-properties.interfaces";
 import { useTrackableAgencies } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
 import { getTrackableAgencyLabel } from "@/features/user-tracked-agencies/utils/integration-link.utils";
+import { RoleTypes } from "@/features/user/interfaces/user.interface";
+import { useAuthStore } from "@/stores/auth";
+
+const PROPERTY_DELETE_ACTIONS: TableRowAction[] = [
+  { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
+];
 
 export default function DashboardPropertiesListPage() {
   const navigate = useNavigate();
+  const deleteConfirm = useOverlayState();
+  const bulkDeleteConfirm = useOverlayState();
+  const role = useAuthStore((state) => state.role);
+  const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
+
   const [status, setStatus] = useState<PropertyStatus | "all">("all");
   const [city, setCity] = useState("");
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [trackedAgencyId, setTrackedAgencyId] = useState<string | "all">("all");
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deletePropertyId, setDeletePropertyId] = useState<string | null>(null);
 
   const query = useMemo<UserPropertyListQuery>(
     () => ({
@@ -35,11 +59,40 @@ export default function DashboardPropertiesListPage() {
 
   const { data, isPending } = useUserProperties(query);
   const { data: agenciesData } = useTrackableAgencies({ limit: 100 });
+  const deleteUserProperty = useDeleteUserProperty();
+  const deleteUserProperties = useDeleteUserProperties();
+
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
+  const selectedCount = selectedIds.size;
   const trackedAgencies = (agenciesData?.data ?? []).filter(
     (agency) => agency.is_tracked && agency.user_tracked_agency_id,
   );
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleDelete = async () => {
+    if (!deletePropertyId) return;
+    await deleteUserProperty.mutateAsync(deletePropertyId);
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(deletePropertyId);
+      return next;
+    });
+    setDeletePropertyId(null);
+  };
+
+  const handleBulkDelete = async () => {
+    await deleteUserProperties.mutateAsync({ ids: Array.from(selectedIds) });
+    setSelectedIds(new Set());
+  };
 
   if (isPending) {
     return (
@@ -55,9 +108,20 @@ export default function DashboardPropertiesListPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-2xl font-semibold tracking-tight text-foreground">My Properties</p>
-        <p className="text-sm text-muted">Your tracked listings.</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-2xl font-semibold tracking-tight text-foreground">My Properties</p>
+          <p className="text-sm text-muted">Your tracked listings.</p>
+        </div>
+        <RoleGate roles={[RoleTypes.ADMIN]}>
+          <Button
+            variant="danger"
+            isDisabled={selectedCount < 1}
+            onPress={bulkDeleteConfirm.open}
+          >
+            Delete selected ({selectedCount})
+          </Button>
+        </RoleGate>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -154,11 +218,13 @@ export default function DashboardPropertiesListPage() {
             <Table.ScrollContainer>
               <Table.Content aria-label="My properties">
                 <Table.Header>
+                  {canDelete ? <Table.Column isRowHeader>Select</Table.Column> : null}
                   <Table.Column isRowHeader>Title</Table.Column>
                   <Table.Column isRowHeader>City</Table.Column>
                   <Table.Column isRowHeader>Price</Table.Column>
                   <Table.Column isRowHeader>Status</Table.Column>
                   <Table.Column isRowHeader>Edited</Table.Column>
+                  {canDelete ? <Table.Column isRowHeader>Actions</Table.Column> : null}
                 </Table.Header>
                 <Table.Body>
                   {properties.map((property) => (
@@ -168,6 +234,18 @@ export default function DashboardPropertiesListPage() {
                       onAction={() => navigate(Routes.dashboard.properties.detail(property.id))}
                       className="cursor-pointer"
                     >
+                      {canDelete ? (
+                        <Table.Cell>
+                          <div onClick={(event) => event.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.has(property.id)}
+                              onChange={() => toggleSelection(property.id)}
+                              aria-label={`Select ${property.title}`}
+                            />
+                          </div>
+                        </Table.Cell>
+                      ) : null}
                       <Table.Cell>
                         <span className="font-medium text-foreground">{property.title}</span>
                       </Table.Cell>
@@ -189,6 +267,19 @@ export default function DashboardPropertiesListPage() {
                           "—"
                         )}
                       </Table.Cell>
+                      {canDelete ? (
+                        <Table.Cell>
+                          <TableRowActionsMenu
+                            actions={PROPERTY_DELETE_ACTIONS}
+                            onAction={(actionId) => {
+                              if (actionId !== "delete") return;
+                              setDeletePropertyId(property.id);
+                              deleteConfirm.open();
+                            }}
+                            ariaLabel={`Actions for ${property.title}`}
+                          />
+                        </Table.Cell>
+                      ) : null}
                     </Table.Row>
                   ))}
                 </Table.Body>
@@ -225,6 +316,27 @@ export default function DashboardPropertiesListPage() {
           </Pagination.Content>
         </Pagination>
       )}
+
+      {canDelete ? (
+        <>
+          <ConfirmationDialog
+            state={deleteConfirm}
+            title="Delete this property?"
+            description="This cannot be undone."
+            confirmLabel="Delete"
+            onConfirm={handleDelete}
+            isPending={deleteUserProperty.isPending}
+          />
+          <ConfirmationDialog
+            state={bulkDeleteConfirm}
+            title="Delete selected properties?"
+            description={`This will permanently delete ${selectedCount} properties. This cannot be undone.`}
+            confirmLabel="Delete"
+            onConfirm={handleBulkDelete}
+            isPending={deleteUserProperties.isPending}
+          />
+        </>
+      ) : null}
     </div>
   );
 }

@@ -1,12 +1,21 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Chip, Input, Pagination, Select, ListBox, Table, useOverlayState } from "@heroui/react";
-import { Layers } from "lucide-react";
+import { Layers, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
-import { useMergeProperties, useProperties } from "@/features/properties/hooks/use-properties";
+import {
+  TableRowActionsMenu,
+  type TableRowAction,
+} from "@/components/ui/table-row-actions-menu";
+import {
+  useDeleteProperties,
+  useDeleteProperty,
+  useMergeProperties,
+  useProperties,
+} from "@/features/properties/hooks/use-properties";
 import {
   type ListingType,
   type PropertyListQuery,
@@ -18,9 +27,15 @@ import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/listing-t
 import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/property-type-filter.options";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 
+const PROPERTY_DELETE_ACTIONS: TableRowAction[] = [
+  { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
+];
+
 export default function PropertiesListPage() {
   const navigate = useNavigate();
   const mergeConfirm = useOverlayState();
+  const deleteConfirm = useOverlayState();
+  const bulkDeleteConfirm = useOverlayState();
 
   const [status, setStatus] = useState<PropertyStatus | "all">("all");
   const [listingType, setListingType] = useState<ListingType | "all">("all");
@@ -32,6 +47,7 @@ export default function PropertiesListPage() {
   const [agencyId, setAgencyId] = useState<string | "all">("all");
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deletePropertyId, setDeletePropertyId] = useState<string | null>(null);
 
   const query = useMemo<PropertyListQuery>(
     () => ({
@@ -52,6 +68,8 @@ export default function PropertiesListPage() {
   const { data, isPending } = useProperties(query);
   const { data: agenciesData } = useAgencies({ limit: 100 });
   const mergeProperties = useMergeProperties();
+  const deleteProperty = useDeleteProperty();
+  const deleteProperties = useDeleteProperties();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
@@ -69,6 +87,22 @@ export default function PropertiesListPage() {
 
   const handleMerge = async () => {
     await mergeProperties.mutateAsync({ property_ids: Array.from(selectedIds) });
+    setSelectedIds(new Set());
+  };
+
+  const handleDelete = async () => {
+    if (!deletePropertyId) return;
+    await deleteProperty.mutateAsync(deletePropertyId);
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(deletePropertyId);
+      return next;
+    });
+    setDeletePropertyId(null);
+  };
+
+  const handleBulkDelete = async () => {
+    await deleteProperties.mutateAsync({ property_ids: Array.from(selectedIds) });
     setSelectedIds(new Set());
   };
 
@@ -91,13 +125,22 @@ export default function PropertiesListPage() {
           <p className="text-2xl font-semibold tracking-tight text-foreground">Properties</p>
           <p className="text-sm text-muted">Normalized listings from crawl runs.</p>
         </div>
-        <Button
-          variant="secondary"
-          isDisabled={selectedCount < 2}
-          onPress={mergeConfirm.open}
-        >
-          Merge selected ({selectedCount})
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="danger"
+            isDisabled={selectedCount < 1}
+            onPress={bulkDeleteConfirm.open}
+          >
+            Delete selected ({selectedCount})
+          </Button>
+          <Button
+            variant="secondary"
+            isDisabled={selectedCount < 2}
+            onPress={mergeConfirm.open}
+          >
+            Merge selected ({selectedCount})
+          </Button>
+        </div>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -254,6 +297,7 @@ export default function PropertiesListPage() {
                   <Table.Column isRowHeader>Type</Table.Column>
                   <Table.Column isRowHeader>Status</Table.Column>
                   <Table.Column isRowHeader>Group</Table.Column>
+                  <Table.Column isRowHeader>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
                   {properties.map((property) => (
@@ -308,6 +352,17 @@ export default function PropertiesListPage() {
                           "—"
                         )}
                       </Table.Cell>
+                      <Table.Cell>
+                        <TableRowActionsMenu
+                          actions={PROPERTY_DELETE_ACTIONS}
+                          onAction={(actionId) => {
+                            if (actionId !== "delete") return;
+                            setDeletePropertyId(property.id);
+                            deleteConfirm.open();
+                          }}
+                          ariaLabel={`Actions for ${property.title}`}
+                        />
+                      </Table.Cell>
                     </Table.Row>
                   ))}
                 </Table.Body>
@@ -352,6 +407,24 @@ export default function PropertiesListPage() {
         confirmLabel="Merge"
         onConfirm={handleMerge}
         isPending={mergeProperties.isPending}
+      />
+
+      <ConfirmationDialog
+        state={deleteConfirm}
+        title="Delete this property?"
+        description="This cannot be undone. Related user copies and history will also be removed."
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+        isPending={deleteProperty.isPending}
+      />
+
+      <ConfirmationDialog
+        state={bulkDeleteConfirm}
+        title="Delete selected properties?"
+        description={`This will permanently delete ${selectedCount} properties. This cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={handleBulkDelete}
+        isPending={deleteProperties.isPending}
       />
     </div>
   );

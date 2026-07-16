@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -24,6 +25,7 @@ import {
   PropertyQueryType,
 } from './dto/property-query.schema';
 import { MergePropertiesDto } from './dto/merge-properties.dto';
+import { DeletePropertiesDto } from './dto/delete-properties.dto';
 import { PropertyEntity } from './entities/property.entity';
 
 @ApiTags('Properties')
@@ -49,6 +51,13 @@ export class PropertiesController {
     return this.propertiesService.merge(dto);
   }
 
+  @Post('bulk-delete')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Delete multiple properties' })
+  removeMany(@Body() dto: DeletePropertiesDto) {
+    return this.propertiesService.removeMany(dto.property_ids);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get property with source links and history' })
   @ApiResponse({ status: 200, type: PropertyEntity })
@@ -61,5 +70,13 @@ export class PropertiesController {
   @ApiOperation({ summary: 'Remove property from its duplicate group' })
   split(@Param('id') id: string) {
     return this.propertiesService.split(id);
+  }
+
+  @Delete(':id')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Delete a property' })
+  @ApiResponse({ status: 200, description: 'Deleted' })
+  remove(@Param('id') id: string) {
+    return this.propertiesService.remove(id);
   }
 }

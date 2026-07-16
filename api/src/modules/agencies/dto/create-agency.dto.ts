@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString, IsUrl, MinLength } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, IsUrl, Matches, MinLength } from 'class-validator';
 
 export class CreateAgencyDto {
     @ApiProperty({ description: 'Agency display name', example: 'Acme Real Estate' })
@@ -25,6 +25,17 @@ export class CreateAgencyDto {
     @IsOptional()
     @IsString()
     notes?: string;
+
+    @ApiProperty({
+        required: false,
+        description: 'Default cron expression for scraping jobs (5 space-separated fields)',
+        example: '0 */6 * * *',
+        default: '0 */6 * * *',
+    })
+    @IsOptional()
+    @IsString()
+    @Matches(/^(\S+\s+){4}\S+$/, { message: 'crawl_interval must be a valid 5-field cron expression' })
+    crawl_interval?: string;
 
     @ApiProperty({ required: false, default: false, description: 'Visible for scraper/crawl setup' })
     @IsOptional()

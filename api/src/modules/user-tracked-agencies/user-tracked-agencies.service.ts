@@ -119,6 +119,7 @@ export class UserTrackedAgenciesService {
         user_id: userId,
         source_agency_id: agency.id,
         enabled: true,
+        crawl_interval: agency.crawl_interval,
         track_new_listings: dto.track_new_listings ?? true,
         track_removed_listings: dto.track_removed_listings ?? true,
         track_updated_listings: dto.track_updated_listings ?? true,

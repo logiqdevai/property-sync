@@ -279,6 +279,7 @@ export default function AgencyDetailPage() {
                     country: agency.country ?? "",
                     city: agency.city ?? "",
                     notes: agency.notes ?? "",
+                    crawl_interval: agency.crawl_interval,
                   }}
                   onSubmit={(values) =>
                     updateAgency.mutate(

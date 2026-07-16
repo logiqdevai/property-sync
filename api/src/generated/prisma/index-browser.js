@@ -166,6 +166,7 @@ exports.Prisma.SourceAgencyScalarFieldEnum = {
   city: 'city',
   is_visible: 'is_visible',
   is_enabled: 'is_enabled',
+  crawl_interval: 'crawl_interval',
   notes: 'notes',
   last_success_at: 'last_success_at',
   last_failure_at: 'last_failure_at',

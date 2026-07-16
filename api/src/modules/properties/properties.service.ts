@@ -139,4 +139,34 @@ export class PropertiesService {
       data: { duplicate_group_id: null },
     });
   }
+
+  async remove(id: string) {
+    const property = await this.prisma.property.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!property) {
+      throw new NotFoundException('Property not found');
+    }
+
+    await this.prisma.property.delete({ where: { id } });
+  }
+
+  async removeMany(propertyIds: string[]) {
+    const uniqueIds = [...new Set(propertyIds)];
+    const count = await this.prisma.property.count({
+      where: { id: { in: uniqueIds } },
+    });
+
+    if (count !== uniqueIds.length) {
+      throw new NotFoundException('One or more properties not found');
+    }
+
+    await this.prisma.property.deleteMany({
+      where: { id: { in: uniqueIds } },
+    });
+
+    return { deleted: uniqueIds.length };
+  }
 }

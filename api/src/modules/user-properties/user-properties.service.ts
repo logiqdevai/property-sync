@@ -170,6 +170,29 @@ export class UserPropertiesService {
     });
   }
 
+  async remove(userId: string, id: string) {
+    await this.assertOwned(userId, id);
+    await this.prisma.userProperty.delete({ where: { id } });
+  }
+
+  async removeMany(userId: string, ids: string[]) {
+    const uniqueIds = [...new Set(ids)];
+    const owned = await this.prisma.userProperty.findMany({
+      where: { user_id: userId, id: { in: uniqueIds } },
+      select: { id: true },
+    });
+
+    if (owned.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more properties not found');
+    }
+
+    await this.prisma.userProperty.deleteMany({
+      where: { user_id: userId, id: { in: uniqueIds } },
+    });
+
+    return { deleted: uniqueIds.length };
+  }
+
   async syncForProperty(
     propertyId: string,
     options: SyncForPropertyOptions,

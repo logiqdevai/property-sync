@@ -27,6 +27,7 @@ export interface SourceAgency {
   city: string | null;
   is_visible: boolean;
   is_enabled: boolean;
+  crawl_interval: string;
   notes: string | null;
   last_success_at: string | null;
   last_failure_at: string | null;
@@ -47,6 +48,7 @@ export interface CreateAgencyPayload {
   country?: string;
   city?: string;
   notes?: string;
+  crawl_interval?: string;
   is_visible?: boolean;
   is_enabled?: boolean;
 }

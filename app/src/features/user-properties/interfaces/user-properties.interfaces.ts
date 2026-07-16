@@ -79,3 +79,7 @@ export interface PaginatedResponse<T> {
     has_prev: boolean;
   };
 }
+
+export interface DeleteUserPropertiesPayload {
+  ids: string[];
+}

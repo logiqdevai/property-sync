@@ -22,6 +22,9 @@ export class Agency {
     @ApiProperty()
     is_enabled: boolean;
 
+    @ApiProperty({ example: '0 */6 * * *' })
+    crawl_interval: string;
+
     @ApiProperty({ nullable: true })
     notes: string | null;
 

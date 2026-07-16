@@ -71,6 +71,7 @@ export const ApiRoutes = {
             list: "/admin/properties",
             detail: (id: string) => `/admin/properties/${id}`,
             merge: "/admin/properties/merge",
+            bulkDelete: "/admin/properties/bulk-delete",
             split: (id: string) => `/admin/properties/${id}/split`,
         },
         notifications: {
@@ -120,6 +121,7 @@ export const ApiRoutes = {
         list: "/properties",
         detail: (id: string) => `/properties/${id}`,
         resync: (id: string) => `/properties/${id}/resync`,
+        bulkDelete: "/properties/bulk-delete",
     },
     dashboard: {
         root: "/dashboard",

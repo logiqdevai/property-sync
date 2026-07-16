@@ -1,6 +1,7 @@
 import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
 import type {
+  DeleteUserPropertiesPayload,
   PaginatedResponse,
   UpdateUserPropertyPayload,
   UserProperty,
@@ -48,5 +49,24 @@ export const resyncUserProperty = async (id: string): Promise<UserProperty> => {
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to resync property.");
+  }
+};
+
+export const deleteUserProperty = async (id: string): Promise<void> => {
+  try {
+    await axiosInstance.delete(ApiRoutes.userProperties.detail(id));
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to delete property.");
+  }
+};
+
+export const deleteUserProperties = async (
+  payload: DeleteUserPropertiesPayload,
+): Promise<{ deleted: number }> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.userProperties.bulkDelete, payload);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to delete properties.");
   }
 };

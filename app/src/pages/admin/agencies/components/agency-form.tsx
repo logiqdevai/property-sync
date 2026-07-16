@@ -1,8 +1,13 @@
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, Label, Input, FieldError } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { agencyFormSchema, type AgencyFormValues } from "@/features/agencies/validation-schemas/agencies.schema";
+import { CrawlIntervalField } from "@/components/ui/crawl-interval-field";
+import {
+  agencyFormSchema,
+  DefaultAgencyCrawlInterval,
+  type AgencyFormValues,
+} from "@/features/agencies/validation-schemas/agencies.schema";
 
 interface AgencyFormProps {
   defaultValues?: Partial<AgencyFormValues>;
@@ -15,6 +20,7 @@ interface AgencyFormProps {
 export function AgencyForm({ defaultValues, submitLabel, isPending, onSubmit, onCancel }: AgencyFormProps) {
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<AgencyFormValues>({
@@ -25,6 +31,7 @@ export function AgencyForm({ defaultValues, submitLabel, isPending, onSubmit, on
       country: defaultValues?.country ?? "",
       city: defaultValues?.city ?? "",
       notes: defaultValues?.notes ?? "",
+      crawl_interval: defaultValues?.crawl_interval ?? DefaultAgencyCrawlInterval,
     },
   });
 
@@ -66,6 +73,23 @@ export function AgencyForm({ defaultValues, submitLabel, isPending, onSubmit, on
         <Input id="agency-notes" {...register("notes")} placeholder="Optional notes" fullWidth />
         {errors.notes && <FieldError>{errors.notes.message}</FieldError>}
       </div>
+
+      <Controller
+        name="crawl_interval"
+        control={control}
+        render={({ field }) => (
+          <div className="flex flex-col gap-1">
+            <CrawlIntervalField
+              value={field.value}
+              disabled={isPending}
+              onChange={field.onChange}
+            />
+            {errors.crawl_interval && (
+              <FieldError>{errors.crawl_interval.message}</FieldError>
+            )}
+          </div>
+        )}
+      />
 
       <div className="flex justify-end gap-2 mt-2">
         {onCancel && (

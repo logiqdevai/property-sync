@@ -7374,6 +7374,7 @@ export namespace Prisma {
     city: string | null
     is_visible: boolean | null
     is_enabled: boolean | null
+    crawl_interval: string | null
     notes: string | null
     last_success_at: Date | null
     last_failure_at: Date | null
@@ -7390,6 +7391,7 @@ export namespace Prisma {
     city: string | null
     is_visible: boolean | null
     is_enabled: boolean | null
+    crawl_interval: string | null
     notes: string | null
     last_success_at: Date | null
     last_failure_at: Date | null
@@ -7406,6 +7408,7 @@ export namespace Prisma {
     city: number
     is_visible: number
     is_enabled: number
+    crawl_interval: number
     notes: number
     last_success_at: number
     last_failure_at: number
@@ -7425,6 +7428,7 @@ export namespace Prisma {
     city?: true
     is_visible?: true
     is_enabled?: true
+    crawl_interval?: true
     notes?: true
     last_success_at?: true
     last_failure_at?: true
@@ -7441,6 +7445,7 @@ export namespace Prisma {
     city?: true
     is_visible?: true
     is_enabled?: true
+    crawl_interval?: true
     notes?: true
     last_success_at?: true
     last_failure_at?: true
@@ -7457,6 +7462,7 @@ export namespace Prisma {
     city?: true
     is_visible?: true
     is_enabled?: true
+    crawl_interval?: true
     notes?: true
     last_success_at?: true
     last_failure_at?: true
@@ -7547,6 +7553,7 @@ export namespace Prisma {
     city: string | null
     is_visible: boolean
     is_enabled: boolean
+    crawl_interval: string
     notes: string | null
     last_success_at: Date | null
     last_failure_at: Date | null
@@ -7581,6 +7588,7 @@ export namespace Prisma {
     city?: boolean
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: boolean
     notes?: boolean
     last_success_at?: boolean
     last_failure_at?: boolean
@@ -7605,6 +7613,7 @@ export namespace Prisma {
     city?: boolean
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: boolean
     notes?: boolean
     last_success_at?: boolean
     last_failure_at?: boolean
@@ -7622,6 +7631,7 @@ export namespace Prisma {
     city?: boolean
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: boolean
     notes?: boolean
     last_success_at?: boolean
     last_failure_at?: boolean
@@ -7639,6 +7649,7 @@ export namespace Prisma {
     city?: boolean
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: boolean
     notes?: boolean
     last_success_at?: boolean
     last_failure_at?: boolean
@@ -7648,7 +7659,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type SourceAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "base_url" | "country" | "city" | "is_visible" | "is_enabled" | "notes" | "last_success_at" | "last_failure_at" | "last_error_message" | "metadata" | "created_at" | "updated_at", ExtArgs["result"]["sourceAgency"]>
+  export type SourceAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "base_url" | "country" | "city" | "is_visible" | "is_enabled" | "crawl_interval" | "notes" | "last_success_at" | "last_failure_at" | "last_error_message" | "metadata" | "created_at" | "updated_at", ExtArgs["result"]["sourceAgency"]>
   export type SourceAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     scrapers?: boolean | SourceAgency$scrapersArgs<ExtArgs>
     user_tracked_agencies?: boolean | SourceAgency$user_tracked_agenciesArgs<ExtArgs>
@@ -7679,6 +7690,7 @@ export namespace Prisma {
       city: string | null
       is_visible: boolean
       is_enabled: boolean
+      crawl_interval: string
       notes: string | null
       last_success_at: Date | null
       last_failure_at: Date | null
@@ -8122,6 +8134,7 @@ export namespace Prisma {
     readonly city: FieldRef<"SourceAgency", 'String'>
     readonly is_visible: FieldRef<"SourceAgency", 'Boolean'>
     readonly is_enabled: FieldRef<"SourceAgency", 'Boolean'>
+    readonly crawl_interval: FieldRef<"SourceAgency", 'String'>
     readonly notes: FieldRef<"SourceAgency", 'String'>
     readonly last_success_at: FieldRef<"SourceAgency", 'DateTime'>
     readonly last_failure_at: FieldRef<"SourceAgency", 'DateTime'>
@@ -32588,6 +32601,7 @@ export namespace Prisma {
     city: 'city',
     is_visible: 'is_visible',
     is_enabled: 'is_enabled',
+    crawl_interval: 'crawl_interval',
     notes: 'notes',
     last_success_at: 'last_success_at',
     last_failure_at: 'last_failure_at',
@@ -33691,6 +33705,7 @@ export namespace Prisma {
     city?: StringNullableFilter<"SourceAgency"> | string | null
     is_visible?: BoolFilter<"SourceAgency"> | boolean
     is_enabled?: BoolFilter<"SourceAgency"> | boolean
+    crawl_interval?: StringFilter<"SourceAgency"> | string
     notes?: StringNullableFilter<"SourceAgency"> | string | null
     last_success_at?: DateTimeNullableFilter<"SourceAgency"> | Date | string | null
     last_failure_at?: DateTimeNullableFilter<"SourceAgency"> | Date | string | null
@@ -33714,6 +33729,7 @@ export namespace Prisma {
     city?: SortOrderInput | SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
+    crawl_interval?: SortOrder
     notes?: SortOrderInput | SortOrder
     last_success_at?: SortOrderInput | SortOrder
     last_failure_at?: SortOrderInput | SortOrder
@@ -33740,6 +33756,7 @@ export namespace Prisma {
     city?: StringNullableFilter<"SourceAgency"> | string | null
     is_visible?: BoolFilter<"SourceAgency"> | boolean
     is_enabled?: BoolFilter<"SourceAgency"> | boolean
+    crawl_interval?: StringFilter<"SourceAgency"> | string
     notes?: StringNullableFilter<"SourceAgency"> | string | null
     last_success_at?: DateTimeNullableFilter<"SourceAgency"> | Date | string | null
     last_failure_at?: DateTimeNullableFilter<"SourceAgency"> | Date | string | null
@@ -33763,6 +33780,7 @@ export namespace Prisma {
     city?: SortOrderInput | SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
+    crawl_interval?: SortOrder
     notes?: SortOrderInput | SortOrder
     last_success_at?: SortOrderInput | SortOrder
     last_failure_at?: SortOrderInput | SortOrder
@@ -33786,6 +33804,7 @@ export namespace Prisma {
     city?: StringNullableWithAggregatesFilter<"SourceAgency"> | string | null
     is_visible?: BoolWithAggregatesFilter<"SourceAgency"> | boolean
     is_enabled?: BoolWithAggregatesFilter<"SourceAgency"> | boolean
+    crawl_interval?: StringWithAggregatesFilter<"SourceAgency"> | string
     notes?: StringNullableWithAggregatesFilter<"SourceAgency"> | string | null
     last_success_at?: DateTimeNullableWithAggregatesFilter<"SourceAgency"> | Date | string | null
     last_failure_at?: DateTimeNullableWithAggregatesFilter<"SourceAgency"> | Date | string | null
@@ -36116,6 +36135,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -36139,6 +36159,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -36162,6 +36183,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -36185,6 +36207,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -36208,6 +36231,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -36225,6 +36249,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -36242,6 +36267,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -38984,6 +39010,7 @@ export namespace Prisma {
     city?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
+    crawl_interval?: SortOrder
     notes?: SortOrder
     last_success_at?: SortOrder
     last_failure_at?: SortOrder
@@ -39001,6 +39028,7 @@ export namespace Prisma {
     city?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
+    crawl_interval?: SortOrder
     notes?: SortOrder
     last_success_at?: SortOrder
     last_failure_at?: SortOrder
@@ -39017,6 +39045,7 @@ export namespace Prisma {
     city?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
+    crawl_interval?: SortOrder
     notes?: SortOrder
     last_success_at?: SortOrder
     last_failure_at?: SortOrder
@@ -44709,6 +44738,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -44731,6 +44761,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -44895,6 +44926,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -44917,6 +44949,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -45148,6 +45181,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -45170,6 +45204,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -45499,6 +45534,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -45521,6 +45557,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -45724,6 +45761,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -45746,6 +45784,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -45900,6 +45939,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -45922,6 +45962,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -46863,6 +46904,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -46885,6 +46927,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -47202,6 +47245,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -47224,6 +47268,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -48047,6 +48092,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -48069,6 +48115,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -48229,6 +48276,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -48251,6 +48299,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -48643,6 +48692,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -48665,6 +48715,7 @@ export namespace Prisma {
     city?: string | null
     is_visible?: boolean
     is_enabled?: boolean
+    crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
     last_failure_at?: Date | string | null
@@ -48731,6 +48782,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -48753,6 +48805,7 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

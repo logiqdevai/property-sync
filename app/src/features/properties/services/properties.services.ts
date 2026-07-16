@@ -1,6 +1,7 @@
 import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
 import type {
+  DeletePropertiesPayload,
   MergePropertiesPayload,
   PaginatedResponse,
   Property,
@@ -47,5 +48,24 @@ export const splitProperty = async (id: string): Promise<Property> => {
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to split property from group.");
+  }
+};
+
+export const deleteProperty = async (id: string): Promise<void> => {
+  try {
+    await axiosInstance.delete(ApiRoutes.admin.properties.detail(id));
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to delete property.");
+  }
+};
+
+export const deleteProperties = async (
+  payload: DeletePropertiesPayload,
+): Promise<{ deleted: number }> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.properties.bulkDelete, payload);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to delete properties.");
   }
 };

@@ -133,3 +133,7 @@ export interface PaginatedResponse<T> {
 export interface MergePropertiesPayload {
   property_ids: string[];
 }
+
+export interface DeletePropertiesPayload {
+  property_ids: string[];
+}

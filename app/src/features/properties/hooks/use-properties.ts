@@ -1,12 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import {
+  deleteProperties,
+  deleteProperty,
   getProperties,
   getProperty,
   mergeProperties,
   splitProperty,
 } from "../services/properties.services";
-import type { PropertyListQuery, MergePropertiesPayload } from "../interfaces/properties.interfaces";
+import type {
+  DeletePropertiesPayload,
+  MergePropertiesPayload,
+  PropertyListQuery,
+} from "../interfaces/properties.interfaces";
 
 export const useProperties = (query: PropertyListQuery) => {
   return useQuery({
@@ -54,6 +60,44 @@ export const useSplitProperty = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not split property",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDeleteProperty = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteProperty(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["properties"] });
+      toast({ title: "Property deleted", duration: 2000, variant: "success" });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not delete property",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDeleteProperties = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: DeletePropertiesPayload) => deleteProperties(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["properties"] });
+      toast({ title: "Properties deleted", duration: 2000, variant: "success" });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not delete properties",
         description: error.message,
         variant: "error",
       });

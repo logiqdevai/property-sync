@@ -27,11 +27,16 @@ export class CrawlSchedulerCron {
         id: true,
         source_agency_id: true,
         crawl_interval: true,
+        source_agency: {
+          select: { crawl_interval: true },
+        },
       },
     });
 
     for (const tracker of trackers) {
-      if (!this.isCronDue(tracker.crawl_interval, now)) {
+      const crawlInterval =
+        tracker.source_agency.crawl_interval || tracker.crawl_interval;
+      if (!this.isCronDue(crawlInterval, now)) {
         continue;
       }
 
