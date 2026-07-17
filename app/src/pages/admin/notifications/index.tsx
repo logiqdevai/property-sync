@@ -9,7 +9,7 @@ import {
   Table,
   useOverlayState,
 } from "@heroui/react";
-import { MailOpen, Send, Trash2 } from "lucide-react";
+import { Copy, MailOpen, Send, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -18,6 +18,10 @@ import {
   TableRowActionsMenu,
   type TableRowAction,
 } from "@/components/ui/table-row-actions-menu";
+import {
+  copyNotificationMessage,
+  NotificationDetailModal,
+} from "./components/notification-detail-modal";
 import { NotificationSeverityChip } from "./components/notification-severity-chip";
 import { NotificationTypeChip } from "./components/notification-type-chip";
 import { SendTelegramTestForm } from "./components/send-telegram-test-form";
@@ -73,6 +77,7 @@ export default function NotificationsListPage() {
   const deleteConfirm = useOverlayState();
   const bulkDeleteConfirm = useOverlayState();
   const telegramTestModal = useOverlayState();
+  const detailModal = useOverlayState();
 
   const [type, setType] = useState<NotificationType | "all">("all");
   const [severity, setSeverity] = useState<NotificationSeverity | "all">("all");
@@ -80,6 +85,12 @@ export default function NotificationsListPage() {
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteNotificationId, setDeleteNotificationId] = useState<string | null>(null);
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+
+  const openNotificationDetail = (notification: Notification) => {
+    setSelectedNotification(notification);
+    detailModal.open();
+  };
 
   const query = useMemo<NotificationListQuery>(
     () => ({
@@ -318,7 +329,25 @@ export default function NotificationsListPage() {
                               ) : (
                                 <span className="font-medium text-foreground">{notification.title}</span>
                               )}
-                              <span className="text-xs text-muted line-clamp-2">{notification.message}</span>
+                              <div className="flex items-start gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => openNotificationDetail(notification)}
+                                  className="text-left text-xs text-muted line-clamp-2 hover:text-foreground transition-colors cursor-pointer"
+                                >
+                                  {notification.message}
+                                </button>
+                                <Button
+                                  size="sm"
+                                  variant="tertiary"
+                                  isIconOnly
+                                  aria-label={`Copy message for ${notification.title}`}
+                                  onPress={() => copyNotificationMessage(notification.message)}
+                                  className="shrink-0"
+                                >
+                                  <Copy className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
                             </div>
                           </Table.Cell>
                           <Table.Cell>
@@ -425,6 +454,8 @@ export default function NotificationsListPage() {
           </Modal.Container>
         </Modal.Backdrop>
       </Modal>
+
+      <NotificationDetailModal state={detailModal} notification={selectedNotification} />
     </div>
   );
 }

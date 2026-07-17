@@ -17,13 +17,18 @@ import { PlatformConfig } from 'generated/prisma';
 
 const SINGLETON_ID = 'singleton';
 
+// Cached in-memory so high-frequency callers (e.g. a new browser context per crawl
+// page/detail item) don't hit the DB on every call. A short TTL -- rather than
+// invalidate-on-write only -- means the cache also self-heals from writes this
+// process didn't make itself: a seed script, a direct DB edit, or another app
+// instance's PATCH in a multi-instance deployment.
+const CACHE_TTL_MS = 30_000;
+
 @Injectable()
 export class PlatformConfigService {
-  // Cached in-memory so high-frequency callers (e.g. a new browser context per
-  // crawl page/detail item) don't hit the DB on every call. Invalidated whenever
-  // an admin updates the config, so changes apply without a restart. `undefined`
-  // means "not fetched yet" -- distinct from a confirmed-missing row (`null`).
+  // `undefined` means "not fetched yet" -- distinct from a confirmed-missing row (`null`).
   private cachedRow: PlatformConfig | null | undefined = undefined;
+  private cachedAt = 0;
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -54,7 +59,7 @@ export class PlatformConfigService {
     const created = await this.prisma.platformConfig.create({
       data: { id: SINGLETON_ID },
     });
-    this.cachedRow = created;
+    this.setCachedRow(created);
     return created;
   }
 
@@ -65,16 +70,24 @@ export class PlatformConfigService {
       update: dto,
     });
 
-    this.cachedRow = updated;
+    this.setCachedRow(updated);
     return updated;
   }
 
   private async getCachedRow(): Promise<PlatformConfig | null> {
-    if (this.cachedRow !== undefined) return this.cachedRow;
+    const isStale =
+      this.cachedRow === undefined || Date.now() - this.cachedAt > CACHE_TTL_MS;
+    if (!isStale) return this.cachedRow as PlatformConfig | null;
 
-    this.cachedRow = await this.prisma.platformConfig.findUnique({
+    const row = await this.prisma.platformConfig.findUnique({
       where: { id: SINGLETON_ID },
     });
-    return this.cachedRow;
+    this.setCachedRow(row);
+    return row;
+  }
+
+  private setCachedRow(row: PlatformConfig | null): void {
+    this.cachedRow = row;
+    this.cachedAt = Date.now();
   }
 }
