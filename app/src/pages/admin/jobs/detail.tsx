@@ -1,10 +1,12 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import { useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { JobStatusChip } from "./components/job-status-chip";
-import { useJob, useRetryJob } from "@/features/jobs/hooks/use-jobs";
+import { useJob, useRetryJob, useStopJob } from "@/features/jobs/hooks/use-jobs";
 import { JobStatuses } from "@/features/jobs/interfaces/jobs.interfaces";
 import { formatDateTime } from "@/lib/date";
 import { formatDuration } from "@/lib/duration";
@@ -24,15 +26,21 @@ function JsonBlock({ value }: { value: unknown }) {
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const stopConfirm = useOverlayState();
 
   const { data: job, isPending } = useJob(id!);
   const retryJob = useRetryJob();
+  const stopJob = useStopJob();
 
   if (isPending || !job) {
     return <DetailSkeleton fieldCount={5} showSubTable subTableRows={2} />;
   }
 
-  const isActive = job.status === JobStatuses.WAITING || job.status === JobStatuses.ACTIVE;
+  const isActive =
+    job.status === JobStatuses.WAITING ||
+    job.status === JobStatuses.ACTIVE ||
+    job.status === JobStatuses.DELAYED ||
+    job.status === JobStatuses.PAUSED;
 
   return (
     <div className="flex flex-col gap-6">
@@ -52,7 +60,16 @@ export default function JobDetailPage() {
           <JobStatusChip status={job.status} />
           {isActive && <Loader2 className="h-4 w-4 animate-spin text-muted" />}
         </div>
-        {job.status === JobStatuses.FAILED && (
+        {isActive ? (
+          <ActionButtonWithPending
+            variant="danger"
+            isPending={stopJob.isPending}
+            isDisabled={stopJob.isPending}
+            onPress={stopConfirm.open}
+          >
+            Stop
+          </ActionButtonWithPending>
+        ) : job.status === JobStatuses.FAILED ? (
           <ActionButtonWithPending
             isPending={retryJob.isPending}
             isDisabled={retryJob.isPending}
@@ -60,7 +77,7 @@ export default function JobDetailPage() {
           >
             Retry
           </ActionButtonWithPending>
-        )}
+        ) : null}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 rounded-xl border border-border bg-surface p-6">
@@ -132,6 +149,17 @@ export default function JobDetailPage() {
           </pre>
         </div>
       )}
+
+      <ConfirmationDialog
+        state={stopConfirm}
+        title="Stop this job?"
+        description="The job will be removed from the queue if possible and marked as failed. An already-running worker may still finish its current work."
+        confirmLabel="Stop job"
+        isPending={stopJob.isPending}
+        onConfirm={async () => {
+          await stopJob.mutateAsync(job.id);
+        }}
+      />
     </div>
   );
 }

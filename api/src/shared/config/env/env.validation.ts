@@ -14,6 +14,8 @@ const EnvSchema = z.object({
     RESEND_API_KEY: z.string().optional(),
     TWILIO_ACCOUNT_SID: z.string().optional(),
     TWILIO_AUTH_TOKEN: z.string().optional(),
+    TELEGRAM_BOT_KEY: z.string().optional(),
+    TELEGRAM_CHAT_ID: z.string().optional(),
     GOOGLE_MAPS_API_KEY: z.string().optional(),
     GCS_PROJECT_ID: z.string().optional(),
     GCS_BUCKET_NAME: z.string().optional(),

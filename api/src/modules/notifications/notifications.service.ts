@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { TelegramService } from '@/integrations/notifications/telegram/services/telegram.service';
 import { NotificationQueryType } from './dto/notification-query.schema';
 import {
   CreateNotificationInput,
@@ -11,12 +12,22 @@ import { Notification as NotificationModel, Prisma } from 'generated/prisma';
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly telegramService: TelegramService,
+  ) {}
 
   create(input: CreateNotificationInput): void {
     setImmediate(async () => {
       try {
-        await this.prisma.notification.create({ data: input });
+        const notification = await this.prisma.notification.create({ data: input });
+
+        try {
+          await this.telegramService.sendNotification(notification);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          this.logger.error(`Failed to send Telegram notification: ${message}`);
+        }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         this.logger.error(`Failed to create notification: ${message}`);
@@ -80,5 +91,29 @@ export class NotificationsService {
     });
 
     return { updated: result.count };
+  }
+
+  async remove(id: string): Promise<{ deleted: number }> {
+    const existing = await this.prisma.notification.findUnique({ where: { id } });
+
+    if (!existing) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    await this.prisma.notification.delete({ where: { id } });
+
+    return { deleted: 1 };
+  }
+
+  async removeMany(ids: string[]): Promise<{ deleted: number }> {
+    const result = await this.prisma.notification.deleteMany({
+      where: { id: { in: ids } },
+    });
+
+    return { deleted: result.count };
+  }
+
+  sendTelegramTest(message: string): Promise<{ sent: true }> {
+    return this.telegramService.sendTestMessage(message);
   }
 }

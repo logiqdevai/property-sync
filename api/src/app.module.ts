@@ -24,7 +24,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { IntegrationTargetsModule } from './modules/integration-targets/integration-targets.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { UserDashboardModule } from './modules/user-dashboard/user-dashboard.module';
+import { HealthModule } from './modules/health/health.module';
 import { QueuesModule } from './core/queues/queues.module';
+import { BullBoardModule } from './core/queues/bull-board.module';
 import { ConfigModule } from './shared/config/env/env.module';
 
 @Module({
@@ -37,6 +39,8 @@ import { ConfigModule } from './shared/config/env/env.module';
     RedisModule,
     RedisCacheModule,
     QueuesModule,
+    BullBoardModule,
+    HealthModule,
     // GraphQLModule,
     AuthModule,
     UsersModule,

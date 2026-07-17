@@ -50,4 +50,14 @@ export class JobsController {
   retry(@Param('id') id: string) {
     return this.jobsService.retry(id);
   }
+
+  @Post(':id/stop')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Stop a queued or running job' })
+  @ApiResponse({ status: 200, type: JobLog })
+  @ApiResponse({ status: 400, description: 'Job is not stoppable' })
+  @ApiResponse({ status: 404, description: 'Job log not found' })
+  stop(@Param('id') id: string) {
+    return this.jobsService.stop(id);
+  }
 }

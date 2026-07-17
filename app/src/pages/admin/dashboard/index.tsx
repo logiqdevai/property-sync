@@ -1,8 +1,13 @@
 import { Link } from "react-router-dom";
+import { ExternalLink } from "lucide-react";
+import { Button } from "@heroui/react";
 import { useDashboard } from "@/features/dashboard/hooks/use-dashboard";
-import type { ActivityFeedItem } from "@/features/dashboard/interfaces/dashboard.interfaces";
+import type { ActivityFeedItem, DashboardKpis } from "@/features/dashboard/interfaces/dashboard.interfaces";
+import { ApiRoutes } from "@/config/api/routes";
+import { environments } from "@/config/environments";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { SystemHealthSection } from "./components/system-health-section";
 
 function KpiCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
@@ -52,22 +57,49 @@ function formatTimestamp(value: string) {
   return new Date(value).toLocaleString();
 }
 
+function getBullBoardUrl() {
+  return new URL(ApiRoutes.admin.queues.bullBoard.replace(/^\//, ""), environments.API_URL).href;
+}
+
 export default function AdminDashboardPage() {
   const { data, isPending } = useDashboard();
 
-  if (isPending || !data) {
-    return <DetailSkeleton fieldCount={8} showSubTable subTableRows={6} />;
-  }
-
-  const { kpis, activity } = data;
-
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <p className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</p>
-        <p className="text-sm text-muted">Platform overview and recent activity.</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</p>
+          <p className="text-sm text-muted">Platform overview and recent activity.</p>
+        </div>
+        <Button
+          variant="secondary"
+          onPress={() => window.open(getBullBoardUrl(), "_blank", "noopener,noreferrer")}
+        >
+          <ExternalLink className="h-4 w-4" />
+          BullMQ dashboard
+        </Button>
       </div>
 
+      <SystemHealthSection />
+
+      {isPending || !data ? (
+        <DetailSkeleton fieldCount={8} showSubTable subTableRows={6} />
+      ) : (
+        <DashboardBody kpis={data.kpis} activity={data.activity} />
+      )}
+    </div>
+  );
+}
+
+function DashboardBody({
+  kpis,
+  activity,
+}: {
+  kpis: DashboardKpis;
+  activity: ActivityFeedItem[];
+}) {
+  return (
+    <>
       <KpiSection title="Scrapers">
         <KpiCard label="Total" value={kpis.scrapers_total} />
         <KpiCard label="Active" value={kpis.scrapers_active} />
@@ -155,6 +187,6 @@ export default function AdminDashboardPage() {
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }

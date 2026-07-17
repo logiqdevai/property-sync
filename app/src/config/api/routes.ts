@@ -1,4 +1,5 @@
 export const ApiRoutes = {
+    health: "/health",
     auth: {
         email: {
             login: "/auth/email/login",
@@ -60,6 +61,10 @@ export const ApiRoutes = {
             list: "/admin/jobs",
             detail: (id: string) => `/admin/jobs/${id}`,
             retry: (id: string) => `/admin/jobs/${id}/retry`,
+            stop: (id: string) => `/admin/jobs/${id}/stop`,
+        },
+        queues: {
+            bullBoard: "/admin/queues",
         },
         diagnostics: {
             prefix: "/admin/diagnostics",
@@ -77,8 +82,11 @@ export const ApiRoutes = {
         notifications: {
             prefix: "/admin/notifications",
             list: "/admin/notifications",
+            detail: (id: string) => `/admin/notifications/${id}`,
             markRead: (id: string) => `/admin/notifications/${id}/read`,
             markAllRead: "/admin/notifications/read-all",
+            bulkDelete: "/admin/notifications/bulk-delete",
+            telegramTest: "/admin/notifications/telegram/test",
         },
         integrationTargets: {
             prefix: "/admin/integration-targets",

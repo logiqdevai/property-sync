@@ -12,6 +12,8 @@ export default () => ({
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
     TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
+    TELEGRAM_BOT_KEY: process.env.TELEGRAM_BOT_KEY,
+    TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID,
     GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
     GCS_PROJECT_ID: process.env.GCS_PROJECT_ID,
     GCS_BUCKET_NAME: process.env.GCS_BUCKET_NAME,

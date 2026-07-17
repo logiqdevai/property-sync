@@ -1,17 +1,33 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { MailOpen } from "lucide-react";
-import { Table, Select, ListBox, Pagination } from "@heroui/react";
+import {
+  Button,
+  ListBox,
+  Modal,
+  Pagination,
+  Select,
+  Table,
+  useOverlayState,
+} from "@heroui/react";
+import { MailOpen, Send, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { TableRowActionsMenu } from "@/components/ui/table-row-actions-menu";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import {
+  TableRowActionsMenu,
+  type TableRowAction,
+} from "@/components/ui/table-row-actions-menu";
 import { NotificationSeverityChip } from "./components/notification-severity-chip";
 import { NotificationTypeChip } from "./components/notification-type-chip";
+import { SendTelegramTestForm } from "./components/send-telegram-test-form";
 import {
+  useDeleteNotification,
+  useDeleteNotifications,
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
   useNotifications,
+  useSendTelegramTest,
 } from "@/features/notifications/hooks/use-notifications";
 import {
   type Notification,
@@ -19,6 +35,7 @@ import {
   type NotificationSeverity,
   type NotificationType,
 } from "@/features/notifications/interfaces/notifications.interfaces";
+import type { SendTelegramTestFormValues } from "@/features/notifications/validation-schemas/notifications.schema";
 import { NotificationTypeFilterOptions } from "@/config/constants/dropdowns/notification-type-filter.options";
 import { NotificationSeverityFilterOptions } from "@/config/constants/dropdowns/notification-severity-filter.options";
 import { ReadFilterOptions } from "@/config/constants/dropdowns/read-filter.options";
@@ -40,11 +57,29 @@ function formatTimestamp(value: string) {
   return new Date(value).toLocaleString();
 }
 
+function getNotificationActions(isRead: boolean): TableRowAction[] {
+  const actions: TableRowAction[] = [];
+
+  if (!isRead) {
+    actions.push({ id: "mark-read", label: "Mark read", icon: MailOpen });
+  }
+
+  actions.push({ id: "delete", label: "Delete", variant: "danger", icon: Trash2 });
+
+  return actions;
+}
+
 export default function NotificationsListPage() {
+  const deleteConfirm = useOverlayState();
+  const bulkDeleteConfirm = useOverlayState();
+  const telegramTestModal = useOverlayState();
+
   const [type, setType] = useState<NotificationType | "all">("all");
   const [severity, setSeverity] = useState<NotificationSeverity | "all">("all");
   const [readState, setReadState] = useState<"all" | "true" | "false">("all");
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleteNotificationId, setDeleteNotificationId] = useState<string | null>(null);
 
   const query = useMemo<NotificationListQuery>(
     () => ({
@@ -60,9 +95,62 @@ export default function NotificationsListPage() {
   const { data, isPending } = useNotifications(query);
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
+  const deleteNotification = useDeleteNotification();
+  const deleteNotifications = useDeleteNotifications();
+  const sendTelegramTest = useSendTelegramTest();
 
   const notifications = data?.data ?? [];
   const pagination = data?.pagination;
+  const selectedCount = selectedIds.size;
+  const allVisibleSelected =
+    notifications.length > 0 && notifications.every((notification) => selectedIds.has(notification.id));
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        for (const notification of notifications) {
+          next.delete(notification.id);
+        }
+        return next;
+      }
+
+      for (const notification of notifications) {
+        next.add(notification.id);
+      }
+      return next;
+    });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteNotificationId) return;
+    await deleteNotification.mutateAsync(deleteNotificationId);
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(deleteNotificationId);
+      return next;
+    });
+    setDeleteNotificationId(null);
+  };
+
+  const handleBulkDelete = async () => {
+    await deleteNotifications.mutateAsync({ ids: Array.from(selectedIds) });
+    setSelectedIds(new Set());
+  };
+
+  const handleSendTelegramTest = async (values: SendTelegramTestFormValues) => {
+    await sendTelegramTest.mutateAsync(values);
+    telegramTestModal.close();
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -73,13 +161,30 @@ export default function NotificationsListPage() {
             System alerts for scraper failures, crawl issues, and property anomalies.
           </p>
         </div>
-        <ActionButtonWithPending
-          variant="secondary"
-          onPress={() => markAllRead.mutateAsync()}
-          isPending={markAllRead.isPending}
-        >
-          Mark all read
-        </ActionButtonWithPending>
+        <div className="flex items-center gap-2">
+          <ActionButtonWithPending
+            variant="secondary"
+            onPress={telegramTestModal.open}
+            isPending={sendTelegramTest.isPending}
+            idleLeading={<Send className="h-4 w-4" />}
+          >
+            Test Telegram
+          </ActionButtonWithPending>
+          <Button
+            variant="danger"
+            isDisabled={selectedCount < 1}
+            onPress={bulkDeleteConfirm.open}
+          >
+            Delete selected ({selectedCount})
+          </Button>
+          <ActionButtonWithPending
+            variant="secondary"
+            onPress={() => markAllRead.mutateAsync()}
+            isPending={markAllRead.isPending}
+          >
+            Mark all read
+          </ActionButtonWithPending>
+        </div>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -88,6 +193,7 @@ export default function NotificationsListPage() {
           selectedKey={type}
           onSelectionChange={(key) => {
             setPage(1);
+            setSelectedIds(new Set());
             setType(key as NotificationType | "all");
           }}
           className="w-64"
@@ -112,6 +218,7 @@ export default function NotificationsListPage() {
           selectedKey={severity}
           onSelectionChange={(key) => {
             setPage(1);
+            setSelectedIds(new Set());
             setSeverity(key as NotificationSeverity | "all");
           }}
           className="w-44"
@@ -136,6 +243,7 @@ export default function NotificationsListPage() {
           selectedKey={readState}
           onSelectionChange={(key) => {
             setPage(1);
+            setSelectedIds(new Set());
             setReadState(key as "all" | "true" | "false");
           }}
           className="w-36"
@@ -157,7 +265,7 @@ export default function NotificationsListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={6} />
+        <TableSkeleton rows={8} columns={7} />
       ) : notifications.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No notifications found.
@@ -169,6 +277,14 @@ export default function NotificationsListPage() {
               <Table.ScrollContainer>
                 <Table.Content aria-label="Notifications">
                   <Table.Header>
+                    <Table.Column isRowHeader>
+                      <input
+                        type="checkbox"
+                        checked={allVisibleSelected}
+                        onChange={toggleSelectAllVisible}
+                        aria-label="Select all notifications on this page"
+                      />
+                    </Table.Column>
                     <Table.Column isRowHeader>Title</Table.Column>
                     <Table.Column>Type</Table.Column>
                     <Table.Column>Severity</Table.Column>
@@ -182,6 +298,14 @@ export default function NotificationsListPage() {
 
                       return (
                         <Table.Row key={notification.id}>
+                          <Table.Cell>
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.has(notification.id)}
+                              onChange={() => toggleSelection(notification.id)}
+                              aria-label={`Select ${notification.title}`}
+                            />
+                          </Table.Cell>
                           <Table.Cell>
                             <div className="flex flex-col gap-1 max-w-md">
                               {link ? (
@@ -213,19 +337,16 @@ export default function NotificationsListPage() {
                           </Table.Cell>
                           <Table.Cell>
                             <TableRowActionsMenu
-                              actions={
-                                notification.is_read
-                                  ? []
-                                  : [
-                                      {
-                                        id: "mark-read",
-                                        label: "Mark read",
-                                        icon: MailOpen,
-                                        isDisabled: markRead.isPending,
-                                      },
-                                    ]
-                              }
-                              onAction={() => markRead.mutate(notification.id)}
+                              actions={getNotificationActions(notification.is_read)}
+                              onAction={(actionId) => {
+                                if (actionId === "mark-read") {
+                                  markRead.mutate(notification.id);
+                                  return;
+                                }
+                                if (actionId !== "delete") return;
+                                setDeleteNotificationId(notification.id);
+                                deleteConfirm.open();
+                              }}
                               ariaLabel={`Actions for ${notification.title}`}
                             />
                           </Table.Cell>
@@ -267,6 +388,43 @@ export default function NotificationsListPage() {
           )}
         </>
       )}
+
+      <ConfirmationDialog
+        state={deleteConfirm}
+        title="Delete this notification?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+        isPending={deleteNotification.isPending}
+      />
+
+      <ConfirmationDialog
+        state={bulkDeleteConfirm}
+        title="Delete selected notifications?"
+        description={`This will permanently delete ${selectedCount} notifications. This cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={handleBulkDelete}
+        isPending={deleteNotifications.isPending}
+      />
+
+      <Modal state={telegramTestModal}>
+        <Modal.Backdrop isDismissable={!sendTelegramTest.isPending}>
+          <Modal.Container>
+            <Modal.Dialog className="max-w-lg">
+              <Modal.Header>
+                <Modal.Heading>Send Telegram test</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <SendTelegramTestForm
+                  isPending={sendTelegramTest.isPending}
+                  onCancel={telegramTestModal.close}
+                  onSubmit={handleSendTelegramTest}
+                />
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
     </div>
   );
 }

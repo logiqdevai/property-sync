@@ -80,3 +80,19 @@ export interface PaginatedResponse<T> {
 export interface MarkAllReadResponse {
   updated: number;
 }
+
+export interface DeleteNotificationsPayload {
+  ids: string[];
+}
+
+export interface DeleteNotificationsResponse {
+  deleted: number;
+}
+
+export interface SendTelegramTestPayload {
+  message: string;
+}
+
+export interface SendTelegramTestResponse {
+  sent: true;
+}

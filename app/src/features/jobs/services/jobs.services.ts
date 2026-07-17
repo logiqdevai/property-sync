@@ -28,3 +28,12 @@ export const retryJob = async (id: string): Promise<JobLog> => {
     throw new Error(error?.response?.data?.message || "Failed to retry job. Please try again.");
   }
 };
+
+export const stopJob = async (id: string): Promise<JobLog> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.jobs.stop(id));
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to stop job. Please try again.");
+  }
+};

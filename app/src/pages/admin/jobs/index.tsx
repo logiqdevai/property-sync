@@ -14,6 +14,7 @@ import {
 } from "@/features/jobs/interfaces/jobs.interfaces";
 import { JobStatusFilterOptions } from "@/config/constants/dropdowns/job-status-filter.options";
 import { JobQueueFilterOptions } from "@/config/constants/dropdowns/job-queue-filter.options";
+import { formatDateTime } from "@/lib/date";
 import { formatDuration } from "@/lib/duration";
 
 function getJobActions(job: { id: string; status: JobStatus }): TableRowAction[] {
@@ -122,7 +123,7 @@ export default function JobsListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={7} />
+        <TableSkeleton rows={8} columns={8} />
       ) : jobs.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No jobs found.
@@ -138,6 +139,7 @@ export default function JobsListPage() {
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Attempts</Table.Column>
                   <Table.Column>Duration</Table.Column>
+                  <Table.Column>Created</Table.Column>
                   <Table.Column>Crawl run</Table.Column>
                   <Table.Column>Actions</Table.Column>
                 </Table.Header>
@@ -154,6 +156,7 @@ export default function JobsListPage() {
                         {job.max_attempts !== null ? ` / ${job.max_attempts}` : ""}
                       </Table.Cell>
                       <Table.Cell>{formatDuration(job.duration_ms)}</Table.Cell>
+                      <Table.Cell>{formatDateTime(job.created_at)}</Table.Cell>
                       <Table.Cell>
                         {job.crawl_run_id ? (
                           <button

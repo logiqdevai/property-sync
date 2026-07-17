@@ -101,6 +101,48 @@ export class JobsService {
     return this.findOne(id);
   }
 
+  async stop(id: string) {
+    const jobLog = await this.prisma.jobLog.findUnique({ where: { id } });
+
+    if (!jobLog) {
+      throw new NotFoundException('Job log not found');
+    }
+
+    const stoppable: JobStatus[] = [
+      JobStatus.WAITING,
+      JobStatus.ACTIVE,
+      JobStatus.DELAYED,
+      JobStatus.PAUSED,
+    ];
+
+    if (!stoppable.includes(jobLog.status)) {
+      throw new BadRequestException(
+        'Only queued or running jobs can be stopped',
+      );
+    }
+
+    if (jobLog.job_id) {
+      try {
+        const queue = this.resolveQueue(jobLog.queue_name);
+        await queue.remove(jobLog.job_id);
+      } catch {}
+    }
+
+    const finishedAt = new Date();
+
+    return this.prisma.jobLog.update({
+      where: { id },
+      data: {
+        status: JobStatus.FAILED,
+        finished_at: finishedAt,
+        duration_ms: jobLog.started_at
+          ? finishedAt.getTime() - jobLog.started_at.getTime()
+          : null,
+        error_message: 'Stopped by admin',
+      },
+    });
+  }
+
   private resolveQueue(queueName: string): Queue {
     if (queueName === GENERATION_QUEUE) {
       return this.generationQueue;
