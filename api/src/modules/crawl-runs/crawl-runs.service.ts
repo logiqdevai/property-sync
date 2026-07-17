@@ -7,10 +7,7 @@ import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CRAWL_QUEUE } from '@/core/queues/queues.constants';
 import { CrawlRunStatus, Prisma } from 'generated/prisma';
-import {
-  CrawlRunQueryType,
-  UserCrawlRunQueryType,
-} from './dto/crawl-run-query.schema';
+import { CrawlRunQueryType } from './dto/crawl-run-query.schema';
 import { PaginatedResult } from './interfaces/crawl-run.interface';
 
 interface CrawlJobData {
@@ -105,65 +102,6 @@ export class CrawlRunsService {
         has_prev: query.page > 1,
       },
       total_cost: aggregate._sum.ai_total_cost?.toString() ?? null,
-    };
-  }
-
-  async findAllForUser(
-    userId: string,
-    query: UserCrawlRunQueryType,
-  ): Promise<PaginatedResult<any>> {
-    // A CrawlRun scrapes an agency's site once, shared across every user tracking that
-    // agency -- it is not created per-tracker (see CrawlSchedulerCron.enqueueDueAgencyRuns),
-    // so scheduled runs carry no user_tracked_agency_id. Scope by the agencies the user
-    // tracks instead of by CrawlRun.user_tracked_agency_id, or scheduled runs never show up.
-    const trackedAgencies = await this.prisma.userTrackedAgency.findMany({
-      where: { user_id: userId },
-      select: { id: true, source_agency_id: true },
-    });
-
-    const scopedAgencyIds = query.user_tracked_agency_id
-      ? trackedAgencies
-          .filter((tracked) => tracked.id === query.user_tracked_agency_id)
-          .map((tracked) => tracked.source_agency_id)
-      : trackedAgencies.map((tracked) => tracked.source_agency_id);
-
-    const where: Prisma.CrawlRunWhereInput = {
-      source_agency_id: { in: scopedAgencyIds },
-      ...(query.status && { status: query.status }),
-      ...(query.date_from || query.date_to
-        ? {
-            created_at: {
-              ...(query.date_from && { gte: query.date_from }),
-              ...(query.date_to && { lte: query.date_to }),
-            },
-          }
-        : {}),
-    };
-
-    const [items, total] = await Promise.all([
-      this.prisma.crawlRun.findMany({
-        where,
-        include: {
-          source_agency: { select: { name: true } },
-          scraper: { select: { name: true } },
-        },
-        skip: (query.page - 1) * query.limit,
-        take: query.limit,
-        orderBy: { created_at: 'desc' },
-      }),
-      this.prisma.crawlRun.count({ where }),
-    ]);
-
-    return {
-      data: items,
-      pagination: {
-        page: query.page,
-        limit: query.limit,
-        total,
-        total_pages: Math.ceil(total / query.limit),
-        has_next: query.page < Math.ceil(total / query.limit),
-        has_prev: query.page > 1,
-      },
     };
   }
 

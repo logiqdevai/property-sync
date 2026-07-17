@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
 import { Table, Select, ListBox, Pagination } from "@heroui/react";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { useTrackableAgencies } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
-import { useUserCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
+import { useUserIntegrationConnections } from "@/features/user-integrations/hooks/use-user-integrations";
+import { useUserCmsSyncRuns } from "@/features/cms-sync-runs/hooks/use-cms-sync-runs";
 import type {
-  CrawlRunStatus,
-  UserCrawlRunListQuery,
-} from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
-import { CrawlRunStatusChip } from "@/pages/admin/crawl-runs/components/crawl-run-status-chip";
-import { CrawlRunStatusFilterOptions } from "@/config/constants/dropdowns/crawl-run-status-filter.options";
+  CmsSyncStatus,
+  CmsSyncRunListQuery,
+} from "@/features/cms-sync-runs/interfaces/cms-sync-runs.interfaces";
+import { CmsSyncStatusChip } from "./components/cms-sync-status-chip";
+import { CmsSyncStatusFilterOptions } from "@/config/constants/dropdowns/cms-sync-status-filter.options";
+import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { formatDateTime } from "@/lib/date";
-import { formatDuration } from "@/lib/duration";
 
 function toStartOfDayIso(date: string) {
   return new Date(`${date}T00:00:00.000Z`).toISOString();
@@ -20,46 +20,46 @@ function toEndOfDayIso(date: string) {
   return new Date(`${date}T23:59:59.999Z`).toISOString();
 }
 
-function formatUsd(value: string | null) {
-  if (!value) return "$0.000000";
-  const num = Number(value);
-  if (Number.isNaN(num)) return value;
-  return `$${num.toFixed(6)}`;
+function connectionEmail(connection: {
+  email: string | null;
+  username: string | null;
+}) {
+  return connection.email || connection.username || "—";
 }
 
-export default function DashboardCrawlRunsPage() {
-  const [status, setStatus] = useState<CrawlRunStatus | "all">("all");
-  const [trackedAgencyId, setTrackedAgencyId] = useState<string | "all">("all");
+export default function DashboardSyncRunsPage() {
+  const [status, setStatus] = useState<CmsSyncStatus | "all">("all");
+  const [integrationId, setIntegrationId] = useState<string | "all">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
 
-  const query = useMemo<UserCrawlRunListQuery>(
+  const query = useMemo<CmsSyncRunListQuery>(
     () => ({
       page,
       limit: 20,
       ...(status !== "all" && { status }),
-      ...(trackedAgencyId !== "all" && { user_tracked_agency_id: trackedAgencyId }),
+      ...(integrationId !== "all" && { user_integration_id: integrationId }),
       ...(dateFrom && { date_from: toStartOfDayIso(dateFrom) }),
       ...(dateTo && { date_to: toEndOfDayIso(dateTo) }),
     }),
-    [page, status, trackedAgencyId, dateFrom, dateTo],
+    [page, status, integrationId, dateFrom, dateTo],
   );
 
-  const { data, isPending } = useUserCrawlRuns(query);
-  const { data: agenciesData } = useTrackableAgencies({ limit: 100 });
+  const { data, isPending } = useUserCmsSyncRuns(query);
+  const { data: connections } = useUserIntegrationConnections();
 
   const runs = data?.data ?? [];
   const pagination = data?.pagination;
-  const trackedAgencies = (agenciesData?.data ?? []).filter(
-    (agency) => agency.is_tracked && agency.user_tracked_agency_id,
+  const integrationConnections = (connections ?? []).filter(
+    (connection) => connection.integration_target.integration_type === IntegrationTypes.ESTATEWEB,
   );
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <p className="text-2xl font-semibold tracking-tight text-foreground">Crawl runs</p>
-        <p className="text-sm text-muted">Executions for the agencies you track.</p>
+        <p className="text-2xl font-semibold tracking-tight text-foreground">Sync runs</p>
+        <p className="text-sm text-muted">CMS push outcomes for your connected integrations.</p>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -68,7 +68,7 @@ export default function DashboardCrawlRunsPage() {
           selectedKey={status}
           onSelectionChange={(key) => {
             setPage(1);
-            setStatus(key as CrawlRunStatus | "all");
+            setStatus(key as CmsSyncStatus | "all");
           }}
           className="w-44"
         >
@@ -78,7 +78,7 @@ export default function DashboardCrawlRunsPage() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {CrawlRunStatusFilterOptions.map((option) => (
+              {CmsSyncStatusFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>
@@ -88,13 +88,13 @@ export default function DashboardCrawlRunsPage() {
         </Select>
 
         <Select
-          aria-label="Filter by tracked agency"
-          selectedKey={trackedAgencyId}
+          aria-label="Filter by integration"
+          selectedKey={integrationId}
           onSelectionChange={(key) => {
             setPage(1);
-            setTrackedAgencyId(key as string | "all");
+            setIntegrationId(key as string | "all");
           }}
-          className="w-56"
+          className="w-64"
         >
           <Select.Trigger>
             <Select.Value />
@@ -103,11 +103,11 @@ export default function DashboardCrawlRunsPage() {
           <Select.Popover>
             <ListBox>
               <ListBox.Item key="all" id="all">
-                All tracked agencies
+                All integrations
               </ListBox.Item>
-              {trackedAgencies.map((agency) => (
-                <ListBox.Item key={agency.user_tracked_agency_id!} id={agency.user_tracked_agency_id!}>
-                  {agency.name}
+              {integrationConnections.map((connection) => (
+                <ListBox.Item key={connection.id} id={connection.id}>
+                  {connectionEmail(connection)}
                 </ListBox.Item>
               ))}
             </ListBox>
@@ -140,34 +140,41 @@ export default function DashboardCrawlRunsPage() {
         <TableSkeleton rows={8} columns={9} />
       ) : runs.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
-          No crawl runs found.
+          No sync runs found.
         </div>
       ) : (
         <div className="rounded-xl border border-border bg-surface overflow-hidden">
           <Table>
             <Table.ScrollContainer>
-              <Table.Content aria-label="Crawl runs">
+              <Table.Content aria-label="Sync runs">
                 <Table.Header>
                   <Table.Column isRowHeader>Agency</Table.Column>
+                  <Table.Column>Integration</Table.Column>
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Created</Table.Column>
                   <Table.Column>Updated</Table.Column>
                   <Table.Column>Removed</Table.Column>
                   <Table.Column>Failed</Table.Column>
-                  <Table.Column>AI cost</Table.Column>
+                  <Table.Column>Attempt</Table.Column>
                   <Table.Column>Started</Table.Column>
-                  <Table.Column>Duration</Table.Column>
                 </Table.Header>
                 <Table.Body>
                   {runs.map((run) => (
                     <Table.Row key={run.id} id={run.id}>
                       <Table.Cell>
                         <span className="font-medium text-foreground">
-                          {run.source_agency?.name ?? "—"}
+                          {run.crawl_run?.source_agency?.name ?? "—"}
                         </span>
                       </Table.Cell>
                       <Table.Cell>
-                        <CrawlRunStatusChip status={run.status} />
+                        <span className="text-sm text-foreground">
+                          {run.user_integration
+                            ? connectionEmail(run.user_integration)
+                            : "—"}
+                        </span>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <CmsSyncStatusChip status={run.status} />
                       </Table.Cell>
                       <Table.Cell>
                         <span className="font-mono text-sm text-foreground">{run.total_created}</span>
@@ -183,11 +190,11 @@ export default function DashboardCrawlRunsPage() {
                       </Table.Cell>
                       <Table.Cell>
                         <span className="font-mono text-sm text-foreground">
-                          {formatUsd(run.ai_total_cost)}
+                          {run.attempt}
+                          {run.max_attempts != null ? `/${run.max_attempts}` : ""}
                         </span>
                       </Table.Cell>
-                      <Table.Cell>{formatDateTime(run.started_at)}</Table.Cell>
-                      <Table.Cell>{formatDuration(run.duration_ms)}</Table.Cell>
+                      <Table.Cell>{formatDateTime(run.started_at ?? run.created_at)}</Table.Cell>
                     </Table.Row>
                   ))}
                 </Table.Body>

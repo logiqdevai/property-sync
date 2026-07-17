@@ -17,6 +17,7 @@ import GenerationRunsListPage from "@/pages/admin/generation-runs";
 import GenerationRunDetailPage from "@/pages/admin/generation-runs/detail";
 import CrawlRunsListPage from "@/pages/admin/crawl-runs";
 import CrawlRunDetailPage from "@/pages/admin/crawl-runs/detail";
+import AdminSyncRunsListPage from "@/pages/admin/sync-runs";
 import JobsListPage from "@/pages/admin/jobs";
 import JobDetailPage from "@/pages/admin/jobs/detail";
 import DiagnosticsListPage from "@/pages/admin/diagnostics";
@@ -28,7 +29,7 @@ import DashboardAgenciesPage from "@/pages/dashboard/agencies";
 import DashboardPropertiesListPage from "@/pages/dashboard/properties";
 import DashboardPropertyDetailPage from "@/pages/dashboard/properties/detail";
 import DashboardIntegrationsPage from "@/pages/dashboard/integrations";
-import DashboardCrawlRunsPage from "@/pages/dashboard/crawl-runs";
+import DashboardSyncRunsPage from "@/pages/dashboard/sync-runs";
 import DashboardAccountPage from "@/pages/dashboard/account";
 import IntegrationTargetsListPage from "@/pages/admin/integration-targets";
 import IntegrationTargetDetailPage from "@/pages/admin/integration-targets/detail";
@@ -70,7 +71,8 @@ export default function AppRoutes() {
         <Route path="properties" element={<DashboardPropertiesListPage />} />
         <Route path="properties/:id" element={<DashboardPropertyDetailPage />} />
         <Route path="integrations" element={<DashboardIntegrationsPage />} />
-        <Route path="crawl-runs" element={<DashboardCrawlRunsPage />} />
+        <Route path="sync-runs" element={<DashboardSyncRunsPage />} />
+        <Route path="crawl-runs" element={<Navigate to={Routes.dashboard.syncRuns} replace />} />
         <Route path="account" element={<DashboardAccountPage />} />
       </Route>
 
@@ -97,6 +99,7 @@ export default function AppRoutes() {
         <Route path="generation-runs/:id" element={<GenerationRunDetailPage />} />
         <Route path="crawl-runs" element={<CrawlRunsListPage />} />
         <Route path="crawl-runs/:id" element={<CrawlRunDetailPage />} />
+        <Route path="sync-runs" element={<AdminSyncRunsListPage />} />
         <Route path="jobs" element={<JobsListPage />} />
         <Route path="jobs/:id" element={<JobDetailPage />} />
         <Route path="diagnostics" element={<DiagnosticsListPage />} />

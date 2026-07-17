@@ -13,6 +13,7 @@ import { AgenciesModule } from './modules/agencies/agencies.module';
 import { ScrapersModule } from './modules/scrapers/scrapers.module';
 import { ScraperGenerationModule } from './modules/scraper-generation/scraper-generation.module';
 import { CrawlRunsModule } from './modules/crawl-runs/crawl-runs.module';
+import { CmsSyncRunsModule } from './modules/cms-sync-runs/cms-sync-runs.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { DiagnosticsModule } from './modules/diagnostics/diagnostics.module';
 import { PropertiesModule } from './modules/properties/properties.module';
@@ -50,6 +51,7 @@ import { ConfigModule } from './shared/config/env/env.module';
     UserIntegrationsModule,
     ScraperGenerationModule,
     CrawlRunsModule,
+    CmsSyncRunsModule,
     JobsModule,
     DiagnosticsModule,
     PropertiesModule,

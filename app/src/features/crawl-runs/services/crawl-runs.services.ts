@@ -5,8 +5,6 @@ import type {
   CrawlRunDetail,
   CrawlRunListQuery,
   CrawlRunListResponse,
-  PaginatedResponse,
-  UserCrawlRunListQuery,
 } from "../interfaces/crawl-runs.interfaces";
 
 export const getCrawlRuns = async (
@@ -14,17 +12,6 @@ export const getCrawlRuns = async (
 ): Promise<CrawlRunListResponse> => {
   try {
     const response = await axiosInstance.get(ApiRoutes.admin.crawlRuns.list, { params: query });
-    return response.data;
-  } catch (error) {
-    throw new Error("Failed to fetch crawl runs. Please try again.");
-  }
-};
-
-export const getUserCrawlRuns = async (
-  query?: UserCrawlRunListQuery,
-): Promise<PaginatedResponse<CrawlRun>> => {
-  try {
-    const response = await axiosInstance.get(ApiRoutes.crawlRuns.list, { params: query });
     return response.data;
   } catch (error) {
     throw new Error("Failed to fetch crawl runs. Please try again.");

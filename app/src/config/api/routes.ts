@@ -56,6 +56,11 @@ export const ApiRoutes = {
             detail: (id: string) => `/admin/crawl-runs/${id}`,
             rerun: (id: string) => `/admin/crawl-runs/${id}/rerun`,
         },
+        cmsSyncRuns: {
+            prefix: "/admin/cms-sync-runs",
+            list: "/admin/cms-sync-runs",
+            integrations: "/admin/cms-sync-runs/integrations",
+        },
         jobs: {
             prefix: "/admin/jobs",
             list: "/admin/jobs",
@@ -123,9 +128,9 @@ export const ApiRoutes = {
         track: (agencyId: string) => `/agencies/${agencyId}/track`,
         integrationLink: (agencyId: string) => `/agencies/${agencyId}/track/integration`,
     },
-    crawlRuns: {
-        prefix: "/crawl-runs",
-        list: "/crawl-runs",
+    cmsSyncRuns: {
+        prefix: "/cms-sync-runs",
+        list: "/cms-sync-runs",
     },
     userProperties: {
         prefix: "/properties",

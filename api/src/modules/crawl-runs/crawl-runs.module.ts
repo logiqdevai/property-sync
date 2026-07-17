@@ -13,7 +13,6 @@ import { ScraperGenerationModule } from '@/modules/scraper-generation/scraper-ge
 import { PropertiesModule } from '@/modules/properties/properties.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { CrawlRunsController } from './crawl-runs.controller';
-import { UserCrawlRunsController } from './user-crawl-runs.controller';
 import { CrawlRunsService } from './crawl-runs.service';
 
 @Module({
@@ -26,7 +25,7 @@ import { CrawlRunsService } from './crawl-runs.service';
     NotificationsModule,
     BullModule.registerQueue({ name: CRAWL_QUEUE }),
   ],
-  controllers: [CrawlRunsController, UserCrawlRunsController],
+  controllers: [CrawlRunsController],
   providers: [
     CrawlRunsService,
     CrawlProcessor,

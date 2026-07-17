@@ -13,7 +13,7 @@ export const Routes = {
             detail: (id: string) => `/dashboard/properties/${id}`,
         },
         integrations: "/dashboard/integrations",
-        crawlRuns: "/dashboard/crawl-runs",
+        syncRuns: "/dashboard/sync-runs",
         account: "/dashboard/account",
     },
     admin: {
@@ -34,6 +34,7 @@ export const Routes = {
             list: "/admin/crawl-runs",
             detail: (id: string) => `/admin/crawl-runs/${id}`,
         },
+        syncRuns: "/admin/sync-runs",
         jobs: {
             list: "/admin/jobs",
             detail: (id: string) => `/admin/jobs/${id}`,

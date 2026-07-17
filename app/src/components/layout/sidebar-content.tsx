@@ -15,7 +15,7 @@ const navItems = [
   { label: 'Agencies', icon: Building2, href: Routes.dashboard.agencies, end: true },
   { label: 'My Properties', icon: Home, href: Routes.dashboard.properties.list, end: true },
   { label: 'Integrations', icon: Plug, href: Routes.dashboard.integrations, end: true },
-  { label: 'Crawl Runs', icon: Activity, href: Routes.dashboard.crawlRuns, end: true },
+  { label: 'Sync Runs', icon: Activity, href: Routes.dashboard.syncRuns, end: true },
   { label: 'Account', icon: User, href: Routes.dashboard.account, end: true },
 ];
 

@@ -3,13 +3,11 @@ import { toast } from "@/hooks/use-toast";
 import {
   getCrawlRun,
   getCrawlRuns,
-  getUserCrawlRuns,
   rerunCrawlRun,
 } from "../services/crawl-runs.services";
 import type {
   CrawlRunListQuery,
   CrawlRunStatus,
-  UserCrawlRunListQuery,
 } from "../interfaces/crawl-runs.interfaces";
 
 const ACTIVE_STATUSES: CrawlRunStatus[] = ["QUEUED", "RUNNING"];
@@ -18,13 +16,6 @@ export const useCrawlRuns = (query: CrawlRunListQuery) => {
   return useQuery({
     queryKey: ["crawlRuns", "list", query],
     queryFn: () => getCrawlRuns(query),
-  });
-};
-
-export const useUserCrawlRuns = (query: UserCrawlRunListQuery) => {
-  return useQuery({
-    queryKey: ["crawlRuns", "userList", query],
-    queryFn: () => getUserCrawlRuns(query),
   });
 };
 
