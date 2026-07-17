@@ -43,6 +43,8 @@ export interface CrawlRun {
   finished_at: string | null;
   duration_ms: number | null;
   total_found: number;
+  total_new_listings: number;
+  total_refreshed_listings: number;
   total_created: number;
   total_updated: number;
   total_removed: number;

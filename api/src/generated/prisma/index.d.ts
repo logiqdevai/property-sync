@@ -380,15 +380,6 @@ export const AuthType: {
 export type AuthType = (typeof AuthType)[keyof typeof AuthType]
 
 
-export const CmsSyncAction: {
-  CREATE: 'CREATE',
-  UPDATE: 'UPDATE',
-  REMOVE: 'REMOVE'
-};
-
-export type CmsSyncAction = (typeof CmsSyncAction)[keyof typeof CmsSyncAction]
-
-
 export const CmsSyncStatus: {
   PENDING: 'PENDING',
   SUCCESS: 'SUCCESS',
@@ -539,10 +530,6 @@ export const IntegrationType: typeof $Enums.IntegrationType
 export type AuthType = $Enums.AuthType
 
 export const AuthType: typeof $Enums.AuthType
-
-export type CmsSyncAction = $Enums.CmsSyncAction
-
-export const CmsSyncAction: typeof $Enums.CmsSyncAction
 
 export type CmsSyncStatus = $Enums.CmsSyncStatus
 
@@ -3628,6 +3615,7 @@ export namespace Prisma {
     execution_traces: number
     property_history: number
     notifications: number
+    cms_sync_runs: number
   }
 
   export type CrawlRunCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3635,6 +3623,7 @@ export namespace Prisma {
     execution_traces?: boolean | CrawlRunCountOutputTypeCountExecution_tracesArgs
     property_history?: boolean | CrawlRunCountOutputTypeCountProperty_historyArgs
     notifications?: boolean | CrawlRunCountOutputTypeCountNotificationsArgs
+    cms_sync_runs?: boolean | CrawlRunCountOutputTypeCountCms_sync_runsArgs
   }
 
   // Custom InputTypes
@@ -3674,6 +3663,13 @@ export namespace Prisma {
    */
   export type CrawlRunCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: NotificationWhereInput
+  }
+
+  /**
+   * CrawlRunCountOutputType without action
+   */
+  export type CrawlRunCountOutputTypeCountCms_sync_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CmsSyncRunWhereInput
   }
 
 
@@ -3785,37 +3781,6 @@ export namespace Prisma {
    */
   export type PropertyCountOutputTypeCountHistoryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PropertyHistoryWhereInput
-  }
-
-
-  /**
-   * Count Type UserPropertyCountOutputType
-   */
-
-  export type UserPropertyCountOutputType = {
-    cms_sync_runs: number
-  }
-
-  export type UserPropertyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    cms_sync_runs?: boolean | UserPropertyCountOutputTypeCountCms_sync_runsArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * UserPropertyCountOutputType without action
-   */
-  export type UserPropertyCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserPropertyCountOutputType
-     */
-    select?: UserPropertyCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * UserPropertyCountOutputType without action
-   */
-  export type UserPropertyCountOutputTypeCountCms_sync_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CmsSyncRunWhereInput
   }
 
 
@@ -8719,7 +8684,6 @@ export namespace Prisma {
     user_id: string | null
     source_agency_id: string | null
     enabled: boolean | null
-    crawl_interval: string | null
     concurrent_insertions: number | null
     insertion_interval_minutes: number | null
     track_new_listings: boolean | null
@@ -8735,7 +8699,6 @@ export namespace Prisma {
     user_id: string | null
     source_agency_id: string | null
     enabled: boolean | null
-    crawl_interval: string | null
     concurrent_insertions: number | null
     insertion_interval_minutes: number | null
     track_new_listings: boolean | null
@@ -8751,7 +8714,6 @@ export namespace Prisma {
     user_id: number
     source_agency_id: number
     enabled: number
-    crawl_interval: number
     concurrent_insertions: number
     insertion_interval_minutes: number
     track_new_listings: number
@@ -8779,7 +8741,6 @@ export namespace Prisma {
     user_id?: true
     source_agency_id?: true
     enabled?: true
-    crawl_interval?: true
     concurrent_insertions?: true
     insertion_interval_minutes?: true
     track_new_listings?: true
@@ -8795,7 +8756,6 @@ export namespace Prisma {
     user_id?: true
     source_agency_id?: true
     enabled?: true
-    crawl_interval?: true
     concurrent_insertions?: true
     insertion_interval_minutes?: true
     track_new_listings?: true
@@ -8811,7 +8771,6 @@ export namespace Prisma {
     user_id?: true
     source_agency_id?: true
     enabled?: true
-    crawl_interval?: true
     concurrent_insertions?: true
     insertion_interval_minutes?: true
     track_new_listings?: true
@@ -8914,7 +8873,6 @@ export namespace Prisma {
     user_id: string
     source_agency_id: string
     enabled: boolean
-    crawl_interval: string
     concurrent_insertions: number
     insertion_interval_minutes: number
     track_new_listings: boolean
@@ -8949,7 +8907,6 @@ export namespace Prisma {
     user_id?: boolean
     source_agency_id?: boolean
     enabled?: boolean
-    crawl_interval?: boolean
     concurrent_insertions?: boolean
     insertion_interval_minutes?: boolean
     track_new_listings?: boolean
@@ -8970,7 +8927,6 @@ export namespace Prisma {
     user_id?: boolean
     source_agency_id?: boolean
     enabled?: boolean
-    crawl_interval?: boolean
     concurrent_insertions?: boolean
     insertion_interval_minutes?: boolean
     track_new_listings?: boolean
@@ -8988,7 +8944,6 @@ export namespace Prisma {
     user_id?: boolean
     source_agency_id?: boolean
     enabled?: boolean
-    crawl_interval?: boolean
     concurrent_insertions?: boolean
     insertion_interval_minutes?: boolean
     track_new_listings?: boolean
@@ -9006,7 +8961,6 @@ export namespace Prisma {
     user_id?: boolean
     source_agency_id?: boolean
     enabled?: boolean
-    crawl_interval?: boolean
     concurrent_insertions?: boolean
     insertion_interval_minutes?: boolean
     track_new_listings?: boolean
@@ -9017,7 +8971,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "crawl_interval" | "concurrent_insertions" | "insertion_interval_minutes" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "use_ai_batching" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
+  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "concurrent_insertions" | "insertion_interval_minutes" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "use_ai_batching" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
   export type UserTrackedAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
@@ -9047,7 +9001,6 @@ export namespace Prisma {
       user_id: string
       source_agency_id: string
       enabled: boolean
-      crawl_interval: string
       concurrent_insertions: number
       insertion_interval_minutes: number
       track_new_listings: boolean
@@ -9487,7 +9440,6 @@ export namespace Prisma {
     readonly user_id: FieldRef<"UserTrackedAgency", 'String'>
     readonly source_agency_id: FieldRef<"UserTrackedAgency", 'String'>
     readonly enabled: FieldRef<"UserTrackedAgency", 'Boolean'>
-    readonly crawl_interval: FieldRef<"UserTrackedAgency", 'String'>
     readonly concurrent_insertions: FieldRef<"UserTrackedAgency", 'Int'>
     readonly insertion_interval_minutes: FieldRef<"UserTrackedAgency", 'Int'>
     readonly track_new_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
@@ -17271,6 +17223,8 @@ export namespace Prisma {
   export type CrawlRunAvgAggregateOutputType = {
     duration_ms: number | null
     total_found: number | null
+    total_new_listings: number | null
+    total_refreshed_listings: number | null
     total_created: number | null
     total_updated: number | null
     total_removed: number | null
@@ -17286,6 +17240,8 @@ export namespace Prisma {
   export type CrawlRunSumAggregateOutputType = {
     duration_ms: number | null
     total_found: number | null
+    total_new_listings: number | null
+    total_refreshed_listings: number | null
     total_created: number | null
     total_updated: number | null
     total_removed: number | null
@@ -17308,6 +17264,8 @@ export namespace Prisma {
     finished_at: Date | null
     duration_ms: number | null
     total_found: number | null
+    total_new_listings: number | null
+    total_refreshed_listings: number | null
     total_created: number | null
     total_updated: number | null
     total_removed: number | null
@@ -17334,6 +17292,8 @@ export namespace Prisma {
     finished_at: Date | null
     duration_ms: number | null
     total_found: number | null
+    total_new_listings: number | null
+    total_refreshed_listings: number | null
     total_created: number | null
     total_updated: number | null
     total_removed: number | null
@@ -17360,6 +17320,8 @@ export namespace Prisma {
     finished_at: number
     duration_ms: number
     total_found: number
+    total_new_listings: number
+    total_refreshed_listings: number
     total_created: number
     total_updated: number
     total_removed: number
@@ -17382,6 +17344,8 @@ export namespace Prisma {
   export type CrawlRunAvgAggregateInputType = {
     duration_ms?: true
     total_found?: true
+    total_new_listings?: true
+    total_refreshed_listings?: true
     total_created?: true
     total_updated?: true
     total_removed?: true
@@ -17397,6 +17361,8 @@ export namespace Prisma {
   export type CrawlRunSumAggregateInputType = {
     duration_ms?: true
     total_found?: true
+    total_new_listings?: true
+    total_refreshed_listings?: true
     total_created?: true
     total_updated?: true
     total_removed?: true
@@ -17419,6 +17385,8 @@ export namespace Prisma {
     finished_at?: true
     duration_ms?: true
     total_found?: true
+    total_new_listings?: true
+    total_refreshed_listings?: true
     total_created?: true
     total_updated?: true
     total_removed?: true
@@ -17445,6 +17413,8 @@ export namespace Prisma {
     finished_at?: true
     duration_ms?: true
     total_found?: true
+    total_new_listings?: true
+    total_refreshed_listings?: true
     total_created?: true
     total_updated?: true
     total_removed?: true
@@ -17471,6 +17441,8 @@ export namespace Prisma {
     finished_at?: true
     duration_ms?: true
     total_found?: true
+    total_new_listings?: true
+    total_refreshed_listings?: true
     total_created?: true
     total_updated?: true
     total_removed?: true
@@ -17585,6 +17557,8 @@ export namespace Prisma {
     finished_at: Date | null
     duration_ms: number | null
     total_found: number
+    total_new_listings: number
+    total_refreshed_listings: number
     total_created: number
     total_updated: number
     total_removed: number
@@ -17631,6 +17605,8 @@ export namespace Prisma {
     finished_at?: boolean
     duration_ms?: boolean
     total_found?: boolean
+    total_new_listings?: boolean
+    total_refreshed_listings?: boolean
     total_created?: boolean
     total_updated?: boolean
     total_removed?: boolean
@@ -17654,6 +17630,7 @@ export namespace Prisma {
     property_history?: boolean | CrawlRun$property_historyArgs<ExtArgs>
     notifications?: boolean | CrawlRun$notificationsArgs<ExtArgs>
     diagnostics_package?: boolean | CrawlRun$diagnostics_packageArgs<ExtArgs>
+    cms_sync_runs?: boolean | CrawlRun$cms_sync_runsArgs<ExtArgs>
     _count?: boolean | CrawlRunCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["crawlRun"]>
 
@@ -17667,6 +17644,8 @@ export namespace Prisma {
     finished_at?: boolean
     duration_ms?: boolean
     total_found?: boolean
+    total_new_listings?: boolean
+    total_refreshed_listings?: boolean
     total_created?: boolean
     total_updated?: boolean
     total_removed?: boolean
@@ -17697,6 +17676,8 @@ export namespace Prisma {
     finished_at?: boolean
     duration_ms?: boolean
     total_found?: boolean
+    total_new_listings?: boolean
+    total_refreshed_listings?: boolean
     total_created?: boolean
     total_updated?: boolean
     total_removed?: boolean
@@ -17727,6 +17708,8 @@ export namespace Prisma {
     finished_at?: boolean
     duration_ms?: boolean
     total_found?: boolean
+    total_new_listings?: boolean
+    total_refreshed_listings?: boolean
     total_created?: boolean
     total_updated?: boolean
     total_removed?: boolean
@@ -17744,7 +17727,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type CrawlRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "scraper_id" | "user_tracked_agency_id" | "status" | "started_at" | "finished_at" | "duration_ms" | "total_found" | "total_created" | "total_updated" | "total_removed" | "total_failed" | "error_message" | "metadata" | "ai_model" | "ai_input_tokens" | "ai_output_tokens" | "ai_input_cost" | "ai_output_cost" | "ai_total_cost" | "ai_average_cost_per_property" | "created_at" | "updated_at", ExtArgs["result"]["crawlRun"]>
+  export type CrawlRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "scraper_id" | "user_tracked_agency_id" | "status" | "started_at" | "finished_at" | "duration_ms" | "total_found" | "total_new_listings" | "total_refreshed_listings" | "total_created" | "total_updated" | "total_removed" | "total_failed" | "error_message" | "metadata" | "ai_model" | "ai_input_tokens" | "ai_output_tokens" | "ai_input_cost" | "ai_output_cost" | "ai_total_cost" | "ai_average_cost_per_property" | "created_at" | "updated_at", ExtArgs["result"]["crawlRun"]>
   export type CrawlRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     user_tracked_agency?: boolean | CrawlRun$user_tracked_agencyArgs<ExtArgs>
@@ -17754,6 +17737,7 @@ export namespace Prisma {
     property_history?: boolean | CrawlRun$property_historyArgs<ExtArgs>
     notifications?: boolean | CrawlRun$notificationsArgs<ExtArgs>
     diagnostics_package?: boolean | CrawlRun$diagnostics_packageArgs<ExtArgs>
+    cms_sync_runs?: boolean | CrawlRun$cms_sync_runsArgs<ExtArgs>
     _count?: boolean | CrawlRunCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type CrawlRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -17778,6 +17762,7 @@ export namespace Prisma {
       property_history: Prisma.$PropertyHistoryPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
       diagnostics_package: Prisma.$DiagnosticsPackagePayload<ExtArgs> | null
+      cms_sync_runs: Prisma.$CmsSyncRunPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -17789,6 +17774,8 @@ export namespace Prisma {
       finished_at: Date | null
       duration_ms: number | null
       total_found: number
+      total_new_listings: number
+      total_refreshed_listings: number
       total_created: number
       total_updated: number
       total_removed: number
@@ -18206,6 +18193,7 @@ export namespace Prisma {
     property_history<T extends CrawlRun$property_historyArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$property_historyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends CrawlRun$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     diagnostics_package<T extends CrawlRun$diagnostics_packageArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$diagnostics_packageArgs<ExtArgs>>): Prisma__DiagnosticsPackageClient<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    cms_sync_runs<T extends CrawlRun$cms_sync_runsArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$cms_sync_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CmsSyncRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18244,6 +18232,8 @@ export namespace Prisma {
     readonly finished_at: FieldRef<"CrawlRun", 'DateTime'>
     readonly duration_ms: FieldRef<"CrawlRun", 'Int'>
     readonly total_found: FieldRef<"CrawlRun", 'Int'>
+    readonly total_new_listings: FieldRef<"CrawlRun", 'Int'>
+    readonly total_refreshed_listings: FieldRef<"CrawlRun", 'Int'>
     readonly total_created: FieldRef<"CrawlRun", 'Int'>
     readonly total_updated: FieldRef<"CrawlRun", 'Int'>
     readonly total_removed: FieldRef<"CrawlRun", 'Int'>
@@ -18805,6 +18795,30 @@ export namespace Prisma {
      */
     include?: DiagnosticsPackageInclude<ExtArgs> | null
     where?: DiagnosticsPackageWhereInput
+  }
+
+  /**
+   * CrawlRun.cms_sync_runs
+   */
+  export type CrawlRun$cms_sync_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CmsSyncRun
+     */
+    select?: CmsSyncRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CmsSyncRun
+     */
+    omit?: CmsSyncRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CmsSyncRunInclude<ExtArgs> | null
+    where?: CmsSyncRunWhereInput
+    orderBy?: CmsSyncRunOrderByWithRelationInput | CmsSyncRunOrderByWithRelationInput[]
+    cursor?: CmsSyncRunWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CmsSyncRunScalarFieldEnum | CmsSyncRunScalarFieldEnum[]
   }
 
   /**
@@ -23703,21 +23717,32 @@ export namespace Prisma {
   export type CmsSyncRunAvgAggregateOutputType = {
     attempt: number | null
     max_attempts: number | null
+    total_created: number | null
+    total_updated: number | null
+    total_removed: number | null
+    total_failed: number | null
   }
 
   export type CmsSyncRunSumAggregateOutputType = {
     attempt: number | null
     max_attempts: number | null
+    total_created: number | null
+    total_updated: number | null
+    total_removed: number | null
+    total_failed: number | null
   }
 
   export type CmsSyncRunMinAggregateOutputType = {
     id: string | null
+    crawl_run_id: string | null
     user_integration_id: string | null
-    user_property_id: string | null
-    action: $Enums.CmsSyncAction | null
     status: $Enums.CmsSyncStatus | null
     attempt: number | null
     max_attempts: number | null
+    total_created: number | null
+    total_updated: number | null
+    total_removed: number | null
+    total_failed: number | null
     error_message: string | null
     started_at: Date | null
     finished_at: Date | null
@@ -23727,12 +23752,15 @@ export namespace Prisma {
 
   export type CmsSyncRunMaxAggregateOutputType = {
     id: string | null
+    crawl_run_id: string | null
     user_integration_id: string | null
-    user_property_id: string | null
-    action: $Enums.CmsSyncAction | null
     status: $Enums.CmsSyncStatus | null
     attempt: number | null
     max_attempts: number | null
+    total_created: number | null
+    total_updated: number | null
+    total_removed: number | null
+    total_failed: number | null
     error_message: string | null
     started_at: Date | null
     finished_at: Date | null
@@ -23742,12 +23770,15 @@ export namespace Prisma {
 
   export type CmsSyncRunCountAggregateOutputType = {
     id: number
+    crawl_run_id: number
     user_integration_id: number
-    user_property_id: number
-    action: number
     status: number
     attempt: number
     max_attempts: number
+    total_created: number
+    total_updated: number
+    total_removed: number
+    total_failed: number
     payload: number
     response: number
     error_message: number
@@ -23762,21 +23793,32 @@ export namespace Prisma {
   export type CmsSyncRunAvgAggregateInputType = {
     attempt?: true
     max_attempts?: true
+    total_created?: true
+    total_updated?: true
+    total_removed?: true
+    total_failed?: true
   }
 
   export type CmsSyncRunSumAggregateInputType = {
     attempt?: true
     max_attempts?: true
+    total_created?: true
+    total_updated?: true
+    total_removed?: true
+    total_failed?: true
   }
 
   export type CmsSyncRunMinAggregateInputType = {
     id?: true
+    crawl_run_id?: true
     user_integration_id?: true
-    user_property_id?: true
-    action?: true
     status?: true
     attempt?: true
     max_attempts?: true
+    total_created?: true
+    total_updated?: true
+    total_removed?: true
+    total_failed?: true
     error_message?: true
     started_at?: true
     finished_at?: true
@@ -23786,12 +23828,15 @@ export namespace Prisma {
 
   export type CmsSyncRunMaxAggregateInputType = {
     id?: true
+    crawl_run_id?: true
     user_integration_id?: true
-    user_property_id?: true
-    action?: true
     status?: true
     attempt?: true
     max_attempts?: true
+    total_created?: true
+    total_updated?: true
+    total_removed?: true
+    total_failed?: true
     error_message?: true
     started_at?: true
     finished_at?: true
@@ -23801,12 +23846,15 @@ export namespace Prisma {
 
   export type CmsSyncRunCountAggregateInputType = {
     id?: true
+    crawl_run_id?: true
     user_integration_id?: true
-    user_property_id?: true
-    action?: true
     status?: true
     attempt?: true
     max_attempts?: true
+    total_created?: true
+    total_updated?: true
+    total_removed?: true
+    total_failed?: true
     payload?: true
     response?: true
     error_message?: true
@@ -23905,12 +23953,15 @@ export namespace Prisma {
 
   export type CmsSyncRunGroupByOutputType = {
     id: string
+    crawl_run_id: string
     user_integration_id: string
-    user_property_id: string | null
-    action: $Enums.CmsSyncAction
     status: $Enums.CmsSyncStatus
     attempt: number
     max_attempts: number | null
+    total_created: number
+    total_updated: number
+    total_removed: number
+    total_failed: number
     payload: JsonValue | null
     response: JsonValue | null
     error_message: string | null
@@ -23941,12 +23992,15 @@ export namespace Prisma {
 
   export type CmsSyncRunSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    crawl_run_id?: boolean
     user_integration_id?: boolean
-    user_property_id?: boolean
-    action?: boolean
     status?: boolean
     attempt?: boolean
     max_attempts?: boolean
+    total_created?: boolean
+    total_updated?: boolean
+    total_removed?: boolean
+    total_failed?: boolean
     payload?: boolean
     response?: boolean
     error_message?: boolean
@@ -23954,18 +24008,21 @@ export namespace Prisma {
     finished_at?: boolean
     created_at?: boolean
     updated_at?: boolean
+    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
-    user_property?: boolean | CmsSyncRun$user_propertyArgs<ExtArgs>
   }, ExtArgs["result"]["cmsSyncRun"]>
 
   export type CmsSyncRunSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    crawl_run_id?: boolean
     user_integration_id?: boolean
-    user_property_id?: boolean
-    action?: boolean
     status?: boolean
     attempt?: boolean
     max_attempts?: boolean
+    total_created?: boolean
+    total_updated?: boolean
+    total_removed?: boolean
+    total_failed?: boolean
     payload?: boolean
     response?: boolean
     error_message?: boolean
@@ -23973,18 +24030,21 @@ export namespace Prisma {
     finished_at?: boolean
     created_at?: boolean
     updated_at?: boolean
+    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
-    user_property?: boolean | CmsSyncRun$user_propertyArgs<ExtArgs>
   }, ExtArgs["result"]["cmsSyncRun"]>
 
   export type CmsSyncRunSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    crawl_run_id?: boolean
     user_integration_id?: boolean
-    user_property_id?: boolean
-    action?: boolean
     status?: boolean
     attempt?: boolean
     max_attempts?: boolean
+    total_created?: boolean
+    total_updated?: boolean
+    total_removed?: boolean
+    total_failed?: boolean
     payload?: boolean
     response?: boolean
     error_message?: boolean
@@ -23992,18 +24052,21 @@ export namespace Prisma {
     finished_at?: boolean
     created_at?: boolean
     updated_at?: boolean
+    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
-    user_property?: boolean | CmsSyncRun$user_propertyArgs<ExtArgs>
   }, ExtArgs["result"]["cmsSyncRun"]>
 
   export type CmsSyncRunSelectScalar = {
     id?: boolean
+    crawl_run_id?: boolean
     user_integration_id?: boolean
-    user_property_id?: boolean
-    action?: boolean
     status?: boolean
     attempt?: boolean
     max_attempts?: boolean
+    total_created?: boolean
+    total_updated?: boolean
+    total_removed?: boolean
+    total_failed?: boolean
     payload?: boolean
     response?: boolean
     error_message?: boolean
@@ -24013,34 +24076,37 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type CmsSyncRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_integration_id" | "user_property_id" | "action" | "status" | "attempt" | "max_attempts" | "payload" | "response" | "error_message" | "started_at" | "finished_at" | "created_at" | "updated_at", ExtArgs["result"]["cmsSyncRun"]>
+  export type CmsSyncRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawl_run_id" | "user_integration_id" | "status" | "attempt" | "max_attempts" | "total_created" | "total_updated" | "total_removed" | "total_failed" | "payload" | "response" | "error_message" | "started_at" | "finished_at" | "created_at" | "updated_at", ExtArgs["result"]["cmsSyncRun"]>
   export type CmsSyncRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
-    user_property?: boolean | CmsSyncRun$user_propertyArgs<ExtArgs>
   }
   export type CmsSyncRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
-    user_property?: boolean | CmsSyncRun$user_propertyArgs<ExtArgs>
   }
   export type CmsSyncRunIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
-    user_property?: boolean | CmsSyncRun$user_propertyArgs<ExtArgs>
   }
 
   export type $CmsSyncRunPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "CmsSyncRun"
     objects: {
+      crawl_run: Prisma.$CrawlRunPayload<ExtArgs>
       user_integration: Prisma.$UserIntegrationPayload<ExtArgs>
-      user_property: Prisma.$UserPropertyPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      crawl_run_id: string
       user_integration_id: string
-      user_property_id: string | null
-      action: $Enums.CmsSyncAction
       status: $Enums.CmsSyncStatus
       attempt: number
       max_attempts: number | null
+      total_created: number
+      total_updated: number
+      total_removed: number
+      total_failed: number
       payload: Prisma.JsonValue | null
       response: Prisma.JsonValue | null
       error_message: string | null
@@ -24442,8 +24508,8 @@ export namespace Prisma {
    */
   export interface Prisma__CmsSyncRunClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    crawl_run<T extends CrawlRunDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRunDefaultArgs<ExtArgs>>): Prisma__CrawlRunClient<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     user_integration<T extends UserIntegrationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserIntegrationDefaultArgs<ExtArgs>>): Prisma__UserIntegrationClient<$Result.GetResult<Prisma.$UserIntegrationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    user_property<T extends CmsSyncRun$user_propertyArgs<ExtArgs> = {}>(args?: Subset<T, CmsSyncRun$user_propertyArgs<ExtArgs>>): Prisma__UserPropertyClient<$Result.GetResult<Prisma.$UserPropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -24474,12 +24540,15 @@ export namespace Prisma {
    */
   interface CmsSyncRunFieldRefs {
     readonly id: FieldRef<"CmsSyncRun", 'String'>
+    readonly crawl_run_id: FieldRef<"CmsSyncRun", 'String'>
     readonly user_integration_id: FieldRef<"CmsSyncRun", 'String'>
-    readonly user_property_id: FieldRef<"CmsSyncRun", 'String'>
-    readonly action: FieldRef<"CmsSyncRun", 'CmsSyncAction'>
     readonly status: FieldRef<"CmsSyncRun", 'CmsSyncStatus'>
     readonly attempt: FieldRef<"CmsSyncRun", 'Int'>
     readonly max_attempts: FieldRef<"CmsSyncRun", 'Int'>
+    readonly total_created: FieldRef<"CmsSyncRun", 'Int'>
+    readonly total_updated: FieldRef<"CmsSyncRun", 'Int'>
+    readonly total_removed: FieldRef<"CmsSyncRun", 'Int'>
+    readonly total_failed: FieldRef<"CmsSyncRun", 'Int'>
     readonly payload: FieldRef<"CmsSyncRun", 'Json'>
     readonly response: FieldRef<"CmsSyncRun", 'Json'>
     readonly error_message: FieldRef<"CmsSyncRun", 'String'>
@@ -24880,25 +24949,6 @@ export namespace Prisma {
      * Limit how many CmsSyncRuns to delete.
      */
     limit?: number
-  }
-
-  /**
-   * CmsSyncRun.user_property
-   */
-  export type CmsSyncRun$user_propertyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserProperty
-     */
-    select?: UserPropertySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserProperty
-     */
-    omit?: UserPropertyOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPropertyInclude<ExtArgs> | null
-    where?: UserPropertyWhereInput
   }
 
   /**
@@ -30288,8 +30338,6 @@ export namespace Prisma {
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     canonical_property?: boolean | PropertyDefaultArgs<ExtArgs>
-    cms_sync_runs?: boolean | UserProperty$cms_sync_runsArgs<ExtArgs>
-    _count?: boolean | UserPropertyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userProperty"]>
 
   export type UserPropertySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -30402,8 +30450,6 @@ export namespace Prisma {
   export type UserPropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     canonical_property?: boolean | PropertyDefaultArgs<ExtArgs>
-    cms_sync_runs?: boolean | UserProperty$cms_sync_runsArgs<ExtArgs>
-    _count?: boolean | UserPropertyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserPropertyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -30419,7 +30465,6 @@ export namespace Prisma {
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       canonical_property: Prisma.$PropertyPayload<ExtArgs>
-      cms_sync_runs: Prisma.$CmsSyncRunPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -30849,7 +30894,6 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     canonical_property<T extends PropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyDefaultArgs<ExtArgs>>): Prisma__PropertyClient<$Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    cms_sync_runs<T extends UserProperty$cms_sync_runsArgs<ExtArgs> = {}>(args?: Subset<T, UserProperty$cms_sync_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CmsSyncRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -31303,30 +31347,6 @@ export namespace Prisma {
      * Limit how many UserProperties to delete.
      */
     limit?: number
-  }
-
-  /**
-   * UserProperty.cms_sync_runs
-   */
-  export type UserProperty$cms_sync_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the CmsSyncRun
-     */
-    select?: CmsSyncRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the CmsSyncRun
-     */
-    omit?: CmsSyncRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CmsSyncRunInclude<ExtArgs> | null
-    where?: CmsSyncRunWhereInput
-    orderBy?: CmsSyncRunOrderByWithRelationInput | CmsSyncRunOrderByWithRelationInput[]
-    cursor?: CmsSyncRunWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: CmsSyncRunScalarFieldEnum | CmsSyncRunScalarFieldEnum[]
   }
 
   /**
@@ -32619,7 +32639,6 @@ export namespace Prisma {
     user_id: 'user_id',
     source_agency_id: 'source_agency_id',
     enabled: 'enabled',
-    crawl_interval: 'crawl_interval',
     concurrent_insertions: 'concurrent_insertions',
     insertion_interval_minutes: 'insertion_interval_minutes',
     track_new_listings: 'track_new_listings',
@@ -32740,6 +32759,8 @@ export namespace Prisma {
     finished_at: 'finished_at',
     duration_ms: 'duration_ms',
     total_found: 'total_found',
+    total_new_listings: 'total_new_listings',
+    total_refreshed_listings: 'total_refreshed_listings',
     total_created: 'total_created',
     total_updated: 'total_updated',
     total_removed: 'total_removed',
@@ -32836,12 +32857,15 @@ export namespace Prisma {
 
   export const CmsSyncRunScalarFieldEnum: {
     id: 'id',
+    crawl_run_id: 'crawl_run_id',
     user_integration_id: 'user_integration_id',
-    user_property_id: 'user_property_id',
-    action: 'action',
     status: 'status',
     attempt: 'attempt',
     max_attempts: 'max_attempts',
+    total_created: 'total_created',
+    total_updated: 'total_updated',
+    total_removed: 'total_removed',
+    total_failed: 'total_failed',
     payload: 'payload',
     response: 'response',
     error_message: 'error_message',
@@ -33330,20 +33354,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'CmsSyncAction'
-   */
-  export type EnumCmsSyncActionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CmsSyncAction'>
-    
-
-
-  /**
-   * Reference to a field of type 'CmsSyncAction[]'
-   */
-  export type ListEnumCmsSyncActionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CmsSyncAction[]'>
-    
-
-
-  /**
    * Reference to a field of type 'CmsSyncStatus'
    */
   export type EnumCmsSyncStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CmsSyncStatus'>
@@ -33822,7 +33832,6 @@ export namespace Prisma {
     user_id?: StringFilter<"UserTrackedAgency"> | string
     source_agency_id?: StringFilter<"UserTrackedAgency"> | string
     enabled?: BoolFilter<"UserTrackedAgency"> | boolean
-    crawl_interval?: StringFilter<"UserTrackedAgency"> | string
     concurrent_insertions?: IntFilter<"UserTrackedAgency"> | number
     insertion_interval_minutes?: IntFilter<"UserTrackedAgency"> | number
     track_new_listings?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -33842,7 +33851,6 @@ export namespace Prisma {
     user_id?: SortOrder
     source_agency_id?: SortOrder
     enabled?: SortOrder
-    crawl_interval?: SortOrder
     concurrent_insertions?: SortOrder
     insertion_interval_minutes?: SortOrder
     track_new_listings?: SortOrder
@@ -33866,7 +33874,6 @@ export namespace Prisma {
     user_id?: StringFilter<"UserTrackedAgency"> | string
     source_agency_id?: StringFilter<"UserTrackedAgency"> | string
     enabled?: BoolFilter<"UserTrackedAgency"> | boolean
-    crawl_interval?: StringFilter<"UserTrackedAgency"> | string
     concurrent_insertions?: IntFilter<"UserTrackedAgency"> | number
     insertion_interval_minutes?: IntFilter<"UserTrackedAgency"> | number
     track_new_listings?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -33886,7 +33893,6 @@ export namespace Prisma {
     user_id?: SortOrder
     source_agency_id?: SortOrder
     enabled?: SortOrder
-    crawl_interval?: SortOrder
     concurrent_insertions?: SortOrder
     insertion_interval_minutes?: SortOrder
     track_new_listings?: SortOrder
@@ -33910,7 +33916,6 @@ export namespace Prisma {
     user_id?: StringWithAggregatesFilter<"UserTrackedAgency"> | string
     source_agency_id?: StringWithAggregatesFilter<"UserTrackedAgency"> | string
     enabled?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
-    crawl_interval?: StringWithAggregatesFilter<"UserTrackedAgency"> | string
     concurrent_insertions?: IntWithAggregatesFilter<"UserTrackedAgency"> | number
     insertion_interval_minutes?: IntWithAggregatesFilter<"UserTrackedAgency"> | number
     track_new_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
@@ -34476,6 +34481,8 @@ export namespace Prisma {
     finished_at?: DateTimeNullableFilter<"CrawlRun"> | Date | string | null
     duration_ms?: IntNullableFilter<"CrawlRun"> | number | null
     total_found?: IntFilter<"CrawlRun"> | number
+    total_new_listings?: IntFilter<"CrawlRun"> | number
+    total_refreshed_listings?: IntFilter<"CrawlRun"> | number
     total_created?: IntFilter<"CrawlRun"> | number
     total_updated?: IntFilter<"CrawlRun"> | number
     total_removed?: IntFilter<"CrawlRun"> | number
@@ -34499,6 +34506,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryListRelationFilter
     notifications?: NotificationListRelationFilter
     diagnostics_package?: XOR<DiagnosticsPackageNullableScalarRelationFilter, DiagnosticsPackageWhereInput> | null
+    cms_sync_runs?: CmsSyncRunListRelationFilter
   }
 
   export type CrawlRunOrderByWithRelationInput = {
@@ -34511,6 +34519,8 @@ export namespace Prisma {
     finished_at?: SortOrderInput | SortOrder
     duration_ms?: SortOrderInput | SortOrder
     total_found?: SortOrder
+    total_new_listings?: SortOrder
+    total_refreshed_listings?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
@@ -34534,6 +34544,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
     diagnostics_package?: DiagnosticsPackageOrderByWithRelationInput
+    cms_sync_runs?: CmsSyncRunOrderByRelationAggregateInput
   }
 
   export type CrawlRunWhereUniqueInput = Prisma.AtLeast<{
@@ -34549,6 +34560,8 @@ export namespace Prisma {
     finished_at?: DateTimeNullableFilter<"CrawlRun"> | Date | string | null
     duration_ms?: IntNullableFilter<"CrawlRun"> | number | null
     total_found?: IntFilter<"CrawlRun"> | number
+    total_new_listings?: IntFilter<"CrawlRun"> | number
+    total_refreshed_listings?: IntFilter<"CrawlRun"> | number
     total_created?: IntFilter<"CrawlRun"> | number
     total_updated?: IntFilter<"CrawlRun"> | number
     total_removed?: IntFilter<"CrawlRun"> | number
@@ -34572,6 +34585,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryListRelationFilter
     notifications?: NotificationListRelationFilter
     diagnostics_package?: XOR<DiagnosticsPackageNullableScalarRelationFilter, DiagnosticsPackageWhereInput> | null
+    cms_sync_runs?: CmsSyncRunListRelationFilter
   }, "id">
 
   export type CrawlRunOrderByWithAggregationInput = {
@@ -34584,6 +34598,8 @@ export namespace Prisma {
     finished_at?: SortOrderInput | SortOrder
     duration_ms?: SortOrderInput | SortOrder
     total_found?: SortOrder
+    total_new_listings?: SortOrder
+    total_refreshed_listings?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
@@ -34619,6 +34635,8 @@ export namespace Prisma {
     finished_at?: DateTimeNullableWithAggregatesFilter<"CrawlRun"> | Date | string | null
     duration_ms?: IntNullableWithAggregatesFilter<"CrawlRun"> | number | null
     total_found?: IntWithAggregatesFilter<"CrawlRun"> | number
+    total_new_listings?: IntWithAggregatesFilter<"CrawlRun"> | number
+    total_refreshed_listings?: IntWithAggregatesFilter<"CrawlRun"> | number
     total_created?: IntWithAggregatesFilter<"CrawlRun"> | number
     total_updated?: IntWithAggregatesFilter<"CrawlRun"> | number
     total_removed?: IntWithAggregatesFilter<"CrawlRun"> | number
@@ -35029,12 +35047,15 @@ export namespace Prisma {
     OR?: CmsSyncRunWhereInput[]
     NOT?: CmsSyncRunWhereInput | CmsSyncRunWhereInput[]
     id?: StringFilter<"CmsSyncRun"> | string
+    crawl_run_id?: StringFilter<"CmsSyncRun"> | string
     user_integration_id?: StringFilter<"CmsSyncRun"> | string
-    user_property_id?: StringNullableFilter<"CmsSyncRun"> | string | null
-    action?: EnumCmsSyncActionFilter<"CmsSyncRun"> | $Enums.CmsSyncAction
     status?: EnumCmsSyncStatusFilter<"CmsSyncRun"> | $Enums.CmsSyncStatus
     attempt?: IntFilter<"CmsSyncRun"> | number
     max_attempts?: IntNullableFilter<"CmsSyncRun"> | number | null
+    total_created?: IntFilter<"CmsSyncRun"> | number
+    total_updated?: IntFilter<"CmsSyncRun"> | number
+    total_removed?: IntFilter<"CmsSyncRun"> | number
+    total_failed?: IntFilter<"CmsSyncRun"> | number
     payload?: JsonNullableFilter<"CmsSyncRun">
     response?: JsonNullableFilter<"CmsSyncRun">
     error_message?: StringNullableFilter<"CmsSyncRun"> | string | null
@@ -35042,18 +35063,21 @@ export namespace Prisma {
     finished_at?: DateTimeNullableFilter<"CmsSyncRun"> | Date | string | null
     created_at?: DateTimeFilter<"CmsSyncRun"> | Date | string
     updated_at?: DateTimeFilter<"CmsSyncRun"> | Date | string
+    crawl_run?: XOR<CrawlRunScalarRelationFilter, CrawlRunWhereInput>
     user_integration?: XOR<UserIntegrationScalarRelationFilter, UserIntegrationWhereInput>
-    user_property?: XOR<UserPropertyNullableScalarRelationFilter, UserPropertyWhereInput> | null
   }
 
   export type CmsSyncRunOrderByWithRelationInput = {
     id?: SortOrder
+    crawl_run_id?: SortOrder
     user_integration_id?: SortOrder
-    user_property_id?: SortOrderInput | SortOrder
-    action?: SortOrder
     status?: SortOrder
     attempt?: SortOrder
     max_attempts?: SortOrderInput | SortOrder
+    total_created?: SortOrder
+    total_updated?: SortOrder
+    total_removed?: SortOrder
+    total_failed?: SortOrder
     payload?: SortOrderInput | SortOrder
     response?: SortOrderInput | SortOrder
     error_message?: SortOrderInput | SortOrder
@@ -35061,21 +35085,25 @@ export namespace Prisma {
     finished_at?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+    crawl_run?: CrawlRunOrderByWithRelationInput
     user_integration?: UserIntegrationOrderByWithRelationInput
-    user_property?: UserPropertyOrderByWithRelationInput
   }
 
   export type CmsSyncRunWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    crawl_run_id_user_integration_id?: CmsSyncRunCrawl_run_idUser_integration_idCompoundUniqueInput
     AND?: CmsSyncRunWhereInput | CmsSyncRunWhereInput[]
     OR?: CmsSyncRunWhereInput[]
     NOT?: CmsSyncRunWhereInput | CmsSyncRunWhereInput[]
+    crawl_run_id?: StringFilter<"CmsSyncRun"> | string
     user_integration_id?: StringFilter<"CmsSyncRun"> | string
-    user_property_id?: StringNullableFilter<"CmsSyncRun"> | string | null
-    action?: EnumCmsSyncActionFilter<"CmsSyncRun"> | $Enums.CmsSyncAction
     status?: EnumCmsSyncStatusFilter<"CmsSyncRun"> | $Enums.CmsSyncStatus
     attempt?: IntFilter<"CmsSyncRun"> | number
     max_attempts?: IntNullableFilter<"CmsSyncRun"> | number | null
+    total_created?: IntFilter<"CmsSyncRun"> | number
+    total_updated?: IntFilter<"CmsSyncRun"> | number
+    total_removed?: IntFilter<"CmsSyncRun"> | number
+    total_failed?: IntFilter<"CmsSyncRun"> | number
     payload?: JsonNullableFilter<"CmsSyncRun">
     response?: JsonNullableFilter<"CmsSyncRun">
     error_message?: StringNullableFilter<"CmsSyncRun"> | string | null
@@ -35083,18 +35111,21 @@ export namespace Prisma {
     finished_at?: DateTimeNullableFilter<"CmsSyncRun"> | Date | string | null
     created_at?: DateTimeFilter<"CmsSyncRun"> | Date | string
     updated_at?: DateTimeFilter<"CmsSyncRun"> | Date | string
+    crawl_run?: XOR<CrawlRunScalarRelationFilter, CrawlRunWhereInput>
     user_integration?: XOR<UserIntegrationScalarRelationFilter, UserIntegrationWhereInput>
-    user_property?: XOR<UserPropertyNullableScalarRelationFilter, UserPropertyWhereInput> | null
-  }, "id">
+  }, "id" | "crawl_run_id_user_integration_id">
 
   export type CmsSyncRunOrderByWithAggregationInput = {
     id?: SortOrder
+    crawl_run_id?: SortOrder
     user_integration_id?: SortOrder
-    user_property_id?: SortOrderInput | SortOrder
-    action?: SortOrder
     status?: SortOrder
     attempt?: SortOrder
     max_attempts?: SortOrderInput | SortOrder
+    total_created?: SortOrder
+    total_updated?: SortOrder
+    total_removed?: SortOrder
+    total_failed?: SortOrder
     payload?: SortOrderInput | SortOrder
     response?: SortOrderInput | SortOrder
     error_message?: SortOrderInput | SortOrder
@@ -35114,12 +35145,15 @@ export namespace Prisma {
     OR?: CmsSyncRunScalarWhereWithAggregatesInput[]
     NOT?: CmsSyncRunScalarWhereWithAggregatesInput | CmsSyncRunScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"CmsSyncRun"> | string
+    crawl_run_id?: StringWithAggregatesFilter<"CmsSyncRun"> | string
     user_integration_id?: StringWithAggregatesFilter<"CmsSyncRun"> | string
-    user_property_id?: StringNullableWithAggregatesFilter<"CmsSyncRun"> | string | null
-    action?: EnumCmsSyncActionWithAggregatesFilter<"CmsSyncRun"> | $Enums.CmsSyncAction
     status?: EnumCmsSyncStatusWithAggregatesFilter<"CmsSyncRun"> | $Enums.CmsSyncStatus
     attempt?: IntWithAggregatesFilter<"CmsSyncRun"> | number
     max_attempts?: IntNullableWithAggregatesFilter<"CmsSyncRun"> | number | null
+    total_created?: IntWithAggregatesFilter<"CmsSyncRun"> | number
+    total_updated?: IntWithAggregatesFilter<"CmsSyncRun"> | number
+    total_removed?: IntWithAggregatesFilter<"CmsSyncRun"> | number
+    total_failed?: IntWithAggregatesFilter<"CmsSyncRun"> | number
     payload?: JsonNullableWithAggregatesFilter<"CmsSyncRun">
     response?: JsonNullableWithAggregatesFilter<"CmsSyncRun">
     error_message?: StringNullableWithAggregatesFilter<"CmsSyncRun"> | string | null
@@ -35602,7 +35636,6 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"UserProperty"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     canonical_property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
-    cms_sync_runs?: CmsSyncRunListRelationFilter
   }
 
   export type UserPropertyOrderByWithRelationInput = {
@@ -35639,7 +35672,6 @@ export namespace Prisma {
     updated_at?: SortOrder
     user?: UserOrderByWithRelationInput
     canonical_property?: PropertyOrderByWithRelationInput
-    cms_sync_runs?: CmsSyncRunOrderByRelationAggregateInput
   }
 
   export type UserPropertyWhereUniqueInput = Prisma.AtLeast<{
@@ -35680,7 +35712,6 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"UserProperty"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     canonical_property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
-    cms_sync_runs?: CmsSyncRunListRelationFilter
   }, "id" | "user_id_property_id">
 
   export type UserPropertyOrderByWithAggregationInput = {
@@ -36280,7 +36311,6 @@ export namespace Prisma {
   export type UserTrackedAgencyCreateInput = {
     id?: string
     enabled?: boolean
-    crawl_interval?: string
     concurrent_insertions?: number
     insertion_interval_minutes?: number
     track_new_listings?: boolean
@@ -36300,7 +36330,6 @@ export namespace Prisma {
     user_id: string
     source_agency_id: string
     enabled?: boolean
-    crawl_interval?: string
     concurrent_insertions?: number
     insertion_interval_minutes?: number
     track_new_listings?: boolean
@@ -36316,7 +36345,6 @@ export namespace Prisma {
   export type UserTrackedAgencyUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -36336,7 +36364,6 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -36354,7 +36381,6 @@ export namespace Prisma {
     user_id: string
     source_agency_id: string
     enabled?: boolean
-    crawl_interval?: string
     concurrent_insertions?: number
     insertion_interval_minutes?: number
     track_new_listings?: boolean
@@ -36368,7 +36394,6 @@ export namespace Prisma {
   export type UserTrackedAgencyUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -36384,7 +36409,6 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -36978,6 +37002,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -37001,6 +37027,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateInput = {
@@ -37013,6 +37040,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -37033,6 +37062,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUpdateInput = {
@@ -37042,6 +37072,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -37065,6 +37097,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateInput = {
@@ -37077,6 +37110,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -37097,6 +37132,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunCreateManyInput = {
@@ -37109,6 +37145,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -37133,6 +37171,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -37160,6 +37200,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -37610,10 +37652,13 @@ export namespace Prisma {
 
   export type CmsSyncRunCreateInput = {
     id?: string
-    action: $Enums.CmsSyncAction
     status?: $Enums.CmsSyncStatus
     attempt?: number
     max_attempts?: number | null
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
@@ -37621,18 +37666,21 @@ export namespace Prisma {
     finished_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
+    crawl_run: CrawlRunCreateNestedOneWithoutCms_sync_runsInput
     user_integration: UserIntegrationCreateNestedOneWithoutSync_runsInput
-    user_property?: UserPropertyCreateNestedOneWithoutCms_sync_runsInput
   }
 
   export type CmsSyncRunUncheckedCreateInput = {
     id?: string
+    crawl_run_id: string
     user_integration_id: string
-    user_property_id?: string | null
-    action: $Enums.CmsSyncAction
     status?: $Enums.CmsSyncStatus
     attempt?: number
     max_attempts?: number | null
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
@@ -37644,10 +37692,13 @@ export namespace Prisma {
 
   export type CmsSyncRunUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    action?: EnumCmsSyncActionFieldUpdateOperationsInput | $Enums.CmsSyncAction
     status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
     attempt?: IntFieldUpdateOperationsInput | number
     max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37655,18 +37706,21 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    crawl_run?: CrawlRunUpdateOneRequiredWithoutCms_sync_runsNestedInput
     user_integration?: UserIntegrationUpdateOneRequiredWithoutSync_runsNestedInput
-    user_property?: UserPropertyUpdateOneWithoutCms_sync_runsNestedInput
   }
 
   export type CmsSyncRunUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: StringFieldUpdateOperationsInput | string
     user_integration_id?: StringFieldUpdateOperationsInput | string
-    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
-    action?: EnumCmsSyncActionFieldUpdateOperationsInput | $Enums.CmsSyncAction
     status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
     attempt?: IntFieldUpdateOperationsInput | number
     max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37678,12 +37732,15 @@ export namespace Prisma {
 
   export type CmsSyncRunCreateManyInput = {
     id?: string
+    crawl_run_id: string
     user_integration_id: string
-    user_property_id?: string | null
-    action: $Enums.CmsSyncAction
     status?: $Enums.CmsSyncStatus
     attempt?: number
     max_attempts?: number | null
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
@@ -37695,10 +37752,13 @@ export namespace Prisma {
 
   export type CmsSyncRunUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    action?: EnumCmsSyncActionFieldUpdateOperationsInput | $Enums.CmsSyncAction
     status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
     attempt?: IntFieldUpdateOperationsInput | number
     max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37710,12 +37770,15 @@ export namespace Prisma {
 
   export type CmsSyncRunUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: StringFieldUpdateOperationsInput | string
     user_integration_id?: StringFieldUpdateOperationsInput | string
-    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
-    action?: EnumCmsSyncActionFieldUpdateOperationsInput | $Enums.CmsSyncAction
     status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
     attempt?: IntFieldUpdateOperationsInput | number
     max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38265,7 +38328,6 @@ export namespace Prisma {
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutSaved_propertiesInput
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
-    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateInput = {
@@ -38300,7 +38362,6 @@ export namespace Prisma {
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
-    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUpdateInput = {
@@ -38335,7 +38396,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
-    cms_sync_runs?: CmsSyncRunUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateInput = {
@@ -38370,7 +38430,6 @@ export namespace Prisma {
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyCreateManyInput = {
@@ -39094,7 +39153,6 @@ export namespace Prisma {
     user_id?: SortOrder
     source_agency_id?: SortOrder
     enabled?: SortOrder
-    crawl_interval?: SortOrder
     concurrent_insertions?: SortOrder
     insertion_interval_minutes?: SortOrder
     track_new_listings?: SortOrder
@@ -39115,7 +39173,6 @@ export namespace Prisma {
     user_id?: SortOrder
     source_agency_id?: SortOrder
     enabled?: SortOrder
-    crawl_interval?: SortOrder
     concurrent_insertions?: SortOrder
     insertion_interval_minutes?: SortOrder
     track_new_listings?: SortOrder
@@ -39131,7 +39188,6 @@ export namespace Prisma {
     user_id?: SortOrder
     source_agency_id?: SortOrder
     enabled?: SortOrder
-    crawl_interval?: SortOrder
     concurrent_insertions?: SortOrder
     insertion_interval_minutes?: SortOrder
     track_new_listings?: SortOrder
@@ -39791,6 +39847,8 @@ export namespace Prisma {
     finished_at?: SortOrder
     duration_ms?: SortOrder
     total_found?: SortOrder
+    total_new_listings?: SortOrder
+    total_refreshed_listings?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
@@ -39811,6 +39869,8 @@ export namespace Prisma {
   export type CrawlRunAvgOrderByAggregateInput = {
     duration_ms?: SortOrder
     total_found?: SortOrder
+    total_new_listings?: SortOrder
+    total_refreshed_listings?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
@@ -39833,6 +39893,8 @@ export namespace Prisma {
     finished_at?: SortOrder
     duration_ms?: SortOrder
     total_found?: SortOrder
+    total_new_listings?: SortOrder
+    total_refreshed_listings?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
@@ -39859,6 +39921,8 @@ export namespace Prisma {
     finished_at?: SortOrder
     duration_ms?: SortOrder
     total_found?: SortOrder
+    total_new_listings?: SortOrder
+    total_refreshed_listings?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
@@ -39878,6 +39942,8 @@ export namespace Prisma {
   export type CrawlRunSumOrderByAggregateInput = {
     duration_ms?: SortOrder
     total_found?: SortOrder
+    total_new_listings?: SortOrder
+    total_refreshed_listings?: SortOrder
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
@@ -40207,13 +40273,6 @@ export namespace Prisma {
     _max?: NestedEnumNotificationSeverityFilter<$PrismaModel>
   }
 
-  export type EnumCmsSyncActionFilter<$PrismaModel = never> = {
-    equals?: $Enums.CmsSyncAction | EnumCmsSyncActionFieldRefInput<$PrismaModel>
-    in?: $Enums.CmsSyncAction[] | ListEnumCmsSyncActionFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CmsSyncAction[] | ListEnumCmsSyncActionFieldRefInput<$PrismaModel>
-    not?: NestedEnumCmsSyncActionFilter<$PrismaModel> | $Enums.CmsSyncAction
-  }
-
   export type EnumCmsSyncStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.CmsSyncStatus | EnumCmsSyncStatusFieldRefInput<$PrismaModel>
     in?: $Enums.CmsSyncStatus[] | ListEnumCmsSyncStatusFieldRefInput<$PrismaModel>
@@ -40221,19 +40280,22 @@ export namespace Prisma {
     not?: NestedEnumCmsSyncStatusFilter<$PrismaModel> | $Enums.CmsSyncStatus
   }
 
-  export type UserPropertyNullableScalarRelationFilter = {
-    is?: UserPropertyWhereInput | null
-    isNot?: UserPropertyWhereInput | null
+  export type CmsSyncRunCrawl_run_idUser_integration_idCompoundUniqueInput = {
+    crawl_run_id: string
+    user_integration_id: string
   }
 
   export type CmsSyncRunCountOrderByAggregateInput = {
     id?: SortOrder
+    crawl_run_id?: SortOrder
     user_integration_id?: SortOrder
-    user_property_id?: SortOrder
-    action?: SortOrder
     status?: SortOrder
     attempt?: SortOrder
     max_attempts?: SortOrder
+    total_created?: SortOrder
+    total_updated?: SortOrder
+    total_removed?: SortOrder
+    total_failed?: SortOrder
     payload?: SortOrder
     response?: SortOrder
     error_message?: SortOrder
@@ -40246,16 +40308,23 @@ export namespace Prisma {
   export type CmsSyncRunAvgOrderByAggregateInput = {
     attempt?: SortOrder
     max_attempts?: SortOrder
+    total_created?: SortOrder
+    total_updated?: SortOrder
+    total_removed?: SortOrder
+    total_failed?: SortOrder
   }
 
   export type CmsSyncRunMaxOrderByAggregateInput = {
     id?: SortOrder
+    crawl_run_id?: SortOrder
     user_integration_id?: SortOrder
-    user_property_id?: SortOrder
-    action?: SortOrder
     status?: SortOrder
     attempt?: SortOrder
     max_attempts?: SortOrder
+    total_created?: SortOrder
+    total_updated?: SortOrder
+    total_removed?: SortOrder
+    total_failed?: SortOrder
     error_message?: SortOrder
     started_at?: SortOrder
     finished_at?: SortOrder
@@ -40265,12 +40334,15 @@ export namespace Prisma {
 
   export type CmsSyncRunMinOrderByAggregateInput = {
     id?: SortOrder
+    crawl_run_id?: SortOrder
     user_integration_id?: SortOrder
-    user_property_id?: SortOrder
-    action?: SortOrder
     status?: SortOrder
     attempt?: SortOrder
     max_attempts?: SortOrder
+    total_created?: SortOrder
+    total_updated?: SortOrder
+    total_removed?: SortOrder
+    total_failed?: SortOrder
     error_message?: SortOrder
     started_at?: SortOrder
     finished_at?: SortOrder
@@ -40281,16 +40353,10 @@ export namespace Prisma {
   export type CmsSyncRunSumOrderByAggregateInput = {
     attempt?: SortOrder
     max_attempts?: SortOrder
-  }
-
-  export type EnumCmsSyncActionWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.CmsSyncAction | EnumCmsSyncActionFieldRefInput<$PrismaModel>
-    in?: $Enums.CmsSyncAction[] | ListEnumCmsSyncActionFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CmsSyncAction[] | ListEnumCmsSyncActionFieldRefInput<$PrismaModel>
-    not?: NestedEnumCmsSyncActionWithAggregatesFilter<$PrismaModel> | $Enums.CmsSyncAction
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumCmsSyncActionFilter<$PrismaModel>
-    _max?: NestedEnumCmsSyncActionFilter<$PrismaModel>
+    total_created?: SortOrder
+    total_updated?: SortOrder
+    total_removed?: SortOrder
+    total_failed?: SortOrder
   }
 
   export type EnumCmsSyncStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -42128,6 +42194,13 @@ export namespace Prisma {
     connect?: DiagnosticsPackageWhereUniqueInput
   }
 
+  export type CmsSyncRunCreateNestedManyWithoutCrawl_runInput = {
+    create?: XOR<CmsSyncRunCreateWithoutCrawl_runInput, CmsSyncRunUncheckedCreateWithoutCrawl_runInput> | CmsSyncRunCreateWithoutCrawl_runInput[] | CmsSyncRunUncheckedCreateWithoutCrawl_runInput[]
+    connectOrCreate?: CmsSyncRunCreateOrConnectWithoutCrawl_runInput | CmsSyncRunCreateOrConnectWithoutCrawl_runInput[]
+    createMany?: CmsSyncRunCreateManyCrawl_runInputEnvelope
+    connect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
+  }
+
   export type JobLogUncheckedCreateNestedManyWithoutCrawl_runInput = {
     create?: XOR<JobLogCreateWithoutCrawl_runInput, JobLogUncheckedCreateWithoutCrawl_runInput> | JobLogCreateWithoutCrawl_runInput[] | JobLogUncheckedCreateWithoutCrawl_runInput[]
     connectOrCreate?: JobLogCreateOrConnectWithoutCrawl_runInput | JobLogCreateOrConnectWithoutCrawl_runInput[]
@@ -42160,6 +42233,13 @@ export namespace Prisma {
     create?: XOR<DiagnosticsPackageCreateWithoutCrawl_runInput, DiagnosticsPackageUncheckedCreateWithoutCrawl_runInput>
     connectOrCreate?: DiagnosticsPackageCreateOrConnectWithoutCrawl_runInput
     connect?: DiagnosticsPackageWhereUniqueInput
+  }
+
+  export type CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput = {
+    create?: XOR<CmsSyncRunCreateWithoutCrawl_runInput, CmsSyncRunUncheckedCreateWithoutCrawl_runInput> | CmsSyncRunCreateWithoutCrawl_runInput[] | CmsSyncRunUncheckedCreateWithoutCrawl_runInput[]
+    connectOrCreate?: CmsSyncRunCreateOrConnectWithoutCrawl_runInput | CmsSyncRunCreateOrConnectWithoutCrawl_runInput[]
+    createMany?: CmsSyncRunCreateManyCrawl_runInputEnvelope
+    connect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
   }
 
   export type EnumCrawlRunStatusFieldUpdateOperationsInput = {
@@ -42260,6 +42340,20 @@ export namespace Prisma {
     update?: XOR<XOR<DiagnosticsPackageUpdateToOneWithWhereWithoutCrawl_runInput, DiagnosticsPackageUpdateWithoutCrawl_runInput>, DiagnosticsPackageUncheckedUpdateWithoutCrawl_runInput>
   }
 
+  export type CmsSyncRunUpdateManyWithoutCrawl_runNestedInput = {
+    create?: XOR<CmsSyncRunCreateWithoutCrawl_runInput, CmsSyncRunUncheckedCreateWithoutCrawl_runInput> | CmsSyncRunCreateWithoutCrawl_runInput[] | CmsSyncRunUncheckedCreateWithoutCrawl_runInput[]
+    connectOrCreate?: CmsSyncRunCreateOrConnectWithoutCrawl_runInput | CmsSyncRunCreateOrConnectWithoutCrawl_runInput[]
+    upsert?: CmsSyncRunUpsertWithWhereUniqueWithoutCrawl_runInput | CmsSyncRunUpsertWithWhereUniqueWithoutCrawl_runInput[]
+    createMany?: CmsSyncRunCreateManyCrawl_runInputEnvelope
+    set?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
+    disconnect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
+    delete?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
+    connect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
+    update?: CmsSyncRunUpdateWithWhereUniqueWithoutCrawl_runInput | CmsSyncRunUpdateWithWhereUniqueWithoutCrawl_runInput[]
+    updateMany?: CmsSyncRunUpdateManyWithWhereWithoutCrawl_runInput | CmsSyncRunUpdateManyWithWhereWithoutCrawl_runInput[]
+    deleteMany?: CmsSyncRunScalarWhereInput | CmsSyncRunScalarWhereInput[]
+  }
+
   export type JobLogUncheckedUpdateManyWithoutCrawl_runNestedInput = {
     create?: XOR<JobLogCreateWithoutCrawl_runInput, JobLogUncheckedCreateWithoutCrawl_runInput> | JobLogCreateWithoutCrawl_runInput[] | JobLogUncheckedCreateWithoutCrawl_runInput[]
     connectOrCreate?: JobLogCreateOrConnectWithoutCrawl_runInput | JobLogCreateOrConnectWithoutCrawl_runInput[]
@@ -42324,6 +42418,20 @@ export namespace Prisma {
     delete?: DiagnosticsPackageWhereInput | boolean
     connect?: DiagnosticsPackageWhereUniqueInput
     update?: XOR<XOR<DiagnosticsPackageUpdateToOneWithWhereWithoutCrawl_runInput, DiagnosticsPackageUpdateWithoutCrawl_runInput>, DiagnosticsPackageUncheckedUpdateWithoutCrawl_runInput>
+  }
+
+  export type CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput = {
+    create?: XOR<CmsSyncRunCreateWithoutCrawl_runInput, CmsSyncRunUncheckedCreateWithoutCrawl_runInput> | CmsSyncRunCreateWithoutCrawl_runInput[] | CmsSyncRunUncheckedCreateWithoutCrawl_runInput[]
+    connectOrCreate?: CmsSyncRunCreateOrConnectWithoutCrawl_runInput | CmsSyncRunCreateOrConnectWithoutCrawl_runInput[]
+    upsert?: CmsSyncRunUpsertWithWhereUniqueWithoutCrawl_runInput | CmsSyncRunUpsertWithWhereUniqueWithoutCrawl_runInput[]
+    createMany?: CmsSyncRunCreateManyCrawl_runInputEnvelope
+    set?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
+    disconnect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
+    delete?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
+    connect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
+    update?: CmsSyncRunUpdateWithWhereUniqueWithoutCrawl_runInput | CmsSyncRunUpdateWithWhereUniqueWithoutCrawl_runInput[]
+    updateMany?: CmsSyncRunUpdateManyWithWhereWithoutCrawl_runInput | CmsSyncRunUpdateManyWithWhereWithoutCrawl_runInput[]
+    deleteMany?: CmsSyncRunScalarWhereInput | CmsSyncRunScalarWhereInput[]
   }
 
   export type CrawlRunCreateNestedOneWithoutDiagnostics_packageInput = {
@@ -42490,24 +42598,28 @@ export namespace Prisma {
     update?: XOR<XOR<CrawlRunUpdateToOneWithWhereWithoutNotificationsInput, CrawlRunUpdateWithoutNotificationsInput>, CrawlRunUncheckedUpdateWithoutNotificationsInput>
   }
 
+  export type CrawlRunCreateNestedOneWithoutCms_sync_runsInput = {
+    create?: XOR<CrawlRunCreateWithoutCms_sync_runsInput, CrawlRunUncheckedCreateWithoutCms_sync_runsInput>
+    connectOrCreate?: CrawlRunCreateOrConnectWithoutCms_sync_runsInput
+    connect?: CrawlRunWhereUniqueInput
+  }
+
   export type UserIntegrationCreateNestedOneWithoutSync_runsInput = {
     create?: XOR<UserIntegrationCreateWithoutSync_runsInput, UserIntegrationUncheckedCreateWithoutSync_runsInput>
     connectOrCreate?: UserIntegrationCreateOrConnectWithoutSync_runsInput
     connect?: UserIntegrationWhereUniqueInput
   }
 
-  export type UserPropertyCreateNestedOneWithoutCms_sync_runsInput = {
-    create?: XOR<UserPropertyCreateWithoutCms_sync_runsInput, UserPropertyUncheckedCreateWithoutCms_sync_runsInput>
-    connectOrCreate?: UserPropertyCreateOrConnectWithoutCms_sync_runsInput
-    connect?: UserPropertyWhereUniqueInput
-  }
-
-  export type EnumCmsSyncActionFieldUpdateOperationsInput = {
-    set?: $Enums.CmsSyncAction
-  }
-
   export type EnumCmsSyncStatusFieldUpdateOperationsInput = {
     set?: $Enums.CmsSyncStatus
+  }
+
+  export type CrawlRunUpdateOneRequiredWithoutCms_sync_runsNestedInput = {
+    create?: XOR<CrawlRunCreateWithoutCms_sync_runsInput, CrawlRunUncheckedCreateWithoutCms_sync_runsInput>
+    connectOrCreate?: CrawlRunCreateOrConnectWithoutCms_sync_runsInput
+    upsert?: CrawlRunUpsertWithoutCms_sync_runsInput
+    connect?: CrawlRunWhereUniqueInput
+    update?: XOR<XOR<CrawlRunUpdateToOneWithWhereWithoutCms_sync_runsInput, CrawlRunUpdateWithoutCms_sync_runsInput>, CrawlRunUncheckedUpdateWithoutCms_sync_runsInput>
   }
 
   export type UserIntegrationUpdateOneRequiredWithoutSync_runsNestedInput = {
@@ -42516,16 +42628,6 @@ export namespace Prisma {
     upsert?: UserIntegrationUpsertWithoutSync_runsInput
     connect?: UserIntegrationWhereUniqueInput
     update?: XOR<XOR<UserIntegrationUpdateToOneWithWhereWithoutSync_runsInput, UserIntegrationUpdateWithoutSync_runsInput>, UserIntegrationUncheckedUpdateWithoutSync_runsInput>
-  }
-
-  export type UserPropertyUpdateOneWithoutCms_sync_runsNestedInput = {
-    create?: XOR<UserPropertyCreateWithoutCms_sync_runsInput, UserPropertyUncheckedCreateWithoutCms_sync_runsInput>
-    connectOrCreate?: UserPropertyCreateOrConnectWithoutCms_sync_runsInput
-    upsert?: UserPropertyUpsertWithoutCms_sync_runsInput
-    disconnect?: UserPropertyWhereInput | boolean
-    delete?: UserPropertyWhereInput | boolean
-    connect?: UserPropertyWhereUniqueInput
-    update?: XOR<XOR<UserPropertyUpdateToOneWithWhereWithoutCms_sync_runsInput, UserPropertyUpdateWithoutCms_sync_runsInput>, UserPropertyUncheckedUpdateWithoutCms_sync_runsInput>
   }
 
   export type SourceAgencyCreateNestedOneWithoutSource_propertiesInput = {
@@ -42796,20 +42898,6 @@ export namespace Prisma {
     connect?: PropertyWhereUniqueInput
   }
 
-  export type CmsSyncRunCreateNestedManyWithoutUser_propertyInput = {
-    create?: XOR<CmsSyncRunCreateWithoutUser_propertyInput, CmsSyncRunUncheckedCreateWithoutUser_propertyInput> | CmsSyncRunCreateWithoutUser_propertyInput[] | CmsSyncRunUncheckedCreateWithoutUser_propertyInput[]
-    connectOrCreate?: CmsSyncRunCreateOrConnectWithoutUser_propertyInput | CmsSyncRunCreateOrConnectWithoutUser_propertyInput[]
-    createMany?: CmsSyncRunCreateManyUser_propertyInputEnvelope
-    connect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
-  }
-
-  export type CmsSyncRunUncheckedCreateNestedManyWithoutUser_propertyInput = {
-    create?: XOR<CmsSyncRunCreateWithoutUser_propertyInput, CmsSyncRunUncheckedCreateWithoutUser_propertyInput> | CmsSyncRunCreateWithoutUser_propertyInput[] | CmsSyncRunUncheckedCreateWithoutUser_propertyInput[]
-    connectOrCreate?: CmsSyncRunCreateOrConnectWithoutUser_propertyInput | CmsSyncRunCreateOrConnectWithoutUser_propertyInput[]
-    createMany?: CmsSyncRunCreateManyUser_propertyInputEnvelope
-    connect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
-  }
-
   export type UserUpdateOneRequiredWithoutSaved_propertiesNestedInput = {
     create?: XOR<UserCreateWithoutSaved_propertiesInput, UserUncheckedCreateWithoutSaved_propertiesInput>
     connectOrCreate?: UserCreateOrConnectWithoutSaved_propertiesInput
@@ -42824,34 +42912,6 @@ export namespace Prisma {
     upsert?: PropertyUpsertWithoutUser_property_copiesInput
     connect?: PropertyWhereUniqueInput
     update?: XOR<XOR<PropertyUpdateToOneWithWhereWithoutUser_property_copiesInput, PropertyUpdateWithoutUser_property_copiesInput>, PropertyUncheckedUpdateWithoutUser_property_copiesInput>
-  }
-
-  export type CmsSyncRunUpdateManyWithoutUser_propertyNestedInput = {
-    create?: XOR<CmsSyncRunCreateWithoutUser_propertyInput, CmsSyncRunUncheckedCreateWithoutUser_propertyInput> | CmsSyncRunCreateWithoutUser_propertyInput[] | CmsSyncRunUncheckedCreateWithoutUser_propertyInput[]
-    connectOrCreate?: CmsSyncRunCreateOrConnectWithoutUser_propertyInput | CmsSyncRunCreateOrConnectWithoutUser_propertyInput[]
-    upsert?: CmsSyncRunUpsertWithWhereUniqueWithoutUser_propertyInput | CmsSyncRunUpsertWithWhereUniqueWithoutUser_propertyInput[]
-    createMany?: CmsSyncRunCreateManyUser_propertyInputEnvelope
-    set?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
-    disconnect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
-    delete?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
-    connect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
-    update?: CmsSyncRunUpdateWithWhereUniqueWithoutUser_propertyInput | CmsSyncRunUpdateWithWhereUniqueWithoutUser_propertyInput[]
-    updateMany?: CmsSyncRunUpdateManyWithWhereWithoutUser_propertyInput | CmsSyncRunUpdateManyWithWhereWithoutUser_propertyInput[]
-    deleteMany?: CmsSyncRunScalarWhereInput | CmsSyncRunScalarWhereInput[]
-  }
-
-  export type CmsSyncRunUncheckedUpdateManyWithoutUser_propertyNestedInput = {
-    create?: XOR<CmsSyncRunCreateWithoutUser_propertyInput, CmsSyncRunUncheckedCreateWithoutUser_propertyInput> | CmsSyncRunCreateWithoutUser_propertyInput[] | CmsSyncRunUncheckedCreateWithoutUser_propertyInput[]
-    connectOrCreate?: CmsSyncRunCreateOrConnectWithoutUser_propertyInput | CmsSyncRunCreateOrConnectWithoutUser_propertyInput[]
-    upsert?: CmsSyncRunUpsertWithWhereUniqueWithoutUser_propertyInput | CmsSyncRunUpsertWithWhereUniqueWithoutUser_propertyInput[]
-    createMany?: CmsSyncRunCreateManyUser_propertyInputEnvelope
-    set?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
-    disconnect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
-    delete?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
-    connect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
-    update?: CmsSyncRunUpdateWithWhereUniqueWithoutUser_propertyInput | CmsSyncRunUpdateWithWhereUniqueWithoutUser_propertyInput[]
-    updateMany?: CmsSyncRunUpdateManyWithWhereWithoutUser_propertyInput | CmsSyncRunUpdateManyWithWhereWithoutUser_propertyInput[]
-    deleteMany?: CmsSyncRunScalarWhereInput | CmsSyncRunScalarWhereInput[]
   }
 
   export type ComputerUseStepCreateNestedManyWithoutScreenshot_beforeInput = {
@@ -43471,28 +43531,11 @@ export namespace Prisma {
     _max?: NestedEnumNotificationSeverityFilter<$PrismaModel>
   }
 
-  export type NestedEnumCmsSyncActionFilter<$PrismaModel = never> = {
-    equals?: $Enums.CmsSyncAction | EnumCmsSyncActionFieldRefInput<$PrismaModel>
-    in?: $Enums.CmsSyncAction[] | ListEnumCmsSyncActionFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CmsSyncAction[] | ListEnumCmsSyncActionFieldRefInput<$PrismaModel>
-    not?: NestedEnumCmsSyncActionFilter<$PrismaModel> | $Enums.CmsSyncAction
-  }
-
   export type NestedEnumCmsSyncStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.CmsSyncStatus | EnumCmsSyncStatusFieldRefInput<$PrismaModel>
     in?: $Enums.CmsSyncStatus[] | ListEnumCmsSyncStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.CmsSyncStatus[] | ListEnumCmsSyncStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumCmsSyncStatusFilter<$PrismaModel> | $Enums.CmsSyncStatus
-  }
-
-  export type NestedEnumCmsSyncActionWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.CmsSyncAction | EnumCmsSyncActionFieldRefInput<$PrismaModel>
-    in?: $Enums.CmsSyncAction[] | ListEnumCmsSyncActionFieldRefInput<$PrismaModel>
-    notIn?: $Enums.CmsSyncAction[] | ListEnumCmsSyncActionFieldRefInput<$PrismaModel>
-    not?: NestedEnumCmsSyncActionWithAggregatesFilter<$PrismaModel> | $Enums.CmsSyncAction
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumCmsSyncActionFilter<$PrismaModel>
-    _max?: NestedEnumCmsSyncActionFilter<$PrismaModel>
   }
 
   export type NestedEnumCmsSyncStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -43593,7 +43636,6 @@ export namespace Prisma {
   export type UserTrackedAgencyCreateWithoutUserInput = {
     id?: string
     enabled?: boolean
-    crawl_interval?: string
     concurrent_insertions?: number
     insertion_interval_minutes?: number
     track_new_listings?: boolean
@@ -43611,7 +43653,6 @@ export namespace Prisma {
     id?: string
     source_agency_id: string
     enabled?: boolean
-    crawl_interval?: string
     concurrent_insertions?: number
     insertion_interval_minutes?: number
     track_new_listings?: boolean
@@ -43665,7 +43706,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
-    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutUserInput = {
@@ -43699,7 +43739,6 @@ export namespace Prisma {
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
-    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutUserInput = {
@@ -43780,7 +43819,6 @@ export namespace Prisma {
     user_id?: StringFilter<"UserTrackedAgency"> | string
     source_agency_id?: StringFilter<"UserTrackedAgency"> | string
     enabled?: BoolFilter<"UserTrackedAgency"> | boolean
-    crawl_interval?: StringFilter<"UserTrackedAgency"> | string
     concurrent_insertions?: IntFilter<"UserTrackedAgency"> | number
     insertion_interval_minutes?: IntFilter<"UserTrackedAgency"> | number
     track_new_listings?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -43941,10 +43979,13 @@ export namespace Prisma {
 
   export type CmsSyncRunCreateWithoutUser_integrationInput = {
     id?: string
-    action: $Enums.CmsSyncAction
     status?: $Enums.CmsSyncStatus
     attempt?: number
     max_attempts?: number | null
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
@@ -43952,16 +43993,19 @@ export namespace Prisma {
     finished_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
-    user_property?: UserPropertyCreateNestedOneWithoutCms_sync_runsInput
+    crawl_run: CrawlRunCreateNestedOneWithoutCms_sync_runsInput
   }
 
   export type CmsSyncRunUncheckedCreateWithoutUser_integrationInput = {
     id?: string
-    user_property_id?: string | null
-    action: $Enums.CmsSyncAction
+    crawl_run_id: string
     status?: $Enums.CmsSyncStatus
     attempt?: number
     max_attempts?: number | null
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
@@ -44079,12 +44123,15 @@ export namespace Prisma {
     OR?: CmsSyncRunScalarWhereInput[]
     NOT?: CmsSyncRunScalarWhereInput | CmsSyncRunScalarWhereInput[]
     id?: StringFilter<"CmsSyncRun"> | string
+    crawl_run_id?: StringFilter<"CmsSyncRun"> | string
     user_integration_id?: StringFilter<"CmsSyncRun"> | string
-    user_property_id?: StringNullableFilter<"CmsSyncRun"> | string | null
-    action?: EnumCmsSyncActionFilter<"CmsSyncRun"> | $Enums.CmsSyncAction
     status?: EnumCmsSyncStatusFilter<"CmsSyncRun"> | $Enums.CmsSyncStatus
     attempt?: IntFilter<"CmsSyncRun"> | number
     max_attempts?: IntNullableFilter<"CmsSyncRun"> | number | null
+    total_created?: IntFilter<"CmsSyncRun"> | number
+    total_updated?: IntFilter<"CmsSyncRun"> | number
+    total_removed?: IntFilter<"CmsSyncRun"> | number
+    total_failed?: IntFilter<"CmsSyncRun"> | number
     payload?: JsonNullableFilter<"CmsSyncRun">
     response?: JsonNullableFilter<"CmsSyncRun">
     error_message?: StringNullableFilter<"CmsSyncRun"> | string | null
@@ -44252,7 +44299,6 @@ export namespace Prisma {
   export type UserTrackedAgencyCreateWithoutSource_agencyInput = {
     id?: string
     enabled?: boolean
-    crawl_interval?: string
     concurrent_insertions?: number
     insertion_interval_minutes?: number
     track_new_listings?: boolean
@@ -44270,7 +44316,6 @@ export namespace Prisma {
     id?: string
     user_id: string
     enabled?: boolean
-    crawl_interval?: string
     concurrent_insertions?: number
     insertion_interval_minutes?: number
     track_new_listings?: boolean
@@ -44344,6 +44389,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -44366,6 +44413,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutSource_agencyInput = {
@@ -44377,6 +44425,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -44397,6 +44447,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutSource_agencyInput = {
@@ -44613,6 +44664,8 @@ export namespace Prisma {
     finished_at?: DateTimeNullableFilter<"CrawlRun"> | Date | string | null
     duration_ms?: IntNullableFilter<"CrawlRun"> | number | null
     total_found?: IntFilter<"CrawlRun"> | number
+    total_new_listings?: IntFilter<"CrawlRun"> | number
+    total_refreshed_listings?: IntFilter<"CrawlRun"> | number
     total_created?: IntFilter<"CrawlRun"> | number
     total_updated?: IntFilter<"CrawlRun"> | number
     total_removed?: IntFilter<"CrawlRun"> | number
@@ -44788,6 +44841,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -44810,6 +44865,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput = {
@@ -44821,6 +44877,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -44841,6 +44899,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput = {
@@ -45008,7 +45067,6 @@ export namespace Prisma {
   export type UserTrackedAgencyCreateWithoutIntegration_linkInput = {
     id?: string
     enabled?: boolean
-    crawl_interval?: string
     concurrent_insertions?: number
     insertion_interval_minutes?: number
     track_new_listings?: boolean
@@ -45027,7 +45085,6 @@ export namespace Prisma {
     user_id: string
     source_agency_id: string
     enabled?: boolean
-    crawl_interval?: string
     concurrent_insertions?: number
     insertion_interval_minutes?: number
     track_new_listings?: boolean
@@ -45097,7 +45154,6 @@ export namespace Prisma {
   export type UserTrackedAgencyUpdateWithoutIntegration_linkInput = {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -45116,7 +45172,6 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -45260,6 +45315,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -45282,6 +45339,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutScraperInput = {
@@ -45293,6 +45351,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -45313,6 +45373,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutScraperInput = {
@@ -46702,6 +46763,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -46724,6 +46787,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutExecution_tracesInput = {
@@ -46736,6 +46800,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -46755,6 +46821,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutExecution_tracesInput = {
@@ -46841,6 +46908,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -46863,6 +46932,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutExecution_tracesInput = {
@@ -46875,6 +46945,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -46894,6 +46966,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type SourceAgencyCreateWithoutCrawl_runsInput = {
@@ -46950,7 +47023,6 @@ export namespace Prisma {
   export type UserTrackedAgencyCreateWithoutCrawl_runsInput = {
     id?: string
     enabled?: boolean
-    crawl_interval?: string
     concurrent_insertions?: number
     insertion_interval_minutes?: number
     track_new_listings?: boolean
@@ -46969,7 +47041,6 @@ export namespace Prisma {
     user_id: string
     source_agency_id: string
     enabled?: boolean
-    crawl_interval?: string
     concurrent_insertions?: number
     insertion_interval_minutes?: number
     track_new_listings?: boolean
@@ -47226,6 +47297,54 @@ export namespace Prisma {
     create: XOR<DiagnosticsPackageCreateWithoutCrawl_runInput, DiagnosticsPackageUncheckedCreateWithoutCrawl_runInput>
   }
 
+  export type CmsSyncRunCreateWithoutCrawl_runInput = {
+    id?: string
+    status?: $Enums.CmsSyncStatus
+    attempt?: number
+    max_attempts?: number | null
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_failed?: number
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    response?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    started_at?: Date | string | null
+    finished_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user_integration: UserIntegrationCreateNestedOneWithoutSync_runsInput
+  }
+
+  export type CmsSyncRunUncheckedCreateWithoutCrawl_runInput = {
+    id?: string
+    user_integration_id: string
+    status?: $Enums.CmsSyncStatus
+    attempt?: number
+    max_attempts?: number | null
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_failed?: number
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    response?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    started_at?: Date | string | null
+    finished_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type CmsSyncRunCreateOrConnectWithoutCrawl_runInput = {
+    where: CmsSyncRunWhereUniqueInput
+    create: XOR<CmsSyncRunCreateWithoutCrawl_runInput, CmsSyncRunUncheckedCreateWithoutCrawl_runInput>
+  }
+
+  export type CmsSyncRunCreateManyCrawl_runInputEnvelope = {
+    data: CmsSyncRunCreateManyCrawl_runInput | CmsSyncRunCreateManyCrawl_runInput[]
+    skipDuplicates?: boolean
+  }
+
   export type SourceAgencyUpsertWithoutCrawl_runsInput = {
     update: XOR<SourceAgencyUpdateWithoutCrawl_runsInput, SourceAgencyUncheckedUpdateWithoutCrawl_runsInput>
     create: XOR<SourceAgencyCreateWithoutCrawl_runsInput, SourceAgencyUncheckedCreateWithoutCrawl_runsInput>
@@ -47297,7 +47416,6 @@ export namespace Prisma {
   export type UserTrackedAgencyUpdateWithoutCrawl_runsInput = {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -47316,7 +47434,6 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -47539,6 +47656,22 @@ export namespace Prisma {
     artifacts?: DiagnosticsArtifactUncheckedUpdateManyWithoutDiagnostics_packageNestedInput
   }
 
+  export type CmsSyncRunUpsertWithWhereUniqueWithoutCrawl_runInput = {
+    where: CmsSyncRunWhereUniqueInput
+    update: XOR<CmsSyncRunUpdateWithoutCrawl_runInput, CmsSyncRunUncheckedUpdateWithoutCrawl_runInput>
+    create: XOR<CmsSyncRunCreateWithoutCrawl_runInput, CmsSyncRunUncheckedCreateWithoutCrawl_runInput>
+  }
+
+  export type CmsSyncRunUpdateWithWhereUniqueWithoutCrawl_runInput = {
+    where: CmsSyncRunWhereUniqueInput
+    data: XOR<CmsSyncRunUpdateWithoutCrawl_runInput, CmsSyncRunUncheckedUpdateWithoutCrawl_runInput>
+  }
+
+  export type CmsSyncRunUpdateManyWithWhereWithoutCrawl_runInput = {
+    where: CmsSyncRunScalarWhereInput
+    data: XOR<CmsSyncRunUpdateManyMutationInput, CmsSyncRunUncheckedUpdateManyWithoutCrawl_runInput>
+  }
+
   export type CrawlRunCreateWithoutDiagnostics_packageInput = {
     id?: string
     status?: $Enums.CrawlRunStatus
@@ -47546,6 +47679,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -47568,6 +47703,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutDiagnostics_packageInput = {
@@ -47580,6 +47716,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -47599,6 +47737,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutDiagnostics_packageInput = {
@@ -47707,6 +47846,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -47729,6 +47870,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutDiagnostics_packageInput = {
@@ -47741,6 +47883,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -47760,6 +47904,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type ScraperUpsertWithoutDiagnostics_packagesInput = {
@@ -47951,6 +48096,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -47973,6 +48120,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutJob_logsInput = {
@@ -47985,6 +48133,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -48004,6 +48154,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutJob_logsInput = {
@@ -48029,6 +48180,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -48051,6 +48204,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutJob_logsInput = {
@@ -48063,6 +48217,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -48082,6 +48238,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type SourceAgencyCreateWithoutNotificationsInput = {
@@ -48197,6 +48354,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -48219,6 +48378,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutNotificationsInput = {
@@ -48231,6 +48391,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -48250,6 +48412,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutNotificationsInput = {
@@ -48393,6 +48556,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -48415,6 +48580,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutNotificationsInput = {
@@ -48427,6 +48593,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -48446,6 +48614,80 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+  }
+
+  export type CrawlRunCreateWithoutCms_sync_runsInput = {
+    id?: string
+    status?: $Enums.CrawlRunStatus
+    started_at?: Date | string | null
+    finished_at?: Date | string | null
+    duration_ms?: number | null
+    total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_failed?: number
+    error_message?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: string | null
+    ai_input_tokens?: number | null
+    ai_output_tokens?: number | null
+    ai_input_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: Decimal | DecimalJsLike | number | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    source_agency: SourceAgencyCreateNestedOneWithoutCrawl_runsInput
+    user_tracked_agency?: UserTrackedAgencyCreateNestedOneWithoutCrawl_runsInput
+    scraper?: ScraperCreateNestedOneWithoutCrawl_runsInput
+    job_logs?: JobLogCreateNestedManyWithoutCrawl_runInput
+    execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
+    property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
+    notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
+  }
+
+  export type CrawlRunUncheckedCreateWithoutCms_sync_runsInput = {
+    id?: string
+    source_agency_id: string
+    scraper_id?: string | null
+    user_tracked_agency_id?: string | null
+    status?: $Enums.CrawlRunStatus
+    started_at?: Date | string | null
+    finished_at?: Date | string | null
+    duration_ms?: number | null
+    total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_failed?: number
+    error_message?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: string | null
+    ai_input_tokens?: number | null
+    ai_output_tokens?: number | null
+    ai_input_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: Decimal | DecimalJsLike | number | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    job_logs?: JobLogUncheckedCreateNestedManyWithoutCrawl_runInput
+    execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
+    property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
+  }
+
+  export type CrawlRunCreateOrConnectWithoutCms_sync_runsInput = {
+    where: CrawlRunWhereUniqueInput
+    create: XOR<CrawlRunCreateWithoutCms_sync_runsInput, CrawlRunUncheckedCreateWithoutCms_sync_runsInput>
   }
 
   export type UserIntegrationCreateWithoutSync_runsInput = {
@@ -48487,77 +48729,83 @@ export namespace Prisma {
     create: XOR<UserIntegrationCreateWithoutSync_runsInput, UserIntegrationUncheckedCreateWithoutSync_runsInput>
   }
 
-  export type UserPropertyCreateWithoutCms_sync_runsInput = {
-    id?: string
-    title: string
-    description?: string | null
-    listing_type?: $Enums.ListingType
-    property_type?: $Enums.PropertyType
-    status?: $Enums.PropertyStatus
-    price?: Decimal | DecimalJsLike | number | string | null
-    currency?: string | null
-    city?: string | null
-    district?: string | null
-    address?: string | null
-    postal_code?: string | null
-    country?: string | null
-    latitude?: Decimal | DecimalJsLike | number | string | null
-    longitude?: Decimal | DecimalJsLike | number | string | null
-    square_meters?: Decimal | DecimalJsLike | number | string | null
-    bedrooms?: number | null
-    bathrooms?: number | null
-    floor?: string | null
-    construction_year?: number | null
-    renovation_year?: number | null
-    features?: NullableJsonNullValueInput | InputJsonValue
-    images?: NullableJsonNullValueInput | InputJsonValue
-    normalized_data?: NullableJsonNullValueInput | InputJsonValue
-    duplicate_group_id?: string | null
-    is_modified?: boolean
-    last_synced_at?: Date | string | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    user: UserCreateNestedOneWithoutSaved_propertiesInput
-    canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
+  export type CrawlRunUpsertWithoutCms_sync_runsInput = {
+    update: XOR<CrawlRunUpdateWithoutCms_sync_runsInput, CrawlRunUncheckedUpdateWithoutCms_sync_runsInput>
+    create: XOR<CrawlRunCreateWithoutCms_sync_runsInput, CrawlRunUncheckedCreateWithoutCms_sync_runsInput>
+    where?: CrawlRunWhereInput
   }
 
-  export type UserPropertyUncheckedCreateWithoutCms_sync_runsInput = {
-    id?: string
-    user_id: string
-    property_id: string
-    title: string
-    description?: string | null
-    listing_type?: $Enums.ListingType
-    property_type?: $Enums.PropertyType
-    status?: $Enums.PropertyStatus
-    price?: Decimal | DecimalJsLike | number | string | null
-    currency?: string | null
-    city?: string | null
-    district?: string | null
-    address?: string | null
-    postal_code?: string | null
-    country?: string | null
-    latitude?: Decimal | DecimalJsLike | number | string | null
-    longitude?: Decimal | DecimalJsLike | number | string | null
-    square_meters?: Decimal | DecimalJsLike | number | string | null
-    bedrooms?: number | null
-    bathrooms?: number | null
-    floor?: string | null
-    construction_year?: number | null
-    renovation_year?: number | null
-    features?: NullableJsonNullValueInput | InputJsonValue
-    images?: NullableJsonNullValueInput | InputJsonValue
-    normalized_data?: NullableJsonNullValueInput | InputJsonValue
-    duplicate_group_id?: string | null
-    is_modified?: boolean
-    last_synced_at?: Date | string | null
-    created_at?: Date | string
-    updated_at?: Date | string
+  export type CrawlRunUpdateToOneWithWhereWithoutCms_sync_runsInput = {
+    where?: CrawlRunWhereInput
+    data: XOR<CrawlRunUpdateWithoutCms_sync_runsInput, CrawlRunUncheckedUpdateWithoutCms_sync_runsInput>
   }
 
-  export type UserPropertyCreateOrConnectWithoutCms_sync_runsInput = {
-    where: UserPropertyWhereUniqueInput
-    create: XOR<UserPropertyCreateWithoutCms_sync_runsInput, UserPropertyUncheckedCreateWithoutCms_sync_runsInput>
+  export type CrawlRunUpdateWithoutCms_sync_runsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
+    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_input_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_output_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    source_agency?: SourceAgencyUpdateOneRequiredWithoutCrawl_runsNestedInput
+    user_tracked_agency?: UserTrackedAgencyUpdateOneWithoutCrawl_runsNestedInput
+    scraper?: ScraperUpdateOneWithoutCrawl_runsNestedInput
+    job_logs?: JobLogUpdateManyWithoutCrawl_runNestedInput
+    execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
+    property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
+    notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
+  }
+
+  export type CrawlRunUncheckedUpdateWithoutCms_sync_runsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: StringFieldUpdateOperationsInput | string
+    scraper_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
+    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_input_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_output_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    job_logs?: JobLogUncheckedUpdateManyWithoutCrawl_runNestedInput
+    execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
+    property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
   }
 
   export type UserIntegrationUpsertWithoutSync_runsInput = {
@@ -48603,85 +48851,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     tracked_agency_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_integrationNestedInput
-  }
-
-  export type UserPropertyUpsertWithoutCms_sync_runsInput = {
-    update: XOR<UserPropertyUpdateWithoutCms_sync_runsInput, UserPropertyUncheckedUpdateWithoutCms_sync_runsInput>
-    create: XOR<UserPropertyCreateWithoutCms_sync_runsInput, UserPropertyUncheckedCreateWithoutCms_sync_runsInput>
-    where?: UserPropertyWhereInput
-  }
-
-  export type UserPropertyUpdateToOneWithWhereWithoutCms_sync_runsInput = {
-    where?: UserPropertyWhereInput
-    data: XOR<UserPropertyUpdateWithoutCms_sync_runsInput, UserPropertyUncheckedUpdateWithoutCms_sync_runsInput>
-  }
-
-  export type UserPropertyUpdateWithoutCms_sync_runsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
-    property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
-    status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
-    price?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    currency?: NullableStringFieldUpdateOperationsInput | string | null
-    city?: NullableStringFieldUpdateOperationsInput | string | null
-    district?: NullableStringFieldUpdateOperationsInput | string | null
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    postal_code?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    latitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    longitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    square_meters?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    bedrooms?: NullableIntFieldUpdateOperationsInput | number | null
-    bathrooms?: NullableIntFieldUpdateOperationsInput | number | null
-    floor?: NullableStringFieldUpdateOperationsInput | string | null
-    construction_year?: NullableIntFieldUpdateOperationsInput | number | null
-    renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
-    features?: NullableJsonNullValueInput | InputJsonValue
-    images?: NullableJsonNullValueInput | InputJsonValue
-    normalized_data?: NullableJsonNullValueInput | InputJsonValue
-    duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
-    is_modified?: BoolFieldUpdateOperationsInput | boolean
-    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
-    canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
-  }
-
-  export type UserPropertyUncheckedUpdateWithoutCms_sync_runsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    user_id?: StringFieldUpdateOperationsInput | string
-    property_id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
-    property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
-    status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
-    price?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    currency?: NullableStringFieldUpdateOperationsInput | string | null
-    city?: NullableStringFieldUpdateOperationsInput | string | null
-    district?: NullableStringFieldUpdateOperationsInput | string | null
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    postal_code?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    latitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    longitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    square_meters?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    bedrooms?: NullableIntFieldUpdateOperationsInput | number | null
-    bathrooms?: NullableIntFieldUpdateOperationsInput | number | null
-    floor?: NullableStringFieldUpdateOperationsInput | string | null
-    construction_year?: NullableIntFieldUpdateOperationsInput | number | null
-    renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
-    features?: NullableJsonNullValueInput | InputJsonValue
-    images?: NullableJsonNullValueInput | InputJsonValue
-    normalized_data?: NullableJsonNullValueInput | InputJsonValue
-    duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
-    is_modified?: BoolFieldUpdateOperationsInput | boolean
-    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SourceAgencyCreateWithoutSource_propertiesInput = {
@@ -48908,7 +49077,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutSaved_propertiesInput
-    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutCanonical_propertyInput = {
@@ -48942,7 +49110,6 @@ export namespace Prisma {
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
-    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutCanonical_propertyInput = {
@@ -49349,6 +49516,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -49371,6 +49540,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutProperty_historyInput = {
@@ -49383,6 +49553,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -49402,6 +49574,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutProperty_historyInput = {
@@ -49502,6 +49675,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -49524,6 +49699,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutProperty_historyInput = {
@@ -49536,6 +49712,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -49555,6 +49733,7 @@ export namespace Prisma {
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type UserCreateWithoutSaved_propertiesInput = {
@@ -49653,48 +49832,6 @@ export namespace Prisma {
   export type PropertyCreateOrConnectWithoutUser_property_copiesInput = {
     where: PropertyWhereUniqueInput
     create: XOR<PropertyCreateWithoutUser_property_copiesInput, PropertyUncheckedCreateWithoutUser_property_copiesInput>
-  }
-
-  export type CmsSyncRunCreateWithoutUser_propertyInput = {
-    id?: string
-    action: $Enums.CmsSyncAction
-    status?: $Enums.CmsSyncStatus
-    attempt?: number
-    max_attempts?: number | null
-    payload?: NullableJsonNullValueInput | InputJsonValue
-    response?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    user_integration: UserIntegrationCreateNestedOneWithoutSync_runsInput
-  }
-
-  export type CmsSyncRunUncheckedCreateWithoutUser_propertyInput = {
-    id?: string
-    user_integration_id: string
-    action: $Enums.CmsSyncAction
-    status?: $Enums.CmsSyncStatus
-    attempt?: number
-    max_attempts?: number | null
-    payload?: NullableJsonNullValueInput | InputJsonValue
-    response?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
-  export type CmsSyncRunCreateOrConnectWithoutUser_propertyInput = {
-    where: CmsSyncRunWhereUniqueInput
-    create: XOR<CmsSyncRunCreateWithoutUser_propertyInput, CmsSyncRunUncheckedCreateWithoutUser_propertyInput>
-  }
-
-  export type CmsSyncRunCreateManyUser_propertyInputEnvelope = {
-    data: CmsSyncRunCreateManyUser_propertyInput | CmsSyncRunCreateManyUser_propertyInput[]
-    skipDuplicates?: boolean
   }
 
   export type UserUpsertWithoutSaved_propertiesInput = {
@@ -49807,22 +49944,6 @@ export namespace Prisma {
     history?: PropertyHistoryUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
-  export type CmsSyncRunUpsertWithWhereUniqueWithoutUser_propertyInput = {
-    where: CmsSyncRunWhereUniqueInput
-    update: XOR<CmsSyncRunUpdateWithoutUser_propertyInput, CmsSyncRunUncheckedUpdateWithoutUser_propertyInput>
-    create: XOR<CmsSyncRunCreateWithoutUser_propertyInput, CmsSyncRunUncheckedCreateWithoutUser_propertyInput>
-  }
-
-  export type CmsSyncRunUpdateWithWhereUniqueWithoutUser_propertyInput = {
-    where: CmsSyncRunWhereUniqueInput
-    data: XOR<CmsSyncRunUpdateWithoutUser_propertyInput, CmsSyncRunUncheckedUpdateWithoutUser_propertyInput>
-  }
-
-  export type CmsSyncRunUpdateManyWithWhereWithoutUser_propertyInput = {
-    where: CmsSyncRunScalarWhereInput
-    data: XOR<CmsSyncRunUpdateManyMutationInput, CmsSyncRunUncheckedUpdateManyWithoutUser_propertyInput>
-  }
-
   export type ComputerUseStepCreateWithoutScreenshot_beforeInput = {
     id?: string
     step_index: number
@@ -49923,7 +50044,6 @@ export namespace Prisma {
     id?: string
     source_agency_id: string
     enabled?: boolean
-    crawl_interval?: string
     concurrent_insertions?: number
     insertion_interval_minutes?: number
     track_new_listings?: boolean
@@ -49985,7 +50105,6 @@ export namespace Prisma {
   export type UserTrackedAgencyUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -50003,7 +50122,6 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -50020,7 +50138,6 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -50062,7 +50179,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
-    cms_sync_runs?: CmsSyncRunUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutUserInput = {
@@ -50096,7 +50212,6 @@ export namespace Prisma {
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateManyWithoutUserInput = {
@@ -50247,11 +50362,14 @@ export namespace Prisma {
 
   export type CmsSyncRunCreateManyUser_integrationInput = {
     id?: string
-    user_property_id?: string | null
-    action: $Enums.CmsSyncAction
+    crawl_run_id: string
     status?: $Enums.CmsSyncStatus
     attempt?: number
     max_attempts?: number | null
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
@@ -50263,10 +50381,13 @@ export namespace Prisma {
 
   export type CmsSyncRunUpdateWithoutUser_integrationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    action?: EnumCmsSyncActionFieldUpdateOperationsInput | $Enums.CmsSyncAction
     status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
     attempt?: IntFieldUpdateOperationsInput | number
     max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -50274,16 +50395,19 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    user_property?: UserPropertyUpdateOneWithoutCms_sync_runsNestedInput
+    crawl_run?: CrawlRunUpdateOneRequiredWithoutCms_sync_runsNestedInput
   }
 
   export type CmsSyncRunUncheckedUpdateWithoutUser_integrationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
-    action?: EnumCmsSyncActionFieldUpdateOperationsInput | $Enums.CmsSyncAction
+    crawl_run_id?: StringFieldUpdateOperationsInput | string
     status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
     attempt?: IntFieldUpdateOperationsInput | number
     max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -50295,11 +50419,14 @@ export namespace Prisma {
 
   export type CmsSyncRunUncheckedUpdateManyWithoutUser_integrationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
-    action?: EnumCmsSyncActionFieldUpdateOperationsInput | $Enums.CmsSyncAction
+    crawl_run_id?: StringFieldUpdateOperationsInput | string
     status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
     attempt?: IntFieldUpdateOperationsInput | number
     max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -50332,7 +50459,6 @@ export namespace Prisma {
     id?: string
     user_id: string
     enabled?: boolean
-    crawl_interval?: string
     concurrent_insertions?: number
     insertion_interval_minutes?: number
     track_new_listings?: boolean
@@ -50368,6 +50494,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -50488,7 +50616,6 @@ export namespace Prisma {
   export type UserTrackedAgencyUpdateWithoutSource_agencyInput = {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -50506,7 +50633,6 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -50523,7 +50649,6 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
     insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -50591,6 +50716,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -50613,6 +50740,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutSource_agencyInput = {
@@ -50624,6 +50752,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -50644,6 +50774,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateManyWithoutSource_agencyInput = {
@@ -50655,6 +50786,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -50776,6 +50909,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -50800,6 +50935,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -50822,6 +50959,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutUser_tracked_agencyInput = {
@@ -50833,6 +50971,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -50853,6 +50993,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyInput = {
@@ -50864,6 +51005,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -50890,6 +51033,8 @@ export namespace Prisma {
     finished_at?: Date | string | null
     duration_ms?: number | null
     total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
     total_created?: number
     total_updated?: number
     total_removed?: number
@@ -50980,6 +51125,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -51002,6 +51149,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutScraperInput = {
@@ -51013,6 +51161,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -51033,6 +51183,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateManyWithoutScraperInput = {
@@ -51044,6 +51195,8 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
@@ -51362,6 +51515,25 @@ export namespace Prisma {
     created_at?: Date | string
   }
 
+  export type CmsSyncRunCreateManyCrawl_runInput = {
+    id?: string
+    user_integration_id: string
+    status?: $Enums.CmsSyncStatus
+    attempt?: number
+    max_attempts?: number | null
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_failed?: number
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    response?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    started_at?: Date | string | null
+    finished_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
   export type JobLogUpdateWithoutCrawl_runInput = {
     id?: StringFieldUpdateOperationsInput | string
     queue_name?: StringFieldUpdateOperationsInput | string
@@ -51513,6 +51685,63 @@ export namespace Prisma {
     scraper_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_read?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CmsSyncRunUpdateWithoutCrawl_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
+    attempt?: IntFieldUpdateOperationsInput | number
+    max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    response?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user_integration?: UserIntegrationUpdateOneRequiredWithoutSync_runsNestedInput
+  }
+
+  export type CmsSyncRunUncheckedUpdateWithoutCrawl_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_integration_id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
+    attempt?: IntFieldUpdateOperationsInput | number
+    max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    response?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CmsSyncRunUncheckedUpdateManyWithoutCrawl_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_integration_id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
+    attempt?: IntFieldUpdateOperationsInput | number
+    max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    response?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DiagnosticsArtifactCreateManyDiagnostics_packageInput = {
@@ -51697,7 +51926,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
-    cms_sync_runs?: CmsSyncRunUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutCanonical_propertyInput = {
@@ -51731,7 +51959,6 @@ export namespace Prisma {
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateManyWithoutCanonical_propertyInput = {
@@ -51795,70 +52022,6 @@ export namespace Prisma {
     new_value?: NullableJsonNullValueInput | InputJsonValue
     crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type CmsSyncRunCreateManyUser_propertyInput = {
-    id?: string
-    user_integration_id: string
-    action: $Enums.CmsSyncAction
-    status?: $Enums.CmsSyncStatus
-    attempt?: number
-    max_attempts?: number | null
-    payload?: NullableJsonNullValueInput | InputJsonValue
-    response?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
-  export type CmsSyncRunUpdateWithoutUser_propertyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    action?: EnumCmsSyncActionFieldUpdateOperationsInput | $Enums.CmsSyncAction
-    status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
-    attempt?: IntFieldUpdateOperationsInput | number
-    max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
-    payload?: NullableJsonNullValueInput | InputJsonValue
-    response?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    user_integration?: UserIntegrationUpdateOneRequiredWithoutSync_runsNestedInput
-  }
-
-  export type CmsSyncRunUncheckedUpdateWithoutUser_propertyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    user_integration_id?: StringFieldUpdateOperationsInput | string
-    action?: EnumCmsSyncActionFieldUpdateOperationsInput | $Enums.CmsSyncAction
-    status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
-    attempt?: IntFieldUpdateOperationsInput | number
-    max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
-    payload?: NullableJsonNullValueInput | InputJsonValue
-    response?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type CmsSyncRunUncheckedUpdateManyWithoutUser_propertyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    user_integration_id?: StringFieldUpdateOperationsInput | string
-    action?: EnumCmsSyncActionFieldUpdateOperationsInput | $Enums.CmsSyncAction
-    status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
-    attempt?: IntFieldUpdateOperationsInput | number
-    max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
-    payload?: NullableJsonNullValueInput | InputJsonValue
-    response?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ComputerUseStepCreateManyScreenshot_beforeInput = {

@@ -77,12 +77,23 @@ export class PropertyNormalizationService {
       return;
     }
 
-    if (!crawlRun.user_tracked_agency_id || !crawlRun.user_tracked_agency) {
-      this.logger.log(`Crawl run ${crawlRunId}: no tracker — skipping normalization`);
+    // Agency-scoped crawl runs (the common case — one crawl serves every
+    // tracker of that agency) carry no tracker of their own. Normalization
+    // still needs *a* user's AI integration to bill/configure the call, so
+    // fall back to the agency's earliest enabled tracker. The resulting
+    // Property records and history are shared/canonical either way — this
+    // only decides whose AI key pays for normalizing them. Revisit once
+    // per-agency AI billing (rather than per-tracker) is designed.
+    const tracker =
+      crawlRun.user_tracked_agency ??
+      (await this.resolveDefaultTrackerForAgency(crawlRun.source_agency_id));
+
+    if (!tracker) {
+      this.logger.log(
+        `Crawl run ${crawlRunId}: no enabled tracker for agency ${crawlRun.source_agency_id} — skipping normalization`,
+      );
       return;
     }
-
-    const tracker = crawlRun.user_tracked_agency;
     const aiProvider = AiDefaults.provider;
     const model = AiDefaults.model;
 
@@ -444,6 +455,13 @@ export class PropertyNormalizationService {
     });
   }
 
+  private async resolveDefaultTrackerForAgency(sourceAgencyId: string) {
+    return this.prisma.userTrackedAgency.findFirst({
+      where: { source_agency_id: sourceAgencyId, enabled: true },
+      orderBy: { created_at: 'asc' },
+    });
+  }
+
   private async loadSourcePropertiesForNormalization(
     sourceAgencyId: string,
     crawlStartedAt: Date,
@@ -594,11 +612,8 @@ export class PropertyNormalizationService {
     removedCount: number;
     totalTracked: number;
   }): Promise<void> {
-    await this.prisma.crawlRun.update({
-      where: { id: params.crawlRunId },
-      data: { total_removed: params.removedCount },
-    });
-
+    // CrawlRun.total_removed is now rolled up from cms_sync_runs, not set here --
+    // removedCount only drives the spike-detection notification below.
     const ratio =
       params.totalTracked > 0 ? params.removedCount / params.totalTracked : 0;
     const isSpike =

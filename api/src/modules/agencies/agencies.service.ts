@@ -143,7 +143,6 @@ export class AgenciesService {
         return this.prisma.userTrackedAgency.update({
             where: { id: tracker.id },
             data: {
-                ...(dto.crawl_interval !== undefined && { crawl_interval: dto.crawl_interval }),
                 ...(dto.concurrent_insertions !== undefined && {
                     concurrent_insertions: dto.concurrent_insertions,
                 }),

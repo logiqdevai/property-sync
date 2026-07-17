@@ -15,33 +15,29 @@ export class CrawlSchedulerCron {
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
-  async enqueueDueTrackerRuns(): Promise<void> {
+  async enqueueDueAgencyRuns(): Promise<void> {
     const now = new Date();
 
-    const trackers = await this.prisma.userTrackedAgency.findMany({
+    // Scheduling is per-agency, not per-tracker: a crawl scrapes the agency's
+    // site once, regardless of how many users track it. Fan-out to individual
+    // trackers (track_new/removed/updated_listings) happens downstream in
+    // PropertyNormalizationService/UserPropertiesService off the shared result.
+    const agencies = await this.prisma.sourceAgency.findMany({
       where: {
-        enabled: true,
-        source_agency: { is_visible: true, is_enabled: true },
+        is_visible: true,
+        is_enabled: true,
+        user_tracked_agencies: { some: { enabled: true } },
       },
-      select: {
-        id: true,
-        source_agency_id: true,
-        crawl_interval: true,
-        source_agency: {
-          select: { crawl_interval: true },
-        },
-      },
+      select: { id: true, crawl_interval: true },
     });
 
-    for (const tracker of trackers) {
-      const crawlInterval =
-        tracker.source_agency.crawl_interval || tracker.crawl_interval;
-      if (!this.isCronDue(crawlInterval, now)) {
+    for (const agency of agencies) {
+      if (!this.isCronDue(agency.crawl_interval, now)) {
         continue;
       }
 
-      const hasActiveRun = await this.crawlRunsService.hasActiveRunForTracker(
-        tracker.id,
+      const hasActiveRun = await this.crawlRunsService.hasActiveRunForAgency(
+        agency.id,
       );
       if (hasActiveRun) {
         continue;
@@ -49,7 +45,7 @@ export class CrawlSchedulerCron {
 
       const scraper = await this.prisma.scraper.findFirst({
         where: {
-          source_agency_id: tracker.source_agency_id,
+          source_agency_id: agency.id,
           status: { in: [ScraperStatus.ACTIVE, ScraperStatus.TESTING] },
         },
         orderBy: { updated_at: 'desc' },
@@ -58,24 +54,18 @@ export class CrawlSchedulerCron {
 
       if (!scraper) {
         this.logger.warn(
-          `tracker ${tracker.id}: no scraper for agency ${tracker.source_agency_id} — skipping`,
+          `agency ${agency.id}: no scraper for agency — skipping`,
         );
         continue;
       }
 
       try {
-        await this.crawlRunsService.enqueue(
-          tracker.source_agency_id,
-          scraper.id,
-          tracker.id,
-        );
-        this.logger.log(
-          `scheduled crawl enqueued for tracker ${tracker.id} (agency ${tracker.source_agency_id})`,
-        );
+        await this.crawlRunsService.enqueue(agency.id, scraper.id);
+        this.logger.log(`scheduled crawl enqueued for agency ${agency.id}`);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         this.logger.error(
-          `failed to enqueue scheduled crawl for tracker ${tracker.id}: ${message}`,
+          `failed to enqueue scheduled crawl for agency ${agency.id}: ${message}`,
         );
       }
     }

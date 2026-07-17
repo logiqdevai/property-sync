@@ -190,7 +190,6 @@ export default function AgencyDetailPage() {
                       accordionId={`${tracker.id}-admin-options`}
                       values={{
                         use_ai_batching: tracker.use_ai_batching,
-                        crawl_interval: tracker.crawl_interval,
                         concurrent_insertions: tracker.concurrent_insertions,
                         insertion_interval_minutes: tracker.insertion_interval_minutes,
                       }}
@@ -205,9 +204,7 @@ export default function AgencyDetailPage() {
                         saveTrackerSettings(tracker.user_id, payload)
                       }
                     />
-                  ) : (
-                    <span className="font-mono text-xs text-muted">{tracker.crawl_interval}</span>
-                  )}
+                  ) : null}
                 </div>
               ))}
             </div>

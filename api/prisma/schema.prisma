@@ -188,14 +188,6 @@ enum AuthType {
   OAUTH
 }
 
-// New: spec section 15 requires sync retries and guarantees data is never lost on failure --
-// this is the audit trail of every attempt to push a Property to a CmsTarget.
-enum CmsSyncAction {
-  CREATE
-  UPDATE
-  REMOVE
-}
-
 enum CmsSyncStatus {
   PENDING
   SUCCESS
@@ -277,8 +269,8 @@ model User {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  tracked_agencies UserTrackedAgency[]
-  saved_properties UserProperty[]
+  tracked_agencies  UserTrackedAgency[]
+  saved_properties  UserProperty[]
   user_integrations UserIntegration[]
 
   @@index([email])
@@ -288,15 +280,15 @@ model User {
 
 /// Destination Integration instance that normalized Property data gets synced to and ai models are integrated with.
 model IntegrationTarget {
-  id             String   @id @default(uuid())
-  integration_type       IntegrationType
-  auth_type      AuthType
-  base_url       String?
-  allow_multiple Boolean  @default(false)
-  is_visible     Boolean  @default(true) // whether the integration is visible to the user (always visible for admin and supper admin)
-  is_enabled     Boolean  @default(true) // when false, users can view but not connect or modify on the Integrations page
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  id               String          @id @default(uuid())
+  integration_type IntegrationType
+  auth_type        AuthType
+  base_url         String?
+  allow_multiple   Boolean         @default(false)
+  is_visible       Boolean         @default(true) // whether the integration is visible to the user (always visible for admin and supper admin)
+  is_enabled       Boolean         @default(true) // when false, users can view but not connect or modify on the Integrations page
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @updatedAt
 
   user_integrations UserIntegration[]
 
@@ -304,24 +296,25 @@ model IntegrationTarget {
 }
 
 model UserIntegration {
-  id             String   @id @default(uuid())
-  integration_target_id  String
-  user_id        String
-  api_key_secret String?
-  webhook_key String?
-  email       String?
-  username       String?
-  password       String?
-  config         Json?
-  is_active      Boolean  @default(true)
-  is_default     Boolean  @default(false)
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  id                    String   @id @default(uuid())
+  integration_target_id String
+  user_id               String
+  api_key_secret        String?
+  webhook_key           String?
+  email                 String?
+  username              String?
+  password              String?
+  config                Json?
+  is_active             Boolean  @default(true)
+  is_default            Boolean  @default(false)
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
 
-  sync_runs CmsSyncRun[]
+  sync_runs           CmsSyncRun[]
   tracked_agency_link UserTrackedAgencyIntegrationLink?
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  integration_target IntegrationTarget @relation(fields: [integration_target_id], references: [id], onDelete: Cascade)
+  user                User                              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  integration_target  IntegrationTarget                 @relation(fields: [integration_target_id], references: [id], onDelete: Cascade)
+
   @@map("user_integrations")
 }
 
@@ -333,24 +326,24 @@ model UserIntegration {
 /// SourceAgency -> ScraperGenerationRun (AI builds a scraper) -> Scraper -> CrawlRun (production run)
 /// -> SourceProperty -> Property.
 model SourceAgency {
-  id                 String       @id @default(uuid())
+  id                 String    @id @default(uuid())
   name               String
-  base_url           String       @unique
-  country            String? 
+  base_url           String    @unique
+  country            String?
   city               String?
-  is_visible         Boolean      @default(false) // not displayed to the user, only to the admin
-  is_enabled         Boolean      @default(false) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin
-  crawl_interval     String       @default("0 */6 * * *")
+  is_visible         Boolean   @default(false) // not displayed to the user, only to the admin
+  is_enabled         Boolean   @default(false) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin
+  crawl_interval     String    @default("0 */6 * * *")
   notes              String?
   last_success_at    DateTime?
   last_failure_at    DateTime?
   last_error_message String?
   metadata           Json?
-  created_at         DateTime     @default(now())
-  updated_at         DateTime     @updatedAt
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
 
   scrapers                Scraper[]
-  user_tracked_agencies    UserTrackedAgency[]
+  user_tracked_agencies   UserTrackedAgency[]
   scraper_generation_runs ScraperGenerationRun[]
   crawl_runs              CrawlRun[]
   source_properties       SourceProperty[]
@@ -363,23 +356,22 @@ model SourceAgency {
 
 /// Which SourceAgencies a user follows/monitors, and which kinds of change notify them.
 model UserTrackedAgency {
-  id                     String   @id @default(uuid())
-  user_id                String
-  source_agency_id       String
-  enabled                Boolean  @default(true)
-  crawl_interval              String @default("0 */6 * * *")
-  concurrent_insertions       Int    @default(1) // the number of properties to insert concurrently to the EstateWeb integration
-  insertion_interval_minutes  Int    @default(5) // the interval between concurrent insertions to the EstateWeb integration
-  track_new_listings     Boolean  @default(true)
-  track_removed_listings Boolean  @default(true)
-  track_updated_listings Boolean  @default(true)
-  use_ai_batching        Boolean    @default(false)
-  created_at             DateTime @default(now())
-  updated_at             DateTime @updatedAt
+  id                         String   @id @default(uuid())
+  user_id                    String
+  source_agency_id           String
+  enabled                    Boolean  @default(true)
+  concurrent_insertions      Int      @default(1) // the number of properties to insert concurrently to the EstateWeb integration
+  insertion_interval_minutes Int      @default(5) // the interval between concurrent insertions to the EstateWeb integration
+  track_new_listings         Boolean  @default(true)
+  track_removed_listings     Boolean  @default(true)
+  track_updated_listings     Boolean  @default(true)
+  use_ai_batching            Boolean  @default(false)
+  created_at                 DateTime @default(now())
+  updated_at                 DateTime @updatedAt
 
-  user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
-  crawl_runs CrawlRun[]
+  user             User                              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  source_agency    SourceAgency                      @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  crawl_runs       CrawlRun[]
   integration_link UserTrackedAgencyIntegrationLink?
 
   @@unique([user_id, source_agency_id])
@@ -396,7 +388,7 @@ model UserTrackedAgencyIntegrationLink {
   updated_at             DateTime @updatedAt
 
   user_tracked_agency UserTrackedAgency @relation(fields: [user_tracked_agency_id], references: [id], onDelete: Cascade)
-  user_integration    UserIntegration    @relation(fields: [user_integration_id], references: [id], onDelete: Cascade)
+  user_integration    UserIntegration   @relation(fields: [user_integration_id], references: [id], onDelete: Cascade)
 
   @@map("user_tracked_agency_integration_links")
 }
@@ -409,23 +401,23 @@ model UserTrackedAgencyIntegrationLink {
 /// active ScraperVersion (see `active_version`). This keeps a single source of truth instead of
 /// letting Scraper.config and ScraperVersion.config drift out of sync.
 model Scraper {
-  id                   String        @id @default(uuid())
+  id                   String          @id @default(uuid())
   source_agency_id     String
   name                 String
-  active_version_id    String?       @unique // FK to the ScraperVersion currently in use
-  version_count        Int           @default(0) // convenience counter, incremented on new versions
-  status               ScraperStatus @default(TESTING)
-  self_healing_enabled Boolean       @default(true) // whether self-heal is allowed to auto-apply fixes
+  active_version_id    String?         @unique // FK to the ScraperVersion currently in use
+  version_count        Int             @default(0) // convenience counter, incremented on new versions
+  status               ScraperStatus   @default(TESTING)
+  self_healing_enabled Boolean         @default(true) // whether self-heal is allowed to auto-apply fixes
   diagnostics_mode     DiagnosticsMode @default(PRODUCTION) // debugging depth for this scraper's crawl runs
-  health               ScraperHealth @default(GOOD) // cached rollup, recomputed by a background job (spec section 18)
-  success_rate         Decimal?      @db.Decimal(5, 2) // cached % over trailing window
+  health               ScraperHealth   @default(GOOD) // cached rollup, recomputed by a background job (spec section 18)
+  success_rate         Decimal?        @db.Decimal(5, 2) // cached % over trailing window
   avg_runtime_ms       Int? // cached average CrawlRun duration
-  consecutive_failures Int           @default(0) // reset to 0 on any SUCCESS CrawlRun
+  consecutive_failures Int             @default(0) // reset to 0 on any SUCCESS CrawlRun
   normalize_limit      Int? // max SourceProperties to AI-normalize per crawl; null = unlimited
   last_success_at      DateTime?
   last_failure_at      DateTime?
-  created_at           DateTime      @default(now())
-  updated_at           DateTime      @updatedAt
+  created_at           DateTime        @default(now())
+  updated_at           DateTime        @updatedAt
 
   source_agency  SourceAgency    @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
   active_version ScraperVersion? @relation("ActiveVersion", fields: [active_version_id], references: [id], onDelete: SetNull)
@@ -504,14 +496,14 @@ model ComputerUseStep {
 /// does" -- Scraper.active_version_id points here. New versions are created by generation runs
 /// (AI) or manual edits (human review), enabling rollback and full history / self-healing.
 model ScraperVersion {
-  id         String   @id @default(uuid())
+  id         String                  @id @default(uuid())
   scraper_id String
   version    Int
   config     Json // full scraper definition: start_url, listing_selector, fields, pagination, etc.
   created_by ScraperVersionCreatedBy
   notes      String? // e.g. reason for the fix, summary of what changed from prior version
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime                @default(now())
+  updated_at DateTime                @updatedAt
 
   scraper Scraper @relation("ScraperVersions", fields: [scraper_id], references: [id], onDelete: Cascade)
 
@@ -551,39 +543,45 @@ model ScraperExecutionTrace {
 /// Playwright run that uses the config from Scraper.active_version -- no AI involved in the
 /// crawl itself, unless normalization (Feature 06) or a failure triggers self-heal.
 model CrawlRun {
-  id               String         @id @default(uuid())
-  source_agency_id String
-  scraper_id       String?
-  user_tracked_agency_id String?
-  status           CrawlRunStatus @default(QUEUED)
-  started_at       DateTime?
-  finished_at      DateTime?
-  duration_ms      Int?
-  total_found      Int            @default(0)
-  total_created    Int            @default(0)
-  total_updated    Int            @default(0)
-  total_removed    Int            @default(0)
-  total_failed     Int            @default(0)
-  error_message    String?
-  metadata         Json?
-  ai_model                      String?
-  ai_input_tokens               Int?
-  ai_output_tokens              Int?
-  ai_input_cost                 Decimal? @db.Decimal(12, 6)
-  ai_output_cost                Decimal? @db.Decimal(12, 6)
-  ai_total_cost                 Decimal? @db.Decimal(12, 6)
-  ai_average_cost_per_property  Decimal? @db.Decimal(12, 8)
-  created_at       DateTime       @default(now())
-  updated_at       DateTime       @updatedAt
+  id                           String         @id @default(uuid())
+  source_agency_id             String
+  scraper_id                   String?
+  user_tracked_agency_id       String?
+  status                       CrawlRunStatus @default(QUEUED)
+  started_at                   DateTime?
+  finished_at                  DateTime?
+  duration_ms                  Int?
+  total_found                  Int            @default(0) // all items seen in this scrape (dedup'd within the run)
+  total_new_listings           Int            @default(0) // of total_found, how many were brand-new SourceProperty rows
+  total_refreshed_listings     Int            @default(0) // of total_found, how many were already-known SourceProperty rows re-seen
+  // total_created/updated/removed/failed below are rolled up from cms_sync_runs (sum across
+  // every user's CmsSyncRun for this run) -- NOT the raw scrape diff above. Stays 0 until the
+  // EstateWeb sync writes results. See CrawlRunsService.recalculateCmsSyncTotals.
+  total_created                Int            @default(0)
+  total_updated                Int            @default(0)
+  total_removed                Int            @default(0)
+  total_failed                 Int            @default(0)
+  error_message                String?
+  metadata                     Json?
+  ai_model                     String?
+  ai_input_tokens              Int?
+  ai_output_tokens             Int?
+  ai_input_cost                Decimal?       @db.Decimal(12, 6)
+  ai_output_cost               Decimal?       @db.Decimal(12, 6)
+  ai_total_cost                Decimal?       @db.Decimal(12, 6)
+  ai_average_cost_per_property Decimal?       @db.Decimal(12, 8)
+  created_at                   DateTime       @default(now())
+  updated_at                   DateTime       @updatedAt
 
-  source_agency    SourceAgency            @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
-  user_tracked_agency UserTrackedAgency?    @relation(fields: [user_tracked_agency_id], references: [id], onDelete: SetNull)
-  scraper          Scraper?                @relation(fields: [scraper_id], references: [id], onDelete: SetNull)
-  job_logs         JobLog[]
-  execution_traces ScraperExecutionTrace[]
-  property_history PropertyHistory[]
-  notifications    Notification[]
+  source_agency       SourceAgency            @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  user_tracked_agency UserTrackedAgency?      @relation(fields: [user_tracked_agency_id], references: [id], onDelete: SetNull)
+  scraper             Scraper?                @relation(fields: [scraper_id], references: [id], onDelete: SetNull)
+  job_logs            JobLog[]
+  execution_traces    ScraperExecutionTrace[]
+  property_history    PropertyHistory[]
+  notifications       Notification[]
   diagnostics_package DiagnosticsPackage?
+  cms_sync_runs       CmsSyncRun[]
 
   @@index([source_agency_id])
   @@index([scraper_id])
@@ -613,8 +611,8 @@ model DiagnosticsPackage {
   exception          String?
   created_at         DateTime        @default(now())
 
-  crawl_run CrawlRun @relation(fields: [crawl_run_id], references: [id], onDelete: Cascade)
-  scraper   Scraper  @relation(fields: [scraper_id], references: [id], onDelete: Cascade)
+  crawl_run CrawlRun              @relation(fields: [crawl_run_id], references: [id], onDelete: Cascade)
+  scraper   Scraper               @relation(fields: [scraper_id], references: [id], onDelete: Cascade)
   artifacts DiagnosticsArtifact[]
 
   @@index([scraper_id])
@@ -695,29 +693,36 @@ model Notification {
   @@map("notifications")
 }
 
-// New: spec section 15 -- every attempt (including retries) to push a Property to a CmsTarget.
-// Nothing is ever deleted here, so a failed sync never loses the record of what was owed.
+// New: spec section 15 -- one batch push of a CrawlRun's affected properties to a single
+// UserIntegration (e.g. one EstateWeb account). NOT one row per property: total_created/
+// total_updated/total_removed/total_failed hold the outcome breakdown for the whole batch,
+// and CrawlRun.total_* is the sum of these across every user_integration for that run
+// (see CrawlRunsService.recalculateCmsSyncTotals). Retries update this same row in place
+// (attempt/status/error_message/response) rather than creating a new row per attempt.
 model CmsSyncRun {
-  id            String        @id @default(uuid())
+  id                  String        @id @default(uuid())
+  crawl_run_id        String
   user_integration_id String
-  user_property_id   String?
-  action        CmsSyncAction
-  status        CmsSyncStatus @default(PENDING)
-  attempt       Int           @default(0)
-  max_attempts  Int?
-  payload       Json?
-  response      Json?
-  error_message String?
-  started_at    DateTime?
-  finished_at   DateTime?
-  created_at    DateTime      @default(now())
-  updated_at    DateTime      @updatedAt
+  status              CmsSyncStatus @default(PENDING)
+  attempt             Int           @default(0)
+  max_attempts        Int?
+  total_created       Int           @default(0)
+  total_updated       Int           @default(0)
+  total_removed       Int           @default(0)
+  total_failed        Int           @default(0)
+  payload             Json?
+  response            Json?
+  error_message       String?
+  started_at          DateTime?
+  finished_at         DateTime?
+  created_at          DateTime      @default(now())
+  updated_at          DateTime      @updatedAt
 
+  crawl_run        CrawlRun        @relation(fields: [crawl_run_id], references: [id], onDelete: Cascade)
   user_integration UserIntegration @relation(fields: [user_integration_id], references: [id], onDelete: Cascade)
-  user_property   UserProperty? @relation(fields: [user_property_id], references: [id], onDelete: SetNull)
 
+  @@unique([crawl_run_id, user_integration_id])
   @@index([user_integration_id])
-  @@index([user_property_id])
   @@index([status])
   @@index([created_at])
   @@map("cms_sync_runs")
@@ -886,15 +891,12 @@ model UserProperty {
 
   user               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   canonical_property Property @relation(fields: [property_id], references: [id], onDelete: Cascade)
-  cms_sync_runs        CmsSyncRun[]
 
   @@unique([user_id, property_id])
   @@index([user_id])
   @@index([property_id])
   @@map("user_properties")
 }
-
-
 
 /// Generic uploaded file record (logos, banners, media, and computer-use screenshots).
 model Document {

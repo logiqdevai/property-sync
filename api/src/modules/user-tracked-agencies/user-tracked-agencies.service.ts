@@ -85,7 +85,6 @@ export class UserTrackedAgenciesService {
                 user_integration_id:
                   tracker.integration_link?.user_integration_id ?? null,
                 ...(showAdminSettings && {
-                  crawl_interval: tracker.crawl_interval,
                   concurrent_insertions: tracker.concurrent_insertions,
                   insertion_interval_minutes: tracker.insertion_interval_minutes,
                 }),
@@ -119,7 +118,6 @@ export class UserTrackedAgenciesService {
         user_id: userId,
         source_agency_id: agency.id,
         enabled: true,
-        crawl_interval: agency.crawl_interval,
         track_new_listings: dto.track_new_listings ?? true,
         track_removed_listings: dto.track_removed_listings ?? true,
         track_updated_listings: dto.track_updated_listings ?? true,

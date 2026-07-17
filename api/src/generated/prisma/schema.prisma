@@ -188,14 +188,6 @@ enum AuthType {
   OAUTH
 }
 
-// New: spec section 15 requires sync retries and guarantees data is never lost on failure --
-// this is the audit trail of every attempt to push a Property to a CmsTarget.
-enum CmsSyncAction {
-  CREATE
-  UPDATE
-  REMOVE
-}
-
 enum CmsSyncStatus {
   PENDING
   SUCCESS
@@ -368,7 +360,6 @@ model UserTrackedAgency {
   user_id                    String
   source_agency_id           String
   enabled                    Boolean  @default(true)
-  crawl_interval             String   @default("0 */6 * * *")
   concurrent_insertions      Int      @default(1) // the number of properties to insert concurrently to the EstateWeb integration
   insertion_interval_minutes Int      @default(5) // the interval between concurrent insertions to the EstateWeb integration
   track_new_listings         Boolean  @default(true)
@@ -560,7 +551,12 @@ model CrawlRun {
   started_at                   DateTime?
   finished_at                  DateTime?
   duration_ms                  Int?
-  total_found                  Int            @default(0)
+  total_found                  Int            @default(0) // all items seen in this scrape (dedup'd within the run)
+  total_new_listings           Int            @default(0) // of total_found, how many were brand-new SourceProperty rows
+  total_refreshed_listings     Int            @default(0) // of total_found, how many were already-known SourceProperty rows re-seen
+  // total_created/updated/removed/failed below are rolled up from cms_sync_runs (sum across
+  // every user's CmsSyncRun for this run) -- NOT the raw scrape diff above. Stays 0 until the
+  // EstateWeb sync writes results. See CrawlRunsService.recalculateCmsSyncTotals.
   total_created                Int            @default(0)
   total_updated                Int            @default(0)
   total_removed                Int            @default(0)
@@ -585,6 +581,7 @@ model CrawlRun {
   property_history    PropertyHistory[]
   notifications       Notification[]
   diagnostics_package DiagnosticsPackage?
+  cms_sync_runs       CmsSyncRun[]
 
   @@index([source_agency_id])
   @@index([scraper_id])
@@ -696,16 +693,23 @@ model Notification {
   @@map("notifications")
 }
 
-// New: spec section 15 -- every attempt (including retries) to push a Property to a CmsTarget.
-// Nothing is ever deleted here, so a failed sync never loses the record of what was owed.
+// New: spec section 15 -- one batch push of a CrawlRun's affected properties to a single
+// UserIntegration (e.g. one EstateWeb account). NOT one row per property: total_created/
+// total_updated/total_removed/total_failed hold the outcome breakdown for the whole batch,
+// and CrawlRun.total_* is the sum of these across every user_integration for that run
+// (see CrawlRunsService.recalculateCmsSyncTotals). Retries update this same row in place
+// (attempt/status/error_message/response) rather than creating a new row per attempt.
 model CmsSyncRun {
   id                  String        @id @default(uuid())
+  crawl_run_id        String
   user_integration_id String
-  user_property_id    String?
-  action              CmsSyncAction
   status              CmsSyncStatus @default(PENDING)
   attempt             Int           @default(0)
   max_attempts        Int?
+  total_created       Int           @default(0)
+  total_updated       Int           @default(0)
+  total_removed       Int           @default(0)
+  total_failed        Int           @default(0)
   payload             Json?
   response            Json?
   error_message       String?
@@ -714,11 +718,11 @@ model CmsSyncRun {
   created_at          DateTime      @default(now())
   updated_at          DateTime      @updatedAt
 
+  crawl_run        CrawlRun        @relation(fields: [crawl_run_id], references: [id], onDelete: Cascade)
   user_integration UserIntegration @relation(fields: [user_integration_id], references: [id], onDelete: Cascade)
-  user_property    UserProperty?   @relation(fields: [user_property_id], references: [id], onDelete: SetNull)
 
+  @@unique([crawl_run_id, user_integration_id])
   @@index([user_integration_id])
-  @@index([user_property_id])
   @@index([status])
   @@index([created_at])
   @@map("cms_sync_runs")
@@ -885,9 +889,8 @@ model UserProperty {
   created_at         DateTime       @default(now())
   updated_at         DateTime       @updatedAt
 
-  user               User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  canonical_property Property     @relation(fields: [property_id], references: [id], onDelete: Cascade)
-  cms_sync_runs      CmsSyncRun[]
+  user               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  canonical_property Property @relation(fields: [property_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, property_id])
   @@index([user_id])

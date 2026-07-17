@@ -63,6 +63,12 @@ export class CrawlProcessor extends WorkerHost {
     const { crawlRunId, jobLogId } = job.data;
     this.logger.log(`crawl job received: ${crawlRunId}`);
 
+    if (!crawlRunId) {
+      throw new Error(
+        `crawl job ${job.id ?? '(no id)'} has no crawlRunId in its payload: ${JSON.stringify(job.data)}`,
+      );
+    }
+
     const run = await this.prisma.crawlRun.findUnique({
       where: { id: crawlRunId },
       include: {
@@ -217,6 +223,10 @@ export class CrawlProcessor extends WorkerHost {
       const finishedAt = new Date();
       const runFailed = !crawlResult.success;
 
+      // total_created/total_updated/total_removed/total_failed are rolled up from
+      // cms_sync_runs (see CrawlRunsService.recalculateCmsSyncTotals), not set here.
+      // total_found/total_new_listings/total_refreshed_listings are the raw scrape
+      // counts, independent of any downstream CMS sync outcome.
       await this.prisma.crawlRun.update({
         where: { id: crawlRunId },
         data: {
@@ -224,8 +234,8 @@ export class CrawlProcessor extends WorkerHost {
           finished_at: finishedAt,
           duration_ms: finishedAt.getTime() - startedAt.getTime(),
           total_found: crawlResult.items.length,
-          total_created: totalCreated,
-          total_updated: totalUpdated,
+          total_new_listings: totalCreated,
+          total_refreshed_listings: totalUpdated,
           error_message: crawlResult.errorSummary ?? null,
         },
       });

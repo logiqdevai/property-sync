@@ -172,7 +172,6 @@ function AgencyCard({
               accordionId={`${agency.id}-admin-options`}
               values={{
                 use_ai_batching: prefs.use_ai_batching,
-                crawl_interval: prefs.crawl_interval ?? "",
                 concurrent_insertions: prefs.concurrent_insertions ?? 1,
                 insertion_interval_minutes: prefs.insertion_interval_minutes ?? 5,
               }}

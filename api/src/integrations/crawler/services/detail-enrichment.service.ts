@@ -33,7 +33,6 @@ export class DetailEnrichmentService {
       `Enriching ${items.length} detail pages (concurrency: ${DETAIL_CONCURRENCY})`,
     );
 
-    let done = 0;
     for (let i = 0; i < items.length; i += DETAIL_CONCURRENCY) {
       const batch = items.slice(i, i + DETAIL_CONCURRENCY);
       const results = await Promise.all(
@@ -51,10 +50,7 @@ export class DetailEnrichmentService {
         if (detail.external_id) {
           item.raw._external_id = detail.external_id;
         }
-        done++;
       }
-
-      this.logger.debug(`Detail enrichment progress: ${done}/${items.length}`);
 
       if (i + DETAIL_CONCURRENCY < items.length) {
         await new Promise((resolve) => setTimeout(resolve, DETAIL_DELAY_MS));

@@ -50,7 +50,6 @@ export class CrawlerService {
 
     const log = (msg: string, data: Record<string, unknown> = {}) => {
       steps.push({ ts: crawlTimestamp(), msg, ...data });
-      this.logger.debug(`[trace] ${msg} ${JSON.stringify(data)}`);
     };
 
     try {

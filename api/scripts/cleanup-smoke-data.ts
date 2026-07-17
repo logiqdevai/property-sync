@@ -70,9 +70,8 @@ async function main() {
     });
 
     if (propertyIds.length > 0) {
-      await tx.cmsSyncRun.deleteMany({
-        where: { user_property: { property_id: { in: propertyIds } } },
-      });
+      // cms_sync_runs are per-crawl-run batches now (no user_property link) --
+      // they cascade-delete below via tx.crawlRun.deleteMany.
       await tx.userProperty.deleteMany({
         where: { property_id: { in: propertyIds } },
       });

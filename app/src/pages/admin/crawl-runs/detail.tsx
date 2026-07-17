@@ -74,34 +74,51 @@ export default function CrawlRunDetailPage() {
         </ActionButtonWithPending>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted">Found</span>
-          <span className="font-mono text-2xl font-bold text-foreground">{run.total_found}</span>
+      <div className="flex flex-col gap-3">
+        <span className="text-xs font-medium uppercase tracking-wide text-muted">Scrape</span>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Found</span>
+            <span className="font-mono text-2xl font-bold text-foreground">{run.total_found}</span>
+          </div>
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">New</span>
+            <span className="font-mono text-2xl font-bold text-success">{run.total_new_listings}</span>
+          </div>
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Refreshed</span>
+            <span className="font-mono text-2xl font-bold text-foreground">{run.total_refreshed_listings}</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted">Created</span>
-          <span className="font-mono text-2xl font-bold text-success">{run.total_created}</span>
-        </div>
-        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted">Updated</span>
-          <span className="font-mono text-2xl font-bold text-foreground">{run.total_updated}</span>
-        </div>
-        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted">Removed</span>
-          <span
-            className={`font-mono text-2xl font-bold ${run.total_removed > 0 ? "text-warning" : "text-foreground"}`}
-          >
-            {run.total_removed}
-          </span>
-        </div>
-        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted">Failed</span>
-          <span
-            className={`font-mono text-2xl font-bold ${run.total_failed > 0 ? "text-danger" : "text-foreground"}`}
-          >
-            {run.total_failed}
-          </span>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <span className="text-xs font-medium uppercase tracking-wide text-muted">CRM sync (all users)</span>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Created</span>
+            <span className="font-mono text-2xl font-bold text-success">{run.total_created}</span>
+          </div>
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Updated</span>
+            <span className="font-mono text-2xl font-bold text-foreground">{run.total_updated}</span>
+          </div>
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Removed</span>
+            <span
+              className={`font-mono text-2xl font-bold ${run.total_removed > 0 ? "text-warning" : "text-foreground"}`}
+            >
+              {run.total_removed}
+            </span>
+          </div>
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Failed</span>
+            <span
+              className={`font-mono text-2xl font-bold ${run.total_failed > 0 ? "text-danger" : "text-foreground"}`}
+            >
+              {run.total_failed}
+            </span>
+          </div>
         </div>
       </div>
 

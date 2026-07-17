@@ -181,7 +181,6 @@ exports.Prisma.UserTrackedAgencyScalarFieldEnum = {
   user_id: 'user_id',
   source_agency_id: 'source_agency_id',
   enabled: 'enabled',
-  crawl_interval: 'crawl_interval',
   concurrent_insertions: 'concurrent_insertions',
   insertion_interval_minutes: 'insertion_interval_minutes',
   track_new_listings: 'track_new_listings',
@@ -281,6 +280,8 @@ exports.Prisma.CrawlRunScalarFieldEnum = {
   finished_at: 'finished_at',
   duration_ms: 'duration_ms',
   total_found: 'total_found',
+  total_new_listings: 'total_new_listings',
+  total_refreshed_listings: 'total_refreshed_listings',
   total_created: 'total_created',
   total_updated: 'total_updated',
   total_removed: 'total_removed',
@@ -362,12 +363,15 @@ exports.Prisma.NotificationScalarFieldEnum = {
 
 exports.Prisma.CmsSyncRunScalarFieldEnum = {
   id: 'id',
+  crawl_run_id: 'crawl_run_id',
   user_integration_id: 'user_integration_id',
-  user_property_id: 'user_property_id',
-  action: 'action',
   status: 'status',
   attempt: 'attempt',
   max_attempts: 'max_attempts',
+  total_created: 'total_created',
+  total_updated: 'total_updated',
+  total_removed: 'total_removed',
+  total_failed: 'total_failed',
   payload: 'payload',
   response: 'response',
   error_message: 'error_message',
@@ -671,12 +675,6 @@ exports.NotificationSeverity = exports.$Enums.NotificationSeverity = {
   INFO: 'INFO',
   WARNING: 'WARNING',
   CRITICAL: 'CRITICAL'
-};
-
-exports.CmsSyncAction = exports.$Enums.CmsSyncAction = {
-  CREATE: 'CREATE',
-  UPDATE: 'UPDATE',
-  REMOVE: 'REMOVE'
 };
 
 exports.CmsSyncStatus = exports.$Enums.CmsSyncStatus = {

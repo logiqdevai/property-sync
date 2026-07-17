@@ -149,7 +149,6 @@ export default function AdminUserDetailPage() {
                     <Table.Column>AI batch</Table.Column>
                     {showAdminTrackerSettings && (
                       <>
-                        <Table.Column>Crawl interval</Table.Column>
                         <Table.Column>Concurrent insertions</Table.Column>
                         <Table.Column>Insertion interval (min)</Table.Column>
                       </>
@@ -177,9 +176,6 @@ export default function AdminUserDetailPage() {
                         <Table.Cell>{tracking.use_ai_batching ? "Yes" : "No"}</Table.Cell>
                         {showAdminTrackerSettings && (
                           <>
-                            <Table.Cell className="font-mono text-xs">
-                              {tracking.crawl_interval}
-                            </Table.Cell>
                             <Table.Cell>{tracking.concurrent_insertions}</Table.Cell>
                             <Table.Cell>{tracking.insertion_interval_minutes}</Table.Cell>
                           </>

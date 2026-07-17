@@ -126,9 +126,9 @@ Each subpage below maps directly to one or more Prisma models, so the dashboard 
 Backed by: `SourceAgency`
 
 - List / search / filter by `status` (Active, Disabled, Archived), `country`, `city`, `is_visible`, `is_enabled`
-- Create / Edit agency: name, base_url, country, city, notes, `is_visible`, `is_enabled`
+- Create / Edit agency: name, base_url, country, city, notes, `crawl_interval` (the scrape schedule — see §8), `is_visible`, `is_enabled`
 - Enable / Disable / Archive (updates `status` — pipeline operational state, separate from user-catalog flags)
-- Detail view: linked Scraper(s), recent `CrawlRun`s, recent `Notification`s, `last_success_at` / `last_failure_at`, tracked users (each `UserTrackedAgency` row shows `crawl_interval` — editable by admins only)
+- Detail view: linked Scraper(s), recent `CrawlRun`s, recent `Notification`s, `last_success_at` / `last_failure_at`, tracked users (`UserTrackedAgency` has no scheduling field of its own — see §8)
 
 
 
@@ -226,7 +226,7 @@ Backed by: `Notification`
 Backed by: `User`, `UserTrackedAgency`, `UserProperty`, `UserIntegration`
 
 - List/search users, view role
-- Per-user detail: tracked agencies (with per-notification-type toggles and `crawl_interval`), saved properties, whether any saved copies have diverged (`is_modified`) from canonical data, and linked `UserIntegration` connections (with enable/disable and edit shortcuts)
+- Per-user detail: tracked agencies (with per-notification-type toggles — scheduling itself is agency-level, see §8), saved properties, whether any saved copies have diverged (`is_modified`) from canonical data, and linked `UserIntegration` connections (with enable/disable and edit shortcuts)
 
 ---
 
@@ -306,13 +306,13 @@ This immediately creates a crawl job (`CrawlRun`), regardless of the configured 
 
 # 8. Scheduled Scraping
 
-Crawl scheduling is driven by `UserTrackedAgency.crawl_interval` — a **cron expression string** per tracker row (default `0 */6 * * *`). `SourceAgency` has no schedule field.
+Crawl scheduling is driven by `SourceAgency.crawl_interval` — a **cron expression string** per agency (default `0 */6 * * *`). One crawl is scraped per agency, shared across every user tracking it — scheduling is not per-tracker.
 
-When a user tracks an agency, a `UserTrackedAgency` row is created with the default interval. Only **Admin** and **Super Admin** users may change `crawl_interval`; end users cannot.
+`UserTrackedAgency` has no `crawl_interval` field of its own — it was removed once scheduling moved to the agency level, to avoid a field that looked configurable per-user but had no effect. Only **Admin** and **Super Admin** users may change `SourceAgency.crawl_interval`.
 
-The scheduler evaluates **each** enabled `UserTrackedAgency` row independently. When a tracker's cron expression matches the current minute and its agency is `ACTIVE`, it enqueues one `CrawlRun` with `user_tracked_agency_id` set to that tracker. Agencies with `status: ACTIVE` but zero enabled trackers are not scheduled. Overlapping runs are prevented **per tracker** (no new enqueue while a run is `QUEUED` or `RUNNING` with the same `user_tracked_agency_id`). Multiple users tracking the same agency each get separate scheduled runs on their own intervals.
+The scheduler evaluates each `SourceAgency` that is `is_visible: true`, `is_enabled: true`, and has **at least one enabled `UserTrackedAgency`** (agencies nobody tracks are not scheduled, even if otherwise eligible). When an agency's cron expression matches the current minute, it enqueues one `CrawlRun` with `user_tracked_agency_id` left `null`. Overlapping runs are prevented **per agency** (no new enqueue while a run is `QUEUED` or `RUNNING` for the same `source_agency_id`) — multiple users tracking the same agency share this one scheduled run, they do not each get a separate one.
 
-Manual "Run Now" (§7) creates a `CrawlRun` with `user_tracked_agency_id` null (raw crawl only; AI normalization is skipped unless a prior attributed run is re-run and copies the FK forward).
+Manual "Run Now" (§7) creates a `CrawlRun` via the same `enqueue()` path, optionally attributing it to a specific tracker's `user_tracked_agency_id` when triggered from that tracker's context (e.g. testing one user's integration); otherwise it's also agency-scoped with a null FK, identical to a scheduled run.
 
 Example cron expressions: every hour, every 6 hours, daily, weekly. Each matching tick creates `JobLog` + `CrawlRun` rows.
 
@@ -332,13 +332,13 @@ Visit property pages
 ↓
 Extract data
 ↓
-Normalize (AI-assisted when `CrawlRun.user_tracked_agency_id` is set — prefs and API key from that tracker's `UserIntegration`; skipped on manual runs with null FK — see §21, §23)
+Normalize (AI-assisted — uses `CrawlRun.user_tracked_agency`'s `UserIntegration` when the run is attributed to a specific tracker, otherwise falls back to the agency's earliest enabled tracker for billing/config purposes; the canonical `Property` output either way is shared, not per-user — see §21, §23)
 ↓
 Compare with existing data
 ↓
 Create / Update / Remove (each change logged to `PropertyHistory`)
 ↓
-Create or update `UserProperty` for the attributed tracker user when `user_tracked_agency_id` is set (otherwise for every enabled tracker on the agency on legacy/admin paths)
+Create or update `UserProperty` for every enabled tracker on the agency (respecting each tracker's own `track_*` prefs), or only the attributed tracker if `user_tracked_agency_id` is set on this `CrawlRun`
 ↓
 Generate reports
 
@@ -430,7 +430,10 @@ Covers: per-`IntegrationType` integration adapters, crawl-triggered and backfill
 
 # 16. Crawl History
 
-Every crawl (`CrawlRun`) stores: Start Time, Finish Time, Duration, Properties Found/Created/Updated/Removed, Errors, Warnings, and linked `JobLog` / `ScraperExecutionTrace` for deeper worker/CPU/memory-level detail.
+Every crawl (`CrawlRun`) — one row per scraper run, shared across every tracker of that agency — stores: Start Time, Finish Time, Duration, Errors, Warnings, and linked `JobLog` / `ScraperExecutionTrace` for deeper worker/CPU/memory-level detail. Two distinct sets of totals:
+
+- **Scrape-level** (`total_found`, `total_new_listings`, `total_refreshed_listings`) — set directly from the Playwright scrape, independent of any user
+- **CMS-sync-level** (`total_created`, `total_updated`, `total_removed`, `total_failed`) — rolled up from `CmsSyncRun` (one batch row per tracker's linked CMS integration for this crawl, see `CMS-SYNCHRONIZATION-SPECIFICATION.MD`), so they read `0` until that sync phase is implemented and starts writing results
 
 ---
 
@@ -499,11 +502,11 @@ Backed by `UserTrackedAgency`. A user can track a `SourceAgency` that is `ACTIVE
 - `track_new_listings` — notify when a new `SourceProperty`/`Property` appears from this agency
 - `track_removed_listings` — notify on removal
 - `track_updated_listings` — notify on price/detail changes
-- `crawl_interval` — cron expression controlling how often this agency is crawled for this user (default `0 */6 * * *`; set by Admin/Super Admin only — see §8)
-- `use_ai_batching` — opt into OpenAI Batch normalization for **this** tracker's scheduled runs (`use_ai_batching: true` and `ai_provider: OPENAI` on the attributed `UserTrackedAgency` row)
-- `ai_provider` / `ai_model` — preferred AI vendor and optional model for normalization on runs attributed to this tracker; requires an active `UserIntegration` for that provider (see §23)
+- `use_ai_batching` — opt into OpenAI Batch normalization when a run happens to be attributed to this tracker (or when this tracker is the agency's fallback billing tracker — see §23)
 
-Users must connect the matching AI provider on the Integrations page before tracking an agency with that `ai_provider`. Tracking is rejected if no active integration with an API key exists, or if the agency is not user-enabled (`is_enabled: false`) or not visible (`is_visible: false`).
+`UserTrackedAgency` has no scheduling field — `SourceAgency.crawl_interval` is the sole scheduling authority, shared across every tracker of that agency (see §8).
+
+Normalization always uses the platform default AI provider (`AiDefaults.provider`/`AiDefaults.model`), not a per-tracker choice. Users must connect that provider on the Integrations page before tracking an agency. Tracking is rejected if no active integration with an API key exists, or if the agency is not user-enabled (`is_enabled: false`) or not visible (`is_visible: false`).
 
 `enabled` toggles tracking on/off without deleting the preference record.
 
@@ -563,8 +566,8 @@ Every outbound AI call uses an **active** `UserIntegration` row (`is_active: tru
 | --- | --- | --- |
 | Manual scraper generation (`ScraperGenerationRun`, `trigger: MANUAL`) | `ANTHROPIC` | Initiating admin's `UserIntegration` |
 | Self-heal scraper generation (`trigger: SELF_HEAL`) | `ANTHROPIC` | Earliest enabled tracker's `UserIntegration` for that agency |
-| Property normalization (sync path) | Attributed tracker's `ai_provider` | That tracker's `UserIntegration` via `CrawlRun.user_tracked_agency` |
-| Property normalization (OpenAI Batch path) | `OPENAI` on attributed tracker | Same; `user_integration_id` stored on `CrawlRun.metadata` for webhook completion |
+| Property normalization | `AiDefaults.provider` (platform default) | `CrawlRun.user_tracked_agency`'s `UserIntegration` if the run is attributed to a tracker, else the agency's earliest enabled tracker (same fallback pattern as self-heal above) |
+| Property normalization (OpenAI Batch path) | Same as above, requires `OPENAI` | Same; `user_integration_id` stored on `CrawlRun.metadata` for webhook completion |
 
 `AiProvider` maps to `IntegrationType` by name (`OPENAI` → `IntegrationType.OPENAI`, etc.). If no suitable active integration exists, the AI step fails or is skipped (raw crawl data may still be saved). `OPENAI_WEBHOOK_SECRET` remains an env var for inbound webhook signature verification only.
 
@@ -638,7 +641,7 @@ The platform should allow an administrator to:
 
 - Add a new agency and attach a dedicated scraper, generated by the AI computer-use agent (using the admin's Anthropic `UserIntegration`) or created manually.
 - Execute it manually.
-- Schedule automatic crawls (per tracked-user `crawl_interval`, §8).
+- Schedule automatic crawls (per-agency `crawl_interval`, shared across every tracker — §8).
 - Detect new, updated, and removed listings, with full `PropertyHistory`.
 - Define integration targets and manage connected `UserIntegration` accounts (enable/disable/edit credentials) — required before AI generation or agency tracking with AI normalization.
 - Monitor every crawl, every BullMQ job, and every AI generation session (with full step replay).

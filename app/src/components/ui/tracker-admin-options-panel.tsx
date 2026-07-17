@@ -1,13 +1,11 @@
 import { Link } from "react-router-dom";
 import { Accordion, Switch } from "@heroui/react";
-import { CrawlIntervalField } from "@/components/ui/crawl-interval-field";
 import type { UpdateTrackerAdminSettingsPayload } from "@/features/agencies/interfaces/agencies.interfaces";
 import type { TrackAgencyPayload } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
 import { Routes } from "@/routes/routes";
 
 export interface TrackerAdminOptionsValues {
   use_ai_batching: boolean;
-  crawl_interval: string;
   concurrent_insertions: number;
   insertion_interval_minutes: number;
 }
@@ -42,7 +40,7 @@ export function TrackerAdminOptionsPanel({
           <Accordion.Body>
             <div
               className="flex flex-col gap-3 pt-1"
-              key={`${accordionId}-${values.crawl_interval}-${values.concurrent_insertions}-${values.insertion_interval_minutes}`}
+              key={`${accordionId}-${values.concurrent_insertions}-${values.insertion_interval_minutes}`}
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 flex-col gap-0.5">
@@ -62,12 +60,6 @@ export function TrackerAdminOptionsPanel({
                   </Switch.Control>
                 </Switch>
               </div>
-
-              <CrawlIntervalField
-                value={values.crawl_interval ?? ""}
-                disabled={disabled}
-                onChange={(crawl_interval) => onAdminSettingsChange({ crawl_interval })}
-              />
 
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-muted">Concurrent insertions</span>
