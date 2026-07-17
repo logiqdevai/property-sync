@@ -114,9 +114,10 @@ export function IntegrationCredentialFields({
             <Input
               id="webhook-url"
               value={webhookUrl}
-              readOnly
+              readOnly={isDisabled}
               fullWidth
               onFocus={(event) => event.currentTarget.select()}
+              onChange={() => {}}
             />
             <p className="text-xs text-muted">
               Register this URL in your provider webhook settings.

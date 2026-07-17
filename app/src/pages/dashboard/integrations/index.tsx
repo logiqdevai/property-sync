@@ -34,6 +34,8 @@ import { LinkConnectionToAgencyModal } from "./components/link-connection-to-age
 import { AllConnectionsModal } from "./components/all-connections-modal";
 import { IntegrationConnectionItem } from "./components/integration-connection-item";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth";
+import { RoleTypes } from "@/features/user/interfaces/user.interface";
 
 const VIEW_ONLY_INTEGRATION_MESSAGE =
   "View only — changes are disabled for this integration";
@@ -58,6 +60,7 @@ function TargetCard({
   onSetDefault,
   onShowAll,
   isPending,
+  isAdmin,
 }: {
   target: AvailableIntegrationTarget;
   connections: MaskedUserIntegrationConnection[];
@@ -68,11 +71,12 @@ function TargetCard({
   onSetDefault: (connection: MaskedUserIntegrationConnection) => void;
   onShowAll: (target: AvailableIntegrationTarget) => void;
   isPending: boolean;
+  isAdmin: boolean;
 }) {
   const targetConnections = connections.filter(
     (connection) => connection.integration_target_id === target.id,
   );
-  const isReadOnly = !target.is_enabled;
+  const isReadOnly = !target.is_enabled && !isAdmin;
 
   return (
     <article className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
@@ -152,6 +156,9 @@ export default function DashboardIntegrationsPage() {
   const [disconnectingConnection, setDisconnectingConnection] =
     useState<MaskedUserIntegrationConnection | null>(null);
   const [pendingLinkConnectionId, setPendingLinkConnectionId] = useState<string | null>(null);
+
+  const role = useAuthStore((state) => state.role);
+  const isAdmin = role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN;
 
   const { data: targets = [], isPending: targetsPending } = useAvailableIntegrationTargets();
   const { data: connections = [], isPending: connectionsPending } = useUserIntegrationConnections();
@@ -292,8 +299,10 @@ export default function DashboardIntegrationsPage() {
   };
 
   const loading = targetsPending || connectionsPending;
-  const isConnectReadOnly = selectedTarget ? !selectedTarget.is_enabled : false;
-  const isEditReadOnly = editingConnection ? !editingConnection.integration_target.is_enabled : false;
+  const isConnectReadOnly = selectedTarget ? !selectedTarget.is_enabled && !isAdmin : false;
+  const isEditReadOnly = editingConnection
+    ? !editingConnection.integration_target.is_enabled && !isAdmin
+    : false;
 
   return (
     <div className="flex flex-col gap-8">
@@ -328,6 +337,7 @@ export default function DashboardIntegrationsPage() {
               }
               onShowAll={openShowAll}
               isPending={isPending}
+              isAdmin={isAdmin}
             />
           ))}
         </div>
@@ -474,6 +484,7 @@ export default function DashboardIntegrationsPage() {
         onSetDefault={(connection) =>
           updateDefault.mutate({ id: connection.id, isDefault: true })
         }
+        isAdmin={isAdmin}
       />
     </div>
   );

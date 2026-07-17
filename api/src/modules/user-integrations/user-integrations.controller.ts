@@ -60,9 +60,10 @@ export class UserIntegrationsController {
   @ApiResponse({ status: 201, type: UserIntegrationConnectionEntity })
   createConnection(
     @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: AuthRole,
     @Body() dto: CreateUserIntegrationDto,
   ) {
-    return this.userIntegrationsService.createConnection(userId, dto);
+    return this.userIntegrationsService.createConnection(userId, role, dto);
   }
 
   @Patch('connections/:id')
@@ -70,10 +71,11 @@ export class UserIntegrationsController {
   @ApiResponse({ status: 200, type: UserIntegrationConnectionEntity })
   updateConnection(
     @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: AuthRole,
     @Param('id') id: string,
     @Body() dto: UpdateUserIntegrationDto,
   ) {
-    return this.userIntegrationsService.updateConnection(userId, id, dto);
+    return this.userIntegrationsService.updateConnection(userId, role, id, dto);
   }
 
   @Patch('connections/:id/status')
@@ -118,8 +120,9 @@ export class UserIntegrationsController {
   @ApiResponse({ status: 204, description: 'Deleted' })
   async deleteConnection(
     @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: AuthRole,
     @Param('id') id: string,
   ) {
-    await this.userIntegrationsService.deleteConnection(userId, id);
+    await this.userIntegrationsService.deleteConnection(userId, role, id);
   }
 }

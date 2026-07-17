@@ -17,6 +17,7 @@ type AllConnectionsModalProps = {
   onDisconnectRequest: (connection: MaskedUserIntegrationConnection) => void;
   onToggleActive: (connection: MaskedUserIntegrationConnection, next: boolean) => void;
   onSetDefault: (connection: MaskedUserIntegrationConnection) => void;
+  isAdmin: boolean;
 };
 
 export function AllConnectionsModal({
@@ -28,9 +29,10 @@ export function AllConnectionsModal({
   onDisconnectRequest,
   onToggleActive,
   onSetDefault,
+  isAdmin,
 }: AllConnectionsModalProps) {
   const [page, setPage] = useState(1);
-  const isReadOnly = target ? !target.is_enabled : true;
+  const isReadOnly = target ? !target.is_enabled && !isAdmin : !isAdmin;
 
   const totalPages = Math.max(1, Math.ceil(connections.length / PAGE_SIZE));
 

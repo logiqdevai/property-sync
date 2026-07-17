@@ -22,6 +22,10 @@ import {
   ResolvedSourceAgencyApiKey,
 } from './interfaces/user-integration.interface';
 
+function isAdminRole(role: AuthRole): boolean {
+  return role === AuthRole.ADMIN || role === AuthRole.SUPER_ADMIN;
+}
+
 @Injectable()
 export class UserIntegrationsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -133,7 +137,11 @@ export class UserIntegrationsService {
     }));
   }
 
-  async createConnection(userId: string, dto: CreateUserIntegrationDto) {
+  async createConnection(
+    userId: string,
+    userRole: AuthRole,
+    dto: CreateUserIntegrationDto,
+  ) {
     const target = await this.prisma.integrationTarget.findUnique({
       where: { id: dto.integration_target_id },
     });
@@ -142,7 +150,7 @@ export class UserIntegrationsService {
       throw new NotFoundException('Integration target not found');
     }
 
-    if (!target.is_enabled) {
+    if (!target.is_enabled && !isAdminRole(userRole)) {
       throw new BadRequestException(
         'This integration is not enabled for changes',
       );
@@ -208,12 +216,13 @@ export class UserIntegrationsService {
 
   async updateConnection(
     userId: string,
+    userRole: AuthRole,
     connectionId: string,
     dto: UpdateUserIntegrationDto,
   ) {
     const connection = await this.findOwnedConnection(userId, connectionId);
 
-    if (!connection.integration_target.is_enabled) {
+    if (!connection.integration_target.is_enabled && !isAdminRole(userRole)) {
       throw new BadRequestException(
         'This integration is not enabled for changes',
       );
@@ -270,7 +279,7 @@ export class UserIntegrationsService {
   ) {
     const connection = await this.findOwnedConnection(userId, connectionId);
 
-    if (!connection.integration_target.is_enabled) {
+    if (!connection.integration_target.is_enabled && !isAdminRole(userRole)) {
       throw new BadRequestException(
         'This integration is not enabled for changes',
       );
@@ -328,7 +337,7 @@ export class UserIntegrationsService {
       );
     }
 
-    if (!connection.integration_target.is_enabled) {
+    if (!connection.integration_target.is_enabled && !isAdminRole(userRole)) {
       throw new BadRequestException(
         'This integration is not enabled for changes',
       );
@@ -394,10 +403,14 @@ export class UserIntegrationsService {
     };
   }
 
-  async deleteConnection(userId: string, connectionId: string) {
+  async deleteConnection(
+    userId: string,
+    userRole: AuthRole,
+    connectionId: string,
+  ) {
     const connection = await this.findOwnedConnection(userId, connectionId);
 
-    if (!connection.integration_target.is_enabled) {
+    if (!connection.integration_target.is_enabled && !isAdminRole(userRole)) {
       throw new BadRequestException(
         'This integration is not enabled for changes',
       );

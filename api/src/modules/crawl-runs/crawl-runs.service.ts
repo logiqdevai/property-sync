@@ -112,18 +112,23 @@ export class CrawlRunsService {
     userId: string,
     query: UserCrawlRunQueryType,
   ): Promise<PaginatedResult<any>> {
+    // A CrawlRun scrapes an agency's site once, shared across every user tracking that
+    // agency -- it is not created per-tracker (see CrawlSchedulerCron.enqueueDueAgencyRuns),
+    // so scheduled runs carry no user_tracked_agency_id. Scope by the agencies the user
+    // tracks instead of by CrawlRun.user_tracked_agency_id, or scheduled runs never show up.
     const trackedAgencies = await this.prisma.userTrackedAgency.findMany({
       where: { user_id: userId },
-      select: { id: true },
+      select: { id: true, source_agency_id: true },
     });
-    const ownedIds = trackedAgencies.map((tracked) => tracked.id);
 
-    const scopedIds = query.user_tracked_agency_id
-      ? ownedIds.filter((id) => id === query.user_tracked_agency_id)
-      : ownedIds;
+    const scopedAgencyIds = query.user_tracked_agency_id
+      ? trackedAgencies
+          .filter((tracked) => tracked.id === query.user_tracked_agency_id)
+          .map((tracked) => tracked.source_agency_id)
+      : trackedAgencies.map((tracked) => tracked.source_agency_id);
 
     const where: Prisma.CrawlRunWhereInput = {
-      user_tracked_agency_id: { in: scopedIds },
+      source_agency_id: { in: scopedAgencyIds },
       ...(query.status && { status: query.status }),
       ...(query.date_from || query.date_to
         ? {

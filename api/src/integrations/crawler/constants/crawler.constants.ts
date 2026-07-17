@@ -9,3 +9,9 @@ export const DETAIL_DELAY_MS = Number(process.env.CRAWL_DETAIL_DELAY_MS ?? 500);
 export const CRAWL_WORKER_CONCURRENCY = Number(
   process.env.CRAWL_WORKER_CONCURRENCY ?? 5,
 );
+export const CRAWL_JOB_TIMEOUT_MS = Number(
+  process.env.CRAWL_JOB_TIMEOUT_MS ?? 30 * 60_000,
+);
+export const CHROMIUM_MAX_CONTEXTS_BEFORE_RESTART = Number(
+  process.env.CRAWL_CHROMIUM_MAX_CONTEXTS_BEFORE_RESTART ?? 250,
+);

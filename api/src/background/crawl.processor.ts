@@ -3,24 +3,25 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CRAWL_QUEUE } from '@/core/queues/queues.constants';
-import { CRAWL_WORKER_CONCURRENCY } from '@/integrations/crawler/constants/crawler.constants';
+import {
+  CRAWL_JOB_TIMEOUT_MS,
+  CRAWL_WORKER_CONCURRENCY,
+} from '@/integrations/crawler/constants/crawler.constants';
 import { CrawlerService } from '@/integrations/crawler/services/crawler.service';
 import { DetailEnrichmentService } from '@/integrations/crawler/services/detail-enrichment.service';
 import { ScraperConfig } from '@/integrations/crawler/interfaces/scraper-config.interface';
 import { DiagnosticsRunContext } from '@/integrations/diagnostics/interfaces/diagnostics.interfaces';
 import { contentHash } from '@/integrations/crawler/utils/crawler.utils';
-import { ScraperGenerationService } from '@/modules/scraper-generation/scraper-generation.service';
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { ScraperFailureHandlerService } from '@/background/scraper-failure-handler.service';
 import {
   CrawlRunStatus,
-  GenerationTrigger,
   JobStatus,
   NotificationSeverity,
   NotificationType,
   Prisma,
   PropertyStatus,
-  ScraperStatus,
 } from 'generated/prisma';
 
 interface CrawlJobData {
@@ -36,9 +37,9 @@ export class CrawlProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     private readonly crawlerService: CrawlerService,
     private readonly detailEnrichmentService: DetailEnrichmentService,
-    private readonly scraperGenerationService: ScraperGenerationService,
     private readonly propertyNormalizationService: PropertyNormalizationService,
     private readonly notificationsService: NotificationsService,
+    private readonly scraperFailureHandler: ScraperFailureHandlerService,
   ) {
     super();
   }
@@ -133,13 +134,18 @@ export class CrawlProcessor extends WorkerHost {
         workerId: job.id ? String(job.id) : undefined,
       };
 
-      const crawlResult = await this.crawlerService.runCrawl(
-        config,
-        diagnosticsCtx,
+      const crawlResult = await this.withTimeout(
+        this.crawlerService.runCrawl(config, diagnosticsCtx),
+        CRAWL_JOB_TIMEOUT_MS,
+        `crawl timed out after ${CRAWL_JOB_TIMEOUT_MS}ms`,
       );
-      await this.detailEnrichmentService.enrichDetailPages(
-        crawlResult.items,
-        config.detail_page,
+      await this.withTimeout(
+        this.detailEnrichmentService.enrichDetailPages(
+          crawlResult.items,
+          config.detail_page,
+        ),
+        CRAWL_JOB_TIMEOUT_MS,
+        `detail enrichment timed out after ${CRAWL_JOB_TIMEOUT_MS}ms`,
       );
 
       const seenUrls = new Set<string>();
@@ -251,7 +257,7 @@ export class CrawlProcessor extends WorkerHost {
           crawl_run_id: crawlRunId,
         });
 
-        await this.handleScraperFailure({
+        await this.scraperFailureHandler.handle({
           scraper,
           crawlRunId,
           sourceAgencyId: run.source_agency_id,
@@ -375,7 +381,7 @@ export class CrawlProcessor extends WorkerHost {
       }
 
       if (currentRun?.scraper) {
-        await this.handleScraperFailure({
+        await this.scraperFailureHandler.handle({
           scraper: currentRun.scraper,
           crawlRunId,
           sourceAgencyId: currentRun.source_agency_id,
@@ -398,6 +404,33 @@ export class CrawlProcessor extends WorkerHost {
 
       throw error;
     }
+  }
+
+  // Bounds the crawl/enrichment work so a wedged browser call (e.g. a hung context
+  // close after Chromium becomes unresponsive) can't leave a CrawlRun stuck in
+  // RUNNING forever -- the underlying promise is abandoned, not cancelled, but the
+  // job fails cleanly and the run/agency are freed up for the next attempt.
+  private withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    timeoutMessage: string,
+  ): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(
+        () => reject(new Error(timeoutMessage)),
+        timeoutMs,
+      );
+      promise.then(
+        (value) => {
+          clearTimeout(timer);
+          resolve(value);
+        },
+        (error) => {
+          clearTimeout(timer);
+          reject(error);
+        },
+      );
+    });
   }
 
   private async markJobActive(
@@ -439,82 +472,5 @@ export class CrawlProcessor extends WorkerHost {
     });
 
     return jobLog.id;
-  }
-
-  private async handleScraperFailure(params: {
-    scraper: { id: string; self_healing_enabled: boolean; consecutive_failures: number };
-    crawlRunId: string;
-    sourceAgencyId: string;
-    zeroListingsPage0: boolean;
-    networkError: boolean;
-    errorMessage: string;
-  }): Promise<void> {
-    const nextFailures = params.scraper.consecutive_failures + 1;
-    const shouldMarkBroken =
-      params.zeroListingsPage0 ||
-      params.networkError ||
-      nextFailures >= 3;
-
-    const failedAt = new Date();
-
-    await Promise.all([
-      this.prisma.scraper.update({
-        where: { id: params.scraper.id },
-        data: {
-          consecutive_failures: nextFailures,
-          last_failure_at: failedAt,
-          ...(shouldMarkBroken ? { status: ScraperStatus.BROKEN } : {}),
-        },
-      }),
-      this.prisma.sourceAgency.update({
-        where: { id: params.sourceAgencyId },
-        data: {
-          last_failure_at: failedAt,
-          last_error_message: params.errorMessage,
-        },
-      }),
-    ]);
-
-    if (!shouldMarkBroken) return;
-
-    if (params.networkError) {
-      this.notificationsService.create({
-        type: NotificationType.WEBSITE_UNAVAILABLE,
-        severity: NotificationSeverity.CRITICAL,
-        title: 'Website unavailable',
-        message: params.errorMessage,
-        source_agency_id: params.sourceAgencyId,
-        scraper_id: params.scraper.id,
-        crawl_run_id: params.crawlRunId,
-      });
-    } else {
-      this.notificationsService.create({
-        type: NotificationType.BROKEN_SCRAPER,
-        severity: NotificationSeverity.WARNING,
-        title: 'Scraper marked as broken',
-        message: params.errorMessage,
-        source_agency_id: params.sourceAgencyId,
-        scraper_id: params.scraper.id,
-        crawl_run_id: params.crawlRunId,
-      });
-    }
-
-    if (params.scraper.self_healing_enabled) {
-      const selfHealPrompt = `Self-heal triggered after crawl failure: ${params.errorMessage}`;
-      const retried = await this.scraperGenerationService.retryLatestForScraper(
-        params.scraper.id,
-        params.errorMessage,
-        selfHealPrompt,
-      );
-
-      if (!retried) {
-        await this.scraperGenerationService.trigger(
-          params.sourceAgencyId,
-          params.scraper.id,
-          GenerationTrigger.SELF_HEAL,
-          selfHealPrompt,
-        );
-      }
-    }
   }
 }
