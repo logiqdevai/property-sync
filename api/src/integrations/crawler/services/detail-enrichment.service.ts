@@ -1,9 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  DETAIL_CONCURRENCY,
-  DETAIL_DELAY_MS,
-  PAGE_TIMEOUT_MS,
-} from '../constants/crawler.constants';
+import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import {
   CrawlItem,
   DetailPageConfig,
@@ -21,7 +17,10 @@ interface DetailEnrichmentResult {
 export class DetailEnrichmentService {
   private readonly logger = new Logger(DetailEnrichmentService.name);
 
-  constructor(private readonly stealthBrowserService: StealthBrowserService) {}
+  constructor(
+    private readonly stealthBrowserService: StealthBrowserService,
+    private readonly platformConfigService: PlatformConfigService,
+  ) {}
 
   async enrichDetailPages(
     items: CrawlItem[],
@@ -29,14 +28,19 @@ export class DetailEnrichmentService {
   ): Promise<void> {
     if (items.length === 0) return;
 
+    const { detail_concurrency, detail_delay_ms, page_timeout_ms } =
+      await this.platformConfigService.getCrawlerConfig();
+
     this.logger.log(
-      `Enriching ${items.length} detail pages (concurrency: ${DETAIL_CONCURRENCY})`,
+      `Enriching ${items.length} detail pages (concurrency: ${detail_concurrency})`,
     );
 
-    for (let i = 0; i < items.length; i += DETAIL_CONCURRENCY) {
-      const batch = items.slice(i, i + DETAIL_CONCURRENCY);
+    for (let i = 0; i < items.length; i += detail_concurrency) {
+      const batch = items.slice(i, i + detail_concurrency);
       const results = await Promise.all(
-        batch.map((item) => this.enrichOneDetailPage(item, detailConfig)),
+        batch.map((item) =>
+          this.enrichOneDetailPage(item, detailConfig, page_timeout_ms),
+        ),
       );
 
       for (let j = 0; j < batch.length; j++) {
@@ -52,15 +56,16 @@ export class DetailEnrichmentService {
         }
       }
 
-      if (i + DETAIL_CONCURRENCY < items.length) {
-        await new Promise((resolve) => setTimeout(resolve, DETAIL_DELAY_MS));
+      if (i + detail_concurrency < items.length) {
+        await new Promise((resolve) => setTimeout(resolve, detail_delay_ms));
       }
     }
   }
 
   private async enrichOneDetailPage(
     item: CrawlItem,
-    detailConfig?: DetailPageConfig | null,
+    detailConfig: DetailPageConfig | null | undefined,
+    pageTimeoutMs: number,
   ): Promise<DetailEnrichmentResult> {
     const { context, page } =
       await this.stealthBrowserService.newStealthPage();
@@ -68,7 +73,7 @@ export class DetailEnrichmentService {
     try {
       const response = await page.goto(item.source_url, {
         waitUntil: 'domcontentloaded',
-        timeout: PAGE_TIMEOUT_MS,
+        timeout: pageTimeoutMs,
       });
 
       if (response && !response.ok()) {

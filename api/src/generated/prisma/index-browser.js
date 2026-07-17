@@ -486,6 +486,21 @@ exports.Prisma.UserPropertyScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.PlatformConfigScalarFieldEnum = {
+  id: 'id',
+  crawler_max_pages: 'crawler_max_pages',
+  crawler_page_timeout_ms: 'crawler_page_timeout_ms',
+  crawler_selector_timeout_ms: 'crawler_selector_timeout_ms',
+  crawler_scroll_pause_ms: 'crawler_scroll_pause_ms',
+  crawler_detail_concurrency: 'crawler_detail_concurrency',
+  crawler_detail_delay_ms: 'crawler_detail_delay_ms',
+  crawler_worker_concurrency: 'crawler_worker_concurrency',
+  crawler_job_timeout_ms: 'crawler_job_timeout_ms',
+  crawler_chromium_max_contexts_before_restart: 'crawler_chromium_max_contexts_before_restart',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.DocumentScalarFieldEnum = {
   id: 'id',
   user_uuid: 'user_uuid',
@@ -760,6 +775,7 @@ exports.Prisma.ModelName = {
   PropertySourceLink: 'PropertySourceLink',
   PropertyHistory: 'PropertyHistory',
   UserProperty: 'UserProperty',
+  PlatformConfig: 'PlatformConfig',
   Document: 'Document'
 };
 

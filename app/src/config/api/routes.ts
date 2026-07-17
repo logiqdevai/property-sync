@@ -100,6 +100,9 @@ export const ApiRoutes = {
         dashboard: {
             root: "/admin/dashboard",
         },
+        platformConfig: {
+            root: "/admin/platform-config",
+        },
         users: {
             prefix: "/admin/users",
             list: "/admin/users",

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Building2, Bot, Sparkles, Activity, ListTodo, Home, Bell, Plug, Users, ArrowLeft, FileSearch } from 'lucide-react';
+import { LayoutDashboard, Building2, Bot, Sparkles, Activity, ListTodo, Home, Bell, Plug, Users, ArrowLeft, FileSearch, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes/routes';
 import { useUnreadNotificationsCount } from '@/features/notifications/hooks/use-notifications';
@@ -21,6 +21,7 @@ const navItems = [
   { label: 'Notifications', icon: Bell, href: Routes.admin.notifications, end: false, showUnreadBadge: true },
   { label: 'Integration Targets', icon: Plug, href: Routes.admin.integrationTargets.list, end: false },
   { label: 'Users', icon: Users, href: Routes.admin.users.list, end: false },
+  { label: 'Crawler Settings', icon: Settings, href: Routes.admin.crawlerConfig, end: false },
 ];
 
 function NavItem({

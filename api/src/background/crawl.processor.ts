@@ -1,12 +1,10 @@
-import { Logger } from '@nestjs/common';
+import { Logger, OnModuleInit } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CRAWL_QUEUE } from '@/core/queues/queues.constants';
-import {
-  CRAWL_JOB_TIMEOUT_MS,
-  CRAWL_WORKER_CONCURRENCY,
-} from '@/integrations/crawler/constants/crawler.constants';
+import { DEFAULT_CRAWL_WORKER_CONCURRENCY } from '@/integrations/crawler/constants/crawler.constants';
+import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import { CrawlerService } from '@/integrations/crawler/services/crawler.service';
 import { DetailEnrichmentService } from '@/integrations/crawler/services/detail-enrichment.service';
 import { ScraperConfig } from '@/integrations/crawler/interfaces/scraper-config.interface';
@@ -29,8 +27,8 @@ interface CrawlJobData {
   jobLogId?: string;
 }
 
-@Processor(CRAWL_QUEUE, { concurrency: CRAWL_WORKER_CONCURRENCY })
-export class CrawlProcessor extends WorkerHost {
+@Processor(CRAWL_QUEUE, { concurrency: DEFAULT_CRAWL_WORKER_CONCURRENCY })
+export class CrawlProcessor extends WorkerHost implements OnModuleInit {
   private readonly logger = new Logger(CrawlProcessor.name);
 
   constructor(
@@ -40,8 +38,18 @@ export class CrawlProcessor extends WorkerHost {
     private readonly propertyNormalizationService: PropertyNormalizationService,
     private readonly notificationsService: NotificationsService,
     private readonly scraperFailureHandler: ScraperFailureHandlerService,
+    private readonly platformConfigService: PlatformConfigService,
   ) {
     super();
+  }
+
+  // @Processor's concurrency option is only readable at class-definition time
+  // (before the DB is even connected), so it starts at a hardcoded default --
+  // this applies the configured value once the app (and DB) are up. BullMQ's
+  // Worker.concurrency setter takes effect immediately, no restart needed.
+  async onModuleInit(): Promise<void> {
+    const { crawl_worker_concurrency } = await this.platformConfigService.getCrawlerConfig();
+    this.worker.concurrency = crawl_worker_concurrency;
   }
 
   async process(job: Job<CrawlJobData>): Promise<void> {
@@ -62,6 +70,7 @@ export class CrawlProcessor extends WorkerHost {
 
   private async processCrawlJob(job: Job<CrawlJobData>): Promise<void> {
     const { crawlRunId, jobLogId } = job.data;
+    const { crawl_job_timeout_ms } = await this.platformConfigService.getCrawlerConfig();
     this.logger.log(`crawl job received: ${crawlRunId}`);
 
     if (!crawlRunId) {
@@ -136,16 +145,16 @@ export class CrawlProcessor extends WorkerHost {
 
       const crawlResult = await this.withTimeout(
         this.crawlerService.runCrawl(config, diagnosticsCtx),
-        CRAWL_JOB_TIMEOUT_MS,
-        `crawl timed out after ${CRAWL_JOB_TIMEOUT_MS}ms`,
+        crawl_job_timeout_ms,
+        `crawl timed out after ${crawl_job_timeout_ms}ms`,
       );
       await this.withTimeout(
         this.detailEnrichmentService.enrichDetailPages(
           crawlResult.items,
           config.detail_page,
         ),
-        CRAWL_JOB_TIMEOUT_MS,
-        `detail enrichment timed out after ${CRAWL_JOB_TIMEOUT_MS}ms`,
+        crawl_job_timeout_ms,
+        `detail enrichment timed out after ${crawl_job_timeout_ms}ms`,
       );
 
       const seenUrls = new Set<string>();

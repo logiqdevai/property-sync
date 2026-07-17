@@ -22,6 +22,7 @@ import { UserTrackedAgenciesModule } from './modules/user-tracked-agencies/user-
 import { UserPropertiesModule } from './modules/user-properties/user-properties.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { IntegrationTargetsModule } from './modules/integration-targets/integration-targets.module';
+import { PlatformConfigModule } from './modules/platform-config/platform-config.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { UserDashboardModule } from './modules/user-dashboard/user-dashboard.module';
 import { HealthModule } from './modules/health/health.module';
@@ -57,6 +58,7 @@ import { ConfigModule } from './shared/config/env/env.module';
     UserPropertiesModule,
     NotificationsModule,
     IntegrationTargetsModule,
+    PlatformConfigModule,
     DashboardModule,
     UserDashboardModule,
   ],

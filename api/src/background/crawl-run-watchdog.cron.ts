@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { ScraperFailureHandlerService } from './scraper-failure-handler.service';
-import { CRAWL_JOB_TIMEOUT_MS } from '@/integrations/crawler/constants/crawler.constants';
+import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import {
   CrawlRunStatus,
   JobStatus,
@@ -26,12 +26,14 @@ export class CrawlRunWatchdogCron {
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
     private readonly scraperFailureHandler: ScraperFailureHandlerService,
+    private readonly platformConfigService: PlatformConfigService,
   ) {}
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async failStaleRunningRuns(): Promise<void> {
+    const { crawl_job_timeout_ms } = await this.platformConfigService.getCrawlerConfig();
     const staleBefore = new Date(
-      Date.now() - CRAWL_JOB_TIMEOUT_MS - STALE_GRACE_MS,
+      Date.now() - crawl_job_timeout_ms - STALE_GRACE_MS,
     );
 
     const staleRuns = await this.prisma.crawlRun.findMany({
@@ -45,7 +47,7 @@ export class CrawlRunWatchdogCron {
     for (const run of staleRuns) {
       const finishedAt = new Date();
       const errorMessage = `Watchdog: run stuck in RUNNING past ${Math.round(
-        (CRAWL_JOB_TIMEOUT_MS + STALE_GRACE_MS) / 60_000,
+        (crawl_job_timeout_ms + STALE_GRACE_MS) / 60_000,
       )} minutes with no update -- likely a worker crash/restart mid-job`;
 
       await this.prisma.crawlRun.update({

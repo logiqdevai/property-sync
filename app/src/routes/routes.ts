@@ -55,5 +55,6 @@ export const Routes = {
             list: "/admin/users",
             detail: (id: string) => `/admin/users/${id}`,
         },
+        crawlerConfig: "/admin/crawler-config",
     },
 };

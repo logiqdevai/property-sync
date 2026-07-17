@@ -5,7 +5,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { Browser, BrowserContext, BrowserContextOptions, chromium, Page } from 'playwright';
-import { CHROMIUM_MAX_CONTEXTS_BEFORE_RESTART } from '../constants/crawler.constants';
+import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 
 const STEALTH_UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
@@ -20,6 +20,8 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(StealthBrowserService.name);
   private browser: Browser | null = null;
   private contextsSinceLaunch = 0;
+
+  constructor(private readonly platformConfigService: PlatformConfigService) {}
 
   async onModuleInit(): Promise<void> {
     await this.ensureBrowser();
@@ -63,8 +65,10 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
       // A long-lived process otherwise accumulates memory across hundreds of
       // context cycles (one per crawl page plus one per detail-page enrichment
       // item -- easily 500+ per run) with no natural restart point.
+      const { chromium_max_contexts_before_restart } =
+        await this.platformConfigService.getCrawlerConfig();
       const dueForRestart =
-        this.contextsSinceLaunch >= CHROMIUM_MAX_CONTEXTS_BEFORE_RESTART &&
+        this.contextsSinceLaunch >= chromium_max_contexts_before_restart &&
         this.browser.contexts().length === 0;
 
       if (!dueForRestart) {

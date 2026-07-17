@@ -2,12 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Page } from 'playwright';
 import { DiagnosticsCaptureService } from '@/integrations/diagnostics/services/diagnostics-capture.service';
 import { DiagnosticsRunContext } from '@/integrations/diagnostics/interfaces/diagnostics.interfaces';
-import {
-  MAX_PAGES,
-  PAGE_TIMEOUT_MS,
-  SCROLL_PAUSE_MS,
-  SELECTOR_TIMEOUT_MS,
-} from '../constants/crawler.constants';
+import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
+import { ResolvedCrawlerConfig } from '../interfaces/crawler-runtime-config.interface';
 import {
   CrawlItem,
   CrawlResult,
@@ -26,6 +22,7 @@ export class CrawlerService {
     private readonly diagnosticsCaptureService: DiagnosticsCaptureService,
     private readonly fieldExtractionService: FieldExtractionService,
     private readonly crawlerDebugService: CrawlerDebugService,
+    private readonly platformConfigService: PlatformConfigService,
   ) {}
 
   async runCrawl(
@@ -41,6 +38,7 @@ export class CrawlerService {
     page: Page,
     config: ScraperConfig,
   ): Promise<CrawlResult> {
+    const crawlerConfig = await this.platformConfigService.getCrawlerConfig();
     const steps: CrawlStep[] = [];
     const items: CrawlItem[] = [];
     let success = false;
@@ -56,7 +54,7 @@ export class CrawlerService {
       log('navigate', { url: config.start_url });
       const response = await page.goto(config.start_url, {
         waitUntil: 'domcontentloaded',
-        timeout: PAGE_TIMEOUT_MS,
+        timeout: crawlerConfig.page_timeout_ms,
       });
 
       if (response && !response.ok()) {
@@ -79,7 +77,7 @@ export class CrawlerService {
       let prevUrl: string | null = null;
       let prevItemCount = -1;
 
-      while (pageNum < MAX_PAGES) {
+      while (pageNum < crawlerConfig.max_pages) {
         const currentUrl = page.url();
 
         if (currentUrl === prevUrl && items.length === prevItemCount) {
@@ -93,7 +91,7 @@ export class CrawlerService {
 
         try {
           await page.waitForSelector(config.listing_selector, {
-            timeout: SELECTOR_TIMEOUT_MS,
+            timeout: crawlerConfig.selector_timeout_ms,
           });
         } catch {
           log('selector_timeout', {
@@ -171,6 +169,7 @@ export class CrawlerService {
           pagination,
           pageNum,
           log,
+          crawlerConfig,
         );
         if (!advanced) break;
         pageNum++;
@@ -200,6 +199,7 @@ export class CrawlerService {
     pagination: NonNullable<ScraperConfig['pagination']>,
     pageNum: number,
     log: (msg: string, data?: Record<string, unknown>) => void,
+    crawlerConfig: ResolvedCrawlerConfig,
   ): Promise<boolean> {
     if (
       pagination.type === 'next_button' ||
@@ -225,7 +225,7 @@ export class CrawlerService {
         }
         await nextControl.click({ timeout: 8000 });
         await page
-          .waitForLoadState('domcontentloaded', { timeout: PAGE_TIMEOUT_MS })
+          .waitForLoadState('domcontentloaded', { timeout: crawlerConfig.page_timeout_ms })
           .catch(() => undefined);
         await page.waitForTimeout(2000);
         log('clicked_next', { url: page.url() });
@@ -261,7 +261,7 @@ export class CrawlerService {
 
       await nextPageLink.click({ timeout: 8000 });
       await page
-        .waitForLoadState('domcontentloaded', { timeout: PAGE_TIMEOUT_MS })
+        .waitForLoadState('domcontentloaded', { timeout: crawlerConfig.page_timeout_ms })
         .catch(() => undefined);
       await page.waitForTimeout(2000);
       log('clicked_page', { page: nextPageNum, url: page.url() });
@@ -280,7 +280,7 @@ export class CrawlerService {
         return false;
       }
       await btn.click({ timeout: 8000 });
-      await page.waitForTimeout(SCROLL_PAUSE_MS);
+      await page.waitForTimeout(crawlerConfig.scroll_pause_ms);
       return true;
     }
 
@@ -292,7 +292,7 @@ export class CrawlerService {
       await page.evaluate(() =>
         window.scrollTo(0, document.body.scrollHeight),
       );
-      await page.waitForTimeout(SCROLL_PAUSE_MS);
+      await page.waitForTimeout(crawlerConfig.scroll_pause_ms);
       const newHeight = await page.evaluate(() => document.body.scrollHeight);
       if (newHeight === prevHeight) {
         log('pagination_end', { reason: 'scroll_height_unchanged' });
@@ -310,7 +310,7 @@ export class CrawlerService {
       url.searchParams.set(paramName, String(pageNum + 2));
       const response = await page.goto(url.href, {
         waitUntil: 'domcontentloaded',
-        timeout: PAGE_TIMEOUT_MS,
+        timeout: crawlerConfig.page_timeout_ms,
       });
       if (response && !response.ok()) {
         log('network_error', { status: response.status(), url: url.href });

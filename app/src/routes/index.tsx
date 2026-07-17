@@ -34,6 +34,7 @@ import IntegrationTargetsListPage from "@/pages/admin/integration-targets";
 import IntegrationTargetDetailPage from "@/pages/admin/integration-targets/detail";
 import AdminUsersListPage from "@/pages/admin/users";
 import AdminUserDetailPage from "@/pages/admin/users/detail";
+import CrawlerConfigPage from "@/pages/admin/crawler-config";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
 
 export default function AppRoutes() {
@@ -107,6 +108,7 @@ export default function AppRoutes() {
         <Route path="integration-targets/:id" element={<IntegrationTargetDetailPage />} />
         <Route path="users" element={<AdminUsersListPage />} />
         <Route path="users/:id" element={<AdminUserDetailPage />} />
+        <Route path="crawler-config" element={<CrawlerConfigPage />} />
       </Route>
 
       {/* Default redirect */}

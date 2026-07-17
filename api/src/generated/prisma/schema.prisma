@@ -898,6 +898,27 @@ model UserProperty {
   @@map("user_properties")
 }
 
+/// Singleton table (single row, fixed id) holding tunable admin-editable parameters for the
+/// whole app, grouped by subsystem prefix (crawler_*, and more subsystems over time). Columns
+/// are nullable -- PlatformConfigService resolves nulls to in-code defaults per subsystem, so
+/// this table is never a hard requirement for anything to run.
+model PlatformConfig {
+  id                                           String   @id @default("singleton")
+  crawler_max_pages                            Int?
+  crawler_page_timeout_ms                      Int?
+  crawler_selector_timeout_ms                  Int?
+  crawler_scroll_pause_ms                      Int?
+  crawler_detail_concurrency                   Int?
+  crawler_detail_delay_ms                      Int?
+  crawler_worker_concurrency                   Int?
+  crawler_job_timeout_ms                       Int?
+  crawler_chromium_max_contexts_before_restart Int?
+  created_at                                   DateTime @default(now())
+  updated_at                                   DateTime @updatedAt
+
+  @@map("platform_config")
+}
+
 /// Generic uploaded file record (logos, banners, media, and computer-use screenshots).
 model Document {
   id         String       @id @default(uuid())

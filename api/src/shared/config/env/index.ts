@@ -25,9 +25,6 @@ export default () => ({
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     SCRAPER_GENERATION_MODEL: process.env.SCRAPER_GENERATION_MODEL,
-    CRAWL_WORKER_CONCURRENCY: process.env.CRAWL_WORKER_CONCURRENCY
-        ? Number(process.env.CRAWL_WORKER_CONCURRENCY)
-        : undefined,
     BULL_BOARD_USER: process.env.BULL_BOARD_USER,
     BULL_BOARD_PASSWORD: process.env.BULL_BOARD_PASSWORD,
 });
