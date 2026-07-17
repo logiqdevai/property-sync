@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { AiService } from '@/integrations/ai/services/ai.service';
-import { AiProviders } from '@/integrations/ai/interfaces/ai.interface';
+import { AiProvider, AiProviders } from '@/integrations/ai/interfaces/ai.interface';
 import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import { calculateAiCost } from '@/integrations/ai/utils/ai-cost';
 import { AiBatchClientService } from '@/integrations/ai-batch/services/ai-batch-client.service';
@@ -14,6 +14,7 @@ import {
   PROPERTY_REMOVAL_SPIKE_RATIO_THRESHOLD,
 } from '@/modules/notifications/constants/notification.constants';
 import {
+  NORMALIZATION_BATCH_SIZE,
   NormalizationUsage,
   buildAnthropicCostReport,
 } from '../constants/normalization.constants';
@@ -26,10 +27,12 @@ import { AnthropicNormalizationService } from './anthropic-normalization.service
 import {
   NormalizedAiRow,
   buildFallbackNormalizedRow,
+  buildNormalizedRowFromExistingProperty,
   buildPropertyRecord,
   detectDuplicates,
   diffPropertyChanges,
   matchExistingDuplicateGroup,
+  matchNormalizedRowsToIds,
 } from '../utils/property-normalization.utils';
 import {
   IntegrationType,
@@ -49,6 +52,7 @@ type SourcePropertyRow = {
   raw_location: string | null;
   raw_description: string | null;
   raw_data: unknown;
+  content_hash: string | null;
 };
 
 @Injectable()
@@ -114,7 +118,6 @@ export class PropertyNormalizationService {
     const sourceProperties = await this.loadSourcePropertiesForNormalization(
       crawlRun.source_agency_id,
       crawlRun.started_at,
-      normalizeLimit,
     );
 
     await this.prisma.crawlRun.update({
@@ -148,6 +151,42 @@ export class PropertyNormalizationService {
       return;
     }
 
+    // Listings whose scraped content hasn't changed since they were last normalized
+    // don't need another AI call — reuse the Property fields already on record.
+    const { reused, toNormalize, reusedRowsBySourceId } =
+      await this.splitUnchangedSourceProperties(sourceProperties);
+
+    if (reused.length > 0) {
+      this.logger.log(
+        `Crawl run ${crawlRunId}: skipping AI normalization for ${reused.length} unchanged listing(s)`,
+      );
+      await this.applyNormalizedResults({
+        crawlRunId,
+        sourceAgencyId: crawlRun.source_agency_id,
+        crawlStartedAt: crawlRun.started_at,
+        sourceProperties: reused,
+        normalizedBySourceId: reusedRowsBySourceId,
+        model,
+        provider: aiProvider,
+        userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
+      });
+    }
+
+    if (toNormalize.length === 0) {
+      return;
+    }
+
+    const limited =
+      normalizeLimit !== null && normalizeLimit > 0 && toNormalize.length > normalizeLimit
+        ? toNormalize.slice(0, normalizeLimit)
+        : toNormalize;
+
+    if (limited.length < toNormalize.length) {
+      this.logger.log(
+        `Crawl run ${crawlRunId}: normalize limit ${normalizeLimit} — normalizing ${limited.length} of ${toNormalize.length} changed listing(s)`,
+      );
+    }
+
     const useBatch =
       tracker.use_ai_batching && aiProvider === IntegrationType.OPENAI;
 
@@ -155,7 +194,7 @@ export class PropertyNormalizationService {
       await this.propertyAiBatchService.submitForCrawlRun({
         crawlRunId,
         sourceAgencyId: crawlRun.source_agency_id,
-        sourceProperties,
+        sourceProperties: limited,
         apiKey: resolvedKey.apiKey,
         userIntegrationId: resolvedKey.userIntegrationId,
         model,
@@ -164,7 +203,7 @@ export class PropertyNormalizationService {
     }
 
     const syncResult = await this.normalizeSync(
-      sourceProperties,
+      limited,
       aiProvider,
       model,
       resolvedKey.apiKey,
@@ -174,7 +213,7 @@ export class PropertyNormalizationService {
       crawlRunId,
       sourceAgencyId: crawlRun.source_agency_id,
       crawlStartedAt: crawlRun.started_at,
-      sourceProperties,
+      sourceProperties: limited,
       normalizedBySourceId: syncResult.normalizedBySourceId,
       model,
       provider: aiProvider,
@@ -182,6 +221,41 @@ export class PropertyNormalizationService {
       openAiUsage: syncResult.openAiUsage,
       userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
     });
+  }
+
+  private async splitUnchangedSourceProperties(
+    sourceProperties: SourcePropertyRow[],
+  ): Promise<{
+    reused: SourcePropertyRow[];
+    toNormalize: SourcePropertyRow[];
+    reusedRowsBySourceId: Map<string, NormalizedAiRow | null>;
+  }> {
+    const links = await this.prisma.propertySourceLink.findMany({
+      where: { source_property_id: { in: sourceProperties.map((sp) => sp.id) } },
+      include: { property: true },
+    });
+    const linkBySourceId = new Map(links.map((link) => [link.source_property_id, link]));
+
+    const reused: SourcePropertyRow[] = [];
+    const toNormalize: SourcePropertyRow[] = [];
+    const reusedRowsBySourceId = new Map<string, NormalizedAiRow | null>();
+
+    for (const sp of sourceProperties) {
+      const link = linkBySourceId.get(sp.id);
+      const unchanged =
+        sp.content_hash != null &&
+        link != null &&
+        link.last_normalized_hash === sp.content_hash;
+
+      if (unchanged) {
+        reused.push(sp);
+        reusedRowsBySourceId.set(sp.id, buildNormalizedRowFromExistingProperty(link.property));
+      } else {
+        toNormalize.push(sp);
+      }
+    }
+
+    return { reused, toNormalize, reusedRowsBySourceId };
   }
 
   async applyNormalizedResults(params: {
@@ -272,6 +346,11 @@ export class PropertyNormalizationService {
           });
         }
 
+        await this.prisma.propertySourceLink.update({
+          where: { id: existingLink.id },
+          data: { last_normalized_hash: sp.content_hash ?? null },
+        });
+
         batchProperties.push(updated);
         await this.userPropertiesService.syncForProperty(updated.id, {
           userTrackedAgencyId: params.userTrackedAgencyId,
@@ -291,6 +370,7 @@ export class PropertyNormalizationService {
               source_property_id: sp.id,
               is_primary_source: true,
               confidence_score: new Prisma.Decimal(1),
+              last_normalized_hash: sp.content_hash ?? null,
             },
           },
           history: {
@@ -394,20 +474,19 @@ export class PropertyNormalizationService {
     }
 
     const output = await this.aiBatchClient.downloadOutputFile(client, batch.output_file_id);
-    let normalizeLimit: number | null =
-      typeof metadata.normalize_limit === 'number' ? metadata.normalize_limit : null;
-    if (normalizeLimit === null && crawlRun.scraper_id) {
-      const scraper = await this.prisma.scraper.findUnique({
-        where: { id: crawlRun.scraper_id },
-        select: { normalize_limit: true },
-      });
-      normalizeLimit = scraper?.normalize_limit ?? null;
-    }
-    const sourceProperties = await this.loadSourcePropertiesForNormalization(
+
+    // batch_chunks[i] holds the ordered source_property_ids that were sent as chunk `i`
+    // (custom_id = `chunk-${i}`) — this is what row.index positions are relative to.
+    const chunks = Array.isArray(metadata.batch_chunks)
+      ? (metadata.batch_chunks as string[][])
+      : [];
+    const pendingIds = new Set(chunks.flat());
+
+    const allSourceProperties = await this.loadSourcePropertiesForNormalization(
       crawlRun.source_agency_id,
       crawlRun.started_at,
-      normalizeLimit,
     );
+    const sourceProperties = allSourceProperties.filter((sp) => pendingIds.has(sp.id));
 
     const normalizedBySourceId = new Map<string, NormalizedAiRow | null>();
     let inputTokens = 0;
@@ -416,9 +495,17 @@ export class PropertyNormalizationService {
     for (const line of output.split('\n').filter(Boolean)) {
       const parsed = this.propertyAiBatchService.parseBatchOutputLine(line);
       if (!parsed) continue;
-      normalizedBySourceId.set(parsed.customId, parsed.normalized);
       inputTokens += parsed.usage?.prompt_tokens ?? 0;
       outputTokens += parsed.usage?.completion_tokens ?? 0;
+
+      const chunkIndex = Number(parsed.customId.replace('chunk-', ''));
+      const ids = chunks[chunkIndex];
+      if (!ids) continue;
+
+      const matched = matchNormalizedRowsToIds(ids, parsed.rows);
+      for (const [id, row] of matched) {
+        normalizedBySourceId.set(id, row);
+      }
     }
 
     const model =
@@ -465,26 +552,14 @@ export class PropertyNormalizationService {
   private async loadSourcePropertiesForNormalization(
     sourceAgencyId: string,
     crawlStartedAt: Date,
-    normalizeLimit: number | null,
   ): Promise<SourcePropertyRow[]> {
-    const sourceProperties = await this.prisma.sourceProperty.findMany({
+    return this.prisma.sourceProperty.findMany({
       where: {
         source_agency_id: sourceAgencyId,
         last_seen_at: { gte: crawlStartedAt },
       },
       orderBy: { last_seen_at: 'asc' },
-      ...(normalizeLimit !== null && normalizeLimit > 0
-        ? { take: normalizeLimit }
-        : {}),
     });
-
-    if (normalizeLimit !== null && normalizeLimit > 0) {
-      this.logger.log(
-        `Normalize limit ${normalizeLimit}: selected ${sourceProperties.length} source properties`,
-      );
-    }
-
-    return sourceProperties;
   }
 
   private async normalizeSync(
@@ -518,30 +593,43 @@ export class PropertyNormalizationService {
     let inputTokens = 0;
     let outputTokens = 0;
 
-    for (const sp of sourceProperties) {
+    for (let i = 0; i < sourceProperties.length; i += NORMALIZATION_BATCH_SIZE) {
+      const chunk = sourceProperties.slice(i, i + NORMALIZATION_BATCH_SIZE);
+      const ids = chunk.map((sp) => sp.id);
+
       try {
-        const input = buildNormalizationInput([sp]);
-        const response = await this.aiService.generateText({
-          provider: providerKey,
+        const { rows, usage } = await this.normalizeOpenAiChunk(
+          chunk,
+          providerKey,
           model,
           apiKey,
-          system: NORMALIZATION_STATIC_INSTRUCTIONS,
-          prompt: buildNormalizationDynamicPrompt(input),
-          maxTokens: 8192,
-        });
+        );
+        inputTokens += usage.inputTokens;
+        outputTokens += usage.outputTokens;
 
-        inputTokens += response.usage?.inputTokens ?? 0;
-        outputTokens += response.usage?.outputTokens ?? 0;
-
-        const arrayMatch = response.response.match(/\[[\s\S]*\]/);
-        if (arrayMatch) {
-          const rows = JSON.parse(arrayMatch[0]) as NormalizedAiRow[];
-          normalizedBySourceId.set(sp.id, rows[0] ?? null);
-        } else {
-          normalizedBySourceId.set(sp.id, buildFallbackNormalizedRow(sp));
+        const matched = matchNormalizedRowsToIds(ids, rows);
+        for (const sp of chunk) {
+          normalizedBySourceId.set(sp.id, matched.get(sp.id) ?? buildFallbackNormalizedRow(sp));
         }
-      } catch {
-        normalizedBySourceId.set(sp.id, buildFallbackNormalizedRow(sp));
+      } catch (chunkErr) {
+        this.logger.warn(
+          `OpenAI normalization chunk failed (${chunkErr instanceof Error ? chunkErr.message : chunkErr}), retrying individually`,
+        );
+        for (const sp of chunk) {
+          try {
+            const { rows, usage } = await this.normalizeOpenAiChunk(
+              [sp],
+              providerKey,
+              model,
+              apiKey,
+            );
+            inputTokens += usage.inputTokens;
+            outputTokens += usage.outputTokens;
+            normalizedBySourceId.set(sp.id, rows[0] ?? buildFallbackNormalizedRow(sp));
+          } catch {
+            normalizedBySourceId.set(sp.id, buildFallbackNormalizedRow(sp));
+          }
+        }
       }
     }
 
@@ -549,6 +637,51 @@ export class PropertyNormalizationService {
       normalizedBySourceId,
       openAiUsage: { inputTokens, outputTokens },
     };
+  }
+
+  private async normalizeOpenAiChunk(
+    chunk: SourcePropertyRow[],
+    providerKey: AiProvider,
+    model: string,
+    apiKey: string,
+  ): Promise<{
+    rows: NormalizedAiRow[];
+    usage: { inputTokens: number; outputTokens: number };
+  }> {
+    const input = buildNormalizationInput(chunk);
+    const response = await this.aiService.generateText({
+      provider: providerKey,
+      model,
+      apiKey,
+      system: NORMALIZATION_STATIC_INSTRUCTIONS,
+      prompt: buildNormalizationDynamicPrompt(input),
+      maxTokens: 8192,
+    });
+
+    const usage = {
+      inputTokens: response.usage?.inputTokens ?? 0,
+      outputTokens: response.usage?.outputTokens ?? 0,
+    };
+
+    const arrayMatch = response.response.match(/\[[\s\S]*\]/);
+    if (arrayMatch) {
+      try {
+        return { rows: JSON.parse(arrayMatch[0]) as NormalizedAiRow[], usage };
+      } catch {
+        // fall through to object-fallback below
+      }
+    }
+
+    const objectMatch = response.response.match(/\{[\s\S]*\}/);
+    if (objectMatch) {
+      try {
+        return { rows: [JSON.parse(objectMatch[0]) as NormalizedAiRow], usage };
+      } catch {
+        // fall through to empty rows below
+      }
+    }
+
+    return { rows: [], usage };
   }
 
   private async detectRemovalsAndReappearances(

@@ -137,7 +137,7 @@ export default function DashboardCrawlRunsPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={6} />
+        <TableSkeleton rows={8} columns={9} />
       ) : runs.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No crawl runs found.
@@ -150,7 +150,10 @@ export default function DashboardCrawlRunsPage() {
                 <Table.Header>
                   <Table.Column isRowHeader>Agency</Table.Column>
                   <Table.Column>Status</Table.Column>
-                  <Table.Column>Totals</Table.Column>
+                  <Table.Column>Created</Table.Column>
+                  <Table.Column>Updated</Table.Column>
+                  <Table.Column>Removed</Table.Column>
+                  <Table.Column>Failed</Table.Column>
                   <Table.Column>AI cost</Table.Column>
                   <Table.Column>Started</Table.Column>
                   <Table.Column>Duration</Table.Column>
@@ -167,10 +170,16 @@ export default function DashboardCrawlRunsPage() {
                         <CrawlRunStatusChip status={run.status} />
                       </Table.Cell>
                       <Table.Cell>
-                        <span className="text-xs text-muted font-mono">
-                          {run.total_found}/{run.total_created}/{run.total_updated}/
-                          {run.total_removed}/{run.total_failed}
-                        </span>
+                        <span className="font-mono text-sm text-foreground">{run.total_created}</span>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span className="font-mono text-sm text-foreground">{run.total_updated}</span>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span className="font-mono text-sm text-foreground">{run.total_removed}</span>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span className="font-mono text-sm text-foreground">{run.total_failed}</span>
                       </Table.Cell>
                       <Table.Cell>
                         <span className="font-mono text-sm text-foreground">

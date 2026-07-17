@@ -41,6 +41,13 @@ export default function CrawlRunDetailPage() {
   const traces = run.execution_traces ?? [];
   const jobLogs = run.job_logs ?? [];
   const hasAiCost = run.ai_total_cost !== null;
+  const metadata = run.metadata ?? {};
+  const batchChunks = Array.isArray(metadata.batch_chunks)
+    ? (metadata.batch_chunks as string[][])
+    : null;
+  const aiBatchId = typeof metadata.ai_batch_id === "string" ? metadata.ai_batch_id : null;
+  const aiBatchStatus =
+    typeof metadata.ai_batch_status === "string" ? metadata.ai_batch_status : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -198,6 +205,33 @@ export default function CrawlRunDetailPage() {
               <p className="text-foreground">{formatUsd(run.ai_average_cost_per_property)}</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {batchChunks && (
+        <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-3">
+          <p className="text-sm font-medium text-foreground">AI batch chunks</p>
+          <div className="grid gap-3 sm:grid-cols-3 text-sm">
+            <div>
+              <span className="text-muted">Batch ID</span>
+              <p className="text-foreground font-mono text-xs">{aiBatchId ?? "—"}</p>
+            </div>
+            <div>
+              <span className="text-muted">Status</span>
+              <p className="text-foreground">{aiBatchStatus ?? "—"}</p>
+            </div>
+            <div>
+              <span className="text-muted">Chunks / listings</span>
+              <p className="text-foreground">
+                {batchChunks.length} / {batchChunks.reduce((sum, chunk) => sum + chunk.length, 0)}
+              </p>
+            </div>
+          </div>
+          <pre className="rounded-lg border border-border bg-background p-3 text-xs overflow-auto max-h-96">
+            {batchChunks
+              .map((ids, index) => `chunk-${index} (${ids.length}): ${ids.join(", ")}`)
+              .join("\n")}
+          </pre>
         </div>
       )}
 

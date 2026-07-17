@@ -9,6 +9,7 @@ import {
   buildNormalizationDynamicPrompt,
   buildNormalizationInput,
 } from '@/modules/properties/constants/normalization-prompt';
+import { NORMALIZATION_BATCH_SIZE } from '@/modules/properties/constants/normalization.constants';
 import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import { NormalizedAiRow } from '@/modules/properties/utils/property-normalization.utils';
 import { JobStatus } from 'generated/prisma';
@@ -17,6 +18,7 @@ interface CrawlRunBatchMetadata {
   ai_batch_id?: string;
   ai_batch_status?: string;
   pending_source_property_ids?: string[];
+  batch_chunks?: string[][];
   user_integration_id?: string;
   ai_provider?: string;
   ai_model?: string;
@@ -52,26 +54,36 @@ export class PropertyAiBatchService {
     const client = this.aiBatchClient.createClient(params.apiKey);
     const model = params.model || AiDefaults.model;
 
-    const lines = params.sourceProperties.map((sp) => {
-      const input = buildNormalizationInput([sp])[0];
+    const chunks: string[][] = [];
+    const lines: string[] = [];
+
+    for (let i = 0; i < params.sourceProperties.length; i += NORMALIZATION_BATCH_SIZE) {
+      const chunk = params.sourceProperties.slice(i, i + NORMALIZATION_BATCH_SIZE);
+      const chunkIndex = chunks.length;
+      chunks.push(chunk.map((sp) => sp.id));
+
+      const input = buildNormalizationInput(chunk);
       const body = {
         model,
+        max_tokens: 8192,
         messages: [
           { role: 'system', content: NORMALIZATION_STATIC_INSTRUCTIONS },
           {
             role: 'user',
-            content: buildNormalizationDynamicPrompt([input]),
+            content: buildNormalizationDynamicPrompt(input),
           },
         ],
       };
 
-      return JSON.stringify({
-        custom_id: sp.id,
-        method: 'POST',
-        url: '/v1/chat/completions',
-        body,
-      });
-    });
+      lines.push(
+        JSON.stringify({
+          custom_id: `chunk-${chunkIndex}`,
+          method: 'POST',
+          url: '/v1/chat/completions',
+          body,
+        }),
+      );
+    }
 
     const inputFileId = await this.aiBatchClient.uploadJsonl(client, lines);
     const batchId = await this.aiBatchClient.createBatch(client, inputFileId, {
@@ -83,6 +95,7 @@ export class PropertyAiBatchService {
       ai_batch_id: batchId,
       ai_batch_status: 'pending',
       pending_source_property_ids: params.sourceProperties.map((sp) => sp.id),
+      batch_chunks: chunks,
       user_integration_id: params.userIntegrationId,
       ai_provider: AiDefaults.provider,
       ai_model: model,
@@ -115,7 +128,7 @@ export class PropertyAiBatchService {
 
   parseBatchOutputLine(line: string): {
     customId: string;
-    normalized: NormalizedAiRow | null;
+    rows: NormalizedAiRow[];
     usage?: { prompt_tokens?: number; completion_tokens?: number };
   } | null {
     try {
@@ -134,25 +147,24 @@ export class PropertyAiBatchService {
       if (!content) {
         return {
           customId: parsed.custom_id,
-          normalized: null,
+          rows: [],
           usage: parsed.response?.body?.usage,
         };
       }
 
       const arrayMatch = content.match(/\[[\s\S]*\]/);
       const objectMatch = content.match(/\{[\s\S]*\}/);
-      let normalized: NormalizedAiRow | null = null;
+      let rows: NormalizedAiRow[] = [];
 
       if (arrayMatch) {
-        const rows = JSON.parse(arrayMatch[0]) as NormalizedAiRow[];
-        normalized = rows[0] ?? null;
+        rows = JSON.parse(arrayMatch[0]) as NormalizedAiRow[];
       } else if (objectMatch) {
-        normalized = JSON.parse(objectMatch[0]) as NormalizedAiRow;
+        rows = [JSON.parse(objectMatch[0]) as NormalizedAiRow];
       }
 
       return {
         customId: parsed.custom_id,
-        normalized,
+        rows,
         usage: parsed.response?.body?.usage,
       };
     } catch {

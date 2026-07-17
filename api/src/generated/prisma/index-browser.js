@@ -437,6 +437,7 @@ exports.Prisma.PropertySourceLinkScalarFieldEnum = {
   source_property_id: 'source_property_id',
   confidence_score: 'confidence_score',
   is_primary_source: 'is_primary_source',
+  last_normalized_hash: 'last_normalized_hash',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };

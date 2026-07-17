@@ -27792,6 +27792,7 @@ export namespace Prisma {
     source_property_id: string | null
     confidence_score: Decimal | null
     is_primary_source: boolean | null
+    last_normalized_hash: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -27802,6 +27803,7 @@ export namespace Prisma {
     source_property_id: string | null
     confidence_score: Decimal | null
     is_primary_source: boolean | null
+    last_normalized_hash: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -27812,6 +27814,7 @@ export namespace Prisma {
     source_property_id: number
     confidence_score: number
     is_primary_source: number
+    last_normalized_hash: number
     created_at: number
     updated_at: number
     _all: number
@@ -27832,6 +27835,7 @@ export namespace Prisma {
     source_property_id?: true
     confidence_score?: true
     is_primary_source?: true
+    last_normalized_hash?: true
     created_at?: true
     updated_at?: true
   }
@@ -27842,6 +27846,7 @@ export namespace Prisma {
     source_property_id?: true
     confidence_score?: true
     is_primary_source?: true
+    last_normalized_hash?: true
     created_at?: true
     updated_at?: true
   }
@@ -27852,6 +27857,7 @@ export namespace Prisma {
     source_property_id?: true
     confidence_score?: true
     is_primary_source?: true
+    last_normalized_hash?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -27949,6 +27955,7 @@ export namespace Prisma {
     source_property_id: string
     confidence_score: Decimal | null
     is_primary_source: boolean
+    last_normalized_hash: string | null
     created_at: Date
     updated_at: Date
     _count: PropertySourceLinkCountAggregateOutputType | null
@@ -27978,6 +27985,7 @@ export namespace Prisma {
     source_property_id?: boolean
     confidence_score?: boolean
     is_primary_source?: boolean
+    last_normalized_hash?: boolean
     created_at?: boolean
     updated_at?: boolean
     property?: boolean | PropertyDefaultArgs<ExtArgs>
@@ -27990,6 +27998,7 @@ export namespace Prisma {
     source_property_id?: boolean
     confidence_score?: boolean
     is_primary_source?: boolean
+    last_normalized_hash?: boolean
     created_at?: boolean
     updated_at?: boolean
     property?: boolean | PropertyDefaultArgs<ExtArgs>
@@ -28002,6 +28011,7 @@ export namespace Prisma {
     source_property_id?: boolean
     confidence_score?: boolean
     is_primary_source?: boolean
+    last_normalized_hash?: boolean
     created_at?: boolean
     updated_at?: boolean
     property?: boolean | PropertyDefaultArgs<ExtArgs>
@@ -28014,11 +28024,12 @@ export namespace Prisma {
     source_property_id?: boolean
     confidence_score?: boolean
     is_primary_source?: boolean
+    last_normalized_hash?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type PropertySourceLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "property_id" | "source_property_id" | "confidence_score" | "is_primary_source" | "created_at" | "updated_at", ExtArgs["result"]["propertySourceLink"]>
+  export type PropertySourceLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "property_id" | "source_property_id" | "confidence_score" | "is_primary_source" | "last_normalized_hash" | "created_at" | "updated_at", ExtArgs["result"]["propertySourceLink"]>
   export type PropertySourceLinkInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     property?: boolean | PropertyDefaultArgs<ExtArgs>
     source_property?: boolean | SourcePropertyDefaultArgs<ExtArgs>
@@ -28044,6 +28055,7 @@ export namespace Prisma {
       source_property_id: string
       confidence_score: Prisma.Decimal | null
       is_primary_source: boolean
+      last_normalized_hash: string | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["propertySourceLink"]>
@@ -28476,6 +28488,7 @@ export namespace Prisma {
     readonly source_property_id: FieldRef<"PropertySourceLink", 'String'>
     readonly confidence_score: FieldRef<"PropertySourceLink", 'Decimal'>
     readonly is_primary_source: FieldRef<"PropertySourceLink", 'Boolean'>
+    readonly last_normalized_hash: FieldRef<"PropertySourceLink", 'String'>
     readonly created_at: FieldRef<"PropertySourceLink", 'DateTime'>
     readonly updated_at: FieldRef<"PropertySourceLink", 'DateTime'>
   }
@@ -34186,6 +34199,7 @@ export namespace Prisma {
     source_property_id: 'source_property_id',
     confidence_score: 'confidence_score',
     is_primary_source: 'is_primary_source',
+    last_normalized_hash: 'last_normalized_hash',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -36728,6 +36742,7 @@ export namespace Prisma {
     source_property_id?: StringFilter<"PropertySourceLink"> | string
     confidence_score?: DecimalNullableFilter<"PropertySourceLink"> | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolFilter<"PropertySourceLink"> | boolean
+    last_normalized_hash?: StringNullableFilter<"PropertySourceLink"> | string | null
     created_at?: DateTimeFilter<"PropertySourceLink"> | Date | string
     updated_at?: DateTimeFilter<"PropertySourceLink"> | Date | string
     property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
@@ -36740,6 +36755,7 @@ export namespace Prisma {
     source_property_id?: SortOrder
     confidence_score?: SortOrderInput | SortOrder
     is_primary_source?: SortOrder
+    last_normalized_hash?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     property?: PropertyOrderByWithRelationInput
@@ -36756,6 +36772,7 @@ export namespace Prisma {
     source_property_id?: StringFilter<"PropertySourceLink"> | string
     confidence_score?: DecimalNullableFilter<"PropertySourceLink"> | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolFilter<"PropertySourceLink"> | boolean
+    last_normalized_hash?: StringNullableFilter<"PropertySourceLink"> | string | null
     created_at?: DateTimeFilter<"PropertySourceLink"> | Date | string
     updated_at?: DateTimeFilter<"PropertySourceLink"> | Date | string
     property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
@@ -36768,6 +36785,7 @@ export namespace Prisma {
     source_property_id?: SortOrder
     confidence_score?: SortOrderInput | SortOrder
     is_primary_source?: SortOrder
+    last_normalized_hash?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: PropertySourceLinkCountOrderByAggregateInput
@@ -36786,6 +36804,7 @@ export namespace Prisma {
     source_property_id?: StringWithAggregatesFilter<"PropertySourceLink"> | string
     confidence_score?: DecimalNullableWithAggregatesFilter<"PropertySourceLink"> | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolWithAggregatesFilter<"PropertySourceLink"> | boolean
+    last_normalized_hash?: StringNullableWithAggregatesFilter<"PropertySourceLink"> | string | null
     created_at?: DateTimeWithAggregatesFilter<"PropertySourceLink"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"PropertySourceLink"> | Date | string
   }
@@ -39510,6 +39529,7 @@ export namespace Prisma {
     id?: string
     confidence_score?: Decimal | DecimalJsLike | number | string | null
     is_primary_source?: boolean
+    last_normalized_hash?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     property: PropertyCreateNestedOneWithoutSource_linksInput
@@ -39522,6 +39542,7 @@ export namespace Prisma {
     source_property_id: string
     confidence_score?: Decimal | DecimalJsLike | number | string | null
     is_primary_source?: boolean
+    last_normalized_hash?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -39530,6 +39551,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     confidence_score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolFieldUpdateOperationsInput | boolean
+    last_normalized_hash?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     property?: PropertyUpdateOneRequiredWithoutSource_linksNestedInput
@@ -39542,6 +39564,7 @@ export namespace Prisma {
     source_property_id?: StringFieldUpdateOperationsInput | string
     confidence_score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolFieldUpdateOperationsInput | boolean
+    last_normalized_hash?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -39552,6 +39575,7 @@ export namespace Prisma {
     source_property_id: string
     confidence_score?: Decimal | DecimalJsLike | number | string | null
     is_primary_source?: boolean
+    last_normalized_hash?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -39560,6 +39584,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     confidence_score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolFieldUpdateOperationsInput | boolean
+    last_normalized_hash?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -39570,6 +39595,7 @@ export namespace Prisma {
     source_property_id?: StringFieldUpdateOperationsInput | string
     confidence_score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolFieldUpdateOperationsInput | boolean
+    last_normalized_hash?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -42078,6 +42104,7 @@ export namespace Prisma {
     source_property_id?: SortOrder
     confidence_score?: SortOrder
     is_primary_source?: SortOrder
+    last_normalized_hash?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -42092,6 +42119,7 @@ export namespace Prisma {
     source_property_id?: SortOrder
     confidence_score?: SortOrder
     is_primary_source?: SortOrder
+    last_normalized_hash?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -42102,6 +42130,7 @@ export namespace Prisma {
     source_property_id?: SortOrder
     confidence_score?: SortOrder
     is_primary_source?: SortOrder
+    last_normalized_hash?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -50435,6 +50464,7 @@ export namespace Prisma {
     id?: string
     confidence_score?: Decimal | DecimalJsLike | number | string | null
     is_primary_source?: boolean
+    last_normalized_hash?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     property: PropertyCreateNestedOneWithoutSource_linksInput
@@ -50445,6 +50475,7 @@ export namespace Prisma {
     property_id: string
     confidence_score?: Decimal | DecimalJsLike | number | string | null
     is_primary_source?: boolean
+    last_normalized_hash?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -50541,6 +50572,7 @@ export namespace Prisma {
     source_property_id?: StringFilter<"PropertySourceLink"> | string
     confidence_score?: DecimalNullableFilter<"PropertySourceLink"> | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolFilter<"PropertySourceLink"> | boolean
+    last_normalized_hash?: StringNullableFilter<"PropertySourceLink"> | string | null
     created_at?: DateTimeFilter<"PropertySourceLink"> | Date | string
     updated_at?: DateTimeFilter<"PropertySourceLink"> | Date | string
   }
@@ -50549,6 +50581,7 @@ export namespace Prisma {
     id?: string
     confidence_score?: Decimal | DecimalJsLike | number | string | null
     is_primary_source?: boolean
+    last_normalized_hash?: string | null
     created_at?: Date | string
     updated_at?: Date | string
     source_property: SourcePropertyCreateNestedOneWithoutProperty_linksInput
@@ -50559,6 +50592,7 @@ export namespace Prisma {
     source_property_id: string
     confidence_score?: Decimal | DecimalJsLike | number | string | null
     is_primary_source?: boolean
+    last_normalized_hash?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -53312,6 +53346,7 @@ export namespace Prisma {
     property_id: string
     confidence_score?: Decimal | DecimalJsLike | number | string | null
     is_primary_source?: boolean
+    last_normalized_hash?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -53320,6 +53355,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     confidence_score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolFieldUpdateOperationsInput | boolean
+    last_normalized_hash?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     property?: PropertyUpdateOneRequiredWithoutSource_linksNestedInput
@@ -53330,6 +53366,7 @@ export namespace Prisma {
     property_id?: StringFieldUpdateOperationsInput | string
     confidence_score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolFieldUpdateOperationsInput | boolean
+    last_normalized_hash?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -53339,6 +53376,7 @@ export namespace Prisma {
     property_id?: StringFieldUpdateOperationsInput | string
     confidence_score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolFieldUpdateOperationsInput | boolean
+    last_normalized_hash?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -53348,6 +53386,7 @@ export namespace Prisma {
     source_property_id: string
     confidence_score?: Decimal | DecimalJsLike | number | string | null
     is_primary_source?: boolean
+    last_normalized_hash?: string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -53399,6 +53438,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     confidence_score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolFieldUpdateOperationsInput | boolean
+    last_normalized_hash?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_property?: SourcePropertyUpdateOneRequiredWithoutProperty_linksNestedInput
@@ -53409,6 +53449,7 @@ export namespace Prisma {
     source_property_id?: StringFieldUpdateOperationsInput | string
     confidence_score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolFieldUpdateOperationsInput | boolean
+    last_normalized_hash?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -53418,6 +53459,7 @@ export namespace Prisma {
     source_property_id?: StringFieldUpdateOperationsInput | string
     confidence_score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     is_primary_source?: BoolFieldUpdateOperationsInput | boolean
+    last_normalized_hash?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }

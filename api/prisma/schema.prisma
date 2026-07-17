@@ -812,13 +812,14 @@ model Property {
 
 /// Mapping layer between normalized Property and the raw SourceProperty rows it was built from.
 model PropertySourceLink {
-  id                 String   @id @default(uuid())
-  property_id        String
-  source_property_id String
-  confidence_score   Decimal? @db.Decimal(5, 2)
-  is_primary_source  Boolean  @default(false)
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
+  id                   String   @id @default(uuid())
+  property_id          String
+  source_property_id   String
+  confidence_score     Decimal? @db.Decimal(5, 2)
+  is_primary_source    Boolean  @default(false)
+  last_normalized_hash String? // SourceProperty.content_hash as of the last AI normalization; lets us skip re-normalizing unchanged listings
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
 
   property        Property       @relation(fields: [property_id], references: [id], onDelete: Cascade)
   source_property SourceProperty @relation(fields: [source_property_id], references: [id], onDelete: Cascade)
@@ -903,18 +904,18 @@ model UserProperty {
 /// are nullable -- PlatformConfigService resolves nulls to in-code defaults per subsystem, so
 /// this table is never a hard requirement for anything to run.
 model PlatformConfig {
-  id                                            String   @id @default("singleton")
-  crawler_max_pages                             Int?
-  crawler_page_timeout_ms                       Int?
-  crawler_selector_timeout_ms                   Int?
-  crawler_scroll_pause_ms                       Int?
-  crawler_detail_concurrency                    Int?
-  crawler_detail_delay_ms                       Int?
-  crawler_worker_concurrency                    Int?
-  crawler_job_timeout_ms                        Int?
-  crawler_chromium_max_contexts_before_restart  Int?
-  created_at                                    DateTime @default(now())
-  updated_at                                    DateTime @updatedAt
+  id                                           String   @id @default("singleton")
+  crawler_max_pages                            Int?
+  crawler_page_timeout_ms                      Int?
+  crawler_selector_timeout_ms                  Int?
+  crawler_scroll_pause_ms                      Int?
+  crawler_detail_concurrency                   Int?
+  crawler_detail_delay_ms                      Int?
+  crawler_worker_concurrency                   Int?
+  crawler_job_timeout_ms                       Int?
+  crawler_chromium_max_contexts_before_restart Int?
+  created_at                                   DateTime @default(now())
+  updated_at                                   DateTime @updatedAt
 
   @@map("platform_config")
 }

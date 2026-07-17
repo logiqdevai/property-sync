@@ -812,13 +812,14 @@ model Property {
 
 /// Mapping layer between normalized Property and the raw SourceProperty rows it was built from.
 model PropertySourceLink {
-  id                 String   @id @default(uuid())
-  property_id        String
-  source_property_id String
-  confidence_score   Decimal? @db.Decimal(5, 2)
-  is_primary_source  Boolean  @default(false)
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
+  id                   String   @id @default(uuid())
+  property_id          String
+  source_property_id   String
+  confidence_score     Decimal? @db.Decimal(5, 2)
+  is_primary_source    Boolean  @default(false)
+  last_normalized_hash String? // SourceProperty.content_hash as of the last AI normalization; lets us skip re-normalizing unchanged listings
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
 
   property        Property       @relation(fields: [property_id], references: [id], onDelete: Cascade)
   source_property SourceProperty @relation(fields: [source_property_id], references: [id], onDelete: Cascade)

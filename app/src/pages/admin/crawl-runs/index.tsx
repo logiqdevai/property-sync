@@ -212,7 +212,7 @@ export default function CrawlRunsListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={9} />
+        <TableSkeleton rows={8} columns={8} />
       ) : runs.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No crawl runs found.
@@ -224,7 +224,6 @@ export default function CrawlRunsListPage() {
               <Table.Content aria-label="Crawl runs">
                 <Table.Header>
                   <Table.Column isRowHeader>Agency</Table.Column>
-                  <Table.Column>User</Table.Column>
                   <Table.Column>Scraper</Table.Column>
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Totals</Table.Column>
@@ -243,11 +242,6 @@ export default function CrawlRunsListPage() {
                       <Table.Cell>
                         <span className="font-medium text-foreground">
                           {run.source_agency?.name ?? "—"}
-                        </span>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <span className="text-foreground">
-                          {run.user_tracked_agency?.user?.email ?? "—"}
                         </span>
                       </Table.Cell>
                       <Table.Cell>{run.scraper?.name ?? "—"}</Table.Cell>

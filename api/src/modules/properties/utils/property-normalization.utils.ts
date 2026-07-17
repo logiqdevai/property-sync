@@ -81,6 +81,51 @@ export function buildFallbackNormalizedRow(sp: {
   };
 }
 
+export function buildNormalizedRowFromExistingProperty(property: Property): NormalizedAiRow {
+  return {
+    title: property.title,
+    description: property.description,
+    listing_type: property.listing_type,
+    property_type: property.property_type,
+    price: property.price != null ? Number(property.price) : null,
+    city: property.city,
+    district: property.district,
+    address: property.address,
+    square_meters: property.square_meters != null ? Number(property.square_meters) : null,
+    bedrooms: property.bedrooms,
+    bathrooms: property.bathrooms,
+    floor: property.floor,
+    construction_year: property.construction_year,
+    features: Array.isArray(property.features)
+      ? (property.features as string[])
+      : null,
+  };
+}
+
+// Matches a chunked AI response back to the source properties it covered, using each
+// row's `index` field (position within the chunk that was sent to the model). A
+// single-item chunk is matched directly since some providers omit `index` when there's
+// only one input.
+export function matchNormalizedRowsToIds(
+  ids: string[],
+  rows: NormalizedAiRow[],
+): Map<string, NormalizedAiRow> {
+  const result = new Map<string, NormalizedAiRow>();
+
+  if (ids.length === 1 && rows.length >= 1) {
+    result.set(ids[0], rows[0]);
+    return result;
+  }
+
+  for (const row of rows) {
+    if (row?.index == null) continue;
+    const id = ids[row.index];
+    if (id) result.set(id, row);
+  }
+
+  return result;
+}
+
 export function buildPropertyRecord(
   n: NormalizedAiRow,
   sp: {
