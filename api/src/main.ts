@@ -14,8 +14,8 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   const config = new DocumentBuilder()
-    .setTitle('Appointly API')
-    .setDescription('The Appointly API documentation')
+    .setTitle('Property Sync API')
+    .setDescription('The Property Sync API documentation')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
