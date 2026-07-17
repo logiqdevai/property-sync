@@ -47,7 +47,7 @@ export default function CrawlerConfigPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <p className="text-2xl font-semibold tracking-tight text-foreground">Crawler settings</p>
+        <p className="text-2xl font-semibold tracking-tight text-foreground">App Config</p>
         <p className="text-sm text-muted">
           Tunable parameters for the crawl worker and Playwright pipeline. Leave a field blank to fall back
           to its default value.

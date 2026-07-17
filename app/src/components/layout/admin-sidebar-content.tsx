@@ -11,18 +11,18 @@ interface AdminSidebarContentProps {
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: Routes.admin.root, end: true },
+  { label: 'Users', icon: Users, href: Routes.admin.users.list, end: false },
+  { label: 'Integration Targets', icon: Plug, href: Routes.admin.integrationTargets.list, end: false },
   { label: 'Agencies', icon: Building2, href: Routes.admin.agencies.list, end: false },
-  { label: 'Scrapers', icon: Bot, href: Routes.admin.scrapers.list, end: false },
   { label: 'Generation Runs', icon: Sparkles, href: Routes.admin.generationRuns.list, end: false },
+  { label: 'Scrapers', icon: Bot, href: Routes.admin.scrapers.list, end: false },
   { label: 'Crawl Runs', icon: Activity, href: Routes.admin.crawlRuns.list, end: false },
-  { label: 'Sync Runs', icon: RefreshCw, href: Routes.admin.syncRuns, end: true },
   { label: 'Job Queue', icon: ListTodo, href: Routes.admin.jobs.list, end: false },
   { label: 'Diagnostics', icon: FileSearch, href: Routes.admin.diagnostics.list, end: false },
   { label: 'Properties', icon: Home, href: Routes.admin.properties.list, end: false },
+  { label: 'Sync Runs', icon: RefreshCw, href: Routes.admin.syncRuns, end: true },
   { label: 'Notifications', icon: Bell, href: Routes.admin.notifications, end: false, showUnreadBadge: true },
-  { label: 'Integration Targets', icon: Plug, href: Routes.admin.integrationTargets.list, end: false },
-  { label: 'Users', icon: Users, href: Routes.admin.users.list, end: false },
-  { label: 'Crawler Settings', icon: Settings, href: Routes.admin.crawlerConfig, end: false },
+  { label: 'App Config', icon: Settings, href: Routes.admin.crawlerConfig, end: false },
 ];
 
 function NavItem({
