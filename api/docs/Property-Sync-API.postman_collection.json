@@ -10291,6 +10291,1344 @@
       "event": []
     },
     {
+      "id": "8b63a9c3-e675-41a2-88db-495f6d3a9645",
+      "name": "Admin EstateWeb",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "f6d689bb-7c2c-4a7c-8d47-0f30433679ea",
+          "name": "List EstateWeb user integrations",
+          "request": {
+            "name": "List EstateWeb user integrations",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "integrations"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "",
+                  "disabled": true
+                }
+              ],
+              "variable": [],
+              "raw": "{{baseUrl}}/admin/estateweb/integrations"
+            },
+            "method": "GET"
+          },
+          "response": [
+            {
+              "id": "10d5c1f0-0c1e-4ce6-bc0d-46afb89b7f96",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "integrations"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "userId",
+                      "value": "",
+                      "disabled": true
+                    }
+                  ],
+                  "variable": [],
+                  "raw": "{{baseUrl}}/admin/estateweb/integrations"
+                },
+                "method": "GET",
+                "body": {},
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "d05ce6ac-18ce-4db4-a000-e2c3f892dd8d",
+          "name": "Get EstateWeb session status for an integration",
+          "request": {
+            "name": "Get EstateWeb session status for an integration",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "integrations",
+                ":userIntegrationId",
+                "session"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{userIntegrationId}}",
+                  "key": "userIntegrationId",
+                  "description": "(Required) "
+                }
+              ],
+              "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/session"
+            },
+            "method": "GET"
+          },
+          "response": [
+            {
+              "id": "530fc97f-eeb8-4d16-b4ed-c054cb188473",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "integrations",
+                    ":userIntegrationId",
+                    "session"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{userIntegrationId}}",
+                      "key": "userIntegrationId",
+                      "description": "(Required) "
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/session"
+                },
+                "method": "GET",
+                "body": {},
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "33d4f1ea-50c1-4cdd-ad1b-40dd75ac9995",
+          "name": "Set EstateWeb session cookie and bearer token for an integration",
+          "request": {
+            "name": "Set EstateWeb session cookie and bearer token for an integration",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "integrations",
+                ":userIntegrationId",
+                "session"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{userIntegrationId}}",
+                  "key": "userIntegrationId",
+                  "description": "(Required) "
+                }
+              ],
+              "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/session"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estate_session\": \"abc123sessionvalue\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"csrf\": \"optional-csrf-token\",\n  \"base_url\": \"https://app.estateweb.gr\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "83ecece7-4485-4594-88e5-1f78657aa58e",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "integrations",
+                    ":userIntegrationId",
+                    "session"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{userIntegrationId}}",
+                      "key": "userIntegrationId",
+                      "description": "(Required) "
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/session"
+                },
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"estate_session\": \"abc123sessionvalue\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"csrf\": \"optional-csrf-token\",\n  \"base_url\": \"https://app.estateweb.gr\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ]
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"ok\": true,\n  \"userIntegrationId\": \"string\",\n  \"baseUrl\": \"https://app.estateweb.gr\",\n  \"hasToken\": true,\n  \"loggedInAt\": \"2026-07-17T12:00:00.000Z\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "fdfe1ca1-a1bc-4014-ad6e-e557d8c72abe",
+          "name": "Invalidate stored EstateWeb session",
+          "request": {
+            "name": "Invalidate stored EstateWeb session",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "integrations",
+                ":userIntegrationId",
+                "session"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{userIntegrationId}}",
+                  "key": "userIntegrationId",
+                  "description": "(Required) "
+                }
+              ],
+              "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/session"
+            },
+            "method": "DELETE"
+          },
+          "response": [
+            {
+              "id": "75650641-676e-424b-9d4a-462b2ee877b3",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "integrations",
+                    ":userIntegrationId",
+                    "session"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{userIntegrationId}}",
+                      "key": "userIntegrationId",
+                      "description": "(Required) "
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/session"
+                },
+                "method": "DELETE",
+                "body": {},
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"ok\": true,\n  \"userIntegrationId\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "a77ae2f1-0ce1-45bc-aac7-82aed020341f",
+          "name": "Test EstateWeb connection via stored email/password login",
+          "request": {
+            "name": "Test EstateWeb connection via stored email/password login",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "integrations",
+                ":userIntegrationId",
+                "session",
+                "test"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{userIntegrationId}}",
+                  "key": "userIntegrationId",
+                  "description": "(Required) "
+                }
+              ],
+              "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/session/test"
+            },
+            "method": "POST"
+          },
+          "response": [
+            {
+              "id": "3faaab43-2f1b-4f9c-abf9-e9c73a86ca2d",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "integrations",
+                    ":userIntegrationId",
+                    "session",
+                    "test"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{userIntegrationId}}",
+                      "key": "userIntegrationId",
+                      "description": "(Required) "
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/session/test"
+                },
+                "method": "POST",
+                "body": {},
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "07eb74f5-a40c-4282-ad88-a0df234e712d",
+          "name": "Get EstateWeb init field definitions",
+          "request": {
+            "name": "Get EstateWeb init field definitions",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "catalog",
+                "fields"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [],
+              "raw": "{{baseUrl}}/admin/estateweb/catalog/fields"
+            },
+            "method": "GET"
+          },
+          "response": [
+            {
+              "id": "dbb13dd1-5a76-4ad0-b6a1-31362b1f049f",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "catalog",
+                    "fields"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [],
+                  "raw": "{{baseUrl}}/admin/estateweb/catalog/fields"
+                },
+                "method": "GET",
+                "body": {},
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "287bc79d-ce27-499c-9864-3091c0a3413c",
+          "name": "Get EstateWeb init property type tree",
+          "request": {
+            "name": "Get EstateWeb init property type tree",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "catalog",
+                "property-types"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [],
+              "raw": "{{baseUrl}}/admin/estateweb/catalog/property-types"
+            },
+            "method": "GET"
+          },
+          "response": [
+            {
+              "id": "20d25cb0-4b68-4c74-b7ca-b5deba0c19d5",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "catalog",
+                    "property-types"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [],
+                  "raw": "{{baseUrl}}/admin/estateweb/catalog/property-types"
+                },
+                "method": "GET",
+                "body": {},
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "daf904ae-ade0-4008-a7b3-41094a9a12b6",
+          "name": "Get compact AI field catalog",
+          "request": {
+            "name": "Get compact AI field catalog",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "catalog",
+                "ai-fields"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "propertyTypeId",
+                  "value": "21",
+                  "disabled": true
+                }
+              ],
+              "variable": [],
+              "raw": "{{baseUrl}}/admin/estateweb/catalog/ai-fields"
+            },
+            "method": "GET"
+          },
+          "response": [
+            {
+              "id": "b23ff860-51aa-4d03-ac94-b84025f73604",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "catalog",
+                    "ai-fields"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "propertyTypeId",
+                      "value": "21",
+                      "disabled": true
+                    }
+                  ],
+                  "variable": [],
+                  "raw": "{{baseUrl}}/admin/estateweb/catalog/ai-fields"
+                },
+                "method": "GET",
+                "body": {},
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "c6655c7d-07ae-463b-89e7-516d92a5346d",
+          "name": "Get compact AI property type catalog",
+          "request": {
+            "name": "Get compact AI property type catalog",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "catalog",
+                "ai-property-types"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [],
+              "raw": "{{baseUrl}}/admin/estateweb/catalog/ai-property-types"
+            },
+            "method": "GET"
+          },
+          "response": [
+            {
+              "id": "83f49b29-aca8-4d87-97fe-043cf09dc6cf",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "catalog",
+                    "ai-property-types"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [],
+                  "raw": "{{baseUrl}}/admin/estateweb/catalog/ai-property-types"
+                },
+                "method": "GET",
+                "body": {},
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "56d7bcf8-441c-4252-96ec-98e1f20acb0f",
+          "name": "List properties from EstateWeb CRM",
+          "request": {
+            "name": "List properties from EstateWeb CRM",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "integrations",
+                ":userIntegrationId",
+                "properties"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "rpp",
+                  "value": "20",
+                  "disabled": true
+                },
+                {
+                  "key": "code",
+                  "value": "",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{userIntegrationId}}",
+                  "key": "userIntegrationId",
+                  "description": "(Required) "
+                }
+              ],
+              "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/properties"
+            },
+            "method": "GET"
+          },
+          "response": [
+            {
+              "id": "8b089e86-4f0b-4bfb-b5ed-f98ac538a9d0",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "integrations",
+                    ":userIntegrationId",
+                    "properties"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "disabled": true
+                    },
+                    {
+                      "key": "rpp",
+                      "value": "20",
+                      "disabled": true
+                    },
+                    {
+                      "key": "code",
+                      "value": "",
+                      "disabled": true
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{userIntegrationId}}",
+                      "key": "userIntegrationId",
+                      "description": "(Required) "
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/properties"
+                },
+                "method": "GET",
+                "body": {},
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "6048e124-b948-4bbd-8581-f5629df4627b",
+          "name": "Get a property from EstateWeb CRM",
+          "request": {
+            "name": "Get a property from EstateWeb CRM",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "integrations",
+                ":userIntegrationId",
+                "properties",
+                ":propertyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{userIntegrationId}}",
+                  "key": "userIntegrationId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{propertyId}}",
+                  "key": "propertyId",
+                  "description": "(Required) "
+                }
+              ],
+              "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/properties/:propertyId"
+            },
+            "method": "GET"
+          },
+          "response": [
+            {
+              "id": "71c3b88e-dfa0-45a3-90d4-027990e6b898",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "integrations",
+                    ":userIntegrationId",
+                    "properties",
+                    ":propertyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{userIntegrationId}}",
+                      "key": "userIntegrationId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{propertyId}}",
+                      "key": "propertyId",
+                      "description": "(Required) "
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/properties/:propertyId"
+                },
+                "method": "GET",
+                "body": {},
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "85e71aa3-547c-472d-b76b-883dc6d28cb2",
+          "name": "Create a property in EstateWeb CRM",
+          "request": {
+            "name": "Create a property in EstateWeb CRM",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "integrations",
+                ":userIntegrationId",
+                "properties"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{userIntegrationId}}",
+                  "key": "userIntegrationId",
+                  "description": "(Required) "
+                }
+              ],
+              "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/properties"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type_id\": 21,\n  \"scope_id\": 1,\n  \"location_id\": 12345,\n  \"address\": \"Example Street 1\",\n  \"price\": 150000,\n  \"sqm\": 65,\n  \"description\": \"Sample listing\",\n  \"fields\": [\n    { \"id\": 1, \"value\": \"2\" }\n  ],\n  \"ads\": [\n    { \"lang_id\": 1, \"title\": \"Sample title\", \"description\": \"Sample ad text\" }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "d4fae481-0fec-41b4-9053-b169f8823a3a",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "integrations",
+                    ":userIntegrationId",
+                    "properties"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{userIntegrationId}}",
+                      "key": "userIntegrationId",
+                      "description": "(Required) "
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/properties"
+                },
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type_id\": 21,\n  \"scope_id\": 1,\n  \"location_id\": 12345,\n  \"address\": \"Example Street 1\",\n  \"price\": 150000,\n  \"sqm\": 65,\n  \"description\": \"Sample listing\",\n  \"fields\": [\n    { \"id\": 1, \"value\": \"2\" }\n  ],\n  \"ads\": [\n    { \"lang_id\": 1, \"title\": \"Sample title\", \"description\": \"Sample ad text\" }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ]
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 1001,\n  \"code\": \"A-1001\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "792b9063-cb26-4df5-a0c7-ea011eae0f6e",
+          "name": "Update a property in EstateWeb CRM",
+          "request": {
+            "name": "Update a property in EstateWeb CRM",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "integrations",
+                ":userIntegrationId",
+                "properties",
+                ":propertyId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{userIntegrationId}}",
+                  "key": "userIntegrationId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{propertyId}}",
+                  "key": "propertyId",
+                  "description": "(Required) "
+                }
+              ],
+              "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/properties/:propertyId"
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1001,\n  \"type_id\": 21,\n  \"scope_id\": 1,\n  \"location_id\": 12345,\n  \"price\": 145000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "c48949b3-7a85-4dc5-87e0-870cce9bef19",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "integrations",
+                    ":userIntegrationId",
+                    "properties",
+                    ":propertyId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{userIntegrationId}}",
+                      "key": "userIntegrationId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{propertyId}}",
+                      "key": "propertyId",
+                      "description": "(Required) "
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/properties/:propertyId"
+                },
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": 1001,\n  \"type_id\": 21,\n  \"scope_id\": 1,\n  \"location_id\": 12345,\n  \"price\": 145000\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ]
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "ea2ed952-4b5c-4752-bccb-c97bf709dd4c",
+          "name": "Upload a property image to EstateWeb CRM",
+          "request": {
+            "name": "Upload a property image to EstateWeb CRM",
+            "description": {},
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "integrations",
+                ":userIntegrationId",
+                "properties",
+                ":propertyId",
+                "images"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{userIntegrationId}}",
+                  "key": "userIntegrationId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{propertyId}}",
+                  "key": "propertyId",
+                  "description": "(Required) "
+                }
+              ],
+              "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/properties/:propertyId/images"
+            },
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "filename",
+                  "value": "living-room.jpg",
+                  "type": "text"
+                },
+                {
+                  "key": "show_on_site",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "show_on_groups",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "show_on_foreign_agents",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "zindex",
+                  "value": "0",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "7931f010-e6c2-4083-b9f8-b2ce633b6f9b",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "integrations",
+                    ":userIntegrationId",
+                    "properties",
+                    ":propertyId",
+                    "images"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{userIntegrationId}}",
+                      "key": "userIntegrationId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{propertyId}}",
+                      "key": "propertyId",
+                      "description": "(Required) "
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/properties/:propertyId/images"
+                },
+                "method": "POST",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": []
+                    },
+                    {
+                      "key": "filename",
+                      "value": "living-room.jpg",
+                      "type": "text"
+                    },
+                    {
+                      "key": "show_on_site",
+                      "value": "1",
+                      "type": "text"
+                    },
+                    {
+                      "key": "show_on_groups",
+                      "value": "0",
+                      "type": "text"
+                    },
+                    {
+                      "key": "show_on_foreign_agents",
+                      "value": "0",
+                      "type": "text"
+                    },
+                    {
+                      "key": "zindex",
+                      "value": "0",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "header": []
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    },
+    {
       "id": "0636c0a3-a74c-4b7d-8337-88242a836080",
       "name": "Dashboard",
       "description": {

@@ -6,7 +6,9 @@ import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TrackerAdminOptionsPanel } from "@/components/ui/tracker-admin-options-panel";
+import { getCrawlIntervalPresetLabel } from "@/config/constants/dropdowns/crawl-interval-preset.options";
 import { AgencyForm } from "./components/agency-form";
+import { AgencyCrawlIntervalPanel } from "./components/agency-crawl-interval-panel";
 import {
   useAgency,
   useDeleteAgency,
@@ -119,6 +121,13 @@ export default function AgencyDetailPage() {
             <span className="text-xs text-danger">{agency.last_error_message}</span>
           )}
         </div>
+        <div className="flex flex-col gap-1 sm:col-span-2">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Crawl interval</span>
+          <span className="text-sm text-foreground">
+            {getCrawlIntervalPresetLabel(agency.crawl_interval)}
+          </span>
+          <span className="font-mono text-xs text-muted">{agency.crawl_interval}</span>
+        </div>
         {agency.notes && (
           <div className="flex flex-col gap-1 sm:col-span-2">
             <span className="text-xs font-medium uppercase tracking-wide text-muted">Notes</span>
@@ -158,6 +167,14 @@ export default function AgencyDetailPage() {
           </Switch>
         </div>
       </div>
+
+      <AgencyCrawlIntervalPanel
+        crawlInterval={agency.crawl_interval}
+        isPending={updateAgency.isPending}
+        onSave={(crawl_interval) =>
+          updateAgency.mutate({ id: agency.id, payload: { crawl_interval } })
+        }
+      />
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-border bg-surface p-6">
@@ -259,13 +276,13 @@ export default function AgencyDetailPage() {
       </div>
 
       <Modal state={editModal}>
-        <Modal.Backdrop isDismissable>
-          <Modal.Container>
+        <Modal.Backdrop isDismissable={!updateAgency.isPending}>
+          <Modal.Container size="lg">
             <Modal.Dialog>
               <Modal.Header>
                 <Modal.Heading>Edit agency</Modal.Heading>
               </Modal.Header>
-              <Modal.Body>
+              <Modal.Body className="max-h-[70vh] overflow-y-auto">
                 <AgencyForm
                   submitLabel="Save"
                   isPending={updateAgency.isPending}

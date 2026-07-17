@@ -2,11 +2,7 @@ import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { MailModule } from './modules/internal/mail/mail.module';
-import { SmsModule } from './modules/internal/sms/sms.module';
-import { AiModule } from './modules/internal/ai/ai.module';
 import { RedisModule } from './core/databases/redis/redis.module';
-import { RedisCacheModule } from './modules/internal/redis-cache/redis-cache.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { AgenciesModule } from './modules/agencies/agencies.module';
@@ -26,6 +22,7 @@ import { IntegrationTargetsModule } from './modules/integration-targets/integrat
 import { PlatformConfigModule } from './modules/platform-config/platform-config.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { UserDashboardModule } from './modules/user-dashboard/user-dashboard.module';
+import { EstateWebAdminModule } from './modules/estateweb/estateweb-admin.module';
 import { HealthModule } from './modules/health/health.module';
 import { QueuesModule } from './core/queues/queues.module';
 import { BullBoardModule } from './core/queues/bull-board.module';
@@ -35,11 +32,7 @@ import { ConfigModule } from './shared/config/env/env.module';
   imports: [
     ConfigModule,
     ScheduleModule.forRoot(),
-    MailModule,
-    SmsModule,
-    AiModule,
     RedisModule,
-    RedisCacheModule,
     QueuesModule,
     BullBoardModule,
     HealthModule,
@@ -63,6 +56,7 @@ import { ConfigModule } from './shared/config/env/env.module';
     PlatformConfigModule,
     DashboardModule,
     UserDashboardModule,
+    EstateWebAdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

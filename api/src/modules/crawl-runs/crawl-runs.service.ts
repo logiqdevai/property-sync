@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -6,13 +7,20 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CRAWL_QUEUE } from '@/core/queues/queues.constants';
-import { CrawlRunStatus, Prisma } from 'generated/prisma';
+import { CrawlRunStatus, JobStatus, Prisma } from 'generated/prisma';
 import { CrawlRunQueryType } from './dto/crawl-run-query.schema';
 import { PaginatedResult } from './interfaces/crawl-run.interface';
 
 interface CrawlJobData {
   crawlRunId: string;
 }
+
+const STOPPABLE_JOB_STATUSES: JobStatus[] = [
+  JobStatus.WAITING,
+  JobStatus.ACTIVE,
+  JobStatus.DELAYED,
+  JobStatus.PAUSED,
+];
 
 @Injectable()
 export class CrawlRunsService {
@@ -147,6 +155,84 @@ export class CrawlRunsService {
       run.scraper_id ?? undefined,
       run.user_tracked_agency_id ?? undefined,
     );
+  }
+
+  async cancel(id: string) {
+    const run = await this.prisma.crawlRun.findUnique({ where: { id } });
+
+    if (!run) {
+      throw new NotFoundException('Crawl run not found');
+    }
+
+    if (
+      run.status !== CrawlRunStatus.QUEUED &&
+      run.status !== CrawlRunStatus.RUNNING
+    ) {
+      throw new BadRequestException(
+        'Only QUEUED or RUNNING crawl runs can be stopped',
+      );
+    }
+
+    const jobLogs = await this.prisma.jobLog.findMany({
+      where: {
+        crawl_run_id: id,
+        status: { in: STOPPABLE_JOB_STATUSES },
+      },
+    });
+
+    for (const jobLog of jobLogs) {
+      if (!jobLog.job_id) continue;
+      try {
+        await this.crawlQueue.remove(jobLog.job_id);
+      } catch {}
+    }
+
+    const finishedAt = new Date();
+    const durationMs = run.started_at
+      ? finishedAt.getTime() - run.started_at.getTime()
+      : null;
+
+    const cancelled = await this.prisma.crawlRun.updateMany({
+      where: {
+        id,
+        status: { in: [CrawlRunStatus.QUEUED, CrawlRunStatus.RUNNING] },
+      },
+      data: {
+        status: CrawlRunStatus.CANCELLED,
+        finished_at: finishedAt,
+        duration_ms: durationMs,
+        error_message: 'Cancelled by admin',
+      },
+    });
+
+    if (cancelled.count === 0) {
+      throw new BadRequestException(
+        'Only QUEUED or RUNNING crawl runs can be stopped',
+      );
+    }
+
+    if (jobLogs.length > 0) {
+      await this.prisma.jobLog.updateMany({
+        where: { id: { in: jobLogs.map((jobLog) => jobLog.id) } },
+        data: {
+          status: JobStatus.FAILED,
+          finished_at: finishedAt,
+          error_message: 'Cancelled by admin',
+        },
+      });
+
+      for (const jobLog of jobLogs) {
+        if (!jobLog.started_at) continue;
+        await this.prisma.jobLog.update({
+          where: { id: jobLog.id },
+          data: {
+            duration_ms: finishedAt.getTime() - jobLog.started_at.getTime(),
+          },
+        });
+      }
+    }
+
+    return this.findOne(id);
   }
 
   async hasActiveRunForAgency(sourceAgencyId: string): Promise<boolean> {

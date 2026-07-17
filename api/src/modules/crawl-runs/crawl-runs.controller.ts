@@ -62,4 +62,14 @@ export class CrawlRunsController {
   rerun(@Param('id') id: string) {
     return this.crawlRunsService.rerun(id);
   }
+
+  @Post(':id/cancel')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Stop a queued or running crawl run' })
+  @ApiResponse({ status: 200, type: CrawlRun })
+  @ApiResponse({ status: 400, description: 'Crawl run is not stoppable' })
+  @ApiResponse({ status: 404, description: 'Crawl run not found' })
+  cancel(@Param('id') id: string) {
+    return this.crawlRunsService.cancel(id);
+  }
 }

@@ -59,6 +59,7 @@ export const ApiRoutes = {
             list: "/admin/crawl-runs",
             detail: (id: string) => `/admin/crawl-runs/${id}`,
             rerun: (id: string) => `/admin/crawl-runs/${id}/rerun`,
+            cancel: (id: string) => `/admin/crawl-runs/${id}/cancel`,
         },
         cmsSyncRuns: {
             prefix: "/admin/cms-sync-runs",

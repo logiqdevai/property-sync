@@ -1,9 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { parseExpression } from 'cron-parser';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CrawlRunsService } from '@/modules/crawl-runs/crawl-runs.service';
 import { ScraperStatus } from 'generated/prisma';
+import type { EnvConfig } from '@/shared/config/env/env.validation';
+
+const MANUAL_ONLY_CRAWL_ENVS: ReadonlySet<EnvConfig['NODE_ENV']> = new Set([
+  'local',
+  'development',
+  'staging',
+]);
 
 @Injectable()
 export class CrawlSchedulerCron {
@@ -12,10 +20,16 @@ export class CrawlSchedulerCron {
   constructor(
     private readonly prisma: PrismaService,
     private readonly crawlRunsService: CrawlRunsService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
   async enqueueDueAgencyRuns(): Promise<void> {
+    const nodeEnv = this.configService.get<EnvConfig['NODE_ENV']>('NODE_ENV');
+    if (nodeEnv && MANUAL_ONLY_CRAWL_ENVS.has(nodeEnv)) {
+      return;
+    }
+
     const now = new Date();
 
     // Scheduling is per-agency, not per-tracker: a crawl scrapes the agency's

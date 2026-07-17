@@ -35,3 +35,14 @@ export const rerunCrawlRun = async (id: string): Promise<CrawlRun> => {
     throw new Error(error?.response?.data?.message || "Failed to rerun crawl. Please try again.");
   }
 };
+
+export const cancelCrawlRun = async (id: string): Promise<CrawlRunDetail> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.crawlRuns.cancel(id));
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to stop crawl. Please try again.",
+    );
+  }
+};

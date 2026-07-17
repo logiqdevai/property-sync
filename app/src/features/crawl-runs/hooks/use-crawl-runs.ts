@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import {
+  cancelCrawlRun,
   getCrawlRun,
   getCrawlRuns,
   rerunCrawlRun,
@@ -43,6 +44,26 @@ export const useRerunCrawlRun = () => {
     onError: (error: any) => {
       toast({
         title: "Could not rerun crawl",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useCancelCrawlRun = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => cancelCrawlRun(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["crawlRuns"] });
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      toast({ title: "Crawl run stopped", duration: 2000, variant: "success" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Could not stop crawl",
         description: error.message,
         variant: "error",
       });

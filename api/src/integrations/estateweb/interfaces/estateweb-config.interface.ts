@@ -1,6 +1,7 @@
 export interface EstateWebApiPaths {
   login: string;
   app: string;
+  init: string;
   properties: string;
   propertyById: (propertyId: number | string) => string;
   propertyImage: (propertyId: number | string) => string;

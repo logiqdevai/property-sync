@@ -1,19 +1,47 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { NotificationType } from 'generated/prisma';
+import {
+  buildEstateWebAiFieldCatalog,
+  buildEstateWebAiPropertyTypeCatalog,
+  EstateWebAiFieldEntry,
+  EstateWebAiPropertyTypeEntry,
+} from '../constants/estateweb-ai-catalog.constants';
+import { EstateWebFieldType } from '../constants/estateweb-enums.constants';
+import {
+  ESTATEWEB_INIT_FIELDS,
+  ESTATEWEB_INIT_PROPERTY_TYPES,
+  EstateWebInitField,
+  EstateWebInitFieldOption,
+  EstateWebInitPropertyType,
+} from '../constants/estateweb-init.constants';
 import { EstateWebConfig } from '../config/estateweb.config';
 import { EstateWebException } from '../exceptions/estateweb.exception';
 import {
   EstateWebCreatePropertyPayload,
+  EstateWebCreatePropertyResponse,
   EstateWebPropertyListQuery,
+  EstateWebPropertyListResponse,
   EstateWebPropertyResponse,
   EstateWebUpdatePropertyPayload,
   EstateWebUploadImagePayload,
 } from '../interfaces/estateweb-property.interface';
 import {
+  getEstateWebFieldOptionName,
+  getEstateWebInitField,
+  getEstateWebInitFieldOption,
+  getEstateWebInitFieldsForType,
+  getEstateWebInitPropertyType,
+  getEstateWebPropertyTypeNamePath,
+  resolveEstateWebFieldByName,
+  resolveEstateWebFieldOptionByName,
+  resolveEstateWebPropertyTypeByName,
+} from '../utils/estateweb-init-lookup.util';
+import {
   assertValidCreatePayload,
   assertValidImageUpload,
   assertValidListQuery,
   assertValidPropertyId,
+  assertValidUpdatePayload,
 } from '../utils/estateweb-property-validation.util';
 import { EstateWebClientService } from './estateweb-client.service';
 import { EstateWebNotificationService } from './estateweb-notification.service';
@@ -26,29 +54,96 @@ export class EstateWebPropertyService {
     private readonly estateWebNotificationService: EstateWebNotificationService,
   ) {}
 
-  listProperties<T = unknown>(
+  getInitFields(): EstateWebInitField[] {
+    return ESTATEWEB_INIT_FIELDS;
+  }
+
+  getInitPropertyTypes(): EstateWebInitPropertyType[] {
+    return ESTATEWEB_INIT_PROPERTY_TYPES;
+  }
+
+  getInitField(fieldId: number): EstateWebInitField | undefined {
+    return getEstateWebInitField(fieldId);
+  }
+
+  getInitPropertyType(typeId: number): EstateWebInitPropertyType | undefined {
+    return getEstateWebInitPropertyType(typeId);
+  }
+
+  getInitFieldsForType(typeId: number): EstateWebInitField[] {
+    return getEstateWebInitFieldsForType(typeId);
+  }
+
+  getInitFieldOption(
+    fieldId: number,
+    optionId: number,
+  ): EstateWebInitFieldOption | undefined {
+    return getEstateWebInitFieldOption(fieldId, optionId);
+  }
+
+  resolvePropertyTypeByName(
+    name: string,
+  ): EstateWebInitPropertyType | undefined {
+    return resolveEstateWebPropertyTypeByName(name);
+  }
+
+  resolveFieldByName(
+    name: string,
+    opts?: { property_type_id?: number; field_type?: EstateWebFieldType },
+  ): EstateWebInitField | undefined {
+    return resolveEstateWebFieldByName(name, opts);
+  }
+
+  resolveFieldOptionByName(
+    fieldId: number,
+    name: string,
+  ): EstateWebInitFieldOption | undefined {
+    return resolveEstateWebFieldOptionByName(fieldId, name);
+  }
+
+  getPropertyTypeNamePath(typeId: number): string | undefined {
+    return getEstateWebPropertyTypeNamePath(typeId);
+  }
+
+  getFieldOptionName(fieldId: number, optionId: number): string | undefined {
+    return getEstateWebFieldOptionName(fieldId, optionId);
+  }
+
+  getAiFieldCatalog(propertyTypeId?: number): EstateWebAiFieldEntry[] {
+    return buildEstateWebAiFieldCatalog(propertyTypeId);
+  }
+
+  getAiPropertyTypeCatalog(): EstateWebAiPropertyTypeEntry[] {
+    return buildEstateWebAiPropertyTypeCatalog();
+  }
+
+  listProperties(
     userIntegrationId: string,
     query: EstateWebPropertyListQuery = {},
-  ): Promise<T> {
+  ): Promise<EstateWebPropertyListResponse> {
     return this.runValidatedOperation(
       userIntegrationId,
       'list-properties',
       () => {
-      assertValidListQuery(query);
+        assertValidListQuery(query);
 
-      return this.estateWebClientService.request<T>(userIntegrationId, {
-        method: 'GET',
-        path: this.estateWebConfig.getConfig().apiPaths.properties,
-        operation: 'list-properties',
-        query: this.buildListQuery(query),
-      });
-    });
+        return this.estateWebClientService.request<EstateWebPropertyListResponse>(
+          userIntegrationId,
+          {
+            method: 'GET',
+            path: this.estateWebConfig.getConfig().apiPaths.properties,
+            operation: 'list-properties',
+            query: this.buildListQuery(query),
+          },
+        );
+      },
+    );
   }
 
   createProperty(
     userIntegrationId: string,
     payload: EstateWebCreatePropertyPayload,
-  ): Promise<EstateWebPropertyResponse> {
+  ): Promise<EstateWebCreatePropertyResponse> {
     return this.runValidatedOperation(
       userIntegrationId,
       'create-property',
@@ -58,7 +153,7 @@ export class EstateWebPropertyService {
         const formData =
           this.estateWebClientService.createMultipartPayload(payload);
 
-        return this.estateWebClientService.request<EstateWebPropertyResponse>(
+        return this.estateWebClientService.request<EstateWebCreatePropertyResponse>(
           userIntegrationId,
           {
             method: 'POST',
@@ -82,8 +177,9 @@ export class EstateWebPropertyService {
       'update-property',
       () => {
         assertValidPropertyId(propertyId);
+        assertValidUpdatePayload(payload);
 
-        if (payload.id !== undefined && String(payload.id) !== String(propertyId)) {
+        if (String(payload.id) !== String(propertyId)) {
           throw new EstateWebException(
             'EstateWeb update property payload id must match route property id',
             NotificationType.ESTATEWEB_VALIDATION_FAILED,
@@ -142,23 +238,29 @@ export class EstateWebPropertyService {
     );
   }
 
-  getProperty<T = EstateWebPropertyResponse>(
+  getProperty(
     userIntegrationId: string,
     propertyId: number | string,
-  ): Promise<T> {
+  ): Promise<EstateWebPropertyResponse> {
     return this.runValidatedOperation(
       userIntegrationId,
       'get-property',
       () => {
-      assertValidPropertyId(propertyId);
+        assertValidPropertyId(propertyId);
 
-      return this.estateWebClientService.request<T>(userIntegrationId, {
-        method: 'GET',
-        path: this.estateWebConfig.getConfig().apiPaths.propertyById(propertyId),
-        operation: 'get-property',
-        propertyId,
-      });
-    });
+        return this.estateWebClientService.request<EstateWebPropertyResponse>(
+          userIntegrationId,
+          {
+            method: 'GET',
+            path: this.estateWebConfig
+              .getConfig()
+              .apiPaths.propertyById(propertyId),
+            operation: 'get-property',
+            propertyId,
+          },
+        );
+      },
+    );
   }
 
   private buildListQuery(
@@ -215,4 +317,3 @@ export class EstateWebPropertyService {
     }
   }
 }
-

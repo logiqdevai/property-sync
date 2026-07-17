@@ -1,10 +1,16 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import { useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
-import { useCrawlRun, useRerunCrawlRun } from "@/features/crawl-runs/hooks/use-crawl-runs";
+import {
+  useCancelCrawlRun,
+  useCrawlRun,
+  useRerunCrawlRun,
+} from "@/features/crawl-runs/hooks/use-crawl-runs";
 import {
   CrawlRunStatuses,
   type CrawlRunStatus,
@@ -29,9 +35,11 @@ function formatUsd(value: string | null) {
 export default function CrawlRunDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const stopConfirm = useOverlayState();
 
   const { data: run, isPending } = useCrawlRun(id!);
   const rerun = useRerunCrawlRun();
+  const cancelRun = useCancelCrawlRun();
 
   if (isPending || !run) {
     return <DetailSkeleton fieldCount={6} showSubTable subTableRows={3} />;
@@ -67,18 +75,31 @@ export default function CrawlRunDetailPage() {
           <CrawlRunStatusChip status={run.status} />
           {isActive && <Loader2 className="h-4 w-4 animate-spin text-muted" />}
         </div>
-        <ActionButtonWithPending
-          variant="secondary"
-          isPending={rerun.isPending}
-          isDisabled={rerun.isPending || isActive}
-          onPress={() =>
-            rerun.mutate(run.id, {
-              onSuccess: (newRun) => navigate(Routes.admin.crawlRuns.detail(newRun.id)),
-            })
-          }
-        >
-          Rerun
-        </ActionButtonWithPending>
+        <div className="flex items-center gap-2 flex-wrap">
+          {isActive ? (
+            <ActionButtonWithPending
+              variant="danger"
+              isPending={cancelRun.isPending}
+              isDisabled={cancelRun.isPending}
+              onPress={stopConfirm.open}
+            >
+              Stop
+            </ActionButtonWithPending>
+          ) : (
+            <ActionButtonWithPending
+              variant="secondary"
+              isPending={rerun.isPending}
+              isDisabled={rerun.isPending}
+              onPress={() =>
+                rerun.mutate(run.id, {
+                  onSuccess: (newRun) => navigate(Routes.admin.crawlRuns.detail(newRun.id)),
+                })
+              }
+            >
+              Rerun
+            </ActionButtonWithPending>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -295,6 +316,17 @@ export default function CrawlRunDetailPage() {
           </div>
         )}
       </div>
+
+      <ConfirmationDialog
+        state={stopConfirm}
+        title="Stop this crawl run?"
+        description="The run will be marked cancelled and removed from the queue if possible. An already-running worker may still finish its current scrape work."
+        confirmLabel="Stop crawl"
+        isPending={cancelRun.isPending}
+        onConfirm={async () => {
+          await cancelRun.mutateAsync(run.id);
+        }}
+      />
     </div>
   );
 }

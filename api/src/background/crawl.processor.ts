@@ -110,13 +110,28 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       startedAt,
     );
 
-    await this.prisma.crawlRun.update({
-      where: { id: crawlRunId },
+    const claimed = await this.prisma.crawlRun.updateMany({
+      where: { id: crawlRunId, status: CrawlRunStatus.QUEUED },
       data: {
         status: CrawlRunStatus.RUNNING,
         started_at: startedAt,
       },
     });
+
+    if (claimed.count === 0) {
+      this.logger.warn(
+        `crawl job ${crawlRunId}: could not claim QUEUED run — skipping`,
+      );
+      await this.prisma.jobLog.update({
+        where: { id: logId },
+        data: {
+          status: JobStatus.FAILED,
+          finished_at: new Date(),
+          error_message: 'Crawl run was cancelled before start',
+        },
+      });
+      return;
+    }
 
     try {
       const scraper = run.scraper;
@@ -242,8 +257,8 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       // cms_sync_runs (see CrawlRunsService.recalculateCmsSyncTotals), not set here.
       // total_found/total_new_listings/total_refreshed_listings are the raw scrape
       // counts, independent of any downstream CMS sync outcome.
-      await this.prisma.crawlRun.update({
-        where: { id: crawlRunId },
+      const finalized = await this.prisma.crawlRun.updateMany({
+        where: { id: crawlRunId, status: CrawlRunStatus.RUNNING },
         data: {
           status: runFailed ? CrawlRunStatus.FAILED : CrawlRunStatus.SUCCESS,
           finished_at: finishedAt,
@@ -254,6 +269,22 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
           error_message: crawlResult.errorSummary ?? null,
         },
       });
+
+      if (finalized.count === 0) {
+        this.logger.warn(
+          `crawl job ${crawlRunId}: run was cancelled — discarding result`,
+        );
+        await this.prisma.jobLog.update({
+          where: { id: logId },
+          data: {
+            status: JobStatus.FAILED,
+            finished_at: finishedAt,
+            duration_ms: finishedAt.getTime() - startedAt.getTime(),
+            error_message: 'Cancelled by admin',
+          },
+        });
+        return;
+      }
 
       if (runFailed) {
         this.notificationsService.create({
@@ -366,6 +397,19 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
           scraper: true,
         },
       });
+
+      if (currentRun?.status === CrawlRunStatus.CANCELLED) {
+        await this.prisma.jobLog.update({
+          where: { id: logId },
+          data: {
+            status: JobStatus.FAILED,
+            finished_at: finishedAt,
+            duration_ms: finishedAt.getTime() - startedAt.getTime(),
+            error_message: 'Cancelled by admin',
+          },
+        });
+        return;
+      }
 
       if (currentRun?.status === CrawlRunStatus.RUNNING) {
         await this.prisma.crawlRun.update({
