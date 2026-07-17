@@ -1,5 +1,9 @@
 export const ApiRoutes = {
     health: "/health",
+    docs: {
+        openapi: "/api",
+        schema: "/api-json",
+    },
     auth: {
         email: {
             login: "/auth/email/login",

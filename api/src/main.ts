@@ -15,7 +15,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Property Sync API')
-    .setDescription('The Property Sync API documentation')
+    .setDescription(
+      'REST API for Property Sync — agency crawling, property normalization, CMS sync, and user integrations.',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();

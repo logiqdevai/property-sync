@@ -2,13 +2,14 @@ import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
-import { AuthRole } from 'generated/prisma';
+import { AuthRole, JobStatus } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { JobsService } from './jobs.service';
 import {
@@ -28,6 +29,10 @@ export class JobsController {
   @Get()
   @ApiOperation({ summary: 'List job logs (paginated, filterable)' })
   @ApiResponse({ status: 200, description: 'Paginated job log list' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'status', required: false, enum: JobStatus })
+  @ApiQuery({ name: 'queue_name', required: false, type: String })
   findAll(
     @Query(new ZodValidationPipe(JobLogQuerySchema)) query: JobLogQueryType,
   ) {

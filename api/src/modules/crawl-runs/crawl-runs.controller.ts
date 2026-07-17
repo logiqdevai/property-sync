@@ -2,13 +2,14 @@ import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
-import { AuthRole } from 'generated/prisma';
+import { AuthRole, CrawlRunStatus } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { CrawlRunsService } from './crawl-runs.service';
 import {
@@ -28,6 +29,15 @@ export class CrawlRunsController {
   @Get()
   @ApiOperation({ summary: 'List crawl runs (paginated, filterable)' })
   @ApiResponse({ status: 200, description: 'Paginated crawl run list' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'status', required: false, enum: CrawlRunStatus })
+  @ApiQuery({ name: 'agency_id', required: false, type: String })
+  @ApiQuery({ name: 'scraper_id', required: false, type: String })
+  @ApiQuery({ name: 'user_tracked_agency_id', required: false, type: String })
+  @ApiQuery({ name: 'user_id', required: false, type: String })
+  @ApiQuery({ name: 'date_from', required: false, type: String })
+  @ApiQuery({ name: 'date_to', required: false, type: String })
   findAll(
     @Query(new ZodValidationPipe(CrawlRunQuerySchema)) query: CrawlRunQueryType,
   ) {

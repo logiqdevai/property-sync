@@ -58,6 +58,8 @@ export class UserIntegrationsController {
   @Post('connections')
   @ApiOperation({ summary: 'Connect to an integration target' })
   @ApiResponse({ status: 201, type: UserIntegrationConnectionEntity })
+  @ApiResponse({ status: 404, description: 'Integration target not found' })
+  @ApiResponse({ status: 409, description: 'Connection already exists' })
   createConnection(
     @CurrentUser('id') userId: string,
     @CurrentUser('role') role: AuthRole,
@@ -69,6 +71,7 @@ export class UserIntegrationsController {
   @Patch('connections/:id')
   @ApiOperation({ summary: 'Update an integration connection' })
   @ApiResponse({ status: 200, type: UserIntegrationConnectionEntity })
+  @ApiResponse({ status: 404, description: 'Connection not found' })
   updateConnection(
     @CurrentUser('id') userId: string,
     @CurrentUser('role') role: AuthRole,
@@ -81,6 +84,7 @@ export class UserIntegrationsController {
   @Patch('connections/:id/status')
   @ApiOperation({ summary: 'Enable or disable an integration connection' })
   @ApiResponse({ status: 200, type: UserIntegrationConnectionEntity })
+  @ApiResponse({ status: 404, description: 'Connection not found' })
   updateConnectionStatus(
     @CurrentUser('id') userId: string,
     @CurrentUser('role') role: AuthRole,
@@ -100,6 +104,8 @@ export class UserIntegrationsController {
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Set or clear the default integration connection' })
   @ApiResponse({ status: 200, type: UserIntegrationConnectionEntity })
+  @ApiResponse({ status: 403, description: 'Admin only' })
+  @ApiResponse({ status: 404, description: 'Connection not found' })
   updateConnectionDefault(
     @CurrentUser('id') userId: string,
     @CurrentUser('role') role: AuthRole,
@@ -118,6 +124,7 @@ export class UserIntegrationsController {
   @HttpCode(204)
   @ApiOperation({ summary: 'Disconnect an integration' })
   @ApiResponse({ status: 204, description: 'Deleted' })
+  @ApiResponse({ status: 404, description: 'Connection not found' })
   async deleteConnection(
     @CurrentUser('id') userId: string,
     @CurrentUser('role') role: AuthRole,

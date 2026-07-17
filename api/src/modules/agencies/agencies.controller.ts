@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
@@ -24,6 +24,13 @@ export class AgenciesController {
     @Get()
     @ApiOperation({ summary: 'List agencies (paginated, searchable, filterable)' })
     @ApiResponse({ status: 200, description: 'Paginated agency list' })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'search', required: false, type: String })
+    @ApiQuery({ name: 'country', required: false, type: String })
+    @ApiQuery({ name: 'city', required: false, type: String })
+    @ApiQuery({ name: 'is_visible', required: false, enum: ['true', 'false'] })
+    @ApiQuery({ name: 'is_enabled', required: false, enum: ['true', 'false'] })
     findAll(@Query(new ZodValidationPipe(AgencyQuerySchema)) query: AgencyQueryType) {
         return this.agenciesService.findAll(query);
     }

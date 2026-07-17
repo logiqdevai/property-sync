@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { ExternalLink } from "lucide-react";
-import { Button } from "@heroui/react";
+import { BookOpen, Braces, ChevronDown, ExternalLink } from "lucide-react";
+import { Button, Dropdown, Label } from "@heroui/react";
 import { useDashboard } from "@/features/dashboard/hooks/use-dashboard";
 import type { ActivityFeedItem, DashboardKpis } from "@/features/dashboard/interfaces/dashboard.interfaces";
 import { ApiRoutes } from "@/config/api/routes";
@@ -57,8 +57,16 @@ function formatTimestamp(value: string) {
   return new Date(value).toLocaleString();
 }
 
+function resolveApiUrl(path: string) {
+  return new URL(path.replace(/^\//, ""), environments.API_URL).href;
+}
+
 function getBullBoardUrl() {
-  return new URL(ApiRoutes.admin.queues.bullBoard.replace(/^\//, ""), environments.API_URL).href;
+  return resolveApiUrl(ApiRoutes.admin.queues.bullBoard);
+}
+
+function openApiDoc(path: string) {
+  window.open(resolveApiUrl(path), "_blank", "noopener,noreferrer");
 }
 
 export default function AdminDashboardPage() {
@@ -71,13 +79,45 @@ export default function AdminDashboardPage() {
           <p className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</p>
           <p className="text-sm text-muted">Platform overview and recent activity.</p>
         </div>
-        <Button
-          variant="secondary"
-          onPress={() => window.open(getBullBoardUrl(), "_blank", "noopener,noreferrer")}
-        >
-          <ExternalLink className="h-4 w-4" />
-          BullMQ dashboard
-        </Button>
+        <div className="flex items-center gap-2">
+          <Dropdown>
+            <Dropdown.Trigger>
+              <Button variant="secondary">
+                <BookOpen className="h-4 w-4" />
+                API docs
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </Dropdown.Trigger>
+            <Dropdown.Popover>
+              <Dropdown.Menu
+                onAction={(key) => {
+                  if (key === "openapi") openApiDoc(ApiRoutes.docs.openapi);
+                  if (key === "schema") openApiDoc(ApiRoutes.docs.schema);
+                }}
+              >
+                <Dropdown.Item id="openapi" textValue="OpenAPI docs">
+                  <div className="flex w-full items-center gap-2">
+                    <BookOpen className="h-3.5 w-3.5 shrink-0 text-muted" />
+                    <Label>OpenAPI docs</Label>
+                  </div>
+                </Dropdown.Item>
+                <Dropdown.Item id="schema" textValue="OpenAPI schema">
+                  <div className="flex w-full items-center gap-2">
+                    <Braces className="h-3.5 w-3.5 shrink-0 text-muted" />
+                    <Label>OpenAPI schema</Label>
+                  </div>
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown.Popover>
+          </Dropdown>
+          <Button
+            variant="secondary"
+            onPress={() => window.open(getBullBoardUrl(), "_blank", "noopener,noreferrer")}
+          >
+            <ExternalLink className="h-4 w-4" />
+            BullMQ dashboard
+          </Button>
+        </div>
       </div>
 
       <SystemHealthSection />

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
@@ -22,6 +22,10 @@ export class AdminUsersController {
   @Get()
   @ApiOperation({ summary: 'List users (paginated, searchable, filterable by role)' })
   @ApiResponse({ status: 200, description: 'Paginated user list' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'role', required: false, enum: AuthRole })
   findAll(@Query(new ZodValidationPipe(UserQuerySchema)) query: UserQueryType) {
     return this.usersService.findAllAdmin(query);
   }

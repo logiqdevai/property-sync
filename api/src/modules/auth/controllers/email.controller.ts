@@ -64,6 +64,7 @@ export class EmailAuthController {
     @Post('forgot-password')
     @ApiOperation({ summary: 'Request a password reset email' })
     @ApiBody({ type: ForgotPasswordDto })
+    @ApiResponse({ status: 200, description: 'Reset email sent if account exists' })
     async forgotPassword(@Body() dto: ForgotPasswordDto) {
         return this.authService.forgotPassword(dto);
     }
@@ -71,13 +72,17 @@ export class EmailAuthController {
     @Post('reset-password')
     @ApiOperation({ summary: 'Set a new password using a reset token' })
     @ApiBody({ type: ResetPasswordDto })
+    @ApiResponse({ status: 200, description: 'Password reset successful' })
+    @ApiResponse({ status: 400, description: 'Invalid or expired token' })
     async resetPassword(@Body() dto: ResetPasswordDto) {
         return this.authService.resetPassword(dto);
     }
 
     @Get('reset-password/validate')
     @ApiOperation({ summary: 'Validate a password reset token' })
-    @ApiQuery({ name: 'token', required: true })
+    @ApiQuery({ name: 'token', required: true, type: String })
+    @ApiResponse({ status: 200, description: 'Token validity result' })
+    @ApiResponse({ status: 400, description: 'Invalid or expired token' })
     async validatePasswordResetToken(@Query('token') token: string) {
         return this.authService.validatePasswordResetToken(token);
     }
@@ -87,6 +92,8 @@ export class EmailAuthController {
     @Roles(AuthRole.ADMIN)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Send a password reset link to a user' })
+    @ApiResponse({ status: 200, description: 'Password reset link sent' })
+    @ApiResponse({ status: 404, description: 'User not found' })
     async sendPasswordResetToUser(@Param('userId') userId: string) {
         return this.authService.sendPasswordResetForUser(userId);
     }

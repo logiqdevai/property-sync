@@ -11,7 +11,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
@@ -35,6 +41,10 @@ export class UserTrackedAgenciesController {
 
   @Get()
   @ApiOperation({ summary: 'Browse trackable agencies with tracking state' })
+  @ApiResponse({ status: 200, description: 'Paginated agency browse list' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
   findAll(
     @CurrentUser('id') userId: string,
     @CurrentUser('role') role: AuthRole,
@@ -46,6 +56,9 @@ export class UserTrackedAgenciesController {
 
   @Post(':agencyId/track')
   @ApiOperation({ summary: 'Track an agency' })
+  @ApiResponse({ status: 201, description: 'Tracked agency created' })
+  @ApiResponse({ status: 404, description: 'Agency not found' })
+  @ApiResponse({ status: 409, description: 'Already tracking this agency' })
   track(
     @CurrentUser('id') userId: string,
     @Param('agencyId') agencyId: string,
@@ -56,6 +69,8 @@ export class UserTrackedAgenciesController {
 
   @Patch(':agencyId/track')
   @ApiOperation({ summary: 'Update tracking preferences' })
+  @ApiResponse({ status: 200, description: 'Tracking preferences updated' })
+  @ApiResponse({ status: 404, description: 'Tracking relationship not found' })
   updateTracking(
     @CurrentUser('id') userId: string,
     @Param('agencyId') agencyId: string,
@@ -67,6 +82,8 @@ export class UserTrackedAgenciesController {
   @Delete(':agencyId/track')
   @HttpCode(204)
   @ApiOperation({ summary: 'Stop tracking an agency' })
+  @ApiResponse({ status: 204, description: 'Stopped tracking' })
+  @ApiResponse({ status: 404, description: 'Tracking relationship not found' })
   async untrack(
     @CurrentUser('id') userId: string,
     @Param('agencyId') agencyId: string,
@@ -76,6 +93,8 @@ export class UserTrackedAgenciesController {
 
   @Get(':agencyId/track/integration')
   @ApiOperation({ summary: 'Get linked integration for a tracked agency' })
+  @ApiResponse({ status: 200, description: 'Linked integration or null' })
+  @ApiResponse({ status: 404, description: 'Tracking relationship not found' })
   getIntegrationLink(
     @CurrentUser('id') userId: string,
     @Param('agencyId') agencyId: string,
@@ -85,6 +104,9 @@ export class UserTrackedAgenciesController {
 
   @Put(':agencyId/track/integration')
   @ApiOperation({ summary: 'Link an integration to a tracked agency (1:1)' })
+  @ApiResponse({ status: 200, description: 'Integration linked' })
+  @ApiResponse({ status: 404, description: 'Tracking or integration not found' })
+  @ApiResponse({ status: 409, description: 'Integration already linked elsewhere' })
   linkIntegration(
     @CurrentUser('id') userId: string,
     @Param('agencyId') agencyId: string,
@@ -100,6 +122,8 @@ export class UserTrackedAgenciesController {
   @Delete(':agencyId/track/integration')
   @HttpCode(204)
   @ApiOperation({ summary: 'Unlink integration from a tracked agency' })
+  @ApiResponse({ status: 204, description: 'Integration unlinked' })
+  @ApiResponse({ status: 404, description: 'Tracking relationship not found' })
   async unlinkIntegration(
     @CurrentUser('id') userId: string,
     @Param('agencyId') agencyId: string,
@@ -107,4 +131,3 @@ export class UserTrackedAgenciesController {
     await this.userTrackedAgenciesService.unlinkIntegration(userId, agencyId);
   }
 }
-

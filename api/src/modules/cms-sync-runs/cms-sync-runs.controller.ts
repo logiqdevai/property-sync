@@ -1,8 +1,9 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
+import { CmsSyncStatus } from 'generated/prisma';
 import { CmsSyncRunsService } from './cms-sync-runs.service';
 import {
   UserCmsSyncRunQuerySchema,
@@ -25,6 +26,12 @@ export class CmsSyncRunsController {
     status: 200,
     description: 'Paginated CMS sync run list scoped to the current user',
   })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'status', required: false, enum: CmsSyncStatus })
+  @ApiQuery({ name: 'user_integration_id', required: false, type: String })
+  @ApiQuery({ name: 'date_from', required: false, type: String })
+  @ApiQuery({ name: 'date_to', required: false, type: String })
   findAll(
     @Query(new ZodValidationPipe(UserCmsSyncRunQuerySchema))
     query: UserCmsSyncRunQueryType,

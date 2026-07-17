@@ -11,13 +11,14 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
-import { AuthRole } from 'generated/prisma';
+import { AuthRole, ScraperHealth, ScraperStatus } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { ScrapersService } from './scrapers.service';
 import { CreateScraperDto } from './dto/create-scraper.dto';
@@ -29,6 +30,7 @@ import {
 } from './dto/scraper-query.schema';
 import { Scraper } from './entities/scraper.entity';
 import { ScraperVersion } from './entities/scraper-version.entity';
+import { CrawlRun } from '../crawl-runs/entities/crawl-run.entity';
 
 @ApiTags('Scrapers')
 @ApiBearerAuth()
@@ -43,6 +45,12 @@ export class ScrapersController {
     summary: 'List scrapers (paginated, searchable, filterable)',
   })
   @ApiResponse({ status: 200, description: 'Paginated scraper list' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'status', required: false, enum: ScraperStatus })
+  @ApiQuery({ name: 'health', required: false, enum: ScraperHealth })
+  @ApiQuery({ name: 'source_agency_id', required: false, type: String })
   findAll(
     @Query(new ZodValidationPipe(ScraperQuerySchema)) query: ScraperQueryType,
   ) {
@@ -116,7 +124,8 @@ export class ScrapersController {
   @Post(':id/run-now')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Manually trigger a crawl run' })
-  @ApiResponse({ status: 201, description: 'Crawl run enqueued' })
+  @ApiResponse({ status: 201, type: CrawlRun })
+  @ApiResponse({ status: 404, description: 'Scraper not found' })
   runNow(@Param('id') id: string) {
     return this.scrapersService.runNow(id);
   }

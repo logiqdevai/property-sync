@@ -12,13 +12,14 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
-import { AuthRole } from 'generated/prisma';
+import { AuthRole, AuthType, IntegrationType } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { IntegrationTargetsService } from './integration-targets.service';
 import {
@@ -48,6 +49,12 @@ export class IntegrationTargetsController {
   @Get()
   @ApiOperation({ summary: 'List integration targets' })
   @ApiResponse({ status: 200, description: 'Paginated integration targets' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'integration_type', required: false, enum: IntegrationType })
+  @ApiQuery({ name: 'auth_type', required: false, enum: AuthType })
+  @ApiQuery({ name: 'is_visible', required: false, enum: ['true', 'false'] })
+  @ApiQuery({ name: 'is_enabled', required: false, enum: ['true', 'false'] })
   findAll(
     @Query(new ZodValidationPipe(IntegrationTargetQuerySchema))
     query: IntegrationTargetQueryType,
@@ -58,6 +65,7 @@ export class IntegrationTargetsController {
   @Get(':id')
   @ApiOperation({ summary: 'Get integration target with connected accounts' })
   @ApiResponse({ status: 200, type: IntegrationTarget })
+  @ApiResponse({ status: 404, description: 'Integration target not found' })
   findOne(@Param('id') id: string) {
     return this.integrationTargetsService.findOne(id);
   }
@@ -116,6 +124,8 @@ export class IntegrationTargetsController {
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete an integration target without connections' })
   @ApiResponse({ status: 200, description: 'Deleted' })
+  @ApiResponse({ status: 404, description: 'Integration target not found' })
+  @ApiResponse({ status: 409, description: 'Target still has connections' })
   remove(@Param('id') id: string) {
     return this.integrationTargetsService.remove(id);
   }

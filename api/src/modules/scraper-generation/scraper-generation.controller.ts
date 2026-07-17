@@ -11,13 +11,14 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
-import { AuthRole } from 'generated/prisma';
+import { AuthRole, GenerationRunStatus, GenerationTrigger } from 'generated/prisma';
 import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { ScraperGenerationService } from './scraper-generation.service';
@@ -43,6 +44,12 @@ export class ScraperGenerationController {
   @Get()
   @ApiOperation({ summary: 'List generation runs (paginated, filterable)' })
   @ApiResponse({ status: 200, description: 'Paginated generation run list' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'status', required: false, enum: GenerationRunStatus })
+  @ApiQuery({ name: 'trigger', required: false, enum: GenerationTrigger })
+  @ApiQuery({ name: 'source_agency_id', required: false, type: String })
+  @ApiQuery({ name: 'scraper_id', required: false, type: String })
   findAll(
     @Query(new ZodValidationPipe(GenerationRunQuerySchema))
     query: GenerationRunQueryType,

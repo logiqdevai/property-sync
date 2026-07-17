@@ -12,13 +12,14 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
-import { AuthRole } from 'generated/prisma';
+import { AuthRole, NotificationSeverity, NotificationType } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { NotificationsService } from './notifications.service';
 import {
@@ -40,6 +41,11 @@ export class NotificationsController {
   @Get()
   @ApiOperation({ summary: 'List notifications (paginated, filterable)' })
   @ApiResponse({ status: 200, description: 'Paginated notification list' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'type', required: false, enum: NotificationType })
+  @ApiQuery({ name: 'severity', required: false, enum: NotificationSeverity })
+  @ApiQuery({ name: 'is_read', required: false, enum: ['true', 'false'] })
   findAll(
     @Query(new ZodValidationPipe(NotificationQuerySchema))
     query: NotificationQueryType,
