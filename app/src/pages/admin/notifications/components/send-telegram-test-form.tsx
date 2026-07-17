@@ -36,7 +36,7 @@ export function SendTelegramTestForm({
         <TextArea
           id="telegram-test-message"
           rows={5}
-          isDisabled={isPending}
+          disabled={isPending}
           {...register("message")}
         />
         {errors.message ? <FieldError>{errors.message.message}</FieldError> : null}

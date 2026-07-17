@@ -194,7 +194,7 @@ export default function ScraperDetailPage() {
               });
             }}
             placeholder="Unlimited"
-            isDisabled={updateScraper.isPending}
+            disabled={updateScraper.isPending}
             fullWidth
           />
           <span className="text-xs text-muted">
