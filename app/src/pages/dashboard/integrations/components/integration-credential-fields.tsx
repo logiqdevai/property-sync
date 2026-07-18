@@ -1,14 +1,20 @@
-import { Input, Label, FieldError } from "@heroui/react";
+import { useState } from "react";
+import { Button, Input, InputGroup, Label, FieldError } from "@heroui/react";
+import { Check, Copy } from "lucide-react";
 import type { UseFormRegister, UseFormWatch } from "react-hook-form";
 import {
   AuthTypes,
+  IntegrationTypes,
   isAiIntegrationType,
   type AuthType,
   type IntegrationType,
 } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import type { MaskedCredentialValues } from "@/features/user-integrations/validation-schemas/user-integrations.schema";
 import { PasswordInput } from "@/components/ui/password-input";
-import { getIntegrationWebhookUrl } from "@/lib/integration-webhook-url";
+import {
+  getIntegrationWebhookUrl,
+  integrationSupportsWebhookUrl,
+} from "@/lib/integration-webhook-url";
 
 type CredentialFieldErrors = {
   email?: { message?: string };
@@ -29,6 +35,7 @@ interface IntegrationCredentialFieldsProps {
   mode?: "create" | "edit";
   isDisabled?: boolean;
   maskedCredentials?: MaskedCredentialValues;
+  webhookOnly?: boolean;
 }
 
 export function IntegrationCredentialFields({
@@ -41,13 +48,36 @@ export function IntegrationCredentialFields({
   mode = "create",
   isDisabled = false,
   maskedCredentials,
+  webhookOnly = false,
 }: IntegrationCredentialFieldsProps) {
+  const [webhookUrlCopied, setWebhookUrlCopied] = useState(false);
   const optionalHint =
     mode === "edit" ? "Leave blank to keep the current value" : undefined;
   const showAiFields = integrationType ? isAiIntegrationType(integrationType) : false;
+  const deferWebhookUntilConnectionExists =
+    integrationType === IntegrationTypes.OPENAI &&
+    mode === "create" &&
+    !connectionId &&
+    !webhookOnly;
+  const showWebhookFields =
+    showAiFields && (webhookOnly || !deferWebhookUntilConnectionExists);
   const webhookUrl = connectionId
     ? getIntegrationWebhookUrl(integrationType ?? "", connectionId)
     : null;
+
+  const copyWebhookUrl = async () => {
+    if (!webhookUrl) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(webhookUrl);
+      setWebhookUrlCopied(true);
+      window.setTimeout(() => setWebhookUrlCopied(false), 2000);
+    } catch {
+      setWebhookUrlCopied(false);
+    }
+  };
 
   const renderSecretInput = (
     fieldName: "password" | "api_key_secret" | "webhook_key",
@@ -94,39 +124,61 @@ export function IntegrationCredentialFields({
   };
 
   const renderAiWebhookFields = () => {
-    if (!showAiFields) {
+    if (!showWebhookFields) {
       return null;
     }
 
     return (
       <>
+        {webhookUrl ? (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="webhook-url">Webhook URL</Label>
+            <InputGroup fullWidth>
+              <InputGroup.Input
+                id="webhook-url"
+                value={webhookUrl}
+                readOnly
+                onFocus={(event) => event.currentTarget.select()}
+                onChange={() => {}}
+              />
+              <InputGroup.Suffix className="pr-0">
+                <Button
+                  isIconOnly
+                  aria-label={webhookUrlCopied ? "Webhook URL copied" : "Copy webhook URL"}
+                  size="sm"
+                  variant="ghost"
+                  onPress={copyWebhookUrl}
+                >
+                  {webhookUrlCopied ? (
+                    <Check className="size-4 text-success" />
+                  ) : (
+                    <Copy className="size-4" />
+                  )}
+                </Button>
+              </InputGroup.Suffix>
+            </InputGroup>
+            <p className="text-xs text-muted">
+              {integrationSupportsWebhookUrl(integrationType ?? "")
+                ? "Paste this URL in OpenAI webhook settings first, then copy the signing secret below."
+                : "Register this URL in your provider webhook settings."}
+            </p>
+          </div>
+        ) : null}
         {renderSecretInput(
           "webhook_key",
           "credential-webhook-key",
           "Webhook signing secret",
-          mode === "create"
+          mode === "create" || webhookOnly
             ? "From your provider webhook settings"
             : optionalHint,
         )}
-        {webhookUrl ? (
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="webhook-url">Webhook URL</Label>
-            <Input
-              id="webhook-url"
-              value={webhookUrl}
-              readOnly={isDisabled}
-              fullWidth
-              onFocus={(event) => event.currentTarget.select()}
-              onChange={() => {}}
-            />
-            <p className="text-xs text-muted">
-              Register this URL in your provider webhook settings.
-            </p>
-          </div>
-        ) : null}
       </>
     );
   };
+
+  if (webhookOnly) {
+    return <>{renderAiWebhookFields()}</>;
+  }
 
   switch (authType) {
     case AuthTypes.EMAIL_PASSWORD:

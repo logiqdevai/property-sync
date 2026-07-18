@@ -35,8 +35,15 @@ const apiKeyBase = z.object({
 
 const bearerTokenSchema = bearerTokenBase.extend(optionalWebhookKeyField);
 const apiKeySchema = apiKeyBase.extend(optionalWebhookKeyField);
-const aiBearerTokenSchema = bearerTokenBase.extend(requiredWebhookKeyField);
-const aiApiKeySchema = apiKeyBase.extend(requiredWebhookKeyField);
+const aiBearerTokenSchema = bearerTokenBase.extend(optionalWebhookKeyField);
+const aiApiKeySchema = apiKeyBase.extend(optionalWebhookKeyField);
+const webhookSetupSchema = z.object({
+  auth_type: z.union([
+    z.literal(AuthTypes.BEARER_TOKEN),
+    z.literal(AuthTypes.API_KEY),
+  ]),
+  ...requiredWebhookKeyField,
+});
 
 const emailPasswordSchema = z.object({
   auth_type: z.literal(AuthTypes.EMAIL_PASSWORD),
@@ -74,6 +81,12 @@ export const connectCredentialsSchema = z.discriminatedUnion("auth_type", [
 ]);
 
 export type ConnectCredentialsFormValues = z.infer<typeof connectCredentialsSchema>;
+
+export type WebhookSetupFormValues = z.infer<typeof webhookSetupSchema>;
+
+export function getWebhookSetupSchema() {
+  return webhookSetupSchema;
+}
 
 export function getEditFormDefaultValues(
   authType: AuthType,

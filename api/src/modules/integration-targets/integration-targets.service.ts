@@ -138,9 +138,7 @@ export class IntegrationTargetsService {
 
     validateCredentialsForAuthType(target.auth_type, dto);
     assertWebhookKeyAllowed(target.integration_type, dto.webhook_key);
-    validateAiIntegrationWebhookKey(target.integration_type, target.auth_type, dto, {
-      requireOnCreate: true,
-    });
+    validateAiIntegrationWebhookKey(target.integration_type, target.auth_type, dto);
 
     const integration = await this.prisma.userIntegration.create({
       data: {

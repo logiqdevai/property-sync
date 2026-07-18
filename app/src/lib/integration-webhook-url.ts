@@ -4,11 +4,17 @@ import {
   type IntegrationType,
 } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 
+export function integrationSupportsWebhookUrl(
+  integrationType: IntegrationType | string,
+): boolean {
+  return integrationType === IntegrationTypes.OPENAI;
+}
+
 export function getIntegrationWebhookUrl(
   integrationType: IntegrationType | string,
   connectionId: string,
 ): string | null {
-  if (integrationType !== IntegrationTypes.OPENAI) {
+  if (!integrationSupportsWebhookUrl(integrationType)) {
     return null;
   }
 

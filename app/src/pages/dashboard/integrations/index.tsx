@@ -22,14 +22,17 @@ import {
 import {
   getConnectCredentialsSchema,
   getEditFormDefaultValues,
+  getWebhookSetupSchema,
   mapConnectFormToPayload,
   mapEditFormToPayload,
   type ConnectCredentialsFormValues,
+  type WebhookSetupFormValues,
 } from "@/features/user-integrations/validation-schemas/user-integrations.schema";
 import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
 import { getIntegrationTypeDescription } from "@/config/constants/dropdowns/integration-type-description.options";
 import { getAuthTypeLabel } from "@/config/constants/dropdowns/auth-type-form.options";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
+import { integrationSupportsWebhookUrl } from "@/lib/integration-webhook-url";
 import { LinkConnectionToAgencyModal } from "./components/link-connection-to-agency-modal";
 import { AllConnectionsModal } from "./components/all-connections-modal";
 import { IntegrationConnectionItem } from "./components/integration-connection-item";
@@ -156,6 +159,8 @@ export default function DashboardIntegrationsPage() {
   const [disconnectingConnection, setDisconnectingConnection] =
     useState<MaskedUserIntegrationConnection | null>(null);
   const [pendingLinkConnectionId, setPendingLinkConnectionId] = useState<string | null>(null);
+  const [webhookSetupConnection, setWebhookSetupConnection] =
+    useState<MaskedUserIntegrationConnection | null>(null);
 
   const role = useAuthStore((state) => state.role);
   const isAdmin = role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN;
@@ -170,6 +175,7 @@ export default function DashboardIntegrationsPage() {
   const disconnectIntegration = useDisconnectIntegration();
 
   const connectForm = useForm<ConnectCredentialsFormValues>();
+  const webhookSetupForm = useForm<WebhookSetupFormValues>();
   const editForm = useForm<ConnectCredentialsFormValues>();
 
   const isPending =
@@ -211,7 +217,16 @@ export default function DashboardIntegrationsPage() {
     );
   }, [editingConnection, editForm]);
 
+  const closeConnectModal = () => {
+    connectModal.close();
+    setSelectedTarget(null);
+    setWebhookSetupConnection(null);
+    webhookSetupForm.reset();
+  };
+
   const openConnect = (target: AvailableIntegrationTarget) => {
+    setWebhookSetupConnection(null);
+    webhookSetupForm.reset();
     setSelectedTarget(target);
     connectModal.open();
   };
@@ -256,8 +271,16 @@ export default function DashboardIntegrationsPage() {
 
     connectIntegration.mutate(mapConnectFormToPayload(selectedTarget.id, parsed), {
       onSuccess: (connection) => {
-        connectModal.close();
-        setSelectedTarget(null);
+        if (integrationSupportsWebhookUrl(selectedTarget.integration_type)) {
+          setWebhookSetupConnection(connection);
+          webhookSetupForm.reset({
+            auth_type: selectedTarget.auth_type as WebhookSetupFormValues["auth_type"],
+            webhook_key: "",
+          });
+          return;
+        }
+
+        closeConnectModal();
 
         if (selectedTarget.integration_type === IntegrationTypes.ESTATEWEB) {
           setPendingLinkConnectionId(connection.id);
@@ -265,6 +288,29 @@ export default function DashboardIntegrationsPage() {
         }
       },
     });
+  });
+
+  const submitWebhookSetup = webhookSetupForm.handleSubmit((values) => {
+    if (!webhookSetupConnection) {
+      return;
+    }
+
+    const parsed = getWebhookSetupSchema().parse({
+      ...values,
+      auth_type: webhookSetupConnection.integration_target.auth_type,
+    });
+
+    updateConnection.mutate(
+      {
+        id: webhookSetupConnection.id,
+        payload: { webhook_key: parsed.webhook_key },
+      },
+      {
+        onSuccess: () => {
+          closeConnectModal();
+        },
+      },
+    );
   });
 
   const submitEdit = editForm.handleSubmit((values) => {
@@ -344,23 +390,67 @@ export default function DashboardIntegrationsPage() {
       )}
 
       <Modal state={connectModal}>
-        <Modal.Backdrop isDismissable={!connectIntegration.isPending}>
+        <Modal.Backdrop
+          isDismissable={!connectIntegration.isPending && !updateConnection.isPending}
+        >
           <Modal.Container>
             <Modal.Dialog className="max-w-lg">
               <Modal.Header>
                 <Modal.Heading>
-                  Connect{" "}
-                  {selectedTarget
-                    ? getIntegrationTypeLabel(selectedTarget.integration_type)
-                    : "integration"}
+                  {webhookSetupConnection
+                    ? "Set up OpenAI webhook"
+                    : `Connect ${
+                        selectedTarget
+                          ? getIntegrationTypeLabel(selectedTarget.integration_type)
+                          : "integration"
+                      }`}
                 </Modal.Heading>
               </Modal.Header>
               <Modal.Body>
-                {selectedTarget && (
+                {selectedTarget && webhookSetupConnection ? (
+                  <Form onSubmit={submitWebhookSetup} className="grid gap-4">
+                    <p className="text-sm text-muted">
+                      Connection created. Copy the webhook URL into OpenAI, then paste the
+                      signing secret they generate.
+                    </p>
+                    <IntegrationCredentialFields
+                      authType={webhookSetupConnection.integration_target.auth_type}
+                      integrationType={
+                        webhookSetupConnection.integration_target.integration_type
+                      }
+                      connectionId={webhookSetupConnection.id}
+                      register={webhookSetupForm.register}
+                      errors={webhookSetupForm.formState.errors}
+                      webhookOnly
+                    />
+                    <div className="flex justify-end gap-2">
+                      <ActionButtonWithPending
+                        type="button"
+                        variant="secondary"
+                        onPress={closeConnectModal}
+                        isDisabled={updateConnection.isPending}
+                      >
+                        Skip for now
+                      </ActionButtonWithPending>
+                      <ActionButtonWithPending
+                        type="submit"
+                        isPending={updateConnection.isPending}
+                      >
+                        Save webhook secret
+                      </ActionButtonWithPending>
+                    </div>
+                  </Form>
+                ) : selectedTarget ? (
                   <Form onSubmit={submitConnect} className="grid gap-4">
                     {isConnectReadOnly && (
                       <p className="text-sm text-muted">{VIEW_ONLY_INTEGRATION_MESSAGE}</p>
                     )}
+                    {integrationSupportsWebhookUrl(selectedTarget.integration_type) ? (
+                      <p className="text-sm text-muted">
+                        Enter your API key first. After connecting you get a webhook URL to
+                        register in OpenAI before the signing secret.
+                      </p>
+                    ) : null}
                     <IntegrationCredentialFields
                       authType={selectedTarget.auth_type}
                       integrationType={selectedTarget.integration_type}
@@ -372,7 +462,7 @@ export default function DashboardIntegrationsPage() {
                       <ActionButtonWithPending
                         type="button"
                         variant="secondary"
-                        onPress={connectModal.close}
+                        onPress={closeConnectModal}
                         isDisabled={connectIntegration.isPending}
                       >
                         Cancel
@@ -386,7 +476,7 @@ export default function DashboardIntegrationsPage() {
                       </ActionButtonWithPending>
                     </div>
                   </Form>
-                )}
+                ) : null}
               </Modal.Body>
             </Modal.Dialog>
           </Modal.Container>
