@@ -37,6 +37,7 @@ export interface UserProperty extends PropertyCmsFields {
   renovation_year: number | null;
   features: string[] | null;
   images: string[] | null;
+  duplicate_group_id: string | null;
   is_modified: boolean;
   last_synced_at: string | null;
   created_at: string;
@@ -44,7 +45,6 @@ export interface UserProperty extends PropertyCmsFields {
 }
 
 export interface UserPropertyDetail extends UserProperty {
-  duplicate_group_id: string | null;
   source_links: PropertySourceLink[];
   history: PropertyHistoryEntry[];
 }
