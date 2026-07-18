@@ -414,6 +414,10 @@ export class PropertyNormalizationService {
         where: { id: property.id },
         data: { duplicate_group_id: property.duplicate_group_id },
       });
+      await this.prisma.userProperty.updateMany({
+        where: { canonical_property_id: property.id },
+        data: { duplicate_group_id: property.duplicate_group_id },
+      });
     }
 
     const removalStats = await this.detectRemovalsAndReappearances(

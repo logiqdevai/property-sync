@@ -91,6 +91,7 @@ export const ApiRoutes = {
             detail: (id: string) => `/admin/properties/${id}`,
             merge: "/admin/properties/merge",
             bulkDelete: "/admin/properties/bulk-delete",
+            dedupeGroups: "/admin/properties/dedupe-groups",
             split: (id: string) => `/admin/properties/${id}/split`,
         },
         notifications: {
@@ -147,6 +148,7 @@ export const ApiRoutes = {
         count: "/properties/count",
         detail: (id: string) => `/properties/${id}`,
         bulkDelete: "/properties/bulk-delete",
+        dedupeGroups: "/properties/dedupe-groups",
     },
     dashboard: {
         root: "/dashboard",

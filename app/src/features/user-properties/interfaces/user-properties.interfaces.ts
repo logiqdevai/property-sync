@@ -86,6 +86,7 @@ export interface UserPropertyListQuery {
   city?: string;
   price_min?: number;
   price_max?: number;
+  has_duplicate_group?: boolean;
   agency_id?: string;
   user_tracked_agency_id?: string;
 }
@@ -110,4 +111,13 @@ export interface PaginatedResponse<T> {
 
 export interface DeleteUserPropertiesPayload {
   ids: string[];
+}
+
+export interface DedupeUserPropertiesPayload {
+  ids: string[];
+}
+
+export interface DedupeUserPropertiesResult {
+  deleted: number;
+  kept: string[];
 }

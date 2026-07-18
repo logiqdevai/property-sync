@@ -3,6 +3,7 @@ import { toast } from "@/hooks/use-toast";
 import {
   deleteUserProperties,
   deleteUserProperty,
+  dedupeUserPropertyGroups,
   getUserProperties,
   getUserPropertiesCount,
   getUserProperty,
@@ -10,6 +11,7 @@ import {
 } from "../services/user-properties.services";
 import type {
   DeleteUserPropertiesPayload,
+  DedupeUserPropertiesPayload,
   UpdateUserPropertyPayload,
   UserPropertyCountQuery,
   UserPropertyListQuery,
@@ -88,6 +90,31 @@ export const useDeleteUserProperties = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not delete properties",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDedupeUserPropertyGroups = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: DedupeUserPropertiesPayload) =>
+      dedupeUserPropertyGroups(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      toast({
+        title: "Kept one per group",
+        description: `Deleted ${result.deleted} duplicate ${result.deleted === 1 ? "property" : "properties"}.`,
+        duration: 2000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not keep one per group",
         description: error.message,
         variant: "error",
       });

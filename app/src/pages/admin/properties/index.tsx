@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Chip, Input, Pagination, Select, ListBox, Table, useOverlayState } from "@heroui/react";
-import { Layers, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
+import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
 import {
   TableRowActionsMenu,
   type TableRowAction,
@@ -13,6 +14,7 @@ import {
 import {
   useDeleteProperties,
   useDeleteProperty,
+  useDedupePropertyGroups,
   useMergeProperties,
   useProperties,
   usePropertiesCount,
@@ -27,8 +29,11 @@ import {
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
 import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/listing-type-filter.options";
 import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/property-type-filter.options";
+import { PropertyDuplicateGroupFilterOptions } from "@/config/constants/dropdowns/property-duplicate-group-filter.options";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { formatPrice } from "@/lib/price";
+import { getDuplicateGroupRowClasses } from "@/lib/duplicate-group-color.utils";
+import { getDuplicateGroupDedupePlan } from "@/lib/duplicate-group-dedupe.utils";
 
 const PROPERTY_DELETE_ACTIONS: TableRowAction[] = [
   { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
@@ -39,15 +44,14 @@ export default function PropertiesListPage() {
   const mergeConfirm = useOverlayState();
   const deleteConfirm = useOverlayState();
   const bulkDeleteConfirm = useOverlayState();
+  const dedupeConfirm = useOverlayState();
 
   const [status, setStatus] = useState<PropertyStatus | "all">("all");
   const [listingType, setListingType] = useState<ListingType | "all">("all");
   const [propertyType, setPropertyType] = useState<PropertyType | "all">("all");
-  const [city, setCity] = useState("");
-  const [priceMin, setPriceMin] = useState("");
-  const [priceMax, setPriceMax] = useState("");
   const [search, setSearch] = useState("");
   const [agencyId, setAgencyId] = useState<string | "all">("all");
+  const [duplicateGroup, setDuplicateGroup] = useState<"all" | "true" | "false">("all");
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deletePropertyId, setDeletePropertyId] = useState<string | null>(null);
@@ -59,13 +63,13 @@ export default function PropertiesListPage() {
       ...(status !== "all" && { status }),
       ...(listingType !== "all" && { listing_type: listingType }),
       ...(propertyType !== "all" && { property_type: propertyType }),
-      ...(city.trim() && { city: city.trim() }),
-      ...(priceMin && { price_min: Number(priceMin) }),
-      ...(priceMax && { price_max: Number(priceMax) }),
       ...(search.trim() && { search: search.trim() }),
       ...(agencyId !== "all" && { agency_id: agencyId }),
+      ...(duplicateGroup !== "all" && {
+        has_duplicate_group: duplicateGroup === "true",
+      }),
     }),
-    [page, status, listingType, propertyType, city, priceMin, priceMax, search, agencyId],
+    [page, status, listingType, propertyType, search, agencyId, duplicateGroup],
   );
 
   const countQuery = useMemo<PropertyCountQuery>(() => {
@@ -79,12 +83,19 @@ export default function PropertiesListPage() {
   const mergeProperties = useMergeProperties();
   const deleteProperty = useDeleteProperty();
   const deleteProperties = useDeleteProperties();
+  const dedupePropertyGroups = useDedupePropertyGroups();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
   const total = countData?.total;
   const agencies = agenciesData?.data ?? [];
   const selectedCount = selectedIds.size;
+
+  const dedupePlan = useMemo(
+    () => getDuplicateGroupDedupePlan(properties, selectedIds),
+    [properties, selectedIds],
+  );
+  const dedupeDeleteCount = dedupePlan.deleteIds.length;
 
   const toggleSelection = (id: string) => {
     setSelectedIds((prev) => {
@@ -116,6 +127,13 @@ export default function PropertiesListPage() {
     setSelectedIds(new Set());
   };
 
+  const handleDedupeGroups = async () => {
+    await dedupePropertyGroups.mutateAsync({
+      property_ids: Array.from(selectedIds),
+    });
+    setSelectedIds(new Set());
+  };
+
   if (isPending) {
     return (
       <div className="flex flex-col gap-6">
@@ -144,6 +162,15 @@ export default function PropertiesListPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {duplicateGroup === "true" ? (
+            <Button
+              variant="secondary"
+              isDisabled={dedupeDeleteCount < 1}
+              onPress={dedupeConfirm.open}
+            >
+              Keep one per group ({dedupeDeleteCount})
+            </Button>
+          ) : null}
           <Button
             variant="danger"
             isDisabled={selectedCount < 1}
@@ -170,35 +197,6 @@ export default function PropertiesListPage() {
             setSearch(e.target.value);
           }}
           className="w-56"
-        />
-        <Input
-          placeholder="City"
-          value={city}
-          onChange={(e) => {
-            setPage(1);
-            setCity(e.target.value);
-          }}
-          className="w-40"
-        />
-        <Input
-          placeholder="Min price"
-          type="number"
-          value={priceMin}
-          onChange={(e) => {
-            setPage(1);
-            setPriceMin(e.target.value);
-          }}
-          className="w-32"
-        />
-        <Input
-          placeholder="Max price"
-          type="number"
-          value={priceMax}
-          onChange={(e) => {
-            setPage(1);
-            setPriceMax(e.target.value);
-          }}
-          className="w-32"
         />
         <Select
           aria-label="Filter by status"
@@ -295,6 +293,29 @@ export default function PropertiesListPage() {
             </ListBox>
           </Select.Popover>
         </Select>
+        <Select
+          aria-label="Filter by duplicate group"
+          selectedKey={duplicateGroup}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setDuplicateGroup(key as "all" | "true" | "false");
+          }}
+          className="w-44"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {PropertyDuplicateGroupFilterOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
       </div>
 
       {properties.length === 0 ? (
@@ -318,9 +339,14 @@ export default function PropertiesListPage() {
                   <Table.Column isRowHeader>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
-                  {properties.map((property) => (
+                  {properties.map((property) => {
+                    const groupCellClass = property.duplicate_group_id
+                      ? getDuplicateGroupRowClasses(property.duplicate_group_id)
+                      : undefined;
+
+                    return (
                     <Table.Row key={property.id}>
-                      <Table.Cell>
+                      <Table.Cell className={groupCellClass}>
                         <input
                           type="checkbox"
                           checked={selectedIds.has(property.id)}
@@ -328,7 +354,7 @@ export default function PropertiesListPage() {
                           aria-label={`Select ${property.title}`}
                         />
                       </Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell className={groupCellClass}>
                         <button
                           type="button"
                           className="text-left text-foreground hover:text-accent transition-colors font-medium"
@@ -337,38 +363,31 @@ export default function PropertiesListPage() {
                           {property.title}
                         </button>
                       </Table.Cell>
-                      <Table.Cell>{property.city ?? "—"}</Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell className={groupCellClass}>{property.city ?? "—"}</Table.Cell>
+                      <Table.Cell className={groupCellClass}>
                         {formatPrice(property.price, property.currency)}
                       </Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell className={groupCellClass}>
                         <Chip size="sm" variant="soft">
                           <Chip.Label>{property.listing_type.replace(/_/g, " ")}</Chip.Label>
                         </Chip>
                       </Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell className={groupCellClass}>
                         <Chip size="sm" variant="soft">
                           <Chip.Label>{property.property_type.replace(/_/g, " ")}</Chip.Label>
                         </Chip>
                       </Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell className={groupCellClass}>
                         <PropertyStatusChip status={property.status} />
                       </Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell className={groupCellClass}>
                         {property.duplicate_group_id ? (
-                          <Chip size="sm" variant="soft" color="warning">
-                            <Chip.Label>
-                              <span className="inline-flex items-center gap-1">
-                                <Layers className="size-3" />
-                                Grouped
-                              </span>
-                            </Chip.Label>
-                          </Chip>
+                          <PropertyDuplicateGroupChip groupId={property.duplicate_group_id} />
                         ) : (
                           "—"
                         )}
                       </Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell className={groupCellClass}>
                         <TableRowActionsMenu
                           actions={PROPERTY_DELETE_ACTIONS}
                           onAction={(actionId) => {
@@ -380,7 +399,8 @@ export default function PropertiesListPage() {
                         />
                       </Table.Cell>
                     </Table.Row>
-                  ))}
+                    );
+                  })}
                 </Table.Body>
               </Table.Content>
             </Table.ScrollContainer>
@@ -441,6 +461,15 @@ export default function PropertiesListPage() {
         confirmLabel="Delete"
         onConfirm={handleBulkDelete}
         isPending={deleteProperties.isPending}
+      />
+
+      <ConfirmationDialog
+        state={dedupeConfirm}
+        title="Keep one property per group?"
+        description={`This will delete ${dedupeDeleteCount} duplicate ${dedupeDeleteCount === 1 ? "property" : "properties"} and keep one from each selected group.`}
+        confirmLabel="Keep one"
+        onConfirm={handleDedupeGroups}
+        isPending={dedupePropertyGroups.isPending}
       />
     </div>
   );

@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { ListingType, PropertyStatus, PropertyType } from 'generated/prisma';
 
+const booleanQueryParam = z
+  .enum(['true', 'false'])
+  .optional()
+  .transform((v) => (v === undefined ? undefined : v === 'true'));
+
 export const PropertyQuerySchema = z.object({
   page: z
     .string()
@@ -23,6 +28,7 @@ export const PropertyQuerySchema = z.object({
     .optional()
     .transform((v) => (v ? parseFloat(v) : undefined)),
   duplicate_group_id: z.string().uuid().optional(),
+  has_duplicate_group: booleanQueryParam,
   search: z.string().optional(),
   agency_id: z.string().uuid().optional(),
 });

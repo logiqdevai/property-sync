@@ -2,6 +2,8 @@ import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
 import type {
   DeleteUserPropertiesPayload,
+  DedupeUserPropertiesPayload,
+  DedupeUserPropertiesResult,
   PaginatedResponse,
   UpdateUserPropertyPayload,
   UserProperty,
@@ -74,5 +76,21 @@ export const deleteUserProperties = async (
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to delete properties.");
+  }
+};
+
+export const dedupeUserPropertyGroups = async (
+  payload: DedupeUserPropertiesPayload,
+): Promise<DedupeUserPropertiesResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.dedupeGroups,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to keep one property per group.",
+    );
   }
 };

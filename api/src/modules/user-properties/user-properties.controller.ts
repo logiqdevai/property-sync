@@ -47,6 +47,11 @@ export class UserPropertiesController {
   @ApiQuery({ name: 'city', required: false, type: String })
   @ApiQuery({ name: 'price_min', required: false, type: Number })
   @ApiQuery({ name: 'price_max', required: false, type: Number })
+  @ApiQuery({
+    name: 'has_duplicate_group',
+    required: false,
+    enum: ['true', 'false'],
+  })
   @ApiQuery({ name: 'agency_id', required: false, type: String })
   @ApiQuery({ name: 'user_tracked_agency_id', required: false, type: String })
   findAll(
@@ -64,6 +69,11 @@ export class UserPropertiesController {
   @ApiQuery({ name: 'city', required: false, type: String })
   @ApiQuery({ name: 'price_min', required: false, type: Number })
   @ApiQuery({ name: 'price_max', required: false, type: Number })
+  @ApiQuery({
+    name: 'has_duplicate_group',
+    required: false,
+    enum: ['true', 'false'],
+  })
   @ApiQuery({ name: 'agency_id', required: false, type: String })
   @ApiQuery({ name: 'user_tracked_agency_id', required: false, type: String })
   count(
@@ -85,6 +95,23 @@ export class UserPropertiesController {
     @Body() dto: DeleteUserPropertiesDto,
   ) {
     return this.userPropertiesService.removeMany(userId, dto.ids);
+  }
+
+  @Post('dedupe-groups')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Keep one saved property per duplicate group and delete the rest (admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Duplicate group members deduped' })
+  @ApiResponse({ status: 400, description: 'No multi-member groups in selection' })
+  @ApiResponse({ status: 403, description: 'Admin only' })
+  dedupeGroups(
+    @CurrentUser('id') userId: string,
+    @Body() dto: DeleteUserPropertiesDto,
+  ) {
+    return this.userPropertiesService.dedupeGroups(userId, dto.ids);
   }
 
   @Get(':id')

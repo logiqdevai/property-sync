@@ -138,6 +138,7 @@ export interface PropertyListQuery {
   price_min?: number;
   price_max?: number;
   duplicate_group_id?: string;
+  has_duplicate_group?: boolean;
   search?: string;
   agency_id?: string;
 }
@@ -166,4 +167,13 @@ export interface MergePropertiesPayload {
 
 export interface DeletePropertiesPayload {
   property_ids: string[];
+}
+
+export interface DedupePropertiesPayload {
+  property_ids: string[];
+}
+
+export interface DedupePropertiesResult {
+  deleted: number;
+  kept: string[];
 }

@@ -2,6 +2,8 @@
 
 Functional specification for pushing `UserProperty` data to external CMS instances via `UserIntegration` connections. **Out of scope for the current implementation phase** — see `PROJECT-SPECIFICATIONS.MD` (Implementation Scope). This document describes the full sync feature to be built after the crawl → `Property` → `UserProperty` → `PropertyHistory` pipeline is complete.
 
+> **Implementation status markers** used below: `[DONE]` = fully implemented in the current codebase, `[PARTIAL]` = partially implemented, `[PENDING]` = not yet implemented.
+
 The **EstateWeb integration adapter** under `api/src/integrations/estateweb/` is already implemented and serves as the reference implementation for this specification (see section 3.5).
 
 ---
@@ -15,20 +17,21 @@ Goals:
 - Push new, updated, and removed listings to the user's CMS
 - Support multiple CMS types via pluggable integration adapters (`IntegrationType` enum)
 - Allow one user to hold **multiple `UserIntegration`s per CMS type** (e.g. multiple EstateWeb accounts with different email/password) and route the sync per tracked agency via `UserTrackedAgencyIntegrationLink`
-- Guarantee no data loss on failure — every attempt is recorded and retried until success or manual resolution
+- **Never create the same real-world listing twice in the CMS** when multiple `Property` / `UserProperty` rows share a `duplicate_group_id` (see §4.5)
+- Guarantee no data loss on failure
 - Provide full visibility into sync health for admins and users
 
 **Prerequisite (current phase):** `IntegrationTarget` and `UserIntegration` configuration UI, crawl-time `UserProperty` create/update, `PropertyHistory`, and the `UserTrackedAgencyIntegrationLink` mapping UI must already be implemented. Sync builds on top of those; it does not replace them.
 
 ---
 
-# 2. Data Model
+# 2. Data Model [DONE]
 
 Backed by Prisma models in `api/prisma/schema.prisma`.
 
-> **Naming note:** the current schema uses generic `IntegrationTarget` / `UserIntegration` instead of the legacy `CmsTarget` / `UserCms`, because the same tables also hold AI-provider credentials (`OPENAI`, `ANTHROPIC`, `GEMINI`, `DEEPSEEK`). Only rows with `integration_type = ESTATEWEB` (and any future CMS-type additions) participate in this sync spec.
+> **Naming note:** the current schema uses generic `IntegrationTarget` / `UserIntegration`, because the same tables also hold AI-provider credentials (`OPENAI`, `ANTHROPIC`, `GEMINI`, `DEEPSEEK`). Only rows with `integration_type = ESTATEWEB` (and any future CMS-type additions) participate in this sync spec.
 
-## 2.1 IntegrationTarget
+## 2.1 IntegrationTarget [DONE]
 
 Platform-defined integration type. Managed by admins (configuration UI exists in the current phase).
 
@@ -41,7 +44,7 @@ Platform-defined integration type. Managed by admins (configuration UI exists in
 | `is_visible` | Whether the integration appears to non-admin users |
 | `is_enabled` | Platform-wide enable; when false, no sync runs and users cannot connect/modify |
 
-## 2.2 UserIntegration
+## 2.2 UserIntegration [DONE]
 
 Per-user connection to an `IntegrationTarget` with that user's credentials.
 
@@ -57,7 +60,7 @@ Per-user connection to an `IntegrationTarget` with that user's credentials.
 
 Sync runs only when **both** `UserIntegration.is_active` and parent `IntegrationTarget.is_enabled` are true.
 
-## 2.3 UserTrackedAgency
+## 2.3 UserTrackedAgency [DONE]
 
 Which `SourceAgency` a user tracks. Crawl scheduling lives on `SourceAgency.crawl_interval`, not here (see below). This model holds **CMS outbound sync throttling** (`concurrent_insertions`, `insertion_interval_minutes`) for the linked integration (e.g. EstateWeb).
 
@@ -69,14 +72,13 @@ These two fields do **not** control Playwright crawl concurrency — that is gov
 | `enabled` | User-level tracker on/off |
 | `concurrent_insertions` | Within one tracker's `CmsSyncRun` batch for a crawl, how many property pushes (CREATE/UPDATE/REMOVE combined) the orchestrator runs **concurrently** at a time (default `1`) |
 | `insertion_interval_minutes` | Minimum delay **between successive chunks** of `concurrent_insertions` property pushes inside that same batch (default `5`). Throttles a large batch (hundreds of changed properties) so the CMS is not flooded in one burst |
-| `track_new_listings`, `track_updated_listings`, `track_removed_listings` | Which change types are included in the tracker's sync batch at all |
-| `use_ai_batching` | Opt into OpenAI Batch normalization for runs attributed to this tracker. Normalization otherwise always uses the platform default AI provider (`AiDefaults.provider`/`AiDefaults.model`) — there is no per-tracker `ai_provider`/`ai_model` field |
+| `track_new_listings`, `track_updated_listings`, `track_removed_listings` | Which change types are included in the tracker's sync batch at all 
 
 `UserTrackedAgency` has no scheduling field — `SourceAgency.crawl_interval` is the sole scheduling authority (one crawl per agency, shared across every tracker; see `PROJECT-SPECIFICATIONS.MD` §8).
 
 `concurrent_insertions` and `insertion_interval_minutes` are **intra-batch** controls, not inter-job rate limits: there is exactly one `CmsSyncRun` per `(crawl_run, user_integration)` (see 2.5), so there's nothing to rate-limit *across* jobs — these two fields instead govern how the orchestrator paces the individual property push calls *inside* that one job. The orchestrator resolves the destination account via `UserTrackedAgencyIntegrationLink` → `UserIntegration` (e.g. one EstateWeb email/password login), then applies these limits while processing the batch for that tracker.
 
-## 2.4 UserTrackedAgencyIntegrationLink (new)
+## 2.4 UserTrackedAgencyIntegrationLink (new) [DONE]
 
 Explicit 1:1 mapping between a `UserTrackedAgency` and the `UserIntegration` that should receive its property pushes.
 
@@ -92,7 +94,7 @@ Rules:
 - On the sync path: after a crawl for `UserTrackedAgency X` produces `UserProperty` create/update/remove events, the orchestrator resolves the linked `UserIntegration` via this table and pushes to that specific CMS account. See `EstateWebIntegrationResolverService.resolveForTrackedAgency()` for the reference implementation.
 - If no link exists for a tracked agency, the orchestrator MAY fall back to the user's `is_default = true` `UserIntegration` for the same `integration_type` (product decision — document at implementation time).
 
-## 2.5 CmsSyncRun
+## 2.5 CmsSyncRun [DONE]
 
 **One row per `(crawl_run_id, user_integration_id)` pair** (`@@unique` constraint) — a batch of every CREATE/UPDATE/REMOVE that crawl produced for that user's tracked agencies on that integration, not one row per property. `CrawlRun` stays exactly **one row per scraper run** regardless of how many users track the agency (see `PROJECT-SPECIFICATIONS.MD`); `CmsSyncRun` is where per-user CRM outcomes live instead.
 
@@ -115,9 +117,9 @@ The model retains the `cms_sync_runs` table name and `CmsSyncRun` class name eve
 
 ---
 
-# 3. Integration Service Architecture
+# 3. Integration Service Architecture [PARTIAL]
 
-## 3.1 Adapter pattern
+## 3.1 Adapter pattern [DONE]
 
 Each `IntegrationType` value that participates in CMS sync maps to one integration module under `api/src/integrations/<integration-type>/`:
 
@@ -159,19 +161,20 @@ integrations/
     └── constants/
 ```
 
-## 3.2 Sync orchestrator
+## 3.2 Sync orchestrator [PENDING]
 
 A `CmsSyncService` (or equivalent feature module) responsible for:
 
 - Resolving the correct adapter from `IntegrationTarget.integration_type`
 - Resolving the target `UserIntegration` for a given `UserTrackedAgency` via `UserTrackedAgencyIntegrationLink` (with optional `is_default` fallback)
 - Loading `UserIntegration` credentials and `UserProperty` data
+- **Collapsing the batch by `UserProperty.duplicate_group_id`** before any CREATE/UPDATE/REMOVE (see §4.5) so grouped duplicates never produce two CMS listings
 - Calling adapter create / update / remove / upload-image methods
 - Writing and updating `CmsSyncRun` rows
 - Enqueueing retries on failure (BullMQ job via `JobLog`)
 - Respecting `UserTrackedAgency.concurrent_insertions` and `insertion_interval_minutes` when draining the queue
 
-## 3.3 Injection
+## 3.3 Injection [PENDING]
 
 Use NestJS custom provider tokens per adapter (e.g. `CMS_ADAPTER_ESTATEWEB`) or a factory keyed by `IntegrationType`. The orchestrator must not import SDK clients directly in feature modules — follow the `integrations/` encapsulation from the API rules. Adapters live in their own module and are re-exported (see `EstateWebModule`).
 
@@ -181,7 +184,7 @@ Use NestJS custom provider tokens per adapter (e.g. `CMS_ADAPTER_ESTATEWEB`) or 
 - Managing `UserIntegration` CRUD or `UserTrackedAgencyIntegrationLink` CRUD (handled by config UI in the current phase)
 - Modifying canonical `Property` or `UserProperty` content beyond reading for push
 
-## 3.5 EstateWeb reference implementation
+## 3.5 EstateWeb reference implementation [DONE]
 
 Implemented in `api/src/integrations/estateweb/`. Summary of behaviour the orchestrator can rely on:
 
@@ -243,9 +246,9 @@ Consumers should catch `EstateWebException`, log/notify, and map to a `CmsSyncRu
 
 ---
 
-# 4. Sync Triggers
+# 4. Sync Triggers [PENDING]
 
-## 4.1 Crawl pipeline (automatic)
+## 4.1 Crawl pipeline (automatic) [PENDING]
 
 The crawl itself (Playwright scrape + AI normalization) runs **once per `CrawlRun`, shared across every user tracking that agency** — see `PROJECT-SPECIFICATIONS.MD`. CMS sync is the per-user fan-out that happens after: once the shared crawl has created/updated canonical `Property` rows, written `PropertyHistory`, and created/updated each tracker's `UserProperty` rows (already per-tracker — see `UserPropertiesService.syncForProperty`), collect every affected `UserProperty` **per tracked agency's linked integration** into one batch:
 
@@ -270,40 +273,94 @@ Generate reports
 
 The link lookup replaces the old "for each active UserCms" fan-out: the sync target is deterministic per tracked agency, not per user. Within one tracker's batch, `track_new_listings`/`track_updated_listings`/`track_removed_listings` (on `UserTrackedAgency`) still decide which of that crawl's changes are included at all.
 
+**Before enqueueing any CREATE/UPDATE/REMOVE pushes**, the orchestrator MUST collapse the batch by `duplicate_group_id` per §4.5 so grouped duplicates never produce two CMS creates for the same listing.
+
 ### New listing
 
 First time a tracking user gets a `UserProperty` for a listing → included as a `CREATE` push in that tracker's `CmsSyncRun` batch for this crawl; counted in `total_created` on success. Adapter also uploads images via `uploadPropertyImage` after create (EstateWeb requires a separate multipart request per image).
+
+If that `UserProperty` shares a non-null `duplicate_group_id` with another `UserProperty` already in the same tracker's batch (or already synced under that group), apply §4.5 — only one CREATE goes to the CMS.
 
 ### Updated listing
 
 Canonical change detected and `UserProperty` updated (or user copy refreshed) → included as an `UPDATE` push in the batch; counted in `total_updated`. Only changed fields need be sent if the adapter supports partial update (EstateWeb `PATCH /api/property/:id` supports partial payload).
 
+Grouped members that share an `integration_property_id` collapse to a single UPDATE per §4.5.
+
 ### Removed listing
 
 `SourceProperty` marked `REMOVED`, `PropertyHistory` written, user's `UserProperty` reflects removal → included as a `REMOVE` push in the batch; counted in `total_removed`.
 
-## 4.2 Connect / link (manual)
+For a duplicate group, REMOVE from the CMS only when every active group member for that tracker is removed (or the shared CMS listing has no remaining active members) — see §4.5.
+
+## 4.5 Duplicate groups — no double CMS entry [PENDING]
+
+Canonical listings may share `Property.duplicate_group_id` (auto-detected during normalization when title + city + price≈match, or set manually via admin merge). That id is copied onto each tracker's `UserProperty.duplicate_group_id`. Without sync-side dedup, a crawl that creates two grouped `UserProperty` rows would push **two CREATEs** into the same EstateWeb (or other CMS) account — a duplicate CRM listing.
+
+### Scope
+
+Dedup applies **within one `CmsSyncRun` batch** (one tracker → one `UserIntegration`). Rows with `duplicate_group_id = null` are never collapsed with each other. Groups that land on **different** `UserIntegration`s (different CMS accounts) are independent — each account may receive its own listing.
+
+### Representative selection
+
+For each non-null `duplicate_group_id` present in the batch (and among already-synced `UserProperty` rows for that tracker with the same group id):
+
+1. Prefer the member that already has a non-null `integration_property_id` (already in the CMS)
+2. Else prefer the oldest `UserProperty` by `created_at` (stable, deterministic)
+3. Else fall back to lowest `UserProperty.id`
+
+That member is the **sync representative** for the group.
+
+### CREATE
+
+- Emit **at most one CREATE** per `duplicate_group_id` (the representative).
+- Non-representative members that would have been CREATE are **skipped**, not failed — record them on the batch `response`, e.g. `{ skipped_duplicate_property_ids: [...] }`, so retries do not attempt a second create.
+- On successful CREATE, set `integration_property_id` on the representative **and** on every other `UserProperty` in that group for this tracker (same CMS listing id). Future updates for any member target that shared CMS record.
+
+### UPDATE
+
+- If multiple group members change in the same crawl, emit **one UPDATE** against the shared `integration_property_id` (payload from the representative, or a merge of changed fields — implementation choice; prefer representative's current `UserProperty` snapshot).
+- Non-representative UPDATEs are skipped the same way as skipped CREATEs (`skipped_duplicate_property_ids`).
+- If a non-representative somehow has no `integration_property_id` yet but the representative does, stamp the shared id and treat as UPDATE, never CREATE.
+
+### REMOVE
+
+- Do **not** REMOVE the CMS listing when only one member of the group is marked removed while others remain active for that tracker.
+- Emit REMOVE only when **no active group member** remains for that tracker (all members removed / inactive), or when the representative is removed and no other active member can take over the shared `integration_property_id`.
+- When REMOVE succeeds, clear `integration_property_id` on all group members for that tracker.
+
+### Admin merge / split after sync
+
+- **Merge** (admin assigns a shared `duplicate_group_id` after some members already have distinct CMS listings): out of automatic scope for v1 — document as an operator follow-up (manually delete the extra CMS listing, then stamp surviving `integration_property_id` onto all group members). Orchestrator MUST still refuse additional CREATEs for members that join a group which already has an `integration_property_id`.
+- **Split** (admin clears `duplicate_group_id` on one property): that property becomes eligible for its own CREATE on the next sync if it has no `integration_property_id`; the remaining group keeps the existing CMS listing.
+
+### Counts
+
+- `total_created` / `total_updated` / `total_removed` count only pushes that actually hit the CMS.
+- Skipped duplicates are neither successes nor failures — they must not inflate `total_failed` or appear in `failed_property_ids`.
+
+## 4.2 Connect / link (manual) [PARTIAL]
 
 When a user completes an EstateWeb `UserIntegration` connect flow **and links it to a tracked agency** via `UserTrackedAgencyIntegrationLink`:
 
 1. Create or update `UserIntegration` with `is_active: true` and valid `email` + `password`
 2. Create/update `UserTrackedAgencyIntegrationLink`
 3. Optionally call `EstateWebIntegrationResolverService.testConnection()` to force a login and persist a working session before the first sync runs
-4. **Enqueue initial backfill** — one `CmsSyncRun` batch (not tied to any `CrawlRun` in this case — see note below) containing a `CREATE` push per existing `UserProperty` for that tracked agency (respecting `is_modified` policy: optionally skip or push user-edited copies based on product decision; chunk by `concurrent_insertions` / `insertion_interval_minutes` when pushing)
+4. **Enqueue initial backfill** — one `CmsSyncRun` batch (not tied to any `CrawlRun` in this case — see note below) containing a `CREATE` push per existing `UserProperty` for that tracked agency (respecting `is_modified` policy: optionally skip or push user-edited copies based on product decision; chunk by `concurrent_insertions` / `insertion_interval_minutes` when pushing). Backfill MUST apply the same §4.5 duplicate-group collapse as crawl-driven sync — one CREATE per `duplicate_group_id`, shared `integration_property_id` stamped on all group members
 
 Note: `CmsSyncRun.crawl_run_id` is required for crawl-driven batches (4.1). A backfill batch has no crawl to attach to — either relax the FK to nullable specifically for this case, or synthesize a no-op `CrawlRun` for the backfill so the constraint holds and `recalculateCmsSyncTotals` still works uniformly (product/implementation decision).
 
-## 4.3 Manual retry (admin)
+## 4.3 Manual retry (admin) [PENDING]
 
 From the CMS Sync subpage, admin can retry any failed `CmsSyncRun` batch — resets status to `PENDING` or `RETRYING`, re-enqueues, and (per 2.5) should only re-push the properties recorded as failed in `response`, not the whole batch, when that information is available.
 
-## 4.4 Manual retry (user)
+## 4.4 Manual retry (user) [PENDING]
 
 Optional: user-facing "Retry failed syncs" on Integrations page for their connection.
 
 ---
 
-# 5. Retry and No-Data-Loss Guarantees
+# 5. Retry and No-Data-Loss Guarantees [PENDING]
 
 - The first property push for a `(crawl_run, user_integration)` pair creates the `CmsSyncRun` row for that batch; every subsequent push in the same batch, and every retry, updates that same row in place — nothing per-property is ever a separate row
 - As each property push resolves, increment `total_created`/`total_updated`/`total_removed` (success) or `total_failed` (failure) on the row, and append the outcome to `response` (e.g. `{ failed_property_ids: [...] }`) so a retry knows exactly what's left, not just that "something" failed
@@ -323,21 +380,21 @@ When `max_attempts` is exhausted:
 
 ---
 
-# 6. Admin Dashboard
+# 6. Admin Dashboard [PARTIAL]
 
-## 6.1 Dashboard home KPIs (additions)
+## 6.1 Dashboard home KPIs (additions) [PENDING]
 
 - CMS Synchronization Status — pending / failed `CmsSyncRun` counts across all `UserIntegration` connections
 - Active CMS Connections — `UserIntegration` with `is_active: true` and `integration_type` participating in sync (currently `ESTATEWEB`) / total configured
 
-## 6.2 Integration Targets (`/admin/integration-targets`) — sync extensions
+## 6.2 Integration Targets (`/admin/integration-targets`) — sync extensions [PARTIAL]
 
 Extends the configuration-only subpage from the current phase:
 
 - Connected accounts table adds **recent sync success/failure counts** per `UserIntegration`
 - Disabling a target (`is_enabled: false`) **pauses sync** for all linked `UserIntegration` rows (no new jobs enqueued; in-flight jobs should complete or fail gracefully)
 
-## 6.3 CMS Sync (`/admin/cms-sync`) — new subpage
+## 6.3 CMS Sync (`/admin/cms-sync`) — new subpage [PARTIAL]
 
 Backed by: `CmsSyncRun` (one row per crawl per user integration), `UserIntegration`, `CrawlRun`, `UserTrackedAgencyIntegrationLink`
 
@@ -346,7 +403,7 @@ Backed by: `CmsSyncRun` (one row per crawl per user integration), `UserIntegrati
 - **Retry sync** action on failed rows — re-pushes only the properties recorded as failed in `response`, not the whole batch
 - Bulk retry for selected failed rows (optional)
 
-## 6.4 Notifications (`/admin/notifications`) — addition
+## 6.4 Notifications (`/admin/notifications`) — addition [PARTIAL]
 
 - Generic `CMS_SYNC_FAILURE` notification type for adapter-agnostic sync failures
 - Adapter-specific `ESTATEWEB_*` notification types already defined in the `NotificationType` enum and emitted by `EstateWebNotificationService`:
@@ -355,36 +412,36 @@ Backed by: `CmsSyncRun` (one row per crawl per user integration), `UserIntegrati
 
 All notifications deep-link to the failed `CmsSyncRun`, its `UserIntegration`, and (when resolvable) the `SourceAgency` behind the linked `UserTrackedAgency`.
 
-## 6.5 Users subpage — addition
+## 6.5 Users subpage — addition [PARTIAL]
 
 - Per-user detail shows sync summary per `UserIntegration` connection (last success, pending/failed counts) and lists all `UserTrackedAgencyIntegrationLink` rows so admins can see which tracker uses which credentials
 
 ---
 
-# 7. User Integrations Page (`/integrations`) — sync extensions
+# 7. User Integrations Page (`/integrations`) — sync extensions [PARTIAL]
 
 Extends the configuration-only Integrations page from the current phase.
 
-### Connected accounts (additions)
+### Connected accounts (additions) [PARTIAL]
 
 - **Sync status summary** — recent `CmsSyncRun` counts (pending, failed, last success)
 - Link to **per-connection sync history** (read-only list of `CmsSyncRun` for that `UserIntegration`)
 - **Enable / Disable** — disabling pauses sync without deleting credentials (already in config phase; now affects job enqueueing)
 - **Default connection** — toggle `is_default` for the fallback when a `UserTrackedAgency` has no explicit link
 
-### Tracker → integration linking
+### Tracker → integration linking [DONE]
 
 - For each `UserTrackedAgency` on the tracker management screen, allow selecting a `UserIntegration` for the same `integration_type` (creates/updates the `UserTrackedAgencyIntegrationLink`)
 - Warn when a tracker has no link and no `is_default` connection exists — sync will not run
 
-### Connect flow (addition)
+### Connect flow (addition) [PARTIAL]
 
 Step 5 after creating or linking a `UserIntegration`:
 
 - Call the adapter's test-connection method (e.g. `EstateWebIntegrationResolverService.testConnection()`) to persist a working session
 - Enqueue **initial backfill sync** for all existing `UserProperty` rows belonging to the linked `UserTrackedAgency`
 
-### Disconnect (addition)
+### Disconnect (addition) [PENDING]
 
 - Warn if pending `CmsSyncRun`s exist for the connection
 - Warn if any `UserTrackedAgencyIntegrationLink` still references this `UserIntegration` — disconnecting will cascade-delete the link (`onDelete: Cascade`), and subsequent crawls will have no target
@@ -392,36 +449,38 @@ Step 5 after creating or linking a `UserIntegration`:
 
 ---
 
-# 8. Property Update and Removal Behaviour
+# 8. Property Update and Removal Behaviour [PENDING]
 
-## 8.1 Updates
+## 8.1 Updates [PENDING]
 
 When crawl detects field changes on a canonical `Property`:
 
 1. Write `PropertyHistory`
 2. Update tracking users' `UserProperty` (respect `is_modified` — do not overwrite user edits without explicit re-sync)
 3. For each affected `UserProperty` whose owning `UserTrackedAgency` has an active `UserTrackedAgencyIntegrationLink`, include it as an `UPDATE` push in that tracker's `CmsSyncRun` batch for this crawl, with changed fields only where the adapter supports it (EstateWeb: `PATCH /api/property/:id` with partial payload)
+4. Collapse duplicate-group members to a single UPDATE per §4.5 before calling the adapter
 
-## 8.2 Removals
+## 8.2 Removals [PENDING]
 
 When a listing is removed from source:
 
 1. `SourceProperty.status` → `REMOVED`
 2. `PropertyHistory` (`REMOVED`)
 3. Update `UserProperty` to reflect removal
-4. Include it as a `REMOVE` push in the linked `UserIntegration`'s batch for this crawl
+4. Include it as a `REMOVE` push in the linked `UserIntegration`'s batch for this crawl — subject to §4.5 (do not remove the CMS listing while other active group members remain)
 
-## 8.3 Reappearance
+## 8.3 Reappearance [PENDING]
 
 When a removed listing reappears:
 
 1. `PropertyHistory` (`REAPPEARED`)
 2. Restore `UserProperty` status
 3. Include it as a `CREATE` or `UPDATE` push in the linked `UserIntegration`'s batch (adapter decides based on whether the CMS still has the listing — EstateWeb should probe with `GET /api/property/:id` when a local reference exists)
+4. If the property rejoins (or already belongs to) a duplicate group that already has an `integration_property_id` on any member, treat as UPDATE against that shared id — never a second CREATE (§4.5)
 
 ---
 
-# 9. Background Jobs
+# 9. Background Jobs [PENDING]
 
 Sync execution runs outside the HTTP request path:
 
@@ -442,7 +501,7 @@ Implement as a simple chunked loop inside the batch job (push `concurrent_insert
 
 ---
 
-# 10. Security
+# 10. Security [PARTIAL]
 
 - Credentials on `UserIntegration` must never be returned in API responses or logs — mask in UI
 - Encrypt `api_key_secret`, `password` at rest (application-level or DB-level — implementation detail)
@@ -453,12 +512,13 @@ Implement as a simple chunked loop inside the batch job (push `concurrent_insert
 
 ---
 
-# 11. Logging
+# 11. Logging [PENDING]
 
 Log events specific to this phase:
 
 - CMS sync batch job enqueued (`crawl_run_id`, `user_integration_id`, `user_tracked_agency_id`)
 - CMS sync attempt started / succeeded / failed, per property within the batch and for the batch as a whole
+- CMS sync duplicate-group skip (representative id, skipped member ids, shared `integration_property_id`)
 - CMS sync retry scheduled (including 401/403 session-refresh retry)
 - CMS sync max attempts exhausted
 - CMS sync manual retry triggered (admin/user)
@@ -468,7 +528,7 @@ Log events specific to this phase:
 
 ---
 
-# 12. Future Expansion
+# 12. Future Expansion [PENDING]
 
 - Additional `IntegrationType` values participating in CMS sync (WordPress, custom REST, etc.) — each adds its own `integrations/<type>/` module following the EstateWeb layout
 - Webhook callbacks from CMS on publish confirmation
@@ -480,7 +540,7 @@ Log events specific to this phase:
 
 ---
 
-# 13. Success Criteria
+# 13. Success Criteria [PENDING]
 
 When this specification is fully implemented:
 
@@ -508,6 +568,7 @@ When this specification is fully implemented:
 - Sync only runs for active `UserIntegration` + active parent `IntegrationTarget`
 - Sync target for each `UserTrackedAgency` is resolved deterministically via `UserTrackedAgencyIntegrationLink` (with optional `is_default` fallback)
 - Per-tracker throttling (`concurrent_insertions`, `insertion_interval_minutes`) paces property pushes **within** each tracker's batch
+- **Duplicate groups never produce two CMS creates for the same listing** — orchestrator collapses by `UserProperty.duplicate_group_id` (§4.5), stamps a shared `integration_property_id` on all group members, and skips non-representative pushes without counting them as failures
 - Each participating `IntegrationType` is isolated in its own `integrations/<type>/` module with no scraping or normalization logic — the EstateWeb module is the reference implementation
 
 ---
@@ -515,6 +576,7 @@ When this specification is fully implemented:
 # 14. Related Documents
 
 - `PROJECT-SPECIFICATIONS.MD` — main platform spec; current phase ends at `UserProperty` + `PropertyHistory`. Also defines `CrawlRun` as one row per scraper run (shared across trackers) and `SourceAgency.crawl_interval` as the sole crawl-scheduling authority — this spec's `CmsSyncRun` batches are the per-user layer built on top of that shared crawl
-- `api/prisma/schema.prisma` — `CrawlRun`, `IntegrationTarget`, `UserIntegration`, `UserTrackedAgency`, `UserTrackedAgencyIntegrationLink`, `CmsSyncRun`, `NotificationType`, `IntegrationType`, `AuthType` enums
+- `api/prisma/schema.prisma` — `CrawlRun`, `IntegrationTarget`, `UserIntegration`, `UserTrackedAgency`, `UserTrackedAgencyIntegrationLink`, `CmsSyncRun`, `Property.duplicate_group_id`, `UserProperty.duplicate_group_id` / `integration_property_id`, `NotificationType`, `IntegrationType`, `AuthType` enums
 - `api/src/integrations/estateweb/` — reference adapter implementation (auth, session, client, property, resolver, notifications, exceptions)
 - `scraping-generation-computer-use-architecture.md` — upstream crawl pipeline (sync step plugs in after `UserProperty` update)
+- `PROJECT-SPECIFICATIONS.MD` §Properties / duplicate grouping — how `duplicate_group_id` is assigned (normalization match + admin merge/split); this sync spec consumes that id to avoid double CMS entry

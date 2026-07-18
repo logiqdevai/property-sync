@@ -54,6 +54,11 @@ export class PropertiesController {
   @ApiQuery({ name: 'price_min', required: false, type: Number })
   @ApiQuery({ name: 'price_max', required: false, type: Number })
   @ApiQuery({ name: 'duplicate_group_id', required: false, type: String })
+  @ApiQuery({
+    name: 'has_duplicate_group',
+    required: false,
+    enum: ['true', 'false'],
+  })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'agency_id', required: false, type: String })
   findAll(
@@ -72,6 +77,11 @@ export class PropertiesController {
   @ApiQuery({ name: 'price_min', required: false, type: Number })
   @ApiQuery({ name: 'price_max', required: false, type: Number })
   @ApiQuery({ name: 'duplicate_group_id', required: false, type: String })
+  @ApiQuery({
+    name: 'has_duplicate_group',
+    required: false,
+    enum: ['true', 'false'],
+  })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'agency_id', required: false, type: String })
   count(
@@ -97,6 +107,18 @@ export class PropertiesController {
   @ApiResponse({ status: 400, description: 'Invalid property ids' })
   removeMany(@Body() dto: DeletePropertiesDto) {
     return this.propertiesService.removeMany(dto.property_ids);
+  }
+
+  @Post('dedupe-groups')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary: 'Keep one property per duplicate group and delete the rest',
+  })
+  @ApiResponse({ status: 200, description: 'Duplicate group members deduped' })
+  @ApiResponse({ status: 400, description: 'No multi-member groups in selection' })
+  @ApiResponse({ status: 404, description: 'One or more properties not found' })
+  dedupeGroups(@Body() dto: DeletePropertiesDto) {
+    return this.propertiesService.dedupeGroups(dto.property_ids);
   }
 
   @Get(':id')

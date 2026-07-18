@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -52,17 +53,28 @@ export class UserPropertiesService {
     query: UserPropertyQueryType,
     sourceAgencyId?: string,
   ): Prisma.UserPropertyWhereInput {
+    const hasCanonicalFilter =
+      !!sourceAgencyId || query.has_duplicate_group !== undefined;
+
     return {
       user_id: userId,
       ...(query.status && { status: query.status }),
       ...(query.city && { city: { contains: query.city, mode: 'insensitive' } }),
-      ...(sourceAgencyId && {
+      ...(hasCanonicalFilter && {
         canonical_property: {
-          source_links: {
-            some: {
-              source_property: { source_agency_id: sourceAgencyId },
+          ...(sourceAgencyId && {
+            source_links: {
+              some: {
+                source_property: { source_agency_id: sourceAgencyId },
+              },
             },
-          },
+          }),
+          ...(query.has_duplicate_group === true && {
+            duplicate_group_id: { not: null },
+          }),
+          ...(query.has_duplicate_group === false && {
+            duplicate_group_id: null,
+          }),
         },
       }),
       ...(query.price_min != null || query.price_max != null
@@ -101,12 +113,22 @@ export class UserPropertiesService {
         skip: (query.page - 1) * query.limit,
         take: query.limit,
         orderBy: { updated_at: 'desc' },
+        include: {
+          canonical_property: {
+            select: { duplicate_group_id: true },
+          },
+        },
       }),
       this.prisma.userProperty.count({ where }),
     ]);
 
     return {
-      data: items.map((item) => serializePropertyForApi(item)),
+      data: items.map(({ canonical_property, ...item }) =>
+        serializePropertyForApi({
+          ...item,
+          duplicate_group_id: canonical_property.duplicate_group_id,
+        }),
+      ),
       pagination: {
         page: query.page,
         limit: query.limit,
@@ -216,26 +238,157 @@ export class UserPropertiesService {
   }
 
   async remove(userId: string, id: string) {
-    await this.assertOwned(userId, id);
+    const property = await this.prisma.userProperty.findFirst({
+      where: { id, user_id: userId },
+      select: {
+        id: true,
+        duplicate_group_id: true,
+        canonical_property: { select: { duplicate_group_id: true } },
+      },
+    });
+
+    if (!property) {
+      throw new ForbiddenException('Property not found');
+    }
+
+    const groupId =
+      property.canonical_property.duplicate_group_id ??
+      property.duplicate_group_id;
+
     await this.prisma.userProperty.delete({ where: { id } });
+
+    if (groupId) {
+      await this.clearSingletonUserDuplicateGroups(userId, [groupId]);
+    }
   }
 
   async removeMany(userId: string, ids: string[]) {
     const uniqueIds = [...new Set(ids)];
     const owned = await this.prisma.userProperty.findMany({
       where: { user_id: userId, id: { in: uniqueIds } },
-      select: { id: true },
+      select: {
+        id: true,
+        duplicate_group_id: true,
+        canonical_property: { select: { duplicate_group_id: true } },
+      },
     });
 
     if (owned.length !== uniqueIds.length) {
       throw new NotFoundException('One or more properties not found');
     }
 
+    const groupIds = owned
+      .map(
+        (property) =>
+          property.canonical_property.duplicate_group_id ??
+          property.duplicate_group_id,
+      )
+      .filter((groupId): groupId is string => !!groupId);
+
     await this.prisma.userProperty.deleteMany({
       where: { user_id: userId, id: { in: uniqueIds } },
     });
 
+    await this.clearSingletonUserDuplicateGroups(userId, groupIds);
+
     return { deleted: uniqueIds.length };
+  }
+
+  async dedupeGroups(userId: string, ids: string[]) {
+    const uniqueIds = [...new Set(ids)];
+    const properties = await this.prisma.userProperty.findMany({
+      where: { user_id: userId, id: { in: uniqueIds } },
+      select: {
+        id: true,
+        duplicate_group_id: true,
+        canonical_property: { select: { duplicate_group_id: true } },
+      },
+    });
+
+    if (properties.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more properties not found');
+    }
+
+    const byGroup = new Map<string, string[]>();
+    for (const property of properties) {
+      const groupId =
+        property.canonical_property.duplicate_group_id ??
+        property.duplicate_group_id;
+      if (!groupId) continue;
+      const members = byGroup.get(groupId) ?? [];
+      members.push(property.id);
+      byGroup.set(groupId, members);
+    }
+
+    const keepIds: string[] = [];
+    const deleteIds: string[] = [];
+    const affectedGroupIds: string[] = [];
+
+    for (const [groupId, members] of byGroup) {
+      if (members.length < 2) continue;
+      const sorted = [...members].sort();
+      keepIds.push(sorted[0]);
+      deleteIds.push(...sorted.slice(1));
+      affectedGroupIds.push(groupId);
+    }
+
+    if (deleteIds.length === 0) {
+      throw new BadRequestException(
+        'Select at least two properties from the same duplicate group',
+      );
+    }
+
+    await this.prisma.userProperty.deleteMany({
+      where: { user_id: userId, id: { in: deleteIds } },
+    });
+
+    await this.clearSingletonUserDuplicateGroups(userId, affectedGroupIds);
+
+    return { deleted: deleteIds.length, kept: keepIds };
+  }
+
+  private async clearSingletonUserDuplicateGroups(
+    userId: string,
+    groupIds: string[],
+  ) {
+    const uniqueGroupIds = [...new Set(groupIds.filter(Boolean))];
+
+    for (const groupId of uniqueGroupIds) {
+      const remaining = await this.prisma.userProperty.findMany({
+        where: {
+          user_id: userId,
+          OR: [
+            { duplicate_group_id: groupId },
+            { canonical_property: { duplicate_group_id: groupId } },
+          ],
+        },
+        select: { id: true },
+      });
+
+      if (remaining.length !== 1) continue;
+
+      await this.prisma.userProperty.update({
+        where: { id: remaining[0].id },
+        data: { duplicate_group_id: null },
+      });
+
+      const canonicalRemaining = await this.prisma.property.count({
+        where: { duplicate_group_id: groupId },
+      });
+
+      if (canonicalRemaining === 1) {
+        await this.prisma.$transaction([
+          this.prisma.property.updateMany({
+            where: { duplicate_group_id: groupId },
+            data: { duplicate_group_id: null },
+          }),
+          this.prisma.userProperty.updateMany({
+            where: { duplicate_group_id: groupId },
+            data: { duplicate_group_id: null },
+          }),
+        ]);
+      }
+    }
   }
 
   async syncForProperty(

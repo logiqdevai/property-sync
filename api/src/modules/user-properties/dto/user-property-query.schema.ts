@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { PropertyStatus } from 'generated/prisma';
 
+const booleanQueryParam = z
+  .enum(['true', 'false'])
+  .optional()
+  .transform((v) => (v === undefined ? undefined : v === 'true'));
+
 export const UserPropertyQuerySchema = z.object({
   page: z
     .string()
@@ -20,6 +25,7 @@ export const UserPropertyQuerySchema = z.object({
     .string()
     .optional()
     .transform((v) => (v ? parseFloat(v) : undefined)),
+  has_duplicate_group: booleanQueryParam,
   agency_id: z.string().uuid().optional(),
   user_tracked_agency_id: z.string().uuid().optional(),
 });

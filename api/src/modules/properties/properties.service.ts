@@ -27,9 +27,13 @@ export class PropertiesService {
       ...(query.listing_type && { listing_type: query.listing_type }),
       ...(query.property_type && { property_type: query.property_type }),
       ...(query.city && { city: { contains: query.city, mode: 'insensitive' } }),
-      ...(query.duplicate_group_id && {
-        duplicate_group_id: query.duplicate_group_id,
-      }),
+      ...(query.duplicate_group_id
+        ? { duplicate_group_id: query.duplicate_group_id }
+        : query.has_duplicate_group === true
+          ? { duplicate_group_id: { not: null } }
+          : query.has_duplicate_group === false
+            ? { duplicate_group_id: null }
+            : {}),
       ...(query.search && {
         OR: [
           { title: { contains: query.search, mode: 'insensitive' } },
@@ -181,6 +185,11 @@ export class PropertiesService {
       data: { duplicate_group_id: groupId },
     });
 
+    await this.prisma.userProperty.updateMany({
+      where: { canonical_property_id: { in: dto.property_ids } },
+      data: { duplicate_group_id: groupId },
+    });
+
     return this.prisma.property.findMany({
       where: { id: { in: dto.property_ids } },
     }).then((items) => items.map((item) => serializePropertyForApi(item)));
@@ -196,41 +205,132 @@ export class PropertiesService {
       throw new BadRequestException('Property is not in a duplicate group');
     }
 
-    return serializePropertyForApi(
-      await this.prisma.property.update({
+    const groupId = property.duplicate_group_id;
+
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.property.update({
         where: { id },
         data: { duplicate_group_id: null },
       }),
-    );
+      this.prisma.userProperty.updateMany({
+        where: { canonical_property_id: id },
+        data: { duplicate_group_id: null },
+      }),
+    ]);
+
+    await this.clearSingletonDuplicateGroups([groupId]);
+
+    return serializePropertyForApi(updated);
   }
 
   async remove(id: string) {
     const property = await this.prisma.property.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, duplicate_group_id: true },
     });
 
     if (!property) {
       throw new NotFoundException('Property not found');
     }
 
+    const groupId = property.duplicate_group_id;
     await this.prisma.property.delete({ where: { id } });
+
+    if (groupId) {
+      await this.clearSingletonDuplicateGroups([groupId]);
+    }
   }
 
   async removeMany(propertyIds: string[]) {
     const uniqueIds = [...new Set(propertyIds)];
-    const count = await this.prisma.property.count({
+    const properties = await this.prisma.property.findMany({
       where: { id: { in: uniqueIds } },
+      select: { id: true, duplicate_group_id: true },
     });
 
-    if (count !== uniqueIds.length) {
+    if (properties.length !== uniqueIds.length) {
       throw new NotFoundException('One or more properties not found');
     }
+
+    const groupIds = properties
+      .map((property) => property.duplicate_group_id)
+      .filter((groupId): groupId is string => !!groupId);
 
     await this.prisma.property.deleteMany({
       where: { id: { in: uniqueIds } },
     });
 
+    await this.clearSingletonDuplicateGroups(groupIds);
+
     return { deleted: uniqueIds.length };
+  }
+
+  async dedupeGroups(propertyIds: string[]) {
+    const uniqueIds = [...new Set(propertyIds)];
+    const properties = await this.prisma.property.findMany({
+      where: { id: { in: uniqueIds } },
+      select: { id: true, duplicate_group_id: true },
+    });
+
+    if (properties.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more properties not found');
+    }
+
+    const byGroup = new Map<string, string[]>();
+    for (const property of properties) {
+      if (!property.duplicate_group_id) continue;
+      const members = byGroup.get(property.duplicate_group_id) ?? [];
+      members.push(property.id);
+      byGroup.set(property.duplicate_group_id, members);
+    }
+
+    const keepIds: string[] = [];
+    const deleteIds: string[] = [];
+    const affectedGroupIds: string[] = [];
+
+    for (const [groupId, members] of byGroup) {
+      if (members.length < 2) continue;
+      const sorted = [...members].sort();
+      keepIds.push(sorted[0]);
+      deleteIds.push(...sorted.slice(1));
+      affectedGroupIds.push(groupId);
+    }
+
+    if (deleteIds.length === 0) {
+      throw new BadRequestException(
+        'Select at least two properties from the same duplicate group',
+      );
+    }
+
+    await this.prisma.property.deleteMany({
+      where: { id: { in: deleteIds } },
+    });
+
+    await this.clearSingletonDuplicateGroups(affectedGroupIds);
+
+    return { deleted: deleteIds.length, kept: keepIds };
+  }
+
+  private async clearSingletonDuplicateGroups(groupIds: string[]) {
+    const uniqueGroupIds = [...new Set(groupIds.filter(Boolean))];
+
+    for (const groupId of uniqueGroupIds) {
+      const remaining = await this.prisma.property.count({
+        where: { duplicate_group_id: groupId },
+      });
+
+      if (remaining !== 1) continue;
+
+      await this.prisma.$transaction([
+        this.prisma.property.updateMany({
+          where: { duplicate_group_id: groupId },
+          data: { duplicate_group_id: null },
+        }),
+        this.prisma.userProperty.updateMany({
+          where: { duplicate_group_id: groupId },
+          data: { duplicate_group_id: null },
+        }),
+      ]);
+    }
   }
 }

@@ -7,7 +7,6 @@ import {
   Building2,
   Calendar,
   ExternalLink,
-  Layers,
   MapPin,
   Maximize2,
   Ruler,
@@ -15,6 +14,7 @@ import {
 import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/listing-type-filter.options";
 import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/property-type-filter.options";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
+import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
 import { formatPropertyHistoryLabel } from "@/features/properties/utils/format-property-history";
 import type {
   CmsPropertyFieldEntry,
@@ -250,14 +250,7 @@ export function PropertyDetailView({
                     </Chip.Label>
                   </Chip>
                   {property.duplicate_group_id && (
-                    <Chip size="sm" variant="soft" color="warning">
-                      <Chip.Label>
-                        <span className="inline-flex items-center gap-1">
-                          <Layers className="size-3" />
-                          Duplicate group
-                        </span>
-                      </Chip.Label>
-                    </Chip>
+                    <PropertyDuplicateGroupChip groupId={property.duplicate_group_id} />
                   )}
                   {headerExtra}
                 </div>
