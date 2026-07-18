@@ -7,6 +7,7 @@ export interface TrackingPrefs {
   user_integration_id?: string | null;
   concurrent_insertions?: number;
   insertion_interval_minutes?: number;
+  text_truncate_pieces?: string[];
 }
 
 export interface TrackableAgency {
@@ -29,6 +30,9 @@ export interface TrackAgencyPayload {
   track_updated_listings?: boolean;
   use_ai_batching?: boolean;
   enabled?: boolean;
+  concurrent_insertions?: number;
+  insertion_interval_minutes?: number;
+  text_truncate_pieces?: string[];
 }
 
 export interface AgencyListQuery {
@@ -56,6 +60,7 @@ export interface UserTrackedAgency {
   enabled: boolean;
   concurrent_insertions: number;
   insertion_interval_minutes: number;
+  text_truncate_pieces: string[];
   track_new_listings: boolean;
   track_removed_listings: boolean;
   track_updated_listings: boolean;

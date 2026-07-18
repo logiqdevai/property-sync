@@ -21,7 +21,6 @@ import {
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
-import { AuthRole } from 'generated/prisma';
 import { UserTrackedAgenciesService } from './user-tracked-agencies.service';
 import { TrackAgencyDto } from './dto/track-agency.dto';
 import { LinkIntegrationDto } from './dto/link-integration.dto';
@@ -47,11 +46,10 @@ export class UserTrackedAgenciesController {
   @ApiQuery({ name: 'search', required: false, type: String })
   findAll(
     @CurrentUser('id') userId: string,
-    @CurrentUser('role') role: AuthRole,
     @Query(new ZodValidationPipe(BrowseAgencyQuerySchema))
     query: BrowseAgencyQueryType,
   ) {
-    return this.userTrackedAgenciesService.findAll(userId, query, role);
+    return this.userTrackedAgenciesService.findAll(userId, query);
   }
 
   @Post(':agencyId/track')

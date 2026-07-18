@@ -4,6 +4,7 @@ import { CreateAgencyDto } from './dto/create-agency.dto';
 import { UpdateAgencyDto } from './dto/update-agency.dto';
 import { UpdateAgencyVisibilityDto } from './dto/update-agency-visibility.dto';
 import { UpdateTrackerAdminSettingsDto } from './dto/update-tracker-admin-settings.dto';
+import { normalizeTextTruncatePieces } from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
 import { AgencyQueryType } from './dto/agency-query.schema';
 import { PaginatedResult } from './interfaces/agency.interface';
 
@@ -150,6 +151,9 @@ export class AgenciesService {
                     insertion_interval_minutes: dto.insertion_interval_minutes,
                 }),
                 ...(dto.use_ai_batching !== undefined && { use_ai_batching: dto.use_ai_batching }),
+                ...(dto.text_truncate_pieces !== undefined && {
+                    text_truncate_pieces: normalizeTextTruncatePieces(dto.text_truncate_pieces),
+                }),
             },
         });
     }

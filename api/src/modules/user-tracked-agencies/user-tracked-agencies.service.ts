@@ -10,16 +10,12 @@ import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import { BrowseAgencyQueryType } from './dto/agency-query.schema';
 import { TrackAgencyDto } from './dto/track-agency.dto';
 import {
-  AuthRole,
   IntegrationType,
   Prisma,
 } from 'generated/prisma';
+import { normalizeTextTruncatePieces } from './utils/apply-text-truncate-pieces.util';
 
 const LINKABLE_INTEGRATION_TYPE = IntegrationType.ESTATEWEB;
-
-function canViewAdminTrackerSettings(role?: AuthRole): boolean {
-  return role === AuthRole.ADMIN || role === AuthRole.SUPER_ADMIN;
-}
 
 @Injectable()
 export class UserTrackedAgenciesService {
@@ -28,7 +24,7 @@ export class UserTrackedAgenciesService {
     private readonly userIntegrationsService: UserIntegrationsService,
   ) {}
 
-  async findAll(userId: string, query: BrowseAgencyQueryType, role?: AuthRole) {
+  async findAll(userId: string, query: BrowseAgencyQueryType) {
     const where: Prisma.SourceAgencyWhereInput = {
       is_visible: true,
       ...(query.search && {
@@ -69,7 +65,6 @@ export class UserTrackedAgenciesService {
     return {
       data: agencies.map((agency) => {
         const tracker = trackerByAgencyId.get(agency.id);
-        const showAdminSettings = canViewAdminTrackerSettings(role);
         return {
           ...agency,
           is_tracked: Boolean(tracker?.enabled),
@@ -84,10 +79,9 @@ export class UserTrackedAgenciesService {
                 enabled: tracker.enabled,
                 user_integration_id:
                   tracker.integration_link?.user_integration_id ?? null,
-                ...(showAdminSettings && {
-                  concurrent_insertions: tracker.concurrent_insertions,
-                  insertion_interval_minutes: tracker.insertion_interval_minutes,
-                }),
+                concurrent_insertions: tracker.concurrent_insertions,
+                insertion_interval_minutes: tracker.insertion_interval_minutes,
+                text_truncate_pieces: tracker.text_truncate_pieces,
               }
               : undefined,
         };
@@ -171,6 +165,15 @@ export class UserTrackedAgenciesService {
           use_ai_batching: dto.use_ai_batching,
         }),
         ...(dto.enabled !== undefined && { enabled: dto.enabled }),
+        ...(dto.concurrent_insertions !== undefined && {
+          concurrent_insertions: dto.concurrent_insertions,
+        }),
+        ...(dto.insertion_interval_minutes !== undefined && {
+          insertion_interval_minutes: dto.insertion_interval_minutes,
+        }),
+        ...(dto.text_truncate_pieces !== undefined && {
+          text_truncate_pieces: normalizeTextTruncatePieces(dto.text_truncate_pieces),
+        }),
       },
     });
   }

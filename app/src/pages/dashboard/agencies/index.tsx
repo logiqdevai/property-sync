@@ -1,3 +1,21 @@
+import type {
+  AgencyListQuery,
+  TrackAgencyPayload,
+  TrackableAgency,
+} from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
+import { AppConfig } from "@/config/constants/app-config";
+import { RoleTypes } from "@/features/user/interfaces/user.interface";
+import { RoleGate } from "@/components/providers/role-gate";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { TrackerAdminOptionsPanel } from "@/components/ui/tracker-admin-options-panel";
+import {
+  useTrackableAgencies,
+  useTrackAgency,
+  useUntrackAgency,
+  useUpdateAgencyTracking,
+} from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
+import { TrackedAgencyIntegrationLink } from "@/pages/dashboard/components/tracked-agency-integration-link";
 import { useMemo, useState } from "react";
 import {
   EmptyState,
@@ -7,26 +25,6 @@ import {
   useOverlayState,
 } from "@heroui/react";
 import { BellOff, ExternalLink, Search } from "lucide-react";
-import { RoleGate } from "@/components/providers/role-gate";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { TrackerAdminOptionsPanel } from "@/components/ui/tracker-admin-options-panel";
-import { useUpdateTrackerAdminSettings } from "@/features/agencies/hooks/use-agencies";
-import { RoleTypes } from "@/features/user/interfaces/user.interface";
-import { useAuthStore } from "@/stores/auth";
-import { TrackedAgencyIntegrationLink } from "@/pages/dashboard/components/tracked-agency-integration-link";
-import {
-  useTrackableAgencies,
-  useTrackAgency,
-  useUntrackAgency,
-  useUpdateAgencyTracking,
-} from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
-import type {
-  AgencyListQuery,
-  TrackAgencyPayload,
-  TrackableAgency,
-} from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
-import type { UpdateTrackerAdminSettingsPayload } from "@/features/agencies/interfaces/agencies.interfaces";
 
 function AgencyCard({
   agency,
@@ -37,22 +35,14 @@ function AgencyCard({
 }) {
   const trackAgency = useTrackAgency();
   const updateTracking = useUpdateAgencyTracking();
-  const updateTrackerAdminSettings = useUpdateTrackerAdminSettings();
-  const userId = useAuthStore((state) => state.user_uuid);
   const prefs = agency.tracking_prefs;
   const isAgencyDisabled = !agency.is_enabled;
-  const isPending =
-    trackAgency.isPending || updateTracking.isPending || updateTrackerAdminSettings.isPending;
+  const isPending = trackAgency.isPending || updateTracking.isPending;
   const isControlsDisabled = isAgencyDisabled || isPending;
 
   const savePrefs = (payload: TrackAgencyPayload) => {
     if (!agency.is_tracked || isAgencyDisabled) return;
     updateTracking.mutate({ agencyId: agency.id, payload });
-  };
-
-  const saveAdminSettings = (payload: UpdateTrackerAdminSettingsPayload) => {
-    if (!agency.is_tracked || !userId || isAgencyDisabled) return;
-    updateTrackerAdminSettings.mutate({ agencyId: agency.id, userId, payload });
   };
 
   const handleTrackToggle = (next: boolean) => {
@@ -167,19 +157,35 @@ function AgencyCard({
             </Switch>
           </div>
 
-          <RoleGate roles={[RoleTypes.ADMIN]}>
+          {AppConfig.tracked_agency_admin_options_visible ? (
             <TrackerAdminOptionsPanel
               accordionId={`${agency.id}-admin-options`}
               values={{
                 use_ai_batching: prefs.use_ai_batching,
                 concurrent_insertions: prefs.concurrent_insertions ?? 1,
                 insertion_interval_minutes: prefs.insertion_interval_minutes ?? 5,
+                text_truncate_pieces: prefs.text_truncate_pieces ?? [],
               }}
               disabled={isControlsDisabled}
               onPrefsChange={savePrefs}
-              onAdminSettingsChange={saveAdminSettings}
+              onAdminSettingsChange={savePrefs}
             />
-          </RoleGate>
+          ) : (
+            <RoleGate roles={[RoleTypes.ADMIN]}>
+              <TrackerAdminOptionsPanel
+                accordionId={`${agency.id}-admin-options`}
+                values={{
+                  use_ai_batching: prefs.use_ai_batching,
+                  concurrent_insertions: prefs.concurrent_insertions ?? 1,
+                  insertion_interval_minutes: prefs.insertion_interval_minutes ?? 5,
+                  text_truncate_pieces: prefs.text_truncate_pieces ?? [],
+                }}
+                disabled={isControlsDisabled}
+                onPrefsChange={savePrefs}
+                onAdminSettingsChange={savePrefs}
+              />
+            </RoleGate>
+          )}
 
           <TrackedAgencyIntegrationLink
             agencyId={agency.id}

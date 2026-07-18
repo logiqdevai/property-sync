@@ -1,5 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsInt, IsOptional, Min } from 'class-validator';
+import {
+    ArrayMaxSize,
+    IsArray,
+    IsBoolean,
+    IsInt,
+    IsOptional,
+    IsString,
+    MaxLength,
+    Min,
+} from 'class-validator';
 
 export class UpdateTrackerAdminSettingsDto {
     @ApiProperty({ required: false, minimum: 1, example: 1 })
@@ -18,4 +27,18 @@ export class UpdateTrackerAdminSettingsDto {
     @IsOptional()
     @IsBoolean()
     use_ai_batching?: boolean;
+
+    @ApiProperty({
+        required: false,
+        type: [String],
+        description:
+            'Substrings removed from title/description before creating the user property',
+        example: ['Agency footer text', 'Call us at'],
+    })
+    @IsOptional()
+    @IsArray()
+    @ArrayMaxSize(50)
+    @IsString({ each: true })
+    @MaxLength(2000, { each: true })
+    text_truncate_pieces?: string[];
 }

@@ -8,6 +8,7 @@ import { UserPropertyQueryType } from './dto/user-property-query.schema';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import { Prisma, Property, PropertyStatus } from 'generated/prisma';
 import { serializePropertyForApi } from '@/modules/properties/utils/property-api-response.util';
+import { applyTextTruncatePieces } from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
 
 export type PropertySyncChangeType = 'created' | 'updated' | 'removed';
 
@@ -301,7 +302,10 @@ export class UserPropertiesService {
         },
       });
 
-      const canonicalFields = this.mapFromCanonical(property);
+      const canonicalFields = this.mapFromCanonical(
+        property,
+        tracker.text_truncate_pieces,
+      );
 
       if (options.changeType === 'created') {
         if (existing) continue;
@@ -351,12 +355,20 @@ export class UserPropertiesService {
     }
   }
 
-  private mapFromCanonical(property: Property) {
+  private mapFromCanonical(
+    property: Property,
+    textTruncatePieces?: string[],
+  ) {
     return {
       property_id: property.property_id,
       internal_id: property.internal_id,
-      title: property.title,
-      description: property.description,
+      title:
+        applyTextTruncatePieces(property.title, textTruncatePieces) ??
+        property.title,
+      description: applyTextTruncatePieces(
+        property.description,
+        textTruncatePieces,
+      ),
       listing_type: property.listing_type,
       property_type: property.property_type,
       status: property.status,

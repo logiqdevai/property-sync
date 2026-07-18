@@ -66,6 +66,7 @@ export class Agency {
         enabled: boolean;
         concurrent_insertions: number;
         insertion_interval_minutes: number;
+        text_truncate_pieces: string[];
         track_new_listings: boolean;
         track_removed_listings: boolean;
         track_updated_listings: boolean;
