@@ -27,6 +27,8 @@ export interface DetailPageConfig {
   image_selector?: string;
   image_type?: 'src' | 'background_image';
   description_selector?: string;
+  specs_selector?: string;
+  features_selector?: string;
   external_id_source?: 'url_path' | 'selector';
   external_id_selector?: string;
 }

@@ -7,6 +7,7 @@ import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { UserPropertyQueryType } from './dto/user-property-query.schema';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import { Prisma, Property, PropertyStatus } from 'generated/prisma';
+import { serializePropertyForApi } from '@/modules/properties/utils/property-api-response.util';
 
 export type PropertySyncChangeType = 'created' | 'updated' | 'removed';
 
@@ -104,7 +105,7 @@ export class UserPropertiesService {
     ]);
 
     return {
-      data: items,
+      data: items.map((item) => serializePropertyForApi(item)),
       pagination: {
         page: query.page,
         limit: query.limit,
@@ -172,24 +173,26 @@ export class UserPropertiesService {
 
     const { canonical_property, ...rest } = userProperty;
 
-    return {
+    return serializePropertyForApi({
       ...rest,
       duplicate_group_id: canonical_property.duplicate_group_id,
       source_links: canonical_property.source_links,
       history: canonical_property.history,
-    };
+    });
   }
 
   async update(userId: string, id: string, dto: UpdateUserPropertyDto) {
     await this.assertOwned(userId, id);
 
-    return this.prisma.userProperty.update({
-      where: { id },
-      data: {
-        ...dto,
-        is_modified: true,
-      },
-    });
+    return serializePropertyForApi(
+      await this.prisma.userProperty.update({
+        where: { id },
+        data: {
+          ...dto,
+          is_modified: true,
+        },
+      }),
+    );
   }
 
   async resync(userId: string, id: string) {
@@ -202,14 +205,16 @@ export class UserPropertiesService {
       throw new NotFoundException('Property not found');
     }
 
-    return this.prisma.userProperty.update({
-      where: { id },
-      data: {
-        ...this.mapFromCanonical(userProperty.canonical_property),
-        is_modified: false,
-        last_synced_at: new Date(),
-      },
-    });
+    return serializePropertyForApi(
+      await this.prisma.userProperty.update({
+        where: { id },
+        data: {
+          ...this.mapFromCanonical(userProperty.canonical_property),
+          is_modified: false,
+          last_synced_at: new Date(),
+        },
+      }),
+    );
   }
 
   async remove(userId: string, id: string) {

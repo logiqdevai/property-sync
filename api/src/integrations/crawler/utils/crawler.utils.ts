@@ -39,6 +39,36 @@ export function extractInternalIdFromText(
   return null;
 }
 
+export function readDetailStructured(rawData: unknown): {
+  specs: Record<string, string> | null;
+  features: string[] | null;
+} {
+  if (!rawData || typeof rawData !== 'object') {
+    return { specs: null, features: null };
+  }
+  const data = rawData as Record<string, unknown>;
+
+  let specs: Record<string, string> | null = null;
+  const rawSpecs = data._detail_specs;
+  if (rawSpecs && typeof rawSpecs === 'object' && !Array.isArray(rawSpecs)) {
+    const entries = Object.entries(rawSpecs as Record<string, unknown>).filter(
+      (entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1].trim() !== '',
+    );
+    if (entries.length > 0) specs = Object.fromEntries(entries);
+  }
+
+  let features: string[] | null = null;
+  const rawFeatures = data._detail_features;
+  if (Array.isArray(rawFeatures)) {
+    const list = rawFeatures.filter(
+      (item): item is string => typeof item === 'string' && item.trim() !== '',
+    );
+    if (list.length > 0) features = list;
+  }
+
+  return { specs, features };
+}
+
 export function extractDenormalizedRawFields(raw: Record<string, unknown>) {
   return {
     raw_property_type: readRawString(raw, [

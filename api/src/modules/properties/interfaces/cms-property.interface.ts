@@ -3,6 +3,11 @@ export interface CmsPropertyFieldEntry {
   value: string | number;
 }
 
+export interface CmsPropertyFieldDisplayEntry {
+  name: string;
+  value: string;
+}
+
 export interface CmsPropertyMetadata {
   guarantee?: string | null;
   stamp?: string | null;

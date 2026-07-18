@@ -362,12 +362,15 @@ export function PropertyDetailView({
         <h2 className="text-sm font-semibold text-foreground">CMS & location</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
           <p>
-            <span className="text-muted">EstateWeb type:</span> {property.estateweb_type_id ?? "—"}
+            <span className="text-muted">Property type:</span>{" "}
+            {property.estateweb_type_name ?? "—"}
           </p>
-          <p>
-            <span className="text-muted">EstateWeb location:</span>{" "}
-            {property.estateweb_location_id ?? "—"}
-          </p>
+          {property.estateweb_location_name && (
+            <p>
+              <span className="text-muted">EstateWeb location:</span>{" "}
+              {property.estateweb_location_name}
+            </p>
+          )}
           <p>
             <span className="text-muted">Video URL:</span>{" "}
             {property.video_url ? (
@@ -398,9 +401,9 @@ export function PropertyDetailView({
             <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">CMS fields</h3>
             <div className="flex flex-wrap gap-2">
               {cmsFieldEntries.map((field) => (
-                <Chip key={field.id} size="sm" variant="soft">
+                <Chip key={`${field.name}-${field.value}`} size="sm" variant="soft">
                   <Chip.Label>
-                    #{field.id}: {String(field.value)}
+                    {field.name}: {field.value}
                   </Chip.Label>
                 </Chip>
               ))}

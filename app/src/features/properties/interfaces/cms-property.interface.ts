@@ -1,6 +1,6 @@
 export interface CmsPropertyFieldEntry {
-  id: number;
-  value: string | number;
+  name: string;
+  value: string;
 }
 
 export interface CmsPropertyMetadata {
@@ -17,7 +17,9 @@ export interface CmsPropertyMetadata {
 
 export interface PropertyCmsFields {
   estateweb_type_id: number | null;
+  estateweb_type_name: string | null;
   estateweb_location_id: number | null;
+  estateweb_location_name: string | null;
   cms_fields: CmsPropertyFieldEntry[] | null;
   cms_metadata: CmsPropertyMetadata | null;
   video_url: string | null;

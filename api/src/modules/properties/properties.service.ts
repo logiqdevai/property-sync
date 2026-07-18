@@ -8,6 +8,7 @@ import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { PropertyQueryType } from './dto/property-query.schema';
 import { MergePropertiesDto } from './dto/merge-properties.dto';
 import { Prisma } from 'generated/prisma';
+import { serializePropertyForApi } from './utils/property-api-response.util';
 
 @Injectable()
 export class PropertiesService {
@@ -61,7 +62,7 @@ export class PropertiesService {
     ]);
 
     return {
-      data: items,
+      data: items.map((item) => serializePropertyForApi(item)),
       pagination: {
         page: query.page,
         limit: query.limit,
@@ -117,7 +118,7 @@ export class PropertiesService {
       throw new NotFoundException('Property not found');
     }
 
-    return property;
+    return serializePropertyForApi(property);
   }
 
   async merge(dto: MergePropertiesDto) {
@@ -140,7 +141,7 @@ export class PropertiesService {
 
     return this.prisma.property.findMany({
       where: { id: { in: dto.property_ids } },
-    });
+    }).then((items) => items.map((item) => serializePropertyForApi(item)));
   }
 
   async split(id: string) {
@@ -153,10 +154,12 @@ export class PropertiesService {
       throw new BadRequestException('Property is not in a duplicate group');
     }
 
-    return this.prisma.property.update({
-      where: { id },
-      data: { duplicate_group_id: null },
-    });
+    return serializePropertyForApi(
+      await this.prisma.property.update({
+        where: { id },
+        data: { duplicate_group_id: null },
+      }),
+    );
   }
 
   async remove(id: string) {

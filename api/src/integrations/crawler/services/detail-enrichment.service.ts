@@ -9,6 +9,8 @@ import { StealthBrowserService } from './stealth-browser.service';
 interface DetailEnrichmentResult {
   images: string[];
   raw_detail_text: string | null;
+  detail_specs: Record<string, string>;
+  detail_features: string[];
   external_id: string | null;
   error?: string;
 }
@@ -51,6 +53,12 @@ export class DetailEnrichmentService {
           ...new Set([...detail.images, ...listingImages]),
         ];
         item.raw._detail_text = detail.raw_detail_text;
+        if (Object.keys(detail.detail_specs).length > 0) {
+          item.raw._detail_specs = detail.detail_specs;
+        }
+        if (detail.detail_features.length > 0) {
+          item.raw._detail_features = detail.detail_features;
+        }
         if (detail.external_id) {
           item.raw._external_id = detail.external_id;
         }
@@ -80,6 +88,8 @@ export class DetailEnrichmentService {
         return {
           images: [],
           raw_detail_text: null,
+          detail_specs: {},
+          detail_features: [],
           external_id: null,
           error: `HTTP ${response.status()}`,
         };
@@ -156,9 +166,79 @@ export class DetailEnrichmentService {
           externalId = el?.textContent?.trim() ?? null;
         }
 
+        const cleanText = (value: string | null | undefined): string =>
+          (value || '').replace(/\s+/g, ' ').trim();
+
+        const detailSpecs: Record<string, string> = {};
+        const featureSet = new Set<string>();
+
+        const addSpec = (rawKey: string, rawValue: string): void => {
+          const key = cleanText(rawKey).replace(/[:：]\s*$/, '');
+          const value = cleanText(rawValue);
+          if (!key || !value) return;
+          if (key.length > 60 || value.length > 200) return;
+          if (Object.keys(detailSpecs).length >= 80) return;
+          if (!(key in detailSpecs)) detailSpecs[key] = value;
+        };
+
+        const specRoots = cfg?.specs_selector
+          ? Array.from(document.querySelectorAll(cfg.specs_selector))
+          : [document];
+
+        for (const root of specRoots) {
+          root.querySelectorAll('table tr').forEach((tr) => {
+            const cells = tr.querySelectorAll('th, td');
+            if (cells.length === 2) {
+              addSpec(cells[0].textContent ?? '', cells[1].textContent ?? '');
+            }
+          });
+          root.querySelectorAll('dl').forEach((dl) => {
+            const dts = dl.querySelectorAll('dt');
+            const dds = dl.querySelectorAll('dd');
+            const count = Math.min(dts.length, dds.length);
+            for (let k = 0; k < count; k++) {
+              addSpec(dts[k].textContent ?? '', dds[k].textContent ?? '');
+            }
+          });
+        }
+
+        const featureRoots = cfg?.features_selector
+          ? Array.from(document.querySelectorAll(cfg.features_selector))
+          : specRoots;
+
+        const lineSelector =
+          'li, [class*="feature"], [class*="detail"], [class*="spec"], [class*="info"], [class*="amenit"], [class*="char"]';
+
+        for (const root of featureRoots) {
+          root.querySelectorAll(lineSelector).forEach((node) => {
+            if (node.querySelector('li, ul, ol, table, dl')) return;
+            const anchor = node.querySelector('a');
+            const text = cleanText(node.textContent);
+            if (!text || text.length > 80) return;
+            if (
+              anchor &&
+              cleanText(anchor.textContent) === text
+            ) {
+              return;
+            }
+            const match = text.match(/^(.{1,50}?)\s*[:：]\s*(.+)$/);
+            if (match) {
+              addSpec(match[1], match[2]);
+            } else if (
+              featureSet.size < 80 &&
+              text.length >= 2 &&
+              !/[.!?]/.test(text)
+            ) {
+              featureSet.add(text);
+            }
+          });
+        }
+
         return {
           images: [...new Set(images)],
           raw_detail_text: descText,
+          detail_specs: detailSpecs,
+          detail_features: [...featureSet],
           external_id: externalId,
         };
       }, detailConfig ?? null);
@@ -167,6 +247,8 @@ export class DetailEnrichmentService {
       return {
         images: [],
         raw_detail_text: null,
+        detail_specs: {},
+        detail_features: [],
         external_id: null,
         error: message,
       };

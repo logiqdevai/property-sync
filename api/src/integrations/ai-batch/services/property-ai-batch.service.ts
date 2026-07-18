@@ -47,6 +47,7 @@ export class PropertyAiBatchService {
       raw_price: string | null;
       raw_location: string | null;
       raw_description: string | null;
+      raw_data?: unknown;
     }>;
     apiKey: string;
     userIntegrationId: string;
