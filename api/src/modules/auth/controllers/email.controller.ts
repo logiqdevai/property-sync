@@ -22,12 +22,11 @@ export class EmailAuthController {
     @UseGuards(JwtGuard, RolesGuard)
     @Roles(AuthRole.ADMIN)
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Register a new user with email and password' })
+    @ApiOperation({ summary: 'Create a user with a password, or send an invite email when password is omitted' })
     @ApiBody({ type: RegisterEmailDto })
     @ApiResponse({
         status: 201,
-        description: 'User registered successfully',
-        type: AuthResponse
+        description: 'User created. When password is omitted, invite_sent is true.',
     })
     @ApiResponse({
         status: 409,

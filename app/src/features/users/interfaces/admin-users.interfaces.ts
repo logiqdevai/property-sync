@@ -3,6 +3,7 @@ import type { MaskedUserIntegration } from "@/features/integration-targets/inter
 
 export interface CreateAdminUserPayload {
   email: string;
+  password?: string;
 }
 
 export interface CreateAdminUserResponse {

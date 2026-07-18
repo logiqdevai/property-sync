@@ -56,14 +56,10 @@ export class EmailAuthService {
                 };
             }
 
-            const token = await this.jwtService.signToken({
-                id: user.id,
-                role: user.role,
-            });
-
-            const expires_in = this.jwtService.getExpirationTime(token);
-
-            return { access_token: token, expires_in: expires_in, user: user };
+            return {
+                user,
+                invite_sent: false,
+            };
         } catch (error) {
             if (error instanceof ConflictException) {
                 throw error;

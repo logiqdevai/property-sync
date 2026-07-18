@@ -23,11 +23,13 @@ export const useCreateAdminUser = () => {
 
   return useMutation({
     mutationFn: (payload: CreateAdminUserPayload) => createAdminUser(payload),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
       toast({
         title: "User created",
-        description: "An invite email was sent so they can set their password.",
+        description: data.invite_sent
+          ? "An invite email was sent so they can set their password."
+          : "Account created with the password you set.",
         duration: 3000,
       });
     },
