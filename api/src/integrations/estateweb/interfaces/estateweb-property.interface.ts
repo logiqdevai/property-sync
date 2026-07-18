@@ -17,6 +17,10 @@ import {
   EstateWebScope,
   EstateWebStatusId,
 } from '../constants/estateweb-enums.constants';
+import {
+  EstateWebFieldId,
+  EstateWebSelectFieldEntry,
+} from '../constants/estateweb-field-options.constants';
 
 export interface EstateWebPropertyAd {
   lang_id: EstateWebLanguageId;
@@ -25,24 +29,25 @@ export interface EstateWebPropertyAd {
   text?: string;
 }
 
-export type EstateWebPropertyFieldValue =
-  | { id: number; value: string }
-  | { id: number; value: number };
-
 export interface EstateWebPropertySelectFieldValue {
-  id: number;
+  id: EstateWebFieldId;
   value: number;
 }
 
 export interface EstateWebPropertyBooleanFieldValue {
-  id: number;
+  id: EstateWebFieldId;
   value: '1';
 }
 
 export interface EstateWebPropertyScalarFieldValue {
-  id: number;
+  id: EstateWebFieldId;
   value: string;
 }
+
+export type EstateWebPropertyFieldValue =
+  | EstateWebSelectFieldEntry
+  | EstateWebPropertyBooleanFieldValue
+  | EstateWebPropertyScalarFieldValue;
 
 export interface EstateWebPropertyFieldResponse {
   field_id: number;
@@ -101,10 +106,9 @@ export interface EstateWebPropertyHistoryEntry {
 }
 
 export interface EstateWebPropertyRentalHistoryEntry {
-  from?: string;
-  to?: string;
-  price?: string | number;
-  tenant?: string;
+  client_id: number;
+  in_date: string;
+  price: string;
 }
 
 export interface EstateWebPropertyMetadata {
@@ -155,6 +159,7 @@ export interface EstateWebPropertyPayload {
   gateways?: EstateWebPropertyGateway[];
   ads?: EstateWebPropertyAd[];
   foreign_agents?: EstateWebPropertyForeignAgent[];
+  images?: EstateWebPropertyImage[];
   history?: EstateWebPropertyHistoryEntry[];
   notes?: EstateWebPropertyNote[];
   price_negotiable?: EstateWebBooleanFlag;

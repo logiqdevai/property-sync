@@ -75,7 +75,10 @@ export type EstateWebStatusId = number;
 
 export type EstateWebHasKeys = '' | '0' | '1' | '2' | string;
 
-export type EstateWebIncomeType = number;
+export enum EstateWebIncomeType {
+  PERCENTAGE = 0,
+  INDEX = 1,
+}
 
 export type EstateWebIncomePeriod = number;
 

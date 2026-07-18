@@ -36,15 +36,38 @@
         ],
         "url": {
           "raw": "{{baseUrl}}/api/property?status_id=0&agent_scope=0&page=1&rpp=50&sort_col=created_at&sort_way=DESC",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "property"],
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "property"
+          ],
           "query": [
-            {"key": "status_id", "value": "0"},
-            {"key": "agent_scope", "value": "0"},
-            {"key": "page", "value": "1"},
-            {"key": "rpp", "value": "50"},
-            {"key": "sort_col", "value": "created_at"},
-            {"key": "sort_way", "value": "DESC"}
+            {
+              "key": "status_id",
+              "value": "0"
+            },
+            {
+              "key": "agent_scope",
+              "value": "0"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "rpp",
+              "value": "50"
+            },
+            {
+              "key": "sort_col",
+              "value": "created_at"
+            },
+            {
+              "key": "sort_way",
+              "value": "DESC"
+            }
           ]
         }
       }
@@ -89,7 +112,7 @@
           "formdata": [
             {
               "key": "payload",
-              "value": "{\"id\":0,\"type_id\":27,\"scope_id\":1,\"location_id\":400,\"client_id\":0,\"coop_id\":0,\"to_client_id\":0,\"code\":\"\",\"address\":\"estavromenos 11\",\"zip\":\"71111\",\"price_start\":50000,\"price\":50000,\"price_final\":0,\"price_web\":50000,\"sqm\":45,\"distance_airport\":\"1000\",\"distance_port\":\"1000\",\"distance_beach\":\"1000\",\"description\":\"Πωλείται φωτεινή και λειτουργική γκαρσονιέρα σε εξαιρετική τοποθεσία, ιδανική για ιδιοκατοίκηση ή επενδυτική εκμετάλλευση. Διαθέτει άνετους χώρους, εύκολη πρόσβαση σε μέσα μεταφοράς και βρίσκεται κοντά σε καταστήματα και βασικές υπηρεσίες. Αποτελεί μια εξαιρετική επιλογή για φοιτητές, εργαζόμενους ή όσους αναζητούν ένα ακίνητο με υψηλή απόδοση.\",\"status_id\":0,\"is_offer\":1,\"is_exclusive_order\":1,\"video_url\":\"\",\"show_video_on_site\":0,\"lat_lng\":\"\",\"show_map_on_site\":0,\"metadata\":\"{\\\"guarantee\\\":\\\"\\\",\\\"stamp\\\":\\\"\\\",\\\"inc_type\\\":0,\\\"inc_value\\\":\\\"\\\",\\\"inc_period\\\":0,\\\"inc_2years\\\":0,\\\"contract_period\\\":\\\"\\\",\\\"terms\\\":\\\"\\\",\\\"has_keys\\\":\\\"\\\",\\\"rental_history\\\":[]}\",\"client_contacted_at\":\"\",\"expires_at\":\"\",\"fields\":[],\"sites\":[],\"gateways\":[],\"ads\":[{\"lang_id\":1,\"text\":\"Πωλείται γκαρσονιέρα σε πολύ καλή κατάσταση, με άνετη και πρακτική διαρρύθμιση που αξιοποιεί ιδανικά τους διαθέσιμους χώρους. Αποτελεί εξαιρετική επιλογή για φοιτητές, εργαζόμενους ή επενδυτές που αναζητούν ένα ακίνητο με προοπτικές υψηλής απόδοσης. Η τοποθεσία της προσφέρει άμεση πρόσβαση σε αγορά, συγκοινωνίες και όλες τις καθημερινές ανέσεις, συνδυάζοντας λειτουργικότητα και άνεση.\",\"title\":\"Φωτεινή Γκαρσονιέρα σε Εξαιρετική Τοποθεσία\",\"description\":\"Λειτουργική και φωτεινή γκαρσονιέρα, ιδανική για ιδιοκατοίκηση ή επένδυση. Βρίσκεται σε προνομιακή περιοχή με εύκολη πρόσβαση σε μέσα μεταφοράς, καταστήματα και βασικές υπηρεσίες.\"},{\"lang_id\":2,\"text\":\"\",\"title\":\"\",\"description\":\"\"},{\"lang_id\":3,\"text\":\"\",\"title\":\"\",\"description\":\"\"},{\"lang_id\":4,\"text\":\"\",\"title\":\"\",\"description\":\"\"},{\"lang_id\":5,\"text\":\"\",\"title\":\"\",\"description\":\"\"},{\"lang_id\":6,\"text\":\"\",\"title\":\"\",\"description\":\"\"}],\"foreign_agents\":[],\"history\":[],\"notes\":[],\"price_negotiable\":0,\"note\":\"\"}",
+              "value": "{\"id\":0,\"type_id\":28,\"scope_id\":2,\"location_id\":400,\"client_id\":0,\"coop_id\":0,\"to_client_id\":0,\"code\":\"11111\",\"address\":\"pelasgon 122\",\"zip\":\"74100\",\"price_start\":40000,\"price\":40000,\"price_final\":0,\"price_web\":40000,\"sqm\":80,\"distance_airport\":\"\",\"distance_port\":\"\",\"distance_beach\":\"\",\"description\":\"\",\"status_id\":0,\"is_offer\":0,\"is_exclusive_order\":0,\"video_url\":\"\",\"show_video_on_site\":0,\"lat_lng\":\"\",\"show_map_on_site\":0,\"metadata\":\"{\\\"guarantee\\\":\\\"\\\",\\\"stamp\\\":\\\"\\\",\\\"inc_type\\\":0,\\\"inc_value\\\":\\\"\\\",\\\"inc_period\\\":0,\\\"inc_2years\\\":0,\\\"contract_period\\\":\\\"\\\",\\\"terms\\\":\\\"\\\",\\\"has_keys\\\":\\\"2\\\",\\\"rental_history\\\":[]}\",\"client_contacted_at\":\"\",\"expires_at\":\"\",\"fields\":[{\"id\":103,\"value\":\"2\"},{\"id\":110,\"value\":18},{\"id\":1001,\"value\":\"22\"},{\"id\":1003,\"value\":\"20\"},{\"id\":1004,\"value\":\"45\"},{\"id\":1005,\"value\":\"45\"},{\"id\":1006,\"value\":\"12\"},{\"id\":1007,\"value\":\"45\"},{\"id\":1008,\"value\":\"45\"},{\"id\":1009,\"value\":\"1\"},{\"id\":1012,\"value\":\"2\"},{\"id\":1013,\"value\":\"2010\"},{\"id\":1014,\"value\":\"2015\"},{\"id\":1100,\"value\":\"45\"},{\"id\":3024,\"value\":\"45\"},{\"id\":3025,\"value\":\"45\"},{\"id\":3026,\"value\":\"45\"},{\"id\":3027,\"value\":\"45\"},{\"id\":1102,\"value\":\"45\"},{\"id\":1202,\"value\":\"2\"},{\"id\":2000,\"value\":\"2\"},{\"id\":2003,\"value\":\"2\"},{\"id\":2004,\"value\":\"2\"},{\"id\":2005,\"value\":\"2\"},{\"id\":2007,\"value\":\"2\"},{\"id\":2010,\"value\":34},{\"id\":2801,\"value\":\"2\"},{\"id\":2802,\"value\":\"45\"},{\"id\":2803,\"value\":\"2\"},{\"id\":2804,\"value\":\"45\"},{\"id\":2811,\"value\":\"45\"},{\"id\":2812,\"value\":\"2\"},{\"id\":2813,\"value\":\"2\"},{\"id\":2814,\"value\":\"2\"},{\"id\":2815,\"value\":\"2\"},{\"id\":2816,\"value\":\"2\"},{\"id\":2817,\"value\":\"2\"},{\"id\":2818,\"value\":\"45\"},{\"id\":2820,\"value\":\"2\"},{\"id\":3028,\"value\":\"2\"},{\"id\":4191,\"value\":\"3\"}],\"sites\":[],\"gateways\":[],\"ads\":[{\"lang_id\":1,\"text\":\"\",\"title\":\"\",\"description\":\"\"},{\"lang_id\":2,\"text\":\"\",\"title\":\"\",\"description\":\"\"},{\"lang_id\":3,\"text\":\"\",\"title\":\"\",\"description\":\"\"},{\"lang_id\":4,\"text\":\"\",\"title\":\"\",\"description\":\"\"},{\"lang_id\":5,\"text\":\"\",\"title\":\"\",\"description\":\"\"},{\"lang_id\":6,\"text\":\"\",\"title\":\"\",\"description\":\"\"}],\"foreign_agents\":[],\"history\":[],\"notes\":[],\"price_negotiable\":0,\"images\":[],\"note\":\"\"}",
               "type": "text",
               "description": "JSON from example-requests/create-property.json"
             }
@@ -97,8 +120,13 @@
         },
         "url": {
           "raw": "{{baseUrl}}/api/property",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "property"]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "property"
+          ]
         },
         "description": "Creates a property using multipart/form-data. Single form field `payload` contains the JSON body."
       }
@@ -130,15 +158,24 @@
           }
         ],
         "body": {
-          "mode": "file",
-          "file": {
-            "src": "update-property-body.json"
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"{{propertyId}}\",\n  \"type_id\": 28,\n  \"scope_id\": 2,\n  \"location_id\": 400,\n  \"client_id\": 0,\n  \"coop_id\": 0,\n  \"to_client_id\": 0,\n  \"code\": \"{{propertyCode}}\",\n  \"address\": \"pelasgon 122\",\n  \"zip\": \"74100\",\n  \"price_start\": 40000,\n  \"price\": 40000,\n  \"price_final\": 0,\n  \"price_web\": 40000,\n  \"sqm\": 80,\n  \"distance_airport\": \"\",\n  \"distance_port\": \"\",\n  \"distance_beach\": \"\",\n  \"description\": \"\",\n  \"status_id\": 0,\n  \"is_offer\": 0,\n  \"is_exclusive_order\": 0,\n  \"video_url\": \"\",\n  \"show_video_on_site\": 0,\n  \"lat_lng\": \"\",\n  \"show_map_on_site\": 0,\n  \"metadata\": \"{\\\"guarantee\\\":\\\"\\\",\\\"stamp\\\":\\\"\\\",\\\"inc_type\\\":0,\\\"inc_value\\\":\\\"\\\",\\\"inc_period\\\":0,\\\"inc_2years\\\":0,\\\"contract_period\\\":\\\"\\\",\\\"terms\\\":\\\"\\\",\\\"has_keys\\\":\\\"2\\\",\\\"rental_history\\\":[]}\",\n  \"client_contacted_at\": \"\",\n  \"expires_at\": \"\",\n  \"fields\": [\n    {\n      \"id\": 103,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 110,\n      \"value\": 18\n    },\n    {\n      \"id\": 1001,\n      \"value\": \"22\"\n    },\n    {\n      \"id\": 1003,\n      \"value\": \"20\"\n    },\n    {\n      \"id\": 1004,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 1005,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 1006,\n      \"value\": \"12\"\n    },\n    {\n      \"id\": 1007,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 1008,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 1009,\n      \"value\": \"1\"\n    },\n    {\n      \"id\": 1012,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 1013,\n      \"value\": \"2010\"\n    },\n    {\n      \"id\": 1014,\n      \"value\": \"2015\"\n    },\n    {\n      \"id\": 1100,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 3024,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 3025,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 3026,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 3027,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 1102,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 1202,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2000,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2003,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2004,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2005,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2007,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2010,\n      \"value\": 34\n    },\n    {\n      \"id\": 2801,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2802,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 2803,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2804,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 2811,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 2812,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2813,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2814,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2815,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2816,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2817,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 2818,\n      \"value\": \"45\"\n    },\n    {\n      \"id\": 2820,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 3028,\n      \"value\": \"2\"\n    },\n    {\n      \"id\": 4191,\n      \"value\": \"3\"\n    }\n  ],\n  \"sites\": [],\n  \"gateways\": [],\n  \"ads\": [\n    {\n      \"lang_id\": 1,\n      \"text\": \"\",\n      \"title\": \"\",\n      \"description\": \"\"\n    },\n    {\n      \"lang_id\": 2,\n      \"text\": \"\",\n      \"title\": \"\",\n      \"description\": \"\"\n    },\n    {\n      \"lang_id\": 3,\n      \"text\": \"\",\n      \"title\": \"\",\n      \"description\": \"\"\n    },\n    {\n      \"lang_id\": 4,\n      \"text\": \"\",\n      \"title\": \"\",\n      \"description\": \"\"\n    },\n    {\n      \"lang_id\": 5,\n      \"text\": \"\",\n      \"title\": \"\",\n      \"description\": \"\"\n    },\n    {\n      \"lang_id\": 6,\n      \"text\": \"\",\n      \"title\": \"\",\n      \"description\": \"\"\n    }\n  ],\n  \"foreign_agents\": [],\n  \"history\": [],\n  \"notes\": [],\n  \"price_negotiable\": 0,\n  \"agent_id\": 2,\n  \"group_id\": 1192,\n  \"user_id\": 1285,\n  \"created_at\": \"2026-07-18\",\n  \"updated_at\": \"2026-07-18\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
           }
         },
         "url": {
           "raw": "{{baseUrl}}/api/property/{{propertyId}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "property", "{{propertyId}}"]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "property",
+            "{{propertyId}}"
+          ]
         },
         "description": "Updates a property with JSON body from update-property-body.json (based on example-requests/update-property.json)."
       }
@@ -184,8 +221,15 @@
         },
         "url": {
           "raw": "{{baseUrl}}/api/property/{{propertyId}}/img",
-          "host": ["{{baseUrl}}"],
-          "path": ["api", "property", "{{propertyId}}", "img"]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "property",
+            "{{propertyId}}",
+            "img"
+          ]
         },
         "description": "Uploads a property image using multipart/form-data with `payload` (JSON text) and `image` (file). Do not set Content-Type manually."
       }
