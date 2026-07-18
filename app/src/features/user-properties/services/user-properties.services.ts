@@ -5,6 +5,8 @@ import type {
   PaginatedResponse,
   UpdateUserPropertyPayload,
   UserProperty,
+  UserPropertyCountQuery,
+  UserPropertyCountResponse,
   UserPropertyDetail,
   UserPropertyListQuery,
 } from "../interfaces/user-properties.interfaces";
@@ -19,6 +21,19 @@ export const getUserProperties = async (
     return response.data;
   } catch {
     throw new Error("Failed to fetch your properties. Please try again.");
+  }
+};
+
+export const getUserPropertiesCount = async (
+  query?: UserPropertyCountQuery,
+): Promise<UserPropertyCountResponse> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.userProperties.count, {
+      params: query,
+    });
+    return response.data;
+  } catch {
+    throw new Error("Failed to fetch property count. Please try again.");
   }
 };
 

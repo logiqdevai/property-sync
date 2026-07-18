@@ -24,6 +24,7 @@ import { EditUserForm } from "./components/edit-user-form";
 import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
 import { getAuthTypeLabel } from "@/config/constants/dropdowns/auth-type-form.options";
 import { formatDate } from "@/lib/date";
+import { formatPrice } from "@/lib/price";
 
 function RoleBadge({ role }: { role: RoleType }) {
   const color =
@@ -223,9 +224,7 @@ export default function AdminUserDetailPage() {
                         <Table.Cell>{property.internal_id ?? "—"}</Table.Cell>
                         <Table.Cell>{property.city ?? "—"}</Table.Cell>
                         <Table.Cell>
-                          {property.price != null
-                            ? `${property.currency ?? ""} ${property.price}`.trim()
-                            : "—"}
+                          {formatPrice(property.price, property.currency)}
                         </Table.Cell>
                         <Table.Cell>{property.status}</Table.Cell>
                         <Table.Cell>

@@ -20,7 +20,10 @@ export interface SyncForPropertyOptions {
 export class UserPropertiesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(userId: string, query: UserPropertyQueryType) {
+  private async resolveFilterSourceAgencyId(
+    userId: string,
+    query: UserPropertyQueryType,
+  ): Promise<string | undefined | null> {
     let sourceAgencyId = query.agency_id;
 
     if (query.user_tracked_agency_id) {
@@ -33,23 +36,21 @@ export class UserPropertiesService {
       });
 
       if (!tracker) {
-        return {
-          data: [],
-          pagination: {
-            page: query.page,
-            limit: query.limit,
-            total: 0,
-            total_pages: 0,
-            has_next: false,
-            has_prev: false,
-          },
-        };
+        return null;
       }
 
       sourceAgencyId = tracker.source_agency_id;
     }
 
-    const where: Prisma.UserPropertyWhereInput = {
+    return sourceAgencyId;
+  }
+
+  private buildWhere(
+    userId: string,
+    query: UserPropertyQueryType,
+    sourceAgencyId?: string,
+  ): Prisma.UserPropertyWhereInput {
+    return {
       user_id: userId,
       ...(query.status && { status: query.status }),
       ...(query.city && { city: { contains: query.city, mode: 'insensitive' } }),
@@ -71,6 +72,26 @@ export class UserPropertiesService {
           }
         : {}),
     };
+  }
+
+  async findAll(userId: string, query: UserPropertyQueryType) {
+    const sourceAgencyId = await this.resolveFilterSourceAgencyId(userId, query);
+
+    if (sourceAgencyId === null) {
+      return {
+        data: [],
+        pagination: {
+          page: query.page,
+          limit: query.limit,
+          total: 0,
+          total_pages: 0,
+          has_next: false,
+          has_prev: false,
+        },
+      };
+    }
+
+    const where = this.buildWhere(userId, query, sourceAgencyId);
 
     const [items, total] = await Promise.all([
       this.prisma.userProperty.findMany({
@@ -93,6 +114,19 @@ export class UserPropertiesService {
         has_prev: query.page > 1,
       },
     };
+  }
+
+  async count(userId: string, query: UserPropertyQueryType) {
+    const sourceAgencyId = await this.resolveFilterSourceAgencyId(userId, query);
+
+    if (sourceAgencyId === null) {
+      return { total: 0 };
+    }
+
+    const total = await this.prisma.userProperty.count({
+      where: this.buildWhere(userId, query, sourceAgencyId),
+    });
+    return { total };
   }
 
   async findOne(userId: string, id: string) {

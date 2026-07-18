@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { extractInternalIdFromText } from '@/integrations/crawler/utils/crawler.utils';
 import {
   ListingType,
   Prisma,
@@ -239,12 +240,20 @@ export function buildPropertyRecord(
       : null;
   const latLng = extractLatLng(sp.raw_data);
   const mergedCmsFields = mergeCmsFieldsFromNormalizedRow(n.cms_fields, n);
+  const internalId =
+    sp.internal_id ??
+    extractInternalIdFromText(
+      sp.raw_description,
+      rawData
+        ? readRawString(rawData, ['_detail_text', 'detail_text', '_description', 'description'])
+        : null,
+    );
 
   return {
     title: n.title ?? sp.raw_title ?? sp.source_url,
     description: n.description ?? null,
     property_id: sp.property_id,
-    internal_id: sp.internal_id,
+    internal_id: internalId,
     listing_type: (n.listing_type as ListingType) ?? ListingType.UNKNOWN,
     property_type: (n.property_type as PropertyType) ?? PropertyType.UNKNOWN,
     status: PropertyStatus.ACTIVE,

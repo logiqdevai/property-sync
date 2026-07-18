@@ -15,9 +15,11 @@ import {
   useDeleteProperty,
   useMergeProperties,
   useProperties,
+  usePropertiesCount,
 } from "@/features/properties/hooks/use-properties";
 import {
   type ListingType,
+  type PropertyCountQuery,
   type PropertyListQuery,
   type PropertyStatus,
   type PropertyType,
@@ -26,6 +28,7 @@ import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/proper
 import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/listing-type-filter.options";
 import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/property-type-filter.options";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
+import { formatPrice } from "@/lib/price";
 
 const PROPERTY_DELETE_ACTIONS: TableRowAction[] = [
   { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
@@ -65,7 +68,13 @@ export default function PropertiesListPage() {
     [page, status, listingType, propertyType, city, priceMin, priceMax, search, agencyId],
   );
 
+  const countQuery = useMemo<PropertyCountQuery>(() => {
+    const { page: _page, limit: _limit, ...filters } = query;
+    return filters;
+  }, [query]);
+
   const { data, isPending } = useProperties(query);
+  const { data: countData } = usePropertiesCount(countQuery);
   const { data: agenciesData } = useAgencies({ limit: 100 });
   const mergeProperties = useMergeProperties();
   const deleteProperty = useDeleteProperty();
@@ -73,6 +82,7 @@ export default function PropertiesListPage() {
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
+  const total = countData?.total;
   const agencies = agenciesData?.data ?? [];
   const selectedCount = selectedIds.size;
 
@@ -123,7 +133,15 @@ export default function PropertiesListPage() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <p className="text-2xl font-semibold tracking-tight text-foreground">Properties</p>
-          <p className="text-sm text-muted">Normalized listings from crawl runs.</p>
+          <p className="text-sm text-muted">
+            Normalized listings from crawl runs
+            {total != null && (
+              <>
+                {" "}
+                · {total.toLocaleString()} {total === 1 ? "property" : "properties"}
+              </>
+            )}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -321,9 +339,7 @@ export default function PropertiesListPage() {
                       </Table.Cell>
                       <Table.Cell>{property.city ?? "—"}</Table.Cell>
                       <Table.Cell>
-                        {property.price
-                          ? `${property.price} ${property.currency ?? "EUR"}`
-                          : "—"}
+                        {formatPrice(property.price, property.currency)}
                       </Table.Cell>
                       <Table.Cell>
                         <Chip size="sm" variant="soft">

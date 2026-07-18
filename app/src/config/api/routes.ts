@@ -87,6 +87,7 @@ export const ApiRoutes = {
         properties: {
             prefix: "/admin/properties",
             list: "/admin/properties",
+            count: "/admin/properties/count",
             detail: (id: string) => `/admin/properties/${id}`,
             merge: "/admin/properties/merge",
             bulkDelete: "/admin/properties/bulk-delete",
@@ -143,6 +144,7 @@ export const ApiRoutes = {
     userProperties: {
         prefix: "/properties",
         list: "/properties",
+        count: "/properties/count",
         detail: (id: string) => `/properties/${id}`,
         resync: (id: string) => `/properties/${id}/resync`,
         bulkDelete: "/properties/bulk-delete",

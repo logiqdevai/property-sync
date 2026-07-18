@@ -90,6 +90,12 @@ export interface UserPropertyListQuery {
   user_tracked_agency_id?: string;
 }
 
+export type UserPropertyCountQuery = Omit<UserPropertyListQuery, "page" | "limit">;
+
+export interface UserPropertyCountResponse {
+  total: number;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: {

@@ -57,6 +57,23 @@ export class UserPropertiesController {
     return this.userPropertiesService.findAll(userId, query);
   }
 
+  @Get('count')
+  @ApiOperation({ summary: 'Count saved properties matching filters' })
+  @ApiResponse({ status: 200, description: 'Filtered saved property total' })
+  @ApiQuery({ name: 'status', required: false, enum: PropertyStatus })
+  @ApiQuery({ name: 'city', required: false, type: String })
+  @ApiQuery({ name: 'price_min', required: false, type: Number })
+  @ApiQuery({ name: 'price_max', required: false, type: Number })
+  @ApiQuery({ name: 'agency_id', required: false, type: String })
+  @ApiQuery({ name: 'user_tracked_agency_id', required: false, type: String })
+  count(
+    @CurrentUser('id') userId: string,
+    @Query(new ZodValidationPipe(UserPropertyQuerySchema))
+    query: UserPropertyQueryType,
+  ) {
+    return this.userPropertiesService.count(userId, query);
+  }
+
   @Post('bulk-delete')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)

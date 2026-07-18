@@ -4,6 +4,7 @@ import {
   deleteProperties,
   deleteProperty,
   getProperties,
+  getPropertiesCount,
   getProperty,
   mergeProperties,
   splitProperty,
@@ -11,6 +12,7 @@ import {
 import type {
   DeletePropertiesPayload,
   MergePropertiesPayload,
+  PropertyCountQuery,
   PropertyListQuery,
 } from "../interfaces/properties.interfaces";
 
@@ -18,6 +20,13 @@ export const useProperties = (query: PropertyListQuery) => {
   return useQuery({
     queryKey: ["properties", "list", query],
     queryFn: () => getProperties(query),
+  });
+};
+
+export const usePropertiesCount = (query: PropertyCountQuery) => {
+  return useQuery({
+    queryKey: ["properties", "count", query],
+    queryFn: () => getPropertiesCount(query),
   });
 };
 

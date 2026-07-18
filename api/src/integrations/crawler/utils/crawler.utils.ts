@@ -20,6 +20,25 @@ function readRawString(raw: Record<string, unknown>, keys: string[]): string | n
   return null;
 }
 
+const INTERNAL_ID_PATTERNS: RegExp[] = [
+  /Κωδικός\s+ακινήτου\s*[:：]?\s*([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/iu,
+  /Κωδικός\s*[:：]\s*([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/iu,
+  /(?:Property\s+)?(?:Code|Ref(?:erence)?)\s*[:：]\s*([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/i,
+];
+
+export function extractInternalIdFromText(
+  ...texts: Array<string | null | undefined>
+): string | null {
+  for (const text of texts) {
+    if (!text) continue;
+    for (const pattern of INTERNAL_ID_PATTERNS) {
+      const match = text.match(pattern);
+      if (match?.[1]) return match[1].trim();
+    }
+  }
+  return null;
+}
+
 export function extractDenormalizedRawFields(raw: Record<string, unknown>) {
   return {
     raw_property_type: readRawString(raw, [
@@ -46,12 +65,17 @@ export function extractSourcePropertyIds(
 ): { property_id: string; internal_id: string | null } {
   const segments = sourceUrl.split('/').filter(Boolean);
   const property_id = segments[segments.length - 1] ?? 'unknown';
-  const internal_id = readRawString(raw, [
-    '_internal_id',
-    '_external_id',
-    'internal_id',
-    'listing_code',
-  ]);
+  const internal_id =
+    readRawString(raw, [
+      '_internal_id',
+      '_external_id',
+      'internal_id',
+      'listing_code',
+    ]) ??
+    extractInternalIdFromText(
+      readRawString(raw, ['_detail_text', 'detail_text', '_description', 'description']),
+      readRawString(raw, ['location', '_location', 'raw_location']),
+    );
 
   return { property_id, internal_id };
 }

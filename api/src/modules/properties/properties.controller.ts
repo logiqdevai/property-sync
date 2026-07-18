@@ -62,6 +62,24 @@ export class PropertiesController {
     return this.propertiesService.findAll(query);
   }
 
+  @Get('count')
+  @ApiOperation({ summary: 'Count properties matching filters' })
+  @ApiResponse({ status: 200, description: 'Filtered property total' })
+  @ApiQuery({ name: 'status', required: false, enum: PropertyStatus })
+  @ApiQuery({ name: 'listing_type', required: false, enum: ListingType })
+  @ApiQuery({ name: 'property_type', required: false, enum: PropertyType })
+  @ApiQuery({ name: 'city', required: false, type: String })
+  @ApiQuery({ name: 'price_min', required: false, type: Number })
+  @ApiQuery({ name: 'price_max', required: false, type: Number })
+  @ApiQuery({ name: 'duplicate_group_id', required: false, type: String })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'agency_id', required: false, type: String })
+  count(
+    @Query(new ZodValidationPipe(PropertyQuerySchema)) query: PropertyQueryType,
+  ) {
+    return this.propertiesService.count(query);
+  }
+
   @Post('merge')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Merge properties into a duplicate group' })

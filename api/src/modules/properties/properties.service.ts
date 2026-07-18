@@ -13,8 +13,8 @@ import { Prisma } from 'generated/prisma';
 export class PropertiesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(query: PropertyQueryType) {
-    const where: Prisma.PropertyWhereInput = {
+  private buildWhere(query: PropertyQueryType): Prisma.PropertyWhereInput {
+    return {
       ...(query.status && { status: query.status }),
       ...(query.listing_type && { listing_type: query.listing_type }),
       ...(query.property_type && { property_type: query.property_type }),
@@ -45,6 +45,10 @@ export class PropertiesService {
         },
       }),
     };
+  }
+
+  async findAll(query: PropertyQueryType) {
+    const where = this.buildWhere(query);
 
     const [items, total] = await Promise.all([
       this.prisma.property.findMany({
@@ -67,6 +71,13 @@ export class PropertiesService {
         has_prev: query.page > 1,
       },
     };
+  }
+
+  async count(query: PropertyQueryType) {
+    const total = await this.prisma.property.count({
+      where: this.buildWhere(query),
+    });
+    return { total };
   }
 
   async findOne(id: string) {

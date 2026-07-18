@@ -307,6 +307,14 @@ export class PropertyNormalizationService {
         params.normalizedBySourceId.get(sp.id) ?? buildFallbackNormalizedRow(sp);
       const record = buildPropertyRecord(aiRow, sp);
 
+      if (record.internal_id && !sp.internal_id) {
+        await this.prisma.sourceProperty.update({
+          where: { id: sp.id },
+          data: { internal_id: record.internal_id },
+        });
+        sp.internal_id = record.internal_id;
+      }
+
       const existingLink = await this.prisma.propertySourceLink.findFirst({
         where: { source_property_id: sp.id },
         include: { property: true },

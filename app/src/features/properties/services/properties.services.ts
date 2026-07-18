@@ -5,6 +5,8 @@ import type {
   MergePropertiesPayload,
   PaginatedResponse,
   Property,
+  PropertyCountQuery,
+  PropertyCountResponse,
   PropertyDetail,
   PropertyListQuery,
 } from "../interfaces/properties.interfaces";
@@ -19,6 +21,19 @@ export const getProperties = async (
     return response.data;
   } catch {
     throw new Error("Failed to fetch properties. Please try again.");
+  }
+};
+
+export const getPropertiesCount = async (
+  query?: PropertyCountQuery,
+): Promise<PropertyCountResponse> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.properties.count, {
+      params: query,
+    });
+    return response.data;
+  } catch {
+    throw new Error("Failed to fetch property count. Please try again.");
   }
 };
 

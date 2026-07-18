@@ -17,12 +17,17 @@ import {
   useDeleteUserProperties,
   useDeleteUserProperty,
   useUserProperties,
+  useUserPropertiesCount,
 } from "@/features/user-properties/hooks/use-user-properties";
-import type { UserPropertyListQuery } from "@/features/user-properties/interfaces/user-properties.interfaces";
+import type {
+  UserPropertyCountQuery,
+  UserPropertyListQuery,
+} from "@/features/user-properties/interfaces/user-properties.interfaces";
 import { useTrackableAgencies } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
 import { getTrackableAgencyLabel } from "@/features/user-tracked-agencies/utils/integration-link.utils";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
 import { useAuthStore } from "@/stores/auth";
+import { formatPrice } from "@/lib/price";
 
 const PROPERTY_DELETE_ACTIONS: TableRowAction[] = [
   { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
@@ -57,13 +62,20 @@ export default function DashboardPropertiesListPage() {
     [page, status, city, priceMin, priceMax, trackedAgencyId],
   );
 
+  const countQuery = useMemo<UserPropertyCountQuery>(() => {
+    const { page: _page, limit: _limit, ...filters } = query;
+    return filters;
+  }, [query]);
+
   const { data, isPending } = useUserProperties(query);
+  const { data: countData } = useUserPropertiesCount(countQuery);
   const { data: agenciesData } = useTrackableAgencies({ limit: 100 });
   const deleteUserProperty = useDeleteUserProperty();
   const deleteUserProperties = useDeleteUserProperties();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
+  const total = countData?.total;
   const selectedCount = selectedIds.size;
   const trackedAgencies = (agenciesData?.data ?? []).filter(
     (agency) => agency.is_tracked && agency.user_tracked_agency_id,
@@ -111,7 +123,15 @@ export default function DashboardPropertiesListPage() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <p className="text-2xl font-semibold tracking-tight text-foreground">My Properties</p>
-          <p className="text-sm text-muted">Your tracked listings.</p>
+          <p className="text-sm text-muted">
+            Your tracked listings
+            {total != null && (
+              <>
+                {" "}
+                · {total.toLocaleString()} {total === 1 ? "property" : "properties"}
+              </>
+            )}
+          </p>
         </div>
         <RoleGate roles={[RoleTypes.ADMIN]}>
           <Button
@@ -251,9 +271,7 @@ export default function DashboardPropertiesListPage() {
                       </Table.Cell>
                       <Table.Cell>{property.city ?? "—"}</Table.Cell>
                       <Table.Cell>
-                        {property.price
-                          ? `${property.price} ${property.currency ?? "EUR"}`
-                          : "—"}
+                        {formatPrice(property.price, property.currency)}
                       </Table.Cell>
                       <Table.Cell>
                         <PropertyStatusChip status={property.status} />

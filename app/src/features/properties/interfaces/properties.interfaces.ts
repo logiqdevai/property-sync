@@ -135,6 +135,12 @@ export interface PropertyListQuery {
   agency_id?: string;
 }
 
+export type PropertyCountQuery = Omit<PropertyListQuery, "page" | "limit">;
+
+export interface PropertyCountResponse {
+  total: number;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: {

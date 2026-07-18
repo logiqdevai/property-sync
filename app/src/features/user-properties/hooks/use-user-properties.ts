@@ -4,6 +4,7 @@ import {
   deleteUserProperties,
   deleteUserProperty,
   getUserProperties,
+  getUserPropertiesCount,
   getUserProperty,
   resyncUserProperty,
   updateUserProperty,
@@ -11,6 +12,7 @@ import {
 import type {
   DeleteUserPropertiesPayload,
   UpdateUserPropertyPayload,
+  UserPropertyCountQuery,
   UserPropertyListQuery,
 } from "../interfaces/user-properties.interfaces";
 
@@ -18,6 +20,13 @@ export const useUserProperties = (query: UserPropertyListQuery) => {
   return useQuery({
     queryKey: ["userProperties", "list", query],
     queryFn: () => getUserProperties(query),
+  });
+};
+
+export const useUserPropertiesCount = (query: UserPropertyCountQuery) => {
+  return useQuery({
+    queryKey: ["userProperties", "count", query],
+    queryFn: () => getUserPropertiesCount(query),
   });
 };
 
