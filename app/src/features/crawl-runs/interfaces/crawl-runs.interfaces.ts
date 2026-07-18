@@ -102,3 +102,7 @@ export interface PaginatedResponse<T> {
 export interface CrawlRunListResponse extends PaginatedResponse<CrawlRun> {
   total_cost: string | null;
 }
+
+export interface DeleteCrawlRunsPayload {
+  crawl_run_ids: string[];
+}

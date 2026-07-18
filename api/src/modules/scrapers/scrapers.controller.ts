@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -28,6 +29,7 @@ import {
   ScraperQuerySchema,
   ScraperQueryType,
 } from './dto/scraper-query.schema';
+import { DeleteScrapersDto } from './dto/delete-scrapers.dto';
 import { Scraper } from './entities/scraper.entity';
 import { ScraperVersion } from './entities/scraper-version.entity';
 import { CrawlRun } from '../crawl-runs/entities/crawl-run.entity';
@@ -55,6 +57,16 @@ export class ScrapersController {
     @Query(new ZodValidationPipe(ScraperQuerySchema)) query: ScraperQueryType,
   ) {
     return this.scrapersService.findAll(query);
+  }
+
+  @Post('bulk-delete')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Delete multiple scrapers' })
+  @ApiResponse({ status: 200, description: 'Scrapers deleted' })
+  @ApiResponse({ status: 400, description: 'One or more scrapers have an active crawl run' })
+  @ApiResponse({ status: 404, description: 'One or more scrapers not found' })
+  removeMany(@Body() dto: DeleteScrapersDto) {
+    return this.scrapersService.removeMany(dto.scraper_ids);
   }
 
   @Get(':id')
@@ -128,5 +140,15 @@ export class ScrapersController {
   @ApiResponse({ status: 404, description: 'Scraper not found' })
   runNow(@Param('id') id: string) {
     return this.scrapersService.runNow(id);
+  }
+
+  @Delete(':id')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Delete a scraper' })
+  @ApiResponse({ status: 200, description: 'Deleted' })
+  @ApiResponse({ status: 400, description: 'Scraper has an active crawl run' })
+  @ApiResponse({ status: 404, description: 'Scraper not found' })
+  remove(@Param('id') id: string) {
+    return this.scrapersService.remove(id);
   }
 }

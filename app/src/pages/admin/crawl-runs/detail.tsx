@@ -9,6 +9,7 @@ import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import {
   useCancelCrawlRun,
   useCrawlRun,
+  useDeleteCrawlRun,
   useRerunCrawlRun,
 } from "@/features/crawl-runs/hooks/use-crawl-runs";
 import {
@@ -36,10 +37,12 @@ export default function CrawlRunDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const stopConfirm = useOverlayState();
+  const deleteConfirm = useOverlayState();
 
   const { data: run, isPending } = useCrawlRun(id!);
   const rerun = useRerunCrawlRun();
   const cancelRun = useCancelCrawlRun();
+  const deleteRun = useDeleteCrawlRun();
 
   if (isPending || !run) {
     return <DetailSkeleton fieldCount={6} showSubTable subTableRows={3} />;
@@ -99,6 +102,14 @@ export default function CrawlRunDetailPage() {
               Rerun
             </ActionButtonWithPending>
           )}
+          <ActionButtonWithPending
+            variant="danger"
+            isPending={deleteRun.isPending}
+            isDisabled={deleteRun.isPending}
+            onPress={deleteConfirm.open}
+          >
+            Delete
+          </ActionButtonWithPending>
         </div>
       </div>
 
@@ -325,6 +336,18 @@ export default function CrawlRunDetailPage() {
         isPending={cancelRun.isPending}
         onConfirm={async () => {
           await cancelRun.mutateAsync(run.id);
+        }}
+      />
+
+      <ConfirmationDialog
+        state={deleteConfirm}
+        title="Delete this crawl run?"
+        description="This will permanently delete the crawl run and its execution traces. This cannot be undone."
+        confirmLabel="Delete"
+        isPending={deleteRun.isPending}
+        onConfirm={async () => {
+          await deleteRun.mutateAsync(run.id);
+          navigate(Routes.admin.crawlRuns.list);
         }}
       />
     </div>

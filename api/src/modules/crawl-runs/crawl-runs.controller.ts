@@ -1,4 +1,13 @@
-import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -16,6 +25,7 @@ import {
   CrawlRunQuerySchema,
   CrawlRunQueryType,
 } from './dto/crawl-run-query.schema';
+import { DeleteCrawlRunsDto } from './dto/delete-crawl-runs.dto';
 import { CrawlRun } from './entities/crawl-run.entity';
 
 @ApiTags('Crawl Runs')
@@ -42,6 +52,16 @@ export class CrawlRunsController {
     @Query(new ZodValidationPipe(CrawlRunQuerySchema)) query: CrawlRunQueryType,
   ) {
     return this.crawlRunsService.findAll(query);
+  }
+
+  @Post('bulk-delete')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Delete multiple crawl runs' })
+  @ApiResponse({ status: 200, description: 'Crawl runs deleted' })
+  @ApiResponse({ status: 400, description: 'One or more runs are active' })
+  @ApiResponse({ status: 404, description: 'One or more crawl runs not found' })
+  removeMany(@Body() dto: DeleteCrawlRunsDto) {
+    return this.crawlRunsService.removeMany(dto.crawl_run_ids);
   }
 
   @Get(':id')
@@ -71,5 +91,15 @@ export class CrawlRunsController {
   @ApiResponse({ status: 404, description: 'Crawl run not found' })
   cancel(@Param('id') id: string) {
     return this.crawlRunsService.cancel(id);
+  }
+
+  @Delete(':id')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Delete a crawl run' })
+  @ApiResponse({ status: 200, description: 'Deleted' })
+  @ApiResponse({ status: 400, description: 'Crawl run is still active' })
+  @ApiResponse({ status: 404, description: 'Crawl run not found' })
+  remove(@Param('id') id: string) {
+    return this.crawlRunsService.remove(id);
   }
 }

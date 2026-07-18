@@ -1,15 +1,22 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, Select, ListBox, Input, Modal, Pagination, useOverlayState } from "@heroui/react";
-import { Search, Plus } from "lucide-react";
+import { Button, Table, Select, ListBox, Input, Modal, Pagination, useOverlayState } from "@heroui/react";
+import { Search, Plus, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { TableRowActionsMenu, type TableRowAction } from "@/components/ui/table-row-actions-menu";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { ScraperForm } from "./components/scraper-form";
 import { ScraperStatusChip } from "./components/scraper-status-chip";
 import { ScraperHealthChip } from "./components/scraper-health-chip";
-import { useCreateScraper, useScrapers } from "@/features/scrapers/hooks/use-scrapers";
+import {
+  useCreateScraper,
+  useDeleteScraper,
+  useDeleteScrapers,
+  useScrapers,
+} from "@/features/scrapers/hooks/use-scrapers";
 import { parseOptionalJsonConfig, parseOptionalNormalizeLimit } from "@/features/scrapers/validation-schemas/scrapers.schema";
 import {
   type ScraperHealth,
@@ -21,15 +28,23 @@ import { ScraperHealthFilterOptions } from "@/config/constants/dropdowns/scraper
 import { formatDate } from "@/lib/date";
 import { useDebouncedValue } from "./hooks/use-debounced-value";
 
+const SCRAPER_DELETE_ACTIONS: TableRowAction[] = [
+  { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
+];
+
 export default function ScrapersListPage() {
   const navigate = useNavigate();
   const createModal = useOverlayState();
+  const deleteConfirm = useOverlayState();
+  const bulkDeleteConfirm = useOverlayState();
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<ScraperStatus | "all">("all");
   const [health, setHealth] = useState<ScraperHealth | "all">("all");
   const [agencyId, setAgencyId] = useState<string | "all">("all");
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleteScraperId, setDeleteScraperId] = useState<string | null>(null);
   const debouncedSearch = useDebouncedValue(search, 300);
 
   const query = useMemo<ScraperListQuery>(
@@ -47,10 +62,38 @@ export default function ScrapersListPage() {
   const { data, isPending } = useScrapers(query);
   const { data: agenciesData } = useAgencies({ limit: 100 });
   const createScraper = useCreateScraper();
+  const deleteScraper = useDeleteScraper();
+  const deleteScrapers = useDeleteScrapers();
 
   const scrapers = data?.data ?? [];
   const pagination = data?.pagination;
   const agencies = agenciesData?.data ?? [];
+  const selectedCount = selectedIds.size;
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteScraperId) return;
+    await deleteScraper.mutateAsync(deleteScraperId);
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(deleteScraperId);
+      return next;
+    });
+    setDeleteScraperId(null);
+  };
+
+  const handleBulkDelete = async () => {
+    await deleteScrapers.mutateAsync({ scraper_ids: Array.from(selectedIds) });
+    setSelectedIds(new Set());
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -59,9 +102,18 @@ export default function ScrapersListPage() {
           <p className="text-2xl font-semibold tracking-tight text-foreground">Scrapers</p>
           <p className="text-sm text-muted">Version-controlled listing scrapers per agency.</p>
         </div>
-        <ActionButtonWithPending onPress={createModal.open} idleLeading={<Plus className="h-4 w-4" />}>
-          New scraper
-        </ActionButtonWithPending>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="danger"
+            isDisabled={selectedCount < 1}
+            onPress={bulkDeleteConfirm.open}
+          >
+            Delete selected ({selectedCount})
+          </Button>
+          <ActionButtonWithPending onPress={createModal.open} idleLeading={<Plus className="h-4 w-4" />}>
+            New scraper
+          </ActionButtonWithPending>
+        </div>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -167,13 +219,15 @@ export default function ScrapersListPage() {
             <Table.ScrollContainer>
               <Table.Content aria-label="Scrapers">
                 <Table.Header>
-                  <Table.Column isRowHeader>Name</Table.Column>
+                  <Table.Column isRowHeader>Select</Table.Column>
+                  <Table.Column>Name</Table.Column>
                   <Table.Column>Agency</Table.Column>
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Health</Table.Column>
                   <Table.Column>Success rate</Table.Column>
                   <Table.Column>Last success</Table.Column>
                   <Table.Column>Last failure</Table.Column>
+                  <Table.Column>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
                   {scrapers.map((scraper) => (
@@ -183,6 +237,16 @@ export default function ScrapersListPage() {
                       onAction={() => navigate(Routes.admin.scrapers.detail(scraper.id))}
                       className="cursor-pointer"
                     >
+                      <Table.Cell>
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(scraper.id)}
+                            onChange={() => toggleSelection(scraper.id)}
+                            aria-label={`Select scraper ${scraper.name}`}
+                          />
+                        </div>
+                      </Table.Cell>
                       <Table.Cell>
                         <div className="flex flex-col">
                           <span className="font-medium text-foreground">{scraper.name}</span>
@@ -211,6 +275,17 @@ export default function ScrapersListPage() {
                       </Table.Cell>
                       <Table.Cell>{formatDate(scraper.last_success_at)}</Table.Cell>
                       <Table.Cell>{formatDate(scraper.last_failure_at)}</Table.Cell>
+                      <Table.Cell>
+                        <TableRowActionsMenu
+                          actions={SCRAPER_DELETE_ACTIONS}
+                          onAction={(actionId) => {
+                            if (actionId !== "delete") return;
+                            setDeleteScraperId(scraper.id);
+                            deleteConfirm.open();
+                          }}
+                          ariaLabel={`Actions for scraper ${scraper.name}`}
+                        />
+                      </Table.Cell>
                     </Table.Row>
                   ))}
                 </Table.Body>
@@ -279,6 +354,24 @@ export default function ScrapersListPage() {
           </Modal.Container>
         </Modal.Backdrop>
       </Modal>
+
+      <ConfirmationDialog
+        state={deleteConfirm}
+        title="Delete this scraper?"
+        description="This will permanently delete the scraper and its versions. Scrapers with active crawl runs cannot be deleted. This cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+        isPending={deleteScraper.isPending}
+      />
+
+      <ConfirmationDialog
+        state={bulkDeleteConfirm}
+        title="Delete selected scrapers?"
+        description={`This will permanently delete ${selectedCount} scrapers. Scrapers with active crawl runs cannot be deleted. This cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={handleBulkDelete}
+        isPending={deleteScrapers.isPending}
+      />
     </div>
   );
 }

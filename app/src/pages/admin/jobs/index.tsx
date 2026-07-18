@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, RotateCcw } from "lucide-react";
-import { Table, Select, ListBox, Pagination } from "@heroui/react";
+import { Eye, RotateCcw, Trash2 } from "lucide-react";
+import { Button, Table, Select, ListBox, Pagination, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { TableRowActionsMenu, type TableRowAction } from "@/components/ui/table-row-actions-menu";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { JobStatusChip } from "./components/job-status-chip";
-import { useJobs, useRetryJob } from "@/features/jobs/hooks/use-jobs";
+import { useDeleteJob, useDeleteJobs, useJobs, useRetryJob } from "@/features/jobs/hooks/use-jobs";
 import {
   JobStatuses,
   type JobLogListQuery,
@@ -28,15 +29,21 @@ function getJobActions(job: { id: string; status: JobStatus }): TableRowAction[]
     });
   }
 
+  actions.push({ id: "delete", label: "Delete", variant: "danger", icon: Trash2 });
+
   return actions;
 }
 
 export default function JobsListPage() {
   const navigate = useNavigate();
+  const deleteConfirm = useOverlayState();
+  const bulkDeleteConfirm = useOverlayState();
 
   const [status, setStatus] = useState<JobStatus | "all">("all");
   const [queueName, setQueueName] = useState<string>("all");
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleteJobId, setDeleteJobId] = useState<string | null>(null);
 
   const query = useMemo<JobLogListQuery>(
     () => ({
@@ -50,9 +57,21 @@ export default function JobsListPage() {
 
   const { data, isPending } = useJobs(query);
   const retryJob = useRetryJob();
+  const deleteJob = useDeleteJob();
+  const deleteJobs = useDeleteJobs();
 
   const jobs = data?.data ?? [];
   const pagination = data?.pagination;
+  const selectedCount = selectedIds.size;
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const handleJobAction = (jobId: string, actionId: string) => {
     if (actionId === "details") {
@@ -62,14 +81,45 @@ export default function JobsListPage() {
 
     if (actionId === "retry") {
       retryJob.mutate(jobId);
+      return;
     }
+
+    if (actionId === "delete") {
+      setDeleteJobId(jobId);
+      deleteConfirm.open();
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteJobId) return;
+    await deleteJob.mutateAsync(deleteJobId);
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(deleteJobId);
+      return next;
+    });
+    setDeleteJobId(null);
+  };
+
+  const handleBulkDelete = async () => {
+    await deleteJobs.mutateAsync({ job_ids: Array.from(selectedIds) });
+    setSelectedIds(new Set());
   };
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-2xl font-semibold tracking-tight text-foreground">Job queue</p>
-        <p className="text-sm text-muted">Background job execution logs from BullMQ workers.</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-2xl font-semibold tracking-tight text-foreground">Job queue</p>
+          <p className="text-sm text-muted">Background job execution logs from BullMQ workers.</p>
+        </div>
+        <Button
+          variant="danger"
+          isDisabled={selectedCount < 1}
+          onPress={bulkDeleteConfirm.open}
+        >
+          Delete selected ({selectedCount})
+        </Button>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -134,7 +184,8 @@ export default function JobsListPage() {
             <Table.ScrollContainer>
               <Table.Content aria-label="Jobs">
                 <Table.Header>
-                  <Table.Column isRowHeader>Queue</Table.Column>
+                  <Table.Column isRowHeader>Select</Table.Column>
+                  <Table.Column>Queue</Table.Column>
                   <Table.Column>Job</Table.Column>
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Attempts</Table.Column>
@@ -146,6 +197,14 @@ export default function JobsListPage() {
                 <Table.Body>
                   {jobs.map((job) => (
                     <Table.Row key={job.id} id={job.id}>
+                      <Table.Cell>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(job.id)}
+                          onChange={() => toggleSelection(job.id)}
+                          aria-label={`Select job ${job.id}`}
+                        />
+                      </Table.Cell>
                       <Table.Cell>{job.queue_name}</Table.Cell>
                       <Table.Cell>{job.job_name ?? "—"}</Table.Cell>
                       <Table.Cell>
@@ -218,6 +277,24 @@ export default function JobsListPage() {
           </Pagination.Content>
         </Pagination>
       )}
+
+      <ConfirmationDialog
+        state={deleteConfirm}
+        title="Delete this job?"
+        description="This will permanently delete the job log. This cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+        isPending={deleteJob.isPending}
+      />
+
+      <ConfirmationDialog
+        state={bulkDeleteConfirm}
+        title="Delete selected jobs?"
+        description={`This will permanently delete ${selectedCount} job logs. This cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={handleBulkDelete}
+        isPending={deleteJobs.isPending}
+      />
     </div>
   );
 }

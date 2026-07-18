@@ -5,6 +5,7 @@ import type {
   CrawlRunDetail,
   CrawlRunListQuery,
   CrawlRunListResponse,
+  DeleteCrawlRunsPayload,
 } from "../interfaces/crawl-runs.interfaces";
 
 export const getCrawlRuns = async (
@@ -43,6 +44,29 @@ export const cancelCrawlRun = async (id: string): Promise<CrawlRunDetail> => {
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to stop crawl. Please try again.",
+    );
+  }
+};
+
+export const deleteCrawlRun = async (id: string): Promise<void> => {
+  try {
+    await axiosInstance.delete(ApiRoutes.admin.crawlRuns.detail(id));
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to delete crawl run. Please try again.",
+    );
+  }
+};
+
+export const deleteCrawlRuns = async (
+  payload: DeleteCrawlRunsPayload,
+): Promise<{ deleted: number }> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.crawlRuns.bulkDelete, payload);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to delete crawl runs. Please try again.",
     );
   }
 };

@@ -43,6 +43,7 @@ export const ApiRoutes = {
             activateVersion: (id: string, versionId: string) =>
                 `/admin/scrapers/${id}/versions/${versionId}/activate`,
             runNow: (id: string) => `/admin/scrapers/${id}/run-now`,
+            bulkDelete: "/admin/scrapers/bulk-delete",
         },
         generationRuns: {
             prefix: "/admin/generation-runs",
@@ -60,6 +61,7 @@ export const ApiRoutes = {
             detail: (id: string) => `/admin/crawl-runs/${id}`,
             rerun: (id: string) => `/admin/crawl-runs/${id}/rerun`,
             cancel: (id: string) => `/admin/crawl-runs/${id}/cancel`,
+            bulkDelete: "/admin/crawl-runs/bulk-delete",
         },
         cmsSyncRuns: {
             prefix: "/admin/cms-sync-runs",
@@ -72,6 +74,7 @@ export const ApiRoutes = {
             detail: (id: string) => `/admin/jobs/${id}`,
             retry: (id: string) => `/admin/jobs/${id}/retry`,
             stop: (id: string) => `/admin/jobs/${id}/stop`,
+            bulkDelete: "/admin/jobs/bulk-delete",
         },
         queues: {
             bullBoard: "/admin/queues",

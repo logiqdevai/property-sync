@@ -1,4 +1,13 @@
-import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -16,6 +25,7 @@ import {
   JobLogQuerySchema,
   JobLogQueryType,
 } from './dto/job-log-query.schema';
+import { DeleteJobLogsDto } from './dto/delete-job-logs.dto';
 import { JobLog } from './entities/job-log.entity';
 
 @ApiTags('Jobs')
@@ -37,6 +47,16 @@ export class JobsController {
     @Query(new ZodValidationPipe(JobLogQuerySchema)) query: JobLogQueryType,
   ) {
     return this.jobsService.findAll(query);
+  }
+
+  @Post('bulk-delete')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Delete multiple job logs' })
+  @ApiResponse({ status: 200, description: 'Job logs deleted' })
+  @ApiResponse({ status: 400, description: 'One or more jobs are active' })
+  @ApiResponse({ status: 404, description: 'One or more job logs not found' })
+  removeMany(@Body() dto: DeleteJobLogsDto) {
+    return this.jobsService.removeMany(dto.job_ids);
   }
 
   @Get(':id')
@@ -64,5 +84,15 @@ export class JobsController {
   @ApiResponse({ status: 404, description: 'Job log not found' })
   stop(@Param('id') id: string) {
     return this.jobsService.stop(id);
+  }
+
+  @Delete(':id')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Delete a job log' })
+  @ApiResponse({ status: 200, description: 'Deleted' })
+  @ApiResponse({ status: 400, description: 'Job is still active' })
+  @ApiResponse({ status: 404, description: 'Job log not found' })
+  remove(@Param('id') id: string) {
+    return this.jobsService.remove(id);
   }
 }

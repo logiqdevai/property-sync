@@ -109,3 +109,7 @@ export interface PaginatedResponse<T> {
   data: T[];
   pagination: PaginationMeta;
 }
+
+export interface DeleteScrapersPayload {
+  scraper_ids: string[];
+}

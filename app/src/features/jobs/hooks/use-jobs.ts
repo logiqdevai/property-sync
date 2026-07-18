@@ -1,7 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
-import { getJob, getJobs, retryJob, stopJob } from "../services/jobs.services";
-import type { JobLogListQuery } from "../interfaces/jobs.interfaces";
+import {
+  deleteJob,
+  deleteJobs,
+  getJob,
+  getJobs,
+  retryJob,
+  stopJob,
+} from "../services/jobs.services";
+import type { DeleteJobsPayload, JobLogListQuery } from "../interfaces/jobs.interfaces";
 
 export const useJobs = (query: JobLogListQuery) => {
   return useQuery({
@@ -60,6 +67,44 @@ export const useStopJob = () => {
     onError: (error: any) => {
       toast({
         title: "Could not stop job",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDeleteJob = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteJob(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      toast({ title: "Job deleted", duration: 2000, variant: "success" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Could not delete job",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDeleteJobs = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: DeleteJobsPayload) => deleteJobs(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      toast({ title: "Jobs deleted", duration: 2000, variant: "success" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Could not delete jobs",
         description: error.message,
         variant: "error",
       });

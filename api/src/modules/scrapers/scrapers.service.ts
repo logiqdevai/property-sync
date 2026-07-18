@@ -1,10 +1,12 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CrawlRunsService } from '@/modules/crawl-runs/crawl-runs.service';
 import {
+  CrawlRunStatus,
   Prisma,
   ScraperStatus,
   ScraperVersionCreatedBy,
@@ -14,6 +16,11 @@ import { CreateScraperVersionDto } from './dto/create-scraper-version.dto';
 import { UpdateScraperDto } from './dto/update-scraper.dto';
 import { ScraperQueryType } from './dto/scraper-query.schema';
 import { PaginatedResult } from './interfaces/scraper.interface';
+
+const ACTIVE_CRAWL_RUN_STATUSES: CrawlRunStatus[] = [
+  CrawlRunStatus.QUEUED,
+  CrawlRunStatus.RUNNING,
+];
 
 @Injectable()
 export class ScrapersService {
@@ -276,6 +283,48 @@ export class ScrapersService {
       scraper.id,
       tracker?.id,
     );
+  }
+
+  async remove(id: string) {
+    await this.ensureExists(id);
+    await this.ensureNoActiveCrawlRuns([id]);
+
+    await this.prisma.scraper.delete({ where: { id } });
+  }
+
+  async removeMany(scraperIds: string[]) {
+    const uniqueIds = [...new Set(scraperIds)];
+    const count = await this.prisma.scraper.count({
+      where: { id: { in: uniqueIds } },
+    });
+
+    if (count !== uniqueIds.length) {
+      throw new NotFoundException('One or more scrapers not found');
+    }
+
+    await this.ensureNoActiveCrawlRuns(uniqueIds);
+
+    await this.prisma.scraper.deleteMany({
+      where: { id: { in: uniqueIds } },
+    });
+
+    return { deleted: uniqueIds.length };
+  }
+
+  private async ensureNoActiveCrawlRuns(scraperIds: string[]) {
+    const activeRun = await this.prisma.crawlRun.findFirst({
+      where: {
+        scraper_id: { in: scraperIds },
+        status: { in: ACTIVE_CRAWL_RUN_STATUSES },
+      },
+      select: { id: true },
+    });
+
+    if (activeRun) {
+      throw new BadRequestException(
+        'Cancel active crawl runs for this scraper before deleting it',
+      );
+    }
   }
 
   private async ensureExists(id: string) {

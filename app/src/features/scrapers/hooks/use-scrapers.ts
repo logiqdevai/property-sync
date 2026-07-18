@@ -4,6 +4,8 @@ import {
   activateScraperVersion,
   createScraper,
   createScraperVersion,
+  deleteScraper,
+  deleteScrapers,
   getScraper,
   getScraperVersions,
   getScrapers,
@@ -13,6 +15,7 @@ import {
 import type {
   CreateScraperPayload,
   CreateScraperVersionPayload,
+  DeleteScrapersPayload,
   ScraperListQuery,
   UpdateScraperPayload,
 } from "../interfaces/scrapers.interfaces";
@@ -119,6 +122,44 @@ export const useRunScraperNow = () => {
     onError: (error: any) => {
       toast({
         title: "Could not run scraper",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDeleteScraper = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteScraper(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scrapers"] });
+      toast({ title: "Scraper deleted", duration: 2000, variant: "success" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Could not delete scraper",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDeleteScrapers = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: DeleteScrapersPayload) => deleteScrapers(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scrapers"] });
+      toast({ title: "Scrapers deleted", duration: 2000, variant: "success" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Could not delete scrapers",
         description: error.message,
         variant: "error",
       });

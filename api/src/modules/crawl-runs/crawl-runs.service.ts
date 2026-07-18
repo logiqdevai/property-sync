@@ -22,6 +22,11 @@ const STOPPABLE_JOB_STATUSES: JobStatus[] = [
   JobStatus.PAUSED,
 ];
 
+const ACTIVE_CRAWL_RUN_STATUSES: CrawlRunStatus[] = [
+  CrawlRunStatus.QUEUED,
+  CrawlRunStatus.RUNNING,
+];
+
 @Injectable()
 export class CrawlRunsService {
   constructor(
@@ -164,10 +169,7 @@ export class CrawlRunsService {
       throw new NotFoundException('Crawl run not found');
     }
 
-    if (
-      run.status !== CrawlRunStatus.QUEUED &&
-      run.status !== CrawlRunStatus.RUNNING
-    ) {
+    if (!ACTIVE_CRAWL_RUN_STATUSES.includes(run.status)) {
       throw new BadRequestException(
         'Only QUEUED or RUNNING crawl runs can be stopped',
       );
@@ -195,7 +197,7 @@ export class CrawlRunsService {
     const cancelled = await this.prisma.crawlRun.updateMany({
       where: {
         id,
-        status: { in: [CrawlRunStatus.QUEUED, CrawlRunStatus.RUNNING] },
+        status: { in: ACTIVE_CRAWL_RUN_STATUSES },
       },
       data: {
         status: CrawlRunStatus.CANCELLED,
@@ -235,11 +237,54 @@ export class CrawlRunsService {
     return this.findOne(id);
   }
 
+  async remove(id: string) {
+    const run = await this.prisma.crawlRun.findUnique({
+      where: { id },
+      select: { id: true, status: true },
+    });
+
+    if (!run) {
+      throw new NotFoundException('Crawl run not found');
+    }
+
+    if (ACTIVE_CRAWL_RUN_STATUSES.includes(run.status)) {
+      throw new BadRequestException(
+        'Cancel the crawl run before deleting it',
+      );
+    }
+
+    await this.prisma.crawlRun.delete({ where: { id } });
+  }
+
+  async removeMany(crawlRunIds: string[]) {
+    const uniqueIds = [...new Set(crawlRunIds)];
+    const runs = await this.prisma.crawlRun.findMany({
+      where: { id: { in: uniqueIds } },
+      select: { id: true, status: true },
+    });
+
+    if (runs.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more crawl runs not found');
+    }
+
+    if (runs.some((run) => ACTIVE_CRAWL_RUN_STATUSES.includes(run.status))) {
+      throw new BadRequestException(
+        'Cancel active crawl runs before deleting them',
+      );
+    }
+
+    await this.prisma.crawlRun.deleteMany({
+      where: { id: { in: uniqueIds } },
+    });
+
+    return { deleted: uniqueIds.length };
+  }
+
   async hasActiveRunForAgency(sourceAgencyId: string): Promise<boolean> {
     const active = await this.prisma.crawlRun.findFirst({
       where: {
         source_agency_id: sourceAgencyId,
-        status: { in: [CrawlRunStatus.QUEUED, CrawlRunStatus.RUNNING] },
+        status: { in: ACTIVE_CRAWL_RUN_STATUSES },
       },
       select: { id: true },
     });

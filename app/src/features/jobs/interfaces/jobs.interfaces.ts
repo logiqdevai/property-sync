@@ -50,3 +50,7 @@ export interface PaginatedResponse<T> {
   data: T[];
   pagination: PaginationMeta;
 }
+
+export interface DeleteJobsPayload {
+  job_ids: string[];
+}

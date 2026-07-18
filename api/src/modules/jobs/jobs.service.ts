@@ -14,6 +14,13 @@ import { JobStatus, Prisma } from 'generated/prisma';
 import { JobLogQueryType } from './dto/job-log-query.schema';
 import { PaginatedResult } from './interfaces/job-log.interface';
 
+const ACTIVE_JOB_STATUSES: JobStatus[] = [
+  JobStatus.WAITING,
+  JobStatus.ACTIVE,
+  JobStatus.DELAYED,
+  JobStatus.PAUSED,
+];
+
 @Injectable()
 export class JobsService {
   constructor(
@@ -108,14 +115,7 @@ export class JobsService {
       throw new NotFoundException('Job log not found');
     }
 
-    const stoppable: JobStatus[] = [
-      JobStatus.WAITING,
-      JobStatus.ACTIVE,
-      JobStatus.DELAYED,
-      JobStatus.PAUSED,
-    ];
-
-    if (!stoppable.includes(jobLog.status)) {
+    if (!ACTIVE_JOB_STATUSES.includes(jobLog.status)) {
       throw new BadRequestException(
         'Only queued or running jobs can be stopped',
       );
@@ -141,6 +141,47 @@ export class JobsService {
         error_message: 'Stopped by admin',
       },
     });
+  }
+
+  async remove(id: string) {
+    const jobLog = await this.prisma.jobLog.findUnique({
+      where: { id },
+      select: { id: true, status: true },
+    });
+
+    if (!jobLog) {
+      throw new NotFoundException('Job log not found');
+    }
+
+    if (ACTIVE_JOB_STATUSES.includes(jobLog.status)) {
+      throw new BadRequestException('Stop the job before deleting it');
+    }
+
+    await this.prisma.jobLog.delete({ where: { id } });
+  }
+
+  async removeMany(jobIds: string[]) {
+    const uniqueIds = [...new Set(jobIds)];
+    const jobLogs = await this.prisma.jobLog.findMany({
+      where: { id: { in: uniqueIds } },
+      select: { id: true, status: true },
+    });
+
+    if (jobLogs.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more job logs not found');
+    }
+
+    if (
+      jobLogs.some((jobLog) => ACTIVE_JOB_STATUSES.includes(jobLog.status))
+    ) {
+      throw new BadRequestException('Stop active jobs before deleting them');
+    }
+
+    await this.prisma.jobLog.deleteMany({
+      where: { id: { in: uniqueIds } },
+    });
+
+    return { deleted: uniqueIds.length };
   }
 
   private resolveQueue(queueName: string): Queue {

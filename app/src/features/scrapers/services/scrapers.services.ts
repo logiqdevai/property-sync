@@ -4,6 +4,7 @@ import type { CrawlRun } from "@/features/crawl-runs/interfaces/crawl-runs.inter
 import type {
   CreateScraperPayload,
   CreateScraperVersionPayload,
+  DeleteScrapersPayload,
   PaginatedResponse,
   Scraper,
   ScraperListQuery,
@@ -95,5 +96,24 @@ export const runScraperNow = async (id: string): Promise<CrawlRun> => {
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to run scraper. Please try again.");
+  }
+};
+
+export const deleteScraper = async (id: string): Promise<void> => {
+  try {
+    await axiosInstance.delete(ApiRoutes.admin.scrapers.detail(id));
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to delete scraper. Please try again.");
+  }
+};
+
+export const deleteScrapers = async (
+  payload: DeleteScrapersPayload,
+): Promise<{ deleted: number }> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.scrapers.bulkDelete, payload);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to delete scrapers. Please try again.");
   }
 };

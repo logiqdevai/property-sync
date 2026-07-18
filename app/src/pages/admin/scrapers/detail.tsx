@@ -5,12 +5,14 @@ import { ArrowLeft, Bot, Activity, History, Sparkles } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { ScraperStatusChip } from "./components/scraper-status-chip";
 import { ScraperHealthChip } from "./components/scraper-health-chip";
 import { ScraperVersionForm } from "./components/scraper-version-form";
 import {
   useActivateScraperVersion,
   useCreateScraperVersion,
+  useDeleteScraper,
   useRunScraperNow,
   useScraper,
   useScraperVersions,
@@ -41,6 +43,7 @@ export default function ScraperDetailPage() {
   const navigate = useNavigate();
   const newVersionModal = useOverlayState();
   const generateModal = useOverlayState();
+  const deleteConfirm = useOverlayState();
 
   const [compareA, setCompareA] = useState<string | null>(null);
   const [compareB, setCompareB] = useState<string | null>(null);
@@ -55,6 +58,7 @@ export default function ScraperDetailPage() {
   const createVersion = useCreateScraperVersion();
   const runNow = useRunScraperNow();
   const createGenerationRun = useCreateGenerationRun();
+  const deleteScraper = useDeleteScraper();
 
   const generationRuns = generationRunsData?.data ?? [];
   const crawlRuns = crawlRunsData?.data ?? [];
@@ -106,6 +110,14 @@ export default function ScraperDetailPage() {
             }
           >
             Run now
+          </ActionButtonWithPending>
+          <ActionButtonWithPending
+            variant="danger"
+            isPending={deleteScraper.isPending}
+            isDisabled={deleteScraper.isPending}
+            onPress={deleteConfirm.open}
+          >
+            Delete
           </ActionButtonWithPending>
         </div>
       </div>
@@ -501,6 +513,18 @@ export default function ScraperDetailPage() {
           </Modal.Container>
         </Modal.Backdrop>
       </Modal>
+
+      <ConfirmationDialog
+        state={deleteConfirm}
+        title="Delete this scraper?"
+        description="This will permanently delete the scraper and its versions. Scrapers with active crawl runs cannot be deleted. This cannot be undone."
+        confirmLabel="Delete"
+        isPending={deleteScraper.isPending}
+        onConfirm={async () => {
+          await deleteScraper.mutateAsync(scraper.id);
+          navigate(Routes.admin.scrapers.list);
+        }}
+      />
     </div>
   );
 }

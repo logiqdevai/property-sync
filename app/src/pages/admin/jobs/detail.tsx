@@ -6,7 +6,7 @@ import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { JobStatusChip } from "./components/job-status-chip";
-import { useJob, useRetryJob, useStopJob } from "@/features/jobs/hooks/use-jobs";
+import { useDeleteJob, useJob, useRetryJob, useStopJob } from "@/features/jobs/hooks/use-jobs";
 import { JobStatuses } from "@/features/jobs/interfaces/jobs.interfaces";
 import { formatDateTime } from "@/lib/date";
 import { formatDuration } from "@/lib/duration";
@@ -27,10 +27,12 @@ export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const stopConfirm = useOverlayState();
+  const deleteConfirm = useOverlayState();
 
   const { data: job, isPending } = useJob(id!);
   const retryJob = useRetryJob();
   const stopJob = useStopJob();
+  const deleteJob = useDeleteJob();
 
   if (isPending || !job) {
     return <DetailSkeleton fieldCount={5} showSubTable subTableRows={2} />;
@@ -60,24 +62,34 @@ export default function JobDetailPage() {
           <JobStatusChip status={job.status} />
           {isActive && <Loader2 className="h-4 w-4 animate-spin text-muted" />}
         </div>
-        {isActive ? (
+        <div className="flex items-center gap-2">
+          {isActive ? (
+            <ActionButtonWithPending
+              variant="danger"
+              isPending={stopJob.isPending}
+              isDisabled={stopJob.isPending}
+              onPress={stopConfirm.open}
+            >
+              Stop
+            </ActionButtonWithPending>
+          ) : job.status === JobStatuses.FAILED ? (
+            <ActionButtonWithPending
+              isPending={retryJob.isPending}
+              isDisabled={retryJob.isPending}
+              onPress={() => retryJob.mutate(job.id)}
+            >
+              Retry
+            </ActionButtonWithPending>
+          ) : null}
           <ActionButtonWithPending
             variant="danger"
-            isPending={stopJob.isPending}
-            isDisabled={stopJob.isPending}
-            onPress={stopConfirm.open}
+            isPending={deleteJob.isPending}
+            isDisabled={deleteJob.isPending}
+            onPress={deleteConfirm.open}
           >
-            Stop
+            Delete
           </ActionButtonWithPending>
-        ) : job.status === JobStatuses.FAILED ? (
-          <ActionButtonWithPending
-            isPending={retryJob.isPending}
-            isDisabled={retryJob.isPending}
-            onPress={() => retryJob.mutate(job.id)}
-          >
-            Retry
-          </ActionButtonWithPending>
-        ) : null}
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 rounded-xl border border-border bg-surface p-6">
@@ -158,6 +170,18 @@ export default function JobDetailPage() {
         isPending={stopJob.isPending}
         onConfirm={async () => {
           await stopJob.mutateAsync(job.id);
+        }}
+      />
+
+      <ConfirmationDialog
+        state={deleteConfirm}
+        title="Delete this job?"
+        description="This will permanently delete the job log. This cannot be undone."
+        confirmLabel="Delete"
+        isPending={deleteJob.isPending}
+        onConfirm={async () => {
+          await deleteJob.mutateAsync(job.id);
+          navigate(Routes.admin.jobs.list);
         }}
       />
     </div>

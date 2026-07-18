@@ -1,13 +1,20 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, Select, ListBox, Pagination } from "@heroui/react";
+import { Button, Table, Select, ListBox, Pagination, useOverlayState } from "@heroui/react";
+import { Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { TableRowActionsMenu, type TableRowAction } from "@/components/ui/table-row-actions-menu";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { useScrapers } from "@/features/scrapers/hooks/use-scrapers";
 import { useAdminUsers } from "@/features/users/hooks/use-admin-users";
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
-import { useCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
+import {
+  useCrawlRuns,
+  useDeleteCrawlRun,
+  useDeleteCrawlRuns,
+} from "@/features/crawl-runs/hooks/use-crawl-runs";
 import {
   type CrawlRunListQuery,
   type CrawlRunStatus,
@@ -15,6 +22,10 @@ import {
 import { CrawlRunStatusFilterOptions } from "@/config/constants/dropdowns/crawl-run-status-filter.options";
 import { formatDateTime } from "@/lib/date";
 import { formatDuration } from "@/lib/duration";
+
+const CRAWL_RUN_DELETE_ACTIONS: TableRowAction[] = [
+  { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
+];
 
 function toStartOfDayIso(date: string) {
   return new Date(`${date}T00:00:00.000Z`).toISOString();
@@ -33,6 +44,8 @@ function formatUsd(value: string | null) {
 
 export default function CrawlRunsListPage() {
   const navigate = useNavigate();
+  const deleteConfirm = useOverlayState();
+  const bulkDeleteConfirm = useOverlayState();
 
   const [status, setStatus] = useState<CrawlRunStatus | "all">("all");
   const [agencyId, setAgencyId] = useState<string | "all">("all");
@@ -41,6 +54,8 @@ export default function CrawlRunsListPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleteCrawlRunId, setDeleteCrawlRunId] = useState<string | null>(null);
 
   const query = useMemo<CrawlRunListQuery>(
     () => ({
@@ -60,18 +75,55 @@ export default function CrawlRunsListPage() {
   const { data: agenciesData } = useAgencies({ limit: 100 });
   const { data: scrapersData } = useScrapers({ limit: 100 });
   const { data: usersData } = useAdminUsers({ limit: 100 });
+  const deleteCrawlRun = useDeleteCrawlRun();
+  const deleteCrawlRuns = useDeleteCrawlRuns();
 
   const runs = data?.data ?? [];
   const pagination = data?.pagination;
   const agencies = agenciesData?.data ?? [];
   const scrapers = scrapersData?.data ?? [];
   const users = usersData?.data ?? [];
+  const selectedCount = selectedIds.size;
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteCrawlRunId) return;
+    await deleteCrawlRun.mutateAsync(deleteCrawlRunId);
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(deleteCrawlRunId);
+      return next;
+    });
+    setDeleteCrawlRunId(null);
+  };
+
+  const handleBulkDelete = async () => {
+    await deleteCrawlRuns.mutateAsync({ crawl_run_ids: Array.from(selectedIds) });
+    setSelectedIds(new Set());
+  };
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-2xl font-semibold tracking-tight text-foreground">Crawl runs</p>
-        <p className="text-sm text-muted">Production Playwright executions against source agencies.</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-2xl font-semibold tracking-tight text-foreground">Crawl runs</p>
+          <p className="text-sm text-muted">Production Playwright executions against source agencies.</p>
+        </div>
+        <Button
+          variant="danger"
+          isDisabled={selectedCount < 1}
+          onPress={bulkDeleteConfirm.open}
+        >
+          Delete selected ({selectedCount})
+        </Button>
       </div>
 
       <div className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-2 w-fit">
@@ -223,13 +275,15 @@ export default function CrawlRunsListPage() {
             <Table.ScrollContainer>
               <Table.Content aria-label="Crawl runs">
                 <Table.Header>
-                  <Table.Column isRowHeader>Agency</Table.Column>
+                  <Table.Column isRowHeader>Select</Table.Column>
+                  <Table.Column>Agency</Table.Column>
                   <Table.Column>Scraper</Table.Column>
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Totals</Table.Column>
                   <Table.Column>AI cost</Table.Column>
                   <Table.Column>Started</Table.Column>
                   <Table.Column>Duration</Table.Column>
+                  <Table.Column>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
                   {runs.map((run) => (
@@ -239,6 +293,16 @@ export default function CrawlRunsListPage() {
                       onAction={() => navigate(Routes.admin.crawlRuns.detail(run.id))}
                       className="cursor-pointer"
                     >
+                      <Table.Cell>
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(run.id)}
+                            onChange={() => toggleSelection(run.id)}
+                            aria-label={`Select crawl run ${run.id}`}
+                          />
+                        </div>
+                      </Table.Cell>
                       <Table.Cell>
                         <span className="font-medium text-foreground">
                           {run.source_agency?.name ?? "—"}
@@ -261,6 +325,17 @@ export default function CrawlRunsListPage() {
                       </Table.Cell>
                       <Table.Cell>{formatDateTime(run.started_at)}</Table.Cell>
                       <Table.Cell>{formatDuration(run.duration_ms)}</Table.Cell>
+                      <Table.Cell>
+                        <TableRowActionsMenu
+                          actions={CRAWL_RUN_DELETE_ACTIONS}
+                          onAction={(actionId) => {
+                            if (actionId !== "delete") return;
+                            setDeleteCrawlRunId(run.id);
+                            deleteConfirm.open();
+                          }}
+                          ariaLabel={`Actions for crawl run ${run.id}`}
+                        />
+                      </Table.Cell>
                     </Table.Row>
                   ))}
                 </Table.Body>
@@ -297,6 +372,24 @@ export default function CrawlRunsListPage() {
           </Pagination.Content>
         </Pagination>
       )}
+
+      <ConfirmationDialog
+        state={deleteConfirm}
+        title="Delete this crawl run?"
+        description="This will permanently delete the crawl run and its execution traces. This cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+        isPending={deleteCrawlRun.isPending}
+      />
+
+      <ConfirmationDialog
+        state={bulkDeleteConfirm}
+        title="Delete selected crawl runs?"
+        description={`This will permanently delete ${selectedCount} crawl runs. This cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={handleBulkDelete}
+        isPending={deleteCrawlRuns.isPending}
+      />
     </div>
   );
 }
