@@ -69,7 +69,9 @@ export interface AdminUserTrackedAgency {
 
 export interface AdminUserSavedProperty {
   id: string;
+  canonical_property_id: string;
   property_id: string;
+  internal_id: string | null;
   title: string;
   city: string | null;
   price: string | null;

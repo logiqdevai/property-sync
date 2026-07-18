@@ -107,9 +107,17 @@ export class UserPropertiesService {
                   select: {
                     id: true,
                     source_url: true,
-                    external_id: true,
+                    property_id: true,
+                    internal_id: true,
                     raw_title: true,
+                    raw_description: true,
                     raw_price: true,
+                    raw_location: true,
+                    raw_property_type: true,
+                    raw_listing_type: true,
+                    raw_sqm: true,
+                    raw_bedrooms: true,
+                    raw_bathrooms: true,
                     last_seen_at: true,
                     status: true,
                   },
@@ -247,9 +255,9 @@ export class UserPropertiesService {
 
       const existing = await this.prisma.userProperty.findUnique({
         where: {
-          user_id_property_id: {
+          user_id_canonical_property_id: {
             user_id: tracker.user_id,
-            property_id: propertyId,
+            canonical_property_id: propertyId,
           },
         },
       });
@@ -261,7 +269,7 @@ export class UserPropertiesService {
         await this.prisma.userProperty.create({
           data: {
             user_id: tracker.user_id,
-            property_id: propertyId,
+            canonical_property_id: propertyId,
             ...canonicalFields,
           },
         });
@@ -288,7 +296,7 @@ export class UserPropertiesService {
         await this.prisma.userProperty.create({
           data: {
             user_id: tracker.user_id,
-            property_id: propertyId,
+            canonical_property_id: propertyId,
             ...canonicalFields,
           },
         });
@@ -306,6 +314,8 @@ export class UserPropertiesService {
 
   private mapFromCanonical(property: Property) {
     return {
+      property_id: property.property_id,
+      internal_id: property.internal_id,
       title: property.title,
       description: property.description,
       listing_type: property.listing_type,
@@ -326,6 +336,16 @@ export class UserPropertiesService {
       floor: property.floor,
       construction_year: property.construction_year,
       renovation_year: property.renovation_year,
+      estateweb_type_id: property.estateweb_type_id,
+      estateweb_location_id: property.estateweb_location_id,
+      cms_fields: property.cms_fields ?? undefined,
+      cms_metadata: property.cms_metadata ?? undefined,
+      video_url: property.video_url,
+      distance_airport: property.distance_airport,
+      distance_port: property.distance_port,
+      distance_beach: property.distance_beach,
+      price_start: property.price_start,
+      price_web: property.price_web,
       features: property.features ?? undefined,
       images: property.images ?? undefined,
       normalized_data: property.normalized_data ?? undefined,

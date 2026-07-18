@@ -7,6 +7,11 @@ import {
   PropertyStatus,
   PropertyType,
 } from 'generated/prisma';
+import {
+  CmsPropertyFieldEntry,
+  CmsPropertyMetadata,
+} from '../interfaces/cms-property.interface';
+import { mergeCmsFieldsFromNormalizedRow } from './property-cms-field-mapper.util';
 
 export interface NormalizedAiRow {
   index?: number;
@@ -15,41 +20,76 @@ export interface NormalizedAiRow {
   listing_type?: string | null;
   property_type?: string | null;
   price?: number | null;
+  price_start?: number | null;
+  price_web?: number | null;
   city?: string | null;
   district?: string | null;
   address?: string | null;
+  postal_code?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   square_meters?: number | null;
   bedrooms?: number | null;
   bathrooms?: number | null;
   floor?: string | null;
   construction_year?: number | null;
+  renovation_year?: number | null;
+  video_url?: string | null;
+  distance_airport?: string | null;
+  distance_port?: string | null;
+  distance_beach?: string | null;
+  estateweb_type_id?: number | null;
+  estateweb_location_id?: number | null;
+  cms_fields?: CmsPropertyFieldEntry[] | null;
+  cms_metadata?: CmsPropertyMetadata | null;
   features?: string[] | null;
 }
 
 export interface PropertyRecordInput {
   title: string;
   description: string | null;
+  property_id: string;
+  internal_id: string | null;
   listing_type: ListingType;
   property_type: PropertyType;
   status: PropertyStatus;
   price: Prisma.Decimal | null;
+  price_start: Prisma.Decimal | null;
+  price_web: Prisma.Decimal | null;
   currency: string;
   city: string | null;
   district: string | null;
   address: string | null;
   postal_code: string | null;
   country: string;
-  latitude: null;
-  longitude: null;
+  latitude: Prisma.Decimal | null;
+  longitude: Prisma.Decimal | null;
   square_meters: Prisma.Decimal | null;
   bedrooms: number | null;
   bathrooms: number | null;
   floor: string | null;
   construction_year: number | null;
-  renovation_year: null;
+  renovation_year: number | null;
+  video_url: string | null;
+  distance_airport: string | null;
+  distance_port: string | null;
+  distance_beach: string | null;
+  estateweb_type_id: number | null;
+  estateweb_location_id: number | null;
+  cms_fields: Prisma.InputJsonValue | null;
+  cms_metadata: Prisma.InputJsonValue | null;
   features: Prisma.InputJsonValue | null;
   images: Prisma.InputJsonValue | null;
   normalized_data: Prisma.InputJsonValue | null;
+}
+
+function readRawString(rawData: Record<string, unknown>, keys: string[]): string | null {
+  for (const key of keys) {
+    const value = rawData[key];
+    if (typeof value === 'string' && value.trim()) return value.trim();
+    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  }
+  return null;
 }
 
 export function extractImages(rawData: unknown): string[] {
@@ -62,11 +102,54 @@ export function extractImages(rawData: unknown): string[] {
   return images.filter((item): item is string => typeof item === 'string');
 }
 
+export function extractLatLng(rawData: unknown): {
+  latitude: number | null;
+  longitude: number | null;
+} {
+  if (!rawData || typeof rawData !== 'object') {
+    return { latitude: null, longitude: null };
+  }
+
+  const data = rawData as Record<string, unknown>;
+  const latLngRaw = data.lat_lng ?? data._lat_lng ?? data.latLng;
+  if (typeof latLngRaw === 'string' && latLngRaw.includes(',')) {
+    const [latRaw, lngRaw] = latLngRaw.split(',');
+    const latitude = parseFloat(latRaw.trim());
+    const longitude = parseFloat(lngRaw.trim());
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      return { latitude, longitude };
+    }
+  }
+
+  const latitude = typeof data.latitude === 'number' ? data.latitude : parseFloat(String(data.latitude ?? ''));
+  const longitude = typeof data.longitude === 'number' ? data.longitude : parseFloat(String(data.longitude ?? ''));
+
+  return {
+    latitude: Number.isFinite(latitude) ? latitude : null,
+    longitude: Number.isFinite(longitude) ? longitude : null,
+  };
+}
+
 export function parseFallbackPrice(rawPrice: string | null | undefined): number | null {
   if (!rawPrice) return null;
   const cleaned = rawPrice.replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.');
   const value = parseFloat(cleaned);
   return Number.isFinite(value) ? value : null;
+}
+
+function toDecimal(value: number | null | undefined): Prisma.Decimal | null {
+  return value != null ? new Prisma.Decimal(value) : null;
+}
+
+function sanitizeCmsMetadata(
+  metadata: CmsPropertyMetadata | null | undefined,
+): Prisma.InputJsonValue | null {
+  if (!metadata) return null;
+  const entries = Object.entries(metadata).filter(
+    ([, value]) => value != null && value !== '',
+  );
+  if (entries.length === 0) return null;
+  return Object.fromEntries(entries) as Prisma.InputJsonValue;
 }
 
 export function buildFallbackNormalizedRow(sp: {
@@ -88,24 +171,36 @@ export function buildNormalizedRowFromExistingProperty(property: Property): Norm
     listing_type: property.listing_type,
     property_type: property.property_type,
     price: property.price != null ? Number(property.price) : null,
+    price_start: property.price_start != null ? Number(property.price_start) : null,
+    price_web: property.price_web != null ? Number(property.price_web) : null,
     city: property.city,
     district: property.district,
     address: property.address,
+    postal_code: property.postal_code,
+    latitude: property.latitude != null ? Number(property.latitude) : null,
+    longitude: property.longitude != null ? Number(property.longitude) : null,
     square_meters: property.square_meters != null ? Number(property.square_meters) : null,
     bedrooms: property.bedrooms,
     bathrooms: property.bathrooms,
     floor: property.floor,
     construction_year: property.construction_year,
+    renovation_year: property.renovation_year,
+    video_url: property.video_url,
+    distance_airport: property.distance_airport,
+    distance_port: property.distance_port,
+    distance_beach: property.distance_beach,
+    estateweb_type_id: property.estateweb_type_id,
+    estateweb_location_id: property.estateweb_location_id,
+    cms_fields: Array.isArray(property.cms_fields)
+      ? (property.cms_fields as unknown as CmsPropertyFieldEntry[])
+      : null,
+    cms_metadata: property.cms_metadata as unknown as CmsPropertyMetadata | null,
     features: Array.isArray(property.features)
       ? (property.features as string[])
       : null,
   };
 }
 
-// Matches a chunked AI response back to the source properties it covered, using each
-// row's `index` field (position within the chunk that was sent to the model). A
-// single-item chunk is matched directly since some providers omit `index` when there's
-// only one input.
 export function matchNormalizedRowsToIds(
   ids: string[],
   rows: NormalizedAiRow[],
@@ -133,32 +228,64 @@ export function buildPropertyRecord(
     raw_title: string | null;
     raw_description: string | null;
     raw_data: unknown;
+    property_id: string;
+    internal_id: string | null;
   },
 ): PropertyRecordInput {
   const allImages = extractImages(sp.raw_data);
+  const rawData =
+    sp.raw_data && typeof sp.raw_data === 'object'
+      ? (sp.raw_data as Record<string, unknown>)
+      : null;
+  const latLng = extractLatLng(sp.raw_data);
+  const mergedCmsFields = mergeCmsFieldsFromNormalizedRow(n.cms_fields, n);
 
   return {
     title: n.title ?? sp.raw_title ?? sp.source_url,
     description: n.description ?? null,
+    property_id: sp.property_id,
+    internal_id: sp.internal_id,
     listing_type: (n.listing_type as ListingType) ?? ListingType.UNKNOWN,
     property_type: (n.property_type as PropertyType) ?? PropertyType.UNKNOWN,
     status: PropertyStatus.ACTIVE,
-    price: n.price != null ? new Prisma.Decimal(n.price) : null,
+    price: toDecimal(n.price),
+    price_start: toDecimal(n.price_start),
+    price_web: toDecimal(n.price_web),
     currency: 'EUR',
     city: n.city ?? null,
     district: n.district ?? null,
     address: n.address ?? null,
-    postal_code: null,
+    postal_code:
+      n.postal_code ??
+      (rawData ? readRawString(rawData, ['postal_code', 'zip', '_postal_code']) : null),
     country: 'GR',
-    latitude: null,
-    longitude: null,
-    square_meters:
-      n.square_meters != null ? new Prisma.Decimal(n.square_meters) : null,
+    latitude: toDecimal(n.latitude ?? latLng.latitude),
+    longitude: toDecimal(n.longitude ?? latLng.longitude),
+    square_meters: toDecimal(n.square_meters),
     bedrooms: n.bedrooms ?? null,
     bathrooms: n.bathrooms ?? null,
     floor: n.floor ?? null,
     construction_year: n.construction_year ?? null,
-    renovation_year: null,
+    renovation_year: n.renovation_year ?? null,
+    video_url:
+      n.video_url ??
+      (rawData ? readRawString(rawData, ['video_url', '_video_url']) : null),
+    distance_airport:
+      n.distance_airport ??
+      (rawData ? readRawString(rawData, ['distance_airport', '_distance_airport']) : null),
+    distance_port:
+      n.distance_port ??
+      (rawData ? readRawString(rawData, ['distance_port', '_distance_port']) : null),
+    distance_beach:
+      n.distance_beach ??
+      (rawData ? readRawString(rawData, ['distance_beach', '_distance_beach']) : null),
+    estateweb_type_id: n.estateweb_type_id ?? null,
+    estateweb_location_id: n.estateweb_location_id ?? null,
+    cms_fields:
+      mergedCmsFields.length > 0
+        ? (mergedCmsFields as unknown as Prisma.InputJsonValue)
+        : null,
+    cms_metadata: sanitizeCmsMetadata(n.cms_metadata),
     features: n.features ? (n.features as Prisma.InputJsonValue) : null,
     images: allImages.length > 0 ? (allImages as Prisma.InputJsonValue) : null,
     normalized_data: (sp.raw_data ?? null) as Prisma.InputJsonValue,
@@ -213,6 +340,10 @@ function imagesArray(value: unknown): string[] {
 function decimalString(value: Prisma.Decimal | null | undefined): string | null {
   if (value == null) return null;
   return value.toString();
+}
+
+function valuesEqual(a: unknown, b: unknown): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
 }
 
 export function diffPropertyChanges(
@@ -273,16 +404,30 @@ export function diffPropertyChanges(
   const trackedFields: Array<keyof PropertyRecordInput> = [
     'title',
     'description',
+    'property_id',
+    'internal_id',
     'listing_type',
     'property_type',
     'city',
     'district',
     'address',
+    'postal_code',
     'square_meters',
     'bedrooms',
     'bathrooms',
     'floor',
     'construction_year',
+    'renovation_year',
+    'video_url',
+    'distance_airport',
+    'distance_port',
+    'distance_beach',
+    'price_start',
+    'price_web',
+    'estateweb_type_id',
+    'estateweb_location_id',
+    'cms_fields',
+    'cms_metadata',
   ];
 
   let otherChanged = false;
@@ -293,7 +438,7 @@ export function diffPropertyChanges(
       oldVal instanceof Prisma.Decimal ? oldVal.toString() : oldVal;
     const newSerialized =
       newVal instanceof Prisma.Decimal ? newVal.toString() : newVal;
-    if (JSON.stringify(oldSerialized) !== JSON.stringify(newSerialized)) {
+    if (!valuesEqual(oldSerialized, newSerialized)) {
       otherChanged = true;
       break;
     }

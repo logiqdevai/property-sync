@@ -191,7 +191,9 @@ export class UsersService {
                 saved_properties: {
                     select: {
                         id: true,
+                        canonical_property_id: true,
                         property_id: true,
+                        internal_id: true,
                         title: true,
                         city: true,
                         price: true,

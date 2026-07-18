@@ -18,6 +18,8 @@ import {
   type UpdateUserPropertyFormValues,
 } from "@/features/user-properties/validation-schemas/user-properties.schema";
 
+const fieldClassName = "rounded-lg border border-border bg-background px-3 py-2";
+
 export default function DashboardPropertyDetailPage() {
   const { id = "" } = useParams();
   const [isEditing, setIsEditing] = useState(false);
@@ -48,11 +50,23 @@ export default function DashboardPropertyDetailPage() {
       city: property.city,
       district: property.district,
       address: property.address,
+      postal_code: property.postal_code,
+      country: property.country,
       square_meters: property.square_meters ? Number(property.square_meters) : null,
       bedrooms: property.bedrooms,
       bathrooms: property.bathrooms,
       floor: property.floor,
       construction_year: property.construction_year,
+      renovation_year: property.renovation_year,
+      integration_property_id: property.integration_property_id,
+      estateweb_type_id: property.estateweb_type_id,
+      estateweb_location_id: property.estateweb_location_id,
+      video_url: property.video_url,
+      distance_airport: property.distance_airport,
+      distance_port: property.distance_port,
+      distance_beach: property.distance_beach,
+      price_start: property.price_start ? Number(property.price_start) : null,
+      price_web: property.price_web ? Number(property.price_web) : null,
     });
   }, [property, reset]);
 
@@ -120,92 +134,114 @@ export default function DashboardPropertyDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <label className="flex flex-col gap-1 text-sm md:col-span-2">
                 <span className="text-muted">Title</span>
-                <input
-                  className="rounded-lg border border-border bg-background px-3 py-2"
-                  {...register("title")}
-                />
+                <input className={fieldClassName} {...register("title")} />
               </label>
               <label className="flex flex-col gap-1 text-sm md:col-span-2">
                 <span className="text-muted">Description</span>
                 <textarea
-                  className="rounded-lg border border-border bg-background px-3 py-2 min-h-24"
+                  className={`${fieldClassName} min-h-24`}
                   {...register("description")}
                 />
               </label>
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-muted">City</span>
-                <input
-                  className="rounded-lg border border-border bg-background px-3 py-2"
-                  {...register("city")}
-                />
+                <input className={fieldClassName} {...register("city")} />
               </label>
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-muted">District</span>
-                <input
-                  className="rounded-lg border border-border bg-background px-3 py-2"
-                  {...register("district")}
-                />
+                <input className={fieldClassName} {...register("district")} />
               </label>
               <label className="flex flex-col gap-1 text-sm md:col-span-2">
                 <span className="text-muted">Address</span>
-                <input
-                  className="rounded-lg border border-border bg-background px-3 py-2"
-                  {...register("address")}
-                />
+                <input className={fieldClassName} {...register("address")} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-muted">Postal code</span>
+                <input className={fieldClassName} {...register("postal_code")} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-muted">Country</span>
+                <input className={fieldClassName} {...register("country")} />
               </label>
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-muted">Price</span>
-                <input
-                  type="number"
-                  className="rounded-lg border border-border bg-background px-3 py-2"
-                  {...register("price")}
-                />
+                <input type="number" className={fieldClassName} {...register("price")} />
               </label>
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-muted">Currency</span>
-                <input
-                  className="rounded-lg border border-border bg-background px-3 py-2"
-                  {...register("currency")}
-                />
+                <input className={fieldClassName} {...register("currency")} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-muted">List price</span>
+                <input type="number" className={fieldClassName} {...register("price_start")} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-muted">Web price</span>
+                <input type="number" className={fieldClassName} {...register("price_web")} />
               </label>
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-muted">Square meters</span>
-                <input
-                  type="number"
-                  className="rounded-lg border border-border bg-background px-3 py-2"
-                  {...register("square_meters")}
-                />
+                <input type="number" className={fieldClassName} {...register("square_meters")} />
               </label>
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-muted">Bedrooms</span>
-                <input
-                  type="number"
-                  className="rounded-lg border border-border bg-background px-3 py-2"
-                  {...register("bedrooms")}
-                />
+                <input type="number" className={fieldClassName} {...register("bedrooms")} />
               </label>
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-muted">Bathrooms</span>
-                <input
-                  type="number"
-                  className="rounded-lg border border-border bg-background px-3 py-2"
-                  {...register("bathrooms")}
-                />
+                <input type="number" className={fieldClassName} {...register("bathrooms")} />
               </label>
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-muted">Floor</span>
-                <input
-                  className="rounded-lg border border-border bg-background px-3 py-2"
-                  {...register("floor")}
-                />
+                <input className={fieldClassName} {...register("floor")} />
               </label>
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-muted">Built</span>
+                <input type="number" className={fieldClassName} {...register("construction_year")} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-muted">Renovated</span>
+                <input type="number" className={fieldClassName} {...register("renovation_year")} />
+              </label>
+            </div>
+
+            <h3 className="text-sm font-semibold text-foreground pt-2">CMS & integration</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="flex flex-col gap-1 text-sm md:col-span-2">
+                <span className="text-muted">CMS property ID</span>
+                <input
+                  className={fieldClassName}
+                  placeholder="EstateWeb property id after sync"
+                  {...register("integration_property_id")}
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-muted">EstateWeb type ID</span>
+                <input type="number" className={fieldClassName} {...register("estateweb_type_id")} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-muted">EstateWeb location ID</span>
                 <input
                   type="number"
-                  className="rounded-lg border border-border bg-background px-3 py-2"
-                  {...register("construction_year")}
+                  className={fieldClassName}
+                  {...register("estateweb_location_id")}
                 />
+              </label>
+              <label className="flex flex-col gap-1 text-sm md:col-span-2">
+                <span className="text-muted">Video URL</span>
+                <input className={fieldClassName} {...register("video_url")} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-muted">Airport distance</span>
+                <input className={fieldClassName} {...register("distance_airport")} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-muted">Port distance</span>
+                <input className={fieldClassName} {...register("distance_port")} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-muted">Beach distance</span>
+                <input className={fieldClassName} {...register("distance_beach")} />
               </label>
             </div>
             <div className="flex justify-end">

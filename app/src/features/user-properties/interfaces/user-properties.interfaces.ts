@@ -6,10 +6,15 @@ import type {
   PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
 
-export interface UserProperty {
+import type { PropertyCmsFields } from "@/features/properties/interfaces/cms-property.interface";
+
+export interface UserProperty extends PropertyCmsFields {
   id: string;
   user_id: string;
+  canonical_property_id: string;
   property_id: string;
+  internal_id: string | null;
+  integration_property_id: string | null;
   title: string;
   description: string | null;
   listing_type: ListingType;
@@ -20,11 +25,16 @@ export interface UserProperty {
   city: string | null;
   district: string | null;
   address: string | null;
+  postal_code: string | null;
+  country: string | null;
+  latitude: string | null;
+  longitude: string | null;
   square_meters: string | null;
   bedrooms: number | null;
   bathrooms: number | null;
   floor: string | null;
   construction_year: number | null;
+  renovation_year: number | null;
   features: string[] | null;
   images: string[] | null;
   is_modified: boolean;
@@ -50,11 +60,23 @@ export interface UpdateUserPropertyPayload {
   city?: string | null;
   district?: string | null;
   address?: string | null;
+  postal_code?: string | null;
+  country?: string | null;
   square_meters?: number | null;
   bedrooms?: number | null;
   bathrooms?: number | null;
   floor?: string | null;
   construction_year?: number | null;
+  renovation_year?: number | null;
+  integration_property_id?: string | null;
+  estateweb_type_id?: number | null;
+  estateweb_location_id?: number | null;
+  video_url?: string | null;
+  distance_airport?: string | null;
+  distance_port?: string | null;
+  distance_beach?: string | null;
+  price_start?: number | null;
+  price_web?: number | null;
 }
 
 export interface UserPropertyListQuery {

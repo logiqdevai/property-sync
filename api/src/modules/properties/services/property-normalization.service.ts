@@ -46,11 +46,17 @@ import {
 type SourcePropertyRow = {
   id: string;
   source_url: string;
-  external_id: string | null;
+  property_id: string;
+  internal_id: string | null;
   raw_title: string | null;
   raw_price: string | null;
   raw_location: string | null;
   raw_description: string | null;
+  raw_property_type: string | null;
+  raw_listing_type: string | null;
+  raw_sqm: string | null;
+  raw_bedrooms: string | null;
+  raw_bathrooms: string | null;
   raw_data: unknown;
   content_hash: string | null;
 };

@@ -9,7 +9,7 @@ import { CrawlerService } from '@/integrations/crawler/services/crawler.service'
 import { DetailEnrichmentService } from '@/integrations/crawler/services/detail-enrichment.service';
 import { ScraperConfig } from '@/integrations/crawler/interfaces/scraper-config.interface';
 import { DiagnosticsRunContext } from '@/integrations/diagnostics/interfaces/diagnostics.interfaces';
-import { contentHash } from '@/integrations/crawler/utils/crawler.utils';
+import { contentHash, extractDenormalizedRawFields, extractSourcePropertyIds } from '@/integrations/crawler/utils/crawler.utils';
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { ScraperFailureHandlerService } from '@/background/scraper-failure-handler.service';
@@ -182,10 +182,9 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         seenUrls.add(item.source_url);
 
         const raw = item.raw ?? {};
-        const externalId =
-          (raw._external_id as string | undefined) ??
-          item.source_url.split('/').filter(Boolean).pop() ??
-          null;
+        const denormalized = extractDenormalizedRawFields(raw);
+        const { property_id: propertyId, internal_id: internalId } =
+          extractSourcePropertyIds(item.source_url, raw);
         const hash = contentHash({
           url: item.source_url,
           title: raw.title,
@@ -211,12 +210,14 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
           },
           create: {
             source_agency_id: run.source_agency_id,
-            external_id: externalId,
+            property_id: propertyId,
+            internal_id: internalId,
             source_url: item.source_url,
             raw_title: (raw.title as string | undefined) ?? null,
             raw_description: (raw._detail_text as string | undefined) ?? null,
             raw_price: (raw.price as string | undefined) ?? null,
             raw_location: (raw.location as string | undefined) ?? null,
+            ...denormalized,
             raw_data: raw as Prisma.InputJsonValue,
             content_hash: hash,
             first_seen_at: now,
@@ -224,11 +225,13 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
             status: PropertyStatus.ACTIVE,
           },
           update: {
-            external_id: externalId,
+            property_id: propertyId,
+            internal_id: internalId,
             raw_title: (raw.title as string | undefined) ?? null,
             raw_description: (raw._detail_text as string | undefined) ?? null,
             raw_price: (raw.price as string | undefined) ?? null,
             raw_location: (raw.location as string | undefined) ?? null,
+            ...denormalized,
             raw_data: raw as Prisma.InputJsonValue,
             content_hash: hash,
             last_seen_at: now,

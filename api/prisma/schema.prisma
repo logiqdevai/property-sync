@@ -737,14 +737,20 @@ model CmsSyncRun {
 model SourceProperty {
   id               String         @id @default(uuid())
   source_agency_id String
-  external_id      String?
+  property_id        String // the property id from the agency url
+  internal_id      String? // the property public id from property description
   source_url       String
   canonical_url    String?
-  raw_title        String?
-  raw_description  String?
-  raw_price        String?
-  raw_location     String?
-  raw_data         Json?
+  raw_title         String?
+  raw_description   String?
+  raw_price         String?
+  raw_location      String?
+  raw_property_type String?
+  raw_listing_type  String?
+  raw_sqm           String?
+  raw_bedrooms      String?
+  raw_bathrooms     String?
+  raw_data          Json?
   raw_html_path    String?
   content_hash     String? // used for deduplication
   first_seen_at    DateTime       @default(now())
@@ -758,7 +764,8 @@ model SourceProperty {
 
   @@unique([source_agency_id, source_url])
   @@index([source_agency_id])
-  @@index([external_id])
+  @@index([property_id])
+  @@index([internal_id])
   @@index([content_hash])
   @@index([status])
   @@index([last_seen_at])
@@ -771,6 +778,8 @@ model Property {
   id                 String         @id @default(uuid())
   title              String
   description        String?
+  property_id        String // the property id from the agency url
+  internal_id      String? // the property public id from property description
   listing_type       ListingType    @default(UNKNOWN)
   property_type      PropertyType   @default(UNKNOWN)
   status             PropertyStatus @default(ACTIVE)
@@ -788,13 +797,23 @@ model Property {
   bathrooms          Int?
   floor              String?
   construction_year  Int?
-  renovation_year    Int?
-  features           Json?
-  images             Json?
-  normalized_data    Json?
-  duplicate_group_id String?
-  created_at         DateTime       @default(now())
-  updated_at         DateTime       @updatedAt
+  renovation_year       Int?
+  features              Json?
+  images                Json?
+  normalized_data       Json?
+  estateweb_type_id     Int?
+  estateweb_location_id Int?
+  cms_fields            Json?
+  cms_metadata          Json?
+  video_url             String?
+  distance_airport      String?
+  distance_port         String?
+  distance_beach        String?
+  price_start           Decimal?       @db.Decimal(14, 2)
+  price_web             Decimal?       @db.Decimal(14, 2)
+  duplicate_group_id    String?
+  created_at            DateTime       @default(now())
+  updated_at            DateTime       @updatedAt
 
   source_links         PropertySourceLink[]
   user_property_copies UserProperty[]
@@ -807,6 +826,8 @@ model Property {
   @@index([district])
   @@index([price])
   @@index([duplicate_group_id])
+  @@index([property_id])
+  @@index([internal_id])
   @@map("properties")
 }
 
@@ -858,9 +879,12 @@ model PropertyHistory {
 /// `is_modified` / `last_synced_at` track whether (and when) this copy has diverged, so the UI
 /// can show a "this differs from the source listing" banner and offer a manual re-sync.
 model UserProperty {
-  id                 String         @id @default(uuid())
-  user_id            String
-  property_id        String
+  id                      String         @id @default(uuid())
+  user_id                 String
+  canonical_property_id   String
+  property_id             String
+  internal_id             String?
+  integration_property_id String?
   title              String
   description        String?
   listing_type       ListingType    @default(UNKNOWN)
@@ -880,21 +904,32 @@ model UserProperty {
   bathrooms          Int?
   floor              String?
   construction_year  Int?
-  renovation_year    Int?
-  features           Json?
-  images             Json?
-  normalized_data    Json?
-  duplicate_group_id String?
-  is_modified        Boolean        @default(false) // true once any field diverges from canonical_property
+  renovation_year       Int?
+  features              Json?
+  images                Json?
+  normalized_data       Json?
+  estateweb_type_id     Int?
+  estateweb_location_id Int?
+  cms_fields            Json?
+  cms_metadata          Json?
+  video_url             String?
+  distance_airport      String?
+  distance_port         String?
+  distance_beach        String?
+  price_start           Decimal?       @db.Decimal(14, 2)
+  price_web             Decimal?       @db.Decimal(14, 2)
+  duplicate_group_id    String?
+  is_modified           Boolean        @default(false) // true once any field diverges from canonical_property
   last_synced_at     DateTime? // last time this copy was refreshed from canonical_property
   created_at         DateTime       @default(now())
   updated_at         DateTime       @updatedAt
 
   user               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  canonical_property Property @relation(fields: [property_id], references: [id], onDelete: Cascade)
+  canonical_property Property @relation(fields: [canonical_property_id], references: [id], onDelete: Cascade)
 
-  @@unique([user_id, property_id])
+  @@unique([user_id, canonical_property_id])
   @@index([user_id])
+  @@index([canonical_property_id])
   @@index([property_id])
   @@map("user_properties")
 }

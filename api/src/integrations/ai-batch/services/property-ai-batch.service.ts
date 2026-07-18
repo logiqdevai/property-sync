@@ -41,7 +41,8 @@ export class PropertyAiBatchService {
     sourceProperties: Array<{
       id: string;
       source_url: string;
-      external_id: string | null;
+      property_id: string;
+      internal_id: string | null;
       raw_title: string | null;
       raw_price: string | null;
       raw_location: string | null;

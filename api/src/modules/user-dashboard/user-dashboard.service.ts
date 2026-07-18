@@ -35,11 +35,11 @@ export class UserDashboardService {
       }),
       this.prisma.userProperty.findMany({
         where: { user_id: userId },
-        select: { property_id: true },
+        select: { canonical_property_id: true },
       }),
     ]);
 
-    const propertyIds = trackedProperties.map((p) => p.property_id);
+    const propertyIds = trackedProperties.map((p) => p.canonical_property_id);
 
     const recentHistory = propertyIds.length
       ? await this.prisma.propertyHistory.findMany({

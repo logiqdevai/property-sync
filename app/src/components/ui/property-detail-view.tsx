@@ -7,6 +7,11 @@ import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/property
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { formatPropertyHistoryLabel } from "@/features/properties/utils/format-property-history";
 import type {
+  CmsPropertyFieldEntry,
+  CmsPropertyMetadata,
+  PropertyCmsFields,
+} from "@/features/properties/interfaces/cms-property.interface";
+import type {
   ListingType,
   PropertyHistoryEntry,
   PropertySourceLink,
@@ -16,8 +21,11 @@ import type {
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { formatDateTime } from "@/lib/date";
 
-export interface PropertyDetailViewData {
+export interface PropertyDetailViewData extends Partial<PropertyCmsFields> {
   title: string;
+  property_id?: string;
+  internal_id?: string | null;
+  integration_property_id?: string | null;
   description: string | null;
   listing_type: ListingType;
   property_type: PropertyType;
@@ -27,16 +35,26 @@ export interface PropertyDetailViewData {
   city: string | null;
   district: string | null;
   address: string | null;
+  postal_code?: string | null;
+  country?: string | null;
   square_meters: string | null;
   bedrooms: number | null;
   bathrooms: number | null;
   floor: string | null;
   construction_year: number | null;
+  renovation_year?: number | null;
   features: string[] | null;
   images: string[] | null;
   duplicate_group_id?: string | null;
   source_links?: PropertySourceLink[];
   history: PropertyHistoryEntry[];
+}
+
+function formatCmsMetadata(metadata: CmsPropertyMetadata | null | undefined): string[] {
+  if (!metadata) return [];
+  return Object.entries(metadata)
+    .filter(([, value]) => value != null && value !== "")
+    .map(([key, value]) => `${key}: ${String(value)}`);
 }
 
 interface PropertyDetailViewProps {
@@ -63,6 +81,8 @@ export function PropertyDetailView({
   footer,
 }: PropertyDetailViewProps) {
   const sourceLinks = property.source_links ?? [];
+  const cmsFieldEntries = (property.cms_fields ?? []) as CmsPropertyFieldEntry[];
+  const cmsMetadataLines = formatCmsMetadata(property.cms_metadata ?? null);
 
   return (
     <div className="flex flex-col gap-8">
@@ -118,6 +138,21 @@ export function PropertyDetailView({
           <h2 className="text-sm font-semibold text-foreground">Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
             <p>
+              <span className="text-muted">Property ID:</span> {property.property_id ?? "—"}
+            </p>
+            <p>
+              <span className="text-muted">Internal ID:</span> {property.internal_id ?? "—"}
+            </p>
+            <p>
+              <span className="text-muted">CMS ID:</span> {property.integration_property_id ?? "—"}
+            </p>
+            <p>
+              <span className="text-muted">Postal code:</span> {property.postal_code ?? "—"}
+            </p>
+            <p>
+              <span className="text-muted">Country:</span> {property.country ?? "—"}
+            </p>
+            <p>
               <span className="text-muted">City:</span> {property.city ?? "—"}
             </p>
             <p>
@@ -142,12 +177,84 @@ export function PropertyDetailView({
             <p>
               <span className="text-muted">Built:</span> {property.construction_year ?? "—"}
             </p>
+            <p>
+              <span className="text-muted">Renovated:</span> {property.renovation_year ?? "—"}
+            </p>
+            <p>
+              <span className="text-muted">List price:</span>{" "}
+              {property.price_start ? `${property.price_start} ${property.currency ?? "EUR"}` : "—"}
+            </p>
+            <p>
+              <span className="text-muted">Web price:</span>{" "}
+              {property.price_web ? `${property.price_web} ${property.currency ?? "EUR"}` : "—"}
+            </p>
           </div>
           {property.description && (
             <p className="text-sm text-muted leading-relaxed">{property.description}</p>
           )}
         </section>
       )}
+
+      <section className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-3">
+        <h2 className="text-sm font-semibold text-foreground">CMS & location</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+          <p>
+            <span className="text-muted">EstateWeb type:</span> {property.estateweb_type_id ?? "—"}
+          </p>
+          <p>
+            <span className="text-muted">EstateWeb location:</span>{" "}
+            {property.estateweb_location_id ?? "—"}
+          </p>
+          <p>
+            <span className="text-muted">Video URL:</span>{" "}
+            {property.video_url ? (
+              <a
+                href={property.video_url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-accent hover:underline break-all"
+              >
+                {property.video_url}
+              </a>
+            ) : (
+              "—"
+            )}
+          </p>
+          <p>
+            <span className="text-muted">Airport distance:</span> {property.distance_airport ?? "—"}
+          </p>
+          <p>
+            <span className="text-muted">Port distance:</span> {property.distance_port ?? "—"}
+          </p>
+          <p>
+            <span className="text-muted">Beach distance:</span> {property.distance_beach ?? "—"}
+          </p>
+        </div>
+        {cmsFieldEntries.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">CMS fields</h3>
+            <div className="flex flex-wrap gap-2">
+              {cmsFieldEntries.map((field) => (
+                <Chip key={field.id} size="sm" variant="soft">
+                  <Chip.Label>
+                    #{field.id}: {String(field.value)}
+                  </Chip.Label>
+                </Chip>
+              ))}
+            </div>
+          </div>
+        )}
+        {cmsMetadataLines.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">CMS metadata</h3>
+            <ul className="text-sm text-muted flex flex-col gap-1">
+              {cmsMetadataLines.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
 
       <section className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
         <h2 className="text-sm font-semibold text-foreground">Images</h2>
@@ -206,6 +313,27 @@ export function PropertyDetailView({
                     {link.source_property.raw_title ?? link.source_property.source_url}
                   </span>
                   <span className="text-muted truncate">{link.source_property.source_url}</span>
+                  <span className="text-muted text-xs">
+                    ID {link.source_property.property_id}
+                    {link.source_property.internal_id
+                      ? ` · Internal ${link.source_property.internal_id}`
+                      : ""}
+                  </span>
+                  {(link.source_property.raw_price ||
+                    link.source_property.raw_location ||
+                    link.source_property.raw_sqm) && (
+                    <span className="text-muted text-xs">
+                      {[
+                        link.source_property.raw_price,
+                        link.source_property.raw_location,
+                        link.source_property.raw_sqm
+                          ? `${link.source_property.raw_sqm} m²`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {link.is_primary_source && (

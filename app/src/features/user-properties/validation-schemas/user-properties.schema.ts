@@ -11,6 +11,11 @@ const optionalNumber = z.preprocess((value) => {
   return Number.isNaN(num) ? null : num;
 }, z.number().nullable());
 
+const optionalString = z.preprocess((value) => {
+  if (value === "" || value === null || value === undefined) return null;
+  return String(value);
+}, z.string().nullable());
+
 export const updateUserPropertyFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().nullable().optional(),
@@ -47,11 +52,23 @@ export const updateUserPropertyFormSchema = z.object({
   city: z.string().nullable().optional(),
   district: z.string().nullable().optional(),
   address: z.string().nullable().optional(),
+  postal_code: z.string().nullable().optional(),
+  country: z.string().nullable().optional(),
   square_meters: optionalNumber.optional(),
   bedrooms: optionalNumber.optional(),
   bathrooms: optionalNumber.optional(),
   floor: z.string().nullable().optional(),
   construction_year: optionalNumber.optional(),
+  renovation_year: optionalNumber.optional(),
+  integration_property_id: optionalString.optional(),
+  estateweb_type_id: optionalNumber.optional(),
+  estateweb_location_id: optionalNumber.optional(),
+  video_url: z.string().nullable().optional(),
+  distance_airport: z.string().nullable().optional(),
+  distance_port: z.string().nullable().optional(),
+  distance_beach: z.string().nullable().optional(),
+  price_start: optionalNumber.optional(),
+  price_web: optionalNumber.optional(),
 });
 
 export type UpdateUserPropertyFormValues = z.infer<typeof updateUserPropertyFormSchema>;

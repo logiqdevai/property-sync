@@ -25077,13 +25077,19 @@ export namespace Prisma {
   export type SourcePropertyMinAggregateOutputType = {
     id: string | null
     source_agency_id: string | null
-    external_id: string | null
+    property_id: string | null
+    internal_id: string | null
     source_url: string | null
     canonical_url: string | null
     raw_title: string | null
     raw_description: string | null
     raw_price: string | null
     raw_location: string | null
+    raw_property_type: string | null
+    raw_listing_type: string | null
+    raw_sqm: string | null
+    raw_bedrooms: string | null
+    raw_bathrooms: string | null
     raw_html_path: string | null
     content_hash: string | null
     first_seen_at: Date | null
@@ -25096,13 +25102,19 @@ export namespace Prisma {
   export type SourcePropertyMaxAggregateOutputType = {
     id: string | null
     source_agency_id: string | null
-    external_id: string | null
+    property_id: string | null
+    internal_id: string | null
     source_url: string | null
     canonical_url: string | null
     raw_title: string | null
     raw_description: string | null
     raw_price: string | null
     raw_location: string | null
+    raw_property_type: string | null
+    raw_listing_type: string | null
+    raw_sqm: string | null
+    raw_bedrooms: string | null
+    raw_bathrooms: string | null
     raw_html_path: string | null
     content_hash: string | null
     first_seen_at: Date | null
@@ -25115,13 +25127,19 @@ export namespace Prisma {
   export type SourcePropertyCountAggregateOutputType = {
     id: number
     source_agency_id: number
-    external_id: number
+    property_id: number
+    internal_id: number
     source_url: number
     canonical_url: number
     raw_title: number
     raw_description: number
     raw_price: number
     raw_location: number
+    raw_property_type: number
+    raw_listing_type: number
+    raw_sqm: number
+    raw_bedrooms: number
+    raw_bathrooms: number
     raw_data: number
     raw_html_path: number
     content_hash: number
@@ -25137,13 +25155,19 @@ export namespace Prisma {
   export type SourcePropertyMinAggregateInputType = {
     id?: true
     source_agency_id?: true
-    external_id?: true
+    property_id?: true
+    internal_id?: true
     source_url?: true
     canonical_url?: true
     raw_title?: true
     raw_description?: true
     raw_price?: true
     raw_location?: true
+    raw_property_type?: true
+    raw_listing_type?: true
+    raw_sqm?: true
+    raw_bedrooms?: true
+    raw_bathrooms?: true
     raw_html_path?: true
     content_hash?: true
     first_seen_at?: true
@@ -25156,13 +25180,19 @@ export namespace Prisma {
   export type SourcePropertyMaxAggregateInputType = {
     id?: true
     source_agency_id?: true
-    external_id?: true
+    property_id?: true
+    internal_id?: true
     source_url?: true
     canonical_url?: true
     raw_title?: true
     raw_description?: true
     raw_price?: true
     raw_location?: true
+    raw_property_type?: true
+    raw_listing_type?: true
+    raw_sqm?: true
+    raw_bedrooms?: true
+    raw_bathrooms?: true
     raw_html_path?: true
     content_hash?: true
     first_seen_at?: true
@@ -25175,13 +25205,19 @@ export namespace Prisma {
   export type SourcePropertyCountAggregateInputType = {
     id?: true
     source_agency_id?: true
-    external_id?: true
+    property_id?: true
+    internal_id?: true
     source_url?: true
     canonical_url?: true
     raw_title?: true
     raw_description?: true
     raw_price?: true
     raw_location?: true
+    raw_property_type?: true
+    raw_listing_type?: true
+    raw_sqm?: true
+    raw_bedrooms?: true
+    raw_bathrooms?: true
     raw_data?: true
     raw_html_path?: true
     content_hash?: true
@@ -25268,13 +25304,19 @@ export namespace Prisma {
   export type SourcePropertyGroupByOutputType = {
     id: string
     source_agency_id: string
-    external_id: string | null
+    property_id: string
+    internal_id: string | null
     source_url: string
     canonical_url: string | null
     raw_title: string | null
     raw_description: string | null
     raw_price: string | null
     raw_location: string | null
+    raw_property_type: string | null
+    raw_listing_type: string | null
+    raw_sqm: string | null
+    raw_bedrooms: string | null
+    raw_bathrooms: string | null
     raw_data: JsonValue | null
     raw_html_path: string | null
     content_hash: string | null
@@ -25305,13 +25347,19 @@ export namespace Prisma {
   export type SourcePropertySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     source_agency_id?: boolean
-    external_id?: boolean
+    property_id?: boolean
+    internal_id?: boolean
     source_url?: boolean
     canonical_url?: boolean
     raw_title?: boolean
     raw_description?: boolean
     raw_price?: boolean
     raw_location?: boolean
+    raw_property_type?: boolean
+    raw_listing_type?: boolean
+    raw_sqm?: boolean
+    raw_bedrooms?: boolean
+    raw_bathrooms?: boolean
     raw_data?: boolean
     raw_html_path?: boolean
     content_hash?: boolean
@@ -25328,13 +25376,19 @@ export namespace Prisma {
   export type SourcePropertySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     source_agency_id?: boolean
-    external_id?: boolean
+    property_id?: boolean
+    internal_id?: boolean
     source_url?: boolean
     canonical_url?: boolean
     raw_title?: boolean
     raw_description?: boolean
     raw_price?: boolean
     raw_location?: boolean
+    raw_property_type?: boolean
+    raw_listing_type?: boolean
+    raw_sqm?: boolean
+    raw_bedrooms?: boolean
+    raw_bathrooms?: boolean
     raw_data?: boolean
     raw_html_path?: boolean
     content_hash?: boolean
@@ -25349,13 +25403,19 @@ export namespace Prisma {
   export type SourcePropertySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     source_agency_id?: boolean
-    external_id?: boolean
+    property_id?: boolean
+    internal_id?: boolean
     source_url?: boolean
     canonical_url?: boolean
     raw_title?: boolean
     raw_description?: boolean
     raw_price?: boolean
     raw_location?: boolean
+    raw_property_type?: boolean
+    raw_listing_type?: boolean
+    raw_sqm?: boolean
+    raw_bedrooms?: boolean
+    raw_bathrooms?: boolean
     raw_data?: boolean
     raw_html_path?: boolean
     content_hash?: boolean
@@ -25370,13 +25430,19 @@ export namespace Prisma {
   export type SourcePropertySelectScalar = {
     id?: boolean
     source_agency_id?: boolean
-    external_id?: boolean
+    property_id?: boolean
+    internal_id?: boolean
     source_url?: boolean
     canonical_url?: boolean
     raw_title?: boolean
     raw_description?: boolean
     raw_price?: boolean
     raw_location?: boolean
+    raw_property_type?: boolean
+    raw_listing_type?: boolean
+    raw_sqm?: boolean
+    raw_bedrooms?: boolean
+    raw_bathrooms?: boolean
     raw_data?: boolean
     raw_html_path?: boolean
     content_hash?: boolean
@@ -25387,7 +25453,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type SourcePropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "external_id" | "source_url" | "canonical_url" | "raw_title" | "raw_description" | "raw_price" | "raw_location" | "raw_data" | "raw_html_path" | "content_hash" | "first_seen_at" | "last_seen_at" | "status" | "created_at" | "updated_at", ExtArgs["result"]["sourceProperty"]>
+  export type SourcePropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "property_id" | "internal_id" | "source_url" | "canonical_url" | "raw_title" | "raw_description" | "raw_price" | "raw_location" | "raw_property_type" | "raw_listing_type" | "raw_sqm" | "raw_bedrooms" | "raw_bathrooms" | "raw_data" | "raw_html_path" | "content_hash" | "first_seen_at" | "last_seen_at" | "status" | "created_at" | "updated_at", ExtArgs["result"]["sourceProperty"]>
   export type SourcePropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     property_links?: boolean | SourceProperty$property_linksArgs<ExtArgs>
@@ -25409,13 +25475,19 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       source_agency_id: string
-      external_id: string | null
+      property_id: string
+      internal_id: string | null
       source_url: string
       canonical_url: string | null
       raw_title: string | null
       raw_description: string | null
       raw_price: string | null
       raw_location: string | null
+      raw_property_type: string | null
+      raw_listing_type: string | null
+      raw_sqm: string | null
+      raw_bedrooms: string | null
+      raw_bathrooms: string | null
       raw_data: Prisma.JsonValue | null
       raw_html_path: string | null
       content_hash: string | null
@@ -25851,13 +25923,19 @@ export namespace Prisma {
   interface SourcePropertyFieldRefs {
     readonly id: FieldRef<"SourceProperty", 'String'>
     readonly source_agency_id: FieldRef<"SourceProperty", 'String'>
-    readonly external_id: FieldRef<"SourceProperty", 'String'>
+    readonly property_id: FieldRef<"SourceProperty", 'String'>
+    readonly internal_id: FieldRef<"SourceProperty", 'String'>
     readonly source_url: FieldRef<"SourceProperty", 'String'>
     readonly canonical_url: FieldRef<"SourceProperty", 'String'>
     readonly raw_title: FieldRef<"SourceProperty", 'String'>
     readonly raw_description: FieldRef<"SourceProperty", 'String'>
     readonly raw_price: FieldRef<"SourceProperty", 'String'>
     readonly raw_location: FieldRef<"SourceProperty", 'String'>
+    readonly raw_property_type: FieldRef<"SourceProperty", 'String'>
+    readonly raw_listing_type: FieldRef<"SourceProperty", 'String'>
+    readonly raw_sqm: FieldRef<"SourceProperty", 'String'>
+    readonly raw_bedrooms: FieldRef<"SourceProperty", 'String'>
+    readonly raw_bathrooms: FieldRef<"SourceProperty", 'String'>
     readonly raw_data: FieldRef<"SourceProperty", 'Json'>
     readonly raw_html_path: FieldRef<"SourceProperty", 'String'>
     readonly content_hash: FieldRef<"SourceProperty", 'String'>
@@ -26325,6 +26403,10 @@ export namespace Prisma {
     bathrooms: number | null
     construction_year: number | null
     renovation_year: number | null
+    estateweb_type_id: number | null
+    estateweb_location_id: number | null
+    price_start: Decimal | null
+    price_web: Decimal | null
   }
 
   export type PropertySumAggregateOutputType = {
@@ -26336,12 +26418,18 @@ export namespace Prisma {
     bathrooms: number | null
     construction_year: number | null
     renovation_year: number | null
+    estateweb_type_id: number | null
+    estateweb_location_id: number | null
+    price_start: Decimal | null
+    price_web: Decimal | null
   }
 
   export type PropertyMinAggregateOutputType = {
     id: string | null
     title: string | null
     description: string | null
+    property_id: string | null
+    internal_id: string | null
     listing_type: $Enums.ListingType | null
     property_type: $Enums.PropertyType | null
     status: $Enums.PropertyStatus | null
@@ -26360,6 +26448,14 @@ export namespace Prisma {
     floor: string | null
     construction_year: number | null
     renovation_year: number | null
+    estateweb_type_id: number | null
+    estateweb_location_id: number | null
+    video_url: string | null
+    distance_airport: string | null
+    distance_port: string | null
+    distance_beach: string | null
+    price_start: Decimal | null
+    price_web: Decimal | null
     duplicate_group_id: string | null
     created_at: Date | null
     updated_at: Date | null
@@ -26369,6 +26465,8 @@ export namespace Prisma {
     id: string | null
     title: string | null
     description: string | null
+    property_id: string | null
+    internal_id: string | null
     listing_type: $Enums.ListingType | null
     property_type: $Enums.PropertyType | null
     status: $Enums.PropertyStatus | null
@@ -26387,6 +26485,14 @@ export namespace Prisma {
     floor: string | null
     construction_year: number | null
     renovation_year: number | null
+    estateweb_type_id: number | null
+    estateweb_location_id: number | null
+    video_url: string | null
+    distance_airport: string | null
+    distance_port: string | null
+    distance_beach: string | null
+    price_start: Decimal | null
+    price_web: Decimal | null
     duplicate_group_id: string | null
     created_at: Date | null
     updated_at: Date | null
@@ -26396,6 +26502,8 @@ export namespace Prisma {
     id: number
     title: number
     description: number
+    property_id: number
+    internal_id: number
     listing_type: number
     property_type: number
     status: number
@@ -26417,6 +26525,16 @@ export namespace Prisma {
     features: number
     images: number
     normalized_data: number
+    estateweb_type_id: number
+    estateweb_location_id: number
+    cms_fields: number
+    cms_metadata: number
+    video_url: number
+    distance_airport: number
+    distance_port: number
+    distance_beach: number
+    price_start: number
+    price_web: number
     duplicate_group_id: number
     created_at: number
     updated_at: number
@@ -26433,6 +26551,10 @@ export namespace Prisma {
     bathrooms?: true
     construction_year?: true
     renovation_year?: true
+    estateweb_type_id?: true
+    estateweb_location_id?: true
+    price_start?: true
+    price_web?: true
   }
 
   export type PropertySumAggregateInputType = {
@@ -26444,12 +26566,18 @@ export namespace Prisma {
     bathrooms?: true
     construction_year?: true
     renovation_year?: true
+    estateweb_type_id?: true
+    estateweb_location_id?: true
+    price_start?: true
+    price_web?: true
   }
 
   export type PropertyMinAggregateInputType = {
     id?: true
     title?: true
     description?: true
+    property_id?: true
+    internal_id?: true
     listing_type?: true
     property_type?: true
     status?: true
@@ -26468,6 +26596,14 @@ export namespace Prisma {
     floor?: true
     construction_year?: true
     renovation_year?: true
+    estateweb_type_id?: true
+    estateweb_location_id?: true
+    video_url?: true
+    distance_airport?: true
+    distance_port?: true
+    distance_beach?: true
+    price_start?: true
+    price_web?: true
     duplicate_group_id?: true
     created_at?: true
     updated_at?: true
@@ -26477,6 +26613,8 @@ export namespace Prisma {
     id?: true
     title?: true
     description?: true
+    property_id?: true
+    internal_id?: true
     listing_type?: true
     property_type?: true
     status?: true
@@ -26495,6 +26633,14 @@ export namespace Prisma {
     floor?: true
     construction_year?: true
     renovation_year?: true
+    estateweb_type_id?: true
+    estateweb_location_id?: true
+    video_url?: true
+    distance_airport?: true
+    distance_port?: true
+    distance_beach?: true
+    price_start?: true
+    price_web?: true
     duplicate_group_id?: true
     created_at?: true
     updated_at?: true
@@ -26504,6 +26650,8 @@ export namespace Prisma {
     id?: true
     title?: true
     description?: true
+    property_id?: true
+    internal_id?: true
     listing_type?: true
     property_type?: true
     status?: true
@@ -26525,6 +26673,16 @@ export namespace Prisma {
     features?: true
     images?: true
     normalized_data?: true
+    estateweb_type_id?: true
+    estateweb_location_id?: true
+    cms_fields?: true
+    cms_metadata?: true
+    video_url?: true
+    distance_airport?: true
+    distance_port?: true
+    distance_beach?: true
+    price_start?: true
+    price_web?: true
     duplicate_group_id?: true
     created_at?: true
     updated_at?: true
@@ -26621,6 +26779,8 @@ export namespace Prisma {
     id: string
     title: string
     description: string | null
+    property_id: string
+    internal_id: string | null
     listing_type: $Enums.ListingType
     property_type: $Enums.PropertyType
     status: $Enums.PropertyStatus
@@ -26642,6 +26802,16 @@ export namespace Prisma {
     features: JsonValue | null
     images: JsonValue | null
     normalized_data: JsonValue | null
+    estateweb_type_id: number | null
+    estateweb_location_id: number | null
+    cms_fields: JsonValue | null
+    cms_metadata: JsonValue | null
+    video_url: string | null
+    distance_airport: string | null
+    distance_port: string | null
+    distance_beach: string | null
+    price_start: Decimal | null
+    price_web: Decimal | null
     duplicate_group_id: string | null
     created_at: Date
     updated_at: Date
@@ -26670,6 +26840,8 @@ export namespace Prisma {
     id?: boolean
     title?: boolean
     description?: boolean
+    property_id?: boolean
+    internal_id?: boolean
     listing_type?: boolean
     property_type?: boolean
     status?: boolean
@@ -26691,6 +26863,16 @@ export namespace Prisma {
     features?: boolean
     images?: boolean
     normalized_data?: boolean
+    estateweb_type_id?: boolean
+    estateweb_location_id?: boolean
+    cms_fields?: boolean
+    cms_metadata?: boolean
+    video_url?: boolean
+    distance_airport?: boolean
+    distance_port?: boolean
+    distance_beach?: boolean
+    price_start?: boolean
+    price_web?: boolean
     duplicate_group_id?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -26704,6 +26886,8 @@ export namespace Prisma {
     id?: boolean
     title?: boolean
     description?: boolean
+    property_id?: boolean
+    internal_id?: boolean
     listing_type?: boolean
     property_type?: boolean
     status?: boolean
@@ -26725,6 +26909,16 @@ export namespace Prisma {
     features?: boolean
     images?: boolean
     normalized_data?: boolean
+    estateweb_type_id?: boolean
+    estateweb_location_id?: boolean
+    cms_fields?: boolean
+    cms_metadata?: boolean
+    video_url?: boolean
+    distance_airport?: boolean
+    distance_port?: boolean
+    distance_beach?: boolean
+    price_start?: boolean
+    price_web?: boolean
     duplicate_group_id?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -26734,6 +26928,8 @@ export namespace Prisma {
     id?: boolean
     title?: boolean
     description?: boolean
+    property_id?: boolean
+    internal_id?: boolean
     listing_type?: boolean
     property_type?: boolean
     status?: boolean
@@ -26755,6 +26951,16 @@ export namespace Prisma {
     features?: boolean
     images?: boolean
     normalized_data?: boolean
+    estateweb_type_id?: boolean
+    estateweb_location_id?: boolean
+    cms_fields?: boolean
+    cms_metadata?: boolean
+    video_url?: boolean
+    distance_airport?: boolean
+    distance_port?: boolean
+    distance_beach?: boolean
+    price_start?: boolean
+    price_web?: boolean
     duplicate_group_id?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -26764,6 +26970,8 @@ export namespace Prisma {
     id?: boolean
     title?: boolean
     description?: boolean
+    property_id?: boolean
+    internal_id?: boolean
     listing_type?: boolean
     property_type?: boolean
     status?: boolean
@@ -26785,12 +26993,22 @@ export namespace Prisma {
     features?: boolean
     images?: boolean
     normalized_data?: boolean
+    estateweb_type_id?: boolean
+    estateweb_location_id?: boolean
+    cms_fields?: boolean
+    cms_metadata?: boolean
+    video_url?: boolean
+    distance_airport?: boolean
+    distance_port?: boolean
+    distance_beach?: boolean
+    price_start?: boolean
+    price_web?: boolean
     duplicate_group_id?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type PropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "listing_type" | "property_type" | "status" | "price" | "currency" | "city" | "district" | "address" | "postal_code" | "country" | "latitude" | "longitude" | "square_meters" | "bedrooms" | "bathrooms" | "floor" | "construction_year" | "renovation_year" | "features" | "images" | "normalized_data" | "duplicate_group_id" | "created_at" | "updated_at", ExtArgs["result"]["property"]>
+  export type PropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "property_id" | "internal_id" | "listing_type" | "property_type" | "status" | "price" | "currency" | "city" | "district" | "address" | "postal_code" | "country" | "latitude" | "longitude" | "square_meters" | "bedrooms" | "bathrooms" | "floor" | "construction_year" | "renovation_year" | "features" | "images" | "normalized_data" | "estateweb_type_id" | "estateweb_location_id" | "cms_fields" | "cms_metadata" | "video_url" | "distance_airport" | "distance_port" | "distance_beach" | "price_start" | "price_web" | "duplicate_group_id" | "created_at" | "updated_at", ExtArgs["result"]["property"]>
   export type PropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     source_links?: boolean | Property$source_linksArgs<ExtArgs>
     user_property_copies?: boolean | Property$user_property_copiesArgs<ExtArgs>
@@ -26811,6 +27029,8 @@ export namespace Prisma {
       id: string
       title: string
       description: string | null
+      property_id: string
+      internal_id: string | null
       listing_type: $Enums.ListingType
       property_type: $Enums.PropertyType
       status: $Enums.PropertyStatus
@@ -26832,6 +27052,16 @@ export namespace Prisma {
       features: Prisma.JsonValue | null
       images: Prisma.JsonValue | null
       normalized_data: Prisma.JsonValue | null
+      estateweb_type_id: number | null
+      estateweb_location_id: number | null
+      cms_fields: Prisma.JsonValue | null
+      cms_metadata: Prisma.JsonValue | null
+      video_url: string | null
+      distance_airport: string | null
+      distance_port: string | null
+      distance_beach: string | null
+      price_start: Prisma.Decimal | null
+      price_web: Prisma.Decimal | null
       duplicate_group_id: string | null
       created_at: Date
       updated_at: Date
@@ -27264,6 +27494,8 @@ export namespace Prisma {
     readonly id: FieldRef<"Property", 'String'>
     readonly title: FieldRef<"Property", 'String'>
     readonly description: FieldRef<"Property", 'String'>
+    readonly property_id: FieldRef<"Property", 'String'>
+    readonly internal_id: FieldRef<"Property", 'String'>
     readonly listing_type: FieldRef<"Property", 'ListingType'>
     readonly property_type: FieldRef<"Property", 'PropertyType'>
     readonly status: FieldRef<"Property", 'PropertyStatus'>
@@ -27285,6 +27517,16 @@ export namespace Prisma {
     readonly features: FieldRef<"Property", 'Json'>
     readonly images: FieldRef<"Property", 'Json'>
     readonly normalized_data: FieldRef<"Property", 'Json'>
+    readonly estateweb_type_id: FieldRef<"Property", 'Int'>
+    readonly estateweb_location_id: FieldRef<"Property", 'Int'>
+    readonly cms_fields: FieldRef<"Property", 'Json'>
+    readonly cms_metadata: FieldRef<"Property", 'Json'>
+    readonly video_url: FieldRef<"Property", 'String'>
+    readonly distance_airport: FieldRef<"Property", 'String'>
+    readonly distance_port: FieldRef<"Property", 'String'>
+    readonly distance_beach: FieldRef<"Property", 'String'>
+    readonly price_start: FieldRef<"Property", 'Decimal'>
+    readonly price_web: FieldRef<"Property", 'Decimal'>
     readonly duplicate_group_id: FieldRef<"Property", 'String'>
     readonly created_at: FieldRef<"Property", 'DateTime'>
     readonly updated_at: FieldRef<"Property", 'DateTime'>
@@ -30042,6 +30284,10 @@ export namespace Prisma {
     bathrooms: number | null
     construction_year: number | null
     renovation_year: number | null
+    estateweb_type_id: number | null
+    estateweb_location_id: number | null
+    price_start: Decimal | null
+    price_web: Decimal | null
   }
 
   export type UserPropertySumAggregateOutputType = {
@@ -30053,12 +30299,19 @@ export namespace Prisma {
     bathrooms: number | null
     construction_year: number | null
     renovation_year: number | null
+    estateweb_type_id: number | null
+    estateweb_location_id: number | null
+    price_start: Decimal | null
+    price_web: Decimal | null
   }
 
   export type UserPropertyMinAggregateOutputType = {
     id: string | null
     user_id: string | null
+    canonical_property_id: string | null
     property_id: string | null
+    internal_id: string | null
+    integration_property_id: string | null
     title: string | null
     description: string | null
     listing_type: $Enums.ListingType | null
@@ -30079,6 +30332,14 @@ export namespace Prisma {
     floor: string | null
     construction_year: number | null
     renovation_year: number | null
+    estateweb_type_id: number | null
+    estateweb_location_id: number | null
+    video_url: string | null
+    distance_airport: string | null
+    distance_port: string | null
+    distance_beach: string | null
+    price_start: Decimal | null
+    price_web: Decimal | null
     duplicate_group_id: string | null
     is_modified: boolean | null
     last_synced_at: Date | null
@@ -30089,7 +30350,10 @@ export namespace Prisma {
   export type UserPropertyMaxAggregateOutputType = {
     id: string | null
     user_id: string | null
+    canonical_property_id: string | null
     property_id: string | null
+    internal_id: string | null
+    integration_property_id: string | null
     title: string | null
     description: string | null
     listing_type: $Enums.ListingType | null
@@ -30110,6 +30374,14 @@ export namespace Prisma {
     floor: string | null
     construction_year: number | null
     renovation_year: number | null
+    estateweb_type_id: number | null
+    estateweb_location_id: number | null
+    video_url: string | null
+    distance_airport: string | null
+    distance_port: string | null
+    distance_beach: string | null
+    price_start: Decimal | null
+    price_web: Decimal | null
     duplicate_group_id: string | null
     is_modified: boolean | null
     last_synced_at: Date | null
@@ -30120,7 +30392,10 @@ export namespace Prisma {
   export type UserPropertyCountAggregateOutputType = {
     id: number
     user_id: number
+    canonical_property_id: number
     property_id: number
+    internal_id: number
+    integration_property_id: number
     title: number
     description: number
     listing_type: number
@@ -30144,6 +30419,16 @@ export namespace Prisma {
     features: number
     images: number
     normalized_data: number
+    estateweb_type_id: number
+    estateweb_location_id: number
+    cms_fields: number
+    cms_metadata: number
+    video_url: number
+    distance_airport: number
+    distance_port: number
+    distance_beach: number
+    price_start: number
+    price_web: number
     duplicate_group_id: number
     is_modified: number
     last_synced_at: number
@@ -30162,6 +30447,10 @@ export namespace Prisma {
     bathrooms?: true
     construction_year?: true
     renovation_year?: true
+    estateweb_type_id?: true
+    estateweb_location_id?: true
+    price_start?: true
+    price_web?: true
   }
 
   export type UserPropertySumAggregateInputType = {
@@ -30173,12 +30462,19 @@ export namespace Prisma {
     bathrooms?: true
     construction_year?: true
     renovation_year?: true
+    estateweb_type_id?: true
+    estateweb_location_id?: true
+    price_start?: true
+    price_web?: true
   }
 
   export type UserPropertyMinAggregateInputType = {
     id?: true
     user_id?: true
+    canonical_property_id?: true
     property_id?: true
+    internal_id?: true
+    integration_property_id?: true
     title?: true
     description?: true
     listing_type?: true
@@ -30199,6 +30495,14 @@ export namespace Prisma {
     floor?: true
     construction_year?: true
     renovation_year?: true
+    estateweb_type_id?: true
+    estateweb_location_id?: true
+    video_url?: true
+    distance_airport?: true
+    distance_port?: true
+    distance_beach?: true
+    price_start?: true
+    price_web?: true
     duplicate_group_id?: true
     is_modified?: true
     last_synced_at?: true
@@ -30209,7 +30513,10 @@ export namespace Prisma {
   export type UserPropertyMaxAggregateInputType = {
     id?: true
     user_id?: true
+    canonical_property_id?: true
     property_id?: true
+    internal_id?: true
+    integration_property_id?: true
     title?: true
     description?: true
     listing_type?: true
@@ -30230,6 +30537,14 @@ export namespace Prisma {
     floor?: true
     construction_year?: true
     renovation_year?: true
+    estateweb_type_id?: true
+    estateweb_location_id?: true
+    video_url?: true
+    distance_airport?: true
+    distance_port?: true
+    distance_beach?: true
+    price_start?: true
+    price_web?: true
     duplicate_group_id?: true
     is_modified?: true
     last_synced_at?: true
@@ -30240,7 +30555,10 @@ export namespace Prisma {
   export type UserPropertyCountAggregateInputType = {
     id?: true
     user_id?: true
+    canonical_property_id?: true
     property_id?: true
+    internal_id?: true
+    integration_property_id?: true
     title?: true
     description?: true
     listing_type?: true
@@ -30264,6 +30582,16 @@ export namespace Prisma {
     features?: true
     images?: true
     normalized_data?: true
+    estateweb_type_id?: true
+    estateweb_location_id?: true
+    cms_fields?: true
+    cms_metadata?: true
+    video_url?: true
+    distance_airport?: true
+    distance_port?: true
+    distance_beach?: true
+    price_start?: true
+    price_web?: true
     duplicate_group_id?: true
     is_modified?: true
     last_synced_at?: true
@@ -30361,7 +30689,10 @@ export namespace Prisma {
   export type UserPropertyGroupByOutputType = {
     id: string
     user_id: string
+    canonical_property_id: string
     property_id: string
+    internal_id: string | null
+    integration_property_id: string | null
     title: string
     description: string | null
     listing_type: $Enums.ListingType
@@ -30385,6 +30716,16 @@ export namespace Prisma {
     features: JsonValue | null
     images: JsonValue | null
     normalized_data: JsonValue | null
+    estateweb_type_id: number | null
+    estateweb_location_id: number | null
+    cms_fields: JsonValue | null
+    cms_metadata: JsonValue | null
+    video_url: string | null
+    distance_airport: string | null
+    distance_port: string | null
+    distance_beach: string | null
+    price_start: Decimal | null
+    price_web: Decimal | null
     duplicate_group_id: string | null
     is_modified: boolean
     last_synced_at: Date | null
@@ -30414,7 +30755,10 @@ export namespace Prisma {
   export type UserPropertySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     user_id?: boolean
+    canonical_property_id?: boolean
     property_id?: boolean
+    internal_id?: boolean
+    integration_property_id?: boolean
     title?: boolean
     description?: boolean
     listing_type?: boolean
@@ -30438,6 +30782,16 @@ export namespace Prisma {
     features?: boolean
     images?: boolean
     normalized_data?: boolean
+    estateweb_type_id?: boolean
+    estateweb_location_id?: boolean
+    cms_fields?: boolean
+    cms_metadata?: boolean
+    video_url?: boolean
+    distance_airport?: boolean
+    distance_port?: boolean
+    distance_beach?: boolean
+    price_start?: boolean
+    price_web?: boolean
     duplicate_group_id?: boolean
     is_modified?: boolean
     last_synced_at?: boolean
@@ -30450,7 +30804,10 @@ export namespace Prisma {
   export type UserPropertySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     user_id?: boolean
+    canonical_property_id?: boolean
     property_id?: boolean
+    internal_id?: boolean
+    integration_property_id?: boolean
     title?: boolean
     description?: boolean
     listing_type?: boolean
@@ -30474,6 +30831,16 @@ export namespace Prisma {
     features?: boolean
     images?: boolean
     normalized_data?: boolean
+    estateweb_type_id?: boolean
+    estateweb_location_id?: boolean
+    cms_fields?: boolean
+    cms_metadata?: boolean
+    video_url?: boolean
+    distance_airport?: boolean
+    distance_port?: boolean
+    distance_beach?: boolean
+    price_start?: boolean
+    price_web?: boolean
     duplicate_group_id?: boolean
     is_modified?: boolean
     last_synced_at?: boolean
@@ -30486,7 +30853,10 @@ export namespace Prisma {
   export type UserPropertySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     user_id?: boolean
+    canonical_property_id?: boolean
     property_id?: boolean
+    internal_id?: boolean
+    integration_property_id?: boolean
     title?: boolean
     description?: boolean
     listing_type?: boolean
@@ -30510,6 +30880,16 @@ export namespace Prisma {
     features?: boolean
     images?: boolean
     normalized_data?: boolean
+    estateweb_type_id?: boolean
+    estateweb_location_id?: boolean
+    cms_fields?: boolean
+    cms_metadata?: boolean
+    video_url?: boolean
+    distance_airport?: boolean
+    distance_port?: boolean
+    distance_beach?: boolean
+    price_start?: boolean
+    price_web?: boolean
     duplicate_group_id?: boolean
     is_modified?: boolean
     last_synced_at?: boolean
@@ -30522,7 +30902,10 @@ export namespace Prisma {
   export type UserPropertySelectScalar = {
     id?: boolean
     user_id?: boolean
+    canonical_property_id?: boolean
     property_id?: boolean
+    internal_id?: boolean
+    integration_property_id?: boolean
     title?: boolean
     description?: boolean
     listing_type?: boolean
@@ -30546,6 +30929,16 @@ export namespace Prisma {
     features?: boolean
     images?: boolean
     normalized_data?: boolean
+    estateweb_type_id?: boolean
+    estateweb_location_id?: boolean
+    cms_fields?: boolean
+    cms_metadata?: boolean
+    video_url?: boolean
+    distance_airport?: boolean
+    distance_port?: boolean
+    distance_beach?: boolean
+    price_start?: boolean
+    price_web?: boolean
     duplicate_group_id?: boolean
     is_modified?: boolean
     last_synced_at?: boolean
@@ -30553,7 +30946,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type UserPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "property_id" | "title" | "description" | "listing_type" | "property_type" | "status" | "price" | "currency" | "city" | "district" | "address" | "postal_code" | "country" | "latitude" | "longitude" | "square_meters" | "bedrooms" | "bathrooms" | "floor" | "construction_year" | "renovation_year" | "features" | "images" | "normalized_data" | "duplicate_group_id" | "is_modified" | "last_synced_at" | "created_at" | "updated_at", ExtArgs["result"]["userProperty"]>
+  export type UserPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "canonical_property_id" | "property_id" | "internal_id" | "integration_property_id" | "title" | "description" | "listing_type" | "property_type" | "status" | "price" | "currency" | "city" | "district" | "address" | "postal_code" | "country" | "latitude" | "longitude" | "square_meters" | "bedrooms" | "bathrooms" | "floor" | "construction_year" | "renovation_year" | "features" | "images" | "normalized_data" | "estateweb_type_id" | "estateweb_location_id" | "cms_fields" | "cms_metadata" | "video_url" | "distance_airport" | "distance_port" | "distance_beach" | "price_start" | "price_web" | "duplicate_group_id" | "is_modified" | "last_synced_at" | "created_at" | "updated_at", ExtArgs["result"]["userProperty"]>
   export type UserPropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     canonical_property?: boolean | PropertyDefaultArgs<ExtArgs>
@@ -30576,7 +30969,10 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       user_id: string
+      canonical_property_id: string
       property_id: string
+      internal_id: string | null
+      integration_property_id: string | null
       title: string
       description: string | null
       listing_type: $Enums.ListingType
@@ -30600,6 +30996,16 @@ export namespace Prisma {
       features: Prisma.JsonValue | null
       images: Prisma.JsonValue | null
       normalized_data: Prisma.JsonValue | null
+      estateweb_type_id: number | null
+      estateweb_location_id: number | null
+      cms_fields: Prisma.JsonValue | null
+      cms_metadata: Prisma.JsonValue | null
+      video_url: string | null
+      distance_airport: string | null
+      distance_port: string | null
+      distance_beach: string | null
+      price_start: Prisma.Decimal | null
+      price_web: Prisma.Decimal | null
       duplicate_group_id: string | null
       is_modified: boolean
       last_synced_at: Date | null
@@ -31032,7 +31438,10 @@ export namespace Prisma {
   interface UserPropertyFieldRefs {
     readonly id: FieldRef<"UserProperty", 'String'>
     readonly user_id: FieldRef<"UserProperty", 'String'>
+    readonly canonical_property_id: FieldRef<"UserProperty", 'String'>
     readonly property_id: FieldRef<"UserProperty", 'String'>
+    readonly internal_id: FieldRef<"UserProperty", 'String'>
+    readonly integration_property_id: FieldRef<"UserProperty", 'String'>
     readonly title: FieldRef<"UserProperty", 'String'>
     readonly description: FieldRef<"UserProperty", 'String'>
     readonly listing_type: FieldRef<"UserProperty", 'ListingType'>
@@ -31056,6 +31465,16 @@ export namespace Prisma {
     readonly features: FieldRef<"UserProperty", 'Json'>
     readonly images: FieldRef<"UserProperty", 'Json'>
     readonly normalized_data: FieldRef<"UserProperty", 'Json'>
+    readonly estateweb_type_id: FieldRef<"UserProperty", 'Int'>
+    readonly estateweb_location_id: FieldRef<"UserProperty", 'Int'>
+    readonly cms_fields: FieldRef<"UserProperty", 'Json'>
+    readonly cms_metadata: FieldRef<"UserProperty", 'Json'>
+    readonly video_url: FieldRef<"UserProperty", 'String'>
+    readonly distance_airport: FieldRef<"UserProperty", 'String'>
+    readonly distance_port: FieldRef<"UserProperty", 'String'>
+    readonly distance_beach: FieldRef<"UserProperty", 'String'>
+    readonly price_start: FieldRef<"UserProperty", 'Decimal'>
+    readonly price_web: FieldRef<"UserProperty", 'Decimal'>
     readonly duplicate_group_id: FieldRef<"UserProperty", 'String'>
     readonly is_modified: FieldRef<"UserProperty", 'Boolean'>
     readonly last_synced_at: FieldRef<"UserProperty", 'DateTime'>
@@ -34140,13 +34559,19 @@ export namespace Prisma {
   export const SourcePropertyScalarFieldEnum: {
     id: 'id',
     source_agency_id: 'source_agency_id',
-    external_id: 'external_id',
+    property_id: 'property_id',
+    internal_id: 'internal_id',
     source_url: 'source_url',
     canonical_url: 'canonical_url',
     raw_title: 'raw_title',
     raw_description: 'raw_description',
     raw_price: 'raw_price',
     raw_location: 'raw_location',
+    raw_property_type: 'raw_property_type',
+    raw_listing_type: 'raw_listing_type',
+    raw_sqm: 'raw_sqm',
+    raw_bedrooms: 'raw_bedrooms',
+    raw_bathrooms: 'raw_bathrooms',
     raw_data: 'raw_data',
     raw_html_path: 'raw_html_path',
     content_hash: 'content_hash',
@@ -34164,6 +34589,8 @@ export namespace Prisma {
     id: 'id',
     title: 'title',
     description: 'description',
+    property_id: 'property_id',
+    internal_id: 'internal_id',
     listing_type: 'listing_type',
     property_type: 'property_type',
     status: 'status',
@@ -34185,6 +34612,16 @@ export namespace Prisma {
     features: 'features',
     images: 'images',
     normalized_data: 'normalized_data',
+    estateweb_type_id: 'estateweb_type_id',
+    estateweb_location_id: 'estateweb_location_id',
+    cms_fields: 'cms_fields',
+    cms_metadata: 'cms_metadata',
+    video_url: 'video_url',
+    distance_airport: 'distance_airport',
+    distance_port: 'distance_port',
+    distance_beach: 'distance_beach',
+    price_start: 'price_start',
+    price_web: 'price_web',
     duplicate_group_id: 'duplicate_group_id',
     created_at: 'created_at',
     updated_at: 'updated_at'
@@ -34224,7 +34661,10 @@ export namespace Prisma {
   export const UserPropertyScalarFieldEnum: {
     id: 'id',
     user_id: 'user_id',
+    canonical_property_id: 'canonical_property_id',
     property_id: 'property_id',
+    internal_id: 'internal_id',
+    integration_property_id: 'integration_property_id',
     title: 'title',
     description: 'description',
     listing_type: 'listing_type',
@@ -34248,6 +34688,16 @@ export namespace Prisma {
     features: 'features',
     images: 'images',
     normalized_data: 'normalized_data',
+    estateweb_type_id: 'estateweb_type_id',
+    estateweb_location_id: 'estateweb_location_id',
+    cms_fields: 'cms_fields',
+    cms_metadata: 'cms_metadata',
+    video_url: 'video_url',
+    distance_airport: 'distance_airport',
+    distance_port: 'distance_port',
+    distance_beach: 'distance_beach',
+    price_start: 'price_start',
+    price_web: 'price_web',
     duplicate_group_id: 'duplicate_group_id',
     is_modified: 'is_modified',
     last_synced_at: 'last_synced_at',
@@ -36447,13 +36897,19 @@ export namespace Prisma {
     NOT?: SourcePropertyWhereInput | SourcePropertyWhereInput[]
     id?: StringFilter<"SourceProperty"> | string
     source_agency_id?: StringFilter<"SourceProperty"> | string
-    external_id?: StringNullableFilter<"SourceProperty"> | string | null
+    property_id?: StringFilter<"SourceProperty"> | string
+    internal_id?: StringNullableFilter<"SourceProperty"> | string | null
     source_url?: StringFilter<"SourceProperty"> | string
     canonical_url?: StringNullableFilter<"SourceProperty"> | string | null
     raw_title?: StringNullableFilter<"SourceProperty"> | string | null
     raw_description?: StringNullableFilter<"SourceProperty"> | string | null
     raw_price?: StringNullableFilter<"SourceProperty"> | string | null
     raw_location?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_property_type?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_listing_type?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_sqm?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_bedrooms?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_bathrooms?: StringNullableFilter<"SourceProperty"> | string | null
     raw_data?: JsonNullableFilter<"SourceProperty">
     raw_html_path?: StringNullableFilter<"SourceProperty"> | string | null
     content_hash?: StringNullableFilter<"SourceProperty"> | string | null
@@ -36469,13 +36925,19 @@ export namespace Prisma {
   export type SourcePropertyOrderByWithRelationInput = {
     id?: SortOrder
     source_agency_id?: SortOrder
-    external_id?: SortOrderInput | SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrderInput | SortOrder
     source_url?: SortOrder
     canonical_url?: SortOrderInput | SortOrder
     raw_title?: SortOrderInput | SortOrder
     raw_description?: SortOrderInput | SortOrder
     raw_price?: SortOrderInput | SortOrder
     raw_location?: SortOrderInput | SortOrder
+    raw_property_type?: SortOrderInput | SortOrder
+    raw_listing_type?: SortOrderInput | SortOrder
+    raw_sqm?: SortOrderInput | SortOrder
+    raw_bedrooms?: SortOrderInput | SortOrder
+    raw_bathrooms?: SortOrderInput | SortOrder
     raw_data?: SortOrderInput | SortOrder
     raw_html_path?: SortOrderInput | SortOrder
     content_hash?: SortOrderInput | SortOrder
@@ -36495,13 +36957,19 @@ export namespace Prisma {
     OR?: SourcePropertyWhereInput[]
     NOT?: SourcePropertyWhereInput | SourcePropertyWhereInput[]
     source_agency_id?: StringFilter<"SourceProperty"> | string
-    external_id?: StringNullableFilter<"SourceProperty"> | string | null
+    property_id?: StringFilter<"SourceProperty"> | string
+    internal_id?: StringNullableFilter<"SourceProperty"> | string | null
     source_url?: StringFilter<"SourceProperty"> | string
     canonical_url?: StringNullableFilter<"SourceProperty"> | string | null
     raw_title?: StringNullableFilter<"SourceProperty"> | string | null
     raw_description?: StringNullableFilter<"SourceProperty"> | string | null
     raw_price?: StringNullableFilter<"SourceProperty"> | string | null
     raw_location?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_property_type?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_listing_type?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_sqm?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_bedrooms?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_bathrooms?: StringNullableFilter<"SourceProperty"> | string | null
     raw_data?: JsonNullableFilter<"SourceProperty">
     raw_html_path?: StringNullableFilter<"SourceProperty"> | string | null
     content_hash?: StringNullableFilter<"SourceProperty"> | string | null
@@ -36517,13 +36985,19 @@ export namespace Prisma {
   export type SourcePropertyOrderByWithAggregationInput = {
     id?: SortOrder
     source_agency_id?: SortOrder
-    external_id?: SortOrderInput | SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrderInput | SortOrder
     source_url?: SortOrder
     canonical_url?: SortOrderInput | SortOrder
     raw_title?: SortOrderInput | SortOrder
     raw_description?: SortOrderInput | SortOrder
     raw_price?: SortOrderInput | SortOrder
     raw_location?: SortOrderInput | SortOrder
+    raw_property_type?: SortOrderInput | SortOrder
+    raw_listing_type?: SortOrderInput | SortOrder
+    raw_sqm?: SortOrderInput | SortOrder
+    raw_bedrooms?: SortOrderInput | SortOrder
+    raw_bathrooms?: SortOrderInput | SortOrder
     raw_data?: SortOrderInput | SortOrder
     raw_html_path?: SortOrderInput | SortOrder
     content_hash?: SortOrderInput | SortOrder
@@ -36543,13 +37017,19 @@ export namespace Prisma {
     NOT?: SourcePropertyScalarWhereWithAggregatesInput | SourcePropertyScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"SourceProperty"> | string
     source_agency_id?: StringWithAggregatesFilter<"SourceProperty"> | string
-    external_id?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
+    property_id?: StringWithAggregatesFilter<"SourceProperty"> | string
+    internal_id?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
     source_url?: StringWithAggregatesFilter<"SourceProperty"> | string
     canonical_url?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
     raw_title?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
     raw_description?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
     raw_price?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
     raw_location?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
+    raw_property_type?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
+    raw_listing_type?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
+    raw_sqm?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
+    raw_bedrooms?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
+    raw_bathrooms?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
     raw_data?: JsonNullableWithAggregatesFilter<"SourceProperty">
     raw_html_path?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
     content_hash?: StringNullableWithAggregatesFilter<"SourceProperty"> | string | null
@@ -36567,6 +37047,8 @@ export namespace Prisma {
     id?: StringFilter<"Property"> | string
     title?: StringFilter<"Property"> | string
     description?: StringNullableFilter<"Property"> | string | null
+    property_id?: StringFilter<"Property"> | string
+    internal_id?: StringNullableFilter<"Property"> | string | null
     listing_type?: EnumListingTypeFilter<"Property"> | $Enums.ListingType
     property_type?: EnumPropertyTypeFilter<"Property"> | $Enums.PropertyType
     status?: EnumPropertyStatusFilter<"Property"> | $Enums.PropertyStatus
@@ -36588,6 +37070,16 @@ export namespace Prisma {
     features?: JsonNullableFilter<"Property">
     images?: JsonNullableFilter<"Property">
     normalized_data?: JsonNullableFilter<"Property">
+    estateweb_type_id?: IntNullableFilter<"Property"> | number | null
+    estateweb_location_id?: IntNullableFilter<"Property"> | number | null
+    cms_fields?: JsonNullableFilter<"Property">
+    cms_metadata?: JsonNullableFilter<"Property">
+    video_url?: StringNullableFilter<"Property"> | string | null
+    distance_airport?: StringNullableFilter<"Property"> | string | null
+    distance_port?: StringNullableFilter<"Property"> | string | null
+    distance_beach?: StringNullableFilter<"Property"> | string | null
+    price_start?: DecimalNullableFilter<"Property"> | Decimal | DecimalJsLike | number | string | null
+    price_web?: DecimalNullableFilter<"Property"> | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: StringNullableFilter<"Property"> | string | null
     created_at?: DateTimeFilter<"Property"> | Date | string
     updated_at?: DateTimeFilter<"Property"> | Date | string
@@ -36600,6 +37092,8 @@ export namespace Prisma {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrderInput | SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrderInput | SortOrder
     listing_type?: SortOrder
     property_type?: SortOrder
     status?: SortOrder
@@ -36621,6 +37115,16 @@ export namespace Prisma {
     features?: SortOrderInput | SortOrder
     images?: SortOrderInput | SortOrder
     normalized_data?: SortOrderInput | SortOrder
+    estateweb_type_id?: SortOrderInput | SortOrder
+    estateweb_location_id?: SortOrderInput | SortOrder
+    cms_fields?: SortOrderInput | SortOrder
+    cms_metadata?: SortOrderInput | SortOrder
+    video_url?: SortOrderInput | SortOrder
+    distance_airport?: SortOrderInput | SortOrder
+    distance_port?: SortOrderInput | SortOrder
+    distance_beach?: SortOrderInput | SortOrder
+    price_start?: SortOrderInput | SortOrder
+    price_web?: SortOrderInput | SortOrder
     duplicate_group_id?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -36636,6 +37140,8 @@ export namespace Prisma {
     NOT?: PropertyWhereInput | PropertyWhereInput[]
     title?: StringFilter<"Property"> | string
     description?: StringNullableFilter<"Property"> | string | null
+    property_id?: StringFilter<"Property"> | string
+    internal_id?: StringNullableFilter<"Property"> | string | null
     listing_type?: EnumListingTypeFilter<"Property"> | $Enums.ListingType
     property_type?: EnumPropertyTypeFilter<"Property"> | $Enums.PropertyType
     status?: EnumPropertyStatusFilter<"Property"> | $Enums.PropertyStatus
@@ -36657,6 +37163,16 @@ export namespace Prisma {
     features?: JsonNullableFilter<"Property">
     images?: JsonNullableFilter<"Property">
     normalized_data?: JsonNullableFilter<"Property">
+    estateweb_type_id?: IntNullableFilter<"Property"> | number | null
+    estateweb_location_id?: IntNullableFilter<"Property"> | number | null
+    cms_fields?: JsonNullableFilter<"Property">
+    cms_metadata?: JsonNullableFilter<"Property">
+    video_url?: StringNullableFilter<"Property"> | string | null
+    distance_airport?: StringNullableFilter<"Property"> | string | null
+    distance_port?: StringNullableFilter<"Property"> | string | null
+    distance_beach?: StringNullableFilter<"Property"> | string | null
+    price_start?: DecimalNullableFilter<"Property"> | Decimal | DecimalJsLike | number | string | null
+    price_web?: DecimalNullableFilter<"Property"> | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: StringNullableFilter<"Property"> | string | null
     created_at?: DateTimeFilter<"Property"> | Date | string
     updated_at?: DateTimeFilter<"Property"> | Date | string
@@ -36669,6 +37185,8 @@ export namespace Prisma {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrderInput | SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrderInput | SortOrder
     listing_type?: SortOrder
     property_type?: SortOrder
     status?: SortOrder
@@ -36690,6 +37208,16 @@ export namespace Prisma {
     features?: SortOrderInput | SortOrder
     images?: SortOrderInput | SortOrder
     normalized_data?: SortOrderInput | SortOrder
+    estateweb_type_id?: SortOrderInput | SortOrder
+    estateweb_location_id?: SortOrderInput | SortOrder
+    cms_fields?: SortOrderInput | SortOrder
+    cms_metadata?: SortOrderInput | SortOrder
+    video_url?: SortOrderInput | SortOrder
+    distance_airport?: SortOrderInput | SortOrder
+    distance_port?: SortOrderInput | SortOrder
+    distance_beach?: SortOrderInput | SortOrder
+    price_start?: SortOrderInput | SortOrder
+    price_web?: SortOrderInput | SortOrder
     duplicate_group_id?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -36707,6 +37235,8 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Property"> | string
     title?: StringWithAggregatesFilter<"Property"> | string
     description?: StringNullableWithAggregatesFilter<"Property"> | string | null
+    property_id?: StringWithAggregatesFilter<"Property"> | string
+    internal_id?: StringNullableWithAggregatesFilter<"Property"> | string | null
     listing_type?: EnumListingTypeWithAggregatesFilter<"Property"> | $Enums.ListingType
     property_type?: EnumPropertyTypeWithAggregatesFilter<"Property"> | $Enums.PropertyType
     status?: EnumPropertyStatusWithAggregatesFilter<"Property"> | $Enums.PropertyStatus
@@ -36728,6 +37258,16 @@ export namespace Prisma {
     features?: JsonNullableWithAggregatesFilter<"Property">
     images?: JsonNullableWithAggregatesFilter<"Property">
     normalized_data?: JsonNullableWithAggregatesFilter<"Property">
+    estateweb_type_id?: IntNullableWithAggregatesFilter<"Property"> | number | null
+    estateweb_location_id?: IntNullableWithAggregatesFilter<"Property"> | number | null
+    cms_fields?: JsonNullableWithAggregatesFilter<"Property">
+    cms_metadata?: JsonNullableWithAggregatesFilter<"Property">
+    video_url?: StringNullableWithAggregatesFilter<"Property"> | string | null
+    distance_airport?: StringNullableWithAggregatesFilter<"Property"> | string | null
+    distance_port?: StringNullableWithAggregatesFilter<"Property"> | string | null
+    distance_beach?: StringNullableWithAggregatesFilter<"Property"> | string | null
+    price_start?: DecimalNullableWithAggregatesFilter<"Property"> | Decimal | DecimalJsLike | number | string | null
+    price_web?: DecimalNullableWithAggregatesFilter<"Property"> | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: StringNullableWithAggregatesFilter<"Property"> | string | null
     created_at?: DateTimeWithAggregatesFilter<"Property"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"Property"> | Date | string
@@ -36888,7 +37428,10 @@ export namespace Prisma {
     NOT?: UserPropertyWhereInput | UserPropertyWhereInput[]
     id?: StringFilter<"UserProperty"> | string
     user_id?: StringFilter<"UserProperty"> | string
+    canonical_property_id?: StringFilter<"UserProperty"> | string
     property_id?: StringFilter<"UserProperty"> | string
+    internal_id?: StringNullableFilter<"UserProperty"> | string | null
+    integration_property_id?: StringNullableFilter<"UserProperty"> | string | null
     title?: StringFilter<"UserProperty"> | string
     description?: StringNullableFilter<"UserProperty"> | string | null
     listing_type?: EnumListingTypeFilter<"UserProperty"> | $Enums.ListingType
@@ -36912,6 +37455,16 @@ export namespace Prisma {
     features?: JsonNullableFilter<"UserProperty">
     images?: JsonNullableFilter<"UserProperty">
     normalized_data?: JsonNullableFilter<"UserProperty">
+    estateweb_type_id?: IntNullableFilter<"UserProperty"> | number | null
+    estateweb_location_id?: IntNullableFilter<"UserProperty"> | number | null
+    cms_fields?: JsonNullableFilter<"UserProperty">
+    cms_metadata?: JsonNullableFilter<"UserProperty">
+    video_url?: StringNullableFilter<"UserProperty"> | string | null
+    distance_airport?: StringNullableFilter<"UserProperty"> | string | null
+    distance_port?: StringNullableFilter<"UserProperty"> | string | null
+    distance_beach?: StringNullableFilter<"UserProperty"> | string | null
+    price_start?: DecimalNullableFilter<"UserProperty"> | Decimal | DecimalJsLike | number | string | null
+    price_web?: DecimalNullableFilter<"UserProperty"> | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: StringNullableFilter<"UserProperty"> | string | null
     is_modified?: BoolFilter<"UserProperty"> | boolean
     last_synced_at?: DateTimeNullableFilter<"UserProperty"> | Date | string | null
@@ -36924,7 +37477,10 @@ export namespace Prisma {
   export type UserPropertyOrderByWithRelationInput = {
     id?: SortOrder
     user_id?: SortOrder
+    canonical_property_id?: SortOrder
     property_id?: SortOrder
+    internal_id?: SortOrderInput | SortOrder
+    integration_property_id?: SortOrderInput | SortOrder
     title?: SortOrder
     description?: SortOrderInput | SortOrder
     listing_type?: SortOrder
@@ -36948,6 +37504,16 @@ export namespace Prisma {
     features?: SortOrderInput | SortOrder
     images?: SortOrderInput | SortOrder
     normalized_data?: SortOrderInput | SortOrder
+    estateweb_type_id?: SortOrderInput | SortOrder
+    estateweb_location_id?: SortOrderInput | SortOrder
+    cms_fields?: SortOrderInput | SortOrder
+    cms_metadata?: SortOrderInput | SortOrder
+    video_url?: SortOrderInput | SortOrder
+    distance_airport?: SortOrderInput | SortOrder
+    distance_port?: SortOrderInput | SortOrder
+    distance_beach?: SortOrderInput | SortOrder
+    price_start?: SortOrderInput | SortOrder
+    price_web?: SortOrderInput | SortOrder
     duplicate_group_id?: SortOrderInput | SortOrder
     is_modified?: SortOrder
     last_synced_at?: SortOrderInput | SortOrder
@@ -36959,12 +37525,15 @@ export namespace Prisma {
 
   export type UserPropertyWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    user_id_property_id?: UserPropertyUser_idProperty_idCompoundUniqueInput
+    user_id_canonical_property_id?: UserPropertyUser_idCanonical_property_idCompoundUniqueInput
     AND?: UserPropertyWhereInput | UserPropertyWhereInput[]
     OR?: UserPropertyWhereInput[]
     NOT?: UserPropertyWhereInput | UserPropertyWhereInput[]
     user_id?: StringFilter<"UserProperty"> | string
+    canonical_property_id?: StringFilter<"UserProperty"> | string
     property_id?: StringFilter<"UserProperty"> | string
+    internal_id?: StringNullableFilter<"UserProperty"> | string | null
+    integration_property_id?: StringNullableFilter<"UserProperty"> | string | null
     title?: StringFilter<"UserProperty"> | string
     description?: StringNullableFilter<"UserProperty"> | string | null
     listing_type?: EnumListingTypeFilter<"UserProperty"> | $Enums.ListingType
@@ -36988,6 +37557,16 @@ export namespace Prisma {
     features?: JsonNullableFilter<"UserProperty">
     images?: JsonNullableFilter<"UserProperty">
     normalized_data?: JsonNullableFilter<"UserProperty">
+    estateweb_type_id?: IntNullableFilter<"UserProperty"> | number | null
+    estateweb_location_id?: IntNullableFilter<"UserProperty"> | number | null
+    cms_fields?: JsonNullableFilter<"UserProperty">
+    cms_metadata?: JsonNullableFilter<"UserProperty">
+    video_url?: StringNullableFilter<"UserProperty"> | string | null
+    distance_airport?: StringNullableFilter<"UserProperty"> | string | null
+    distance_port?: StringNullableFilter<"UserProperty"> | string | null
+    distance_beach?: StringNullableFilter<"UserProperty"> | string | null
+    price_start?: DecimalNullableFilter<"UserProperty"> | Decimal | DecimalJsLike | number | string | null
+    price_web?: DecimalNullableFilter<"UserProperty"> | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: StringNullableFilter<"UserProperty"> | string | null
     is_modified?: BoolFilter<"UserProperty"> | boolean
     last_synced_at?: DateTimeNullableFilter<"UserProperty"> | Date | string | null
@@ -36995,12 +37574,15 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"UserProperty"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     canonical_property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
-  }, "id" | "user_id_property_id">
+  }, "id" | "user_id_canonical_property_id">
 
   export type UserPropertyOrderByWithAggregationInput = {
     id?: SortOrder
     user_id?: SortOrder
+    canonical_property_id?: SortOrder
     property_id?: SortOrder
+    internal_id?: SortOrderInput | SortOrder
+    integration_property_id?: SortOrderInput | SortOrder
     title?: SortOrder
     description?: SortOrderInput | SortOrder
     listing_type?: SortOrder
@@ -37024,6 +37606,16 @@ export namespace Prisma {
     features?: SortOrderInput | SortOrder
     images?: SortOrderInput | SortOrder
     normalized_data?: SortOrderInput | SortOrder
+    estateweb_type_id?: SortOrderInput | SortOrder
+    estateweb_location_id?: SortOrderInput | SortOrder
+    cms_fields?: SortOrderInput | SortOrder
+    cms_metadata?: SortOrderInput | SortOrder
+    video_url?: SortOrderInput | SortOrder
+    distance_airport?: SortOrderInput | SortOrder
+    distance_port?: SortOrderInput | SortOrder
+    distance_beach?: SortOrderInput | SortOrder
+    price_start?: SortOrderInput | SortOrder
+    price_web?: SortOrderInput | SortOrder
     duplicate_group_id?: SortOrderInput | SortOrder
     is_modified?: SortOrder
     last_synced_at?: SortOrderInput | SortOrder
@@ -37042,7 +37634,10 @@ export namespace Prisma {
     NOT?: UserPropertyScalarWhereWithAggregatesInput | UserPropertyScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"UserProperty"> | string
     user_id?: StringWithAggregatesFilter<"UserProperty"> | string
+    canonical_property_id?: StringWithAggregatesFilter<"UserProperty"> | string
     property_id?: StringWithAggregatesFilter<"UserProperty"> | string
+    internal_id?: StringNullableWithAggregatesFilter<"UserProperty"> | string | null
+    integration_property_id?: StringNullableWithAggregatesFilter<"UserProperty"> | string | null
     title?: StringWithAggregatesFilter<"UserProperty"> | string
     description?: StringNullableWithAggregatesFilter<"UserProperty"> | string | null
     listing_type?: EnumListingTypeWithAggregatesFilter<"UserProperty"> | $Enums.ListingType
@@ -37066,6 +37661,16 @@ export namespace Prisma {
     features?: JsonNullableWithAggregatesFilter<"UserProperty">
     images?: JsonNullableWithAggregatesFilter<"UserProperty">
     normalized_data?: JsonNullableWithAggregatesFilter<"UserProperty">
+    estateweb_type_id?: IntNullableWithAggregatesFilter<"UserProperty"> | number | null
+    estateweb_location_id?: IntNullableWithAggregatesFilter<"UserProperty"> | number | null
+    cms_fields?: JsonNullableWithAggregatesFilter<"UserProperty">
+    cms_metadata?: JsonNullableWithAggregatesFilter<"UserProperty">
+    video_url?: StringNullableWithAggregatesFilter<"UserProperty"> | string | null
+    distance_airport?: StringNullableWithAggregatesFilter<"UserProperty"> | string | null
+    distance_port?: StringNullableWithAggregatesFilter<"UserProperty"> | string | null
+    distance_beach?: StringNullableWithAggregatesFilter<"UserProperty"> | string | null
+    price_start?: DecimalNullableWithAggregatesFilter<"UserProperty"> | Decimal | DecimalJsLike | number | string | null
+    price_web?: DecimalNullableWithAggregatesFilter<"UserProperty"> | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: StringNullableWithAggregatesFilter<"UserProperty"> | string | null
     is_modified?: BoolWithAggregatesFilter<"UserProperty"> | boolean
     last_synced_at?: DateTimeNullableWithAggregatesFilter<"UserProperty"> | Date | string | null
@@ -39162,13 +39767,19 @@ export namespace Prisma {
 
   export type SourcePropertyCreateInput = {
     id?: string
-    external_id?: string | null
+    property_id: string
+    internal_id?: string | null
     source_url: string
     canonical_url?: string | null
     raw_title?: string | null
     raw_description?: string | null
     raw_price?: string | null
     raw_location?: string | null
+    raw_property_type?: string | null
+    raw_listing_type?: string | null
+    raw_sqm?: string | null
+    raw_bedrooms?: string | null
+    raw_bathrooms?: string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: string | null
     content_hash?: string | null
@@ -39184,13 +39795,19 @@ export namespace Prisma {
   export type SourcePropertyUncheckedCreateInput = {
     id?: string
     source_agency_id: string
-    external_id?: string | null
+    property_id: string
+    internal_id?: string | null
     source_url: string
     canonical_url?: string | null
     raw_title?: string | null
     raw_description?: string | null
     raw_price?: string | null
     raw_location?: string | null
+    raw_property_type?: string | null
+    raw_listing_type?: string | null
+    raw_sqm?: string | null
+    raw_bedrooms?: string | null
+    raw_bathrooms?: string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: string | null
     content_hash?: string | null
@@ -39204,13 +39821,19 @@ export namespace Prisma {
 
   export type SourcePropertyUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    external_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     source_url?: StringFieldUpdateOperationsInput | string
     canonical_url?: NullableStringFieldUpdateOperationsInput | string | null
     raw_title?: NullableStringFieldUpdateOperationsInput | string | null
     raw_description?: NullableStringFieldUpdateOperationsInput | string | null
     raw_price?: NullableStringFieldUpdateOperationsInput | string | null
     raw_location?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_property_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_listing_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_sqm?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bedrooms?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bathrooms?: NullableStringFieldUpdateOperationsInput | string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: NullableStringFieldUpdateOperationsInput | string | null
     content_hash?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39226,13 +39849,19 @@ export namespace Prisma {
   export type SourcePropertyUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     source_agency_id?: StringFieldUpdateOperationsInput | string
-    external_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     source_url?: StringFieldUpdateOperationsInput | string
     canonical_url?: NullableStringFieldUpdateOperationsInput | string | null
     raw_title?: NullableStringFieldUpdateOperationsInput | string | null
     raw_description?: NullableStringFieldUpdateOperationsInput | string | null
     raw_price?: NullableStringFieldUpdateOperationsInput | string | null
     raw_location?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_property_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_listing_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_sqm?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bedrooms?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bathrooms?: NullableStringFieldUpdateOperationsInput | string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: NullableStringFieldUpdateOperationsInput | string | null
     content_hash?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39247,13 +39876,19 @@ export namespace Prisma {
   export type SourcePropertyCreateManyInput = {
     id?: string
     source_agency_id: string
-    external_id?: string | null
+    property_id: string
+    internal_id?: string | null
     source_url: string
     canonical_url?: string | null
     raw_title?: string | null
     raw_description?: string | null
     raw_price?: string | null
     raw_location?: string | null
+    raw_property_type?: string | null
+    raw_listing_type?: string | null
+    raw_sqm?: string | null
+    raw_bedrooms?: string | null
+    raw_bathrooms?: string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: string | null
     content_hash?: string | null
@@ -39266,13 +39901,19 @@ export namespace Prisma {
 
   export type SourcePropertyUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    external_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     source_url?: StringFieldUpdateOperationsInput | string
     canonical_url?: NullableStringFieldUpdateOperationsInput | string | null
     raw_title?: NullableStringFieldUpdateOperationsInput | string | null
     raw_description?: NullableStringFieldUpdateOperationsInput | string | null
     raw_price?: NullableStringFieldUpdateOperationsInput | string | null
     raw_location?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_property_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_listing_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_sqm?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bedrooms?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bathrooms?: NullableStringFieldUpdateOperationsInput | string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: NullableStringFieldUpdateOperationsInput | string | null
     content_hash?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39286,13 +39927,19 @@ export namespace Prisma {
   export type SourcePropertyUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     source_agency_id?: StringFieldUpdateOperationsInput | string
-    external_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     source_url?: StringFieldUpdateOperationsInput | string
     canonical_url?: NullableStringFieldUpdateOperationsInput | string | null
     raw_title?: NullableStringFieldUpdateOperationsInput | string | null
     raw_description?: NullableStringFieldUpdateOperationsInput | string | null
     raw_price?: NullableStringFieldUpdateOperationsInput | string | null
     raw_location?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_property_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_listing_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_sqm?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bedrooms?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bathrooms?: NullableStringFieldUpdateOperationsInput | string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: NullableStringFieldUpdateOperationsInput | string | null
     content_hash?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39307,6 +39954,8 @@ export namespace Prisma {
     id?: string
     title: string
     description?: string | null
+    property_id: string
+    internal_id?: string | null
     listing_type?: $Enums.ListingType
     property_type?: $Enums.PropertyType
     status?: $Enums.PropertyStatus
@@ -39328,6 +39977,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -39340,6 +39999,8 @@ export namespace Prisma {
     id?: string
     title: string
     description?: string | null
+    property_id: string
+    internal_id?: string | null
     listing_type?: $Enums.ListingType
     property_type?: $Enums.PropertyType
     status?: $Enums.PropertyStatus
@@ -39361,6 +40022,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -39373,6 +40044,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
     property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
@@ -39394,6 +40067,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39406,6 +40089,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
     property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
@@ -39427,6 +40112,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39439,6 +40134,8 @@ export namespace Prisma {
     id?: string
     title: string
     description?: string | null
+    property_id: string
+    internal_id?: string | null
     listing_type?: $Enums.ListingType
     property_type?: $Enums.PropertyType
     status?: $Enums.PropertyStatus
@@ -39460,6 +40157,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -39469,6 +40176,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
     property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
@@ -39490,6 +40199,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39499,6 +40218,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
     property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
@@ -39520,6 +40241,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39677,6 +40408,9 @@ export namespace Prisma {
 
   export type UserPropertyCreateInput = {
     id?: string
+    property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
     title: string
     description?: string | null
     listing_type?: $Enums.ListingType
@@ -39700,6 +40434,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
     last_synced_at?: Date | string | null
@@ -39712,7 +40456,10 @@ export namespace Prisma {
   export type UserPropertyUncheckedCreateInput = {
     id?: string
     user_id: string
+    canonical_property_id: string
     property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
     title: string
     description?: string | null
     listing_type?: $Enums.ListingType
@@ -39736,6 +40483,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
     last_synced_at?: Date | string | null
@@ -39745,6 +40502,9 @@ export namespace Prisma {
 
   export type UserPropertyUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
@@ -39768,6 +40528,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -39780,7 +40550,10 @@ export namespace Prisma {
   export type UserPropertyUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
+    canonical_property_id?: StringFieldUpdateOperationsInput | string
     property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
@@ -39804,6 +40577,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -39814,7 +40597,10 @@ export namespace Prisma {
   export type UserPropertyCreateManyInput = {
     id?: string
     user_id: string
+    canonical_property_id: string
     property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
     title: string
     description?: string | null
     listing_type?: $Enums.ListingType
@@ -39838,6 +40624,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
     last_synced_at?: Date | string | null
@@ -39847,6 +40643,9 @@ export namespace Prisma {
 
   export type UserPropertyUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
@@ -39870,6 +40669,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -39880,7 +40689,10 @@ export namespace Prisma {
   export type UserPropertyUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
+    canonical_property_id?: StringFieldUpdateOperationsInput | string
     property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
@@ -39904,6 +40716,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41878,13 +42700,19 @@ export namespace Prisma {
   export type SourcePropertyCountOrderByAggregateInput = {
     id?: SortOrder
     source_agency_id?: SortOrder
-    external_id?: SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrder
     source_url?: SortOrder
     canonical_url?: SortOrder
     raw_title?: SortOrder
     raw_description?: SortOrder
     raw_price?: SortOrder
     raw_location?: SortOrder
+    raw_property_type?: SortOrder
+    raw_listing_type?: SortOrder
+    raw_sqm?: SortOrder
+    raw_bedrooms?: SortOrder
+    raw_bathrooms?: SortOrder
     raw_data?: SortOrder
     raw_html_path?: SortOrder
     content_hash?: SortOrder
@@ -41898,13 +42726,19 @@ export namespace Prisma {
   export type SourcePropertyMaxOrderByAggregateInput = {
     id?: SortOrder
     source_agency_id?: SortOrder
-    external_id?: SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrder
     source_url?: SortOrder
     canonical_url?: SortOrder
     raw_title?: SortOrder
     raw_description?: SortOrder
     raw_price?: SortOrder
     raw_location?: SortOrder
+    raw_property_type?: SortOrder
+    raw_listing_type?: SortOrder
+    raw_sqm?: SortOrder
+    raw_bedrooms?: SortOrder
+    raw_bathrooms?: SortOrder
     raw_html_path?: SortOrder
     content_hash?: SortOrder
     first_seen_at?: SortOrder
@@ -41917,13 +42751,19 @@ export namespace Prisma {
   export type SourcePropertyMinOrderByAggregateInput = {
     id?: SortOrder
     source_agency_id?: SortOrder
-    external_id?: SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrder
     source_url?: SortOrder
     canonical_url?: SortOrder
     raw_title?: SortOrder
     raw_description?: SortOrder
     raw_price?: SortOrder
     raw_location?: SortOrder
+    raw_property_type?: SortOrder
+    raw_listing_type?: SortOrder
+    raw_sqm?: SortOrder
+    raw_bedrooms?: SortOrder
+    raw_bathrooms?: SortOrder
     raw_html_path?: SortOrder
     content_hash?: SortOrder
     first_seen_at?: SortOrder
@@ -41961,6 +42801,8 @@ export namespace Prisma {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrder
     listing_type?: SortOrder
     property_type?: SortOrder
     status?: SortOrder
@@ -41982,6 +42824,16 @@ export namespace Prisma {
     features?: SortOrder
     images?: SortOrder
     normalized_data?: SortOrder
+    estateweb_type_id?: SortOrder
+    estateweb_location_id?: SortOrder
+    cms_fields?: SortOrder
+    cms_metadata?: SortOrder
+    video_url?: SortOrder
+    distance_airport?: SortOrder
+    distance_port?: SortOrder
+    distance_beach?: SortOrder
+    price_start?: SortOrder
+    price_web?: SortOrder
     duplicate_group_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -41996,12 +42848,18 @@ export namespace Prisma {
     bathrooms?: SortOrder
     construction_year?: SortOrder
     renovation_year?: SortOrder
+    estateweb_type_id?: SortOrder
+    estateweb_location_id?: SortOrder
+    price_start?: SortOrder
+    price_web?: SortOrder
   }
 
   export type PropertyMaxOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrder
     listing_type?: SortOrder
     property_type?: SortOrder
     status?: SortOrder
@@ -42020,6 +42878,14 @@ export namespace Prisma {
     floor?: SortOrder
     construction_year?: SortOrder
     renovation_year?: SortOrder
+    estateweb_type_id?: SortOrder
+    estateweb_location_id?: SortOrder
+    video_url?: SortOrder
+    distance_airport?: SortOrder
+    distance_port?: SortOrder
+    distance_beach?: SortOrder
+    price_start?: SortOrder
+    price_web?: SortOrder
     duplicate_group_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -42029,6 +42895,8 @@ export namespace Prisma {
     id?: SortOrder
     title?: SortOrder
     description?: SortOrder
+    property_id?: SortOrder
+    internal_id?: SortOrder
     listing_type?: SortOrder
     property_type?: SortOrder
     status?: SortOrder
@@ -42047,6 +42915,14 @@ export namespace Prisma {
     floor?: SortOrder
     construction_year?: SortOrder
     renovation_year?: SortOrder
+    estateweb_type_id?: SortOrder
+    estateweb_location_id?: SortOrder
+    video_url?: SortOrder
+    distance_airport?: SortOrder
+    distance_port?: SortOrder
+    distance_beach?: SortOrder
+    price_start?: SortOrder
+    price_web?: SortOrder
     duplicate_group_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -42061,6 +42937,10 @@ export namespace Prisma {
     bathrooms?: SortOrder
     construction_year?: SortOrder
     renovation_year?: SortOrder
+    estateweb_type_id?: SortOrder
+    estateweb_location_id?: SortOrder
+    price_start?: SortOrder
+    price_web?: SortOrder
   }
 
   export type EnumListingTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -42185,15 +43065,18 @@ export namespace Prisma {
     _max?: NestedEnumPropertyHistoryEventTypeFilter<$PrismaModel>
   }
 
-  export type UserPropertyUser_idProperty_idCompoundUniqueInput = {
+  export type UserPropertyUser_idCanonical_property_idCompoundUniqueInput = {
     user_id: string
-    property_id: string
+    canonical_property_id: string
   }
 
   export type UserPropertyCountOrderByAggregateInput = {
     id?: SortOrder
     user_id?: SortOrder
+    canonical_property_id?: SortOrder
     property_id?: SortOrder
+    internal_id?: SortOrder
+    integration_property_id?: SortOrder
     title?: SortOrder
     description?: SortOrder
     listing_type?: SortOrder
@@ -42217,6 +43100,16 @@ export namespace Prisma {
     features?: SortOrder
     images?: SortOrder
     normalized_data?: SortOrder
+    estateweb_type_id?: SortOrder
+    estateweb_location_id?: SortOrder
+    cms_fields?: SortOrder
+    cms_metadata?: SortOrder
+    video_url?: SortOrder
+    distance_airport?: SortOrder
+    distance_port?: SortOrder
+    distance_beach?: SortOrder
+    price_start?: SortOrder
+    price_web?: SortOrder
     duplicate_group_id?: SortOrder
     is_modified?: SortOrder
     last_synced_at?: SortOrder
@@ -42233,12 +43126,19 @@ export namespace Prisma {
     bathrooms?: SortOrder
     construction_year?: SortOrder
     renovation_year?: SortOrder
+    estateweb_type_id?: SortOrder
+    estateweb_location_id?: SortOrder
+    price_start?: SortOrder
+    price_web?: SortOrder
   }
 
   export type UserPropertyMaxOrderByAggregateInput = {
     id?: SortOrder
     user_id?: SortOrder
+    canonical_property_id?: SortOrder
     property_id?: SortOrder
+    internal_id?: SortOrder
+    integration_property_id?: SortOrder
     title?: SortOrder
     description?: SortOrder
     listing_type?: SortOrder
@@ -42259,6 +43159,14 @@ export namespace Prisma {
     floor?: SortOrder
     construction_year?: SortOrder
     renovation_year?: SortOrder
+    estateweb_type_id?: SortOrder
+    estateweb_location_id?: SortOrder
+    video_url?: SortOrder
+    distance_airport?: SortOrder
+    distance_port?: SortOrder
+    distance_beach?: SortOrder
+    price_start?: SortOrder
+    price_web?: SortOrder
     duplicate_group_id?: SortOrder
     is_modified?: SortOrder
     last_synced_at?: SortOrder
@@ -42269,7 +43177,10 @@ export namespace Prisma {
   export type UserPropertyMinOrderByAggregateInput = {
     id?: SortOrder
     user_id?: SortOrder
+    canonical_property_id?: SortOrder
     property_id?: SortOrder
+    internal_id?: SortOrder
+    integration_property_id?: SortOrder
     title?: SortOrder
     description?: SortOrder
     listing_type?: SortOrder
@@ -42290,6 +43201,14 @@ export namespace Prisma {
     floor?: SortOrder
     construction_year?: SortOrder
     renovation_year?: SortOrder
+    estateweb_type_id?: SortOrder
+    estateweb_location_id?: SortOrder
+    video_url?: SortOrder
+    distance_airport?: SortOrder
+    distance_port?: SortOrder
+    distance_beach?: SortOrder
+    price_start?: SortOrder
+    price_web?: SortOrder
     duplicate_group_id?: SortOrder
     is_modified?: SortOrder
     last_synced_at?: SortOrder
@@ -42306,6 +43225,10 @@ export namespace Prisma {
     bathrooms?: SortOrder
     construction_year?: SortOrder
     renovation_year?: SortOrder
+    estateweb_type_id?: SortOrder
+    estateweb_location_id?: SortOrder
+    price_start?: SortOrder
+    price_web?: SortOrder
   }
 
   export type PlatformConfigCountOrderByAggregateInput = {
@@ -45233,6 +46156,9 @@ export namespace Prisma {
 
   export type UserPropertyCreateWithoutUserInput = {
     id?: string
+    property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
     title: string
     description?: string | null
     listing_type?: $Enums.ListingType
@@ -45256,6 +46182,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
     last_synced_at?: Date | string | null
@@ -45266,7 +46202,10 @@ export namespace Prisma {
 
   export type UserPropertyUncheckedCreateWithoutUserInput = {
     id?: string
+    canonical_property_id: string
     property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
     title: string
     description?: string | null
     listing_type?: $Enums.ListingType
@@ -45290,6 +46229,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
     last_synced_at?: Date | string | null
@@ -45407,7 +46356,10 @@ export namespace Prisma {
     NOT?: UserPropertyScalarWhereInput | UserPropertyScalarWhereInput[]
     id?: StringFilter<"UserProperty"> | string
     user_id?: StringFilter<"UserProperty"> | string
+    canonical_property_id?: StringFilter<"UserProperty"> | string
     property_id?: StringFilter<"UserProperty"> | string
+    internal_id?: StringNullableFilter<"UserProperty"> | string | null
+    integration_property_id?: StringNullableFilter<"UserProperty"> | string | null
     title?: StringFilter<"UserProperty"> | string
     description?: StringNullableFilter<"UserProperty"> | string | null
     listing_type?: EnumListingTypeFilter<"UserProperty"> | $Enums.ListingType
@@ -45431,6 +46383,16 @@ export namespace Prisma {
     features?: JsonNullableFilter<"UserProperty">
     images?: JsonNullableFilter<"UserProperty">
     normalized_data?: JsonNullableFilter<"UserProperty">
+    estateweb_type_id?: IntNullableFilter<"UserProperty"> | number | null
+    estateweb_location_id?: IntNullableFilter<"UserProperty"> | number | null
+    cms_fields?: JsonNullableFilter<"UserProperty">
+    cms_metadata?: JsonNullableFilter<"UserProperty">
+    video_url?: StringNullableFilter<"UserProperty"> | string | null
+    distance_airport?: StringNullableFilter<"UserProperty"> | string | null
+    distance_port?: StringNullableFilter<"UserProperty"> | string | null
+    distance_beach?: StringNullableFilter<"UserProperty"> | string | null
+    price_start?: DecimalNullableFilter<"UserProperty"> | Decimal | DecimalJsLike | number | string | null
+    price_web?: DecimalNullableFilter<"UserProperty"> | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: StringNullableFilter<"UserProperty"> | string | null
     is_modified?: BoolFilter<"UserProperty"> | boolean
     last_synced_at?: DateTimeNullableFilter<"UserProperty"> | Date | string | null
@@ -46018,13 +46980,19 @@ export namespace Prisma {
 
   export type SourcePropertyCreateWithoutSource_agencyInput = {
     id?: string
-    external_id?: string | null
+    property_id: string
+    internal_id?: string | null
     source_url: string
     canonical_url?: string | null
     raw_title?: string | null
     raw_description?: string | null
     raw_price?: string | null
     raw_location?: string | null
+    raw_property_type?: string | null
+    raw_listing_type?: string | null
+    raw_sqm?: string | null
+    raw_bedrooms?: string | null
+    raw_bathrooms?: string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: string | null
     content_hash?: string | null
@@ -46038,13 +47006,19 @@ export namespace Prisma {
 
   export type SourcePropertyUncheckedCreateWithoutSource_agencyInput = {
     id?: string
-    external_id?: string | null
+    property_id: string
+    internal_id?: string | null
     source_url: string
     canonical_url?: string | null
     raw_title?: string | null
     raw_description?: string | null
     raw_price?: string | null
     raw_location?: string | null
+    raw_property_type?: string | null
+    raw_listing_type?: string | null
+    raw_sqm?: string | null
+    raw_bedrooms?: string | null
+    raw_bathrooms?: string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: string | null
     content_hash?: string | null
@@ -46261,13 +47235,19 @@ export namespace Prisma {
     NOT?: SourcePropertyScalarWhereInput | SourcePropertyScalarWhereInput[]
     id?: StringFilter<"SourceProperty"> | string
     source_agency_id?: StringFilter<"SourceProperty"> | string
-    external_id?: StringNullableFilter<"SourceProperty"> | string | null
+    property_id?: StringFilter<"SourceProperty"> | string
+    internal_id?: StringNullableFilter<"SourceProperty"> | string | null
     source_url?: StringFilter<"SourceProperty"> | string
     canonical_url?: StringNullableFilter<"SourceProperty"> | string | null
     raw_title?: StringNullableFilter<"SourceProperty"> | string | null
     raw_description?: StringNullableFilter<"SourceProperty"> | string | null
     raw_price?: StringNullableFilter<"SourceProperty"> | string | null
     raw_location?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_property_type?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_listing_type?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_sqm?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_bedrooms?: StringNullableFilter<"SourceProperty"> | string | null
+    raw_bathrooms?: StringNullableFilter<"SourceProperty"> | string | null
     raw_data?: JsonNullableFilter<"SourceProperty">
     raw_html_path?: StringNullableFilter<"SourceProperty"> | string | null
     content_hash?: StringNullableFilter<"SourceProperty"> | string | null
@@ -50609,6 +51589,9 @@ export namespace Prisma {
 
   export type UserPropertyCreateWithoutCanonical_propertyInput = {
     id?: string
+    property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
     title: string
     description?: string | null
     listing_type?: $Enums.ListingType
@@ -50632,6 +51615,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
     last_synced_at?: Date | string | null
@@ -50643,6 +51636,9 @@ export namespace Prisma {
   export type UserPropertyUncheckedCreateWithoutCanonical_propertyInput = {
     id?: string
     user_id: string
+    property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
     title: string
     description?: string | null
     listing_type?: $Enums.ListingType
@@ -50666,6 +51662,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
     last_synced_at?: Date | string | null
@@ -50765,6 +51771,8 @@ export namespace Prisma {
     id?: string
     title: string
     description?: string | null
+    property_id: string
+    internal_id?: string | null
     listing_type?: $Enums.ListingType
     property_type?: $Enums.PropertyType
     status?: $Enums.PropertyStatus
@@ -50786,6 +51794,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -50797,6 +51815,8 @@ export namespace Prisma {
     id?: string
     title: string
     description?: string | null
+    property_id: string
+    internal_id?: string | null
     listing_type?: $Enums.ListingType
     property_type?: $Enums.PropertyType
     status?: $Enums.PropertyStatus
@@ -50818,6 +51838,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -50832,13 +51862,19 @@ export namespace Prisma {
 
   export type SourcePropertyCreateWithoutProperty_linksInput = {
     id?: string
-    external_id?: string | null
+    property_id: string
+    internal_id?: string | null
     source_url: string
     canonical_url?: string | null
     raw_title?: string | null
     raw_description?: string | null
     raw_price?: string | null
     raw_location?: string | null
+    raw_property_type?: string | null
+    raw_listing_type?: string | null
+    raw_sqm?: string | null
+    raw_bedrooms?: string | null
+    raw_bathrooms?: string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: string | null
     content_hash?: string | null
@@ -50853,13 +51889,19 @@ export namespace Prisma {
   export type SourcePropertyUncheckedCreateWithoutProperty_linksInput = {
     id?: string
     source_agency_id: string
-    external_id?: string | null
+    property_id: string
+    internal_id?: string | null
     source_url: string
     canonical_url?: string | null
     raw_title?: string | null
     raw_description?: string | null
     raw_price?: string | null
     raw_location?: string | null
+    raw_property_type?: string | null
+    raw_listing_type?: string | null
+    raw_sqm?: string | null
+    raw_bedrooms?: string | null
+    raw_bathrooms?: string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: string | null
     content_hash?: string | null
@@ -50890,6 +51932,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
     property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
@@ -50911,6 +51955,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50922,6 +51976,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
     property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
@@ -50943,6 +51999,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50963,13 +52029,19 @@ export namespace Prisma {
 
   export type SourcePropertyUpdateWithoutProperty_linksInput = {
     id?: StringFieldUpdateOperationsInput | string
-    external_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     source_url?: StringFieldUpdateOperationsInput | string
     canonical_url?: NullableStringFieldUpdateOperationsInput | string | null
     raw_title?: NullableStringFieldUpdateOperationsInput | string | null
     raw_description?: NullableStringFieldUpdateOperationsInput | string | null
     raw_price?: NullableStringFieldUpdateOperationsInput | string | null
     raw_location?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_property_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_listing_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_sqm?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bedrooms?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bathrooms?: NullableStringFieldUpdateOperationsInput | string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: NullableStringFieldUpdateOperationsInput | string | null
     content_hash?: NullableStringFieldUpdateOperationsInput | string | null
@@ -50984,13 +52056,19 @@ export namespace Prisma {
   export type SourcePropertyUncheckedUpdateWithoutProperty_linksInput = {
     id?: StringFieldUpdateOperationsInput | string
     source_agency_id?: StringFieldUpdateOperationsInput | string
-    external_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     source_url?: StringFieldUpdateOperationsInput | string
     canonical_url?: NullableStringFieldUpdateOperationsInput | string | null
     raw_title?: NullableStringFieldUpdateOperationsInput | string | null
     raw_description?: NullableStringFieldUpdateOperationsInput | string | null
     raw_price?: NullableStringFieldUpdateOperationsInput | string | null
     raw_location?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_property_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_listing_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_sqm?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bedrooms?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bathrooms?: NullableStringFieldUpdateOperationsInput | string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: NullableStringFieldUpdateOperationsInput | string | null
     content_hash?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51005,6 +52083,8 @@ export namespace Prisma {
     id?: string
     title: string
     description?: string | null
+    property_id: string
+    internal_id?: string | null
     listing_type?: $Enums.ListingType
     property_type?: $Enums.PropertyType
     status?: $Enums.PropertyStatus
@@ -51026,6 +52106,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -51037,6 +52127,8 @@ export namespace Prisma {
     id?: string
     title: string
     description?: string | null
+    property_id: string
+    internal_id?: string | null
     listing_type?: $Enums.ListingType
     property_type?: $Enums.PropertyType
     status?: $Enums.PropertyStatus
@@ -51058,6 +52150,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -51158,6 +52260,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
     property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
@@ -51179,6 +52283,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51190,6 +52304,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
     property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
@@ -51211,6 +52327,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51330,6 +52456,8 @@ export namespace Prisma {
     id?: string
     title: string
     description?: string | null
+    property_id: string
+    internal_id?: string | null
     listing_type?: $Enums.ListingType
     property_type?: $Enums.PropertyType
     status?: $Enums.PropertyStatus
@@ -51351,6 +52479,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -51362,6 +52500,8 @@ export namespace Prisma {
     id?: string
     title: string
     description?: string | null
+    property_id: string
+    internal_id?: string | null
     listing_type?: $Enums.ListingType
     property_type?: $Enums.PropertyType
     status?: $Enums.PropertyStatus
@@ -51383,6 +52523,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -51445,6 +52595,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
     property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
@@ -51466,6 +52618,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51477,6 +52639,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
     property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
@@ -51498,6 +52662,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51617,7 +52791,10 @@ export namespace Prisma {
 
   export type UserPropertyCreateManyUserInput = {
     id?: string
+    canonical_property_id: string
     property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
     title: string
     description?: string | null
     listing_type?: $Enums.ListingType
@@ -51641,6 +52818,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
     last_synced_at?: Date | string | null
@@ -51711,6 +52898,9 @@ export namespace Prisma {
 
   export type UserPropertyUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
@@ -51734,6 +52924,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -51744,7 +52944,10 @@ export namespace Prisma {
 
   export type UserPropertyUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    canonical_property_id?: StringFieldUpdateOperationsInput | string
     property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
@@ -51768,6 +52971,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -51777,7 +52990,10 @@ export namespace Prisma {
 
   export type UserPropertyUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    canonical_property_id?: StringFieldUpdateOperationsInput | string
     property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
@@ -51801,6 +53017,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -52076,13 +53302,19 @@ export namespace Prisma {
 
   export type SourcePropertyCreateManySource_agencyInput = {
     id?: string
-    external_id?: string | null
+    property_id: string
+    internal_id?: string | null
     source_url: string
     canonical_url?: string | null
     raw_title?: string | null
     raw_description?: string | null
     raw_price?: string | null
     raw_location?: string | null
+    raw_property_type?: string | null
+    raw_listing_type?: string | null
+    raw_sqm?: string | null
+    raw_bedrooms?: string | null
+    raw_bathrooms?: string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: string | null
     content_hash?: string | null
@@ -52368,13 +53600,19 @@ export namespace Prisma {
 
   export type SourcePropertyUpdateWithoutSource_agencyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    external_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     source_url?: StringFieldUpdateOperationsInput | string
     canonical_url?: NullableStringFieldUpdateOperationsInput | string | null
     raw_title?: NullableStringFieldUpdateOperationsInput | string | null
     raw_description?: NullableStringFieldUpdateOperationsInput | string | null
     raw_price?: NullableStringFieldUpdateOperationsInput | string | null
     raw_location?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_property_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_listing_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_sqm?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bedrooms?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bathrooms?: NullableStringFieldUpdateOperationsInput | string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: NullableStringFieldUpdateOperationsInput | string | null
     content_hash?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52388,13 +53626,19 @@ export namespace Prisma {
 
   export type SourcePropertyUncheckedUpdateWithoutSource_agencyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    external_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     source_url?: StringFieldUpdateOperationsInput | string
     canonical_url?: NullableStringFieldUpdateOperationsInput | string | null
     raw_title?: NullableStringFieldUpdateOperationsInput | string | null
     raw_description?: NullableStringFieldUpdateOperationsInput | string | null
     raw_price?: NullableStringFieldUpdateOperationsInput | string | null
     raw_location?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_property_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_listing_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_sqm?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bedrooms?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bathrooms?: NullableStringFieldUpdateOperationsInput | string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: NullableStringFieldUpdateOperationsInput | string | null
     content_hash?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52408,13 +53652,19 @@ export namespace Prisma {
 
   export type SourcePropertyUncheckedUpdateManyWithoutSource_agencyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    external_id?: NullableStringFieldUpdateOperationsInput | string | null
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
     source_url?: StringFieldUpdateOperationsInput | string
     canonical_url?: NullableStringFieldUpdateOperationsInput | string | null
     raw_title?: NullableStringFieldUpdateOperationsInput | string | null
     raw_description?: NullableStringFieldUpdateOperationsInput | string | null
     raw_price?: NullableStringFieldUpdateOperationsInput | string | null
     raw_location?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_property_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_listing_type?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_sqm?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bedrooms?: NullableStringFieldUpdateOperationsInput | string | null
+    raw_bathrooms?: NullableStringFieldUpdateOperationsInput | string | null
     raw_data?: NullableJsonNullValueInput | InputJsonValue
     raw_html_path?: NullableStringFieldUpdateOperationsInput | string | null
     content_hash?: NullableStringFieldUpdateOperationsInput | string | null
@@ -53394,6 +54644,9 @@ export namespace Prisma {
   export type UserPropertyCreateManyCanonical_propertyInput = {
     id?: string
     user_id: string
+    property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
     title: string
     description?: string | null
     listing_type?: $Enums.ListingType
@@ -53417,6 +54670,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
     last_synced_at?: Date | string | null
@@ -53466,6 +54729,9 @@ export namespace Prisma {
 
   export type UserPropertyUpdateWithoutCanonical_propertyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
@@ -53489,6 +54755,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53500,6 +54776,9 @@ export namespace Prisma {
   export type UserPropertyUncheckedUpdateWithoutCanonical_propertyInput = {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
@@ -53523,6 +54802,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53533,6 +54822,9 @@ export namespace Prisma {
   export type UserPropertyUncheckedUpdateManyWithoutCanonical_propertyInput = {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
@@ -53556,6 +54848,16 @@ export namespace Prisma {
     features?: NullableJsonNullValueInput | InputJsonValue
     images?: NullableJsonNullValueInput | InputJsonValue
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

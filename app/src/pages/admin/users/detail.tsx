@@ -201,6 +201,8 @@ export default function AdminUserDetailPage() {
                 <Table.Content aria-label="Saved properties">
                   <Table.Header>
                     <Table.Column isRowHeader>Title</Table.Column>
+                    <Table.Column>Property ID</Table.Column>
+                    <Table.Column>Internal ID</Table.Column>
                     <Table.Column>City</Table.Column>
                     <Table.Column>Price</Table.Column>
                     <Table.Column>Status</Table.Column>
@@ -211,12 +213,14 @@ export default function AdminUserDetailPage() {
                       <Table.Row key={property.id}>
                         <Table.Cell>
                           <Link
-                            to={Routes.admin.properties.detail(property.property_id)}
+                            to={Routes.admin.properties.detail(property.canonical_property_id)}
                             className="text-accent hover:underline"
                           >
                             {property.title}
                           </Link>
                         </Table.Cell>
+                        <Table.Cell>{property.property_id}</Table.Cell>
+                        <Table.Cell>{property.internal_id ?? "—"}</Table.Cell>
                         <Table.Cell>{property.city ?? "—"}</Table.Cell>
                         <Table.Cell>
                           {property.price != null

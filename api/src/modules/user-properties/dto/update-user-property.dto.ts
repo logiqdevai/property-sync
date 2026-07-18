@@ -101,4 +101,49 @@ export class UpdateUserPropertyDto {
   @IsOptional()
   @IsInt()
   renovation_year?: number | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsInt()
+  estateweb_type_id?: number | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsInt()
+  estateweb_location_id?: number | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsString()
+  video_url?: string | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsString()
+  distance_airport?: string | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsString()
+  distance_port?: string | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsString()
+  distance_beach?: string | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsNumber()
+  price_start?: number | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsNumber()
+  price_web?: number | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsString()
+  integration_property_id?: string | null;
 }

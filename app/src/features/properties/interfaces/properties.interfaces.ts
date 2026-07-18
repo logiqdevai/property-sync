@@ -1,3 +1,5 @@
+import type { PropertyCmsFields } from "./cms-property.interface";
+
 export const PropertyStatuses = {
   ACTIVE: "ACTIVE",
   INACTIVE: "INACTIVE",
@@ -45,9 +47,11 @@ export const PropertyHistoryEventTypes = {
 export type PropertyHistoryEventType =
   (typeof PropertyHistoryEventTypes)[keyof typeof PropertyHistoryEventTypes];
 
-export interface Property {
+export interface Property extends PropertyCmsFields {
   id: string;
   title: string;
+  property_id: string;
+  internal_id: string | null;
   description: string | null;
   listing_type: ListingType;
   property_type: PropertyType;
@@ -57,11 +61,16 @@ export interface Property {
   city: string | null;
   district: string | null;
   address: string | null;
+  postal_code: string | null;
+  country: string | null;
+  latitude: string | null;
+  longitude: string | null;
   square_meters: string | null;
   bedrooms: number | null;
   bathrooms: number | null;
   floor: string | null;
   construction_year: number | null;
+  renovation_year: number | null;
   duplicate_group_id: string | null;
   features: string[] | null;
   images: string[] | null;
@@ -72,9 +81,17 @@ export interface Property {
 export interface SourcePropertySummary {
   id: string;
   source_url: string;
-  external_id: string | null;
+  property_id: string;
+  internal_id: string | null;
   raw_title: string | null;
+  raw_description: string | null;
   raw_price: string | null;
+  raw_location: string | null;
+  raw_property_type: string | null;
+  raw_listing_type: string | null;
+  raw_sqm: string | null;
+  raw_bedrooms: string | null;
+  raw_bathrooms: string | null;
   last_seen_at: string | null;
   status: PropertyStatus;
 }
