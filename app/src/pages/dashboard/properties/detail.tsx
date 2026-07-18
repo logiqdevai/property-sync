@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Chip, useOverlayState } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { PropertyDetailView } from "@/components/ui/property-detail-view";
 import {
-  useResyncUserProperty,
   useUpdateUserProperty,
   useUserProperty,
 } from "@/features/user-properties/hooks/use-user-properties";
@@ -23,10 +21,8 @@ const fieldClassName = "rounded-lg border border-border bg-background px-3 py-2"
 export default function DashboardPropertyDetailPage() {
   const { id = "" } = useParams();
   const [isEditing, setIsEditing] = useState(false);
-  const resyncConfirm = useOverlayState();
   const { data: property, isPending } = useUserProperty(id);
   const updateProperty = useUpdateUserProperty();
-  const resyncProperty = useResyncUserProperty();
 
   const {
     register,
@@ -79,10 +75,6 @@ export default function DashboardPropertyDetailPage() {
     setIsEditing(false);
   });
 
-  const handleResync = async () => {
-    await resyncProperty.mutateAsync(property.id);
-  };
-
   const handleCancelEdit = () => {
     reset();
     setIsEditing(false);
@@ -94,13 +86,6 @@ export default function DashboardPropertyDetailPage() {
       backHref={Routes.dashboard.properties.list}
       backLabel="← Back to my properties"
       showFieldDiff
-      headerExtra={
-        property.is_modified ? (
-          <Chip size="sm" variant="soft" color="warning">
-            <Chip.Label>Edited</Chip.Label>
-          </Chip>
-        ) : undefined
-      }
       headerActions={
         isEditing ? (
           <Button variant="secondary" onPress={handleCancelEdit}>
@@ -111,18 +96,6 @@ export default function DashboardPropertyDetailPage() {
             Edit
           </Button>
         )
-      }
-      banner={
-        property.is_modified ? (
-          <div className="rounded-xl border border-warning/30 bg-warning/10 p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-foreground">
-              This listing has been edited and will no longer auto-update from the source.
-            </p>
-            <Button variant="secondary" onPress={resyncConfirm.open}>
-              Resync from source
-            </Button>
-          </div>
-        ) : undefined
       }
       details={
         isEditing ? (
@@ -255,16 +228,6 @@ export default function DashboardPropertyDetailPage() {
             </div>
           </form>
         ) : undefined
-      }
-      footer={
-        <ConfirmationDialog
-          state={resyncConfirm}
-          title="Resync from source?"
-          description="This will discard your local edits and overwrite this copy with the latest canonical data."
-          confirmLabel="Resync"
-          onConfirm={handleResync}
-          isPending={resyncProperty.isPending}
-        />
       }
     />
   );

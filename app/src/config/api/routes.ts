@@ -146,7 +146,6 @@ export const ApiRoutes = {
         list: "/properties",
         count: "/properties/count",
         detail: (id: string) => `/properties/${id}`,
-        resync: (id: string) => `/properties/${id}/resync`,
         bulkDelete: "/properties/bulk-delete",
     },
     dashboard: {

@@ -9,9 +9,6 @@ export class UserDashboardStats {
   active_properties: number;
 
   @ApiProperty()
-  modified_properties: number;
-
-  @ApiProperty()
   properties_added_this_week: number;
 
   @ApiProperty()

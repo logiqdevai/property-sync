@@ -80,7 +80,7 @@ export function CreateUserForm({
           }}
           fullWidth
         >
-          <Label>Password setup</Label>
+          <Label>up</Label>
           <Select.Trigger>
             <Select.Value />
             <Select.Indicator />

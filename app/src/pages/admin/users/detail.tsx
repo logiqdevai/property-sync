@@ -207,7 +207,6 @@ export default function AdminUserDetailPage() {
                     <Table.Column>City</Table.Column>
                     <Table.Column>Price</Table.Column>
                     <Table.Column>Status</Table.Column>
-                    <Table.Column>Edited</Table.Column>
                   </Table.Header>
                   <Table.Body>
                     {user.saved_properties.map((property) => (
@@ -227,15 +226,6 @@ export default function AdminUserDetailPage() {
                           {formatPrice(property.price, property.currency)}
                         </Table.Cell>
                         <Table.Cell>{property.status}</Table.Cell>
-                        <Table.Cell>
-                          {property.is_modified ? (
-                            <Chip size="sm" variant="soft" color="warning">
-                              Edited
-                            </Chip>
-                          ) : (
-                            "—"
-                          )}
-                        </Table.Cell>
                       </Table.Row>
                     ))}
                   </Table.Body>

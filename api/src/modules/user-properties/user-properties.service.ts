@@ -188,10 +188,7 @@ export class UserPropertiesService {
     return serializePropertyForApi(
       await this.prisma.userProperty.update({
         where: { id },
-        data: {
-          ...dto,
-          is_modified: true,
-        },
+        data: dto,
       }),
     );
   }
@@ -321,9 +318,6 @@ export class UserPropertiesService {
 
       if (options.changeType === 'removed') {
         if (!existing) continue;
-        if (existing.is_modified) {
-          continue;
-        }
         await this.prisma.userProperty.update({
           where: { id: existing.id },
           data: {
@@ -345,8 +339,6 @@ export class UserPropertiesService {
         });
         continue;
       }
-
-      if (existing.is_modified) continue;
 
       await this.prisma.userProperty.update({
         where: { id: existing.id },

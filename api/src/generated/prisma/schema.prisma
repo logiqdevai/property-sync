@@ -920,7 +920,7 @@ model UserProperty {
   price_start             Decimal?       @db.Decimal(14, 2)
   price_web               Decimal?       @db.Decimal(14, 2)
   duplicate_group_id      String?
-  is_modified             Boolean        @default(false) // true once any field diverges from canonical_property
+  is_modified             Boolean        @default(false)
   last_synced_at          DateTime? // last time this copy was refreshed from canonical_property
   created_at              DateTime       @default(now())
   updated_at              DateTime       @updatedAt

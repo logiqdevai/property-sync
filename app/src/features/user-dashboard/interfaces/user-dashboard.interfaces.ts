@@ -3,7 +3,6 @@ import type { PropertyHistoryEventType } from "@/features/properties/interfaces/
 export interface UserDashboardStats {
   total_properties: number;
   active_properties: number;
-  modified_properties: number;
   properties_added_this_week: number;
   tracked_agencies: number;
 }

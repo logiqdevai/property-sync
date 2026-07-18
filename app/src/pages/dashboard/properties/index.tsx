@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Chip, Input, Pagination, Select, ListBox, Table, useOverlayState } from "@heroui/react";
+import { Button, Input, Pagination, Select, ListBox, Table, useOverlayState } from "@heroui/react";
 import { Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
@@ -243,7 +243,6 @@ export default function DashboardPropertiesListPage() {
                   <Table.Column isRowHeader>City</Table.Column>
                   <Table.Column isRowHeader>Price</Table.Column>
                   <Table.Column isRowHeader>Status</Table.Column>
-                  <Table.Column isRowHeader>Edited</Table.Column>
                   {canDelete ? <Table.Column isRowHeader>Actions</Table.Column> : null}
                 </Table.Header>
                 <Table.Body>
@@ -275,15 +274,6 @@ export default function DashboardPropertiesListPage() {
                       </Table.Cell>
                       <Table.Cell>
                         <PropertyStatusChip status={property.status} />
-                      </Table.Cell>
-                      <Table.Cell>
-                        {property.is_modified ? (
-                          <Chip size="sm" variant="soft" color="warning">
-                            <Chip.Label>Edited</Chip.Label>
-                          </Chip>
-                        ) : (
-                          "—"
-                        )}
                       </Table.Cell>
                       {canDelete ? (
                         <Table.Cell>

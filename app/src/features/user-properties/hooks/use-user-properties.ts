@@ -6,7 +6,6 @@ import {
   getUserProperties,
   getUserPropertiesCount,
   getUserProperty,
-  resyncUserProperty,
   updateUserProperty,
 } from "../services/user-properties.services";
 import type {
@@ -51,25 +50,6 @@ export const useUpdateUserProperty = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not save property",
-        description: error.message,
-        variant: "error",
-      });
-    },
-  });
-};
-
-export const useResyncUserProperty = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => resyncUserProperty(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
-      toast({ title: "Property resynced from source", duration: 2000, variant: "success" });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Could not resync property",
         description: error.message,
         variant: "error",
       });

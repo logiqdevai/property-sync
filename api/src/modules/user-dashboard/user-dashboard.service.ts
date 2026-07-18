@@ -15,7 +15,6 @@ export class UserDashboardService {
     const [
       totalProperties,
       activeProperties,
-      modifiedProperties,
       propertiesAddedThisWeek,
       trackedAgencies,
       trackedProperties,
@@ -23,9 +22,6 @@ export class UserDashboardService {
       this.prisma.userProperty.count({ where: { user_id: userId } }),
       this.prisma.userProperty.count({
         where: { user_id: userId, status: PropertyStatus.ACTIVE },
-      }),
-      this.prisma.userProperty.count({
-        where: { user_id: userId, is_modified: true },
       }),
       this.prisma.userProperty.count({
         where: { user_id: userId, created_at: { gte: sevenDaysAgo } },
@@ -54,7 +50,6 @@ export class UserDashboardService {
       stats: {
         total_properties: totalProperties,
         active_properties: activeProperties,
-        modified_properties: modifiedProperties,
         properties_added_this_week: propertiesAddedThisWeek,
         tracked_agencies: trackedAgencies,
       },
