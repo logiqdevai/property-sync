@@ -1,5 +1,8 @@
+import { createHash } from 'crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
+import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
+import { GcsFolders } from '@/shared/config/gcs-folders';
 import {
   CrawlItem,
   DetailPageConfig,
@@ -12,6 +15,7 @@ interface DetailEnrichmentResult {
   detail_specs: Record<string, string>;
   detail_features: string[];
   external_id: string | null;
+  raw_html_path: string | null;
   error?: string;
 }
 
@@ -22,11 +26,13 @@ export class DetailEnrichmentService {
   constructor(
     private readonly stealthBrowserService: StealthBrowserService,
     private readonly platformConfigService: PlatformConfigService,
+    private readonly gcsService: GcsService,
   ) {}
 
   async enrichDetailPages(
     items: CrawlItem[],
     detailConfig?: DetailPageConfig | null,
+    sourceAgencyId?: string,
   ): Promise<void> {
     if (items.length === 0) return;
 
@@ -41,7 +47,12 @@ export class DetailEnrichmentService {
       const batch = items.slice(i, i + detail_concurrency);
       const results = await Promise.all(
         batch.map((item) =>
-          this.enrichOneDetailPage(item, detailConfig, page_timeout_ms),
+          this.enrichOneDetailPage(
+            item,
+            detailConfig,
+            page_timeout_ms,
+            sourceAgencyId,
+          ),
         ),
       );
 
@@ -62,6 +73,9 @@ export class DetailEnrichmentService {
         if (detail.external_id) {
           item.raw._external_id = detail.external_id;
         }
+        if (detail.raw_html_path) {
+          item.raw._raw_html_path = detail.raw_html_path;
+        }
       }
 
       if (i + detail_concurrency < items.length) {
@@ -74,7 +88,17 @@ export class DetailEnrichmentService {
     item: CrawlItem,
     detailConfig: DetailPageConfig | null | undefined,
     pageTimeoutMs: number,
+    sourceAgencyId?: string,
   ): Promise<DetailEnrichmentResult> {
+    const empty: DetailEnrichmentResult = {
+      images: [],
+      raw_detail_text: null,
+      detail_specs: {},
+      detail_features: [],
+      external_id: null,
+      raw_html_path: null,
+    };
+
     const { context, page } =
       await this.stealthBrowserService.newStealthPage();
 
@@ -85,19 +109,12 @@ export class DetailEnrichmentService {
       });
 
       if (response && !response.ok()) {
-        return {
-          images: [],
-          raw_detail_text: null,
-          detail_specs: {},
-          detail_features: [],
-          external_id: null,
-          error: `HTTP ${response.status()}`,
-        };
+        return { ...empty, error: `HTTP ${response.status()}` };
       }
 
       await page.waitForTimeout(1000);
 
-      return await page.evaluate((cfg) => {
+      const extracted = await page.evaluate((cfg) => {
         const images: string[] = [];
 
         if (cfg?.image_selector) {
@@ -242,18 +259,54 @@ export class DetailEnrichmentService {
           external_id: externalId,
         };
       }, detailConfig ?? null);
+
+      const html = await page.content();
+      const rawHtmlPath = await this.uploadDetailHtml(
+        html,
+        item.source_url,
+        sourceAgencyId,
+      );
+
+      return {
+        ...extracted,
+        raw_html_path: rawHtmlPath,
+      };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return {
-        images: [],
-        raw_detail_text: null,
-        detail_specs: {},
-        detail_features: [],
-        external_id: null,
-        error: message,
-      };
+      return { ...empty, error: message };
     } finally {
       await context.close().catch(() => undefined);
+    }
+  }
+
+  private async uploadDetailHtml(
+    html: string,
+    sourceUrl: string,
+    sourceAgencyId?: string,
+  ): Promise<string | null> {
+    if (!html) return null;
+
+    try {
+      const urlHash = createHash('sha256')
+        .update(sourceUrl)
+        .digest('hex')
+        .slice(0, 16);
+      const agencySegment = sourceAgencyId ?? 'unknown';
+      const filename = `${agencySegment}/${urlHash}.html`;
+
+      const upload = await this.gcsService.uploadImageFromBuffer(
+        Buffer.from(html, 'utf8'),
+        filename,
+        'text/html; charset=utf-8',
+        GcsFolders.sourcePropertyHtml,
+      );
+
+      return upload.path;
+    } catch (error) {
+      this.logger.warn(
+        `Failed to upload detail HTML for ${sourceUrl}: ${error instanceof Error ? error.message : error}`,
+      );
+      return null;
     }
   }
 }

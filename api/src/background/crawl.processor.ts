@@ -167,6 +167,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         this.detailEnrichmentService.enrichDetailPages(
           crawlResult.items,
           config.detail_page,
+          run.source_agency_id,
         ),
         crawl_job_timeout_ms,
         `detail enrichment timed out after ${crawl_job_timeout_ms}ms`,
@@ -185,6 +186,8 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         const denormalized = extractDenormalizedRawFields(raw);
         const { property_id: propertyId, internal_id: internalId } =
           extractSourcePropertyIds(item.source_url, raw);
+        const rawHtmlPath =
+          typeof raw._raw_html_path === 'string' ? raw._raw_html_path : null;
         const hash = contentHash({
           url: item.source_url,
           title: raw.title,
@@ -219,6 +222,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
             raw_location: (raw.location as string | undefined) ?? null,
             ...denormalized,
             raw_data: raw as Prisma.InputJsonValue,
+            raw_html_path: rawHtmlPath,
             content_hash: hash,
             first_seen_at: now,
             last_seen_at: now,
@@ -233,6 +237,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
             raw_location: (raw.location as string | undefined) ?? null,
             ...denormalized,
             raw_data: raw as Prisma.InputJsonValue,
+            ...(rawHtmlPath ? { raw_html_path: rawHtmlPath } : {}),
             content_hash: hash,
             last_seen_at: now,
             status: PropertyStatus.ACTIVE,

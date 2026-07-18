@@ -5,6 +5,7 @@ import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { PropertyDetailView } from "@/components/ui/property-detail-view";
 import { useProperty, useSplitProperty } from "@/features/properties/hooks/use-properties";
+import { SourcePropertyPanel } from "./components/source-property-panel";
 
 export default function PropertyDetailPage() {
   const { id = "" } = useParams();
@@ -33,14 +34,17 @@ export default function PropertyDetailPage() {
         ) : undefined
       }
       footer={
-        <ConfirmationDialog
-          state={splitConfirm}
-          title="Split from duplicate group?"
-          description="This property will be removed from its duplicate group. Other grouped properties stay linked."
-          confirmLabel="Split"
-          onConfirm={handleSplit}
-          isPending={splitProperty.isPending}
-        />
+        <>
+          <SourcePropertyPanel sourceLinks={property.source_links} />
+          <ConfirmationDialog
+            state={splitConfirm}
+            title="Split from duplicate group?"
+            description="This property will be removed from its duplicate group. Other grouped properties stay linked."
+            confirmLabel="Split"
+            onConfirm={handleSplit}
+            isPending={splitProperty.isPending}
+          />
+        </>
       }
     />
   );

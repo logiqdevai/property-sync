@@ -751,7 +751,7 @@ model SourceProperty {
   raw_bedrooms      String?
   raw_bathrooms     String?
   raw_data          Json?
-  raw_html_path     String?
+  raw_html_path     String? // GCS object path for the detail-page HTML snapshot
   content_hash      String? // used for deduplication
   first_seen_at     DateTime       @default(now())
   last_seen_at      DateTime?

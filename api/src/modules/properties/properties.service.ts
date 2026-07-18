@@ -1,10 +1,12 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
 import { PropertyQueryType } from './dto/property-query.schema';
 import { MergePropertiesDto } from './dto/merge-properties.dto';
 import { Prisma } from 'generated/prisma';
@@ -12,7 +14,12 @@ import { serializePropertyForApi } from './utils/property-api-response.util';
 
 @Injectable()
 export class PropertiesService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(PropertiesService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gcsService: GcsService,
+  ) {}
 
   private buildWhere(query: PropertyQueryType): Prisma.PropertyWhereInput {
     return {
@@ -102,8 +109,14 @@ export class PropertiesService {
                 raw_sqm: true,
                 raw_bedrooms: true,
                 raw_bathrooms: true,
+                raw_data: true,
+                raw_html_path: true,
+                content_hash: true,
+                first_seen_at: true,
                 last_seen_at: true,
                 status: true,
+                created_at: true,
+                updated_at: true,
               },
             },
           },
@@ -118,7 +131,36 @@ export class PropertiesService {
       throw new NotFoundException('Property not found');
     }
 
-    return serializePropertyForApi(property);
+    const sourceLinks = await Promise.all(
+      property.source_links.map(async (link) => {
+        const rawHtmlPath = link.source_property.raw_html_path;
+        let raw_html_url: string | null = null;
+        if (rawHtmlPath) {
+          try {
+            raw_html_url = await this.gcsService.getSignedUrlForPath(
+              rawHtmlPath,
+              60,
+            );
+          } catch (error) {
+            this.logger.warn(
+              `Failed to sign raw HTML for source property ${link.source_property.id}: ${error instanceof Error ? error.message : error}`,
+            );
+          }
+        }
+        return {
+          ...link,
+          source_property: {
+            ...link.source_property,
+            raw_html_url,
+          },
+        };
+      }),
+    );
+
+    return serializePropertyForApi({
+      ...property,
+      source_links: sourceLinks,
+    });
   }
 
   async merge(dto: MergePropertiesDto) {

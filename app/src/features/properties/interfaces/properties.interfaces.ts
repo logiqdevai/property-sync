@@ -94,6 +94,13 @@ export interface SourcePropertySummary {
   raw_bathrooms: string | null;
   last_seen_at: string | null;
   status: PropertyStatus;
+  raw_data?: unknown;
+  raw_html_path?: string | null;
+  raw_html_url?: string | null;
+  content_hash?: string | null;
+  first_seen_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface PropertySourceLink {
