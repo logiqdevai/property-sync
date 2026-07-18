@@ -15,12 +15,12 @@ import {
   CmsPropertyFieldEntry,
   CmsPropertyMetadata,
 } from '../interfaces/cms-property.interface';
+import { sanitizeRawDescription } from '../constants/normalization-prompt';
 import { mergeCmsFieldsFromNormalizedRow } from './property-cms-field-mapper.util';
 
 export interface NormalizedAiRow {
   index?: number;
   title?: string | null;
-  description?: string | null;
   listing_type?: string | null;
   property_type?: string | null;
   price?: number | null;
@@ -173,7 +173,6 @@ export function buildFallbackNormalizedRow(sp: {
 export function buildNormalizedRowFromExistingProperty(property: Property): NormalizedAiRow {
   return {
     title: property.title,
-    description: property.description,
     listing_type: property.listing_type,
     property_type: property.property_type,
     price: property.price != null ? Number(property.price) : null,
@@ -257,7 +256,7 @@ export function buildPropertyRecord(
 
   return {
     title: n.title ?? sp.raw_title ?? sp.source_url,
-    description: n.description ?? null,
+    description: sanitizeRawDescription(sp.raw_description),
     property_id: sp.property_id,
     internal_id: internalId,
     listing_type: (n.listing_type as ListingType) ?? ListingType.UNKNOWN,

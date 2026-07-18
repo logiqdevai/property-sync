@@ -31,6 +31,9 @@ export class PlatformConfig {
   @ApiProperty({ nullable: true, description: 'Null means the default value is used' })
   crawler_chromium_max_contexts_before_restart: number | null;
 
+  @ApiProperty({ nullable: true, description: 'Null means the default value is used' })
+  normalization_ai_raw_description_max_chars: number | null;
+
   @ApiProperty()
   created_at: Date;
 

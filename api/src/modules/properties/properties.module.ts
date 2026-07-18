@@ -6,6 +6,7 @@ import { UserIntegrationsModule } from '@/modules/user-integrations/user-integra
 import { AI_BATCH_COMPLETE_QUEUE } from '@/core/queues/queues.constants';
 import { AiBatchModule } from '@/integrations/ai-batch/ai-batch.module';
 import { GcsIntegrationModule } from '@/integrations/storage/gcs/gcs.module';
+import { PlatformConfigModule } from '@/modules/platform-config/platform-config.module';
 import { PropertiesController } from './properties.controller';
 import { PropertiesService } from './properties.service';
 import { PropertyNormalizationService } from './services/property-normalization.service';
@@ -23,6 +24,7 @@ import { NotificationsModule } from '@/modules/notifications/notifications.modul
     UserPropertiesModule,
     NotificationsModule,
     GcsIntegrationModule,
+    PlatformConfigModule,
     BullModule.registerQueue({ name: AI_BATCH_COMPLETE_QUEUE }),
   ],
   controllers: [PropertiesController],

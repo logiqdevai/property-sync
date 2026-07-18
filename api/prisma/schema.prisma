@@ -949,6 +949,7 @@ model PlatformConfig {
   crawler_worker_concurrency                   Int?
   crawler_job_timeout_ms                       Int?
   crawler_chromium_max_contexts_before_restart Int?
+  normalization_ai_raw_description_max_chars   Int?
   created_at                                   DateTime @default(now())
   updated_at                                   DateTime @updatedAt
 

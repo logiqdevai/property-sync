@@ -11,6 +11,7 @@ import {
   DEFAULT_SCROLL_PAUSE_MS,
   DEFAULT_SELECTOR_TIMEOUT_MS,
 } from '../src/integrations/crawler/constants/crawler.constants';
+import { DEFAULT_AI_RAW_DESCRIPTION_MAX_CHARS } from '../src/modules/properties/constants/normalization.constants';
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL as string,
@@ -29,6 +30,7 @@ const data = {
   crawler_worker_concurrency: DEFAULT_CRAWL_WORKER_CONCURRENCY,
   crawler_job_timeout_ms: DEFAULT_CRAWL_JOB_TIMEOUT_MS,
   crawler_chromium_max_contexts_before_restart: DEFAULT_CHROMIUM_MAX_CONTEXTS_BEFORE_RESTART,
+  normalization_ai_raw_description_max_chars: DEFAULT_AI_RAW_DESCRIPTION_MAX_CHARS,
 };
 
 async function main() {
@@ -38,7 +40,7 @@ async function main() {
     update: data,
   });
 
-  console.log('Seeded platform_config with current crawler defaults:');
+  console.log('Seeded platform_config with current crawler/normalization defaults:');
   console.log(row);
 }
 

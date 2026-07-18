@@ -9,6 +9,7 @@ export interface PlatformConfig {
   crawler_worker_concurrency: number | null;
   crawler_job_timeout_ms: number | null;
   crawler_chromium_max_contexts_before_restart: number | null;
+  normalization_ai_raw_description_max_chars: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -23,4 +24,5 @@ export interface UpdatePlatformConfigPayload {
   crawler_worker_concurrency?: number | null;
   crawler_job_timeout_ms?: number | null;
   crawler_chromium_max_contexts_before_restart?: number | null;
+  normalization_ai_raw_description_max_chars?: number | null;
 }

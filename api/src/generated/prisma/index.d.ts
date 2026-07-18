@@ -31916,6 +31916,7 @@ export namespace Prisma {
     crawler_worker_concurrency: number | null
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
+    normalization_ai_raw_description_max_chars: number | null
   }
 
   export type PlatformConfigSumAggregateOutputType = {
@@ -31928,6 +31929,7 @@ export namespace Prisma {
     crawler_worker_concurrency: number | null
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
+    normalization_ai_raw_description_max_chars: number | null
   }
 
   export type PlatformConfigMinAggregateOutputType = {
@@ -31941,6 +31943,7 @@ export namespace Prisma {
     crawler_worker_concurrency: number | null
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
+    normalization_ai_raw_description_max_chars: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -31956,6 +31959,7 @@ export namespace Prisma {
     crawler_worker_concurrency: number | null
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
+    normalization_ai_raw_description_max_chars: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -31971,6 +31975,7 @@ export namespace Prisma {
     crawler_worker_concurrency: number
     crawler_job_timeout_ms: number
     crawler_chromium_max_contexts_before_restart: number
+    normalization_ai_raw_description_max_chars: number
     created_at: number
     updated_at: number
     _all: number
@@ -31987,6 +31992,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: true
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
+    normalization_ai_raw_description_max_chars?: true
   }
 
   export type PlatformConfigSumAggregateInputType = {
@@ -31999,6 +32005,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: true
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
+    normalization_ai_raw_description_max_chars?: true
   }
 
   export type PlatformConfigMinAggregateInputType = {
@@ -32012,6 +32019,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: true
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
+    normalization_ai_raw_description_max_chars?: true
     created_at?: true
     updated_at?: true
   }
@@ -32027,6 +32035,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: true
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
+    normalization_ai_raw_description_max_chars?: true
     created_at?: true
     updated_at?: true
   }
@@ -32042,6 +32051,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: true
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
+    normalization_ai_raw_description_max_chars?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -32144,6 +32154,7 @@ export namespace Prisma {
     crawler_worker_concurrency: number | null
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
+    normalization_ai_raw_description_max_chars: number | null
     created_at: Date
     updated_at: Date
     _count: PlatformConfigCountAggregateOutputType | null
@@ -32178,6 +32189,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: boolean
     crawler_job_timeout_ms?: boolean
     crawler_chromium_max_contexts_before_restart?: boolean
+    normalization_ai_raw_description_max_chars?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["platformConfig"]>
@@ -32193,6 +32205,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: boolean
     crawler_job_timeout_ms?: boolean
     crawler_chromium_max_contexts_before_restart?: boolean
+    normalization_ai_raw_description_max_chars?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["platformConfig"]>
@@ -32208,6 +32221,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: boolean
     crawler_job_timeout_ms?: boolean
     crawler_chromium_max_contexts_before_restart?: boolean
+    normalization_ai_raw_description_max_chars?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["platformConfig"]>
@@ -32223,11 +32237,12 @@ export namespace Prisma {
     crawler_worker_concurrency?: boolean
     crawler_job_timeout_ms?: boolean
     crawler_chromium_max_contexts_before_restart?: boolean
+    normalization_ai_raw_description_max_chars?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
+  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "normalization_ai_raw_description_max_chars" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
 
   export type $PlatformConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "PlatformConfig"
@@ -32243,6 +32258,7 @@ export namespace Prisma {
       crawler_worker_concurrency: number | null
       crawler_job_timeout_ms: number | null
       crawler_chromium_max_contexts_before_restart: number | null
+      normalization_ai_raw_description_max_chars: number | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["platformConfig"]>
@@ -32678,6 +32694,7 @@ export namespace Prisma {
     readonly crawler_worker_concurrency: FieldRef<"PlatformConfig", 'Int'>
     readonly crawler_job_timeout_ms: FieldRef<"PlatformConfig", 'Int'>
     readonly crawler_chromium_max_contexts_before_restart: FieldRef<"PlatformConfig", 'Int'>
+    readonly normalization_ai_raw_description_max_chars: FieldRef<"PlatformConfig", 'Int'>
     readonly created_at: FieldRef<"PlatformConfig", 'DateTime'>
     readonly updated_at: FieldRef<"PlatformConfig", 'DateTime'>
   }
@@ -34719,6 +34736,7 @@ export namespace Prisma {
     crawler_worker_concurrency: 'crawler_worker_concurrency',
     crawler_job_timeout_ms: 'crawler_job_timeout_ms',
     crawler_chromium_max_contexts_before_restart: 'crawler_chromium_max_contexts_before_restart',
+    normalization_ai_raw_description_max_chars: 'normalization_ai_raw_description_max_chars',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -37692,6 +37710,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: IntNullableFilter<"PlatformConfig"> | number | null
     crawler_job_timeout_ms?: IntNullableFilter<"PlatformConfig"> | number | null
     crawler_chromium_max_contexts_before_restart?: IntNullableFilter<"PlatformConfig"> | number | null
+    normalization_ai_raw_description_max_chars?: IntNullableFilter<"PlatformConfig"> | number | null
     created_at?: DateTimeFilter<"PlatformConfig"> | Date | string
     updated_at?: DateTimeFilter<"PlatformConfig"> | Date | string
   }
@@ -37707,6 +37726,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrderInput | SortOrder
     crawler_job_timeout_ms?: SortOrderInput | SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrderInput | SortOrder
+    normalization_ai_raw_description_max_chars?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -37725,6 +37745,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: IntNullableFilter<"PlatformConfig"> | number | null
     crawler_job_timeout_ms?: IntNullableFilter<"PlatformConfig"> | number | null
     crawler_chromium_max_contexts_before_restart?: IntNullableFilter<"PlatformConfig"> | number | null
+    normalization_ai_raw_description_max_chars?: IntNullableFilter<"PlatformConfig"> | number | null
     created_at?: DateTimeFilter<"PlatformConfig"> | Date | string
     updated_at?: DateTimeFilter<"PlatformConfig"> | Date | string
   }, "id">
@@ -37740,6 +37761,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrderInput | SortOrder
     crawler_job_timeout_ms?: SortOrderInput | SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrderInput | SortOrder
+    normalization_ai_raw_description_max_chars?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: PlatformConfigCountOrderByAggregateInput
@@ -37763,6 +37785,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     crawler_job_timeout_ms?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     crawler_chromium_max_contexts_before_restart?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
+    normalization_ai_raw_description_max_chars?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     created_at?: DateTimeWithAggregatesFilter<"PlatformConfig"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"PlatformConfig"> | Date | string
   }
@@ -40744,6 +40767,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: number | null
     crawler_job_timeout_ms?: number | null
     crawler_chromium_max_contexts_before_restart?: number | null
+    normalization_ai_raw_description_max_chars?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -40759,6 +40783,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: number | null
     crawler_job_timeout_ms?: number | null
     crawler_chromium_max_contexts_before_restart?: number | null
+    normalization_ai_raw_description_max_chars?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -40774,6 +40799,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
+    normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40789,6 +40815,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
+    normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40804,6 +40831,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: number | null
     crawler_job_timeout_ms?: number | null
     crawler_chromium_max_contexts_before_restart?: number | null
+    normalization_ai_raw_description_max_chars?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -40819,6 +40847,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
+    normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40834,6 +40863,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
+    normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43242,6 +43272,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrder
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
+    normalization_ai_raw_description_max_chars?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -43256,6 +43287,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrder
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
+    normalization_ai_raw_description_max_chars?: SortOrder
   }
 
   export type PlatformConfigMaxOrderByAggregateInput = {
@@ -43269,6 +43301,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrder
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
+    normalization_ai_raw_description_max_chars?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -43284,6 +43317,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrder
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
+    normalization_ai_raw_description_max_chars?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -43298,6 +43332,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrder
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
+    normalization_ai_raw_description_max_chars?: SortOrder
   }
 
   export type EnumDocumentTypeFilter<$PrismaModel = never> = {

@@ -9,6 +9,7 @@ import { PropertyAiBatchService } from '@/integrations/ai-batch/services/propert
 import { UserIntegrationsService } from '@/modules/user-integrations/user-integrations.service';
 import { UserPropertiesService } from '@/modules/user-properties/user-properties.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import {
   PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD,
   PROPERTY_REMOVAL_SPIKE_RATIO_THRESHOLD,
@@ -74,6 +75,7 @@ export class PropertyNormalizationService {
     private readonly aiBatchClient: AiBatchClientService,
     private readonly userPropertiesService: UserPropertiesService,
     private readonly notificationsService: NotificationsService,
+    private readonly platformConfigService: PlatformConfigService,
   ) {}
 
   async normalizeForCrawlRun(crawlRunId: string): Promise<void> {
@@ -662,7 +664,11 @@ export class PropertyNormalizationService {
     rows: NormalizedAiRow[];
     usage: { inputTokens: number; outputTokens: number };
   }> {
-    const input = buildNormalizationInput(chunk);
+    const { ai_raw_description_max_chars } =
+      await this.platformConfigService.getNormalizationConfig();
+    const input = buildNormalizationInput(chunk, {
+      aiRawDescriptionMaxChars: ai_raw_description_max_chars,
+    });
     const response = await this.aiService.generateText({
       provider: providerKey,
       model,

@@ -10,7 +10,8 @@ export interface CrawlerConfigFieldDef {
     | "crawler_detail_delay_ms"
     | "crawler_worker_concurrency"
     | "crawler_job_timeout_ms"
-    | "crawler_chromium_max_contexts_before_restart";
+    | "crawler_chromium_max_contexts_before_restart"
+    | "normalization_ai_raw_description_max_chars";
   label: string;
   defaultValue: number;
   min: number;
@@ -80,6 +81,13 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
     defaultValue: 250,
     min: 1,
     hint: "Browser contexts created before recycling the shared Chromium instance.",
+  },
+  {
+    key: "normalization_ai_raw_description_max_chars",
+    label: "AI raw description max chars",
+    defaultValue: 2000,
+    min: 100,
+    hint: "Max characters of scraped description sent to AI for field extraction. Full text is still stored on the property.",
   },
 ];
 

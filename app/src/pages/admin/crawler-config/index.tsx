@@ -49,13 +49,13 @@ export default function CrawlerConfigPage() {
       <div>
         <p className="text-2xl font-semibold tracking-tight text-foreground">App Config</p>
         <p className="text-sm text-muted">
-          Tunable parameters for the crawl worker and Playwright pipeline. Leave a field blank to fall back
-          to its default value.
+          Tunable parameters for crawl worker, Playwright pipeline, and AI normalization. Leave a
+          field blank to fall back to its default value.
         </p>
       </div>
 
       {isPending || !data ? (
-        <DetailSkeleton fieldCount={9} showSubTable={false} />
+        <DetailSkeleton fieldCount={10} showSubTable={false} />
       ) : (
         <Form onSubmit={handleSubmit(submit)} className="grid gap-4 max-w-xl">
           {CRAWLER_CONFIG_FIELDS.map((field) => (

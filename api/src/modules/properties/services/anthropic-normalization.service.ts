@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Anthropic from '@anthropic-ai/sdk';
+import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import {
   NORMALIZATION_BATCH_SIZE,
   NormalizationUsage,
@@ -16,6 +17,8 @@ import { NormalizedAiRow } from '../utils/property-normalization.utils';
 @Injectable()
 export class AnthropicNormalizationService {
   private readonly logger = new Logger(AnthropicNormalizationService.name);
+
+  constructor(private readonly platformConfigService: PlatformConfigService) {}
 
   async normalizeSourceProperties(
     sourceProperties: Array<{
@@ -87,7 +90,11 @@ export class AnthropicNormalizationService {
     }>,
     usage: NormalizationUsage,
   ): Promise<NormalizedAiRow[]> {
-    const input = buildNormalizationInput(sourceProperties);
+    const { ai_raw_description_max_chars } =
+      await this.platformConfigService.getNormalizationConfig();
+    const input = buildNormalizationInput(sourceProperties, {
+      aiRawDescriptionMaxChars: ai_raw_description_max_chars,
+    });
     const dynamicInput = buildNormalizationDynamicPrompt(input);
 
     const response = await client.messages.create({

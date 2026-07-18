@@ -3,6 +3,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { AI_BATCH_COMPLETE_QUEUE } from '@/core/queues/queues.constants';
+import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import { AiBatchClientService } from './ai-batch-client.service';
 import {
   NORMALIZATION_STATIC_INSTRUCTIONS,
@@ -31,6 +32,7 @@ export class PropertyAiBatchService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly aiBatchClient: AiBatchClientService,
+    private readonly platformConfigService: PlatformConfigService,
     @InjectQueue(AI_BATCH_COMPLETE_QUEUE)
     private readonly aiBatchCompleteQueue: Queue,
   ) {}
@@ -55,6 +57,8 @@ export class PropertyAiBatchService {
   }): Promise<void> {
     const client = this.aiBatchClient.createClient(params.apiKey);
     const model = params.model || AiDefaults.model;
+    const { ai_raw_description_max_chars } =
+      await this.platformConfigService.getNormalizationConfig();
 
     const chunks: string[][] = [];
     const lines: string[] = [];
@@ -64,7 +68,9 @@ export class PropertyAiBatchService {
       const chunkIndex = chunks.length;
       chunks.push(chunk.map((sp) => sp.id));
 
-      const input = buildNormalizationInput(chunk);
+      const input = buildNormalizationInput(chunk, {
+        aiRawDescriptionMaxChars: ai_raw_description_max_chars,
+      });
       const body = {
         model,
         max_tokens: 8192,

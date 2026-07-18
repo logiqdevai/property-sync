@@ -12,6 +12,7 @@ import {
   DEFAULT_SELECTOR_TIMEOUT_MS,
 } from '@/integrations/crawler/constants/crawler.constants';
 import { ResolvedCrawlerConfig } from '@/integrations/crawler/interfaces/crawler-runtime-config.interface';
+import { DEFAULT_AI_RAW_DESCRIPTION_MAX_CHARS } from '@/modules/properties/constants/normalization.constants';
 import { UpdatePlatformConfigDto } from './dto/update-platform-config.dto';
 import { PlatformConfig } from 'generated/prisma';
 
@@ -23,6 +24,10 @@ const SINGLETON_ID = 'singleton';
 // process didn't make itself: a seed script, a direct DB edit, or another app
 // instance's PATCH in a multi-instance deployment.
 const CACHE_TTL_MS = 30_000;
+
+export interface ResolvedNormalizationConfig {
+  ai_raw_description_max_chars: number;
+}
 
 @Injectable()
 export class PlatformConfigService {
@@ -49,6 +54,16 @@ export class PlatformConfigService {
       chromium_max_contexts_before_restart:
         row?.crawler_chromium_max_contexts_before_restart ??
         DEFAULT_CHROMIUM_MAX_CONTEXTS_BEFORE_RESTART,
+    };
+  }
+
+  async getNormalizationConfig(): Promise<ResolvedNormalizationConfig> {
+    const row = await this.getCachedRow();
+
+    return {
+      ai_raw_description_max_chars:
+        row?.normalization_ai_raw_description_max_chars ??
+        DEFAULT_AI_RAW_DESCRIPTION_MAX_CHARS,
     };
   }
 

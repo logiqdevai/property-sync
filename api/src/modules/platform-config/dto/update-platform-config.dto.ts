@@ -104,4 +104,16 @@ export class UpdatePlatformConfigDto {
   @IsInt()
   @Min(1)
   crawler_chromium_max_contexts_before_restart?: number | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
+      'Max characters of raw_description sent to AI during normalization (full text still stored on Property)',
+    example: 2000,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsInt()
+  @Min(100)
+  normalization_ai_raw_description_max_chars?: number | null;
 }

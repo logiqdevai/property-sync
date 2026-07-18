@@ -1,6 +1,10 @@
 import { buildEstateWebAiPropertyTypeCatalog } from '@/integrations/estateweb/constants/estateweb-ai-catalog.constants';
 import { readDetailStructured } from '@/integrations/crawler/utils/crawler.utils';
-import { LISTING_TYPES, PROPERTY_TYPES } from './normalization.constants';
+import {
+  DEFAULT_AI_RAW_DESCRIPTION_MAX_CHARS,
+  LISTING_TYPES,
+  PROPERTY_TYPES,
+} from './normalization.constants';
 
 function buildEstateWebTypeCatalogJson(): string {
   const leafTypes = buildEstateWebAiPropertyTypeCatalog()
@@ -28,7 +32,6 @@ ${buildEstateWebTypeCatalogJson()}
 {
   "index": <same as input index>,
   "title": string (clean title: property type + size, no agency codes or extra whitespace),
-  "description": string | null (1-3 sentence property description extracted from raw_description),
   "listing_type": ListingType,
   "property_type": PropertyType,
   "price": number | null (numeric value only, no symbols — "100.000€" → 100000, "450 €/μήνα" → 450),
@@ -73,7 +76,7 @@ ${buildEstateWebTypeCatalogJson()}
 - The site is Greek. Infer listing_type from labels like "ΠΩΛΕΙΤΑΙ" (SALE), "ΕΝΟΙΚΙΑΖΕΤΑΙ" (RENT), "Αγγελία Προς Πώληση" (SALE), "Αγγελία Ενοικίασης" (RENT)
 - raw_location may contain "Κωδικός <code>  <city>" — extract just the city name. raw_description has Υποπεριοχή (sub-region=city) and Γειτονιά (neighborhood=district) for more precise location
 - Prices use Greek thousand separators: "100.000" = 100000, not 100
-- description: write a complete, clean property description from raw_description text (cover layout, condition, amenities). Strip agency contact info, legal boilerplate, phone/email/address and navigation noise. Do not truncate mid-sentence.
+- Do NOT return a description field. The listing description is stored separately from the scrape; use raw_description only as a signal for other fields (city, district, features, etc.)
 - city/district: prefer values from raw_description (Υποπεριοχή/Γειτονιά) over raw_location when available
 - cms_metadata is mainly for rentals (guarantee, income terms, contract period, has_keys)
 - Only include cms_fields entries you are confident about; omit unknown custom fields
@@ -111,6 +114,29 @@ export interface NormalizationInputRow {
   detail_features: string[] | null;
 }
 
+export function sanitizeRawDescription(text: string | null | undefined): string | null {
+  if (!text) return null;
+  const cleaned = text
+    .split('')
+    .filter((c) => {
+      const code = c.charCodeAt(0);
+      return code >= 32 && code !== 127;
+    })
+    .join('')
+    .trim();
+  return cleaned || null;
+}
+
+function rawDescriptionForAi(
+  text: string | null | undefined,
+  maxChars: number,
+): string | null {
+  const cleaned = sanitizeRawDescription(text);
+  if (!cleaned) return null;
+  if (cleaned.length <= maxChars) return cleaned;
+  return `${cleaned.slice(0, maxChars)}…`;
+}
+
 export function buildNormalizationInput(
   sourceProperties: Array<{
     source_url: string;
@@ -127,7 +153,11 @@ export function buildNormalizationInput(
     raw_bathrooms?: string | null;
     raw_data?: unknown;
   }>,
+  options?: { aiRawDescriptionMaxChars?: number },
 ): NormalizationInputRow[] {
+  const maxChars =
+    options?.aiRawDescriptionMaxChars ?? DEFAULT_AI_RAW_DESCRIPTION_MAX_CHARS;
+
   return sourceProperties.map((sp, i) => {
     const { specs, features } = readDetailStructured(sp.raw_data);
     return {
@@ -138,16 +168,7 @@ export function buildNormalizationInput(
       raw_title: sp.raw_title,
       raw_price: sp.raw_price,
       raw_location: sp.raw_location,
-      raw_description: sp.raw_description
-        ? sp.raw_description
-            .split('')
-            .filter((c) => {
-              const code = c.charCodeAt(0);
-              return code >= 32 && code !== 127;
-            })
-            .join('')
-            .slice(0, 2500)
-        : null,
+      raw_description: rawDescriptionForAi(sp.raw_description, maxChars),
       raw_property_type: sp.raw_property_type ?? null,
       raw_listing_type: sp.raw_listing_type ?? null,
       raw_sqm: sp.raw_sqm ?? null,

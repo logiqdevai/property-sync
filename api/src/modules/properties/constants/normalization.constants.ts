@@ -1,5 +1,7 @@
 export const NORMALIZATION_BATCH_SIZE = 10;
 
+export const DEFAULT_AI_RAW_DESCRIPTION_MAX_CHARS = 2000;
+
 export const LISTING_TYPES = [
   'SALE',
   'RENT',
