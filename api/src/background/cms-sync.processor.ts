@@ -1,4 +1,4 @@
-import { Logger, OnModuleInit } from '@nestjs/common';
+import { HttpException, Logger, OnModuleInit } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
@@ -21,6 +21,7 @@ import {
   UserProperty,
 } from 'generated/prisma';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { EstateWebException } from '@/integrations/estateweb/exceptions/estateweb.exception';
 
 const CMS_SYNC_WORKER_CONCURRENCY = 1;
 
@@ -129,6 +130,18 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     const mergedResult = this.mergeWithPreviousResult(previousResponse, result);
     const status =
       mergedResult.failed > 0 ? CmsSyncStatus.FAILED : CmsSyncStatus.SUCCESS;
+    const failureSummary = this.formatFailureSummary(mergedResult.responses);
+
+    if (mergedResult.failed > 0) {
+      this.logger.error(
+        `CmsSyncRun ${cms_sync_run_id}: ${mergedResult.failed} property push(es) failed. ${failureSummary}`,
+      );
+      for (const op of mergedResult.responses.filter((r) => !r.success)) {
+        this.logger.error(
+          `CmsSyncRun ${cms_sync_run_id} op failure: property=${op.user_property_id} operation=${op.operation} error=${op.error ?? 'unknown'}`,
+        );
+      }
+    }
 
     await this.cmsSyncRunsService.updateBatchResult(cms_sync_run_id, {
       total_created: mergedResult.created,
@@ -142,8 +155,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         operation_results: mergedResult.responses,
       },
       status,
-      error_message:
-        mergedResult.failed > 0 ? 'Some properties failed to sync' : null,
+      error_message: mergedResult.failed > 0 ? failureSummary : null,
     });
 
     await this.crawlRunsService.recalculateCmsSyncTotals(crawl_run_id);
@@ -154,12 +166,12 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
           type: NotificationType.CMS_SYNC_FAILURE,
           severity: NotificationSeverity.CRITICAL,
           title: 'CMS sync batch failed',
-          message: `CmsSyncRun ${cms_sync_run_id} exhausted all retries. ${mergedResult.failed} property push(es) failed.`,
+          message: `CmsSyncRun ${cms_sync_run_id} exhausted all retries. ${failureSummary}`,
           crawl_run_id: crawl_run_id,
         });
       } else {
         throw new Error(
-          `CmsSyncRun ${cms_sync_run_id}: ${mergedResult.failed} property push(es) failed; scheduling retry`,
+          `CmsSyncRun ${cms_sync_run_id}: ${mergedResult.failed} property push(es) failed; scheduling retry. ${failureSummary}`,
         );
       }
     }
@@ -227,6 +239,10 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       };
     }
 
+    this.logger.log(
+      `CMS sync op start: property=${operation.user_property_id} operation=${operation.operation} integration=${userIntegrationId} type_id=${userProperty.estateweb_type_id ?? 'null'} location_id=${userProperty.estateweb_location_id ?? 'null'}`,
+    );
+
     try {
       switch (operation.operation) {
         case 'CREATE': {
@@ -239,6 +255,9 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             operation.duplicate_group_id,
             userProperty.user_id,
             createResult.integration_property_id,
+          );
+          this.logger.log(
+            `CMS sync op success: property=${operation.user_property_id} operation=CREATE integration_property_id=${createResult.integration_property_id}`,
           );
           return {
             user_property_id: operation.user_property_id,
@@ -268,6 +287,9 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             userProperty.user_id,
             integrationId,
           );
+          this.logger.log(
+            `CMS sync op success: property=${operation.user_property_id} operation=UPDATE integration_property_id=${integrationId}`,
+          );
           return {
             user_property_id: operation.user_property_id,
             operation: 'UPDATE',
@@ -290,6 +312,9 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             operation.duplicate_group_id,
             userProperty.user_id,
           );
+          this.logger.log(
+            `CMS sync op success: property=${operation.user_property_id} operation=REMOVE integration_property_id=${integrationId}`,
+          );
           return {
             user_property_id: operation.user_property_id,
             operation: 'REMOVE',
@@ -299,7 +324,11 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         }
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = this.extractErrorMessage(error);
+      this.logger.error(
+        `CMS sync op failed: property=${operation.user_property_id} operation=${operation.operation} error=${message}`,
+        error instanceof Error ? error.stack : undefined,
+      );
       return {
         user_property_id: operation.user_property_id,
         operation: operation.operation,
@@ -307,6 +336,63 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         error: message,
       };
     }
+  }
+
+  private formatFailureSummary(
+    responses: CmsSyncOperationResult[],
+  ): string {
+    const failures = responses.filter((op) => !op.success);
+    if (failures.length === 0) {
+      return 'Some properties failed to sync';
+    }
+
+    return failures
+      .map(
+        (op) =>
+          `${op.user_property_id}[${op.operation}]: ${op.error ?? 'unknown error'}`,
+      )
+      .join(' | ');
+  }
+
+  private extractErrorMessage(error: unknown): string {
+    if (error instanceof EstateWebException) {
+      const response = error.getResponse();
+      const bodyMessage =
+        typeof response === 'object' &&
+        response !== null &&
+        'message' in response &&
+        typeof (response as { message: unknown }).message === 'string'
+          ? (response as { message: string }).message
+          : error.message;
+      const details =
+        error.details && Object.keys(error.details).length > 0
+          ? ` details=${JSON.stringify(error.details)}`
+          : '';
+      return `${error.code}: ${bodyMessage}${details}`;
+    }
+
+    if (error instanceof HttpException) {
+      const response = error.getResponse();
+      if (typeof response === 'string') {
+        return response;
+      }
+      if (
+        typeof response === 'object' &&
+        response !== null &&
+        'message' in response
+      ) {
+        const message = (response as { message?: unknown }).message;
+        if (typeof message === 'string') return message;
+        if (Array.isArray(message)) return message.join(', ');
+      }
+      return error.message;
+    }
+
+    if (error instanceof Error) {
+      return error.message;
+    }
+
+    return String(error);
   }
 
   private async stampIntegrationPropertyId(

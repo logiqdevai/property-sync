@@ -56,7 +56,7 @@ ${buildEstateWebTypeCatalogJson()}
   "distance_port": string | null,
   "distance_beach": string | null,
   "estateweb_type_id": number | null (leaf type id from the EstateWeb catalog above),
-  "estateweb_location_id": number | null (only when explicitly present in raw data),
+  "estateweb_location_id": number | null (leave null unless an EstateWeb numeric location id is explicitly present in raw data — the backend resolves it deterministically from city/district, so never guess),
   "cms_fields": [{ "id": number, "value": string | number }] | null (EstateWeb custom fields; booleans as "1", select fields as numeric option id),
   "cms_metadata": {
     "guarantee": string | null,

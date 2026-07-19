@@ -1,4 +1,4 @@
-import FormData from 'form-data';
+import FormData = require('form-data');
 import {
   EstateWebAgentSiteId,
   EstateWebGatewayLogo,

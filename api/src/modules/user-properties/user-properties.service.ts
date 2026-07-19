@@ -419,78 +419,107 @@ export class UserPropertiesService {
       throw new NotFoundException('One or more properties not found');
     }
 
-    let updated = 0;
-    const sourceAgencyIds = new Set<string>();
+    const propertyUpdates = properties.flatMap((property) => {
+      const nextTitle =
+        applyTextTruncatePieces(property.title, pieces) ?? property.title;
+      const nextDescription = applyTextTruncatePieces(
+        property.description,
+        pieces,
+      );
 
-    await this.prisma.$transaction(async (tx) => {
-      for (const property of properties) {
-        const nextTitle =
-          applyTextTruncatePieces(property.title, pieces) ?? property.title;
-        const nextDescription = applyTextTruncatePieces(
-          property.description,
-          pieces,
-        );
-
-        if (
-          nextTitle === property.title &&
-          nextDescription === property.description
-        ) {
-          continue;
-        }
-
-        await tx.userProperty.update({
-          where: { id: property.id },
-          data: {
-            title: nextTitle,
-            description: nextDescription,
-          },
-        });
-        updated += 1;
+      if (
+        nextTitle === property.title &&
+        nextDescription === property.description
+      ) {
+        return [];
       }
 
-      for (const property of properties) {
-        const link = await tx.propertySourceLink.findFirst({
-          where: { property_id: property.canonical_property_id },
-          include: {
+      return [
+        {
+          id: property.id,
+          title: nextTitle,
+          description: nextDescription,
+        },
+      ];
+    });
+
+    const canonicalPropertyIds = [
+      ...new Set(properties.map((property) => property.canonical_property_id)),
+    ];
+
+    await this.prisma.$transaction(
+      async (tx) => {
+        if (propertyUpdates.length > 0) {
+          await Promise.all(
+            propertyUpdates.map((update) =>
+              tx.userProperty.update({
+                where: { id: update.id },
+                data: {
+                  title: update.title,
+                  description: update.description,
+                },
+              }),
+            ),
+          );
+        }
+
+        const links = await tx.propertySourceLink.findMany({
+          where: { property_id: { in: canonicalPropertyIds } },
+          select: {
             source_property: { select: { source_agency_id: true } },
           },
         });
-        const agencyId = link?.source_property.source_agency_id;
-        if (agencyId) sourceAgencyIds.add(agencyId);
-      }
 
-      if (sourceAgencyIds.size === 0) return;
+        const sourceAgencyIds = [
+          ...new Set(
+            links
+              .map((link) => link.source_property.source_agency_id)
+              .filter((agencyId): agencyId is string => Boolean(agencyId)),
+          ),
+        ];
 
-      const trackers = await tx.userTrackedAgency.findMany({
-        where: {
-          user_id: userId,
-          source_agency_id: { in: [...sourceAgencyIds] },
-        },
-        select: { id: true, text_truncate_pieces: true },
-      });
+        if (sourceAgencyIds.length === 0) return;
 
-      for (const tracker of trackers) {
-        const nextPieces = normalizeTextTruncatePieces([
-          ...tracker.text_truncate_pieces,
-          ...pieces,
-        ]);
-        if (
-          nextPieces.length === tracker.text_truncate_pieces.length &&
-          nextPieces.every(
-            (piece, index) => piece === tracker.text_truncate_pieces[index],
-          )
-        ) {
-          continue;
-        }
-
-        await tx.userTrackedAgency.update({
-          where: { id: tracker.id },
-          data: { text_truncate_pieces: nextPieces },
+        const trackers = await tx.userTrackedAgency.findMany({
+          where: {
+            user_id: userId,
+            source_agency_id: { in: sourceAgencyIds },
+          },
+          select: { id: true, text_truncate_pieces: true },
         });
-      }
-    });
 
-    return { updated, total: uniqueIds.length };
+        const trackerUpdates = trackers.flatMap((tracker) => {
+          const nextPieces = normalizeTextTruncatePieces([
+            ...tracker.text_truncate_pieces,
+            ...pieces,
+          ]);
+          if (
+            nextPieces.length === tracker.text_truncate_pieces.length &&
+            nextPieces.every(
+              (piece, index) => piece === tracker.text_truncate_pieces[index],
+            )
+          ) {
+            return [];
+          }
+
+          return [{ id: tracker.id, text_truncate_pieces: nextPieces }];
+        });
+
+        if (trackerUpdates.length === 0) return;
+
+        await Promise.all(
+          trackerUpdates.map((update) =>
+            tx.userTrackedAgency.update({
+              where: { id: update.id },
+              data: { text_truncate_pieces: update.text_truncate_pieces },
+            }),
+          ),
+        );
+      },
+      { timeout: 30_000 },
+    );
+
+    return { updated: propertyUpdates.length, total: uniqueIds.length };
   }
 
   async splitMany(userId: string, ids: string[]) {

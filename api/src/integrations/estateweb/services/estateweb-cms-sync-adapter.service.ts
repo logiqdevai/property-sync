@@ -1,17 +1,24 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { UserProperty } from 'generated/prisma';
 import {
   CmsPushCreateResult,
   CmsSyncAdapter,
 } from '@/modules/cms-sync/interfaces/cms-sync-adapter.interface';
 import { CmsPropertyFieldEntry } from '@/modules/properties/interfaces/cms-property.interface';
+import { coerceCmsFieldValueForEstateWeb } from '@/modules/properties/utils/property-cms-field-mapper.util';
 import {
+  EstateWebPropertyAd,
   EstateWebPropertyFieldValue,
   EstateWebPropertyPayload,
   EstateWebUpdatePropertyPayload,
   EstateWebUploadImagePayload,
 } from '../interfaces/estateweb-property.interface';
-import { EstateWebScope } from '../constants/estateweb-enums.constants';
+import {
+  ESTATEWEB_INIT_LANGUAGES,
+  EstateWebScope,
+} from '../constants/estateweb-enums.constants';
+import { resolveEstateWebLocationId } from '../utils/estateweb-location-lookup.util';
+import { getEstateWebInitFieldsForType } from '../utils/estateweb-init-lookup.util';
 import { EstateWebException } from '../exceptions/estateweb.exception';
 import { NotificationType } from 'generated/prisma';
 import { EstateWebPropertyService } from './estateweb-property.service';
@@ -21,8 +28,23 @@ interface ImageEntry {
   filename: string;
 }
 
+const EMPTY_METADATA = {
+  guarantee: '',
+  stamp: '',
+  inc_type: 0,
+  inc_value: '',
+  inc_period: 0,
+  inc_2years: 0,
+  contract_period: '',
+  terms: '',
+  has_keys: '',
+  rental_history: [] as unknown[],
+};
+
 @Injectable()
 export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
+  private readonly logger = new Logger(EstateWebCmsSyncAdapter.name);
+
   constructor(
     private readonly estateWebPropertyService: EstateWebPropertyService,
   ) {}
@@ -34,6 +56,10 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     this.assertRequiredFields(userProperty);
 
     const payload = this.buildPayload(userProperty);
+    this.logger.log(
+      `EstateWeb CREATE payload: type_id=${payload.type_id} location_id=${payload.location_id} scope_id=${payload.scope_id} fields=${payload.fields?.length ?? 0} price=${payload.price ?? 'null'}`,
+    );
+
     const result = await this.estateWebPropertyService.createProperty(
       userIntegrationId,
       payload,
@@ -89,35 +115,105 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     userProperty?: UserProperty,
     integrationPropertyId?: number,
   ): EstateWebPropertyPayload {
-    const payload: EstateWebPropertyPayload = {
-      id: integrationPropertyId,
+    const price = userProperty?.price ? Number(userProperty.price) : 0;
+    const priceStart = userProperty?.price_start
+      ? Number(userProperty.price_start)
+      : price;
+    const priceWeb = userProperty?.price_web
+      ? Number(userProperty.price_web)
+      : price;
+    const title = userProperty?.title ?? '';
+    const description = userProperty?.description ?? '';
+
+    return {
+      id: integrationPropertyId ?? 0,
       type_id: userProperty?.estateweb_type_id ?? 0,
-      location_id: userProperty?.estateweb_location_id ?? 0,
+      location_id: this.resolveLocationId(userProperty) ?? 0,
       scope_id: this.resolveScopeId(userProperty),
-      address: userProperty?.address ?? undefined,
-      zip: userProperty?.postal_code ?? undefined,
-      price_start: userProperty?.price_start
-        ? Number(userProperty.price_start)
-        : userProperty?.price
-          ? Number(userProperty.price)
-          : undefined,
-      price: userProperty?.price ? Number(userProperty.price) : undefined,
-      price_web: userProperty?.price_web
-        ? Number(userProperty.price_web)
-        : undefined,
+      client_id: 0,
+      coop_id: 0,
+      to_client_id: 0,
+      code: userProperty?.internal_id ?? userProperty?.property_id ?? '',
+      address: userProperty?.address ?? '',
+      zip: userProperty?.postal_code ?? '',
+      price_start: priceStart,
+      price,
+      price_final: 0,
+      price_web: priceWeb,
       sqm: userProperty?.square_meters
         ? Number(userProperty.square_meters)
-        : undefined,
-      description: userProperty?.description ?? undefined,
-      distance_airport: userProperty?.distance_airport ?? undefined,
-      distance_port: userProperty?.distance_port ?? undefined,
-      distance_beach: userProperty?.distance_beach ?? undefined,
-      video_url: userProperty?.video_url ?? undefined,
+        : 0,
+      distance_airport: userProperty?.distance_airport ?? '',
+      distance_port: userProperty?.distance_port ?? '',
+      distance_beach: userProperty?.distance_beach ?? '',
+      description,
+      status_id: 0,
+      is_offer: 0,
+      is_exclusive_order: 0,
+      video_url: userProperty?.video_url ?? '',
+      show_video_on_site: 0,
       lat_lng: this.buildLatLng(userProperty),
-      fields: this.buildFields(userProperty?.cms_fields),
+      show_map_on_site: 0,
+      metadata: this.buildMetadata(userProperty),
+      client_contacted_at: '',
+      expires_at: '',
+      fields: this.buildFields(
+        userProperty?.cms_fields,
+        userProperty?.estateweb_type_id,
+      ),
+      sites: [],
+      gateways: [],
+      ads: this.buildAds(title, description),
+      foreign_agents: [],
+      history: [],
+      notes: [],
+      price_negotiable: 0,
+      note: '',
     };
+  }
 
-    return payload;
+  private buildAds(title: string, description: string): EstateWebPropertyAd[] {
+    return ESTATEWEB_INIT_LANGUAGES.map((lang) =>
+      lang.id === 1
+        ? {
+            lang_id: lang.id,
+            title,
+            description,
+            text: description,
+          }
+        : {
+            lang_id: lang.id,
+            title: '',
+            description: '',
+            text: '',
+          },
+    );
+  }
+
+  private buildMetadata(userProperty?: UserProperty): string {
+    const raw = userProperty?.cms_metadata;
+    const fromProperty =
+      raw && typeof raw === 'object' && !Array.isArray(raw)
+        ? (raw as Record<string, unknown>)
+        : {};
+
+    return JSON.stringify({
+      ...EMPTY_METADATA,
+      ...fromProperty,
+      rental_history: Array.isArray(fromProperty.rental_history)
+        ? fromProperty.rental_history
+        : [],
+    });
+  }
+
+  private resolveLocationId(userProperty?: UserProperty): number | null {
+    if (userProperty?.estateweb_location_id) {
+      return userProperty.estateweb_location_id;
+    }
+    return resolveEstateWebLocationId(
+      userProperty?.city,
+      userProperty?.district,
+    );
   }
 
   private resolveScopeId(userProperty?: UserProperty): EstateWebScope {
@@ -127,25 +223,40 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     return EstateWebScope.SALE;
   }
 
-  private buildLatLng(userProperty?: UserProperty): string | undefined {
-    if (!userProperty?.latitude || !userProperty?.longitude) return undefined;
+  private buildLatLng(userProperty?: UserProperty): string {
+    if (!userProperty?.latitude || !userProperty?.longitude) return '';
     return `${userProperty.latitude},${userProperty.longitude}`;
   }
 
   private buildFields(
     cmsFields: unknown,
-  ): EstateWebPropertyFieldValue[] | undefined {
-    if (!Array.isArray(cmsFields)) return undefined;
+    propertyTypeId?: number | null,
+  ): EstateWebPropertyFieldValue[] {
+    if (!Array.isArray(cmsFields)) return [];
     const entries = cmsFields as CmsPropertyFieldEntry[];
-    return entries
-      .filter(
-        (entry): entry is CmsPropertyFieldEntry =>
-          entry?.id != null && entry.value != null,
-      )
-      .map((entry) => ({
-        id: entry.id,
-        value: String(entry.value),
-      })) as EstateWebPropertyFieldValue[];
+    const allowedIds =
+      propertyTypeId != null
+        ? new Set(
+            getEstateWebInitFieldsForType(propertyTypeId).map(
+              (field) => field.id,
+            ),
+          )
+        : null;
+    const fields: EstateWebPropertyFieldValue[] = [];
+
+    for (const entry of entries) {
+      if (entry?.id == null || entry.value == null || entry.value === '') {
+        continue;
+      }
+      if (allowedIds && !allowedIds.has(entry.id)) {
+        continue;
+      }
+      const value = coerceCmsFieldValueForEstateWeb(entry.id, entry.value);
+      if (value == null) continue;
+      fields.push({ id: entry.id, value } as EstateWebPropertyFieldValue);
+    }
+
+    return fields;
   }
 
   private async uploadImages(
@@ -210,7 +321,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         HttpStatus.BAD_REQUEST,
       );
     }
-    if (!userProperty?.estateweb_location_id) {
+    if (!this.resolveLocationId(userProperty)) {
       throw new EstateWebException(
         'EstateWeb location id is required',
         NotificationType.ESTATEWEB_VALIDATION_FAILED,

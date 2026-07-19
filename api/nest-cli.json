@@ -12,6 +12,10 @@
       {
         "include": "generated/**/*",
         "outDir": "dist/src"
+      },
+      {
+        "include": "integrations/estateweb/constants/*.json",
+        "outDir": "dist/src"
       }
     ]
   }

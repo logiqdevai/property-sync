@@ -1,0 +1,5334 @@
+{
+    "user": {
+        "id": 1126,
+        "group_id": 1078,
+        "name": "BITSIMIS-THES",
+        "email": "info@bitsimis-real-homes.gr",
+        "login_at": "2026-07-19 10:23:35.802703",
+        "is_active": true,
+        "last_version": "1.4.0",
+        "tasks": []
+    },
+    "group": {
+        "id": 1078,
+        "name": "BITSIMIS-THES",
+        "is_admin": false,
+        "client_permissions": "",
+        "property_permissions": "vp",
+        "request_permissions": "v"
+    },
+    "agent": {
+        "id": 2,
+        "name": "Akinita Kritis",
+        "languages": [
+            {
+                "id": 1,
+                "name": "Ελληνικά",
+                "iso_code": "el"
+            },
+            {
+                "id": 2,
+                "name": "Αγγλικά",
+                "iso_code": "en"
+            },
+            {
+                "id": 3,
+                "name": "Γερμανικά",
+                "iso_code": "de"
+            },
+            {
+                "id": 4,
+                "name": "Γαλλικά",
+                "iso_code": "fr"
+            },
+            {
+                "id": 5,
+                "name": "Ιταλικά",
+                "iso_code": "it"
+            },
+            {
+                "id": 6,
+                "name": "Ρώσσικα",
+                "iso_code": "ru"
+            }
+        ],
+        "sites": [
+            {
+                "id": 1002,
+                "name": "1. re1.gr"
+            },
+            {
+                "id": 1004,
+                "name": "2. synergazomenoi-mesites.gr"
+            },
+            {
+                "id": 2,
+                "name": "3. akinitakritis.gr"
+            },
+            {
+                "id": 32,
+                "name": "4. mesitikes-aggelies.gr"
+            },
+            {
+                "id": 1003,
+                "name": "6. greekpropertyfinder.gr"
+            },
+            {
+                "id": 11,
+                "name": "5. luxury-properties-greece.gr"
+            }
+        ],
+        "gateways": [
+            {
+                "agent_id": 2,
+                "name": "Κρητικές Αγγελίες",
+                "logo": "kritikes-aggelies"
+            },
+            {
+                "agent_id": 2,
+                "name": "Spitogatos",
+                "logo": "spitogatos"
+            }
+        ],
+        "foreign_agents": [],
+        "contact": "Πετράκης Κώστας",
+        "address1": "",
+        "address2": "",
+        "max_users": 150,
+        "phone1": "2810343635",
+        "phone2": "",
+        "fax": "",
+        "mobile": "6944870180",
+        "email": "info@akinitakritis.gr",
+        "created_at": "2009-03-07 00:00:00",
+        "activated_at": "2021-01-13 01:31:34",
+        "expires_at": null,
+        "settings": {
+            "hidden_locations": [],
+            "sms_api_key": "859f-6d0a-81cd-3912ce3"
+        }
+    },
+    "users": [
+        {
+            "id": 1047,
+            "name": "action-chania"
+        },
+        {
+            "id": 1212,
+            "name": "ALEXANDROS"
+        },
+        {
+            "id": 1210,
+            "name": "AMAZING-ΑΤΗ"
+        },
+        {
+            "id": 1233,
+            "name": "ANASTASIA-KASSANDRA"
+        },
+        {
+            "id": 1235,
+            "name": "ANATOLIA-THESS-AMPELOK"
+        },
+        {
+            "id": 1085,
+            "name": "anthimiadis-thes"
+        },
+        {
+            "id": 1241,
+            "name": "ANTONIOU-THESS"
+        },
+        {
+            "id": 1070,
+            "name": "ANYHOME-THES"
+        },
+        {
+            "id": 1078,
+            "name": "asteres-ath"
+        },
+        {
+            "id": 1222,
+            "name": "BALABANIDIS-SERRES"
+        },
+        {
+            "id": 1148,
+            "name": "BALAIS-XALKIDA"
+        },
+        {
+            "id": 1234,
+            "name": "BALA-LAGGADAS"
+        },
+        {
+            "id": 1087,
+            "name": "BALKAMOU-ATH"
+        },
+        {
+            "id": 1242,
+            "name": "BASI-THESS"
+        },
+        {
+            "id": 1229,
+            "name": "BENETH-SIVOTA"
+        },
+        {
+            "id": 1192,
+            "name": "BEST-P.FALIRO-ATHENS"
+        },
+        {
+            "id": 1101,
+            "name": "bigidis-serres"
+        },
+        {
+            "id": 1126,
+            "name": "BITSIMIS-THES"
+        },
+        {
+            "id": 1104,
+            "name": "BLS-ΚΟΜΟΤΗΝΗ"
+        },
+        {
+            "id": 1277,
+            "name": "BOLD-THESS"
+        },
+        {
+            "id": 1239,
+            "name": "brickbrokers-ath"
+        },
+        {
+            "id": 1232,
+            "name": "CASA-XALANDRI-ATH"
+        },
+        {
+            "id": 1281,
+            "name": "CHORA-CHANIA"
+        },
+        {
+            "id": 1275,
+            "name": "CITYPULSE-ATH"
+        },
+        {
+            "id": 1287,
+            "name": "CIVI-THESS"
+        },
+        {
+            "id": 1227,
+            "name": "CONTRACT-CHANIA"
+        },
+        {
+            "id": 2,
+            "name": "costas"
+        },
+        {
+            "id": 1014,
+            "name": "CretaHouses-Notia-Kriti"
+        },
+        {
+            "id": 1224,
+            "name": "cretarealty-HER"
+        },
+        {
+            "id": 1061,
+            "name": "crete-homes Agios"
+        },
+        {
+            "id": 1193,
+            "name": "DB-LIMNOS"
+        },
+        {
+            "id": 1083,
+            "name": "DEAL-ATH-NOTIA"
+        },
+        {
+            "id": 1089,
+            "name": "dedalos-ath"
+        },
+        {
+            "id": 1204,
+            "name": "DIAMANTI-THES"
+        },
+        {
+            "id": 1122,
+            "name": "DimMar-Ioannina"
+        },
+        {
+            "id": 1286,
+            "name": "DOMINA-ALEXANDROUPOLI"
+        },
+        {
+            "id": 1086,
+            "name": "domo-atik-orop"
+        },
+        {
+            "id": 1284,
+            "name": "doraefxetzi-SITIA"
+        },
+        {
+            "id": 1063,
+            "name": "ektimisi-Ath"
+        },
+        {
+            "id": 1084,
+            "name": "ELINIC-ALIMOS-ATH"
+        },
+        {
+            "id": 1213,
+            "name": "ESTIA-PATRA"
+        },
+        {
+            "id": 1191,
+            "name": "EUROLAND-CHANIA"
+        },
+        {
+            "id": 1093,
+            "name": "eviaproperty"
+        },
+        {
+            "id": 1144,
+            "name": "FIND-ATH"
+        },
+        {
+            "id": 1283,
+            "name": "GAIA-SPARTI"
+        },
+        {
+            "id": 1120,
+            "name": "GAIA-ΠΥΛΟΣ"
+        },
+        {
+            "id": 1069,
+            "name": "galaxy-Λιβαδειά"
+        },
+        {
+            "id": 1219,
+            "name": "GD-BIRONAS-ATH"
+        },
+        {
+            "id": 7,
+            "name": "gianna"
+        },
+        {
+            "id": 1190,
+            "name": "GIOLARIS-KOROPI"
+        },
+        {
+            "id": 1211,
+            "name": "GIRNI-KATERINI"
+        },
+        {
+            "id": 1082,
+            "name": "globale-ath"
+        },
+        {
+            "id": 1228,
+            "name": "GOLDEN SOUTH-CRETE"
+        },
+        {
+            "id": 1181,
+            "name": "GOLDEN-XALKIDIKI"
+        },
+        {
+            "id": 6,
+            "name": "grafeio-xersonisoy"
+        },
+        {
+            "id": 4,
+            "name": "grafiodiplamou"
+        },
+        {
+            "id": 5,
+            "name": "grafio gianas"
+        },
+        {
+            "id": 1094,
+            "name": "GREEK-IOANNINA"
+        },
+        {
+            "id": 1205,
+            "name": "GRISLANDS-ATH"
+        },
+        {
+            "id": 1136,
+            "name": "Hellene-chania"
+        },
+        {
+            "id": 1223,
+            "name": "HOMEADORE-THES"
+        },
+        {
+            "id": 1080,
+            "name": "HOMEARTH-MARKOPOULO"
+        },
+        {
+            "id": 1278,
+            "name": "HOUSE-ATH"
+        },
+        {
+            "id": 1079,
+            "name": "IMPERIAL-ATH"
+        },
+        {
+            "id": 1073,
+            "name": "inovart-kalamata"
+        },
+        {
+            "id": 1206,
+            "name": "INOVART-ΒΛΑΣΣΗΣ"
+        },
+        {
+            "id": 1230,
+            "name": "KARAZISI-VOLOS"
+        },
+        {
+            "id": 1067,
+            "name": "katsaros-nafplio"
+        },
+        {
+            "id": 1279,
+            "name": "KAVA-NAXOS"
+        },
+        {
+            "id": 1147,
+            "name": "KONTORABDIS-GLYFADA"
+        },
+        {
+            "id": 1189,
+            "name": "KOUTRAKI-PEIRAIAS"
+        },
+        {
+            "id": 1134,
+            "name": "KOUZ-XALKIDA"
+        },
+        {
+            "id": 1097,
+            "name": "ktima-rodos"
+        },
+        {
+            "id": 1021,
+            "name": "landhouse"
+        },
+        {
+            "id": 1217,
+            "name": "LEPTOKARIA"
+        },
+        {
+            "id": 1090,
+            "name": "MENI-CHIOS"
+        },
+        {
+            "id": 1216,
+            "name": "messinia-deal"
+        },
+        {
+            "id": 1124,
+            "name": "messinirealestate"
+        },
+        {
+            "id": 1129,
+            "name": "MOMENTUM-XALKIDIKI"
+        },
+        {
+            "id": 1220,
+            "name": "MOURIKIS-AIGIO"
+        },
+        {
+            "id": 1132,
+            "name": "MPOTOU-SMILE-ΑΤΗ"
+        },
+        {
+            "id": 1099,
+            "name": "NAKAS-KOZANI"
+        },
+        {
+            "id": 1076,
+            "name": "NEWDEAL-ATH"
+        },
+        {
+            "id": 1125,
+            "name": "nikiestate-chania"
+        },
+        {
+            "id": 1282,
+            "name": "nikos"
+        },
+        {
+            "id": 1023,
+            "name": "openhouse chania"
+        },
+        {
+            "id": 1130,
+            "name": "OPEN-KAVALA"
+        },
+        {
+            "id": 1022,
+            "name": "PAGALOS-ΡΕΘΥΜΝΟ"
+        },
+        {
+            "id": 1218,
+            "name": "Paggaio-Kavala"
+        },
+        {
+            "id": 1276,
+            "name": "panourgia-santorini"
+        },
+        {
+            "id": 1186,
+            "name": "papagiannakis-ath"
+        },
+        {
+            "id": 1214,
+            "name": "PAPPAS-IONIAN"
+        },
+        {
+            "id": 1183,
+            "name": "PARASCOS-IERAPETRA"
+        },
+        {
+            "id": 1131,
+            "name": "PARVERIS-KOS"
+        },
+        {
+            "id": 1184,
+            "name": "PERRA-KORINTHOS"
+        },
+        {
+            "id": 1096,
+            "name": "pgxalkida"
+        },
+        {
+            "id": 1088,
+            "name": "PRATTI-ATHE"
+        },
+        {
+            "id": 1074,
+            "name": "promotion-lamia"
+        },
+        {
+            "id": 1092,
+            "name": "PROPERTY4UKERKYRA"
+        },
+        {
+            "id": 1091,
+            "name": "REAL-NAXOS"
+        },
+        {
+            "id": 1072,
+            "name": "realtors-kos"
+        },
+        {
+            "id": 1066,
+            "name": "REBS-ΙΩΑΝΝΙΝΑ"
+        },
+        {
+            "id": 1081,
+            "name": "remax-residencepro"
+        },
+        {
+            "id": 1237,
+            "name": "SAMIOS-THESS"
+        },
+        {
+            "id": 1225,
+            "name": "SAMOS-HOME"
+        },
+        {
+            "id": 1049,
+            "name": "sampson-rethimno"
+        },
+        {
+            "id": 1048,
+            "name": "sea-sun"
+        },
+        {
+            "id": 1185,
+            "name": "SIAFARIKAS-ARTA"
+        },
+        {
+            "id": 1062,
+            "name": "SIMPLE HOME ath"
+        },
+        {
+            "id": 1127,
+            "name": "SITHONIA-XALKIDIKI"
+        },
+        {
+            "id": 1137,
+            "name": "smart-patra"
+        },
+        {
+            "id": 1077,
+            "name": "SMART-REAL-ATH"
+        },
+        {
+            "id": 1095,
+            "name": "SMART-THES"
+        },
+        {
+            "id": 1135,
+            "name": "SOLDATOS-PREVEZA"
+        },
+        {
+            "id": 1215,
+            "name": "SOULIMENAS-XALKIDIKI"
+        },
+        {
+            "id": 1221,
+            "name": "SPITITEXNI-ORAIOKASTRO"
+        },
+        {
+            "id": 1064,
+            "name": "SPYROS"
+        },
+        {
+            "id": 1187,
+            "name": "STAVROSBAS-HERAKL"
+        },
+        {
+            "id": 1145,
+            "name": "STEFANOU-LESVOS"
+        },
+        {
+            "id": 1236,
+            "name": "sygrisis-ath"
+        },
+        {
+            "id": 1071,
+            "name": "synergia-trikala"
+        },
+        {
+            "id": 1240,
+            "name": "terioys-SANTORINI"
+        },
+        {
+            "id": 1209,
+            "name": "Tessss"
+        },
+        {
+            "id": 1123,
+            "name": "test"
+        },
+        {
+            "id": 1285,
+            "name": "TEST"
+        },
+        {
+            "id": 1128,
+            "name": "THEOTHER-ATH"
+        },
+        {
+            "id": 1146,
+            "name": "TSELEMEGOS-LEROS"
+        },
+        {
+            "id": 1098,
+            "name": "TSILI-THESS"
+        },
+        {
+            "id": 54,
+            "name": "universalestate-ΚΡΗΤΗ"
+        },
+        {
+            "id": 1103,
+            "name": "world-alexandr"
+        },
+        {
+            "id": 1102,
+            "name": "xalkias-lamia"
+        },
+        {
+            "id": 1231,
+            "name": "xaralamp-ath"
+        },
+        {
+            "id": 1143,
+            "name": "XATZI-EXP"
+        },
+        {
+            "id": 1182,
+            "name": "XIXIS-ARGOL"
+        },
+        {
+            "id": 1226,
+            "name": "XOUXTOULAS-NAUPAKTOS"
+        },
+        {
+            "id": 1207,
+            "name": "ΓΙΑΝΝΑ"
+        },
+        {
+            "id": 1068,
+            "name": "ΔΕΔΕΣ-ΚΟΡΙΝΘΟΣ"
+        },
+        {
+            "id": 1203,
+            "name": "ΔΕΚΟΥΤΣΙΔΗΣ-ΞΥΛΟΚΑΣΤΡΟ"
+        },
+        {
+            "id": 1018,
+            "name": "ΕΥΑ"
+        },
+        {
+            "id": 1194,
+            "name": "ΚΑΜΠΑΣΑΚΗ ΑΤΗ-HER"
+        },
+        {
+            "id": 1060,
+            "name": "Κρητικά Αγορά-her"
+        },
+        {
+            "id": 1100,
+            "name": "ΚΤΗΜΑΤΟΜΕΣΙΤΙΚΗ-ΚΥΘΗΡΩΝ"
+        },
+        {
+            "id": 1238,
+            "name": "ΛΑΜΠΡΟΠΟΥΛΟΣ-THESS"
+        },
+        {
+            "id": 1121,
+            "name": "ΣΚΟΥΡΑΣ-ΠΕΛΟΠΟΝΗΣΣΟΣ"
+        },
+        {
+            "id": 1188,
+            "name": "ΤΑΦΡΑΣ-ATH"
+        }
+    ],
+    "property_types": [
+        {
+            "id": 20,
+            "name": "Κατοικία",
+            "parent_id": null,
+            "zindex": 1,
+            "children": [
+                {
+                    "id": 21,
+                    "name": "Γκαρσονιέρα",
+                    "parent_id": 20,
+                    "zindex": 2,
+                    "children": []
+                },
+                {
+                    "id": 22,
+                    "name": "Διαμέρισμα δυάρι",
+                    "parent_id": 20,
+                    "zindex": 3,
+                    "children": []
+                },
+                {
+                    "id": 23,
+                    "name": "Διαμέρισμα τριάρι",
+                    "parent_id": 20,
+                    "zindex": 4,
+                    "children": []
+                },
+                {
+                    "id": 24,
+                    "name": "Διαμέρισμα τεσσάρι",
+                    "parent_id": 20,
+                    "zindex": 5,
+                    "children": []
+                },
+                {
+                    "id": 25,
+                    "name": "Διαμέρισμα πεντάρι",
+                    "parent_id": 20,
+                    "zindex": 6,
+                    "children": []
+                },
+                {
+                    "id": 26,
+                    "name": "Μεζονέτα",
+                    "parent_id": 20,
+                    "zindex": 7,
+                    "children": []
+                },
+                {
+                    "id": 27,
+                    "name": "Μονοκατοικία",
+                    "parent_id": 20,
+                    "zindex": 8,
+                    "children": []
+                },
+                {
+                    "id": 28,
+                    "name": "Συγκρότημα - πολυκατοικία",
+                    "parent_id": 20,
+                    "zindex": 9,
+                    "children": []
+                },
+                {
+                    "id": 29,
+                    "name": "Παλαιά Κατοικία",
+                    "parent_id": 20,
+                    "zindex": 10,
+                    "children": []
+                },
+                {
+                    "id": 1000,
+                    "name": "Εξοχικό",
+                    "parent_id": 20,
+                    "zindex": 11,
+                    "children": []
+                }
+            ]
+        },
+        {
+            "id": 10,
+            "name": "Επαγγ. Χώρος",
+            "parent_id": null,
+            "zindex": 11,
+            "children": [
+                {
+                    "id": 11,
+                    "name": "Αποθήκη",
+                    "parent_id": 10,
+                    "zindex": 12,
+                    "children": []
+                },
+                {
+                    "id": 12,
+                    "name": "Αυτοτελές κτίριο",
+                    "parent_id": 10,
+                    "zindex": 13,
+                    "children": []
+                },
+                {
+                    "id": 13,
+                    "name": "Γραφείο",
+                    "parent_id": 10,
+                    "zindex": 14,
+                    "children": []
+                },
+                {
+                    "id": 14,
+                    "name": "Κατάστημα",
+                    "parent_id": 10,
+                    "zindex": 15,
+                    "children": []
+                },
+                {
+                    "id": 15,
+                    "name": "Εργοστάσιο",
+                    "parent_id": 10,
+                    "zindex": 16,
+                    "children": []
+                },
+                {
+                    "id": 16,
+                    "name": "Επιχείρηση",
+                    "parent_id": 10,
+                    "zindex": 17,
+                    "children": []
+                },
+                {
+                    "id": 17,
+                    "name": "Βιοτεχνικό κτίριο",
+                    "parent_id": 10,
+                    "zindex": 18,
+                    "children": []
+                }
+            ]
+        },
+        {
+            "id": 1,
+            "name": "Έκταση",
+            "parent_id": null,
+            "zindex": 19,
+            "children": [
+                {
+                    "id": 2,
+                    "name": "Αγροτεμάχιο",
+                    "parent_id": 1,
+                    "zindex": 20,
+                    "children": []
+                },
+                {
+                    "id": 3,
+                    "name": "Οικόπεδο",
+                    "parent_id": 1,
+                    "zindex": 21,
+                    "children": []
+                }
+            ]
+        },
+        {
+            "id": 30,
+            "name": "Κτίριο",
+            "parent_id": null,
+            "zindex": 22,
+            "children": [
+                {
+                    "id": 31,
+                    "name": "Ξενοδοχείο",
+                    "parent_id": 30,
+                    "zindex": 23,
+                    "children": []
+                },
+                {
+                    "id": 32,
+                    "name": "Τουριστικό συγκρότημα",
+                    "parent_id": 30,
+                    "zindex": 24,
+                    "children": []
+                },
+                {
+                    "id": 33,
+                    "name": "Ενοικιαζόμενα δωμάτια",
+                    "parent_id": 30,
+                    "zindex": 25,
+                    "children": []
+                }
+            ]
+        },
+        {
+            "id": 900,
+            "name": "Λοιπά",
+            "parent_id": null,
+            "zindex": 26,
+            "children": [
+                {
+                    "id": 902,
+                    "name": "Θέση στάθμευσης",
+                    "parent_id": 900,
+                    "zindex": 27,
+                    "children": []
+                },
+                {
+                    "id": 901,
+                    "name": "Άλλο",
+                    "parent_id": 900,
+                    "zindex": 28,
+                    "children": []
+                }
+            ]
+        }
+    ],
+    "fields": [
+        {
+            "id": 4120,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Playroom",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4001,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Roofgarden",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4002,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "W.C.",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 2000,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "W.C.",
+            "is_required": false,
+            "types": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4004,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Άδεια",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4003,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Άδεια καταστήματος",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4041,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Άδεια οικοδομής",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4142,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Άδεια υγειονομικού ενδιαφέροντος",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 1200,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": false,
+            "name": "Αέρας",
+            "is_required": false,
+            "types": [
+                12,
+                14
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4112,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ανακαινισμένο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4172,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ανακαινισμένο μερικώς",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4173,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ανακαινισμένο πλήρως",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4005,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ανελκυστήρας",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4075,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ανελκυστήρας επαγγελμ.",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4006,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αποθήκη",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4007,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αποχέτευση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 3100,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. Bangalows",
+            "is_required": false,
+            "types": [
+                31,
+                32
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3028,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. αποθηκών",
+            "is_required": false,
+            "types": [
+                28,
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 2817,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. αποθηκών (σύνολο)",
+            "is_required": false,
+            "types": [
+                28
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4164,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Άρδευση από γεώτρηση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4162,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Άρδευση από δεξαμενή",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4165,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Άρδευση από πηγάδι",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4161,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Άρδευση από ΤΟΕΒ",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4163,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Άρδευση από χαβούζα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4127,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρδεύσιμο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 3012,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. διαμερισμάτων (σύνολο)",
+            "is_required": false,
+            "types": [
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3017,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. δίχωρων",
+            "is_required": false,
+            "types": [
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3013,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. δωματίων (σύνολο",
+            "is_required": false,
+            "types": [
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 2803,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. καταστημάτων (σύνολο)",
+            "is_required": false,
+            "types": [
+                28,
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3002,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. κλινών (σύνολο)",
+            "is_required": false,
+            "types": [
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3020,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. μεζονετών",
+            "is_required": false,
+            "types": [
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 2820,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. μονοκατοικιών",
+            "is_required": false,
+            "types": [
+                28,
+                32
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3016,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. μονόχωρων",
+            "is_required": false,
+            "types": [
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1302,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. ορόφων (σύνολο)",
+            "is_required": false,
+            "types": [
+                13
+            ],
+            "field_options": []
+        },
+        {
+            "id": 2801,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. σπιτιών (σύνολο)",
+            "is_required": false,
+            "types": [
+                28
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3019,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. τετράχωρων",
+            "is_required": false,
+            "types": [
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4193,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Άρτιο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 3018,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αρ. τρίχωρων",
+            "is_required": false,
+            "types": [
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3000,
+            "type_id": 4,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αστέρων",
+            "is_required": false,
+            "types": [
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4143,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αύλειος χώρος",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4008,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αυλή",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4009,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Αυτόνομη θέρμανση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4111,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Βαμμένο πρόσφατα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4010,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Βεράντα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4012,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Βοηθητικό δωμάτιο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4013,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Βόθρος",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4147,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Βραχυπρόθεσμη μίσθωση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4073,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Γεώτρηση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4154,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Γήπεδο Τένις",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4077,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Γκαζόν",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 2812,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Γκαρσονιέρες (σύνολο)",
+            "is_required": false,
+            "types": [
+                28
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4014,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Γυμναστήριο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4015,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Γωνιακό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4192,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Δεν επιτρέπονται κατοικίδια",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4016,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Δεντροφυτεμένο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4017,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Δεξαμενή νερού",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4090,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Διαμπερές",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4184,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Διατήρηση οροφής",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4183,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Διατήρηση τοίχων",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4137,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Διατηρητέο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4114,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Διπλά τζάμια",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4151,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Δομημένη καλωδίωση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4084,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Δορυφορική κεραία",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 110,
+            "type_id": 2,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Δρόμος",
+            "is_required": false,
+            "types": [
+                2,
+                3,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                1000
+            ],
+            "field_options": [
+                {
+                    "id": 15,
+                    "field_id": 110,
+                    "name": "Όχι"
+                },
+                {
+                    "id": 16,
+                    "field_id": 110,
+                    "name": "Άσφαλτος"
+                },
+                {
+                    "id": 19,
+                    "field_id": 110,
+                    "name": "Χωματόδρομος"
+                },
+                {
+                    "id": 20,
+                    "field_id": 110,
+                    "name": "Τσιμεντένιος"
+                },
+                {
+                    "id": 17,
+                    "field_id": 110,
+                    "name": "Πεζόδρομος"
+                },
+                {
+                    "id": 18,
+                    "field_id": 110,
+                    "name": "Πλακόστρωτο"
+                }
+            ]
+        },
+        {
+            "id": 2813,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Δυάρια (σύνολο)",
+            "is_required": false,
+            "types": [
+                28
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4160,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Δυνατότητα άρδευσης",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4108,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Δώμα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4185,
+            "type_id": 2,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Είδος γκαρσονιέρας",
+            "is_required": true,
+            "types": [
+                21
+            ],
+            "field_options": [
+                {
+                    "id": 40,
+                    "field_id": 4185,
+                    "name": "Δώμα"
+                },
+                {
+                    "id": 41,
+                    "field_id": 4185,
+                    "name": "Μονόχωρη"
+                },
+                {
+                    "id": 42,
+                    "field_id": 4185,
+                    "name": "Δίχωρη"
+                },
+                {
+                    "id": 43,
+                    "field_id": 4185,
+                    "name": "Studio"
+                },
+                {
+                    "id": 44,
+                    "field_id": 4185,
+                    "name": "Ρετιρέ"
+                }
+            ]
+        },
+        {
+            "id": 108,
+            "type_id": 2,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Είδος εδάφους",
+            "is_required": false,
+            "types": [
+                2,
+                3
+            ],
+            "field_options": [
+                {
+                    "id": 1,
+                    "field_id": 108,
+                    "name": "Εύφορο"
+                },
+                {
+                    "id": 2,
+                    "field_id": 108,
+                    "name": "Βραχώδες"
+                }
+            ]
+        },
+        {
+            "id": 4186,
+            "type_id": 2,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Είδος εξοχικού",
+            "is_required": true,
+            "types": [
+                1000
+            ],
+            "field_options": [
+                {
+                    "id": 50,
+                    "field_id": 4186,
+                    "name": "Studio"
+                },
+                {
+                    "id": 51,
+                    "field_id": 4186,
+                    "name": "Δώμα"
+                },
+                {
+                    "id": 52,
+                    "field_id": 4186,
+                    "name": "Διαμέρισμα"
+                },
+                {
+                    "id": 53,
+                    "field_id": 4186,
+                    "name": "Οροφοδιαμέρισμα"
+                },
+                {
+                    "id": 54,
+                    "field_id": 4186,
+                    "name": "Μονόχωρο"
+                },
+                {
+                    "id": 55,
+                    "field_id": 4186,
+                    "name": "Δίχωρo"
+                },
+                {
+                    "id": 56,
+                    "field_id": 4186,
+                    "name": "Μεζονέτα"
+                },
+                {
+                    "id": 57,
+                    "field_id": 4186,
+                    "name": "Ρετιρέ"
+                }
+            ]
+        },
+        {
+            "id": 4145,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Εκτός οικισμού",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4146,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Εκτός σχεδίου",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4129,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ελαιώνας",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4171,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Εμπόδια τεχνητά",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4170,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Εμπόδια φυσικά",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4116,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ενδοδαπέδια θέρμανση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 2010,
+            "type_id": 2,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ενεργειακή κλάση",
+            "is_required": false,
+            "types": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                31,
+                32,
+                33,
+                1000
+            ],
+            "field_options": [
+                {
+                    "id": 24,
+                    "field_id": 2010,
+                    "name": "Α+"
+                },
+                {
+                    "id": 25,
+                    "field_id": 2010,
+                    "name": "Α"
+                },
+                {
+                    "id": 26,
+                    "field_id": 2010,
+                    "name": "Β+"
+                },
+                {
+                    "id": 27,
+                    "field_id": 2010,
+                    "name": "Β"
+                },
+                {
+                    "id": 28,
+                    "field_id": 2010,
+                    "name": "Γ"
+                },
+                {
+                    "id": 29,
+                    "field_id": 2010,
+                    "name": "Δ"
+                },
+                {
+                    "id": 30,
+                    "field_id": 2010,
+                    "name": "Ε"
+                },
+                {
+                    "id": 31,
+                    "field_id": 2010,
+                    "name": "Ζ"
+                },
+                {
+                    "id": 32,
+                    "field_id": 2010,
+                    "name": "Η"
+                },
+                {
+                    "id": 33,
+                    "field_id": 2010,
+                    "name": "Δεν απαιτείται"
+                },
+                {
+                    "id": 34,
+                    "field_id": 2010,
+                    "name": "Έκδοση σε εξέλιξη"
+                }
+            ]
+        },
+        {
+            "id": 4018,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ενιαίος χώρος",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4123,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Εντοιχισμένες ντουλάπες",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4019,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Εντός οικισμού",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4020,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Εντός σχεδίου",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4125,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Εξοπλισμένο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4091,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Έπαυλης",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4148,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Επενδυτικό ακίνητο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4189,
+            "type_id": 2,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Επίπεδο",
+            "is_required": true,
+            "types": [
+                902
+            ],
+            "field_options": [
+                {
+                    "id": 130,
+                    "field_id": 4189,
+                    "name": "Ισόγειο"
+                },
+                {
+                    "id": 131,
+                    "field_id": 4189,
+                    "name": "Υπόγειο"
+                },
+                {
+                    "id": 132,
+                    "field_id": 4189,
+                    "name": "1"
+                },
+                {
+                    "id": 133,
+                    "field_id": 4189,
+                    "name": "2"
+                },
+                {
+                    "id": 134,
+                    "field_id": 4189,
+                    "name": "3"
+                },
+                {
+                    "id": 135,
+                    "field_id": 4189,
+                    "name": "4"
+                },
+                {
+                    "id": 136,
+                    "field_id": 4189,
+                    "name": "-2"
+                },
+                {
+                    "id": 137,
+                    "field_id": 4189,
+                    "name": "-3"
+                },
+                {
+                    "id": 138,
+                    "field_id": 4189,
+                    "name": "-4"
+                }
+            ]
+        },
+        {
+            "id": 4022,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Επιπλωμένο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4023,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Επιτρέπονται ζώα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4136,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Επιτρέπονται κατοικίδια",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4024,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Εστιατόριο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4085,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Εσωτερική σκάλα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 1014,
+            "type_id": 4,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Έτος ανακαίνισης",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                31,
+                32,
+                33,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1013,
+            "type_id": 4,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Έτος κατασκευής",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                31,
+                32,
+                33,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4025,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ηλεκτρικές συσκευές",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4102,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ηλεκτρική γκαραζόπορτα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4027,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ηλεκτρικός θερμοσ.",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4028,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ηλιακός θερμοσ.",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4029,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ημιτελές",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4092,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ημιυπόγειο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4030,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Θέα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4128,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Θερμοκήπιο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4032,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Θερμοσυσσωρευτές",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4190,
+            "type_id": 4,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Θέσεις",
+            "is_required": true,
+            "types": [
+                902
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1012,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Θέσεις στάθμευσης",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                31,
+                32,
+                33,
+                901,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4074,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Θυροτηλεόραση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4094,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ισόγειο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4140,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Καλοκαιρινή μίσθωση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4134,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Καλωδιακή τηλεόραση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4139,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κατάλληλο για αγροτική χρήση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4118,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κατάλληλο για εξοχικό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4119,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κατάλληλο για επαγγελματική χρήση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4130,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κατάλληλο για φοιτητές",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 2910,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": false,
+            "name": "Κατάσταση των γειτονικών",
+            "is_required": false,
+            "types": [
+                29
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3011,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κατηγορία",
+            "is_required": false,
+            "types": [
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4174,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κατοικήσιμο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4034,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Καφετέρια",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4035,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κεντρική θέρμανση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4036,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κεντρικό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4037,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κήπος",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4038,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κλειστό πάρκινγκ",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4039,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κλιματισμός",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 111,
+            "type_id": 2,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κλίση εδάφους",
+            "is_required": false,
+            "types": [
+                2,
+                3
+            ],
+            "field_options": [
+                {
+                    "id": 21,
+                    "field_id": 111,
+                    "name": "Επίπεδο"
+                },
+                {
+                    "id": 22,
+                    "field_id": 111,
+                    "name": "Επικλινές"
+                },
+                {
+                    "id": 23,
+                    "field_id": 111,
+                    "name": "Αμφιθεατρικό"
+                }
+            ]
+        },
+        {
+            "id": 1001,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κοινόχρηστα €/μήνα",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4104,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κοντά σε super market",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4106,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κοντά σε εκκλησία",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4105,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κοντά σε παραλία",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4107,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κοντά σε πάρκινγκ",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4153,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κοντά σε στάση λεωφ.",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4103,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κοντά σε σχολείο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4093,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κουφώματα PVC",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4040,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κουφώματα αλουμινίου",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4083,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κουφώματα ξύλινα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4177,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κτισμένο με πέτρες",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4179,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κτισμένο με πυλό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4178,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Κτισμένο με τούβλα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 2816,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Μεζονέτες (σύνολο)",
+            "is_required": false,
+            "types": [
+                28
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4159,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Μη αρδευόμενο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4175,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Μη κατοικήσιμο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4043,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Μόνωση",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 2003,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Μπαλκόνια",
+            "is_required": false,
+            "types": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                1000,
+                13
+            ],
+            "field_options": []
+        },
+        {
+            "id": 2004,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Μπάνια",
+            "is_required": false,
+            "types": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4044,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Μπαρ",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4045,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Μπάρμπεκιου",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4132,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Νεόδμητο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4138,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Νεοκλασσικό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 2005,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ντουλάπες",
+            "is_required": false,
+            "types": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4080,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ξενώνας",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4141,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Οικιστικό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4047,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Οικοδομήσιμο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 2600,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Οικόπεδο (τ.μ.)",
+            "is_required": false,
+            "types": [
+                26,
+                27
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4180,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Οροφή με δοκάρια",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4182,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Οροφή με κεραμίδια",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4181,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Οροφή με ταράτσα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4144,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Οροφοδιαμέρισμα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 1202,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Όροφοι",
+            "is_required": false,
+            "types": [
+                12,
+                15,
+                26,
+                27,
+                28,
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4191,
+            "type_id": 4,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Όροφοι / Επίπεδα",
+            "is_required": false,
+            "types": [
+                12,
+                15,
+                26,
+                27,
+                28,
+                29,
+                1000,
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4187,
+            "type_id": 2,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Όροφος",
+            "is_required": true,
+            "types": [
+                13,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+            ],
+            "field_options": [
+                {
+                    "id": 60,
+                    "field_id": 4187,
+                    "name": "Υπόγειο"
+                },
+                {
+                    "id": 61,
+                    "field_id": 4187,
+                    "name": "Ημιυπόγειο"
+                },
+                {
+                    "id": 62,
+                    "field_id": 4187,
+                    "name": "Ισόγειο"
+                },
+                {
+                    "id": 63,
+                    "field_id": 4187,
+                    "name": "Ισόγειο υπερυψωμένο"
+                },
+                {
+                    "id": 64,
+                    "field_id": 4187,
+                    "name": "Ημιόροφος"
+                },
+                {
+                    "id": 65,
+                    "field_id": 4187,
+                    "name": "1"
+                },
+                {
+                    "id": 66,
+                    "field_id": 4187,
+                    "name": "2"
+                },
+                {
+                    "id": 67,
+                    "field_id": 4187,
+                    "name": "3"
+                },
+                {
+                    "id": 68,
+                    "field_id": 4187,
+                    "name": "4"
+                },
+                {
+                    "id": 69,
+                    "field_id": 4187,
+                    "name": "5"
+                },
+                {
+                    "id": 70,
+                    "field_id": 4187,
+                    "name": "6"
+                },
+                {
+                    "id": 71,
+                    "field_id": 4187,
+                    "name": "7"
+                },
+                {
+                    "id": 72,
+                    "field_id": 4187,
+                    "name": "8"
+                },
+                {
+                    "id": 73,
+                    "field_id": 4187,
+                    "name": "9"
+                },
+                {
+                    "id": 74,
+                    "field_id": 4187,
+                    "name": "10"
+                },
+                {
+                    "id": 75,
+                    "field_id": 4187,
+                    "name": "11"
+                },
+                {
+                    "id": 76,
+                    "field_id": 4187,
+                    "name": "12"
+                },
+                {
+                    "id": 77,
+                    "field_id": 4187,
+                    "name": "13"
+                },
+                {
+                    "id": 78,
+                    "field_id": 4187,
+                    "name": "14"
+                },
+                {
+                    "id": 79,
+                    "field_id": 4187,
+                    "name": "15"
+                },
+                {
+                    "id": 80,
+                    "field_id": 4187,
+                    "name": "16"
+                },
+                {
+                    "id": 81,
+                    "field_id": 4187,
+                    "name": "17"
+                },
+                {
+                    "id": 82,
+                    "field_id": 4187,
+                    "name": "18"
+                },
+                {
+                    "id": 83,
+                    "field_id": 4187,
+                    "name": "19"
+                },
+                {
+                    "id": 84,
+                    "field_id": 4187,
+                    "name": "20"
+                },
+                {
+                    "id": 85,
+                    "field_id": 4187,
+                    "name": "21"
+                },
+                {
+                    "id": 86,
+                    "field_id": 4187,
+                    "name": "22"
+                },
+                {
+                    "id": 87,
+                    "field_id": 4187,
+                    "name": "23"
+                },
+                {
+                    "id": 88,
+                    "field_id": 4187,
+                    "name": "24"
+                },
+                {
+                    "id": 89,
+                    "field_id": 4187,
+                    "name": "25"
+                },
+                {
+                    "id": 90,
+                    "field_id": 4187,
+                    "name": "26"
+                },
+                {
+                    "id": 91,
+                    "field_id": 4187,
+                    "name": "27"
+                },
+                {
+                    "id": 92,
+                    "field_id": 4187,
+                    "name": "28"
+                },
+                {
+                    "id": 93,
+                    "field_id": 4187,
+                    "name": "29"
+                },
+                {
+                    "id": 94,
+                    "field_id": 4187,
+                    "name": "30"
+                },
+                {
+                    "id": 95,
+                    "field_id": 4187,
+                    "name": "31"
+                },
+                {
+                    "id": 96,
+                    "field_id": 4187,
+                    "name": "32"
+                },
+                {
+                    "id": 97,
+                    "field_id": 4187,
+                    "name": "33"
+                },
+                {
+                    "id": 98,
+                    "field_id": 4187,
+                    "name": "34"
+                },
+                {
+                    "id": 99,
+                    "field_id": 4187,
+                    "name": "35"
+                },
+                {
+                    "id": 100,
+                    "field_id": 4187,
+                    "name": "36"
+                },
+                {
+                    "id": 101,
+                    "field_id": 4187,
+                    "name": "37"
+                },
+                {
+                    "id": 102,
+                    "field_id": 4187,
+                    "name": "38"
+                },
+                {
+                    "id": 103,
+                    "field_id": 4187,
+                    "name": "39"
+                },
+                {
+                    "id": 104,
+                    "field_id": 4187,
+                    "name": "40"
+                },
+                {
+                    "id": 105,
+                    "field_id": 4187,
+                    "name": "41"
+                },
+                {
+                    "id": 106,
+                    "field_id": 4187,
+                    "name": "42"
+                },
+                {
+                    "id": 107,
+                    "field_id": 4187,
+                    "name": "43"
+                },
+                {
+                    "id": 108,
+                    "field_id": 4187,
+                    "name": "44"
+                },
+                {
+                    "id": 109,
+                    "field_id": 4187,
+                    "name": "45"
+                },
+                {
+                    "id": 110,
+                    "field_id": 4187,
+                    "name": "46"
+                },
+                {
+                    "id": 111,
+                    "field_id": 4187,
+                    "name": "47"
+                },
+                {
+                    "id": 112,
+                    "field_id": 4187,
+                    "name": "48"
+                },
+                {
+                    "id": 113,
+                    "field_id": 4187,
+                    "name": "49"
+                },
+                {
+                    "id": 114,
+                    "field_id": 4187,
+                    "name": "50"
+                }
+            ]
+        },
+        {
+            "id": 1300,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Όροφος (συμπλ.)",
+            "is_required": false,
+            "types": [
+                13,
+                21,
+                22,
+                23,
+                24,
+                25
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4078,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Παιδική χαρά",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 103,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Παράδοση την",
+            "is_required": false,
+            "types": [
+                2,
+                3,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                31,
+                32,
+                33,
+                901,
+                902,
+                17,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4048,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Παραθαλάσσιο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4049,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πάρκινγκ",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4087,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πάρκινγκ υπογείου",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4050,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πατάρι",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4101,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πάτωμα laminate",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4011,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πάτωμα βιομηχανικό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4051,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πάτωμα γρανίτης",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4052,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πάτωμα μάρμαρο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4053,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πάτωμα μωσαϊκό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4054,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πάτωμα ξύλο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4055,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πάτωμα πλακάκι",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4056,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πάτωμα τσιμέντο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4121,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πέργκολα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4057,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Περιφραγμένο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4095,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πετρέλαιο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4076,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πιλοτή",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4058,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πισίνα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4109,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πιστοποιητικό νομιμότητας",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 104,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": false,
+            "name": "Πλήθος ιδιοκτητών",
+            "is_required": false,
+            "types": [
+                2,
+                3
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4157,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πλυντήριο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4155,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πλυντήριο πιάτων",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4131,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πολυτελής κατοικία",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4086,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πόρτα ασφαλείας",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 300,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ποσοστό κάλυψης (%)",
+            "is_required": false,
+            "types": [
+                3,
+                29
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4059,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πρασιά",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4060,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Προβολή",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 109,
+            "type_id": 2,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Προσανατολισμός",
+            "is_required": false,
+            "types": [
+                2,
+                3
+            ],
+            "field_options": [
+                {
+                    "id": 3,
+                    "field_id": 109,
+                    "name": "Ανατολικός"
+                },
+                {
+                    "id": 4,
+                    "field_id": 109,
+                    "name": "Ανατολικοδυτικός"
+                },
+                {
+                    "id": 5,
+                    "field_id": 109,
+                    "name": "Ανατολικομεσημβρινός"
+                },
+                {
+                    "id": 6,
+                    "field_id": 109,
+                    "name": "Βόρειος"
+                },
+                {
+                    "id": 7,
+                    "field_id": 109,
+                    "name": "Βορειανατολικός"
+                },
+                {
+                    "id": 8,
+                    "field_id": 109,
+                    "name": "Βορειοδυτικός"
+                },
+                {
+                    "id": 9,
+                    "field_id": 109,
+                    "name": "Δυτικός"
+                },
+                {
+                    "id": 10,
+                    "field_id": 109,
+                    "name": "Δυτικομεσημβρινός"
+                },
+                {
+                    "id": 11,
+                    "field_id": 109,
+                    "name": "Μεσημβρινός"
+                },
+                {
+                    "id": 12,
+                    "field_id": 109,
+                    "name": "Νότιος"
+                },
+                {
+                    "id": 13,
+                    "field_id": 109,
+                    "name": "Νοτιοανατολικός"
+                },
+                {
+                    "id": 14,
+                    "field_id": 109,
+                    "name": "Νοτιοδυτικός"
+                }
+            ]
+        },
+        {
+            "id": 4169,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πρόσβαση δύσκολη",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4168,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πρόσβαση εύκολη",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4115,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πρόσοψη",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 100,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πρόσοψη (μ.)",
+            "is_required": false,
+            "types": [
+                2,
+                3,
+                11,
+                14,
+                17,
+                29
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4061,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πρόσοψη σε άσφαλτο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4089,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Πρόσοψη σε καλντερίμι",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4062,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ράμπα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4158,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ράμπα αναπήρων",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4063,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ρεσεψιόν",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4079,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ρετιρέ",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4042,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ρεύμα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4166,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ρεύμα αγροτικό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4126,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ρεύμα βιομηχανικό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4117,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ρεύμα νυχτερινό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4068,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ρεύμα τριφασικό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4064,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ρολόι ΔΕΗ",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4065,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ρολόι νερού",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4100,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Σάουνα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 1203,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Σε οικόπεδο (τ.μ.)",
+            "is_required": false,
+            "types": [
+                12
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4149,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Σίτες",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4097,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Σόμπα pellet",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4096,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Σόμπα πετρελαίου",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4133,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Σοφίτα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4081,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Συναγερμός",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 101,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Συντελεστής δόμησης",
+            "is_required": false,
+            "types": [
+                2,
+                3,
+                29
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4088,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τέντες",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 2815,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τεσσάρια (σύνολο)",
+            "is_required": false,
+            "types": [
+                28
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4066,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τζάκι",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4098,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τζάκι ενεργειακό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4122,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τζακούζι",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 1600,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τιμή Πώλησης",
+            "is_required": false,
+            "types": [
+                16
+            ],
+            "field_options": []
+        },
+        {
+            "id": 2907,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. 1ος όροφος",
+            "is_required": false,
+            "types": [
+                29
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1100,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. 1ου ορόφου",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                14,
+                15,
+                17,
+                28,
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3024,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. 2ου ορόφου",
+            "is_required": false,
+            "types": [
+                12,
+                28,
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3025,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. 3ου ορόφου",
+            "is_required": false,
+            "types": [
+                12,
+                28,
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3026,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. 4ου ορόφου",
+            "is_required": false,
+            "types": [
+                12,
+                28,
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3027,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. 5ου ορόφου",
+            "is_required": false,
+            "types": [
+                12,
+                28,
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1002,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. ακινήτου (σύνολο)",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                29,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 107,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. αποθήκης",
+            "is_required": false,
+            "types": [
+                2,
+                3
+            ],
+            "field_options": []
+        },
+        {
+            "id": 2818,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. αποθηκών (σύνολο)",
+            "is_required": false,
+            "types": [
+                28
+            ],
+            "field_options": []
+        },
+        {
+            "id": 2905,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. αυλής",
+            "is_required": false,
+            "types": [
+                29
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1104,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. γραφείων (σύνολο)",
+            "is_required": false,
+            "types": [
+                11,
+                17
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3202,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. διαμερισμάτων (σύνολο)",
+            "is_required": false,
+            "types": [
+                32
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1003,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. εξωτ. χώρου",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                27,
+                28,
+                31,
+                32,
+                33,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 3004,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. εστιατορίου",
+            "is_required": false,
+            "types": [
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1004,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. ημιορόφου",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                28
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1006,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. Ημιυπαίθριου",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                31,
+                32,
+                33,
+                901,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 200,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. θερμοκήπιο μεταλλικό",
+            "is_required": false,
+            "types": [
+                2
+            ],
+            "field_options": []
+        },
+        {
+            "id": 201,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. θερμοκήπιο ξύλινο",
+            "is_required": false,
+            "types": [
+                2
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1005,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. ισογείου",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                28,
+                29,
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 2804,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. καταστημάτων (σύνολο)",
+            "is_required": false,
+            "types": [
+                28,
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 106,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. κατοικίας",
+            "is_required": false,
+            "types": [
+                2,
+                3
+            ],
+            "field_options": []
+        },
+        {
+            "id": 102,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. κτίζει",
+            "is_required": false,
+            "types": [
+                2,
+                3
+            ],
+            "field_options": []
+        },
+        {
+            "id": 2811,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. κτιρίου (σύνολο)",
+            "is_required": false,
+            "types": [
+                28,
+                31,
+                32,
+                33
+            ],
+            "field_options": []
+        },
+        {
+            "id": 105,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. κτίσματος",
+            "is_required": false,
+            "types": [
+                2,
+                3,
+                29,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1102,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. οικοπέδου",
+            "is_required": false,
+            "types": [
+                11,
+                14,
+                15,
+                17,
+                28,
+                31,
+                32,
+                33,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1301,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. ορόφου",
+            "is_required": false,
+            "types": [
+                13
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1007,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. ορόφων (σύνολο)",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                28,
+                31,
+                32,
+                33,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 2908,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. πατάρι – οντάς",
+            "is_required": false,
+            "types": [
+                29
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1008,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. παταριού",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                28
+            ],
+            "field_options": []
+        },
+        {
+            "id": 2802,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. σπιτιών (σύνολο)",
+            "is_required": false,
+            "types": [
+                28
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1009,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. υπογείου",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                26,
+                27,
+                28,
+                29,
+                31,
+                32,
+                33,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 1105,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τ.μ. ψυγείων (σύνολο)",
+            "is_required": false,
+            "types": [
+                11,
+                17
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4067,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τουαλέτα",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 2814,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τριάρια (σύνολο)",
+            "is_required": false,
+            "types": [
+                28
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4188,
+            "type_id": 2,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Τύπος parking",
+            "is_required": true,
+            "types": [
+                902
+            ],
+            "field_options": [
+                {
+                    "id": 120,
+                    "field_id": 4188,
+                    "name": "Parking πιλοτής"
+                },
+                {
+                    "id": 121,
+                    "field_id": 4188,
+                    "name": "Ανοιχτό parking"
+                },
+                {
+                    "id": 122,
+                    "field_id": 4188,
+                    "name": "Κλειστό parking"
+                },
+                {
+                    "id": 123,
+                    "field_id": 4188,
+                    "name": "Υπόγειο parking"
+                }
+            ]
+        },
+        {
+            "id": 4046,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ύδρευση νερό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 2007,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Υπνοδωμάτια",
+            "is_required": false,
+            "types": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                1000
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4070,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Υπόγειο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4069,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Υπό κατασκευή",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 1103,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ύψος (μ.)",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                14,
+                15,
+                17
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4082,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Φυσικό αέριο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4110,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Φωτεινό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4099,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Φωτοβολταϊκό",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4113,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Χρήζει ανακαίνισης",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4152,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Χρηματοκιβώτιο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4167,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Χρήση γής – ΣΧΟΑΠ",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4176,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Χρήση των γειτονικών",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4071,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Χρησιμοποιείται",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4150,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Χωρίς μεσιτική αμοιβή",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 1010,
+            "type_id": 1,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Χώροι",
+            "is_required": false,
+            "types": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17
+            ],
+            "field_options": []
+        },
+        {
+            "id": 4072,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Χώρος υποδοχής",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4124,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Χώρος φορτοεκφόρτωσης",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4135,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ψευδοροφή",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        },
+        {
+            "id": 4156,
+            "type_id": 3,
+            "default_value": null,
+            "is_visible_on_site": true,
+            "name": "Ψυγείο",
+            "is_required": false,
+            "types": [],
+            "field_options": []
+        }
+    ],
+    "fieldsOfTypes": {
+        "2": [
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            200,
+            201
+        ],
+        "3": [
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            300
+        ],
+        "11": [
+            100,
+            103,
+            1001,
+            1002,
+            1003,
+            1004,
+            1005,
+            1006,
+            1007,
+            1008,
+            1009,
+            1010,
+            1012,
+            1013,
+            1014,
+            1100,
+            1102,
+            1104,
+            1105,
+            1103,
+            2010
+        ],
+        "12": [
+            103,
+            1001,
+            1002,
+            1003,
+            1004,
+            1005,
+            1006,
+            1007,
+            1008,
+            1009,
+            1010,
+            1012,
+            1013,
+            1014,
+            1100,
+            3024,
+            3025,
+            3026,
+            3027,
+            1103,
+            1200,
+            1202,
+            1203,
+            2010,
+            4191
+        ],
+        "13": [
+            103,
+            1001,
+            1002,
+            1003,
+            1004,
+            1005,
+            1006,
+            1007,
+            1008,
+            1009,
+            1010,
+            1012,
+            1013,
+            1014,
+            1300,
+            1301,
+            1302,
+            2010,
+            4187,
+            2003
+        ],
+        "14": [
+            100,
+            103,
+            1001,
+            1002,
+            1003,
+            1004,
+            1005,
+            1006,
+            1007,
+            1008,
+            1009,
+            1010,
+            1012,
+            1013,
+            1014,
+            1100,
+            1102,
+            1103,
+            1200,
+            2010
+        ],
+        "15": [
+            103,
+            1001,
+            1002,
+            1003,
+            1004,
+            1005,
+            1006,
+            1007,
+            1008,
+            1009,
+            1010,
+            1012,
+            1013,
+            1014,
+            1100,
+            1102,
+            1103,
+            1202,
+            2010,
+            4191
+        ],
+        "16": [
+            103,
+            1001,
+            1002,
+            1003,
+            1004,
+            1005,
+            1006,
+            1007,
+            1008,
+            1009,
+            1010,
+            1012,
+            1013,
+            1014,
+            1600,
+            2010
+        ],
+        "17": [
+            100,
+            103,
+            1001,
+            1002,
+            1003,
+            1004,
+            1005,
+            1006,
+            1007,
+            1008,
+            1009,
+            1010,
+            1012,
+            1013,
+            1014,
+            1100,
+            1102,
+            1104,
+            1105,
+            1103,
+            2010,
+            103
+        ],
+        "21": [
+            103,
+            110,
+            1001,
+            1006,
+            1012,
+            1013,
+            1014,
+            1300,
+            2000,
+            2003,
+            2004,
+            2005,
+            2007,
+            2010,
+            4185,
+            4187
+        ],
+        "22": [
+            103,
+            110,
+            1001,
+            1006,
+            1012,
+            1013,
+            1014,
+            1300,
+            2000,
+            2003,
+            2004,
+            2005,
+            2007,
+            2010,
+            4187
+        ],
+        "23": [
+            103,
+            110,
+            1001,
+            1006,
+            1012,
+            1013,
+            1014,
+            1300,
+            2000,
+            2003,
+            2004,
+            2005,
+            2007,
+            2010,
+            4187
+        ],
+        "24": [
+            103,
+            110,
+            1001,
+            1006,
+            1012,
+            1013,
+            1014,
+            1300,
+            2000,
+            2003,
+            2004,
+            2005,
+            2007,
+            2010,
+            4187
+        ],
+        "25": [
+            103,
+            110,
+            1001,
+            1006,
+            1012,
+            1013,
+            1014,
+            1300,
+            2000,
+            2003,
+            2004,
+            2005,
+            2007,
+            2010,
+            4187
+        ],
+        "26": [
+            103,
+            110,
+            1001,
+            1006,
+            1009,
+            1012,
+            1013,
+            1014,
+            1202,
+            2000,
+            2003,
+            2004,
+            2005,
+            2007,
+            2010,
+            2600,
+            4187,
+            4191
+        ],
+        "27": [
+            103,
+            110,
+            1001,
+            1003,
+            1006,
+            1009,
+            1012,
+            1013,
+            1014,
+            1202,
+            2000,
+            2003,
+            2004,
+            2005,
+            2007,
+            2010,
+            2600,
+            4191
+        ],
+        "28": [
+            103,
+            110,
+            1001,
+            1003,
+            1004,
+            1005,
+            1006,
+            1007,
+            1008,
+            1009,
+            1012,
+            1013,
+            1014,
+            1100,
+            3024,
+            3025,
+            3026,
+            3027,
+            1102,
+            1202,
+            2000,
+            2003,
+            2004,
+            2005,
+            2007,
+            2010,
+            2801,
+            2802,
+            2803,
+            2804,
+            2811,
+            2812,
+            2813,
+            2814,
+            2815,
+            2816,
+            2817,
+            2818,
+            2820,
+            3028,
+            4191
+        ],
+        "29": [
+            100,
+            101,
+            103,
+            105,
+            110,
+            300,
+            1001,
+            1002,
+            1005,
+            1006,
+            1009,
+            1012,
+            1013,
+            1014,
+            2000,
+            2003,
+            2004,
+            2005,
+            2007,
+            2010,
+            2905,
+            2907,
+            2908,
+            2910,
+            4191
+        ],
+        "31": [
+            103,
+            1003,
+            1005,
+            1006,
+            1007,
+            1009,
+            1012,
+            1013,
+            1014,
+            1100,
+            3024,
+            3025,
+            3026,
+            3027,
+            1102,
+            1202,
+            2803,
+            2804,
+            2811,
+            3000,
+            3002,
+            3004,
+            3011,
+            3012,
+            3013,
+            3016,
+            3017,
+            3018,
+            3019,
+            3020,
+            3028,
+            3100,
+            2010,
+            4191
+        ],
+        "32": [
+            103,
+            1003,
+            1005,
+            1006,
+            1007,
+            1009,
+            1012,
+            1013,
+            1014,
+            1100,
+            3024,
+            3025,
+            3026,
+            3027,
+            1102,
+            1202,
+            2803,
+            2804,
+            2811,
+            2820,
+            3000,
+            3002,
+            3004,
+            3011,
+            3012,
+            3013,
+            3016,
+            3017,
+            3018,
+            3019,
+            3020,
+            3028,
+            3100,
+            3202,
+            2010,
+            4191
+        ],
+        "33": [
+            103,
+            1003,
+            1005,
+            1006,
+            1007,
+            1009,
+            1012,
+            1013,
+            1014,
+            1100,
+            3024,
+            3025,
+            3026,
+            3027,
+            1102,
+            1202,
+            2803,
+            2804,
+            2811,
+            3000,
+            3002,
+            3004,
+            3011,
+            3012,
+            3013,
+            3016,
+            3017,
+            3018,
+            3019,
+            3020,
+            3028,
+            2010,
+            4191
+        ],
+        "901": [
+            103,
+            1006,
+            1012
+        ],
+        "902": [
+            103,
+            4188,
+            4189,
+            4190
+        ],
+        "1000": [
+            4186,
+            4191,
+            103,
+            105,
+            110,
+            1001,
+            1002,
+            1003,
+            1006,
+            1007,
+            1009,
+            1012,
+            1013,
+            1014,
+            1102,
+            2000,
+            2003,
+            2004,
+            2005,
+            2007,
+            2010
+        ]
+    },
+    "property_history_types": {
+        "10": "Καταχώρηση",
+        "20": "Ενημέρωση",
+        "30": "Αλλαγή τιμής",
+        "40": "Υπόδειξη",
+        "50": "Ενοικίαση",
+        "60": "Πώληση",
+        "70": "Αλλαγή Κατάστασης",
+        "80": "Διαγραφή"
+    },
+    "history_types": {
+        "100": "Login",
+        "101": "Logout",
+        "200": "Ανάθεση ακινήτου",
+        "201": "Διαγραφή ακινήτου",
+        "210": "Υπόδειξη ακινήτου",
+        "220": "Ολοκλήρωση ακινήτου",
+        "230": "Ανάρτηση ακινήτου",
+        "231": "Απόσυρση ακινήτου",
+        "300": "Δημιουργία επαφής",
+        "301": "Διαγραφή επαφής",
+        "302": "Ενημέρωση επαφής",
+        "400": "Καταχώρηση εργασίας",
+        "420": "Ολοκλήρωση εργασίας",
+        "500": "Καταχώρηση ζήτησης",
+        "501": "Διαγραφή ζήτησης"
+    },
+    "cache": {
+        "locations": "1746438764"
+    },
+    "clients": [],
+    "ws": "wss://app.estateweb.gr:6969",
+    "image_server": "https://images.estateweb.gr/",
+    "server_message": null,
+    "under_maintenance": 0
+}

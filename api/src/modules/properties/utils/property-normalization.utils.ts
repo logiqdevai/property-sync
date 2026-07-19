@@ -17,6 +17,7 @@ import {
 } from '../interfaces/cms-property.interface';
 import { sanitizeRawDescription } from '../constants/normalization-prompt';
 import { mergeCmsFieldsFromNormalizedRow } from './property-cms-field-mapper.util';
+import { resolveEstateWebLocationId } from '@/integrations/estateweb/utils/estateweb-location-lookup.util';
 
 export interface NormalizedAiRow {
   index?: number;
@@ -269,6 +270,10 @@ export function buildPropertyRecord(
     n,
     structured,
   );
+  const city = n.city ?? null;
+  const district = n.district ?? null;
+  const estatewebLocationId =
+    n.estateweb_location_id ?? resolveEstateWebLocationId(city, district);
   const internalId =
     sp.internal_id ??
     extractInternalIdFromText(
@@ -295,8 +300,8 @@ export function buildPropertyRecord(
     price_start: toDecimal(n.price_start),
     price_web: toDecimal(n.price_web),
     currency: 'EUR',
-    city: n.city ?? null,
-    district: n.district ?? null,
+    city,
+    district,
     address: n.address ?? null,
     postal_code:
       n.postal_code ??
@@ -331,7 +336,7 @@ export function buildPropertyRecord(
         ? readRawString(rawData, ['distance_beach', '_distance_beach'])
         : null),
     estateweb_type_id: n.estateweb_type_id ?? null,
-    estateweb_location_id: n.estateweb_location_id ?? null,
+    estateweb_location_id: estatewebLocationId,
     cms_fields:
       mergedCmsFields.length > 0
         ? (mergedCmsFields as unknown as Prisma.InputJsonValue)

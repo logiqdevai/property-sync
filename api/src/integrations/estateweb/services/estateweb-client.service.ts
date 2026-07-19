@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import FormData from 'form-data';
+import FormData = require('form-data');
 import { NotificationType } from 'generated/prisma';
 import { EstateWebConfig } from '../config/estateweb.config';
 import { EstateWebException } from '../exceptions/estateweb.exception';
@@ -88,10 +88,12 @@ export class EstateWebClientService {
     const url = this.buildUrl(baseUrl, options.path, options.query);
     const headers = this.buildAuthHeaders(session);
 
-    let body: unknown;
+    let body: BodyInit | undefined;
     if (options.formData) {
+      const formBuffer = options.formData.getBuffer();
       Object.assign(headers, options.formData.getHeaders());
-      body = options.formData;
+      headers['Content-Length'] = String(formBuffer.length);
+      body = new Uint8Array(formBuffer);
     } else if (options.body !== undefined) {
       headers['Content-Type'] = 'application/json';
       body = JSON.stringify(options.body);
@@ -102,7 +104,7 @@ export class EstateWebClientService {
       response = await fetch(url, {
         method,
         headers,
-        body: body as BodyInit | undefined,
+        body,
       });
     } catch (error) {
       throw mapFetchError(error, { method, path: options.path });
