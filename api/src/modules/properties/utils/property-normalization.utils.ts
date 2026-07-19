@@ -151,13 +151,79 @@ export function extractLatLng(rawData: unknown): {
 export function parseFallbackPrice(
   rawPrice: string | null | undefined,
 ): number | null {
-  if (!rawPrice) return null;
-  const cleaned = rawPrice
-    .replace(/[^\d.,]/g, '')
-    .replace(/\./g, '')
-    .replace(',', '.');
-  const value = parseFloat(cleaned);
-  return Number.isFinite(value) ? value : null;
+  const prices = parseAllPrices(rawPrice);
+  if (prices.length === 0) return null;
+  return prices.length >= 2
+    ? Math.min(...prices)
+    : prices[0];
+}
+
+export function parseAllPrices(
+  rawPrice: string | null | undefined,
+): number[] {
+  if (!rawPrice) return [];
+  const matches = [
+    ...rawPrice.matchAll(/\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?/g),
+  ];
+  const values: number[] = [];
+  for (const match of matches) {
+    const cleaned = match[0].replace(/\./g, '').replace(',', '.');
+    const value = parseFloat(cleaned);
+    if (Number.isFinite(value) && value > 0) values.push(value);
+  }
+  return [...new Set(values)];
+}
+
+function extractListedPriceFromDescription(
+  description: string | null | undefined,
+): number | null {
+  if (!description) return null;
+  const match = description.match(/Τιμή\s*:\s*([\d.,]+)/i);
+  if (!match?.[1]) return null;
+  return parseFallbackPrice(match[1]);
+}
+
+export function resolveNormalizedPrices(
+  n: Pick<NormalizedAiRow, 'price' | 'price_start' | 'price_web'>,
+  context?: {
+    rawPrice?: string | null;
+    rawDescription?: string | null;
+  },
+): {
+  price: number | null;
+  price_start: number | null;
+  price_web: number | null;
+} {
+  let price = n.price ?? null;
+  let priceStart = n.price_start ?? null;
+  let priceWeb = n.price_web ?? null;
+
+  const fromRaw = parseAllPrices(context?.rawPrice);
+  const fromDesc = extractListedPriceFromDescription(context?.rawDescription);
+
+  if (fromRaw.length >= 2) {
+    const sorted = [...fromRaw].sort((a, b) => a - b);
+    price = sorted[0];
+    priceStart = sorted[sorted.length - 1];
+  } else if (price != null && priceStart != null && priceStart < price) {
+    const tmp = price;
+    price = priceStart;
+    priceStart = tmp;
+  } else if (
+    price != null &&
+    fromDesc != null &&
+    fromDesc < price &&
+    (priceStart == null || priceStart === fromDesc)
+  ) {
+    priceStart = price;
+    price = fromDesc;
+  }
+
+  if (priceWeb == null && price != null) {
+    priceWeb = price;
+  }
+
+  return { price, price_start: priceStart, price_web: priceWeb };
 }
 
 function toDecimal(value: number | null | undefined): Prisma.Decimal | null {
@@ -179,9 +245,15 @@ export function buildFallbackNormalizedRow(sp: {
   raw_title: string | null;
   raw_price: string | null;
 }): NormalizedAiRow {
+  const prices = resolveNormalizedPrices(
+    { price: parseFallbackPrice(sp.raw_price) },
+    { rawPrice: sp.raw_price },
+  );
   return {
     title: sp.raw_title,
-    price: parseFallbackPrice(sp.raw_price),
+    price: prices.price,
+    price_start: prices.price_start,
+    price_web: prices.price_web,
     listing_type: 'UNKNOWN',
     property_type: 'UNKNOWN',
   };
@@ -254,6 +326,7 @@ export function buildPropertyRecord(
     source_url: string;
     raw_title: string | null;
     raw_description: string | null;
+    raw_price?: string | null;
     raw_data: unknown;
     property_id: string;
     internal_id: string | null;
@@ -288,6 +361,18 @@ export function buildPropertyRecord(
           ])
         : null,
     );
+  const rawPrice =
+    sp.raw_price ??
+    (rawData != null
+      ? readRawString(rawData, ['price', '_price'])
+      : null);
+  const detailText = rawData
+    ? readRawString(rawData, ['_detail_text', 'detail_text'])
+    : null;
+  const prices = resolveNormalizedPrices(n, {
+    rawPrice,
+    rawDescription: sp.raw_description ?? detailText,
+  });
 
   return {
     title: n.title ?? sp.raw_title ?? sp.source_url,
@@ -297,9 +382,9 @@ export function buildPropertyRecord(
     listing_type: (n.listing_type as ListingType) ?? ListingType.UNKNOWN,
     property_type: (n.property_type as PropertyType) ?? PropertyType.UNKNOWN,
     status: PropertyStatus.ACTIVE,
-    price: toDecimal(n.price),
-    price_start: toDecimal(n.price_start),
-    price_web: toDecimal(n.price_web),
+    price: toDecimal(prices.price),
+    price_start: toDecimal(prices.price_start),
+    price_web: toDecimal(prices.price_web),
     currency: 'EUR',
     city,
     district,

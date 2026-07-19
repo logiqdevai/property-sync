@@ -77,6 +77,7 @@ Field types:
 - Selectors are AUTOMATICALLY VERIFIED after "done" — if they fail you will be told exactly what broke and MUST fix them
 - listing_selector must match ALL card containers on the page (the repeating outer wrapper)
 - Fields must work WITHIN a single card, not at page level
+- For "price": if a card shows BOTH an old (strikethrough/del) and a new price, select the PARENT that contains BOTH so textContent is like "270.000 € 250.000 €" — never only the strikethrough node
 - For detail_page: you MUST visit an actual detail page and inspect it — do not guess selectors
 - external_id_source "url_path": pipeline extracts last URL path segment (e.g. /property/1165 → "1165")
 - external_id_source "selector": pipeline reads the text of external_id_selector on the detail page

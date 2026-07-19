@@ -42,7 +42,26 @@ export class FieldExtractionService {
         return match ? match[1] : null;
       }
 
-      return (await el.textContent({ timeout: FIELD_TIMEOUT }))?.trim() || null;
+      await el.waitFor({ state: 'attached', timeout: FIELD_TIMEOUT });
+      return (
+        (await el.evaluate((node) => {
+          const isStruck =
+            node instanceof HTMLElement &&
+            (node.tagName === 'DEL' ||
+              node.tagName === 'S' ||
+              node.tagName === 'STRIKE' ||
+              window
+                .getComputedStyle(node)
+                .textDecorationLine.includes('line-through'));
+          if (isStruck && node.parentElement) {
+            const parentText = node.parentElement.textContent
+              ?.replace(/\s+/g, ' ')
+              .trim();
+            if (parentText) return parentText;
+          }
+          return node.textContent?.replace(/\s+/g, ' ').trim() || null;
+        })) ?? null
+      );
     } catch {
       return null;
     }

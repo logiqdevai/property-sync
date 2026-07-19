@@ -34,9 +34,9 @@ ${buildEstateWebTypeCatalogJson()}
   "title": string (clean title: property type + size, no agency codes or extra whitespace),
   "listing_type": ListingType,
   "property_type": PropertyType,
-  "price": number | null (numeric value only, no symbols — "100.000€" → 100000, "450 €/μήνα" → 450),
-  "price_start": number | null (original/list price before discount when visible),
-  "price_web": number | null (web display price when different from price),
+  "price": number | null (CURRENT asking/sale price only — numeric, no symbols: "100.000€" → 100000, "450 €/μήνα" → 450),
+  "price_start": number | null (original list price BEFORE discount; must be >= price when both set; null if no prior/list price shown),
+  "price_web": number | null (price shown on the public website; if not separately labeled, set equal to price — never leave null when price is known),
   "city": string | null,
   "district": string | null,
   "address": string | null,
@@ -77,7 +77,12 @@ ${buildEstateWebTypeCatalogJson()}
 - The site is Greek. Infer listing_type from labels like "ΠΩΛΕΙΤΑΙ" (SALE), "ΕΝΟΙΚΙΑΖΕΤΑΙ" (RENT), "Αγγελία Προς Πώληση" (SALE), "Αγγελία Ενοικίασης" (RENT)
 - raw_location may contain "Κωδικός <code>  <city>" — extract just the city name. raw_description has Υποπεριοχή (sub-region=city) and Γειτονιά (neighborhood=district) for more precise location
 - Prices use Greek thousand separators: "100.000" = 100000, not 100
-- Do NOT return a description field. The listing description is stored separately from the scrape; use raw_description only as a signal for other fields (city, district, features, etc.)
+- Discounted listings often show TWO prices (strikethrough old + current), e.g. "270.000 € 250.000 €", or "Τιμή: 250.000 €" in the description while raw_price still has the old figure. Rules:
+  - price = the LOWER / current asking price (what the buyer pays now)
+  - price_start = the HIGHER / original list price
+  - price_web = the website display price (= price when only one public figure)
+  - Never set price_start below price; if unsure which is current, prefer the value next to "Τιμή:" in raw_description / detail text over a lone higher raw_price
+- Do NOT return a description field. The listing description is stored separately from the scrape; use raw_description only as a signal for other fields (city, district, features, price, etc.)
 - city/district: prefer values from raw_description (Υποπεριοχή/Γειτονιά) over raw_location when available
 - cms_metadata is mainly for rentals (guarantee, income terms, contract period, has_keys)
 - Only include cms_fields entries you are confident about; omit unknown custom fields
