@@ -100,6 +100,14 @@ export class UserPropertiesService {
             },
           }
         : {}),
+      ...(query.date_from || query.date_to
+        ? {
+            created_at: {
+              ...(query.date_from && { gte: query.date_from }),
+              ...(query.date_to && { lte: query.date_to }),
+            },
+          }
+        : {}),
     };
   }
 
@@ -125,11 +133,16 @@ export class UserPropertiesService {
 
     const where = this.buildWhere(userId, query, sourceAgencyId);
 
+    const unlimited = query.limit === 0;
     const [items, total] = await Promise.all([
       this.prisma.userProperty.findMany({
         where,
-        skip: (query.page - 1) * query.limit,
-        take: query.limit,
+        ...(unlimited
+          ? {}
+          : {
+              skip: (query.page - 1) * query.limit,
+              take: query.limit,
+            }),
         orderBy: { updated_at: 'desc' },
         include: {
           canonical_property: {
@@ -140,6 +153,8 @@ export class UserPropertiesService {
       this.prisma.userProperty.count({ where }),
     ]);
 
+    const totalPages = unlimited ? 1 : Math.ceil(total / query.limit);
+
     return {
       data: items.map(({ canonical_property, ...item }) =>
         serializePropertyForApi({
@@ -148,12 +163,12 @@ export class UserPropertiesService {
         }),
       ),
       pagination: {
-        page: query.page,
+        page: unlimited ? 1 : query.page,
         limit: query.limit,
         total,
-        total_pages: Math.ceil(total / query.limit),
-        has_next: query.page < Math.ceil(total / query.limit),
-        has_prev: query.page > 1,
+        total_pages: totalPages,
+        has_next: unlimited ? false : query.page < totalPages,
+        has_prev: unlimited ? false : query.page > 1,
       },
     };
   }

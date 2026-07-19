@@ -20,7 +20,7 @@ const navItems = [
   { label: 'Job Queue', icon: ListTodo, href: Routes.admin.jobs.list, end: false },
   { label: 'Diagnostics', icon: FileSearch, href: Routes.admin.diagnostics.list, end: false },
   { label: 'Properties', icon: Home, href: Routes.admin.properties.list, end: false },
-  { label: 'Sync Runs', icon: RefreshCw, href: Routes.admin.syncRuns, end: true },
+  { label: 'Sync Runs', icon: RefreshCw, href: Routes.admin.syncRuns.list, end: false },
   { label: 'Notifications', icon: Bell, href: Routes.admin.notifications, end: false, showUnreadBadge: true },
   { label: 'App Config', icon: Settings, href: Routes.admin.crawlerConfig, end: false },
 ];

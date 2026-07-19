@@ -141,6 +141,8 @@ export interface PropertyListQuery {
   has_duplicate_group?: boolean;
   search?: string;
   agency_id?: string;
+  date_from?: string;
+  date_to?: string;
 }
 
 export type PropertyCountQuery = Omit<PropertyListQuery, "page" | "limit">;

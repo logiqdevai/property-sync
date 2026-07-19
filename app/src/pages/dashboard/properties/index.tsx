@@ -26,6 +26,7 @@ import {
 import type { PropertyStatus } from "@/features/properties/interfaces/properties.interfaces";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
 import { PropertyDuplicateGroupFilterOptions } from "@/config/constants/dropdowns/property-duplicate-group-filter.options";
+import { TablePageSizeOptions } from "@/config/constants/dropdowns/table-page-size.options";
 import {
   useDeleteUserProperties,
   useDeleteUserProperty,
@@ -46,6 +47,7 @@ import { getTrackableAgencyLabel } from "@/features/user-tracked-agencies/utils/
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
 import { useAuthStore } from "@/stores/auth";
 import { formatPrice } from "@/lib/price";
+import { toEndOfDayIso, toStartOfDayIso } from "@/lib/date";
 import { getDuplicateGroupRowClasses } from "@/lib/duplicate-group-color.utils";
 import { getDuplicateGroupDedupePlan } from "@/lib/duplicate-group-dedupe.utils";
 import { cn } from "@/lib/utils";
@@ -76,6 +78,9 @@ export default function DashboardPropertiesListPage() {
   const [status, setStatus] = useState<PropertyStatus | "all">("all");
   const [trackedAgencyId, setTrackedAgencyId] = useState<string | "all">("all");
   const [duplicateGroup, setDuplicateGroup] = useState<"all" | "true" | "false">("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [limit, setLimit] = useState(20);
   const [page, setPage] = useState(1);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deletePropertyId, setDeletePropertyId] = useState<string | null>(null);
@@ -83,14 +88,16 @@ export default function DashboardPropertiesListPage() {
   const query = useMemo<UserPropertyListQuery>(
     () => ({
       page,
-      limit: 20,
+      limit,
       ...(status !== "all" && { status }),
       ...(trackedAgencyId !== "all" && { user_tracked_agency_id: trackedAgencyId }),
       ...(duplicateGroup !== "all" && {
         has_duplicate_group: duplicateGroup === "true",
       }),
+      ...(dateFrom && { date_from: toStartOfDayIso(dateFrom) }),
+      ...(dateTo && { date_to: toEndOfDayIso(dateTo) }),
     }),
-    [page, status, trackedAgencyId, duplicateGroup],
+    [page, limit, status, trackedAgencyId, duplicateGroup, dateFrom, dateTo],
   );
 
   const countQuery = useMemo<UserPropertyCountQuery>(() => {
@@ -259,18 +266,6 @@ export default function DashboardPropertiesListPage() {
     clearSelection();
   };
 
-  if (isPending) {
-    return (
-      <div className="flex flex-col gap-6">
-        <div>
-          <p className="text-2xl font-semibold tracking-tight text-foreground">My Properties</p>
-          <p className="text-sm text-muted">Your tracked listings.</p>
-        </div>
-        <TableSkeleton rows={8} columns={6} />
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -369,9 +364,60 @@ export default function DashboardPropertiesListPage() {
             </ListBox>
           </Select.Popover>
         </Select>
+        <input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => {
+            setPage(1);
+            setDateFrom(e.target.value);
+          }}
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground"
+          aria-label="From date"
+        />
+        <input
+          type="date"
+          value={dateTo}
+          onChange={(e) => {
+            setPage(1);
+            setDateTo(e.target.value);
+          }}
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground"
+          aria-label="To date"
+        />
+        <Select
+          aria-label="Rows per page"
+          selectedKey={
+            TablePageSizeOptions.find((option) => option.value === limit)?.id ??
+            String(limit)
+          }
+          onSelectionChange={(key) => {
+            setPage(1);
+            const option = TablePageSizeOptions.find(
+              (item) => item.id === String(key),
+            );
+            setLimit(option?.value ?? 20);
+          }}
+          className="w-44"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {TablePageSizeOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
       </div>
 
-      {properties.length === 0 ? (
+      {isPending ? (
+        <TableSkeleton rows={8} columns={6} />
+      ) : properties.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No properties yet. Track an agency to start receiving listings.
         </div>

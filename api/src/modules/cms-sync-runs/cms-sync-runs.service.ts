@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
@@ -27,7 +31,8 @@ const listInclude = {
   crawl_run: {
     select: {
       id: true,
-      source_agency: { select: { name: true } },
+      source_agency_id: true,
+      source_agency: { select: { id: true, name: true } },
     },
   },
   user_integration: {
@@ -39,6 +44,7 @@ const listInclude = {
       user: { select: { id: true, email: true } },
       integration_target: {
         select: {
+          id: true,
           integration_type: true,
           base_url: true,
         },
@@ -167,12 +173,14 @@ export class CmsSyncRunsService {
       run.status !== CmsSyncStatus.FAILED &&
       run.status !== CmsSyncStatus.RETRYING
     ) {
-      throw new Error('Only failed or retrying CMS sync runs can be retried');
+      throw new BadRequestException(
+        'Only failed or retrying CMS sync runs can be retried',
+      );
     }
 
     const maxAttempts = run.max_attempts ?? 3;
     if (run.attempt >= maxAttempts) {
-      throw new Error('Maximum retry attempts reached');
+      throw new BadRequestException('Maximum retry attempts reached');
     }
 
     await this.resetForRetry(id, maxAttempts);

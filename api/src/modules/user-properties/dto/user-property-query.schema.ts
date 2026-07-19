@@ -14,7 +14,13 @@ export const UserPropertyQuerySchema = z.object({
   limit: z
     .string()
     .optional()
-    .transform((v) => (v ? Math.min(parseInt(v, 10), 100) : 20)),
+    .transform((v) => {
+      if (v === undefined || v === '') return 20;
+      const parsed = parseInt(v, 10);
+      if (!Number.isFinite(parsed) || parsed < 0) return 20;
+      if (parsed === 0) return 0;
+      return Math.min(parsed, 100);
+    }),
   status: z.nativeEnum(PropertyStatus).optional(),
   city: z.string().optional(),
   price_min: z
@@ -28,6 +34,16 @@ export const UserPropertyQuerySchema = z.object({
   has_duplicate_group: booleanQueryParam,
   agency_id: z.string().uuid().optional(),
   user_tracked_agency_id: z.string().uuid().optional(),
+  date_from: z
+    .string()
+    .datetime()
+    .optional()
+    .transform((v) => (v ? new Date(v) : undefined)),
+  date_to: z
+    .string()
+    .datetime()
+    .optional()
+    .transform((v) => (v ? new Date(v) : undefined)),
 });
 
 export type UserPropertyQueryType = z.infer<typeof UserPropertyQuerySchema>;

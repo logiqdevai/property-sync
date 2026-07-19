@@ -18,6 +18,7 @@ import GenerationRunDetailPage from "@/pages/admin/generation-runs/detail";
 import CrawlRunsListPage from "@/pages/admin/crawl-runs";
 import CrawlRunDetailPage from "@/pages/admin/crawl-runs/detail";
 import AdminSyncRunsListPage from "@/pages/admin/sync-runs";
+import AdminSyncRunDetailPage from "@/pages/admin/sync-runs/detail";
 import JobsListPage from "@/pages/admin/jobs";
 import JobDetailPage from "@/pages/admin/jobs/detail";
 import DiagnosticsListPage from "@/pages/admin/diagnostics";
@@ -100,6 +101,7 @@ export default function AppRoutes() {
         <Route path="crawl-runs" element={<CrawlRunsListPage />} />
         <Route path="crawl-runs/:id" element={<CrawlRunDetailPage />} />
         <Route path="sync-runs" element={<AdminSyncRunsListPage />} />
+        <Route path="sync-runs/:id" element={<AdminSyncRunDetailPage />} />
         <Route path="jobs" element={<JobsListPage />} />
         <Route path="jobs/:id" element={<JobDetailPage />} />
         <Route path="diagnostics" element={<DiagnosticsListPage />} />

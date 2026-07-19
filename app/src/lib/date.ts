@@ -17,3 +17,11 @@ export function formatDateTime(value: string | null | undefined): string {
     minute: "2-digit",
   });
 }
+
+export function toStartOfDayIso(date: string) {
+  return new Date(`${date}T00:00:00.000Z`).toISOString();
+}
+
+export function toEndOfDayIso(date: string) {
+  return new Date(`${date}T23:59:59.999Z`).toISOString();
+}

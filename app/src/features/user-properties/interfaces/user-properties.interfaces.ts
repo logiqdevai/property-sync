@@ -90,6 +90,8 @@ export interface UserPropertyListQuery {
   has_duplicate_group?: boolean;
   agency_id?: string;
   user_tracked_agency_id?: string;
+  date_from?: string;
+  date_to?: string;
 }
 
 export type UserPropertyCountQuery = Omit<UserPropertyListQuery, "page" | "limit">;

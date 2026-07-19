@@ -62,6 +62,8 @@ export class PropertiesController {
   })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'agency_id', required: false, type: String })
+  @ApiQuery({ name: 'date_from', required: false, type: String })
+  @ApiQuery({ name: 'date_to', required: false, type: String })
   findAll(
     @Query(new ZodValidationPipe(PropertyQuerySchema)) query: PropertyQueryType,
   ) {
@@ -85,6 +87,8 @@ export class PropertiesController {
   })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'agency_id', required: false, type: String })
+  @ApiQuery({ name: 'date_from', required: false, type: String })
+  @ApiQuery({ name: 'date_to', required: false, type: String })
   count(
     @Query(new ZodValidationPipe(PropertyQuerySchema)) query: PropertyQueryType,
   ) {

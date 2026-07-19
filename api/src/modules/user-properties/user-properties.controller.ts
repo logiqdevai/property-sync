@@ -55,6 +55,8 @@ export class UserPropertiesController {
   })
   @ApiQuery({ name: 'agency_id', required: false, type: String })
   @ApiQuery({ name: 'user_tracked_agency_id', required: false, type: String })
+  @ApiQuery({ name: 'date_from', required: false, type: String })
+  @ApiQuery({ name: 'date_to', required: false, type: String })
   findAll(
     @CurrentUser('id') userId: string,
     @Query(new ZodValidationPipe(UserPropertyQuerySchema))
@@ -77,6 +79,8 @@ export class UserPropertiesController {
   })
   @ApiQuery({ name: 'agency_id', required: false, type: String })
   @ApiQuery({ name: 'user_tracked_agency_id', required: false, type: String })
+  @ApiQuery({ name: 'date_from', required: false, type: String })
+  @ApiQuery({ name: 'date_to', required: false, type: String })
   count(
     @CurrentUser('id') userId: string,
     @Query(new ZodValidationPipe(UserPropertyQuerySchema))

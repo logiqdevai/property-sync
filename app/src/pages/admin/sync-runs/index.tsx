@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Table, Select, ListBox, Pagination } from "@heroui/react";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { Routes } from "@/routes/routes";
 import { useAdminUsers } from "@/features/users/hooks/use-admin-users";
 import {
   useAdminCmsSyncRunIntegrations,
@@ -30,6 +32,7 @@ function connectionEmail(connection: {
 }
 
 export default function AdminSyncRunsListPage() {
+  const navigate = useNavigate();
   const [status, setStatus] = useState<CmsSyncStatus | "all">("all");
   const [userId, setUserId] = useState<string | "all">("all");
   const [integrationId, setIntegrationId] = useState<string | "all">("all");
@@ -203,7 +206,12 @@ export default function AdminSyncRunsListPage() {
                 </Table.Header>
                 <Table.Body>
                   {runs.map((run) => (
-                    <Table.Row key={run.id} id={run.id}>
+                    <Table.Row
+                      key={run.id}
+                      id={run.id}
+                      onAction={() => navigate(Routes.admin.syncRuns.detail(run.id))}
+                      className="cursor-pointer"
+                    >
                       <Table.Cell>
                         <span className="font-medium text-foreground">
                           {run.crawl_run?.source_agency?.name ?? "—"}

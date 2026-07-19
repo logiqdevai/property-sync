@@ -18,6 +18,8 @@ export interface CmsSyncRun {
   total_updated: number;
   total_removed: number;
   total_failed: number;
+  payload: Record<string, unknown> | null;
+  response: Record<string, unknown> | null;
   error_message: string | null;
   started_at: string | null;
   finished_at: string | null;
@@ -25,7 +27,8 @@ export interface CmsSyncRun {
   updated_at: string;
   crawl_run?: {
     id: string;
-    source_agency?: { name: string };
+    source_agency_id?: string;
+    source_agency?: { id?: string; name: string };
   };
   user_integration?: {
     id: string;
@@ -34,6 +37,7 @@ export interface CmsSyncRun {
     user_id?: string;
     user?: { id: string; email: string };
     integration_target: {
+      id?: string;
       integration_type: string;
       base_url: string | null;
     };

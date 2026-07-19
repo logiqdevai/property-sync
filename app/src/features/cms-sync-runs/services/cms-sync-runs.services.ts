@@ -30,6 +30,26 @@ export const getAdminCmsSyncRuns = async (
   }
 };
 
+export const getAdminCmsSyncRun = async (id: string): Promise<CmsSyncRun> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.cmsSyncRuns.detail(id));
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to fetch sync run. Please try again.");
+  }
+};
+
+export const retryAdminCmsSyncRun = async (id: string): Promise<CmsSyncRun> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.cmsSyncRuns.retry(id));
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ?? "Failed to retry sync run. Please try again.",
+    );
+  }
+};
+
 export const getAdminCmsSyncRunIntegrations = async (query?: {
   user_id?: string;
 }): Promise<EstateWebIntegrationOption[]> => {

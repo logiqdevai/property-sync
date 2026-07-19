@@ -48,6 +48,19 @@ export class AdminCmsSyncRunsController {
     return this.cmsSyncRunsService.findAll(query);
   }
 
+  @Get('integrations')
+  @ApiOperation({
+    summary: 'List EstateWeb integrations for sync-run filter dropdowns',
+  })
+  @ApiResponse({ status: 200, description: 'EstateWeb user integrations' })
+  @ApiQuery({ name: 'user_id', required: false, type: String })
+  listIntegrations(
+    @Query(new ZodValidationPipe(AdminCmsSyncRunIntegrationsQuerySchema))
+    query: AdminCmsSyncRunIntegrationsQueryType,
+  ) {
+    return this.cmsSyncRunsService.listEstateWebIntegrations(query);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a single CMS sync run detail' })
   @ApiResponse({ status: 200, description: 'CMS sync run detail' })
@@ -62,18 +75,5 @@ export class AdminCmsSyncRunsController {
   @ApiParam({ name: 'id', type: String })
   retry(@Param('id') id: string) {
     return this.cmsSyncRunsService.retry(id);
-  }
-
-  @Get('integrations')
-  @ApiOperation({
-    summary: 'List EstateWeb integrations for sync-run filter dropdowns',
-  })
-  @ApiResponse({ status: 200, description: 'EstateWeb user integrations' })
-  @ApiQuery({ name: 'user_id', required: false, type: String })
-  listIntegrations(
-    @Query(new ZodValidationPipe(AdminCmsSyncRunIntegrationsQuerySchema))
-    query: AdminCmsSyncRunIntegrationsQueryType,
-  ) {
-    return this.cmsSyncRunsService.listEstateWebIntegrations(query);
   }
 }
