@@ -25,6 +25,8 @@ import DiagnosticsListPage from "@/pages/admin/diagnostics";
 import DiagnosticsDetailPage from "@/pages/admin/diagnostics/detail";
 import PropertiesListPage from "@/pages/admin/properties";
 import PropertyDetailPage from "@/pages/admin/properties/detail";
+import SourcePropertyDetailPage from "@/pages/admin/properties/source-detail";
+import UserPropertyDetailPage from "@/pages/admin/properties/user-detail";
 import NotificationsListPage from "@/pages/admin/notifications";
 import DashboardAgenciesPage from "@/pages/dashboard/agencies";
 import DashboardPropertiesListPage from "@/pages/dashboard/properties";
@@ -106,6 +108,8 @@ export default function AppRoutes() {
         <Route path="jobs/:id" element={<JobDetailPage />} />
         <Route path="diagnostics" element={<DiagnosticsListPage />} />
         <Route path="diagnostics/:id" element={<DiagnosticsDetailPage />} />
+        <Route path="properties/sources/:id" element={<SourcePropertyDetailPage />} />
+        <Route path="properties/users/:id" element={<UserPropertyDetailPage />} />
         <Route path="properties" element={<PropertiesListPage />} />
         <Route path="properties/:id" element={<PropertyDetailPage />} />
         <Route path="notifications" element={<NotificationsListPage />} />

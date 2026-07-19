@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import { UserPropertyQueryType } from './dto/user-property-query.schema';
+import { AdminUserPropertyQueryType } from './dto/admin-user-property-query.schema';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import { Prisma, Property, PropertyStatus } from 'generated/prisma';
 import {
@@ -152,7 +153,13 @@ export class UserPropertiesService {
               skip: (query.page - 1) * query.limit,
               take: query.limit,
             }),
-        orderBy: { updated_at: 'desc' },
+        orderBy:
+          query.has_duplicate_group === true
+            ? [
+                { canonical_property: { duplicate_group_id: 'asc' } },
+                { updated_at: 'desc' },
+              ]
+            : { updated_at: 'desc' },
         include: {
           canonical_property: {
             select: { duplicate_group_id: true },
@@ -971,5 +978,510 @@ export class UserPropertiesService {
     if (!userProperty) {
       throw new ForbiddenException('Property not found');
     }
+  }
+
+  private buildAdminWhere(
+    query: AdminUserPropertyQueryType,
+  ): Prisma.UserPropertyWhereInput {
+    const hasCanonicalFilter =
+      !!query.agency_id || query.has_duplicate_group !== undefined;
+
+    return {
+      ...(query.user_id && { user_id: query.user_id }),
+      ...(query.status && { status: query.status }),
+      ...(query.listing_type && { listing_type: query.listing_type }),
+      ...(query.property_type && { property_type: query.property_type }),
+      ...(query.search && {
+        OR: [
+          { id: { equals: query.search } },
+          { property_id: { contains: query.search, mode: 'insensitive' } },
+          { internal_id: { contains: query.search, mode: 'insensitive' } },
+          { title: { contains: query.search, mode: 'insensitive' } },
+          { city: { contains: query.search, mode: 'insensitive' } },
+          { district: { contains: query.search, mode: 'insensitive' } },
+          {
+            user: {
+              email: { contains: query.search, mode: 'insensitive' },
+            },
+          },
+        ],
+      }),
+      ...(hasCanonicalFilter && {
+        canonical_property: {
+          ...(query.agency_id && {
+            source_links: {
+              some: {
+                source_property: { source_agency_id: query.agency_id },
+              },
+            },
+          }),
+          ...(query.has_duplicate_group === true && {
+            duplicate_group_id: { not: null },
+          }),
+          ...(query.has_duplicate_group === false && {
+            duplicate_group_id: null,
+          }),
+        },
+      }),
+      ...(query.date_from || query.date_to
+        ? {
+            created_at: {
+              ...(query.date_from && { gte: query.date_from }),
+              ...(query.date_to && { lte: query.date_to }),
+            },
+          }
+        : {}),
+    };
+  }
+
+  async adminFindAll(query: AdminUserPropertyQueryType) {
+    const where = this.buildAdminWhere(query);
+    const unlimited = query.limit === 0;
+
+    const [items, total] = await Promise.all([
+      this.prisma.userProperty.findMany({
+        where,
+        ...(unlimited
+          ? {}
+          : {
+              skip: (query.page - 1) * query.limit,
+              take: query.limit,
+            }),
+        orderBy:
+          query.has_duplicate_group === true
+            ? [
+                { canonical_property: { duplicate_group_id: 'asc' } },
+                { updated_at: 'desc' },
+              ]
+            : { updated_at: 'desc' },
+        include: {
+          user: { select: { id: true, email: true } },
+          canonical_property: {
+            select: { duplicate_group_id: true },
+          },
+        },
+      }),
+      this.prisma.userProperty.count({ where }),
+    ]);
+
+    const totalPages = unlimited ? 1 : Math.ceil(total / query.limit);
+
+    return {
+      data: items.map(({ canonical_property, user, ...item }) =>
+        serializePropertyForApi({
+          ...item,
+          user,
+          duplicate_group_id: canonical_property.duplicate_group_id,
+        }),
+      ),
+      pagination: {
+        page: unlimited ? 1 : query.page,
+        limit: query.limit,
+        total,
+        total_pages: totalPages,
+        has_next: unlimited ? false : query.page < totalPages,
+        has_prev: unlimited ? false : query.page > 1,
+      },
+    };
+  }
+
+  async adminCount(query: AdminUserPropertyQueryType) {
+    const total = await this.prisma.userProperty.count({
+      where: this.buildAdminWhere(query),
+    });
+    return { total };
+  }
+
+  async adminFindOne(id: string) {
+    const userProperty = await this.prisma.userProperty.findUnique({
+      where: { id },
+      include: {
+        user: { select: { id: true, email: true, role: true } },
+        canonical_property: {
+          include: {
+            source_links: {
+              include: {
+                source_property: {
+                  select: {
+                    id: true,
+                    source_url: true,
+                    property_id: true,
+                    internal_id: true,
+                    raw_title: true,
+                    raw_description: true,
+                    raw_price: true,
+                    raw_location: true,
+                    raw_property_type: true,
+                    raw_listing_type: true,
+                    raw_sqm: true,
+                    raw_bedrooms: true,
+                    raw_bathrooms: true,
+                    last_seen_at: true,
+                    status: true,
+                  },
+                },
+              },
+            },
+            history: {
+              orderBy: { created_at: 'desc' },
+            },
+          },
+        },
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('User property not found');
+    }
+
+    const { canonical_property, user, ...rest } = userProperty;
+
+    return serializePropertyForApi({
+      ...rest,
+      user,
+      duplicate_group_id: canonical_property.duplicate_group_id,
+      source_links: canonical_property.source_links,
+      history: canonical_property.history,
+    });
+  }
+
+  async adminRemove(id: string) {
+    const property = await this.prisma.userProperty.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        user_id: true,
+        duplicate_group_id: true,
+        canonical_property: { select: { duplicate_group_id: true } },
+      },
+    });
+
+    if (!property) {
+      throw new NotFoundException('User property not found');
+    }
+
+    const groupId =
+      property.canonical_property.duplicate_group_id ??
+      property.duplicate_group_id;
+
+    await this.prisma.userProperty.delete({ where: { id } });
+
+    if (groupId) {
+      await this.clearSingletonUserDuplicateGroups(property.user_id, [
+        groupId,
+      ]);
+    }
+  }
+
+  async adminRemoveMany(ids: string[]) {
+    const uniqueIds = [...new Set(ids)];
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: uniqueIds } },
+      select: {
+        id: true,
+        user_id: true,
+        duplicate_group_id: true,
+        canonical_property: { select: { duplicate_group_id: true } },
+      },
+    });
+
+    if (properties.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more user properties not found');
+    }
+
+    await this.prisma.userProperty.deleteMany({
+      where: { id: { in: uniqueIds } },
+    });
+
+    const groupsByUser = new Map<string, string[]>();
+    for (const property of properties) {
+      const groupId =
+        property.canonical_property.duplicate_group_id ??
+        property.duplicate_group_id;
+      if (!groupId) continue;
+      const groupIds = groupsByUser.get(property.user_id) ?? [];
+      groupIds.push(groupId);
+      groupsByUser.set(property.user_id, groupIds);
+    }
+
+    await Promise.all(
+      [...groupsByUser.entries()].map(([userId, groupIds]) =>
+        this.clearSingletonUserDuplicateGroups(userId, groupIds),
+      ),
+    );
+
+    return { deleted: uniqueIds.length };
+  }
+
+  async adminTruncateDescriptions(
+    ids: string[],
+    text: string,
+    replacement?: string,
+  ) {
+    const pieces = normalizeTextTruncatePieces([text]);
+    if (pieces.length === 0) {
+      throw new BadRequestException('Truncate text is required');
+    }
+
+    const replaceWith = replacement ?? '';
+    const persistPieces = replaceWith.length === 0;
+
+    const uniqueIds = [...new Set(ids)];
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: uniqueIds } },
+      select: {
+        id: true,
+        user_id: true,
+        title: true,
+        description: true,
+        canonical_property_id: true,
+      },
+    });
+
+    if (properties.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more user properties not found');
+    }
+
+    const propertyUpdates = properties.flatMap((property) => {
+      const nextTitle =
+        applyTextTruncatePieces(property.title, pieces, replaceWith) ??
+        property.title;
+      const nextDescription = applyTextTruncatePieces(
+        property.description,
+        pieces,
+        replaceWith,
+      );
+
+      if (
+        nextTitle === property.title &&
+        nextDescription === property.description
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          id: property.id,
+          title: nextTitle,
+          description: nextDescription,
+        },
+      ];
+    });
+
+    const canonicalPropertyIds = [
+      ...new Set(properties.map((property) => property.canonical_property_id)),
+    ];
+    const userIds = [...new Set(properties.map((property) => property.user_id))];
+
+    await this.prisma.$transaction(
+      async (tx) => {
+        if (propertyUpdates.length > 0) {
+          await Promise.all(
+            propertyUpdates.map((update) =>
+              tx.userProperty.update({
+                where: { id: update.id },
+                data: {
+                  title: update.title,
+                  description: update.description,
+                },
+              }),
+            ),
+          );
+        }
+
+        if (!persistPieces) return;
+
+        const links = await tx.propertySourceLink.findMany({
+          where: { property_id: { in: canonicalPropertyIds } },
+          select: {
+            source_property: { select: { source_agency_id: true } },
+          },
+        });
+
+        const sourceAgencyIds = [
+          ...new Set(
+            links
+              .map((link) => link.source_property.source_agency_id)
+              .filter((agencyId): agencyId is string => Boolean(agencyId)),
+          ),
+        ];
+
+        if (sourceAgencyIds.length === 0) return;
+
+        const trackers = await tx.userTrackedAgency.findMany({
+          where: {
+            user_id: { in: userIds },
+            source_agency_id: { in: sourceAgencyIds },
+          },
+          select: { id: true, text_truncate_pieces: true },
+        });
+
+        const trackerUpdates = trackers.flatMap((tracker) => {
+          const nextPieces = normalizeTextTruncatePieces([
+            ...tracker.text_truncate_pieces,
+            ...pieces,
+          ]);
+          if (
+            nextPieces.length === tracker.text_truncate_pieces.length &&
+            nextPieces.every(
+              (piece, index) => piece === tracker.text_truncate_pieces[index],
+            )
+          ) {
+            return [];
+          }
+
+          return [{ id: tracker.id, text_truncate_pieces: nextPieces }];
+        });
+
+        if (trackerUpdates.length === 0) return;
+
+        await Promise.all(
+          trackerUpdates.map((update) =>
+            tx.userTrackedAgency.update({
+              where: { id: update.id },
+              data: { text_truncate_pieces: update.text_truncate_pieces },
+            }),
+          ),
+        );
+      },
+      { timeout: 30_000 },
+    );
+
+    return { updated: propertyUpdates.length, total: uniqueIds.length };
+  }
+
+  async adminSplitMany(ids: string[]) {
+    const uniqueIds = [...new Set(ids)];
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: uniqueIds } },
+      select: {
+        id: true,
+        user_id: true,
+        duplicate_group_id: true,
+        canonical_property_id: true,
+        canonical_property: { select: { duplicate_group_id: true } },
+      },
+    });
+
+    if (properties.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more user properties not found');
+    }
+
+    const grouped = properties.filter(
+      (property) =>
+        property.canonical_property.duplicate_group_id ??
+        property.duplicate_group_id,
+    );
+
+    if (grouped.length === 0) {
+      throw new BadRequestException(
+        'None of the selected properties are in a duplicate group',
+      );
+    }
+
+    const userPropertyIds = grouped.map((property) => property.id);
+    const canonicalIds = [
+      ...new Set(grouped.map((property) => property.canonical_property_id)),
+    ];
+
+    await this.prisma.$transaction([
+      this.prisma.property.updateMany({
+        where: { id: { in: canonicalIds } },
+        data: { duplicate_group_id: null },
+      }),
+      this.prisma.userProperty.updateMany({
+        where: {
+          OR: [
+            { id: { in: userPropertyIds } },
+            { canonical_property_id: { in: canonicalIds } },
+          ],
+        },
+        data: { duplicate_group_id: null },
+      }),
+    ]);
+
+    const groupsByUser = new Map<string, string[]>();
+    for (const property of grouped) {
+      const groupId =
+        property.canonical_property.duplicate_group_id ??
+        property.duplicate_group_id;
+      if (!groupId) continue;
+      const groupIds = groupsByUser.get(property.user_id) ?? [];
+      groupIds.push(groupId);
+      groupsByUser.set(property.user_id, groupIds);
+    }
+
+    await Promise.all(
+      [...groupsByUser.entries()].map(([userId, groupIds]) =>
+        this.clearSingletonUserDuplicateGroups(userId, groupIds),
+      ),
+    );
+
+    return { split: grouped.length };
+  }
+
+  async adminDedupeGroups(ids: string[]) {
+    const uniqueIds = [...new Set(ids)];
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: uniqueIds } },
+      select: {
+        id: true,
+        user_id: true,
+        duplicate_group_id: true,
+        canonical_property: { select: { duplicate_group_id: true } },
+      },
+    });
+
+    if (properties.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more user properties not found');
+    }
+
+    const byGroup = new Map<string, string[]>();
+    for (const property of properties) {
+      const groupId =
+        property.canonical_property.duplicate_group_id ??
+        property.duplicate_group_id;
+      if (!groupId) continue;
+      const members = byGroup.get(groupId) ?? [];
+      members.push(property.id);
+      byGroup.set(groupId, members);
+    }
+
+    const keepIds: string[] = [];
+    const deleteIds: string[] = [];
+    const affectedByUser = new Map<string, string[]>();
+
+    for (const [groupId, members] of byGroup) {
+      if (members.length < 2) continue;
+      const sorted = [...members].sort();
+      keepIds.push(sorted[0]);
+      deleteIds.push(...sorted.slice(1));
+
+      for (const id of members) {
+        const property = properties.find((item) => item.id === id);
+        if (!property) continue;
+        const groupIds = affectedByUser.get(property.user_id) ?? [];
+        groupIds.push(groupId);
+        affectedByUser.set(property.user_id, groupIds);
+      }
+    }
+
+    if (deleteIds.length === 0) {
+      throw new BadRequestException(
+        'Select at least two properties from the same duplicate group',
+      );
+    }
+
+    await this.prisma.userProperty.deleteMany({
+      where: { id: { in: deleteIds } },
+    });
+
+    await Promise.all(
+      [...affectedByUser.entries()].map(([userId, groupIds]) =>
+        this.clearSingletonUserDuplicateGroups(userId, groupIds),
+      ),
+    );
+
+    return { deleted: deleteIds.length, kept: keepIds };
   }
 }

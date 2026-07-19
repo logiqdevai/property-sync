@@ -99,6 +99,23 @@ export const ApiRoutes = {
             bulkSplit: "/admin/properties/bulk-split",
             split: (id: string) => `/admin/properties/${id}/split`,
         },
+        sourceProperties: {
+            prefix: "/admin/source-properties",
+            list: "/admin/source-properties",
+            count: "/admin/source-properties/count",
+            detail: (id: string) => `/admin/source-properties/${id}`,
+            bulkDelete: "/admin/source-properties/bulk-delete",
+        },
+        userProperties: {
+            prefix: "/admin/user-properties",
+            list: "/admin/user-properties",
+            count: "/admin/user-properties/count",
+            detail: (id: string) => `/admin/user-properties/${id}`,
+            bulkDelete: "/admin/user-properties/bulk-delete",
+            truncateDescriptions: "/admin/user-properties/truncate-descriptions",
+            dedupeGroups: "/admin/user-properties/dedupe-groups",
+            bulkSplit: "/admin/user-properties/bulk-split",
+        },
         notifications: {
             prefix: "/admin/notifications",
             list: "/admin/notifications",

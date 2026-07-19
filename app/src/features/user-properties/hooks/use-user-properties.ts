@@ -1,19 +1,29 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import {
+  deleteAdminUserProperties,
+  deleteAdminUserProperty,
   deleteUserProperties,
   deleteUserProperty,
+  dedupeAdminUserPropertyGroups,
   dedupeUserPropertyGroups,
+  getAdminUserProperties,
+  getAdminUserPropertiesCount,
+  getAdminUserProperty,
   getUserProperties,
   getUserPropertiesCount,
   getUserProperty,
   pushUserPropertiesToCrm,
   pushUserPropertyToCrm,
+  splitAdminUserProperties,
   splitUserProperties,
+  truncateAdminUserPropertyDescriptions,
   truncateUserPropertyDescriptions,
   updateUserProperty,
 } from "../services/user-properties.services";
 import type {
+  AdminUserPropertyCountQuery,
+  AdminUserPropertyListQuery,
   DeleteUserPropertiesPayload,
   DedupeUserPropertiesPayload,
   PushUserPropertiesToCrmPayload,
@@ -32,6 +42,13 @@ export const useUserProperties = (query: UserPropertyListQuery) => {
   });
 };
 
+export const useAdminUserProperties = (query: AdminUserPropertyListQuery) => {
+  return useQuery({
+    queryKey: ["adminUserProperties", "list", query],
+    queryFn: () => getAdminUserProperties(query),
+  });
+};
+
 export const useUserPropertiesCount = (query: UserPropertyCountQuery) => {
   return useQuery({
     queryKey: ["userProperties", "count", query],
@@ -39,10 +56,27 @@ export const useUserPropertiesCount = (query: UserPropertyCountQuery) => {
   });
 };
 
+export const useAdminUserPropertiesCount = (
+  query: AdminUserPropertyCountQuery,
+) => {
+  return useQuery({
+    queryKey: ["adminUserProperties", "count", query],
+    queryFn: () => getAdminUserPropertiesCount(query),
+  });
+};
+
 export const useUserProperty = (id: string) => {
   return useQuery({
     queryKey: ["userProperties", "detail", id],
     queryFn: () => getUserProperty(id),
+    enabled: !!id,
+  });
+};
+
+export const useAdminUserProperty = (id: string) => {
+  return useQuery({
+    queryKey: ["adminUserProperties", "detail", id],
+    queryFn: () => getAdminUserProperty(id),
     enabled: !!id,
   });
 };
@@ -152,6 +186,29 @@ export const useDeleteUserProperty = () => {
   });
 };
 
+export const useDeleteAdminUserProperty = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteAdminUserProperty(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
+      toast({
+        title: "User property deleted",
+        duration: 2000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not delete user property",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
 export const useDeleteUserProperties = () => {
   const queryClient = useQueryClient();
 
@@ -164,6 +221,106 @@ export const useDeleteUserProperties = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not delete properties",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDeleteAdminUserProperties = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: DeleteUserPropertiesPayload) =>
+      deleteAdminUserProperties(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
+      toast({
+        title: "User properties deleted",
+        description: `Deleted ${result.deleted} ${result.deleted === 1 ? "property" : "properties"}.`,
+        duration: 2000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not delete user properties",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useTruncateAdminUserPropertyDescriptions = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: TruncateUserPropertyDescriptionsPayload) =>
+      truncateAdminUserPropertyDescriptions(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
+      toast({
+        title: "Text truncated",
+        description: `Updated ${result.updated} of ${result.total} ${result.total === 1 ? "property" : "properties"}.`,
+        duration: 2000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not truncate text",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDedupeAdminUserPropertyGroups = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: DedupeUserPropertiesPayload) =>
+      dedupeAdminUserPropertyGroups(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
+      toast({
+        title: "Kept one per group",
+        description: `Deleted ${result.deleted} duplicate ${result.deleted === 1 ? "property" : "properties"}.`,
+        duration: 2000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not keep one per group",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useSplitAdminUserProperties = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: SplitUserPropertiesPayload) =>
+      splitAdminUserProperties(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
+      toast({
+        title: "Split from group",
+        description: `Removed ${result.split} ${result.split === 1 ? "property" : "properties"} from duplicate groups.`,
+        duration: 2000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not split from group",
         description: error.message,
         variant: "error",
       });

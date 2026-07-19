@@ -13,6 +13,7 @@ import { CmsSyncRunsModule } from './modules/cms-sync-runs/cms-sync-runs.module'
 import { JobsModule } from './modules/jobs/jobs.module';
 import { DiagnosticsModule } from './modules/diagnostics/diagnostics.module';
 import { PropertiesModule } from './modules/properties/properties.module';
+import { SourcePropertiesModule } from './modules/source-properties/source-properties.module';
 import { OpenAiWebhooksModule } from './modules/openai-webhooks/openai-webhooks.module';
 import { UserIntegrationsModule } from './modules/user-integrations/user-integrations.module';
 import { UserTrackedAgenciesModule } from './modules/user-tracked-agencies/user-tracked-agencies.module';
@@ -49,6 +50,7 @@ import { CmsSyncModule } from './modules/cms-sync/cms-sync.module';
     JobsModule,
     DiagnosticsModule,
     PropertiesModule,
+    SourcePropertiesModule,
     OpenAiWebhooksModule,
     UserTrackedAgenciesModule,
     UserPropertiesModule,

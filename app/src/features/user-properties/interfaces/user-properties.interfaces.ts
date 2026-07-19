@@ -43,6 +43,11 @@ export interface UserProperty extends PropertyCmsFields {
   last_synced_at: string | null;
   created_at: string;
   updated_at: string;
+  user?: {
+    id: string;
+    email: string;
+    role?: string;
+  };
 }
 
 export interface UserPropertyDetail extends UserProperty {
@@ -98,7 +103,26 @@ export interface UserPropertyListQuery {
   date_to?: string;
 }
 
+export interface AdminUserPropertyListQuery {
+  page?: number;
+  limit?: number;
+  status?: PropertyStatus;
+  listing_type?: ListingType;
+  property_type?: PropertyType;
+  search?: string;
+  user_id?: string;
+  agency_id?: string;
+  has_duplicate_group?: boolean;
+  date_from?: string;
+  date_to?: string;
+}
+
 export type UserPropertyCountQuery = Omit<UserPropertyListQuery, "page" | "limit">;
+
+export type AdminUserPropertyCountQuery = Omit<
+  AdminUserPropertyListQuery,
+  "page" | "limit"
+>;
 
 export interface UserPropertyCountResponse {
   total: number;

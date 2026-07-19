@@ -1,61 +1,48 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Button, Chip, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { PropertyDetailView } from "@/components/ui/property-detail-view";
 import {
-  useProperty,
-  useSplitProperty,
-  useTruncatePropertyDescriptions,
-} from "@/features/properties/hooks/use-properties";
+  useAdminUserProperty,
+  useDeleteAdminUserProperty,
+} from "@/features/user-properties/hooks/use-user-properties";
 
-export default function PropertyDetailPage() {
+export default function UserPropertyDetailPage() {
   const { id = "" } = useParams();
-  const splitConfirm = useOverlayState();
-  const truncateConfirm = useOverlayState();
-  const { data: property, isPending } = useProperty(id);
-  const splitProperty = useSplitProperty();
-  const truncateDescriptions = useTruncatePropertyDescriptions();
+  const navigate = useNavigate();
+  const deleteConfirm = useOverlayState();
+  const { data: property, isPending } = useAdminUserProperty(id);
+  const deleteUserProperty = useDeleteAdminUserProperty();
 
   if (isPending || !property) {
     return <DetailSkeleton />;
   }
 
-  const handleSplit = async () => {
-    await splitProperty.mutateAsync(property.id);
-  };
-
-  const handleTruncate = async ({
-    text,
-    replacement,
-  }: {
-    text: string;
-    replacement?: string;
-  }) => {
-    await truncateDescriptions.mutateAsync({
-      property_ids: [property.id],
-      text,
-      ...(replacement ? { replacement } : {}),
-    });
+  const handleDelete = async () => {
+    await deleteUserProperty.mutateAsync(property.id);
+    navigate(Routes.admin.properties.userList);
   };
 
   return (
     <PropertyDetailView
       property={property}
-      backHref={Routes.admin.properties.list}
-      backLabel="← Back to properties"
+      backHref={Routes.admin.properties.userList}
+      backLabel="← Back to user properties"
       headerActions={
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" onPress={truncateConfirm.open}>
-            Truncate text
-          </Button>
-          {property.duplicate_group_id ? (
-            <Button variant="secondary" onPress={splitConfirm.open}>
-              Split from group
-            </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {property.user ? (
+            <Link
+              to={Routes.admin.users.detail(property.user.id)}
+              className="text-sm text-accent hover:underline"
+            >
+              Owner: {property.user.email}
+            </Link>
           ) : null}
+          <Button variant="danger" onPress={deleteConfirm.open}>
+            Delete
+          </Button>
         </div>
       }
       footer={
@@ -94,18 +81,12 @@ export default function PropertyDetailPage() {
             )}
           </section>
           <ConfirmationDialog
-            state={splitConfirm}
-            title="Split from duplicate group?"
-            description="This property will be removed from its duplicate group. Other grouped properties stay linked."
-            confirmLabel="Split"
-            onConfirm={handleSplit}
-            isPending={splitProperty.isPending}
-          />
-          <TruncateDescriptionDialog
-            state={truncateConfirm}
-            propertyCount={1}
-            onConfirm={handleTruncate}
-            isPending={truncateDescriptions.isPending}
+            state={deleteConfirm}
+            title="Delete this user property?"
+            description="This cannot be undone. The user's saved copy will be removed."
+            confirmLabel="Delete"
+            onConfirm={handleDelete}
+            isPending={deleteUserProperty.isPending}
           />
         </>
       }

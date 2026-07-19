@@ -89,7 +89,10 @@ export class PropertiesService {
               skip: (query.page - 1) * query.limit,
               take: query.limit,
             }),
-        orderBy: { updated_at: 'desc' },
+        orderBy:
+          query.has_duplicate_group === true
+            ? [{ duplicate_group_id: 'asc' }, { updated_at: 'desc' }]
+            : { updated_at: 'desc' },
       }),
       this.prisma.property.count({ where }),
     ]);

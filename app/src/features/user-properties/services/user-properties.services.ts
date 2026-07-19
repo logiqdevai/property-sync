@@ -11,6 +11,8 @@ import type {
   SplitUserPropertiesResult,
   UpdateUserPropertyPayload,
   UserProperty,
+  AdminUserPropertyCountQuery,
+  AdminUserPropertyListQuery,
   UserPropertyCountQuery,
   UserPropertyCountResponse,
   UserPropertyDetail,
@@ -32,6 +34,19 @@ export const getUserProperties = async (
   }
 };
 
+export const getAdminUserProperties = async (
+  query?: AdminUserPropertyListQuery,
+): Promise<PaginatedResponse<UserProperty>> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.userProperties.list, {
+      params: query,
+    });
+    return response.data;
+  } catch {
+    throw new Error("Failed to fetch user properties. Please try again.");
+  }
+};
+
 export const getUserPropertiesCount = async (
   query?: UserPropertyCountQuery,
 ): Promise<UserPropertyCountResponse> => {
@@ -45,12 +60,38 @@ export const getUserPropertiesCount = async (
   }
 };
 
+export const getAdminUserPropertiesCount = async (
+  query?: AdminUserPropertyCountQuery,
+): Promise<UserPropertyCountResponse> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.userProperties.count, {
+      params: query,
+    });
+    return response.data;
+  } catch {
+    throw new Error("Failed to fetch user property count. Please try again.");
+  }
+};
+
 export const getUserProperty = async (id: string): Promise<UserPropertyDetail> => {
   try {
     const response = await axiosInstance.get(ApiRoutes.userProperties.detail(id));
     return response.data;
   } catch {
     throw new Error("Failed to fetch property. Please try again.");
+  }
+};
+
+export const getAdminUserProperty = async (
+  id: string,
+): Promise<UserPropertyDetail> => {
+  try {
+    const response = await axiosInstance.get(
+      ApiRoutes.admin.userProperties.detail(id),
+    );
+    return response.data;
+  } catch {
+    throw new Error("Failed to fetch user property. Please try again.");
   }
 };
 
@@ -97,6 +138,16 @@ export const deleteUserProperty = async (id: string): Promise<void> => {
   }
 };
 
+export const deleteAdminUserProperty = async (id: string): Promise<void> => {
+  try {
+    await axiosInstance.delete(ApiRoutes.admin.userProperties.detail(id));
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to delete user property.",
+    );
+  }
+};
+
 export const deleteUserProperties = async (
   payload: DeleteUserPropertiesPayload,
 ): Promise<{ deleted: number }> => {
@@ -105,6 +156,70 @@ export const deleteUserProperties = async (
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to delete properties.");
+  }
+};
+
+export const deleteAdminUserProperties = async (
+  payload: DeleteUserPropertiesPayload,
+): Promise<{ deleted: number }> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.bulkDelete,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to delete user properties.",
+    );
+  }
+};
+
+export const truncateAdminUserPropertyDescriptions = async (
+  payload: TruncateUserPropertyDescriptionsPayload,
+): Promise<TruncateUserPropertyDescriptionsResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.truncateDescriptions,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to truncate user property descriptions.",
+    );
+  }
+};
+
+export const dedupeAdminUserPropertyGroups = async (
+  payload: DedupeUserPropertiesPayload,
+): Promise<DedupeUserPropertiesResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.dedupeGroups,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to keep one user property per group.",
+    );
+  }
+};
+
+export const splitAdminUserProperties = async (
+  payload: SplitUserPropertiesPayload,
+): Promise<SplitUserPropertiesResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.bulkSplit,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to split user properties from groups.",
+    );
   }
 };
 

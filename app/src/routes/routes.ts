@@ -48,7 +48,11 @@ export const Routes = {
         },
         properties: {
             list: "/admin/properties",
+            sourceList: "/admin/properties?tab=source",
+            userList: "/admin/properties?tab=user",
             detail: (id: string) => `/admin/properties/${id}`,
+            sourceDetail: (id: string) => `/admin/properties/sources/${id}`,
+            userDetail: (id: string) => `/admin/properties/users/${id}`,
         },
         notifications: "/admin/notifications",
         integrationTargets: {
