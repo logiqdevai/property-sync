@@ -497,7 +497,7 @@ export default function DashboardPropertyDetailPage() {
                 <input type="hidden" {...register("floor")} />
                 <CatalogField
                   label="Floor"
-                  displayValue={floor}
+                  displayValue={floor ?? null}
                   emptyLabel="Select floor"
                   onChoose={floorPicker.open}
                   onClear={() => {
