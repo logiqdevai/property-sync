@@ -1,7 +1,16 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, RotateCcw, Trash2 } from "lucide-react";
-import { Button, Table, Select, ListBox, Pagination, useOverlayState } from "@heroui/react";
+import {
+  Button,
+  Checkbox,
+  Table,
+  Select,
+  ListBox,
+  Pagination,
+  useOverlayState,
+  type Selection,
+} from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { TableRowActionsMenu, type TableRowAction } from "@/components/ui/table-row-actions-menu";
@@ -42,7 +51,7 @@ export default function JobsListPage() {
   const [status, setStatus] = useState<JobStatus | "all">("all");
   const [queueName, setQueueName] = useState<string>("all");
   const [page, setPage] = useState(1);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deleteJobId, setDeleteJobId] = useState<string | null>(null);
 
   const query = useMemo<JobLogListQuery>(
@@ -62,16 +71,15 @@ export default function JobsListPage() {
 
   const jobs = data?.data ?? [];
   const pagination = data?.pagination;
+  const selectedIds = useMemo(() => {
+    if (selectedKeys === "all") {
+      return new Set(jobs.map((job) => job.id));
+    }
+    return new Set([...selectedKeys].map(String));
+  }, [selectedKeys, jobs]);
   const selectedCount = selectedIds.size;
 
-  const toggleSelection = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  const clearSelection = () => setSelectedKeys(new Set());
 
   const handleJobAction = (jobId: string, actionId: string) => {
     if (actionId === "details") {
@@ -93,7 +101,10 @@ export default function JobsListPage() {
   const handleDelete = async () => {
     if (!deleteJobId) return;
     await deleteJob.mutateAsync(deleteJobId);
-    setSelectedIds((prev) => {
+    setSelectedKeys((prev) => {
+      if (prev === "all") {
+        return new Set(jobs.map((job) => job.id).filter((id) => id !== deleteJobId));
+      }
       const next = new Set(prev);
       next.delete(deleteJobId);
       return next;
@@ -103,7 +114,7 @@ export default function JobsListPage() {
 
   const handleBulkDelete = async () => {
     await deleteJobs.mutateAsync({ job_ids: Array.from(selectedIds) });
-    setSelectedIds(new Set());
+    clearSelection();
   };
 
   return (
@@ -182,10 +193,23 @@ export default function JobsListPage() {
         <div className="rounded-xl border border-border bg-surface overflow-hidden">
           <Table>
             <Table.ScrollContainer>
-              <Table.Content aria-label="Jobs">
+              <Table.Content
+                aria-label="Jobs"
+                selectionMode="multiple"
+                selectedKeys={selectedKeys}
+                onSelectionChange={setSelectedKeys}
+              >
                 <Table.Header>
-                  <Table.Column isRowHeader>Select</Table.Column>
-                  <Table.Column>Queue</Table.Column>
+                  <Table.Column className="pr-0">
+                    <Checkbox aria-label="Select all jobs on this page" slot="selection">
+                      <Checkbox.Content>
+                        <Checkbox.Control>
+                          <Checkbox.Indicator />
+                        </Checkbox.Control>
+                      </Checkbox.Content>
+                    </Checkbox>
+                  </Table.Column>
+                  <Table.Column isRowHeader>Queue</Table.Column>
                   <Table.Column>Job</Table.Column>
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Attempts</Table.Column>
@@ -197,13 +221,18 @@ export default function JobsListPage() {
                 <Table.Body>
                   {jobs.map((job) => (
                     <Table.Row key={job.id} id={job.id}>
-                      <Table.Cell>
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.has(job.id)}
-                          onChange={() => toggleSelection(job.id)}
+                      <Table.Cell className="pr-0">
+                        <Checkbox
                           aria-label={`Select job ${job.id}`}
-                        />
+                          slot="selection"
+                          variant="secondary"
+                        >
+                          <Checkbox.Content>
+                            <Checkbox.Control>
+                              <Checkbox.Indicator />
+                            </Checkbox.Control>
+                          </Checkbox.Content>
+                        </Checkbox>
                       </Table.Cell>
                       <Table.Cell>{job.queue_name}</Table.Cell>
                       <Table.Cell>{job.job_name ?? "—"}</Table.Cell>

@@ -1,6 +1,17 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Table, Select, ListBox, Input, Modal, Pagination, useOverlayState } from "@heroui/react";
+import {
+  Button,
+  Checkbox,
+  Table,
+  Select,
+  ListBox,
+  Input,
+  Modal,
+  Pagination,
+  useOverlayState,
+  type Selection,
+} from "@heroui/react";
 import { Search, Plus, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
@@ -43,7 +54,7 @@ export default function ScrapersListPage() {
   const [health, setHealth] = useState<ScraperHealth | "all">("all");
   const [agencyId, setAgencyId] = useState<string | "all">("all");
   const [page, setPage] = useState(1);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deleteScraperId, setDeleteScraperId] = useState<string | null>(null);
   const debouncedSearch = useDebouncedValue(search, 300);
 
@@ -68,21 +79,23 @@ export default function ScrapersListPage() {
   const scrapers = data?.data ?? [];
   const pagination = data?.pagination;
   const agencies = agenciesData?.data ?? [];
+  const selectedIds = useMemo(() => {
+    if (selectedKeys === "all") {
+      return new Set(scrapers.map((scraper) => scraper.id));
+    }
+    return new Set([...selectedKeys].map(String));
+  }, [selectedKeys, scrapers]);
   const selectedCount = selectedIds.size;
 
-  const toggleSelection = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  const clearSelection = () => setSelectedKeys(new Set());
 
   const handleDelete = async () => {
     if (!deleteScraperId) return;
     await deleteScraper.mutateAsync(deleteScraperId);
-    setSelectedIds((prev) => {
+    setSelectedKeys((prev) => {
+      if (prev === "all") {
+        return new Set(scrapers.map((scraper) => scraper.id).filter((id) => id !== deleteScraperId));
+      }
       const next = new Set(prev);
       next.delete(deleteScraperId);
       return next;
@@ -92,7 +105,7 @@ export default function ScrapersListPage() {
 
   const handleBulkDelete = async () => {
     await deleteScrapers.mutateAsync({ scraper_ids: Array.from(selectedIds) });
-    setSelectedIds(new Set());
+    clearSelection();
   };
 
   return (
@@ -217,10 +230,23 @@ export default function ScrapersListPage() {
         <div className="rounded-xl border border-border bg-surface overflow-hidden">
           <Table>
             <Table.ScrollContainer>
-              <Table.Content aria-label="Scrapers">
+              <Table.Content
+                aria-label="Scrapers"
+                selectionMode="multiple"
+                selectedKeys={selectedKeys}
+                onSelectionChange={setSelectedKeys}
+              >
                 <Table.Header>
-                  <Table.Column isRowHeader>Select</Table.Column>
-                  <Table.Column>Name</Table.Column>
+                  <Table.Column className="pr-0">
+                    <Checkbox aria-label="Select all scrapers on this page" slot="selection">
+                      <Checkbox.Content>
+                        <Checkbox.Control>
+                          <Checkbox.Indicator />
+                        </Checkbox.Control>
+                      </Checkbox.Content>
+                    </Checkbox>
+                  </Table.Column>
+                  <Table.Column isRowHeader>Name</Table.Column>
                   <Table.Column>Agency</Table.Column>
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Health</Table.Column>
@@ -237,15 +263,18 @@ export default function ScrapersListPage() {
                       onAction={() => navigate(Routes.admin.scrapers.detail(scraper.id))}
                       className="cursor-pointer"
                     >
-                      <Table.Cell>
-                        <div onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.has(scraper.id)}
-                            onChange={() => toggleSelection(scraper.id)}
-                            aria-label={`Select scraper ${scraper.name}`}
-                          />
-                        </div>
+                      <Table.Cell className="pr-0">
+                        <Checkbox
+                          aria-label={`Select scraper ${scraper.name}`}
+                          slot="selection"
+                          variant="secondary"
+                        >
+                          <Checkbox.Content>
+                            <Checkbox.Control>
+                              <Checkbox.Indicator />
+                            </Checkbox.Control>
+                          </Checkbox.Content>
+                        </Checkbox>
                       </Table.Cell>
                       <Table.Cell>
                         <div className="flex flex-col">

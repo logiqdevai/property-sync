@@ -1,6 +1,15 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Table, Select, ListBox, Pagination, useOverlayState } from "@heroui/react";
+import {
+  Button,
+  Checkbox,
+  Table,
+  Select,
+  ListBox,
+  Pagination,
+  useOverlayState,
+  type Selection,
+} from "@heroui/react";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
@@ -55,7 +64,7 @@ export default function CrawlRunsListPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deleteCrawlRunId, setDeleteCrawlRunId] = useState<string | null>(null);
 
   const query = useMemo<CrawlRunListQuery>(
@@ -84,21 +93,23 @@ export default function CrawlRunsListPage() {
   const agencies = agenciesData?.data ?? [];
   const scrapers = scrapersData?.data ?? [];
   const users = usersData?.data ?? [];
+  const selectedIds = useMemo(() => {
+    if (selectedKeys === "all") {
+      return new Set(runs.map((run) => run.id));
+    }
+    return new Set([...selectedKeys].map(String));
+  }, [selectedKeys, runs]);
   const selectedCount = selectedIds.size;
 
-  const toggleSelection = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  const clearSelection = () => setSelectedKeys(new Set());
 
   const handleDelete = async () => {
     if (!deleteCrawlRunId) return;
     await deleteCrawlRun.mutateAsync(deleteCrawlRunId);
-    setSelectedIds((prev) => {
+    setSelectedKeys((prev) => {
+      if (prev === "all") {
+        return new Set(runs.map((run) => run.id).filter((id) => id !== deleteCrawlRunId));
+      }
       const next = new Set(prev);
       next.delete(deleteCrawlRunId);
       return next;
@@ -108,7 +119,7 @@ export default function CrawlRunsListPage() {
 
   const handleBulkDelete = async () => {
     await deleteCrawlRuns.mutateAsync({ crawl_run_ids: Array.from(selectedIds) });
-    setSelectedIds(new Set());
+    clearSelection();
   };
 
   return (
@@ -270,10 +281,23 @@ export default function CrawlRunsListPage() {
         <div className="rounded-xl border border-border bg-surface overflow-hidden">
           <Table>
             <Table.ScrollContainer>
-              <Table.Content aria-label="Crawl runs">
+              <Table.Content
+                aria-label="Crawl runs"
+                selectionMode="multiple"
+                selectedKeys={selectedKeys}
+                onSelectionChange={setSelectedKeys}
+              >
                 <Table.Header>
-                  <Table.Column isRowHeader>Select</Table.Column>
-                  <Table.Column>Agency</Table.Column>
+                  <Table.Column className="pr-0">
+                    <Checkbox aria-label="Select all crawl runs on this page" slot="selection">
+                      <Checkbox.Content>
+                        <Checkbox.Control>
+                          <Checkbox.Indicator />
+                        </Checkbox.Control>
+                      </Checkbox.Content>
+                    </Checkbox>
+                  </Table.Column>
+                  <Table.Column isRowHeader>Agency</Table.Column>
                   <Table.Column>Scraper</Table.Column>
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Totals</Table.Column>
@@ -290,15 +314,18 @@ export default function CrawlRunsListPage() {
                       onAction={() => navigate(Routes.admin.crawlRuns.detail(run.id))}
                       className="cursor-pointer"
                     >
-                      <Table.Cell>
-                        <div onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.has(run.id)}
-                            onChange={() => toggleSelection(run.id)}
-                            aria-label={`Select crawl run ${run.id}`}
-                          />
-                        </div>
+                      <Table.Cell className="pr-0">
+                        <Checkbox
+                          aria-label={`Select crawl run ${run.id}`}
+                          slot="selection"
+                          variant="secondary"
+                        >
+                          <Checkbox.Content>
+                            <Checkbox.Control>
+                              <Checkbox.Indicator />
+                            </Checkbox.Control>
+                          </Checkbox.Content>
+                        </Checkbox>
                       </Table.Cell>
                       <Table.Cell>
                         <span className="font-medium text-foreground">

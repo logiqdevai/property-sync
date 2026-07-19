@@ -2,12 +2,14 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Button,
+  Checkbox,
   ListBox,
   Modal,
   Pagination,
   Select,
   Table,
   useOverlayState,
+  type Selection,
 } from "@heroui/react";
 import { Copy, MailOpen, Send, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
@@ -83,7 +85,7 @@ export default function NotificationsListPage() {
   const [severity, setSeverity] = useState<NotificationSeverity | "all">("all");
   const [readState, setReadState] = useState<"all" | "true" | "false">("all");
   const [page, setPage] = useState(1);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deleteNotificationId, setDeleteNotificationId] = useState<string | null>(null);
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
 
@@ -112,40 +114,27 @@ export default function NotificationsListPage() {
 
   const notifications = data?.data ?? [];
   const pagination = data?.pagination;
+  const selectedIds = useMemo(() => {
+    if (selectedKeys === "all") {
+      return new Set(notifications.map((notification) => notification.id));
+    }
+    return new Set([...selectedKeys].map(String));
+  }, [selectedKeys, notifications]);
   const selectedCount = selectedIds.size;
-  const allVisibleSelected =
-    notifications.length > 0 && notifications.every((notification) => selectedIds.has(notification.id));
 
-  const toggleSelection = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const toggleSelectAllVisible = () => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (allVisibleSelected) {
-        for (const notification of notifications) {
-          next.delete(notification.id);
-        }
-        return next;
-      }
-
-      for (const notification of notifications) {
-        next.add(notification.id);
-      }
-      return next;
-    });
-  };
+  const clearSelection = () => setSelectedKeys(new Set());
 
   const handleDelete = async () => {
     if (!deleteNotificationId) return;
     await deleteNotification.mutateAsync(deleteNotificationId);
-    setSelectedIds((prev) => {
+    setSelectedKeys((prev) => {
+      if (prev === "all") {
+        return new Set(
+          notifications
+            .map((notification) => notification.id)
+            .filter((id) => id !== deleteNotificationId),
+        );
+      }
       const next = new Set(prev);
       next.delete(deleteNotificationId);
       return next;
@@ -155,7 +144,7 @@ export default function NotificationsListPage() {
 
   const handleBulkDelete = async () => {
     await deleteNotifications.mutateAsync({ ids: Array.from(selectedIds) });
-    setSelectedIds(new Set());
+    clearSelection();
   };
 
   const handleSendTelegramTest = async (values: SendTelegramTestFormValues) => {
@@ -204,7 +193,7 @@ export default function NotificationsListPage() {
           selectedKey={type}
           onSelectionChange={(key) => {
             setPage(1);
-            setSelectedIds(new Set());
+            clearSelection();
             setType(key as NotificationType | "all");
           }}
           className="w-64"
@@ -229,7 +218,7 @@ export default function NotificationsListPage() {
           selectedKey={severity}
           onSelectionChange={(key) => {
             setPage(1);
-            setSelectedIds(new Set());
+            clearSelection();
             setSeverity(key as NotificationSeverity | "all");
           }}
           className="w-44"
@@ -254,7 +243,7 @@ export default function NotificationsListPage() {
           selectedKey={readState}
           onSelectionChange={(key) => {
             setPage(1);
-            setSelectedIds(new Set());
+            clearSelection();
             setReadState(key as "all" | "true" | "false");
           }}
           className="w-36"
@@ -286,15 +275,21 @@ export default function NotificationsListPage() {
           <div className="rounded-xl border border-border bg-surface overflow-hidden">
             <Table>
               <Table.ScrollContainer>
-                <Table.Content aria-label="Notifications">
+                <Table.Content
+                  aria-label="Notifications"
+                  selectionMode="multiple"
+                  selectedKeys={selectedKeys}
+                  onSelectionChange={setSelectedKeys}
+                >
                   <Table.Header>
-                    <Table.Column isRowHeader>
-                      <input
-                        type="checkbox"
-                        checked={allVisibleSelected}
-                        onChange={toggleSelectAllVisible}
-                        aria-label="Select all notifications on this page"
-                      />
+                    <Table.Column className="pr-0">
+                      <Checkbox aria-label="Select all notifications on this page" slot="selection">
+                        <Checkbox.Content>
+                          <Checkbox.Control>
+                            <Checkbox.Indicator />
+                          </Checkbox.Control>
+                        </Checkbox.Content>
+                      </Checkbox>
                     </Table.Column>
                     <Table.Column isRowHeader>Title</Table.Column>
                     <Table.Column>Type</Table.Column>
@@ -308,14 +303,19 @@ export default function NotificationsListPage() {
                       const link = resolveNotificationLink(notification);
 
                       return (
-                        <Table.Row key={notification.id}>
-                          <Table.Cell>
-                            <input
-                              type="checkbox"
-                              checked={selectedIds.has(notification.id)}
-                              onChange={() => toggleSelection(notification.id)}
+                        <Table.Row key={notification.id} id={notification.id}>
+                          <Table.Cell className="pr-0">
+                            <Checkbox
                               aria-label={`Select ${notification.title}`}
-                            />
+                              slot="selection"
+                              variant="secondary"
+                            >
+                              <Checkbox.Content>
+                                <Checkbox.Control>
+                                  <Checkbox.Indicator />
+                                </Checkbox.Control>
+                              </Checkbox.Content>
+                            </Checkbox>
                           </Table.Cell>
                           <Table.Cell>
                             <div className="flex flex-col gap-1 max-w-md">
