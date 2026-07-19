@@ -28,10 +28,17 @@ export default function PropertyDetailPage() {
     await splitProperty.mutateAsync(property.id);
   };
 
-  const handleTruncate = async (text: string) => {
+  const handleTruncate = async ({
+    text,
+    replacement,
+  }: {
+    text: string;
+    replacement?: string;
+  }) => {
     await truncateDescriptions.mutateAsync({
       property_ids: [property.id],
       text,
+      ...(replacement ? { replacement } : {}),
     });
   };
 

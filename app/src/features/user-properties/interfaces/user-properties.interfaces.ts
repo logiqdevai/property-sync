@@ -146,6 +146,7 @@ export interface SplitUserPropertiesResult {
 export interface TruncateUserPropertyDescriptionsPayload {
   ids: string[];
   text: string;
+  replacement?: string;
 }
 
 export interface TruncateUserPropertyDescriptionsResult {

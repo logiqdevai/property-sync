@@ -126,6 +126,7 @@ export class PropertiesController {
     return this.propertiesService.truncateDescriptions(
       dto.property_ids,
       dto.text,
+      dto.replacement,
     );
   }
 

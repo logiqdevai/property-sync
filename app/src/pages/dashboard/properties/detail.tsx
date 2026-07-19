@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, useOverlayState } from "@heroui/react";
+import { Pencil, Scissors, Upload, X } from "lucide-react";
+import { useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
+import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { PropertyDetailView } from "@/components/ui/property-detail-view";
 import {
@@ -72,6 +75,39 @@ export default function DashboardPropertyDetailPage() {
     });
   }, [property, reset]);
 
+  const headerActions = useMemo<TableRowAction[]>(() => {
+    if (!property) return [];
+
+    return [
+      {
+        id: "push-to-crm",
+        label: property.integration_property_id ? "Update EstateWeb" : "Push to EstateWeb",
+        variant: "accent",
+        icon: Upload,
+        isDisabled: isEditing || pushToCrm.isPending,
+      },
+      {
+        id: "truncate",
+        label: "Truncate text",
+        variant: "warning",
+        icon: Scissors,
+      },
+      isEditing
+        ? {
+            id: "cancel-edit",
+            label: "Cancel edit",
+            variant: "danger",
+            icon: X,
+          }
+        : {
+            id: "edit",
+            label: "Edit",
+            variant: "default",
+            icon: Pencil,
+          },
+    ];
+  }, [isEditing, property, pushToCrm.isPending]);
+
   if (isPending || !property) {
     return <DetailSkeleton />;
   }
@@ -86,11 +122,36 @@ export default function DashboardPropertyDetailPage() {
     setIsEditing(false);
   };
 
-  const handleTruncate = async (text: string) => {
+  const handleTruncate = async ({
+    text,
+    replacement,
+  }: {
+    text: string;
+    replacement?: string;
+  }) => {
     await truncateDescriptions.mutateAsync({
       ids: [property.id],
       text,
+      ...(replacement ? { replacement } : {}),
     });
+  };
+
+  const handleHeaderAction = (actionId: string) => {
+    if (actionId === "push-to-crm") {
+      pushToCrm.mutate(property.id);
+      return;
+    }
+    if (actionId === "truncate") {
+      truncateConfirm.open();
+      return;
+    }
+    if (actionId === "edit") {
+      setIsEditing(true);
+      return;
+    }
+    if (actionId === "cancel-edit") {
+      handleCancelEdit();
+    }
   };
 
   return (
@@ -114,176 +175,170 @@ export default function DashboardPropertyDetailPage() {
       ) : null}
 
       <PropertyDetailView
-      property={property}
-      backHref={Routes.dashboard.properties.list}
-      backLabel="← Back to my properties"
-      showFieldDiff
-      headerActions={
-        <div className="flex items-center gap-2">
-          <ActionButtonWithPending
-            variant="secondary"
+        property={property}
+        backHref={Routes.dashboard.properties.list}
+        backLabel="← Back to my properties"
+        showFieldDiff
+        headerActions={
+          <BulkActionsMenu
+            actions={headerActions}
+            onAction={handleHeaderAction}
             isPending={pushToCrm.isPending}
-            onPress={() => pushToCrm.mutate(property.id)}
-          >
-            {property.integration_property_id
-              ? "Update EstateWeb"
-              : "Push to EstateWeb"}
-          </ActionButtonWithPending>
-          <Button variant="secondary" onPress={truncateConfirm.open}>
-            Truncate text
-          </Button>
-          {isEditing ? (
-            <Button variant="secondary" onPress={handleCancelEdit}>
-              Cancel
-            </Button>
-          ) : (
-            <Button variant="secondary" onPress={() => setIsEditing(true)}>
-              Edit
-            </Button>
-          )}
-        </div>
-      }
-      details={
-        isEditing ? (
-          <form
-            onSubmit={onSubmit}
-            className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4"
-          >
-            <h2 className="text-sm font-semibold text-foreground">Edit your copy</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label className="flex flex-col gap-1 text-sm md:col-span-2">
-                <span className="text-muted">Title</span>
-                <input className={fieldClassName} {...register("title")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm md:col-span-2">
-                <span className="text-muted">Description</span>
-                <textarea
-                  className={`${fieldClassName} min-h-24`}
-                  {...register("description")}
-                />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">City</span>
-                <input className={fieldClassName} {...register("city")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">District</span>
-                <input className={fieldClassName} {...register("district")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm md:col-span-2">
-                <span className="text-muted">Address</span>
-                <input className={fieldClassName} {...register("address")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Postal code</span>
-                <input className={fieldClassName} {...register("postal_code")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Country</span>
-                <input className={fieldClassName} {...register("country")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Price</span>
-                <input type="number" className={fieldClassName} {...register("price")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Currency</span>
-                <input className={fieldClassName} {...register("currency")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">List price</span>
-                <input type="number" className={fieldClassName} {...register("price_start")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Web price</span>
-                <input type="number" className={fieldClassName} {...register("price_web")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Square meters</span>
-                <input type="number" className={fieldClassName} {...register("square_meters")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Bedrooms</span>
-                <input type="number" className={fieldClassName} {...register("bedrooms")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Bathrooms</span>
-                <input type="number" className={fieldClassName} {...register("bathrooms")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Floor</span>
-                <input className={fieldClassName} {...register("floor")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Built</span>
-                <input type="number" className={fieldClassName} {...register("construction_year")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Renovated</span>
-                <input type="number" className={fieldClassName} {...register("renovation_year")} />
-              </label>
-            </div>
+          />
+        }
+        details={
+          isEditing ? (
+            <form
+              onSubmit={onSubmit}
+              className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4"
+            >
+              <h2 className="text-sm font-semibold text-foreground">Edit your copy</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className="flex flex-col gap-1 text-sm md:col-span-2">
+                  <span className="text-muted">Title</span>
+                  <input className={fieldClassName} {...register("title")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm md:col-span-2">
+                  <span className="text-muted">Description</span>
+                  <textarea
+                    className={`${fieldClassName} min-h-24`}
+                    {...register("description")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">City</span>
+                  <input className={fieldClassName} {...register("city")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">District</span>
+                  <input className={fieldClassName} {...register("district")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm md:col-span-2">
+                  <span className="text-muted">Address</span>
+                  <input className={fieldClassName} {...register("address")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Postal code</span>
+                  <input className={fieldClassName} {...register("postal_code")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Country</span>
+                  <input className={fieldClassName} {...register("country")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Price</span>
+                  <input type="number" className={fieldClassName} {...register("price")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Currency</span>
+                  <input className={fieldClassName} {...register("currency")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">List price</span>
+                  <input type="number" className={fieldClassName} {...register("price_start")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Web price</span>
+                  <input type="number" className={fieldClassName} {...register("price_web")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Square meters</span>
+                  <input type="number" className={fieldClassName} {...register("square_meters")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Bedrooms</span>
+                  <input type="number" className={fieldClassName} {...register("bedrooms")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Bathrooms</span>
+                  <input type="number" className={fieldClassName} {...register("bathrooms")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Floor</span>
+                  <input className={fieldClassName} {...register("floor")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Built</span>
+                  <input
+                    type="number"
+                    className={fieldClassName}
+                    {...register("construction_year")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Renovated</span>
+                  <input
+                    type="number"
+                    className={fieldClassName}
+                    {...register("renovation_year")}
+                  />
+                </label>
+              </div>
 
-            <h3 className="text-sm font-semibold text-foreground pt-2">CMS & integration</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label className="flex flex-col gap-1 text-sm md:col-span-2">
-                <span className="text-muted">CMS property ID</span>
-                <input
-                  className={fieldClassName}
-                  placeholder="EstateWeb property id after sync"
-                  {...register("integration_property_id")}
-                />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">EstateWeb type ID</span>
-                <input type="number" className={fieldClassName} {...register("estateweb_type_id")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">EstateWeb location ID</span>
-                <input
-                  type="number"
-                  className={fieldClassName}
-                  {...register("estateweb_location_id")}
-                />
-              </label>
-              <label className="flex flex-col gap-1 text-sm md:col-span-2">
-                <span className="text-muted">Video URL</span>
-                <input className={fieldClassName} {...register("video_url")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Airport distance</span>
-                <input className={fieldClassName} {...register("distance_airport")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Port distance</span>
-                <input className={fieldClassName} {...register("distance_port")} />
-              </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Beach distance</span>
-                <input className={fieldClassName} {...register("distance_beach")} />
-              </label>
-            </div>
-            <div className="flex justify-end">
-              <ActionButtonWithPending
-                type="submit"
-                isDisabled={!isDirty}
-                isPending={updateProperty.isPending}
-              >
-                Save changes
-              </ActionButtonWithPending>
-            </div>
-          </form>
-        ) : undefined
-      }
-      footer={
-        <TruncateDescriptionDialog
-          state={truncateConfirm}
-          propertyCount={1}
-          onConfirm={handleTruncate}
-          isPending={truncateDescriptions.isPending}
-        />
-      }
-    />
+              <h3 className="text-sm font-semibold text-foreground pt-2">CMS & integration</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className="flex flex-col gap-1 text-sm md:col-span-2">
+                  <span className="text-muted">CMS property ID</span>
+                  <input
+                    className={fieldClassName}
+                    placeholder="EstateWeb property id after sync"
+                    {...register("integration_property_id")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">EstateWeb type ID</span>
+                  <input
+                    type="number"
+                    className={fieldClassName}
+                    {...register("estateweb_type_id")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">EstateWeb location ID</span>
+                  <input
+                    type="number"
+                    className={fieldClassName}
+                    {...register("estateweb_location_id")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm md:col-span-2">
+                  <span className="text-muted">Video URL</span>
+                  <input className={fieldClassName} {...register("video_url")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Airport distance</span>
+                  <input className={fieldClassName} {...register("distance_airport")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Port distance</span>
+                  <input className={fieldClassName} {...register("distance_port")} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Beach distance</span>
+                  <input className={fieldClassName} {...register("distance_beach")} />
+                </label>
+              </div>
+              <div className="flex justify-end">
+                <ActionButtonWithPending
+                  type="submit"
+                  isDisabled={!isDirty}
+                  isPending={updateProperty.isPending}
+                >
+                  Save changes
+                </ActionButtonWithPending>
+              </div>
+            </form>
+          ) : undefined
+        }
+        footer={
+          <TruncateDescriptionDialog
+            state={truncateConfirm}
+            propertyCount={1}
+            onConfirm={handleTruncate}
+            isPending={truncateDescriptions.isPending}
+          />
+        }
+      />
     </div>
   );
 }

@@ -158,6 +158,7 @@ export class UserPropertiesController {
       userId,
       dto.ids,
       dto.text,
+      dto.replacement,
     );
   }
 

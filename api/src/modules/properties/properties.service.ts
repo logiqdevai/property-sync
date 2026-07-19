@@ -327,12 +327,17 @@ export class PropertiesService {
     return { deleted: uniqueIds.length };
   }
 
-  async truncateDescriptions(propertyIds: string[], text: string) {
+  async truncateDescriptions(
+    propertyIds: string[],
+    text: string,
+    replacement?: string,
+  ) {
     const pieces = normalizeTextTruncatePieces([text]);
     if (pieces.length === 0) {
       throw new BadRequestException('Truncate text is required');
     }
 
+    const replaceWith = replacement ?? '';
     const uniqueIds = [...new Set(propertyIds)];
     const properties = await this.prisma.property.findMany({
       where: { id: { in: uniqueIds } },
@@ -348,10 +353,12 @@ export class PropertiesService {
     await this.prisma.$transaction(async (tx) => {
       for (const property of properties) {
         const nextTitle =
-          applyTextTruncatePieces(property.title, pieces) ?? property.title;
+          applyTextTruncatePieces(property.title, pieces, replaceWith) ??
+          property.title;
         const nextDescription = applyTextTruncatePieces(
           property.description,
           pieces,
+          replaceWith,
         );
 
         if (
@@ -376,11 +383,15 @@ export class PropertiesService {
 
         for (const userProperty of linked) {
           const linkedTitle =
-            applyTextTruncatePieces(userProperty.title, pieces) ??
-            userProperty.title;
+            applyTextTruncatePieces(
+              userProperty.title,
+              pieces,
+              replaceWith,
+            ) ?? userProperty.title;
           const linkedDescription = applyTextTruncatePieces(
             userProperty.description,
             pieces,
+            replaceWith,
           );
 
           if (

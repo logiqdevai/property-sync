@@ -1,7 +1,10 @@
 import { ChevronDown } from "lucide-react";
 import { Button, Dropdown, Label } from "@heroui/react";
 import { cn } from "@/lib/utils";
-import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
+import {
+  getActionTone,
+  type TableRowAction,
+} from "@/components/ui/table-row-actions-menu";
 
 export type BulkActionsMenuProps = {
   actions: TableRowAction[];
@@ -34,6 +37,7 @@ export function BulkActionsMenu({
         <Dropdown.Menu onAction={(key) => onAction(String(key))}>
           {actions.map((action) => {
             const Icon = action.icon;
+            const tone = getActionTone(action.variant);
 
             return (
               <Dropdown.Item
@@ -45,14 +49,9 @@ export function BulkActionsMenu({
               >
                 <div className="flex w-full items-center gap-2">
                   {Icon ? (
-                    <Icon
-                      className={cn(
-                        "h-3.5 w-3.5 shrink-0",
-                        action.variant === "danger" ? "text-danger" : "text-muted",
-                      )}
-                    />
+                    <Icon className={cn("h-3.5 w-3.5 shrink-0", tone.icon)} />
                   ) : null}
-                  <Label>{action.label}</Label>
+                  <Label className={tone.label}>{action.label}</Label>
                 </div>
               </Dropdown.Item>
             );

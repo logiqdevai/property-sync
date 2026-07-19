@@ -1,5 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMinSize, IsArray, IsString, IsUUID, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MinLength,
+} from 'class-validator';
 
 export class TruncatePropertyDescriptionsDto {
   @ApiProperty({ type: [String], minItems: 1 })
@@ -9,9 +16,17 @@ export class TruncatePropertyDescriptionsDto {
   property_ids: string[];
 
   @ApiProperty({
-    description: 'Exact text to remove from each property title and description',
+    description: 'Exact text to find in each property title and description',
   })
   @IsString()
   @MinLength(1)
   text: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Optional replacement for matched text. Omit or leave empty to remove.',
+  })
+  @IsOptional()
+  @IsString()
+  replacement?: string;
 }

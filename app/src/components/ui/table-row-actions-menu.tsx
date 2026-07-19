@@ -3,10 +3,12 @@ import { MoreHorizontal } from "lucide-react";
 import { Button, Dropdown, Label } from "@heroui/react";
 import { cn } from "@/lib/utils";
 
+export type TableRowActionVariant = "default" | "accent" | "warning" | "danger";
+
 export type TableRowAction = {
   id: string;
   label: string;
-  variant?: "default" | "danger";
+  variant?: TableRowActionVariant;
   icon?: LucideIcon;
   isDisabled?: boolean;
 };
@@ -16,6 +18,27 @@ export type TableRowActionsMenuProps = {
   onAction: (actionId: string) => void;
   ariaLabel?: string;
 };
+
+const actionToneClass: Record<TableRowActionVariant, string> = {
+  default: "text-foreground",
+  accent: "text-accent",
+  warning: "text-warning",
+  danger: "text-danger",
+};
+
+const actionIconToneClass: Record<TableRowActionVariant, string> = {
+  default: "text-muted",
+  accent: "text-accent",
+  warning: "text-warning",
+  danger: "text-danger",
+};
+
+export function getActionTone(variant: TableRowActionVariant = "default") {
+  return {
+    label: actionToneClass[variant],
+    icon: actionIconToneClass[variant],
+  };
+}
 
 export function TableRowActionsMenu({
   actions,
@@ -38,6 +61,7 @@ export function TableRowActionsMenu({
           <Dropdown.Menu onAction={(key) => onAction(String(key))}>
             {actions.map((action) => {
               const Icon = action.icon;
+              const tone = getActionTone(action.variant);
 
               return (
                 <Dropdown.Item
@@ -49,14 +73,9 @@ export function TableRowActionsMenu({
                 >
                   <div className="flex w-full items-center gap-2">
                     {Icon ? (
-                      <Icon
-                        className={cn(
-                          "h-3.5 w-3.5 shrink-0",
-                          action.variant === "danger" ? "text-danger" : "text-muted",
-                        )}
-                      />
+                      <Icon className={cn("h-3.5 w-3.5 shrink-0", tone.icon)} />
                     ) : null}
-                    <Label>{action.label}</Label>
+                    <Label className={tone.label}>{action.label}</Label>
                   </div>
                 </Dropdown.Item>
               );

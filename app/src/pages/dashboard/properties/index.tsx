@@ -253,10 +253,17 @@ export default function DashboardPropertiesListPage() {
     clearSelection();
   };
 
-  const handleTruncateDescriptions = async (text: string) => {
+  const handleTruncateDescriptions = async ({
+    text,
+    replacement,
+  }: {
+    text: string;
+    replacement?: string;
+  }) => {
     await truncateDescriptions.mutateAsync({
       ids: Array.from(selectedIds),
       text,
+      ...(replacement ? { replacement } : {}),
     });
     clearSelection();
   };

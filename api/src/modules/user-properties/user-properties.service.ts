@@ -413,11 +413,19 @@ export class UserPropertiesService {
     return { deleted: uniqueIds.length };
   }
 
-  async truncateDescriptions(userId: string, ids: string[], text: string) {
+  async truncateDescriptions(
+    userId: string,
+    ids: string[],
+    text: string,
+    replacement?: string,
+  ) {
     const pieces = normalizeTextTruncatePieces([text]);
     if (pieces.length === 0) {
       throw new BadRequestException('Truncate text is required');
     }
+
+    const replaceWith = replacement ?? '';
+    const persistPieces = replaceWith.length === 0;
 
     const uniqueIds = [...new Set(ids)];
     const properties = await this.prisma.userProperty.findMany({
@@ -436,10 +444,12 @@ export class UserPropertiesService {
 
     const propertyUpdates = properties.flatMap((property) => {
       const nextTitle =
-        applyTextTruncatePieces(property.title, pieces) ?? property.title;
+        applyTextTruncatePieces(property.title, pieces, replaceWith) ??
+        property.title;
       const nextDescription = applyTextTruncatePieces(
         property.description,
         pieces,
+        replaceWith,
       );
 
       if (
@@ -477,6 +487,8 @@ export class UserPropertiesService {
             ),
           );
         }
+
+        if (!persistPieces) return;
 
         const links = await tx.propertySourceLink.findMany({
           where: { property_id: { in: canonicalPropertyIds } },

@@ -1,6 +1,7 @@
 export function applyTextTruncatePieces(
   text: string | null | undefined,
   pieces: string[] | null | undefined,
+  replacement = '',
 ): string | null {
   if (!text) return null;
 
@@ -8,7 +9,7 @@ export function applyTextTruncatePieces(
   for (const piece of pieces ?? []) {
     const trimmed = piece?.trim();
     if (!trimmed) continue;
-    result = result.split(trimmed).join('');
+    result = result.split(trimmed).join(replacement);
   }
 
   const cleaned = result
