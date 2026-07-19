@@ -282,38 +282,41 @@ export class UserPropertiesService {
     );
   }
 
-  async pushToCrm(userId: string, id: string) {
-    const existing = await this.prisma.userProperty.findFirst({
-      where: { id, user_id: userId },
-      select: {
-        id: true,
-        integration_property_id: true,
-        pending_crm_update: true,
-      },
+  async pushToCrm(userId: string, ids: string | string[]) {
+    const idList = [...new Set(Array.isArray(ids) ? ids : [ids])];
+    if (idList.length === 0) {
+      throw new BadRequestException('No properties selected');
+    }
+
+    const owned = await this.prisma.userProperty.findMany({
+      where: { id: { in: idList }, user_id: userId },
+      select: { id: true },
     });
 
-    if (!existing) {
+    if (owned.length === 0) {
       throw new NotFoundException('Property not found');
-    }
-    if (!existing.integration_property_id) {
-      throw new BadRequestException('Property is not in the CRM yet');
     }
 
     try {
-      await this.cmsSyncOrchestratorService.planAndEnqueueManualPropertyUpdate(
-        userId,
-        id,
-      );
+      const result =
+        await this.cmsSyncOrchestratorService.planAndEnqueueManualPropertyUpdate(
+          userId,
+          idList,
+        );
+
+      if (idList.length === 1 && result.queued === 1) {
+        return serializePropertyForApi(
+          await this.prisma.userProperty.findFirstOrThrow({
+            where: { id: idList[0], user_id: userId },
+          }),
+        );
+      }
+
+      return result;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(message);
     }
-
-    return serializePropertyForApi(
-      await this.prisma.userProperty.findFirstOrThrow({
-        where: { id, user_id: userId },
-      }),
-    );
   }
 
   async resync(userId: string, id: string) {
@@ -488,6 +491,67 @@ export class UserPropertiesService {
     });
 
     return { updated, total: uniqueIds.length };
+  }
+
+  async splitMany(userId: string, ids: string[]) {
+    const uniqueIds = [...new Set(ids)];
+    const properties = await this.prisma.userProperty.findMany({
+      where: { user_id: userId, id: { in: uniqueIds } },
+      select: {
+        id: true,
+        duplicate_group_id: true,
+        canonical_property_id: true,
+        canonical_property: { select: { duplicate_group_id: true } },
+      },
+    });
+
+    if (properties.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more properties not found');
+    }
+
+    const grouped = properties.filter(
+      (property) =>
+        property.canonical_property.duplicate_group_id ??
+        property.duplicate_group_id,
+    );
+
+    if (grouped.length === 0) {
+      throw new BadRequestException(
+        'None of the selected properties are in a duplicate group',
+      );
+    }
+
+    const userPropertyIds = grouped.map((property) => property.id);
+    const canonicalIds = [
+      ...new Set(grouped.map((property) => property.canonical_property_id)),
+    ];
+    const groupIds = grouped
+      .map(
+        (property) =>
+          property.canonical_property.duplicate_group_id ??
+          property.duplicate_group_id,
+      )
+      .filter((groupId): groupId is string => !!groupId);
+
+    await this.prisma.$transaction([
+      this.prisma.property.updateMany({
+        where: { id: { in: canonicalIds } },
+        data: { duplicate_group_id: null },
+      }),
+      this.prisma.userProperty.updateMany({
+        where: {
+          OR: [
+            { id: { in: userPropertyIds } },
+            { canonical_property_id: { in: canonicalIds } },
+          ],
+        },
+        data: { duplicate_group_id: null },
+      }),
+    ]);
+
+    await this.clearSingletonUserDuplicateGroups(userId, groupIds);
+
+    return { split: grouped.length };
   }
 
   async dedupeGroups(userId: string, ids: string[]) {

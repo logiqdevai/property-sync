@@ -8,6 +8,7 @@ import {
   getPropertiesCount,
   getProperty,
   mergeProperties,
+  splitProperties,
   splitProperty,
   truncatePropertyDescriptions,
 } from "../services/properties.services";
@@ -17,6 +18,7 @@ import type {
   MergePropertiesPayload,
   PropertyCountQuery,
   PropertyListQuery,
+  SplitPropertiesPayload,
   TruncatePropertyDescriptionsPayload,
 } from "../interfaces/properties.interfaces";
 
@@ -73,6 +75,31 @@ export const useSplitProperty = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not split property",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useSplitProperties = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: SplitPropertiesPayload) => splitProperties(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["properties"] });
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      toast({
+        title: "Split from group",
+        description: `Removed ${result.split} ${result.split === 1 ? "property" : "properties"} from duplicate groups.`,
+        duration: 2000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not split from group",
         description: error.message,
         variant: "error",
       });

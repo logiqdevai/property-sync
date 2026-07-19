@@ -93,6 +93,7 @@ export const ApiRoutes = {
             bulkDelete: "/admin/properties/bulk-delete",
             dedupeGroups: "/admin/properties/dedupe-groups",
             truncateDescriptions: "/admin/properties/truncate-descriptions",
+            bulkSplit: "/admin/properties/bulk-split",
             split: (id: string) => `/admin/properties/${id}/split`,
         },
         notifications: {
@@ -150,8 +151,10 @@ export const ApiRoutes = {
         detail: (id: string) => `/properties/${id}`,
         resync: (id: string) => `/properties/${id}/resync`,
         pushToCrm: (id: string) => `/properties/${id}/push-to-crm`,
+        bulkPushToCrm: "/properties/push-to-crm",
         bulkDelete: "/properties/bulk-delete",
         dedupeGroups: "/properties/dedupe-groups",
+        bulkSplit: "/properties/bulk-split",
         truncateDescriptions: "/properties/truncate-descriptions",
     },
     dashboard: {

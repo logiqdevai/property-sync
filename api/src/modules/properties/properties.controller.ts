@@ -140,6 +140,19 @@ export class PropertiesController {
     return this.propertiesService.dedupeGroups(dto.property_ids);
   }
 
+  @Post('bulk-split')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Remove selected properties from their duplicate groups' })
+  @ApiResponse({ status: 200, description: 'Properties split from groups' })
+  @ApiResponse({
+    status: 400,
+    description: 'None of the selected properties are in a duplicate group',
+  })
+  @ApiResponse({ status: 404, description: 'One or more properties not found' })
+  splitMany(@Body() dto: DeletePropertiesDto) {
+    return this.propertiesService.splitMany(dto.property_ids);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get property with source links and history' })
   @ApiResponse({ status: 200, type: PropertyEntity })

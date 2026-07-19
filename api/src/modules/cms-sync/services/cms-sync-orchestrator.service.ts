@@ -335,10 +335,19 @@ export class CmsSyncOrchestratorService {
 
   async planAndEnqueueManualPropertyUpdate(
     userId: string,
-    userPropertyId: string,
-  ): Promise<void> {
-    const userProperty = await this.prisma.userProperty.findFirst({
-      where: { id: userPropertyId, user_id: userId },
+    userPropertyIds: string | string[],
+  ): Promise<{
+    queued: number;
+    batches_enqueued: number;
+    failed: Array<{ user_property_id: string; error: string }>;
+  }> {
+    const ids = [...new Set(Array.isArray(userPropertyIds) ? userPropertyIds : [userPropertyIds])];
+    if (ids.length === 0) {
+      throw new Error('No properties selected');
+    }
+
+    const userProperties = await this.prisma.userProperty.findMany({
+      where: { id: { in: ids }, user_id: userId },
       include: {
         canonical_property: {
           include: {
@@ -352,70 +361,227 @@ export class CmsSyncOrchestratorService {
       },
     });
 
-    if (!userProperty) {
-      throw new Error('Property not found');
-    }
-    if (!userProperty.integration_property_id) {
-      throw new Error('Property is not in the CRM yet');
-    }
+    const foundIds = new Set(userProperties.map((p) => p.id));
+    const failed: Array<{ user_property_id: string; error: string }> = [];
 
-    const sourceAgencyId =
-      userProperty.canonical_property.source_links[0]?.source_property
-        .source_agency_id;
-    if (!sourceAgencyId) {
-      throw new Error('Property has no source agency');
+    for (const id of ids) {
+      if (!foundIds.has(id)) {
+        failed.push({ user_property_id: id, error: 'Property not found' });
+      }
     }
 
-    const tracker = await this.prisma.userTrackedAgency.findUnique({
-      where: {
-        user_id_source_agency_id: {
-          user_id: userId,
-          source_agency_id: sourceAgencyId,
-        },
-      },
-    });
-
-    if (!tracker?.enabled) {
-      throw new Error('Agency is not being tracked');
-    }
-
-    const crawlRun = await this.crawlRunsService.createBackfillRun(
-      tracker.source_agency_id,
-      tracker.id,
-    );
-
-    await this.processTrackerBatch(
-      crawlRun.id,
+    const byTracker = new Map<
+      string,
       {
-        tracker: {
-          id: tracker.id,
-          user_id: tracker.user_id,
-          source_agency_id: tracker.source_agency_id,
-          track_new_listings: tracker.track_new_listings,
-          track_updated_listings: true,
-          track_removed_listings: tracker.track_removed_listings,
-          auto_update_to_crm: tracker.auto_update_to_crm,
-          concurrent_insertions: tracker.concurrent_insertions,
-          insertion_interval_minutes: tracker.insertion_interval_minutes,
-          max_properties: tracker.max_properties,
-        },
-        affected: [
-          {
-            user_property_id: userProperty.id,
-            change_type: 'UPDATE',
-            user_property: userProperty,
+        tracker: TrackerGroup['tracker'] & {
+          integration_link: {
+            user_integration: {
+              is_active: boolean;
+              integration_target: {
+                is_enabled: boolean;
+                integration_type: IntegrationType;
+              };
+            };
+          } | null;
+        };
+        affected: AffectedUserProperty[];
+      }
+    >();
+
+    for (const userProperty of userProperties) {
+      const sourceAgencyId =
+        userProperty.canonical_property.source_links[0]?.source_property
+          .source_agency_id;
+
+      if (!sourceAgencyId) {
+        failed.push({
+          user_property_id: userProperty.id,
+          error: 'Property has no source agency',
+        });
+        continue;
+      }
+
+      const operation: CmsSyncOperationType = userProperty.integration_property_id
+        ? 'UPDATE'
+        : 'CREATE';
+
+      if (
+        operation === 'CREATE' &&
+        userProperty.status === PropertyStatus.REMOVED
+      ) {
+        failed.push({
+          user_property_id: userProperty.id,
+          error: 'Cannot push a removed property that is not in the CRM',
+        });
+        continue;
+      }
+
+      let entry = byTracker.get(sourceAgencyId);
+      if (!entry) {
+        const tracker = await this.prisma.userTrackedAgency.findUnique({
+          where: {
+            user_id_source_agency_id: {
+              user_id: userId,
+              source_agency_id: sourceAgencyId,
+            },
           },
-        ],
-      },
-      { includeUpdatesRegardlessOfAuto: true },
-    );
+          include: {
+            integration_link: {
+              include: {
+                user_integration: {
+                  include: { integration_target: true },
+                },
+              },
+            },
+          },
+        });
+
+        if (!tracker?.enabled) {
+          failed.push({
+            user_property_id: userProperty.id,
+            error: 'Agency is not being tracked',
+          });
+          continue;
+        }
+
+        entry = {
+          tracker: {
+            id: tracker.id,
+            user_id: tracker.user_id,
+            source_agency_id: tracker.source_agency_id,
+            track_new_listings: true,
+            track_updated_listings: true,
+            track_removed_listings: tracker.track_removed_listings,
+            auto_update_to_crm: tracker.auto_update_to_crm,
+            concurrent_insertions: tracker.concurrent_insertions,
+            insertion_interval_minutes: tracker.insertion_interval_minutes,
+            max_properties: tracker.max_properties,
+            integration_link: tracker.integration_link,
+          },
+          affected: [],
+        };
+        byTracker.set(sourceAgencyId, entry);
+      }
+
+      entry.affected.push({
+        user_property_id: userProperty.id,
+        change_type: operation,
+        user_property: userProperty,
+      });
+    }
+
+    let queued = 0;
+    let batchesEnqueued = 0;
+
+    for (const entry of byTracker.values()) {
+      const link = entry.tracker.integration_link;
+      if (!link) {
+        for (const item of entry.affected) {
+          failed.push({
+            user_property_id: item.user_property_id,
+            error:
+              'No EstateWeb CRM linked to this tracked agency. Connect and link an integration first.',
+          });
+        }
+        continue;
+      }
+
+      const integration = link.user_integration;
+      if (!integration.is_active) {
+        for (const item of entry.affected) {
+          failed.push({
+            user_property_id: item.user_property_id,
+            error: 'Linked EstateWeb integration is inactive',
+          });
+        }
+        continue;
+      }
+      if (!integration.integration_target.is_enabled) {
+        for (const item of entry.affected) {
+          failed.push({
+            user_property_id: item.user_property_id,
+            error: 'EstateWeb integration target is disabled',
+          });
+        }
+        continue;
+      }
+      if (
+        integration.integration_target.integration_type !==
+        IntegrationType.ESTATEWEB
+      ) {
+        for (const item of entry.affected) {
+          failed.push({
+            user_property_id: item.user_property_id,
+            error: 'Only EstateWeb CRM push is supported',
+          });
+        }
+        continue;
+      }
+
+      const crawlRun = await this.crawlRunsService.createBackfillRun(
+        entry.tracker.source_agency_id,
+        entry.tracker.id,
+      );
+
+      const enqueued = await this.processTrackerBatch(
+        crawlRun.id,
+        {
+          tracker: {
+            id: entry.tracker.id,
+            user_id: entry.tracker.user_id,
+            source_agency_id: entry.tracker.source_agency_id,
+            track_new_listings: entry.tracker.track_new_listings,
+            track_updated_listings: entry.tracker.track_updated_listings,
+            track_removed_listings: entry.tracker.track_removed_listings,
+            auto_update_to_crm: entry.tracker.auto_update_to_crm,
+            concurrent_insertions: entry.tracker.concurrent_insertions,
+            insertion_interval_minutes:
+              entry.tracker.insertion_interval_minutes,
+            max_properties: entry.tracker.max_properties,
+          },
+          affected: entry.affected,
+        },
+        { includeUpdatesRegardlessOfAuto: true },
+      );
+
+      if (!enqueued) {
+        for (const item of entry.affected) {
+          failed.push({
+            user_property_id: item.user_property_id,
+            error:
+              item.change_type === 'CREATE'
+                ? 'Property was not pushed. Max CRM property limit may be reached, or the listing was skipped as a duplicate.'
+                : 'Property was not pushed. The sync batch produced no operations.',
+          });
+        }
+        continue;
+      }
+
+      queued += entry.affected.length;
+      batchesEnqueued += 1;
+    }
+
+    if (queued === 0) {
+      const firstError = failed[0]?.error ?? 'No properties could be pushed';
+      throw new Error(
+        failed.length === 1
+          ? firstError
+          : `None of the ${ids.length} properties could be pushed. ${firstError}`,
+      );
+    }
+
+    return {
+      queued,
+      batches_enqueued: batchesEnqueued,
+      failed,
+    };
   }
 
   private async processTrackerBatch(
     crawlRunId: string,
     trackerGroup: TrackerGroup,
     options?: ProcessTrackerBatchOptions,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const tracker = trackerGroup.tracker;
 
     const heldBackUpdates = trackerGroup.affected.filter(
@@ -439,10 +605,10 @@ export class CmsSyncOrchestratorService {
       this.isChangeTypeEnabled(a.change_type, tracker, options),
     );
 
-    if (filtered.length === 0) return;
+    if (filtered.length === 0) return false;
 
     const integration = await this.resolveLinkedIntegration(tracker.id);
-    if (!integration) return;
+    if (!integration) return false;
 
     const batch = await this.batchService.buildBatch({
       crawl_run_id: crawlRunId,
@@ -459,7 +625,7 @@ export class CmsSyncOrchestratorService {
       this.logger.log(
         `Crawl ${crawlRunId}: tracker ${tracker.id} has no CMS operations after duplicate collapse`,
       );
-      return;
+      return false;
     }
 
     const cmsSyncRun = await this.cmsSyncRunsService.createBatch({
@@ -479,6 +645,8 @@ export class CmsSyncOrchestratorService {
     this.logger.log(
       `Crawl ${crawlRunId}: enqueued CMS sync run ${cmsSyncRun.id} for tracker ${tracker.id} with ${batch.operations.length} operation(s)`,
     );
+
+    return true;
   }
 
   private async resolveLinkedIntegration(userTrackedAgencyId: string): Promise<{

@@ -114,6 +114,16 @@ export interface DeleteUserPropertiesPayload {
   ids: string[];
 }
 
+export interface PushUserPropertiesToCrmPayload {
+  ids: string[];
+}
+
+export interface PushUserPropertiesToCrmResult {
+  queued: number;
+  batches_enqueued: number;
+  failed: Array<{ user_property_id: string; error: string }>;
+}
+
 export interface DedupeUserPropertiesPayload {
   ids: string[];
 }
@@ -121,6 +131,14 @@ export interface DedupeUserPropertiesPayload {
 export interface DedupeUserPropertiesResult {
   deleted: number;
   kept: string[];
+}
+
+export interface SplitUserPropertiesPayload {
+  ids: string[];
+}
+
+export interface SplitUserPropertiesResult {
+  split: number;
 }
 
 export interface TruncateUserPropertyDescriptionsPayload {

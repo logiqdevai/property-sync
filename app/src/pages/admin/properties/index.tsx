@@ -1,11 +1,22 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Chip, Input, Pagination, Select, ListBox, Table, useOverlayState } from "@heroui/react";
-import { Trash2 } from "lucide-react";
+import {
+  Checkbox,
+  Chip,
+  Input,
+  Pagination,
+  Select,
+  ListBox,
+  Table,
+  useOverlayState,
+  type Selection,
+} from "@heroui/react";
+import { Layers, Merge, Scissors, Trash2, Ungroup } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
+import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
 import {
@@ -19,6 +30,7 @@ import {
   useMergeProperties,
   useProperties,
   usePropertiesCount,
+  useSplitProperties,
   useTruncatePropertyDescriptions,
 } from "@/features/properties/hooks/use-properties";
 import {
@@ -36,6 +48,7 @@ import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { formatPrice } from "@/lib/price";
 import { getDuplicateGroupRowClasses } from "@/lib/duplicate-group-color.utils";
 import { getDuplicateGroupDedupePlan } from "@/lib/duplicate-group-dedupe.utils";
+import { cn } from "@/lib/utils";
 
 const PROPERTY_DELETE_ACTIONS: TableRowAction[] = [
   { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
@@ -48,6 +61,7 @@ export default function PropertiesListPage() {
   const bulkDeleteConfirm = useOverlayState();
   const dedupeConfirm = useOverlayState();
   const truncateConfirm = useOverlayState();
+  const splitConfirm = useOverlayState();
 
   const [status, setStatus] = useState<PropertyStatus | "all">("all");
   const [listingType, setListingType] = useState<ListingType | "all">("all");
@@ -56,7 +70,7 @@ export default function PropertiesListPage() {
   const [agencyId, setAgencyId] = useState<string | "all">("all");
   const [duplicateGroup, setDuplicateGroup] = useState<"all" | "true" | "false">("all");
   const [page, setPage] = useState(1);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deletePropertyId, setDeletePropertyId] = useState<string | null>(null);
 
   const query = useMemo<PropertyListQuery>(
@@ -87,15 +101,23 @@ export default function PropertiesListPage() {
   const deleteProperty = useDeleteProperty();
   const deleteProperties = useDeleteProperties();
   const dedupePropertyGroups = useDedupePropertyGroups();
+  const splitProperties = useSplitProperties();
   const truncateDescriptions = useTruncatePropertyDescriptions();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
   const total = countData?.total;
   const agencies = agenciesData?.data ?? [];
+  const selectedIds = useMemo(() => {
+    if (selectedKeys === "all") {
+      return new Set(properties.map((property) => property.id));
+    }
+    return new Set([...selectedKeys].map(String));
+  }, [selectedKeys, properties]);
   const selectedCount = selectedIds.size;
-  const allVisibleSelected =
-    properties.length > 0 && properties.every((property) => selectedIds.has(property.id));
+  const selectedGroupedCount = properties.filter(
+    (property) => selectedIds.has(property.id) && property.duplicate_group_id,
+  ).length;
 
   const dedupePlan = useMemo(
     () => getDuplicateGroupDedupePlan(properties, selectedIds),
@@ -103,41 +125,85 @@ export default function PropertiesListPage() {
   );
   const dedupeDeleteCount = dedupePlan.deleteIds.length;
 
-  const toggleSelection = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  const bulkActions = useMemo<TableRowAction[]>(() => {
+    const actions: TableRowAction[] = [
+      {
+        id: "truncate",
+        label: "Truncate text",
+        icon: Scissors,
+        isDisabled: selectedCount < 1,
+      },
+      {
+        id: "split",
+        label: "Split from group",
+        icon: Ungroup,
+        isDisabled: selectedGroupedCount < 1,
+      },
+      {
+        id: "merge",
+        label: "Merge selected",
+        icon: Merge,
+        isDisabled: selectedCount < 2,
+      },
+      {
+        id: "delete",
+        label: "Delete selected",
+        variant: "danger",
+        icon: Trash2,
+        isDisabled: selectedCount < 1,
+      },
+    ];
 
-  const toggleSelectAllVisible = () => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (allVisibleSelected) {
-        for (const property of properties) {
-          next.delete(property.id);
-        }
-        return next;
-      }
+    if (duplicateGroup === "true") {
+      actions.unshift({
+        id: "dedupe",
+        label: "Keep one per group",
+        icon: Layers,
+        isDisabled: dedupeDeleteCount < 1,
+      });
+    }
 
-      for (const property of properties) {
-        next.add(property.id);
-      }
-      return next;
-    });
+    return actions;
+  }, [dedupeDeleteCount, duplicateGroup, selectedCount, selectedGroupedCount]);
+
+  const clearSelection = () => setSelectedKeys(new Set());
+
+  const handleBulkAction = (actionId: string) => {
+    if (actionId === "truncate") {
+      truncateConfirm.open();
+      return;
+    }
+    if (actionId === "split") {
+      splitConfirm.open();
+      return;
+    }
+    if (actionId === "merge") {
+      mergeConfirm.open();
+      return;
+    }
+    if (actionId === "dedupe") {
+      dedupeConfirm.open();
+      return;
+    }
+    if (actionId === "delete") {
+      bulkDeleteConfirm.open();
+    }
   };
 
   const handleMerge = async () => {
     await mergeProperties.mutateAsync({ property_ids: Array.from(selectedIds) });
-    setSelectedIds(new Set());
+    clearSelection();
   };
 
   const handleDelete = async () => {
     if (!deletePropertyId) return;
     await deleteProperty.mutateAsync(deletePropertyId);
-    setSelectedIds((prev) => {
+    setSelectedKeys((prev) => {
+      if (prev === "all") {
+        return new Set(
+          properties.map((property) => property.id).filter((id) => id !== deletePropertyId),
+        );
+      }
       const next = new Set(prev);
       next.delete(deletePropertyId);
       return next;
@@ -147,14 +213,21 @@ export default function PropertiesListPage() {
 
   const handleBulkDelete = async () => {
     await deleteProperties.mutateAsync({ property_ids: Array.from(selectedIds) });
-    setSelectedIds(new Set());
+    clearSelection();
   };
 
   const handleDedupeGroups = async () => {
     await dedupePropertyGroups.mutateAsync({
       property_ids: Array.from(selectedIds),
     });
-    setSelectedIds(new Set());
+    clearSelection();
+  };
+
+  const handleSplitFromGroup = async () => {
+    await splitProperties.mutateAsync({
+      property_ids: Array.from(selectedIds),
+    });
+    clearSelection();
   };
 
   const handleTruncateDescriptions = async (text: string) => {
@@ -162,7 +235,7 @@ export default function PropertiesListPage() {
       property_ids: Array.from(selectedIds),
       text,
     });
-    setSelectedIds(new Set());
+    clearSelection();
   };
 
   if (isPending) {
@@ -192,38 +265,11 @@ export default function PropertiesListPage() {
             )}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {duplicateGroup === "true" ? (
-            <Button
-              variant="secondary"
-              isDisabled={dedupeDeleteCount < 1}
-              onPress={dedupeConfirm.open}
-            >
-              Keep one per group ({dedupeDeleteCount})
-            </Button>
-          ) : null}
-          <Button
-            variant="secondary"
-            isDisabled={selectedCount < 1}
-            onPress={truncateConfirm.open}
-          >
-            Truncate text ({selectedCount})
-          </Button>
-          <Button
-            variant="danger"
-            isDisabled={selectedCount < 1}
-            onPress={bulkDeleteConfirm.open}
-          >
-            Delete selected ({selectedCount})
-          </Button>
-          <Button
-            variant="secondary"
-            isDisabled={selectedCount < 2}
-            onPress={mergeConfirm.open}
-          >
-            Merge selected ({selectedCount})
-          </Button>
-        </div>
+        <BulkActionsMenu
+          label={selectedCount > 0 ? `Actions (${selectedCount})` : "Actions"}
+          actions={bulkActions}
+          onAction={handleBulkAction}
+        />
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -364,15 +410,21 @@ export default function PropertiesListPage() {
         <div className="rounded-xl border border-border bg-surface overflow-hidden">
           <Table>
             <Table.ScrollContainer>
-              <Table.Content aria-label="Properties">
+              <Table.Content
+                aria-label="Properties"
+                selectionMode="multiple"
+                selectedKeys={selectedKeys}
+                onSelectionChange={setSelectedKeys}
+              >
                 <Table.Header>
-                  <Table.Column isRowHeader>
-                    <input
-                      type="checkbox"
-                      checked={allVisibleSelected}
-                      onChange={toggleSelectAllVisible}
-                      aria-label="Select all properties on this page"
-                    />
+                  <Table.Column className="pr-0">
+                    <Checkbox aria-label="Select all properties on this page" slot="selection">
+                      <Checkbox.Content>
+                        <Checkbox.Control>
+                          <Checkbox.Indicator />
+                        </Checkbox.Control>
+                      </Checkbox.Content>
+                    </Checkbox>
                   </Table.Column>
                   <Table.Column isRowHeader>Title</Table.Column>
                   <Table.Column isRowHeader>City</Table.Column>
@@ -390,14 +442,19 @@ export default function PropertiesListPage() {
                       : undefined;
 
                     return (
-                    <Table.Row key={property.id}>
-                      <Table.Cell className={groupCellClass}>
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.has(property.id)}
-                          onChange={() => toggleSelection(property.id)}
+                    <Table.Row key={property.id} id={property.id}>
+                      <Table.Cell className={cn("pr-0", groupCellClass)}>
+                        <Checkbox
                           aria-label={`Select ${property.title}`}
-                        />
+                          slot="selection"
+                          variant="secondary"
+                        >
+                          <Checkbox.Content>
+                            <Checkbox.Control>
+                              <Checkbox.Indicator />
+                            </Checkbox.Control>
+                          </Checkbox.Content>
+                        </Checkbox>
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>
                         <button
@@ -515,6 +572,15 @@ export default function PropertiesListPage() {
         confirmLabel="Keep one"
         onConfirm={handleDedupeGroups}
         isPending={dedupePropertyGroups.isPending}
+      />
+
+      <ConfirmationDialog
+        state={splitConfirm}
+        title="Split from duplicate group?"
+        description={`This will remove ${selectedGroupedCount} ${selectedGroupedCount === 1 ? "property" : "properties"} from their duplicate groups. Other grouped properties stay linked.`}
+        confirmLabel="Split"
+        onConfirm={handleSplitFromGroup}
+        isPending={splitProperties.isPending}
       />
 
       <TruncateDescriptionDialog

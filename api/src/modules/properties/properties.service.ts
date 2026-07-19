@@ -233,6 +233,43 @@ export class PropertiesService {
     return serializePropertyForApi(updated);
   }
 
+  async splitMany(propertyIds: string[]) {
+    const uniqueIds = [...new Set(propertyIds)];
+    const properties = await this.prisma.property.findMany({
+      where: { id: { in: uniqueIds } },
+      select: { id: true, duplicate_group_id: true },
+    });
+
+    if (properties.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more properties not found');
+    }
+
+    const grouped = properties.filter((property) => property.duplicate_group_id);
+    if (grouped.length === 0) {
+      throw new BadRequestException(
+        'None of the selected properties are in a duplicate group',
+      );
+    }
+
+    const ids = grouped.map((property) => property.id);
+    const groupIds = grouped.map((property) => property.duplicate_group_id!);
+
+    await this.prisma.$transaction([
+      this.prisma.property.updateMany({
+        where: { id: { in: ids } },
+        data: { duplicate_group_id: null },
+      }),
+      this.prisma.userProperty.updateMany({
+        where: { canonical_property_id: { in: ids } },
+        data: { duplicate_group_id: null },
+      }),
+    ]);
+
+    await this.clearSingletonDuplicateGroups(groupIds);
+
+    return { split: ids.length };
+  }
+
   async remove(id: string) {
     const property = await this.prisma.property.findUnique({
       where: { id },

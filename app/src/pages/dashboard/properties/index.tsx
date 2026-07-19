@@ -1,14 +1,24 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Chip, Pagination, Select, ListBox, Table, useOverlayState } from "@heroui/react";
-import { Trash2 } from "lucide-react";
+import {
+  Button,
+  Checkbox,
+  Chip,
+  Pagination,
+  Select,
+  ListBox,
+  Table,
+  useOverlayState,
+  type Selection,
+} from "@heroui/react";
+import { Layers, Scissors, Trash2, Ungroup, Upload } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
+import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
-import { RoleGate } from "@/components/providers/role-gate";
 import {
   TableRowActionsMenu,
   type TableRowAction,
@@ -20,7 +30,9 @@ import {
   useDeleteUserProperties,
   useDeleteUserProperty,
   useDedupeUserPropertyGroups,
+  usePushUserPropertiesToCrm,
   usePushUserPropertyToCrm,
+  useSplitUserProperties,
   useTruncateUserPropertyDescriptions,
   useUserProperties,
   useUserPropertiesCount,
@@ -36,10 +48,20 @@ import { useAuthStore } from "@/stores/auth";
 import { formatPrice } from "@/lib/price";
 import { getDuplicateGroupRowClasses } from "@/lib/duplicate-group-color.utils";
 import { getDuplicateGroupDedupePlan } from "@/lib/duplicate-group-dedupe.utils";
+import { cn } from "@/lib/utils";
 
-const PROPERTY_DELETE_ACTIONS: TableRowAction[] = [
-  { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
-];
+const PROPERTY_PUSH_ACTION: TableRowAction = {
+  id: "push-to-crm",
+  label: "Push to EstateWeb",
+  icon: Upload,
+};
+
+const PROPERTY_DELETE_ACTION: TableRowAction = {
+  id: "delete",
+  label: "Delete",
+  variant: "danger",
+  icon: Trash2,
+};
 
 export default function DashboardPropertiesListPage() {
   const navigate = useNavigate();
@@ -47,6 +69,7 @@ export default function DashboardPropertiesListPage() {
   const bulkDeleteConfirm = useOverlayState();
   const dedupeConfirm = useOverlayState();
   const truncateConfirm = useOverlayState();
+  const splitConfirm = useOverlayState();
   const role = useAuthStore((state) => state.role);
   const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
 
@@ -54,7 +77,7 @@ export default function DashboardPropertiesListPage() {
   const [trackedAgencyId, setTrackedAgencyId] = useState<string | "all">("all");
   const [duplicateGroup, setDuplicateGroup] = useState<"all" | "true" | "false">("all");
   const [page, setPage] = useState(1);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deletePropertyId, setDeletePropertyId] = useState<string | null>(null);
 
   const query = useMemo<UserPropertyListQuery>(
@@ -81,55 +104,122 @@ export default function DashboardPropertiesListPage() {
   const deleteUserProperty = useDeleteUserProperty();
   const deleteUserProperties = useDeleteUserProperties();
   const dedupeUserPropertyGroups = useDedupeUserPropertyGroups();
+  const splitUserProperties = useSplitUserProperties();
   const truncateDescriptions = useTruncateUserPropertyDescriptions();
   const pushToCrm = usePushUserPropertyToCrm();
+  const pushSelectedToCrm = usePushUserPropertiesToCrm();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
   const total = countData?.total;
+  const selectedIds = useMemo(() => {
+    if (selectedKeys === "all") {
+      return new Set(properties.map((property) => property.id));
+    }
+    return new Set([...selectedKeys].map(String));
+  }, [selectedKeys, properties]);
   const selectedCount = selectedIds.size;
   const trackedAgencies = (agenciesData?.data ?? []).filter(
     (agency) => agency.is_tracked && agency.user_tracked_agency_id,
   );
-  const allVisibleSelected =
-    properties.length > 0 && properties.every((property) => selectedIds.has(property.id));
 
   const dedupePlan = useMemo(
     () => getDuplicateGroupDedupePlan(properties, selectedIds),
     [properties, selectedIds],
   );
   const dedupeDeleteCount = dedupePlan.deleteIds.length;
+  const canManageBulk = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
+  const selectedGroupedCount = properties.filter(
+    (property) => selectedIds.has(property.id) && property.duplicate_group_id,
+  ).length;
 
-  const toggleSelection = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
+  const bulkActions = useMemo<TableRowAction[]>(() => {
+    const actions: TableRowAction[] = [
+      {
+        id: "push-to-crm",
+        label: "Push to EstateWeb",
+        icon: Upload,
+        isDisabled: selectedCount < 1 || pushSelectedToCrm.isPending,
+      },
+      {
+        id: "truncate",
+        label: "Truncate text",
+        icon: Scissors,
+        isDisabled: selectedCount < 1,
+      },
+    ];
 
-  const toggleSelectAllVisible = () => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (allVisibleSelected) {
-        for (const property of properties) {
-          next.delete(property.id);
-        }
-        return next;
-      }
+    if (canManageBulk) {
+      actions.push({
+        id: "split",
+        label: "Split from group",
+        icon: Ungroup,
+        isDisabled: selectedGroupedCount < 1,
+      });
+    }
 
-      for (const property of properties) {
-        next.add(property.id);
-      }
-      return next;
-    });
+    if (canManageBulk && duplicateGroup === "true") {
+      actions.push({
+        id: "dedupe",
+        label: "Keep one per group",
+        icon: Layers,
+        isDisabled: dedupeDeleteCount < 1,
+      });
+    }
+
+    if (canManageBulk) {
+      actions.push({
+        id: "delete",
+        label: "Delete selected",
+        variant: "danger",
+        icon: Trash2,
+        isDisabled: selectedCount < 1,
+      });
+    }
+
+    return actions;
+  }, [
+    canManageBulk,
+    dedupeDeleteCount,
+    duplicateGroup,
+    pushSelectedToCrm.isPending,
+    selectedCount,
+    selectedGroupedCount,
+  ]);
+
+  const clearSelection = () => setSelectedKeys(new Set());
+
+  const handleBulkAction = (actionId: string) => {
+    if (actionId === "push-to-crm") {
+      void handleBulkPushToCrm();
+      return;
+    }
+    if (actionId === "truncate") {
+      truncateConfirm.open();
+      return;
+    }
+    if (actionId === "split") {
+      splitConfirm.open();
+      return;
+    }
+    if (actionId === "dedupe") {
+      dedupeConfirm.open();
+      return;
+    }
+    if (actionId === "delete") {
+      bulkDeleteConfirm.open();
+    }
   };
 
   const handleDelete = async () => {
     if (!deletePropertyId) return;
     await deleteUserProperty.mutateAsync(deletePropertyId);
-    setSelectedIds((prev) => {
+    setSelectedKeys((prev) => {
+      if (prev === "all") {
+        return new Set(
+          properties.map((property) => property.id).filter((id) => id !== deletePropertyId),
+        );
+      }
       const next = new Set(prev);
       next.delete(deletePropertyId);
       return next;
@@ -139,14 +229,21 @@ export default function DashboardPropertiesListPage() {
 
   const handleBulkDelete = async () => {
     await deleteUserProperties.mutateAsync({ ids: Array.from(selectedIds) });
-    setSelectedIds(new Set());
+    clearSelection();
   };
 
   const handleDedupeGroups = async () => {
     await dedupeUserPropertyGroups.mutateAsync({
       ids: Array.from(selectedIds),
     });
-    setSelectedIds(new Set());
+    clearSelection();
+  };
+
+  const handleSplitFromGroup = async () => {
+    await splitUserProperties.mutateAsync({
+      ids: Array.from(selectedIds),
+    });
+    clearSelection();
   };
 
   const handleTruncateDescriptions = async (text: string) => {
@@ -154,7 +251,12 @@ export default function DashboardPropertiesListPage() {
       ids: Array.from(selectedIds),
       text,
     });
-    setSelectedIds(new Set());
+    clearSelection();
+  };
+
+  const handleBulkPushToCrm = async () => {
+    await pushSelectedToCrm.mutateAsync({ ids: Array.from(selectedIds) });
+    clearSelection();
   };
 
   if (isPending) {
@@ -184,33 +286,11 @@ export default function DashboardPropertiesListPage() {
             )}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            isDisabled={selectedCount < 1}
-            onPress={truncateConfirm.open}
-          >
-            Truncate text ({selectedCount})
-          </Button>
-          <RoleGate roles={[RoleTypes.ADMIN]}>
-            {duplicateGroup === "true" ? (
-              <Button
-                variant="secondary"
-                isDisabled={dedupeDeleteCount < 1}
-                onPress={dedupeConfirm.open}
-              >
-                Keep one per group ({dedupeDeleteCount})
-              </Button>
-            ) : null}
-            <Button
-              variant="danger"
-              isDisabled={selectedCount < 1}
-              onPress={bulkDeleteConfirm.open}
-            >
-              Delete selected ({selectedCount})
-            </Button>
-          </RoleGate>
-        </div>
+        <BulkActionsMenu
+          label={selectedCount > 0 ? `Actions (${selectedCount})` : "Actions"}
+          actions={bulkActions}
+          onAction={handleBulkAction}
+        />
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -299,15 +379,21 @@ export default function DashboardPropertiesListPage() {
         <div className="rounded-xl border border-border bg-surface overflow-hidden">
           <Table>
             <Table.ScrollContainer>
-              <Table.Content aria-label="My properties">
+              <Table.Content
+                aria-label="My properties"
+                selectionMode="multiple"
+                selectedKeys={selectedKeys}
+                onSelectionChange={setSelectedKeys}
+              >
                 <Table.Header>
-                  <Table.Column isRowHeader>
-                    <input
-                      type="checkbox"
-                      checked={allVisibleSelected}
-                      onChange={toggleSelectAllVisible}
-                      aria-label="Select all properties on this page"
-                    />
+                  <Table.Column className="pr-0">
+                    <Checkbox aria-label="Select all properties on this page" slot="selection">
+                      <Checkbox.Content>
+                        <Checkbox.Control>
+                          <Checkbox.Indicator />
+                        </Checkbox.Control>
+                      </Checkbox.Content>
+                    </Checkbox>
                   </Table.Column>
                   <Table.Column isRowHeader>Title</Table.Column>
                   <Table.Column isRowHeader>City</Table.Column>
@@ -315,13 +401,21 @@ export default function DashboardPropertiesListPage() {
                   <Table.Column isRowHeader>Status</Table.Column>
                   <Table.Column isRowHeader>CRM</Table.Column>
                   <Table.Column isRowHeader>Group</Table.Column>
-                  {canDelete ? <Table.Column isRowHeader>Actions</Table.Column> : null}
+                  <Table.Column isRowHeader>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
                   {properties.map((property) => {
                     const groupCellClass = property.duplicate_group_id
                       ? getDuplicateGroupRowClasses(property.duplicate_group_id)
                       : undefined;
+                    const rowActions: TableRowAction[] = [
+                      {
+                        ...PROPERTY_PUSH_ACTION,
+                        isDisabled:
+                          pushToCrm.isPending && pushToCrm.variables === property.id,
+                      },
+                      ...(canDelete ? [PROPERTY_DELETE_ACTION] : []),
+                    ];
 
                     return (
                     <Table.Row
@@ -330,15 +424,18 @@ export default function DashboardPropertiesListPage() {
                       onAction={() => navigate(Routes.dashboard.properties.detail(property.id))}
                       className="cursor-pointer"
                     >
-                      <Table.Cell className={groupCellClass}>
-                        <div onClick={(event) => event.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.has(property.id)}
-                            onChange={() => toggleSelection(property.id)}
-                            aria-label={`Select ${property.title}`}
-                          />
-                        </div>
+                      <Table.Cell className={cn("pr-0", groupCellClass)}>
+                        <Checkbox
+                          aria-label={`Select ${property.title}`}
+                          slot="selection"
+                          variant="secondary"
+                        >
+                          <Checkbox.Content>
+                            <Checkbox.Control>
+                              <Checkbox.Indicator />
+                            </Checkbox.Control>
+                          </Checkbox.Content>
+                        </Checkbox>
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>
                         <span className="font-medium text-foreground">{property.title}</span>
@@ -370,6 +467,10 @@ export default function DashboardPropertiesListPage() {
                               Update CRM
                             </Button>
                           </div>
+                        ) : property.integration_property_id ? (
+                          <Chip size="sm" variant="soft" color="success">
+                            Synced
+                          </Chip>
                         ) : (
                           "—"
                         )}
@@ -381,19 +482,21 @@ export default function DashboardPropertiesListPage() {
                           "—"
                         )}
                       </Table.Cell>
-                      {canDelete ? (
-                        <Table.Cell className={groupCellClass}>
-                          <TableRowActionsMenu
-                            actions={PROPERTY_DELETE_ACTIONS}
-                            onAction={(actionId) => {
-                              if (actionId !== "delete") return;
-                              setDeletePropertyId(property.id);
-                              deleteConfirm.open();
-                            }}
-                            ariaLabel={`Actions for ${property.title}`}
-                          />
-                        </Table.Cell>
-                      ) : null}
+                      <Table.Cell className={groupCellClass}>
+                        <TableRowActionsMenu
+                          actions={rowActions}
+                          onAction={(actionId) => {
+                            if (actionId === "push-to-crm") {
+                              pushToCrm.mutate(property.id);
+                              return;
+                            }
+                            if (actionId !== "delete") return;
+                            setDeletePropertyId(property.id);
+                            deleteConfirm.open();
+                          }}
+                          ariaLabel={`Actions for ${property.title}`}
+                        />
+                      </Table.Cell>
                     </Table.Row>
                     );
                   })}
@@ -457,6 +560,14 @@ export default function DashboardPropertiesListPage() {
             confirmLabel="Keep one"
             onConfirm={handleDedupeGroups}
             isPending={dedupeUserPropertyGroups.isPending}
+          />
+          <ConfirmationDialog
+            state={splitConfirm}
+            title="Split from duplicate group?"
+            description={`This will remove ${selectedGroupedCount} ${selectedGroupedCount === 1 ? "property" : "properties"} from their duplicate groups. Other grouped properties stay linked.`}
+            confirmLabel="Split"
+            onConfirm={handleSplitFromGroup}
+            isPending={splitUserProperties.isPending}
           />
         </>
       ) : null}

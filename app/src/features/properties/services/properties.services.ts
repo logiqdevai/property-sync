@@ -11,6 +11,8 @@ import type {
   PropertyCountResponse,
   PropertyDetail,
   PropertyListQuery,
+  SplitPropertiesPayload,
+  SplitPropertiesResult,
   TruncatePropertyDescriptionsPayload,
   TruncatePropertyDescriptionsResult,
 } from "../interfaces/properties.interfaces";
@@ -101,6 +103,22 @@ export const dedupePropertyGroups = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to keep one property per group.",
+    );
+  }
+};
+
+export const splitProperties = async (
+  payload: SplitPropertiesPayload,
+): Promise<SplitPropertiesResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.properties.bulkSplit,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to split properties from groups.",
     );
   }
 };

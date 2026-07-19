@@ -118,6 +118,27 @@ export class UserPropertiesController {
     return this.userPropertiesService.dedupeGroups(userId, dto.ids);
   }
 
+  @Post('bulk-split')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Remove selected saved properties from their duplicate groups (admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Properties split from groups' })
+  @ApiResponse({
+    status: 400,
+    description: 'None of the selected properties are in a duplicate group',
+  })
+  @ApiResponse({ status: 403, description: 'Admin only' })
+  @ApiResponse({ status: 404, description: 'One or more properties not found' })
+  splitMany(
+    @CurrentUser('id') userId: string,
+    @Body() dto: DeleteUserPropertiesDto,
+  ) {
+    return this.userPropertiesService.splitMany(userId, dto.ids);
+  }
+
   @Post('truncate-descriptions')
   @ApiOperation({
     summary: 'Remove exact text from selected saved property titles and descriptions',
@@ -134,6 +155,21 @@ export class UserPropertiesController {
       dto.ids,
       dto.text,
     );
+  }
+
+  @Post('push-to-crm')
+  @ApiOperation({
+    summary:
+      'Push one or more properties to the linked EstateWeb CRM (create or update)',
+  })
+  @ApiResponse({ status: 200, description: 'CRM push queued' })
+  @ApiResponse({ status: 400, description: 'Cannot push to CRM' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  pushToCrmMany(
+    @CurrentUser('id') userId: string,
+    @Body() dto: DeleteUserPropertiesDto,
+  ) {
+    return this.userPropertiesService.pushToCrm(userId, dto.ids);
   }
 
   @Get(':id')
@@ -165,7 +201,10 @@ export class UserPropertiesController {
   }
 
   @Post(':id/push-to-crm')
-  @ApiOperation({ summary: 'Manually push this property update to the CRM' })
+  @ApiOperation({
+    summary:
+      'Push this property to the linked EstateWeb CRM (create or update)',
+  })
   @ApiResponse({ status: 200, type: UserPropertyEntity })
   @ApiResponse({ status: 400, description: 'Cannot push to CRM' })
   @ApiResponse({ status: 404, description: 'Saved property not found' })

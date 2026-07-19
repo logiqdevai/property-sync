@@ -5,6 +5,10 @@ import type {
   DedupeUserPropertiesPayload,
   DedupeUserPropertiesResult,
   PaginatedResponse,
+  PushUserPropertiesToCrmPayload,
+  PushUserPropertiesToCrmResult,
+  SplitUserPropertiesPayload,
+  SplitUserPropertiesResult,
   UpdateUserPropertyPayload,
   UserProperty,
   UserPropertyCountQuery,
@@ -71,6 +75,20 @@ export const pushUserPropertyToCrm = async (id: string): Promise<UserProperty> =
   }
 };
 
+export const pushUserPropertiesToCrm = async (
+  payload: PushUserPropertiesToCrmPayload,
+): Promise<UserProperty | PushUserPropertiesToCrmResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.bulkPushToCrm,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to push properties to CRM.");
+  }
+};
+
 export const deleteUserProperty = async (id: string): Promise<void> => {
   try {
     await axiosInstance.delete(ApiRoutes.userProperties.detail(id));
@@ -102,6 +120,22 @@ export const dedupeUserPropertyGroups = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to keep one property per group.",
+    );
+  }
+};
+
+export const splitUserProperties = async (
+  payload: SplitUserPropertiesPayload,
+): Promise<SplitUserPropertiesResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.bulkSplit,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to split properties from groups.",
     );
   }
 };

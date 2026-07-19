@@ -7,13 +7,18 @@ import {
   getUserProperties,
   getUserPropertiesCount,
   getUserProperty,
+  pushUserPropertiesToCrm,
   pushUserPropertyToCrm,
+  splitUserProperties,
   truncateUserPropertyDescriptions,
   updateUserProperty,
 } from "../services/user-properties.services";
 import type {
   DeleteUserPropertiesPayload,
   DedupeUserPropertiesPayload,
+  PushUserPropertiesToCrmPayload,
+  PushUserPropertiesToCrmResult,
+  SplitUserPropertiesPayload,
   TruncateUserPropertyDescriptionsPayload,
   UpdateUserPropertyPayload,
   UserPropertyCountQuery,
@@ -71,8 +76,49 @@ export const usePushUserPropertyToCrm = () => {
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
       queryClient.invalidateQueries({ queryKey: ["cmsSyncRuns"] });
       toast({
-        title: "CRM update queued",
-        description: "The property will be updated in your CRM shortly.",
+        title: "EstateWeb sync queued",
+        description: "Property will be pushed to your linked EstateWeb CRM shortly.",
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not push to CRM",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const usePushUserPropertiesToCrm = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: PushUserPropertiesToCrmPayload) =>
+      pushUserPropertiesToCrm(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      queryClient.invalidateQueries({ queryKey: ["cmsSyncRuns"] });
+
+      if ("queued" in result) {
+        const bulk = result as PushUserPropertiesToCrmResult;
+        toast({
+          title: "EstateWeb sync queued",
+          description:
+            bulk.failed.length > 0
+              ? `Queued ${bulk.queued}. ${bulk.failed.length} failed.`
+              : `${bulk.queued} ${bulk.queued === 1 ? "property" : "properties"} will be pushed shortly.`,
+          duration: 2500,
+          variant: bulk.failed.length > 0 ? "warning" : "success",
+        });
+        return;
+      }
+
+      toast({
+        title: "EstateWeb sync queued",
+        description: "Property will be pushed to your linked EstateWeb CRM shortly.",
         duration: 2500,
         variant: "success",
       });
@@ -143,6 +189,31 @@ export const useDedupeUserPropertyGroups = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not keep one per group",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useSplitUserProperties = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: SplitUserPropertiesPayload) =>
+      splitUserProperties(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      toast({
+        title: "Split from group",
+        description: `Removed ${result.split} ${result.split === 1 ? "property" : "properties"} from duplicate groups.`,
+        duration: 2000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not split from group",
         description: error.message,
         variant: "error",
       });

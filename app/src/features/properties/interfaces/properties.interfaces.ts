@@ -178,6 +178,14 @@ export interface DedupePropertiesResult {
   kept: string[];
 }
 
+export interface SplitPropertiesPayload {
+  property_ids: string[];
+}
+
+export interface SplitPropertiesResult {
+  split: number;
+}
+
 export interface TruncatePropertyDescriptionsPayload {
   property_ids: string[];
   text: string;

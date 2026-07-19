@@ -120,6 +120,15 @@ export default function DashboardPropertyDetailPage() {
       showFieldDiff
       headerActions={
         <div className="flex items-center gap-2">
+          <ActionButtonWithPending
+            variant="secondary"
+            isPending={pushToCrm.isPending}
+            onPress={() => pushToCrm.mutate(property.id)}
+          >
+            {property.integration_property_id
+              ? "Update EstateWeb"
+              : "Push to EstateWeb"}
+          </ActionButtonWithPending>
           <Button variant="secondary" onPress={truncateConfirm.open}>
             Truncate text
           </Button>
