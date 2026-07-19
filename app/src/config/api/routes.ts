@@ -163,6 +163,12 @@ export const ApiRoutes = {
     estateweb: {
         catalog: {
             locations: "/estateweb/catalog/locations",
+            floors: "/estateweb/catalog/floors",
+            energyClasses: "/estateweb/catalog/energy-classes",
+            roadTypes: "/estateweb/catalog/road-types",
+            listingTypes: "/estateweb/catalog/listing-types",
+            propertyTypes: "/estateweb/catalog/property-types",
+            features: "/estateweb/catalog/features",
         },
     },
     dashboard: {

@@ -1,12 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsInt,
-  IsNumber,
-  IsOptional,
-  IsString,
-  Min,
-} from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { ListingType, PropertyStatus, PropertyType } from 'generated/prisma';
 
 export class UpdateUserPropertyDto {
@@ -92,6 +85,12 @@ export class UpdateUserPropertyDto {
   @IsString()
   floor?: string | null;
 
+  @ApiProperty({ required: false, nullable: true, type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  features?: string[] | null;
+
   @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   @IsInt()
@@ -105,12 +104,27 @@ export class UpdateUserPropertyDto {
   @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   @IsInt()
+  estateweb_scope_id?: number | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsInt()
   estateweb_type_id?: number | null;
 
   @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   @IsInt()
   estateweb_location_id?: number | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsInt()
+  estateweb_energy_class_id?: number | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsInt()
+  estateweb_road_type_id?: number | null;
 
   @ApiProperty({ required: false, nullable: true })
   @IsOptional()

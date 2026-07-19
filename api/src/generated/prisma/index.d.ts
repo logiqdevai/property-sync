@@ -26444,6 +26444,7 @@ export namespace Prisma {
     renovation_year: number | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
+    estateweb_scope_id: number | null
     price_start: Decimal | null
     price_web: Decimal | null
   }
@@ -26459,6 +26460,7 @@ export namespace Prisma {
     renovation_year: number | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
+    estateweb_scope_id: number | null
     price_start: Decimal | null
     price_web: Decimal | null
   }
@@ -26489,6 +26491,7 @@ export namespace Prisma {
     renovation_year: number | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
+    estateweb_scope_id: number | null
     video_url: string | null
     distance_airport: string | null
     distance_port: string | null
@@ -26526,6 +26529,7 @@ export namespace Prisma {
     renovation_year: number | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
+    estateweb_scope_id: number | null
     video_url: string | null
     distance_airport: string | null
     distance_port: string | null
@@ -26566,6 +26570,7 @@ export namespace Prisma {
     normalized_data: number
     estateweb_type_id: number
     estateweb_location_id: number
+    estateweb_scope_id: number
     cms_fields: number
     cms_metadata: number
     video_url: number
@@ -26592,6 +26597,7 @@ export namespace Prisma {
     renovation_year?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
+    estateweb_scope_id?: true
     price_start?: true
     price_web?: true
   }
@@ -26607,6 +26613,7 @@ export namespace Prisma {
     renovation_year?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
+    estateweb_scope_id?: true
     price_start?: true
     price_web?: true
   }
@@ -26637,6 +26644,7 @@ export namespace Prisma {
     renovation_year?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
+    estateweb_scope_id?: true
     video_url?: true
     distance_airport?: true
     distance_port?: true
@@ -26674,6 +26682,7 @@ export namespace Prisma {
     renovation_year?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
+    estateweb_scope_id?: true
     video_url?: true
     distance_airport?: true
     distance_port?: true
@@ -26714,6 +26723,7 @@ export namespace Prisma {
     normalized_data?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
+    estateweb_scope_id?: true
     cms_fields?: true
     cms_metadata?: true
     video_url?: true
@@ -26843,6 +26853,7 @@ export namespace Prisma {
     normalized_data: JsonValue | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
+    estateweb_scope_id: number | null
     cms_fields: JsonValue | null
     cms_metadata: JsonValue | null
     video_url: string | null
@@ -26904,6 +26915,7 @@ export namespace Prisma {
     normalized_data?: boolean
     estateweb_type_id?: boolean
     estateweb_location_id?: boolean
+    estateweb_scope_id?: boolean
     cms_fields?: boolean
     cms_metadata?: boolean
     video_url?: boolean
@@ -26950,6 +26962,7 @@ export namespace Prisma {
     normalized_data?: boolean
     estateweb_type_id?: boolean
     estateweb_location_id?: boolean
+    estateweb_scope_id?: boolean
     cms_fields?: boolean
     cms_metadata?: boolean
     video_url?: boolean
@@ -26992,6 +27005,7 @@ export namespace Prisma {
     normalized_data?: boolean
     estateweb_type_id?: boolean
     estateweb_location_id?: boolean
+    estateweb_scope_id?: boolean
     cms_fields?: boolean
     cms_metadata?: boolean
     video_url?: boolean
@@ -27034,6 +27048,7 @@ export namespace Prisma {
     normalized_data?: boolean
     estateweb_type_id?: boolean
     estateweb_location_id?: boolean
+    estateweb_scope_id?: boolean
     cms_fields?: boolean
     cms_metadata?: boolean
     video_url?: boolean
@@ -27047,7 +27062,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type PropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "property_id" | "internal_id" | "listing_type" | "property_type" | "status" | "price" | "currency" | "city" | "district" | "address" | "postal_code" | "country" | "latitude" | "longitude" | "square_meters" | "bedrooms" | "bathrooms" | "floor" | "construction_year" | "renovation_year" | "features" | "images" | "normalized_data" | "estateweb_type_id" | "estateweb_location_id" | "cms_fields" | "cms_metadata" | "video_url" | "distance_airport" | "distance_port" | "distance_beach" | "price_start" | "price_web" | "duplicate_group_id" | "created_at" | "updated_at", ExtArgs["result"]["property"]>
+  export type PropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "property_id" | "internal_id" | "listing_type" | "property_type" | "status" | "price" | "currency" | "city" | "district" | "address" | "postal_code" | "country" | "latitude" | "longitude" | "square_meters" | "bedrooms" | "bathrooms" | "floor" | "construction_year" | "renovation_year" | "features" | "images" | "normalized_data" | "estateweb_type_id" | "estateweb_location_id" | "estateweb_scope_id" | "cms_fields" | "cms_metadata" | "video_url" | "distance_airport" | "distance_port" | "distance_beach" | "price_start" | "price_web" | "duplicate_group_id" | "created_at" | "updated_at", ExtArgs["result"]["property"]>
   export type PropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     source_links?: boolean | Property$source_linksArgs<ExtArgs>
     user_property_copies?: boolean | Property$user_property_copiesArgs<ExtArgs>
@@ -27093,6 +27108,7 @@ export namespace Prisma {
       normalized_data: Prisma.JsonValue | null
       estateweb_type_id: number | null
       estateweb_location_id: number | null
+      estateweb_scope_id: number | null
       cms_fields: Prisma.JsonValue | null
       cms_metadata: Prisma.JsonValue | null
       video_url: string | null
@@ -27558,6 +27574,7 @@ export namespace Prisma {
     readonly normalized_data: FieldRef<"Property", 'Json'>
     readonly estateweb_type_id: FieldRef<"Property", 'Int'>
     readonly estateweb_location_id: FieldRef<"Property", 'Int'>
+    readonly estateweb_scope_id: FieldRef<"Property", 'Int'>
     readonly cms_fields: FieldRef<"Property", 'Json'>
     readonly cms_metadata: FieldRef<"Property", 'Json'>
     readonly video_url: FieldRef<"Property", 'String'>
@@ -30325,6 +30342,7 @@ export namespace Prisma {
     renovation_year: number | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
+    estateweb_scope_id: number | null
     price_start: Decimal | null
     price_web: Decimal | null
   }
@@ -30340,6 +30358,7 @@ export namespace Prisma {
     renovation_year: number | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
+    estateweb_scope_id: number | null
     price_start: Decimal | null
     price_web: Decimal | null
   }
@@ -30373,6 +30392,7 @@ export namespace Prisma {
     renovation_year: number | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
+    estateweb_scope_id: number | null
     video_url: string | null
     distance_airport: string | null
     distance_port: string | null
@@ -30416,6 +30436,7 @@ export namespace Prisma {
     renovation_year: number | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
+    estateweb_scope_id: number | null
     video_url: string | null
     distance_airport: string | null
     distance_port: string | null
@@ -30462,6 +30483,7 @@ export namespace Prisma {
     normalized_data: number
     estateweb_type_id: number
     estateweb_location_id: number
+    estateweb_scope_id: number
     cms_fields: number
     cms_metadata: number
     video_url: number
@@ -30491,6 +30513,7 @@ export namespace Prisma {
     renovation_year?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
+    estateweb_scope_id?: true
     price_start?: true
     price_web?: true
   }
@@ -30506,6 +30529,7 @@ export namespace Prisma {
     renovation_year?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
+    estateweb_scope_id?: true
     price_start?: true
     price_web?: true
   }
@@ -30539,6 +30563,7 @@ export namespace Prisma {
     renovation_year?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
+    estateweb_scope_id?: true
     video_url?: true
     distance_airport?: true
     distance_port?: true
@@ -30582,6 +30607,7 @@ export namespace Prisma {
     renovation_year?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
+    estateweb_scope_id?: true
     video_url?: true
     distance_airport?: true
     distance_port?: true
@@ -30628,6 +30654,7 @@ export namespace Prisma {
     normalized_data?: true
     estateweb_type_id?: true
     estateweb_location_id?: true
+    estateweb_scope_id?: true
     cms_fields?: true
     cms_metadata?: true
     video_url?: true
@@ -30763,6 +30790,7 @@ export namespace Prisma {
     normalized_data: JsonValue | null
     estateweb_type_id: number | null
     estateweb_location_id: number | null
+    estateweb_scope_id: number | null
     cms_fields: JsonValue | null
     cms_metadata: JsonValue | null
     video_url: string | null
@@ -30830,6 +30858,7 @@ export namespace Prisma {
     normalized_data?: boolean
     estateweb_type_id?: boolean
     estateweb_location_id?: boolean
+    estateweb_scope_id?: boolean
     cms_fields?: boolean
     cms_metadata?: boolean
     video_url?: boolean
@@ -30880,6 +30909,7 @@ export namespace Prisma {
     normalized_data?: boolean
     estateweb_type_id?: boolean
     estateweb_location_id?: boolean
+    estateweb_scope_id?: boolean
     cms_fields?: boolean
     cms_metadata?: boolean
     video_url?: boolean
@@ -30930,6 +30960,7 @@ export namespace Prisma {
     normalized_data?: boolean
     estateweb_type_id?: boolean
     estateweb_location_id?: boolean
+    estateweb_scope_id?: boolean
     cms_fields?: boolean
     cms_metadata?: boolean
     video_url?: boolean
@@ -30980,6 +31011,7 @@ export namespace Prisma {
     normalized_data?: boolean
     estateweb_type_id?: boolean
     estateweb_location_id?: boolean
+    estateweb_scope_id?: boolean
     cms_fields?: boolean
     cms_metadata?: boolean
     video_url?: boolean
@@ -30996,7 +31028,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type UserPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "canonical_property_id" | "property_id" | "internal_id" | "integration_property_id" | "title" | "description" | "listing_type" | "property_type" | "status" | "price" | "currency" | "city" | "district" | "address" | "postal_code" | "country" | "latitude" | "longitude" | "square_meters" | "bedrooms" | "bathrooms" | "floor" | "construction_year" | "renovation_year" | "features" | "images" | "normalized_data" | "estateweb_type_id" | "estateweb_location_id" | "cms_fields" | "cms_metadata" | "video_url" | "distance_airport" | "distance_port" | "distance_beach" | "price_start" | "price_web" | "duplicate_group_id" | "is_modified" | "pending_crm_update" | "last_synced_at" | "created_at" | "updated_at", ExtArgs["result"]["userProperty"]>
+  export type UserPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "canonical_property_id" | "property_id" | "internal_id" | "integration_property_id" | "title" | "description" | "listing_type" | "property_type" | "status" | "price" | "currency" | "city" | "district" | "address" | "postal_code" | "country" | "latitude" | "longitude" | "square_meters" | "bedrooms" | "bathrooms" | "floor" | "construction_year" | "renovation_year" | "features" | "images" | "normalized_data" | "estateweb_type_id" | "estateweb_location_id" | "estateweb_scope_id" | "cms_fields" | "cms_metadata" | "video_url" | "distance_airport" | "distance_port" | "distance_beach" | "price_start" | "price_web" | "duplicate_group_id" | "is_modified" | "pending_crm_update" | "last_synced_at" | "created_at" | "updated_at", ExtArgs["result"]["userProperty"]>
   export type UserPropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     canonical_property?: boolean | PropertyDefaultArgs<ExtArgs>
@@ -31048,6 +31080,7 @@ export namespace Prisma {
       normalized_data: Prisma.JsonValue | null
       estateweb_type_id: number | null
       estateweb_location_id: number | null
+      estateweb_scope_id: number | null
       cms_fields: Prisma.JsonValue | null
       cms_metadata: Prisma.JsonValue | null
       video_url: string | null
@@ -31518,6 +31551,7 @@ export namespace Prisma {
     readonly normalized_data: FieldRef<"UserProperty", 'Json'>
     readonly estateweb_type_id: FieldRef<"UserProperty", 'Int'>
     readonly estateweb_location_id: FieldRef<"UserProperty", 'Int'>
+    readonly estateweb_scope_id: FieldRef<"UserProperty", 'Int'>
     readonly cms_fields: FieldRef<"UserProperty", 'Json'>
     readonly cms_metadata: FieldRef<"UserProperty", 'Json'>
     readonly video_url: FieldRef<"UserProperty", 'String'>
@@ -34686,6 +34720,7 @@ export namespace Prisma {
     normalized_data: 'normalized_data',
     estateweb_type_id: 'estateweb_type_id',
     estateweb_location_id: 'estateweb_location_id',
+    estateweb_scope_id: 'estateweb_scope_id',
     cms_fields: 'cms_fields',
     cms_metadata: 'cms_metadata',
     video_url: 'video_url',
@@ -34762,6 +34797,7 @@ export namespace Prisma {
     normalized_data: 'normalized_data',
     estateweb_type_id: 'estateweb_type_id',
     estateweb_location_id: 'estateweb_location_id',
+    estateweb_scope_id: 'estateweb_scope_id',
     cms_fields: 'cms_fields',
     cms_metadata: 'cms_metadata',
     video_url: 'video_url',
@@ -37161,6 +37197,7 @@ export namespace Prisma {
     normalized_data?: JsonNullableFilter<"Property">
     estateweb_type_id?: IntNullableFilter<"Property"> | number | null
     estateweb_location_id?: IntNullableFilter<"Property"> | number | null
+    estateweb_scope_id?: IntNullableFilter<"Property"> | number | null
     cms_fields?: JsonNullableFilter<"Property">
     cms_metadata?: JsonNullableFilter<"Property">
     video_url?: StringNullableFilter<"Property"> | string | null
@@ -37206,6 +37243,7 @@ export namespace Prisma {
     normalized_data?: SortOrderInput | SortOrder
     estateweb_type_id?: SortOrderInput | SortOrder
     estateweb_location_id?: SortOrderInput | SortOrder
+    estateweb_scope_id?: SortOrderInput | SortOrder
     cms_fields?: SortOrderInput | SortOrder
     cms_metadata?: SortOrderInput | SortOrder
     video_url?: SortOrderInput | SortOrder
@@ -37254,6 +37292,7 @@ export namespace Prisma {
     normalized_data?: JsonNullableFilter<"Property">
     estateweb_type_id?: IntNullableFilter<"Property"> | number | null
     estateweb_location_id?: IntNullableFilter<"Property"> | number | null
+    estateweb_scope_id?: IntNullableFilter<"Property"> | number | null
     cms_fields?: JsonNullableFilter<"Property">
     cms_metadata?: JsonNullableFilter<"Property">
     video_url?: StringNullableFilter<"Property"> | string | null
@@ -37299,6 +37338,7 @@ export namespace Prisma {
     normalized_data?: SortOrderInput | SortOrder
     estateweb_type_id?: SortOrderInput | SortOrder
     estateweb_location_id?: SortOrderInput | SortOrder
+    estateweb_scope_id?: SortOrderInput | SortOrder
     cms_fields?: SortOrderInput | SortOrder
     cms_metadata?: SortOrderInput | SortOrder
     video_url?: SortOrderInput | SortOrder
@@ -37349,6 +37389,7 @@ export namespace Prisma {
     normalized_data?: JsonNullableWithAggregatesFilter<"Property">
     estateweb_type_id?: IntNullableWithAggregatesFilter<"Property"> | number | null
     estateweb_location_id?: IntNullableWithAggregatesFilter<"Property"> | number | null
+    estateweb_scope_id?: IntNullableWithAggregatesFilter<"Property"> | number | null
     cms_fields?: JsonNullableWithAggregatesFilter<"Property">
     cms_metadata?: JsonNullableWithAggregatesFilter<"Property">
     video_url?: StringNullableWithAggregatesFilter<"Property"> | string | null
@@ -37546,6 +37587,7 @@ export namespace Prisma {
     normalized_data?: JsonNullableFilter<"UserProperty">
     estateweb_type_id?: IntNullableFilter<"UserProperty"> | number | null
     estateweb_location_id?: IntNullableFilter<"UserProperty"> | number | null
+    estateweb_scope_id?: IntNullableFilter<"UserProperty"> | number | null
     cms_fields?: JsonNullableFilter<"UserProperty">
     cms_metadata?: JsonNullableFilter<"UserProperty">
     video_url?: StringNullableFilter<"UserProperty"> | string | null
@@ -37596,6 +37638,7 @@ export namespace Prisma {
     normalized_data?: SortOrderInput | SortOrder
     estateweb_type_id?: SortOrderInput | SortOrder
     estateweb_location_id?: SortOrderInput | SortOrder
+    estateweb_scope_id?: SortOrderInput | SortOrder
     cms_fields?: SortOrderInput | SortOrder
     cms_metadata?: SortOrderInput | SortOrder
     video_url?: SortOrderInput | SortOrder
@@ -37650,6 +37693,7 @@ export namespace Prisma {
     normalized_data?: JsonNullableFilter<"UserProperty">
     estateweb_type_id?: IntNullableFilter<"UserProperty"> | number | null
     estateweb_location_id?: IntNullableFilter<"UserProperty"> | number | null
+    estateweb_scope_id?: IntNullableFilter<"UserProperty"> | number | null
     cms_fields?: JsonNullableFilter<"UserProperty">
     cms_metadata?: JsonNullableFilter<"UserProperty">
     video_url?: StringNullableFilter<"UserProperty"> | string | null
@@ -37700,6 +37744,7 @@ export namespace Prisma {
     normalized_data?: SortOrderInput | SortOrder
     estateweb_type_id?: SortOrderInput | SortOrder
     estateweb_location_id?: SortOrderInput | SortOrder
+    estateweb_scope_id?: SortOrderInput | SortOrder
     cms_fields?: SortOrderInput | SortOrder
     cms_metadata?: SortOrderInput | SortOrder
     video_url?: SortOrderInput | SortOrder
@@ -37756,6 +37801,7 @@ export namespace Prisma {
     normalized_data?: JsonNullableWithAggregatesFilter<"UserProperty">
     estateweb_type_id?: IntNullableWithAggregatesFilter<"UserProperty"> | number | null
     estateweb_location_id?: IntNullableWithAggregatesFilter<"UserProperty"> | number | null
+    estateweb_scope_id?: IntNullableWithAggregatesFilter<"UserProperty"> | number | null
     cms_fields?: JsonNullableWithAggregatesFilter<"UserProperty">
     cms_metadata?: JsonNullableWithAggregatesFilter<"UserProperty">
     video_url?: StringNullableWithAggregatesFilter<"UserProperty"> | string | null
@@ -40099,6 +40145,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -40144,6 +40191,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -40189,6 +40237,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40234,6 +40283,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40279,6 +40329,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -40321,6 +40372,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40363,6 +40415,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40556,6 +40609,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -40606,6 +40660,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -40652,6 +40707,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40702,6 +40758,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40750,6 +40807,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -40796,6 +40854,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40844,6 +40903,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42977,6 +43037,7 @@ export namespace Prisma {
     normalized_data?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
+    estateweb_scope_id?: SortOrder
     cms_fields?: SortOrder
     cms_metadata?: SortOrder
     video_url?: SortOrder
@@ -43001,6 +43062,7 @@ export namespace Prisma {
     renovation_year?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
+    estateweb_scope_id?: SortOrder
     price_start?: SortOrder
     price_web?: SortOrder
   }
@@ -43031,6 +43093,7 @@ export namespace Prisma {
     renovation_year?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
+    estateweb_scope_id?: SortOrder
     video_url?: SortOrder
     distance_airport?: SortOrder
     distance_port?: SortOrder
@@ -43068,6 +43131,7 @@ export namespace Prisma {
     renovation_year?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
+    estateweb_scope_id?: SortOrder
     video_url?: SortOrder
     distance_airport?: SortOrder
     distance_port?: SortOrder
@@ -43090,6 +43154,7 @@ export namespace Prisma {
     renovation_year?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
+    estateweb_scope_id?: SortOrder
     price_start?: SortOrder
     price_web?: SortOrder
   }
@@ -43253,6 +43318,7 @@ export namespace Prisma {
     normalized_data?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
+    estateweb_scope_id?: SortOrder
     cms_fields?: SortOrder
     cms_metadata?: SortOrder
     video_url?: SortOrder
@@ -43280,6 +43346,7 @@ export namespace Prisma {
     renovation_year?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
+    estateweb_scope_id?: SortOrder
     price_start?: SortOrder
     price_web?: SortOrder
   }
@@ -43313,6 +43380,7 @@ export namespace Prisma {
     renovation_year?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
+    estateweb_scope_id?: SortOrder
     video_url?: SortOrder
     distance_airport?: SortOrder
     distance_port?: SortOrder
@@ -43356,6 +43424,7 @@ export namespace Prisma {
     renovation_year?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
+    estateweb_scope_id?: SortOrder
     video_url?: SortOrder
     distance_airport?: SortOrder
     distance_port?: SortOrder
@@ -43381,6 +43450,7 @@ export namespace Prisma {
     renovation_year?: SortOrder
     estateweb_type_id?: SortOrder
     estateweb_location_id?: SortOrder
+    estateweb_scope_id?: SortOrder
     price_start?: SortOrder
     price_web?: SortOrder
   }
@@ -46358,6 +46428,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -46406,6 +46477,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -46564,6 +46636,7 @@ export namespace Prisma {
     normalized_data?: JsonNullableFilter<"UserProperty">
     estateweb_type_id?: IntNullableFilter<"UserProperty"> | number | null
     estateweb_location_id?: IntNullableFilter<"UserProperty"> | number | null
+    estateweb_scope_id?: IntNullableFilter<"UserProperty"> | number | null
     cms_fields?: JsonNullableFilter<"UserProperty">
     cms_metadata?: JsonNullableFilter<"UserProperty">
     video_url?: StringNullableFilter<"UserProperty"> | string | null
@@ -51827,6 +51900,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -51875,6 +51949,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -52008,6 +52083,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -52052,6 +52128,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -52169,6 +52246,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52213,6 +52291,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52320,6 +52399,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -52364,6 +52444,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -52497,6 +52578,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52541,6 +52623,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52693,6 +52776,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -52737,6 +52821,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -52832,6 +52917,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52876,6 +52962,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -53035,6 +53122,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -53151,6 +53239,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -53199,6 +53288,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -53246,6 +53336,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -54912,6 +55003,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: number | null
     estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: string | null
@@ -54998,6 +55090,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -55046,6 +55139,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null
@@ -55093,6 +55187,7 @@ export namespace Prisma {
     normalized_data?: NullableJsonNullValueInput | InputJsonValue
     estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
     estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
     cms_fields?: NullableJsonNullValueInput | InputJsonValue
     cms_metadata?: NullableJsonNullValueInput | InputJsonValue
     video_url?: NullableStringFieldUpdateOperationsInput | string | null

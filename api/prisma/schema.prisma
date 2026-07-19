@@ -806,6 +806,7 @@ model Property {
   normalized_data       Json?
   estateweb_type_id     Int?
   estateweb_location_id Int?
+  estateweb_scope_id    Int?
   cms_fields            Json?
   cms_metadata          Json?
   video_url             String?
@@ -913,6 +914,7 @@ model UserProperty {
   normalized_data       Json?
   estateweb_type_id     Int?
   estateweb_location_id Int?
+  estateweb_scope_id    Int?
   cms_fields            Json?
   cms_metadata          Json?
   video_url             String?

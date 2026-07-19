@@ -37,6 +37,14 @@ import {
   resolveEstateWebFieldOptionByName,
   resolveEstateWebPropertyTypeByName,
 } from '../utils/estateweb-init-lookup.util';
+import {
+  listEstateWebEnergyClassCatalog,
+  listEstateWebFeaturesCatalog,
+  listEstateWebFloorCatalog,
+  listEstateWebListingTypeCatalog,
+  listEstateWebPropertyTypeCatalog,
+  listEstateWebRoadTypeCatalog,
+} from '../utils/estateweb-catalog.util';
 import { listEstateWebLocationCatalog } from '../utils/estateweb-location-lookup.util';
 import {
   assertValidCreatePayload,
@@ -70,6 +78,34 @@ export class EstateWebPropertyService {
 
   getLocationCatalog() {
     return listEstateWebLocationCatalog();
+  }
+
+  getFloorCatalog() {
+    return listEstateWebFloorCatalog();
+  }
+
+  getEnergyClassCatalog() {
+    return listEstateWebEnergyClassCatalog();
+  }
+
+  getRoadTypeCatalog() {
+    return listEstateWebRoadTypeCatalog();
+  }
+
+  getFeaturesCatalog() {
+    return listEstateWebFeaturesCatalog();
+  }
+
+  getListingTypeCatalog() {
+    return listEstateWebListingTypeCatalog();
+  }
+
+  getPropertyTypeCatalog() {
+    return listEstateWebPropertyTypeCatalog();
+  }
+
+  getInitPropertyTypeCatalog() {
+    return listEstateWebPropertyTypeCatalog();
   }
 
   getInitField(fieldId: number): EstateWebInitField | undefined {

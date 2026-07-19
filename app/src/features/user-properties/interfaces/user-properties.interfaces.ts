@@ -72,6 +72,10 @@ export interface UpdateUserPropertyPayload {
   integration_property_id?: string | null;
   estateweb_type_id?: number | null;
   estateweb_location_id?: number | null;
+  estateweb_scope_id?: number | null;
+  estateweb_energy_class_id?: number | null;
+  estateweb_road_type_id?: number | null;
+  features?: string[] | null;
   video_url?: string | null;
   distance_airport?: string | null;
   distance_port?: string | null;

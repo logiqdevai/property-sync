@@ -9,7 +9,12 @@ import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync
 import { UserPropertyQueryType } from './dto/user-property-query.schema';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import { Prisma, Property, PropertyStatus } from 'generated/prisma';
+import {
+  listingTypeFromEstateWebScopeId,
+  resolveEstateWebScopeId,
+} from '@/integrations/estateweb/utils/estateweb-catalog.util';
 import { serializePropertyForApi } from '@/modules/properties/utils/property-api-response.util';
+import { upsertEstateWebEnergyClassInCmsFields, upsertEstateWebRoadTypeInCmsFields } from '@/modules/properties/utils/property-cms-field-mapper.util';
 import {
   applyTextTruncatePieces,
   normalizeTextTruncatePieces,
@@ -288,13 +293,61 @@ export class UserPropertiesService {
     return serializePropertyForApi(
       await this.prisma.userProperty.update({
         where: { id },
-        data: {
-          ...dto,
-          is_modified: true,
-          pending_crm_update: pendingCrmUpdate,
-        },
+        data: this.buildUserPropertyUpdateData(
+          dto,
+          pendingCrmUpdate,
+          existing.cms_fields,
+        ),
       }),
     );
+  }
+
+  private buildUserPropertyUpdateData(
+    dto: UpdateUserPropertyDto,
+    pendingCrmUpdate: boolean,
+    existingCmsFields: unknown,
+  ): Prisma.UserPropertyUpdateInput {
+    const {
+      estateweb_energy_class_id,
+      estateweb_road_type_id,
+      ...rest
+    } = dto;
+    const data: Prisma.UserPropertyUpdateInput = {
+      ...rest,
+      is_modified: true,
+      pending_crm_update: pendingCrmUpdate,
+    };
+
+    if (dto.estateweb_scope_id != null) {
+      data.listing_type = listingTypeFromEstateWebScopeId(dto.estateweb_scope_id);
+    } else if (dto.listing_type != null && dto.estateweb_scope_id === undefined) {
+      const scopeId = resolveEstateWebScopeId(dto.listing_type, null);
+      if (scopeId != null) {
+        data.estateweb_scope_id = scopeId;
+      }
+    }
+
+    if (
+      estateweb_energy_class_id !== undefined ||
+      estateweb_road_type_id !== undefined
+    ) {
+      let cmsFields = existingCmsFields;
+      if (estateweb_energy_class_id !== undefined) {
+        cmsFields = upsertEstateWebEnergyClassInCmsFields(
+          cmsFields,
+          estateweb_energy_class_id,
+        );
+      }
+      if (estateweb_road_type_id !== undefined) {
+        cmsFields = upsertEstateWebRoadTypeInCmsFields(
+          cmsFields,
+          estateweb_road_type_id,
+        );
+      }
+      data.cms_fields = cmsFields as unknown as Prisma.InputJsonValue;
+    }
+
+    return data;
   }
 
   async pushToCrm(userId: string, ids: string | string[]) {

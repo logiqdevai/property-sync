@@ -1,110 +1,117 @@
 import { useDeferredValue, useEffect, useMemo, useState, type FC } from "react";
-import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight, Layers3 } from "lucide-react";
 import { Button, Input, Modal, Skeleton, useOverlayState } from "@heroui/react";
-import { useEstateWebLocationCatalog } from "@/features/estateweb/hooks/use-estateweb";
-import type { EstateWebLocationCatalogItem } from "@/features/estateweb/interfaces/estateweb.interfaces";
+import { useEstateWebPropertyTypeCatalog } from "@/features/estateweb/hooks/use-estateweb";
+import type { EstateWebPropertyTypeCatalogItem } from "@/features/estateweb/interfaces/estateweb.interfaces";
 import { cn } from "@/lib/utils";
 
-export type EstateWebLocationPickerModalState = ReturnType<typeof useOverlayState>;
+export type EstateWebPropertyTypePickerModalState = ReturnType<typeof useOverlayState>;
 
-type EstateWebLocationPickerModalProps = {
-  state: EstateWebLocationPickerModalState;
+type EstateWebPropertyTypePickerModalProps = {
+  state: EstateWebPropertyTypePickerModalState;
   selectedId: number | null;
-  onSelect: (location: EstateWebLocationCatalogItem) => void;
+  onSelect: (propertyType: EstateWebPropertyTypeCatalogItem) => void;
   onClear: () => void;
 };
 
-const ROOT_PARENT_ID = 0;
+const ROOT_PARENT_KEY = "__root__";
 const SEARCH_RESULT_LIMIT = 80;
 
+function parentKey(parentId: number | null) {
+  return parentId == null ? ROOT_PARENT_KEY : String(parentId);
+}
+
 function buildAncestorChain(
-  locationsById: Map<number, EstateWebLocationCatalogItem>,
-  locationId: number | null,
-): EstateWebLocationCatalogItem[] {
-  if (locationId == null) return [];
-  const chain: EstateWebLocationCatalogItem[] = [];
-  let current = locationsById.get(locationId);
+  typesById: Map<number, EstateWebPropertyTypeCatalogItem>,
+  typeId: number | null,
+): EstateWebPropertyTypeCatalogItem[] {
+  if (typeId == null) return [];
+  const chain: EstateWebPropertyTypeCatalogItem[] = [];
+  let current = typesById.get(typeId);
   while (current) {
     chain.unshift(current);
-    if (current.parent_id === ROOT_PARENT_ID) break;
-    current = locationsById.get(current.parent_id);
+    if (current.parent_id == null) break;
+    current = typesById.get(current.parent_id);
   }
   return chain;
 }
 
-function compareByName(a: EstateWebLocationCatalogItem, b: EstateWebLocationCatalogItem) {
+function compareByName(
+  a: EstateWebPropertyTypeCatalogItem,
+  b: EstateWebPropertyTypeCatalogItem,
+) {
   return a.name.localeCompare(b.name, "el");
 }
 
-export const EstateWebLocationPickerModal: FC<EstateWebLocationPickerModalProps> = ({
-  state,
-  selectedId,
-  onSelect,
-  onClear,
-}) => {
-  const { data: locations = [], isPending } = useEstateWebLocationCatalog(state.isOpen);
-  const [parentId, setParentId] = useState(ROOT_PARENT_ID);
+export const EstateWebPropertyTypePickerModal: FC<
+  EstateWebPropertyTypePickerModalProps
+> = ({ state, selectedId, onSelect, onClear }) => {
+  const { data: propertyTypes = [], isPending } = useEstateWebPropertyTypeCatalog(
+    state.isOpen,
+  );
+  const [parentId, setParentId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search.trim().toLowerCase());
 
-  const locationsById = useMemo(() => {
-    return new Map(locations.map((location) => [location.id, location]));
-  }, [locations]);
+  const typesById = useMemo(() => {
+    return new Map(propertyTypes.map((type) => [type.id, type]));
+  }, [propertyTypes]);
 
   const childrenByParentId = useMemo(() => {
-    const map = new Map<number, EstateWebLocationCatalogItem[]>();
-    for (const location of locations) {
-      const bucket = map.get(location.parent_id);
-      if (bucket) bucket.push(location);
-      else map.set(location.parent_id, [location]);
+    const map = new Map<string, EstateWebPropertyTypeCatalogItem[]>();
+    for (const type of propertyTypes) {
+      const key = parentKey(type.parent_id);
+      const bucket = map.get(key);
+      if (bucket) bucket.push(type);
+      else map.set(key, [type]);
     }
     for (const bucket of map.values()) {
       bucket.sort(compareByName);
     }
     return map;
-  }, [locations]);
+  }, [propertyTypes]);
 
   useEffect(() => {
     if (!state.isOpen) return;
     setSearch("");
-    if (selectedId != null && locationsById.has(selectedId)) {
-      const selected = locationsById.get(selectedId)!;
+    if (selectedId != null && typesById.has(selectedId)) {
+      const selected = typesById.get(selectedId)!;
       setParentId(selected.has_children ? selected.id : selected.parent_id);
       return;
     }
-    setParentId(ROOT_PARENT_ID);
-  }, [state.isOpen, selectedId, locationsById]);
+    setParentId(null);
+  }, [state.isOpen, selectedId, typesById]);
 
   const breadcrumb = useMemo(() => {
-    if (parentId === ROOT_PARENT_ID) return [];
-    return buildAncestorChain(locationsById, parentId);
-  }, [locationsById, parentId]);
+    if (parentId == null) return [];
+    return buildAncestorChain(typesById, parentId);
+  }, [typesById, parentId]);
 
-  const currentChildren = childrenByParentId.get(parentId) ?? [];
-  const currentParent = parentId === ROOT_PARENT_ID ? null : locationsById.get(parentId) ?? null;
+  const currentChildren = childrenByParentId.get(parentKey(parentId)) ?? [];
+  const currentParent = parentId == null ? null : typesById.get(parentId) ?? null;
 
   const searchResults = useMemo(() => {
     if (!deferredSearch) return [];
-    const matches: EstateWebLocationCatalogItem[] = [];
-    for (const location of locations) {
+    const matches: EstateWebPropertyTypeCatalogItem[] = [];
+    for (const type of propertyTypes) {
       if (
-        location.name.toLowerCase().includes(deferredSearch) ||
-        location.path.toLowerCase().includes(deferredSearch) ||
-        String(location.id).includes(deferredSearch)
+        type.name.toLowerCase().includes(deferredSearch) ||
+        type.path.toLowerCase().includes(deferredSearch) ||
+        String(type.id).includes(deferredSearch)
       ) {
-        matches.push(location);
+        matches.push(type);
         if (matches.length >= SEARCH_RESULT_LIMIT) break;
       }
     }
     return matches;
-  }, [deferredSearch, locations]);
+  }, [deferredSearch, propertyTypes]);
 
   const handleClose = () => {
     state.close();
   };
 
-  const handleSelect = (location: EstateWebLocationCatalogItem) => {
-    onSelect(location);
+  const handleSelect = (propertyType: EstateWebPropertyTypeCatalogItem) => {
+    onSelect(propertyType);
     state.close();
   };
 
@@ -113,8 +120,8 @@ export const EstateWebLocationPickerModal: FC<EstateWebLocationPickerModalProps>
     state.close();
   };
 
-  const handleDrillIn = (location: EstateWebLocationCatalogItem) => {
-    setParentId(location.id);
+  const handleDrillIn = (propertyType: EstateWebPropertyTypeCatalogItem) => {
+    setParentId(propertyType.id);
     setSearch("");
   };
 
@@ -130,11 +137,11 @@ export const EstateWebLocationPickerModal: FC<EstateWebLocationPickerModalProps>
         <Modal.Container>
           <Modal.Dialog className="max-w-xl w-full">
             <Modal.Header>
-              <Modal.Heading>EstateWeb location</Modal.Heading>
+              <Modal.Heading>EstateWeb property type</Modal.Heading>
             </Modal.Header>
             <Modal.Body className="flex flex-col gap-3">
               <Input
-                aria-label="Search locations"
+                aria-label="Search property types"
                 placeholder="Search by name, path, or id…"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -149,20 +156,25 @@ export const EstateWebLocationPickerModal: FC<EstateWebLocationPickerModalProps>
               ) : isSearchMode ? (
                 <div className="flex flex-col gap-1 max-h-80 overflow-y-auto">
                   {searchResults.length === 0 ? (
-                    <p className="text-sm text-muted py-4 text-center">No locations match.</p>
+                    <p className="text-sm text-muted py-4 text-center">
+                      No property types match.
+                    </p>
                   ) : (
-                    searchResults.map((location) => (
+                    searchResults.map((propertyType) => (
                       <button
-                        key={location.id}
+                        key={propertyType.id}
                         type="button"
                         className={cn(
                           "flex flex-col gap-0.5 rounded-lg border border-border px-3 py-2 text-left hover:bg-surface-secondary",
-                          selectedId === location.id && "border-accent/50 bg-accent/10",
+                          selectedId === propertyType.id && "border-accent/50 bg-accent/10",
+                          !propertyType.is_leaf && "opacity-80",
                         )}
-                        onClick={() => handleSelect(location)}
+                        onClick={() => handleSelect(propertyType)}
                       >
-                        <span className="text-sm font-medium text-foreground">{location.name}</span>
-                        <span className="text-xs text-muted truncate">{location.path}</span>
+                        <span className="text-sm font-medium text-foreground">
+                          {propertyType.name}
+                        </span>
+                        <span className="text-xs text-muted truncate">{propertyType.path}</span>
                       </button>
                     ))
                   )}
@@ -174,11 +186,11 @@ export const EstateWebLocationPickerModal: FC<EstateWebLocationPickerModalProps>
                       type="button"
                       className={cn(
                         "rounded px-1.5 py-0.5 hover:bg-surface-secondary hover:text-foreground",
-                        parentId === ROOT_PARENT_ID && "font-semibold text-foreground",
+                        parentId == null && "font-semibold text-foreground",
                       )}
-                      onClick={() => setParentId(ROOT_PARENT_ID)}
+                      onClick={() => setParentId(null)}
                     >
-                      All regions
+                      All categories
                     </button>
                     {breadcrumb.map((crumb) => (
                       <span key={crumb.id} className="inline-flex items-center gap-1">
@@ -216,12 +228,12 @@ export const EstateWebLocationPickerModal: FC<EstateWebLocationPickerModalProps>
                   ) : null}
 
                   <div className="flex flex-col gap-1 max-h-72 overflow-y-auto">
-                    {parentId !== ROOT_PARENT_ID ? (
+                    {parentId != null ? (
                       <button
                         type="button"
                         className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted hover:bg-surface-secondary hover:text-foreground"
                         onClick={() =>
-                          setParentId(currentParent?.parent_id ?? ROOT_PARENT_ID)
+                          setParentId(currentParent?.parent_id ?? null)
                         }
                       >
                         <ChevronLeft className="size-4" />
@@ -230,38 +242,40 @@ export const EstateWebLocationPickerModal: FC<EstateWebLocationPickerModalProps>
                     ) : null}
 
                     {currentChildren.length === 0 ? (
-                      <p className="text-sm text-muted py-4 text-center">No child locations.</p>
+                      <p className="text-sm text-muted py-4 text-center">
+                        No child property types.
+                      </p>
                     ) : (
-                      currentChildren.map((location) => (
+                      currentChildren.map((propertyType) => (
                         <div
-                          key={location.id}
+                          key={propertyType.id}
                           className={cn(
                             "flex items-center gap-1 rounded-lg border border-border",
-                            selectedId === location.id && "border-accent/50 bg-accent/10",
+                            selectedId === propertyType.id && "border-accent/50 bg-accent/10",
                           )}
                         >
                           <button
                             type="button"
                             className="flex min-w-0 flex-1 items-center gap-2 px-3 py-2 text-left hover:bg-surface-secondary rounded-l-lg"
                             onClick={() =>
-                              location.has_children
-                                ? handleDrillIn(location)
-                                : handleSelect(location)
+                              propertyType.has_children
+                                ? handleDrillIn(propertyType)
+                                : handleSelect(propertyType)
                             }
                           >
-                            <MapPin className="size-3.5 shrink-0 text-muted" />
+                            <Layers3 className="size-3.5 shrink-0 text-muted" />
                             <span className="min-w-0">
                               <span className="block text-sm font-medium text-foreground truncate">
-                                {location.name}
+                                {propertyType.name}
                               </span>
                             </span>
                           </button>
-                          {location.has_children ? (
+                          {propertyType.has_children ? (
                             <button
                               type="button"
-                              aria-label={`Open ${location.name}`}
+                              aria-label={`Open ${propertyType.name}`}
                               className="shrink-0 px-3 py-2 text-muted hover:text-foreground"
-                              onClick={() => handleDrillIn(location)}
+                              onClick={() => handleDrillIn(propertyType)}
                             >
                               <ChevronRight className="size-4" />
                             </button>
@@ -270,7 +284,7 @@ export const EstateWebLocationPickerModal: FC<EstateWebLocationPickerModalProps>
                               variant="secondary"
                               size="sm"
                               className="mr-2"
-                              onPress={() => handleSelect(location)}
+                              onPress={() => handleSelect(propertyType)}
                             >
                               Select
                             </Button>

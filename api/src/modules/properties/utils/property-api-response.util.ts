@@ -5,9 +5,18 @@ import {
   getEstateWebPropertyTypeNamePath,
 } from '@/integrations/estateweb/utils/estateweb-init-lookup.util';
 import {
+  getEstateWebEnergyClassName,
+  getEstateWebRoadTypeName,
+  getEstateWebScopeName,
+} from '@/integrations/estateweb/utils/estateweb-catalog.util';
+import {
   CmsPropertyFieldDisplayEntry,
   CmsPropertyFieldEntry,
 } from '../interfaces/cms-property.interface';
+import {
+  extractEstateWebEnergyClassId,
+  extractEstateWebRoadTypeId,
+} from './property-cms-field-mapper.util';
 
 function formatCmsFieldDisplayValue(
   fieldId: number,
@@ -81,11 +90,24 @@ export function serializePropertyForApi<T extends Record<string, unknown>>(
 ): T & {
   estateweb_type_name: string | null;
   estateweb_location_name: string | null;
+  estateweb_scope_name: string | null;
+  estateweb_energy_class_id: number | null;
+  estateweb_energy_class_name: string | null;
+  estateweb_road_type_id: number | null;
+  estateweb_road_type_name: string | null;
 } {
   const estatewebTypeId =
     typeof property.estateweb_type_id === 'number'
       ? property.estateweb_type_id
       : null;
+  const estatewebScopeId =
+    typeof property.estateweb_scope_id === 'number'
+      ? property.estateweb_scope_id
+      : null;
+  const estatewebEnergyClassId = extractEstateWebEnergyClassId(
+    property.cms_fields,
+  );
+  const estatewebRoadTypeId = extractEstateWebRoadTypeId(property.cms_fields);
 
   return {
     ...property,
@@ -93,6 +115,17 @@ export function serializePropertyForApi<T extends Record<string, unknown>>(
       ? (getEstateWebPropertyTypeNamePath(estatewebTypeId) ?? null)
       : null,
     estateweb_location_name: null,
+    estateweb_scope_name: estatewebScopeId
+      ? (getEstateWebScopeName(estatewebScopeId) ?? null)
+      : null,
+    estateweb_energy_class_id: estatewebEnergyClassId,
+    estateweb_energy_class_name: estatewebEnergyClassId
+      ? (getEstateWebEnergyClassName(estatewebEnergyClassId) ?? null)
+      : null,
+    estateweb_road_type_id: estatewebRoadTypeId,
+    estateweb_road_type_name: estatewebRoadTypeId
+      ? (getEstateWebRoadTypeName(estatewebRoadTypeId) ?? null)
+      : null,
     cms_fields: serializeCmsFieldsForApi(property.cms_fields),
   };
 }

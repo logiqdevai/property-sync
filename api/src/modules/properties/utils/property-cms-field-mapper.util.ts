@@ -14,7 +14,8 @@ const ESTATEWEB_FIELD_RENOVATION_YEAR = 1014;
 const ESTATEWEB_FIELD_BEDROOMS = 2007;
 const ESTATEWEB_FIELD_BATHROOMS = 2004;
 const ESTATEWEB_FIELD_FLOOR = 4187;
-const ESTATEWEB_FIELD_ENERGY_CLASS = 2010;
+export const ESTATEWEB_FIELD_ENERGY_CLASS = 2010;
+export const ESTATEWEB_FIELD_ROAD_TYPE = 110;
 
 const NEGATIVE_VALUE_TOKENS = new Set([
   'όχι',
@@ -75,6 +76,86 @@ function resolveFloorValue(floor: string): number | null {
   if (resolved) return resolved.id;
 
   return null;
+}
+
+export function extractEstateWebCmsSelectOptionId(
+  cmsFields: unknown,
+  fieldId: number,
+): number | null {
+  if (!Array.isArray(cmsFields)) return null;
+  for (const entry of cmsFields) {
+    if (
+      !entry ||
+      typeof entry !== 'object' ||
+      (entry as CmsPropertyFieldEntry).id !== fieldId
+    ) {
+      continue;
+    }
+    const raw = (entry as CmsPropertyFieldEntry).value;
+    const optionId =
+      typeof raw === 'number' ? raw : Number.parseInt(String(raw), 10);
+    return Number.isFinite(optionId) ? optionId : null;
+  }
+  return null;
+}
+
+export function upsertEstateWebCmsSelectOption(
+  cmsFields: unknown,
+  fieldId: number,
+  optionId: number | null,
+): CmsPropertyFieldEntry[] {
+  const existing = Array.isArray(cmsFields)
+    ? (cmsFields as CmsPropertyFieldEntry[]).filter(
+        (entry) =>
+          entry &&
+          typeof entry === 'object' &&
+          typeof entry.id === 'number' &&
+          entry.id !== fieldId &&
+          entry.value != null &&
+          entry.value !== '',
+      )
+    : [];
+
+  if (optionId == null) return existing;
+  return [...existing, { id: fieldId, value: optionId }];
+}
+
+export function extractEstateWebEnergyClassId(
+  cmsFields: unknown,
+): number | null {
+  return extractEstateWebCmsSelectOptionId(
+    cmsFields,
+    ESTATEWEB_FIELD_ENERGY_CLASS,
+  );
+}
+
+export function upsertEstateWebEnergyClassInCmsFields(
+  cmsFields: unknown,
+  optionId: number | null,
+): CmsPropertyFieldEntry[] {
+  return upsertEstateWebCmsSelectOption(
+    cmsFields,
+    ESTATEWEB_FIELD_ENERGY_CLASS,
+    optionId,
+  );
+}
+
+export function extractEstateWebRoadTypeId(cmsFields: unknown): number | null {
+  return extractEstateWebCmsSelectOptionId(
+    cmsFields,
+    ESTATEWEB_FIELD_ROAD_TYPE,
+  );
+}
+
+export function upsertEstateWebRoadTypeInCmsFields(
+  cmsFields: unknown,
+  optionId: number | null,
+): CmsPropertyFieldEntry[] {
+  return upsertEstateWebCmsSelectOption(
+    cmsFields,
+    ESTATEWEB_FIELD_ROAD_TYPE,
+    optionId,
+  );
 }
 
 function isTruthyValue(value: string): boolean {
@@ -278,6 +359,16 @@ export function mergeCmsFieldsFromNormalizedRow(
         option.id,
         propertyTypeId,
       );
+    }
+  }
+
+  if (row.road) {
+    const option = resolveEstateWebFieldOptionByName(
+      ESTATEWEB_FIELD_ROAD_TYPE,
+      row.road,
+    );
+    if (option) {
+      upsertField(fields, ESTATEWEB_FIELD_ROAD_TYPE, option.id, propertyTypeId);
     }
   }
 

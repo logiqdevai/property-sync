@@ -6,6 +6,7 @@ import {
   UserProperty,
 } from 'generated/prisma';
 import { EstateWebScope } from '../constants/estateweb-enums.constants';
+import { resolveEstateWebScopeId } from '../utils/estateweb-catalog.util';
 import {
   EstateWebPropertyListItem,
 } from '../interfaces/estateweb-property.interface';
@@ -195,10 +196,11 @@ export class EstateWebPropertyReconciliationService {
   }
 
   private resolveScopeId(userProperty: UserProperty): EstateWebScope {
-    if (userProperty.listing_type === 'RENT') return EstateWebScope.RENT;
-    if (userProperty.listing_type === 'SHORT_TERM_RENT') {
-      return EstateWebScope.RENT;
-    }
+    const scopeId = resolveEstateWebScopeId(
+      userProperty.listing_type,
+      userProperty.estateweb_scope_id,
+    );
+    if (scopeId === EstateWebScope.RENT) return EstateWebScope.RENT;
     return EstateWebScope.SALE;
   }
 

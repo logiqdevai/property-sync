@@ -40,6 +40,7 @@ export interface NormalizedAiRow {
   construction_year?: number | null;
   renovation_year?: number | null;
   energy_class?: string | null;
+  road?: string | null;
   heating?: string | null;
   video_url?: string | null;
   distance_airport?: string | null;

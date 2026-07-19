@@ -82,10 +82,25 @@ export class UserPropertyEntity {
   renovation_year: number | null;
 
   @ApiProperty({ nullable: true })
+  estateweb_scope_id: number | null;
+
+  @ApiProperty({ nullable: true })
   estateweb_type_id: number | null;
 
   @ApiProperty({ nullable: true })
   estateweb_location_id: number | null;
+
+  @ApiProperty({ nullable: true })
+  estateweb_energy_class_id: number | null;
+
+  @ApiProperty({ nullable: true })
+  estateweb_energy_class_name: string | null;
+
+  @ApiProperty({ nullable: true })
+  estateweb_road_type_id: number | null;
+
+  @ApiProperty({ nullable: true })
+  estateweb_road_type_name: string | null;
 
   @ApiProperty({ nullable: true })
   video_url: string | null;

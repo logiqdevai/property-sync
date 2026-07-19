@@ -223,6 +223,34 @@ export class AdminEstateWebPropertiesService {
     return this.estateWebPropertyService.getLocationCatalog();
   }
 
+  getFloorCatalog() {
+    return this.estateWebPropertyService.getFloorCatalog();
+  }
+
+  getEnergyClassCatalog() {
+    return this.estateWebPropertyService.getEnergyClassCatalog();
+  }
+
+  getRoadTypeCatalog() {
+    return this.estateWebPropertyService.getRoadTypeCatalog();
+  }
+
+  getFeaturesCatalog() {
+    return this.estateWebPropertyService.getFeaturesCatalog();
+  }
+
+  getListingTypeCatalog() {
+    return this.estateWebPropertyService.getListingTypeCatalog();
+  }
+
+  getPropertyTypeCatalog() {
+    return this.estateWebPropertyService.getPropertyTypeCatalog();
+  }
+
+  getInitPropertyTypeCatalog() {
+    return this.estateWebPropertyService.getInitPropertyTypeCatalog();
+  }
+
   getAiFieldCatalog(propertyTypeId?: number) {
     return this.estateWebPropertyService.getAiFieldCatalog(propertyTypeId);
   }

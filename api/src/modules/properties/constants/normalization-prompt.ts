@@ -50,6 +50,7 @@ ${buildEstateWebTypeCatalogJson()}
   "construction_year": number | null,
   "renovation_year": number | null,
   "energy_class": string | null (energy performance rating exactly as shown, e.g. "Α+", "Β", "Δεν απαιτείται"),
+  "road": string | null (road access type exactly as shown, e.g. "Άσφαλτος", "Χωματόδρομος", "Πλακόστρωτο", "Όχι"),
   "heating": string | null (heating description as shown, e.g. "Ατομική - Φυσικό αέριο"),
   "video_url": string | null,
   "distance_airport": string | null,
@@ -91,6 +92,7 @@ ${buildEstateWebTypeCatalogJson()}
   - "Όροφος" → floor
   - "Έτος κατασκευής" → construction_year (prefer this over "κατασκευασμένη το <year>" in prose)
   - "Ενεργειακή κλάση" → energy_class
+  - "Δρόμος" → road
   - "Θέρμανση" → heating
 - If a spec label and the prose disagree, use the spec value.
 - Populate features from detail_features plus notable amenities in the spec table/prose; keep them concise (e.g. "parking", "elevator", "storage", "fireplace", "security door", "air conditioning").

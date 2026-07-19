@@ -118,6 +118,43 @@ export class AdminEstateWebPropertiesController {
     return this.adminEstateWebPropertiesService.getLocationCatalog();
   }
 
+  @Get('catalog/floors')
+  @ApiOperation({ summary: 'Get EstateWeb floor option catalog' })
+  getFloorCatalog() {
+    return this.adminEstateWebPropertiesService.getFloorCatalog();
+  }
+
+  @Get('catalog/energy-classes')
+  @ApiOperation({ summary: 'Get EstateWeb energy class option catalog' })
+  getEnergyClassCatalog() {
+    return this.adminEstateWebPropertiesService.getEnergyClassCatalog();
+  }
+
+  @Get('catalog/road-types')
+  @ApiOperation({ summary: 'Get EstateWeb road type option catalog' })
+  getRoadTypeCatalog() {
+    return this.adminEstateWebPropertiesService.getRoadTypeCatalog();
+  }
+
+  @Get('catalog/listing-types')
+  @ApiOperation({ summary: 'Get listing type catalog' })
+  getListingTypeCatalog() {
+    return this.adminEstateWebPropertiesService.getListingTypeCatalog();
+  }
+
+  @Get('catalog/estateweb-property-types')
+  @ApiOperation({
+    summary: 'Get EstateWeb property type catalog (id + human-readable path)',
+  })
+  getInitPropertyTypeCatalog() {
+    return this.adminEstateWebPropertiesService.getInitPropertyTypeCatalog();
+  }
+  @Get('catalog/features')
+  @ApiOperation({ summary: 'Get EstateWeb feature catalog' })
+  getFeaturesCatalog() {
+    return this.adminEstateWebPropertiesService.getFeaturesCatalog();
+  }
+
   @Get('catalog/ai-fields')
   @ApiOperation({ summary: 'Get compact AI field catalog' })
   @ApiQuery({ name: 'propertyTypeId', required: false, type: Number })

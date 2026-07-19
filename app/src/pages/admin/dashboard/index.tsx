@@ -81,13 +81,11 @@ export default function AdminDashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <Dropdown>
-            <Dropdown.Trigger>
-              <Button variant="secondary">
-                <BookOpen className="h-4 w-4" />
-                API docs
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </Dropdown.Trigger>
+            <Button variant="secondary">
+              <BookOpen className="h-4 w-4" />
+              API docs
+              <ChevronDown className="h-4 w-4" />
+            </Button>
             <Dropdown.Popover>
               <Dropdown.Menu
                 onAction={(key) => {

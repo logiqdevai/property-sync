@@ -398,6 +398,14 @@ export function PropertyDetailView({
             <span className="text-muted">Property type:</span>{" "}
             {property.estateweb_type_name ?? "—"}
           </p>
+          <p>
+            <span className="text-muted">Energy class:</span>{" "}
+            {property.estateweb_energy_class_name ?? "—"}
+          </p>
+          <p>
+            <span className="text-muted">Road:</span>{" "}
+            {property.estateweb_road_type_name ?? "—"}
+          </p>
           {property.estateweb_location_name && (
             <p>
               <span className="text-muted">EstateWeb location:</span>{" "}

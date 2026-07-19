@@ -52,11 +52,9 @@ export function TableRowActionsMenu({
   return (
     <div onClick={(event) => event.stopPropagation()}>
       <Dropdown>
-        <Dropdown.Trigger>
-          <Button size="sm" variant="ghost" aria-label={ariaLabel} className="min-w-8 px-2">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </Dropdown.Trigger>
+        <Button size="sm" variant="ghost" aria-label={ariaLabel} className="min-w-8 px-2">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
         <Dropdown.Popover>
           <Dropdown.Menu onAction={(key) => onAction(String(key))}>
             {actions.map((action) => {

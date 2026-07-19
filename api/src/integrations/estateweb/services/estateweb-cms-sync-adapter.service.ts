@@ -19,6 +19,7 @@ import {
   EstateWebScope,
 } from '../constants/estateweb-enums.constants';
 import { resolveEstateWebLocationId } from '../utils/estateweb-location-lookup.util';
+import { resolveEstateWebScopeId } from '../utils/estateweb-catalog.util';
 import { getEstateWebInitFieldsForType } from '../utils/estateweb-init-lookup.util';
 import { EstateWebException } from '../exceptions/estateweb.exception';
 import { NotificationType } from 'generated/prisma';
@@ -218,9 +219,11 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   }
 
   private resolveScopeId(userProperty?: UserProperty): EstateWebScope {
-    if (userProperty?.listing_type === 'RENT') return EstateWebScope.RENT;
-    if (userProperty?.listing_type === 'SHORT_TERM_RENT')
-      return EstateWebScope.RENT;
+    const scopeId = resolveEstateWebScopeId(
+      userProperty?.listing_type,
+      userProperty?.estateweb_scope_id,
+    );
+    if (scopeId === EstateWebScope.RENT) return EstateWebScope.RENT;
     return EstateWebScope.SALE;
   }
 
