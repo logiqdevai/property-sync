@@ -8,6 +8,7 @@ import {
   IsString,
   MaxLength,
   Min,
+  ValidateIf,
 } from 'class-validator';
 
 export class TrackAgencyDto {
@@ -47,6 +48,20 @@ export class TrackAgencyDto {
   @IsInt()
   @Min(1)
   insertion_interval_minutes?: number;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    minimum: 1,
+    description:
+      'Max listings to insert into the linked CRM. Null clears the cap (unlimited).',
+    example: 100,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsInt()
+  @Min(1)
+  max_properties?: number | null;
 
   @ApiProperty({ required: false, type: [String] })
   @IsOptional()

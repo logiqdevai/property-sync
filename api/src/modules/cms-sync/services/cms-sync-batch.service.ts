@@ -15,6 +15,7 @@ export interface TrackerBatchInput {
   source_agency_id: string;
   concurrent_insertions: number;
   insertion_interval_minutes: number;
+  max_properties: number | null;
   affected: AffectedUserProperty[];
 }
 
@@ -59,6 +60,13 @@ export class CmsSyncBatchService {
       }
     }
 
+    const cappedOperations = await this.applyMaxPropertiesCap(
+      userId,
+      input.source_agency_id,
+      input.max_properties,
+      operations,
+    );
+
     return {
       crawl_run_id: input.crawl_run_id,
       user_integration_id: input.user_integration_id,
@@ -66,9 +74,61 @@ export class CmsSyncBatchService {
       source_agency_id: input.source_agency_id,
       concurrent_insertions: input.concurrent_insertions,
       insertion_interval_minutes: input.insertion_interval_minutes,
-      operations,
+      operations: cappedOperations,
       user_property_ids: input.affected.map((a) => a.user_property_id),
     };
+  }
+
+  private async applyMaxPropertiesCap(
+    userId: string,
+    sourceAgencyId: string,
+    maxProperties: number | null,
+    operations: CmsSyncBatchOperation[],
+  ): Promise<CmsSyncBatchOperation[]> {
+    if (maxProperties == null) {
+      return operations;
+    }
+
+    const alreadySynced = await this.countSyncedProperties(
+      userId,
+      sourceAgencyId,
+    );
+    const remaining = Math.max(0, maxProperties - alreadySynced);
+
+    let createsKept = 0;
+    return operations.filter((op) => {
+      if (op.operation !== 'CREATE') {
+        return true;
+      }
+      if (createsKept >= remaining) {
+        return false;
+      }
+      createsKept += 1;
+      return true;
+    });
+  }
+
+  private async countSyncedProperties(
+    userId: string,
+    sourceAgencyId: string,
+  ): Promise<number> {
+    const rows = await this.prisma.userProperty.findMany({
+      where: {
+        user_id: userId,
+        integration_property_id: { not: null },
+        status: { not: PropertyStatus.REMOVED },
+        canonical_property: {
+          source_links: {
+            some: {
+              source_property: { source_agency_id: sourceAgencyId },
+            },
+          },
+        },
+      },
+      select: { integration_property_id: true },
+      distinct: ['integration_property_id'],
+    });
+    return rows.length;
   }
 
   private groupByDuplicateGroup(

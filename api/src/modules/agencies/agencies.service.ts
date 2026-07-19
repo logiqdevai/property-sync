@@ -165,6 +165,9 @@ export class AgenciesService {
         ...(dto.insertion_interval_minutes !== undefined && {
           insertion_interval_minutes: dto.insertion_interval_minutes,
         }),
+        ...(dto.max_properties !== undefined && {
+          max_properties: dto.max_properties,
+        }),
         ...(dto.use_ai_batching !== undefined && {
           use_ai_batching: dto.use_ai_batching,
         }),

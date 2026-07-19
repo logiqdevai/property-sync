@@ -82,6 +82,7 @@ export class UserTrackedAgenciesService {
                   tracker.integration_link?.user_integration_id ?? null,
                 concurrent_insertions: tracker.concurrent_insertions,
                 insertion_interval_minutes: tracker.insertion_interval_minutes,
+                max_properties: tracker.max_properties,
                 text_truncate_pieces: tracker.text_truncate_pieces,
               }
             : undefined,
@@ -171,6 +172,9 @@ export class UserTrackedAgenciesService {
         }),
         ...(dto.insertion_interval_minutes !== undefined && {
           insertion_interval_minutes: dto.insertion_interval_minutes,
+        }),
+        ...(dto.max_properties !== undefined && {
+          max_properties: dto.max_properties,
         }),
         ...(dto.text_truncate_pieces !== undefined && {
           text_truncate_pieces: normalizeTextTruncatePieces(

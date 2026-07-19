@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { Accordion, Button, Chip, CloseButton, Switch } from "@heroui/react";
 import type { UpdateTrackerAdminSettingsPayload } from "@/features/agencies/interfaces/agencies.interfaces";
 import type { TrackAgencyPayload } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
-import { Routes } from "@/routes/routes";
 
 export interface TrackerAdminOptionsValues {
   use_ai_batching: boolean;
   concurrent_insertions: number;
   insertion_interval_minutes: number;
+  max_properties: number | null;
   text_truncate_pieces: string[];
 }
 
@@ -25,7 +24,6 @@ export function TrackerAdminOptionsPanel({
   values,
   disabled = false,
   accordionId = "admin-options",
-  showIntegrationsHint = true,
   onPrefsChange,
   onAdminSettingsChange,
 }: TrackerAdminOptionsPanelProps) {
@@ -61,7 +59,7 @@ export function TrackerAdminOptionsPanel({
           <Accordion.Body>
             <div
               className="flex flex-col gap-3 pt-1"
-              key={`${accordionId}-${values.concurrent_insertions}-${values.insertion_interval_minutes}-${pieces.join("\0")}`}
+              key={`${accordionId}-${values.concurrent_insertions}-${values.insertion_interval_minutes}-${values.max_properties ?? "unlimited"}-${pieces.join("\0")}`}
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 flex-col gap-0.5">
@@ -81,6 +79,38 @@ export function TrackerAdminOptionsPanel({
                   </Switch.Control>
                 </Switch>
               </div>
+
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-muted">Maximum properties</span>
+                <span className="text-xs text-muted">
+                  Cap how many listings are inserted into the CRM. Leave empty for no limit.
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  className="rounded-lg border border-border bg-background px-3 py-2"
+                  defaultValue={values.max_properties ?? ""}
+                  disabled={disabled}
+                  placeholder="Unlimited"
+                  onBlur={(e) => {
+                    const raw = e.target.value.trim();
+                    if (raw === "") {
+                      if (values.max_properties != null) {
+                        onAdminSettingsChange({ max_properties: null });
+                      }
+                      return;
+                    }
+                    const value = Number.parseInt(raw, 10);
+                    if (
+                      Number.isFinite(value) &&
+                      value >= 1 &&
+                      value !== values.max_properties
+                    ) {
+                      onAdminSettingsChange({ max_properties: value });
+                    }
+                  }}
+                />
+              </label>
 
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-muted">Concurrent insertions</span>
@@ -176,19 +206,7 @@ export function TrackerAdminOptionsPanel({
                 </div>
               </div>
 
-              {showIntegrationsHint ? (
-                <p className="text-xs text-muted">
-                  Batching applies on scheduled crawls when batching is enabled. Connect your AI
-                  key on{" "}
-                  <Link
-                    to={Routes.dashboard.integrations}
-                    className="text-accent hover:underline"
-                  >
-                    Integrations
-                  </Link>{" "}
-                  before tracking.
-                </p>
-              ) : null}
+
             </div>
           </Accordion.Body>
         </Accordion.Panel>

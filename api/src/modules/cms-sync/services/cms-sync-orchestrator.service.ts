@@ -27,6 +27,7 @@ interface TrackerGroup {
     track_removed_listings: boolean;
     concurrent_insertions: number;
     insertion_interval_minutes: number;
+    max_properties: number | null;
   };
   affected: AffectedUserProperty[];
 }
@@ -152,6 +153,7 @@ export class CmsSyncOrchestratorService {
         track_removed_listings: tracker.track_removed_listings,
         concurrent_insertions: tracker.concurrent_insertions,
         insertion_interval_minutes: tracker.insertion_interval_minutes,
+        max_properties: tracker.max_properties,
       },
       affected,
     };
@@ -312,6 +314,7 @@ export class CmsSyncOrchestratorService {
           track_removed_listings: tracker.track_removed_listings,
           concurrent_insertions: tracker.concurrent_insertions,
           insertion_interval_minutes: tracker.insertion_interval_minutes,
+          max_properties: tracker.max_properties,
         },
         affected: [],
       };
@@ -344,6 +347,7 @@ export class CmsSyncOrchestratorService {
       source_agency_id: tracker.source_agency_id,
       concurrent_insertions: tracker.concurrent_insertions,
       insertion_interval_minutes: tracker.insertion_interval_minutes,
+      max_properties: tracker.max_properties,
       affected: filtered,
     });
 

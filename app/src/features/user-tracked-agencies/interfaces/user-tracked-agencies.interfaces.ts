@@ -7,6 +7,7 @@ export interface TrackingPrefs {
   user_integration_id?: string | null;
   concurrent_insertions?: number;
   insertion_interval_minutes?: number;
+  max_properties?: number | null;
   text_truncate_pieces?: string[];
 }
 
@@ -32,6 +33,7 @@ export interface TrackAgencyPayload {
   enabled?: boolean;
   concurrent_insertions?: number;
   insertion_interval_minutes?: number;
+  max_properties?: number | null;
   text_truncate_pieces?: string[];
 }
 
@@ -60,6 +62,7 @@ export interface UserTrackedAgency {
   enabled: boolean;
   concurrent_insertions: number;
   insertion_interval_minutes: number;
+  max_properties: number | null;
   text_truncate_pieces: string[];
   track_new_listings: boolean;
   track_removed_listings: boolean;

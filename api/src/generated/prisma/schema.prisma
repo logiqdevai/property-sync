@@ -362,6 +362,7 @@ model UserTrackedAgency {
   enabled                    Boolean  @default(true)
   concurrent_insertions      Int      @default(1) // the number of properties to insert concurrently to the EstateWeb integration
   insertion_interval_minutes Int      @default(5) // the interval between concurrent insertions to the EstateWeb integration
+  max_properties             Int? // max listings allowed in the linked CRM; null = unlimited
   text_truncate_pieces       String[] @default([])
   track_new_listings         Boolean  @default(true)
   track_removed_listings     Boolean  @default(true)

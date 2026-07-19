@@ -5,6 +5,7 @@ export interface AgencyTrackedUser {
   enabled: boolean;
   concurrent_insertions: number;
   insertion_interval_minutes: number;
+  max_properties: number | null;
   text_truncate_pieces: string[];
   track_new_listings: boolean;
   track_removed_listings: boolean;
@@ -63,6 +64,7 @@ export interface UpdateAgencyVisibilityPayload {
 export interface UpdateTrackerAdminSettingsPayload {
   concurrent_insertions?: number;
   insertion_interval_minutes?: number;
+  max_properties?: number | null;
   use_ai_batching?: boolean;
   text_truncate_pieces?: string[];
 }
