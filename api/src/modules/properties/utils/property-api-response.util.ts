@@ -15,6 +15,7 @@ import {
 } from '../interfaces/cms-property.interface';
 import {
   extractEstateWebEnergyClassId,
+  extractEstateWebFeatureNames,
   extractEstateWebRoadTypeId,
 } from './property-cms-field-mapper.util';
 
@@ -108,9 +109,15 @@ export function serializePropertyForApi<T extends Record<string, unknown>>(
     property.cms_fields,
   );
   const estatewebRoadTypeId = extractEstateWebRoadTypeId(property.cms_fields);
+  const featuresFromCms = Array.isArray(property.cms_fields)
+    ? extractEstateWebFeatureNames(property.cms_fields)
+    : null;
 
   return {
     ...property,
+    features:
+      featuresFromCms ??
+      (Array.isArray(property.features) ? property.features : null),
     estateweb_type_name: estatewebTypeId
       ? (getEstateWebPropertyTypeNamePath(estatewebTypeId) ?? null)
       : null,

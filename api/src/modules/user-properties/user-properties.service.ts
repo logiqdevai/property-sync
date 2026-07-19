@@ -14,7 +14,11 @@ import {
   resolveEstateWebScopeId,
 } from '@/integrations/estateweb/utils/estateweb-catalog.util';
 import { serializePropertyForApi } from '@/modules/properties/utils/property-api-response.util';
-import { upsertEstateWebEnergyClassInCmsFields, upsertEstateWebRoadTypeInCmsFields } from '@/modules/properties/utils/property-cms-field-mapper.util';
+import {
+  syncEstateWebFeaturesInCmsFields,
+  upsertEstateWebEnergyClassInCmsFields,
+  upsertEstateWebRoadTypeInCmsFields,
+} from '@/modules/properties/utils/property-cms-field-mapper.util';
 import {
   applyTextTruncatePieces,
   normalizeTextTruncatePieces,
@@ -297,6 +301,7 @@ export class UserPropertiesService {
           dto,
           pendingCrmUpdate,
           existing.cms_fields,
+          existing.estateweb_type_id,
         ),
       }),
     );
@@ -306,6 +311,7 @@ export class UserPropertiesService {
     dto: UpdateUserPropertyDto,
     pendingCrmUpdate: boolean,
     existingCmsFields: unknown,
+    existingPropertyTypeId?: number | null,
   ): Prisma.UserPropertyUpdateInput {
     const {
       estateweb_energy_class_id,
@@ -327,23 +333,35 @@ export class UserPropertiesService {
       }
     }
 
-    if (
-      estateweb_energy_class_id !== undefined ||
-      estateweb_road_type_id !== undefined
-    ) {
-      let cmsFields = existingCmsFields;
-      if (estateweb_energy_class_id !== undefined) {
-        cmsFields = upsertEstateWebEnergyClassInCmsFields(
-          cmsFields,
-          estateweb_energy_class_id,
-        );
-      }
-      if (estateweb_road_type_id !== undefined) {
-        cmsFields = upsertEstateWebRoadTypeInCmsFields(
-          cmsFields,
-          estateweb_road_type_id,
-        );
-      }
+    const propertyTypeId =
+      dto.estateweb_type_id ?? existingPropertyTypeId ?? null;
+    let cmsFields = existingCmsFields;
+    let cmsFieldsChanged = false;
+
+    if (estateweb_energy_class_id !== undefined) {
+      cmsFields = upsertEstateWebEnergyClassInCmsFields(
+        cmsFields,
+        estateweb_energy_class_id,
+      );
+      cmsFieldsChanged = true;
+    }
+    if (estateweb_road_type_id !== undefined) {
+      cmsFields = upsertEstateWebRoadTypeInCmsFields(
+        cmsFields,
+        estateweb_road_type_id,
+      );
+      cmsFieldsChanged = true;
+    }
+    if (dto.features !== undefined) {
+      cmsFields = syncEstateWebFeaturesInCmsFields(
+        cmsFields,
+        dto.features,
+        propertyTypeId,
+      );
+      cmsFieldsChanged = true;
+    }
+
+    if (cmsFieldsChanged) {
       data.cms_fields = cmsFields as unknown as Prisma.InputJsonValue;
     }
 

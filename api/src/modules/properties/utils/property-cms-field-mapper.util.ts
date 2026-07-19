@@ -1,4 +1,5 @@
 import { EstateWebFieldType } from '@/integrations/estateweb/constants/estateweb-enums.constants';
+import { listEstateWebFeaturesCatalog } from '@/integrations/estateweb/utils/estateweb-catalog.util';
 import {
   getEstateWebInitField,
   getEstateWebInitFieldOption,
@@ -156,6 +157,61 @@ export function upsertEstateWebRoadTypeInCmsFields(
     ESTATEWEB_FIELD_ROAD_TYPE,
     optionId,
   );
+}
+
+const ESTATEWEB_FEATURE_FIELD_IDS = new Set(
+  listEstateWebFeaturesCatalog().map((feature) => feature.id),
+);
+
+export function extractEstateWebFeatureNames(cmsFields: unknown): string[] {
+  if (!Array.isArray(cmsFields)) return [];
+
+  const names: string[] = [];
+  for (const entry of cmsFields) {
+    if (
+      !entry ||
+      typeof entry !== 'object' ||
+      typeof (entry as CmsPropertyFieldEntry).id !== 'number'
+    ) {
+      continue;
+    }
+    const typed = entry as CmsPropertyFieldEntry;
+    if (!ESTATEWEB_FEATURE_FIELD_IDS.has(typed.id)) continue;
+    if (typed.value !== 1 && typed.value !== '1') continue;
+    const field = getEstateWebInitField(typed.id);
+    if (!field) continue;
+    names.push(field.name);
+  }
+  return names;
+}
+
+export function syncEstateWebFeaturesInCmsFields(
+  cmsFields: unknown,
+  featureNames: string[] | null | undefined,
+  propertyTypeId?: number | null,
+): CmsPropertyFieldEntry[] {
+  const retained = Array.isArray(cmsFields)
+    ? (cmsFields as CmsPropertyFieldEntry[]).filter(
+        (entry) =>
+          entry &&
+          typeof entry === 'object' &&
+          typeof entry.id === 'number' &&
+          entry.value != null &&
+          entry.value !== '' &&
+          !ESTATEWEB_FEATURE_FIELD_IDS.has(entry.id),
+      )
+    : [];
+
+  const fields = new Map<number, CmsPropertyFieldEntry>(
+    retained.map((entry) => [entry.id, entry]),
+  );
+
+  for (const name of featureNames ?? []) {
+    if (typeof name !== 'string' || !name.trim()) continue;
+    applyBooleanFieldByName(fields, name.trim(), propertyTypeId);
+  }
+
+  return Array.from(fields.values());
 }
 
 function isTruthyValue(value: string): boolean {
