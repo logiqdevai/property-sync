@@ -75,7 +75,7 @@ export function TruncateDescriptionDialog({
                     rows={5}
                     fullWidth
                     placeholder="Paste the exact phrase or block to find…"
-                    isDisabled={isPending}
+                    disabled={isPending}
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -90,7 +90,7 @@ export function TruncateDescriptionDialog({
                     rows={3}
                     fullWidth
                     placeholder="Leave empty to remove, or type replacement…"
-                    isDisabled={isPending}
+                    disabled={isPending}
                   />
                 </div>
               </div>

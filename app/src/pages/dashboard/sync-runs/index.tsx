@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Table, Select, ListBox, Pagination } from "@heroui/react";
+import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { useUserIntegrationConnections } from "@/features/user-integrations/hooks/use-user-integrations";
 import { useUserCmsSyncRuns } from "@/features/cms-sync-runs/hooks/use-cms-sync-runs";
@@ -114,25 +115,21 @@ export default function DashboardSyncRunsPage() {
           </Select.Popover>
         </Select>
 
-        <input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => {
-            setPage(1);
-            setDateFrom(e.target.value);
-          }}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground"
+        <DatePickerField
           aria-label="From date"
-        />
-        <input
-          type="date"
-          value={dateTo}
-          onChange={(e) => {
+          value={dateFrom}
+          onChange={(next) => {
             setPage(1);
-            setDateTo(e.target.value);
+            setDateFrom(next);
           }}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground"
+        />
+        <DatePickerField
           aria-label="To date"
+          value={dateTo}
+          onChange={(next) => {
+            setPage(1);
+            setDateTo(next);
+          }}
         />
       </div>
 

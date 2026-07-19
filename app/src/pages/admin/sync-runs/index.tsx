@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trash2 } from "lucide-react";
 import { Table, Select, ListBox, Pagination, useOverlayState } from "@heroui/react";
+import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
@@ -184,25 +185,21 @@ export default function AdminSyncRunsListPage() {
           </Select.Popover>
         </Select>
 
-        <input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => {
-            setPage(1);
-            setDateFrom(e.target.value);
-          }}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground"
+        <DatePickerField
           aria-label="From date"
-        />
-        <input
-          type="date"
-          value={dateTo}
-          onChange={(e) => {
+          value={dateFrom}
+          onChange={(next) => {
             setPage(1);
-            setDateTo(e.target.value);
+            setDateFrom(next);
           }}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground"
+        />
+        <DatePickerField
           aria-label="To date"
+          value={dateTo}
+          onChange={(next) => {
+            setPage(1);
+            setDateTo(next);
+          }}
         />
       </div>
 

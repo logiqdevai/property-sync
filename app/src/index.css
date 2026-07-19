@@ -73,9 +73,20 @@ body {
   --tertiary-foreground: oklch(0.18 0.04 var(--tertiary-h));
   --tertiary-bg:         oklch(0.80 0.11 var(--tertiary-h) / 0.14);
 
+  --default:            oklch(0.255 0.016 var(--neutral-h));
+  --default-foreground: oklch(0.94 0.008 var(--neutral-h));
+
+  --segment:            oklch(0.305 0.014 var(--neutral-h));
+  --segment-foreground: oklch(0.94 0.008 var(--neutral-h));
+
   --field-background:  oklch(0.188 0.013 var(--neutral-h));
+  --field-foreground:  oklch(0.94 0.008 var(--neutral-h));
   --field-border:      oklch(0.295 0.014 var(--neutral-h));
+  --field-border-width: 1px;
   --field-placeholder: oklch(0.48 0.01 var(--neutral-h));
+  --field-shadow: 0 0 0 0 transparent inset;
+
+  --overlay-shadow: 0 0 1px 0 oklch(1 0 0 / 0.3) inset;
 
   --focus: var(--accent);
   --link:  oklch(0.80 0.11 var(--primary-h));
@@ -183,9 +194,26 @@ body {
   --tertiary-foreground: oklch(0.99 0.002 var(--tertiary-h));
   --tertiary-bg:         oklch(0.58 0.13 var(--tertiary-h) / 0.12);
 
+  --default:            oklch(0.945 0.008 95);
+  --default-foreground: oklch(0.20 0.022 var(--neutral-h));
+
+  --segment:            oklch(1 0.002 95);
+  --segment-foreground: oklch(0.20 0.022 var(--neutral-h));
+
   --field-background:  oklch(0.99 0.002 95);
+  --field-foreground:  oklch(0.20 0.022 var(--neutral-h));
   --field-border:      oklch(0.855 0.008 95);
+  --field-border-width: 1px;
   --field-placeholder: oklch(0.62 0.01 var(--neutral-h));
+  --field-shadow:
+    0 2px 4px 0 oklch(0 0 0 / 0.04),
+    0 1px 2px 0 oklch(0 0 0 / 0.06),
+    0 0 1px 0 oklch(0 0 0 / 0.06);
+
+  --overlay-shadow:
+    0 2px 8px 0 oklch(0 0 0 / 0.06),
+    0 -6px 12px 0 oklch(0 0 0 / 0.03),
+    0 14px 28px 0 oklch(0 0 0 / 0.08);
 
   --focus: var(--accent);
   --link:  oklch(0.46 0.16 var(--primary-h));

@@ -13,6 +13,7 @@ import {
 } from "@heroui/react";
 import { Layers, Scissors, Trash2, Ungroup, Upload } from "lucide-react";
 import { Routes } from "@/routes/routes";
+import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
@@ -371,25 +372,21 @@ export default function DashboardPropertiesListPage() {
             </ListBox>
           </Select.Popover>
         </Select>
-        <input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => {
-            setPage(1);
-            setDateFrom(e.target.value);
-          }}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground"
+        <DatePickerField
           aria-label="From date"
-        />
-        <input
-          type="date"
-          value={dateTo}
-          onChange={(e) => {
+          value={dateFrom}
+          onChange={(next) => {
             setPage(1);
-            setDateTo(e.target.value);
+            setDateFrom(next);
           }}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground"
+        />
+        <DatePickerField
           aria-label="To date"
+          value={dateTo}
+          onChange={(next) => {
+            setPage(1);
+            setDateTo(next);
+          }}
         />
         <Select
           aria-label="Rows per page"
