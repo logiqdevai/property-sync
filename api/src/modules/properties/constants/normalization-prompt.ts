@@ -119,12 +119,17 @@ export function sanitizeRawDescription(
 ): string | null {
   if (!text) return null;
   const cleaned = text
+    .replace(/\r\n?/g, '\n')
     .split('')
     .filter((c) => {
       const code = c.charCodeAt(0);
-      return code >= 32 && code !== 127;
+      return (code >= 32 && code !== 127) || code === 10 || code === 9;
     })
     .join('')
+    .replace(/\t/g, ' ')
+    .replace(/[^\S\n]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
   return cleaned || null;
 }

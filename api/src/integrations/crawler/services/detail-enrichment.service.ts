@@ -148,11 +148,24 @@ export class DetailEnrichmentService {
           });
         }
 
+        const preserveDescriptionText = (
+          value: string | null | undefined,
+        ): string | null => {
+          if (!value) return null;
+          const cleaned = value
+            .replace(/\r\n?/g, '\n')
+            .replace(/[^\S\n]+/g, ' ')
+            .replace(/ *\n */g, '\n')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
+          return cleaned || null;
+        };
+
         let descText: string | null = null;
         if (cfg?.description_selector) {
           const el = document.querySelector(cfg.description_selector);
           descText = el
-            ? (el as HTMLElement).innerText.replace(/\s+/g, ' ').trim()
+            ? preserveDescriptionText((el as HTMLElement).innerText)
             : null;
         } else {
           const patterns = [
@@ -166,9 +179,9 @@ export class DetailEnrichmentService {
           for (const sel of patterns) {
             const el = document.querySelector(sel);
             if (el) {
-              descText = (el as HTMLElement).innerText
-                .replace(/\s+/g, ' ')
-                .trim();
+              descText = preserveDescriptionText(
+                (el as HTMLElement).innerText,
+              );
               break;
             }
           }

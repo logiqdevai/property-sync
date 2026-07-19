@@ -32,10 +32,21 @@ async function enrichOneDetailPage(browser, item, detailConfig) {
         });
       }
 
+      const preserveDescriptionText = (value) => {
+        if (!value) return null;
+        const cleaned = value
+          .replace(/\r\n?/g, '\n')
+          .replace(/[^\S\n]+/g, ' ')
+          .replace(/ *\n */g, '\n')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+        return cleaned || null;
+      };
+
       let descText = null;
       if (cfg && cfg.description_selector) {
         const el = document.querySelector(cfg.description_selector);
-        descText = el ? el.innerText.replace(/\s+/g, ' ').trim() : null;
+        descText = el ? preserveDescriptionText(el.innerText) : null;
       } else {
         const patterns = [
           '.description', '[class*="description"]', '.property-description',
@@ -43,7 +54,7 @@ async function enrichOneDetailPage(browser, item, detailConfig) {
         ];
         for (const sel of patterns) {
           const el = document.querySelector(sel);
-          if (el) { descText = el.innerText.replace(/\s+/g, ' ').trim(); break; }
+          if (el) { descText = preserveDescriptionText(el.innerText); break; }
         }
       }
 
