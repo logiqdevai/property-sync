@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Chip } from "@heroui/react";
+import { Button, Chip } from "@heroui/react";
 import {
   Bath,
   BedDouble,
@@ -31,6 +31,7 @@ import type {
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { formatDateTime } from "@/lib/date";
 import { formatPrice } from "@/lib/price";
+import { cn } from "@/lib/utils";
 
 export interface PropertyDetailViewData extends Partial<PropertyCmsFields> {
   title: string;
@@ -110,6 +111,52 @@ function SpecItem({
         </span>
         <span className="text-sm font-medium text-foreground tabular-nums">{value}</span>
       </div>
+    </div>
+  );
+}
+
+function PropertyImagesGrid({ images, title }: { images: string[]; title: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const canExpand = images.length > 2;
+
+  return (
+    <div className="@container flex flex-col gap-3">
+      <div
+        className={cn(
+          "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3",
+          expanded
+            ? "overflow-y-auto max-h-[calc(3*((100cqi-0.75rem)/2)+1.5rem)] sm:max-h-[calc(3*((100cqi-1.5rem)/3)+1.5rem)] md:max-h-[calc(3*((100cqi-2.25rem)/4)+1.5rem)]"
+            : "overflow-hidden max-h-[calc((100cqi-0.75rem)/2)] sm:max-h-[calc((100cqi-1.5rem)/3)] md:max-h-[calc((100cqi-2.25rem)/4)]",
+        )}
+      >
+        {images.map((src, index) => (
+          <a
+            key={src}
+            href={src}
+            target="_blank"
+            rel="noreferrer"
+            className="block aspect-square overflow-hidden rounded-lg border border-border"
+          >
+            <img
+              src={src}
+              alt={`${title} photo ${index + 1}`}
+              loading="lazy"
+              className="size-full object-cover"
+            />
+          </a>
+        ))}
+      </div>
+      {canExpand ? (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="self-start"
+          onPress={() => setExpanded((current) => !current)}
+        >
+          {expanded ? "Show less" : "Show more"}
+        </Button>
+      ) : null}
     </div>
   );
 }
@@ -413,24 +460,7 @@ export function PropertyDetailView({
         {!property.images || property.images.length === 0 ? (
           <p className="text-sm text-muted">No images yet.</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {property.images.map((src, index) => (
-              <a
-                key={src}
-                href={src}
-                target="_blank"
-                rel="noreferrer"
-                className="block aspect-square overflow-hidden rounded-lg border border-border"
-              >
-                <img
-                  src={src}
-                  alt={`${property.title} photo ${index + 1}`}
-                  loading="lazy"
-                  className="size-full object-cover"
-                />
-              </a>
-            ))}
-          </div>
+          <PropertyImagesGrid images={property.images} title={property.title} />
         )}
       </section>
 

@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Scissors, Upload, X } from "lucide-react";
-import { useOverlayState } from "@heroui/react";
+import { MapPin, Pencil, Scissors, Upload, X } from "lucide-react";
+import { Button, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -11,6 +11,7 @@ import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { PropertyDetailView } from "@/components/ui/property-detail-view";
+import { useEstateWebLocationCatalog } from "@/features/estateweb/hooks/use-estateweb";
 import {
   usePushUserPropertyToCrm,
   useTruncateUserPropertyDescriptions,
@@ -21,6 +22,7 @@ import {
   updateUserPropertyFormSchema,
   type UpdateUserPropertyFormValues,
 } from "@/features/user-properties/validation-schemas/user-properties.schema";
+import { EstateWebLocationPickerModal } from "./components/estateweb-location-picker-modal";
 
 const fieldClassName = "rounded-lg border border-border bg-background px-3 py-2";
 
@@ -28,19 +30,30 @@ export default function DashboardPropertyDetailPage() {
   const { id = "" } = useParams();
   const [isEditing, setIsEditing] = useState(false);
   const truncateConfirm = useOverlayState();
+  const locationPicker = useOverlayState();
   const { data: property, isPending } = useUserProperty(id);
   const updateProperty = useUpdateUserProperty();
   const pushToCrm = usePushUserPropertyToCrm();
   const truncateDescriptions = useTruncateUserPropertyDescriptions();
+  const { data: locationCatalog = [] } = useEstateWebLocationCatalog(isEditing);
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { isDirty },
   } = useForm<UpdateUserPropertyFormValues>({
     resolver: zodResolver(updateUserPropertyFormSchema) as Resolver<UpdateUserPropertyFormValues>,
   });
+
+  const estatewebLocationId = watch("estateweb_location_id");
+  const selectedLocationPath = useMemo(() => {
+    if (estatewebLocationId == null) return null;
+    return locationCatalog.find((location) => location.id === Number(estatewebLocationId))
+      ?.path ?? null;
+  }, [estatewebLocationId, locationCatalog]);
 
   useEffect(() => {
     if (!property) return;
@@ -293,14 +306,44 @@ export default function DashboardPropertyDetailPage() {
                     {...register("estateweb_type_id")}
                   />
                 </label>
-                <label className="flex flex-col gap-1 text-sm">
-                  <span className="text-muted">EstateWeb location ID</span>
-                  <input
-                    type="number"
-                    className={fieldClassName}
-                    {...register("estateweb_location_id")}
-                  />
-                </label>
+                <div className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">EstateWeb location</span>
+                  <input type="hidden" {...register("estateweb_location_id")} />
+                  <div className="flex gap-2">
+                    <div className={`${fieldClassName} flex-1 min-w-0`}>
+                      {selectedLocationPath ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm text-foreground truncate">
+                            {selectedLocationPath}
+                          </span>
+                          <span className="text-xs text-muted">ID {estatewebLocationId}</span>
+                        </div>
+                      ) : estatewebLocationId != null && String(estatewebLocationId) !== "" ? (
+                        <span className="text-sm text-foreground">ID {estatewebLocationId}</span>
+                      ) : (
+                        <span className="text-sm text-muted">No location selected</span>
+                      )}
+                    </div>
+                    <Button type="button" variant="secondary" onPress={locationPicker.open}>
+                      <MapPin className="size-4" />
+                      Choose
+                    </Button>
+                    {estatewebLocationId != null && String(estatewebLocationId) !== "" ? (
+                      <Button
+                        type="button"
+                        variant="danger"
+                        onPress={() => {
+                          setValue("estateweb_location_id", null, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                          });
+                        }}
+                      >
+                        Clear
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
                 <label className="flex flex-col gap-1 text-sm md:col-span-2">
                   <span className="text-muted">Video URL</span>
                   <input className={fieldClassName} {...register("video_url")} />
@@ -331,12 +374,34 @@ export default function DashboardPropertyDetailPage() {
           ) : undefined
         }
         footer={
-          <TruncateDescriptionDialog
-            state={truncateConfirm}
-            propertyCount={1}
-            onConfirm={handleTruncate}
-            isPending={truncateDescriptions.isPending}
-          />
+          <>
+            <TruncateDescriptionDialog
+              state={truncateConfirm}
+              propertyCount={1}
+              onConfirm={handleTruncate}
+              isPending={truncateDescriptions.isPending}
+            />
+            <EstateWebLocationPickerModal
+              state={locationPicker}
+              selectedId={
+                estatewebLocationId != null && String(estatewebLocationId) !== ""
+                  ? Number(estatewebLocationId)
+                  : null
+              }
+              onSelect={(location) => {
+                setValue("estateweb_location_id", location.id, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                });
+              }}
+              onClear={() => {
+                setValue("estateweb_location_id", null, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                });
+              }}
+            />
+          </>
         }
       />
     </div>

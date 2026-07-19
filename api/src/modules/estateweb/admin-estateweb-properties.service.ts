@@ -219,6 +219,10 @@ export class AdminEstateWebPropertiesService {
     return this.estateWebPropertyService.getInitPropertyTypes();
   }
 
+  getLocationCatalog() {
+    return this.estateWebPropertyService.getLocationCatalog();
+  }
+
   getAiFieldCatalog(propertyTypeId?: number) {
     return this.estateWebPropertyService.getAiFieldCatalog(propertyTypeId);
   }

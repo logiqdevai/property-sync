@@ -1,10 +1,28 @@
 import { ESTATEWEB_LOCATIONS } from '../constants/estateweb-locations.constants';
-import { EstateWebLocation } from '../interfaces/estateweb-location.interface';
+import {
+  EstateWebLocation,
+  EstateWebLocationCatalogItem,
+} from '../interfaces/estateweb-location.interface';
 import { normalizeEstateWebLabel } from './estateweb-init-lookup.util';
 
 const LOCATION_BY_ID = new Map<number, EstateWebLocation>(
   ESTATEWEB_LOCATIONS.map((loc) => [loc.id, loc]),
 );
+
+const LOCATION_IDS_WITH_CHILDREN = new Set(
+  ESTATEWEB_LOCATIONS.map((loc) => loc.parent_id),
+);
+
+const LOCATION_CATALOG: EstateWebLocationCatalogItem[] =
+  ESTATEWEB_LOCATIONS.map((loc) => ({
+    id: loc.id,
+    name: loc.name,
+    parent_id: loc.parent_id,
+    level: loc.level,
+    is_city: loc.is_city,
+    path: loc.path,
+    has_children: LOCATION_IDS_WITH_CHILDREN.has(loc.id),
+  }));
 
 const LOCATION_BY_NORMALIZED_NAME: Map<string, EstateWebLocation[]> = (() => {
   const idx = new Map<string, EstateWebLocation[]>();
@@ -29,6 +47,11 @@ export function getEstateWebLocation(
   locationId: number,
 ): EstateWebLocation | undefined {
   return LOCATION_BY_ID.get(locationId);
+}
+
+/** Flat catalog for UI pickers (id, labels, hierarchy flags). */
+export function listEstateWebLocationCatalog(): EstateWebLocationCatalogItem[] {
+  return LOCATION_CATALOG;
 }
 
 /** Breadcrumb path for a location id (e.g. `"Μακεδονία » Θεσσαλονίκη"`). */

@@ -109,6 +109,15 @@ export class AdminEstateWebPropertiesController {
     return this.adminEstateWebPropertiesService.getInitPropertyTypes();
   }
 
+  @Get('catalog/locations')
+  @ApiOperation({
+    summary: 'Get EstateWeb location catalog (id + human-readable path)',
+  })
+  @ApiResponse({ status: 200, description: 'EstateWeb location catalog' })
+  getLocationCatalog() {
+    return this.adminEstateWebPropertiesService.getLocationCatalog();
+  }
+
   @Get('catalog/ai-fields')
   @ApiOperation({ summary: 'Get compact AI field catalog' })
   @ApiQuery({ name: 'propertyTypeId', required: false, type: Number })

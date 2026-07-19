@@ -160,6 +160,11 @@ export const ApiRoutes = {
         bulkSplit: "/properties/bulk-split",
         truncateDescriptions: "/properties/truncate-descriptions",
     },
+    estateweb: {
+        catalog: {
+            locations: "/estateweb/catalog/locations",
+        },
+    },
     dashboard: {
         root: "/dashboard",
     },

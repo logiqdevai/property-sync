@@ -37,6 +37,7 @@ import {
   resolveEstateWebFieldOptionByName,
   resolveEstateWebPropertyTypeByName,
 } from '../utils/estateweb-init-lookup.util';
+import { listEstateWebLocationCatalog } from '../utils/estateweb-location-lookup.util';
 import {
   assertValidCreatePayload,
   assertValidImageUpload,
@@ -65,6 +66,10 @@ export class EstateWebPropertyService {
 
   getInitPropertyTypes(): EstateWebInitPropertyType[] {
     return ESTATEWEB_INIT_PROPERTY_TYPES;
+  }
+
+  getLocationCatalog() {
+    return listEstateWebLocationCatalog();
   }
 
   getInitField(fieldId: number): EstateWebInitField | undefined {
