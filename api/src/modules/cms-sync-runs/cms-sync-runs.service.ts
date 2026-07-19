@@ -167,6 +167,24 @@ export class CmsSyncRunsService {
     return { deleted: true };
   }
 
+  async removeMany(cmsSyncRunIds: string[]) {
+    const uniqueIds = [...new Set(cmsSyncRunIds)];
+    const runs = await this.prisma.cmsSyncRun.findMany({
+      where: { id: { in: uniqueIds } },
+      select: { id: true },
+    });
+
+    if (runs.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more CMS sync runs not found');
+    }
+
+    await this.prisma.cmsSyncRun.deleteMany({
+      where: { id: { in: uniqueIds } },
+    });
+
+    return { deleted: uniqueIds.length };
+  }
+
   async retry(id: string) {
     const run = await this.prisma.cmsSyncRun.findUnique({
       where: { id },
@@ -237,10 +255,29 @@ export class CmsSyncRunsService {
       },
       update: {
         status: CmsSyncStatus.PENDING,
+        attempt: 0,
+        max_attempts: params.maxAttempts,
+        total_created: 0,
+        total_updated: 0,
+        total_removed: 0,
+        total_failed: 0,
         payload: params.payload as Prisma.InputJsonValue,
+        response: null,
         error_message: null,
         started_at: new Date(),
         finished_at: null,
+      },
+    });
+  }
+
+  async markAttemptStarted(id: string, attempt: number) {
+    return this.prisma.cmsSyncRun.update({
+      where: { id },
+      data: {
+        attempt,
+        started_at: new Date(),
+        finished_at: null,
+        updated_at: new Date(),
       },
     });
   }

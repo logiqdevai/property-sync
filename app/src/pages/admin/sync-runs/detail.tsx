@@ -13,6 +13,7 @@ import {
 } from "@/features/cms-sync-runs/interfaces/cms-sync-runs.interfaces";
 import { CmsSyncStatusChip } from "./components/cms-sync-status-chip";
 import { formatDateTime } from "@/lib/date";
+import { durationMsFromRange, formatDuration } from "@/lib/duration";
 
 function JsonBlock({ value }: { value: unknown }) {
   if (value === null || value === undefined) {
@@ -184,6 +185,12 @@ export default function AdminSyncRunDetailPage() {
           <span className="text-sm text-foreground font-mono">
             {run.attempt}
             {run.max_attempts != null ? ` / ${run.max_attempts}` : ""}
+          </span>
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Duration</span>
+          <span className="text-sm text-foreground font-mono">
+            {formatDuration(durationMsFromRange(run.started_at, run.finished_at))}
           </span>
         </div>
         <div className="flex flex-col gap-1">

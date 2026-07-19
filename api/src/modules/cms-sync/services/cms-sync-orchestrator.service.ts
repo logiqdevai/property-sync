@@ -550,7 +550,7 @@ export class CmsSyncOrchestratorService {
             user_property_id: item.user_property_id,
             error:
               item.change_type === 'CREATE'
-                ? 'Property was not pushed. Max CRM property limit may be reached, or the listing was skipped as a duplicate.'
+                ? 'Property was not pushed. Max CRM property limit may be reached.'
                 : 'Property was not pushed. The sync batch produced no operations.',
           });
         }
@@ -623,7 +623,7 @@ export class CmsSyncOrchestratorService {
 
     if (batch.operations.length === 0) {
       this.logger.log(
-        `Crawl ${crawlRunId}: tracker ${tracker.id} has no CMS operations after duplicate collapse`,
+        `Crawl ${crawlRunId}: tracker ${tracker.id} has no CMS operations`,
       );
       return false;
     }

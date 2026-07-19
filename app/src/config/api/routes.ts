@@ -69,6 +69,7 @@ export const ApiRoutes = {
             detail: (id: string) => `/admin/cms-sync-runs/${id}`,
             retry: (id: string) => `/admin/cms-sync-runs/${id}/retry`,
             integrations: "/admin/cms-sync-runs/integrations",
+            bulkDelete: "/admin/cms-sync-runs/bulk-delete",
         },
         jobs: {
             prefix: "/admin/jobs",

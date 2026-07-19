@@ -1,10 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trash2 } from "lucide-react";
-import { Table, Select, ListBox, Pagination, useOverlayState } from "@heroui/react";
+import {
+  Checkbox,
+  Table,
+  Select,
+  ListBox,
+  Pagination,
+  useOverlayState,
+  type Selection,
+} from "@heroui/react";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import {
   TableRowActionsMenu,
   type TableRowAction,
@@ -17,6 +26,7 @@ import {
   useAdminCmsSyncRunIntegrations,
   useAdminCmsSyncRuns,
   useDeleteAdminCmsSyncRun,
+  useDeleteAdminCmsSyncRuns,
 } from "@/features/cms-sync-runs/hooks/use-cms-sync-runs";
 import type {
   AdminCmsSyncRunListQuery,
@@ -25,6 +35,7 @@ import type {
 import { CmsSyncStatusChip } from "./components/cms-sync-status-chip";
 import { CmsSyncStatusFilterOptions } from "@/config/constants/dropdowns/cms-sync-status-filter.options";
 import { formatDateTime } from "@/lib/date";
+import { durationMsFromRange, formatDuration } from "@/lib/duration";
 
 const SYNC_RUN_DELETE_ACTIONS: TableRowAction[] = [
   { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
@@ -48,6 +59,7 @@ function connectionEmail(connection: {
 export default function AdminSyncRunsListPage() {
   const navigate = useNavigate();
   const deleteConfirm = useOverlayState();
+  const bulkDeleteConfirm = useOverlayState();
   const role = useAuthStore((state) => state.role);
   const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
 
@@ -57,6 +69,7 @@ export default function AdminSyncRunsListPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
+  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deleteRunId, setDeleteRunId] = useState<string | null>(null);
 
   const query = useMemo<AdminCmsSyncRunListQuery>(
@@ -78,6 +91,7 @@ export default function AdminSyncRunsListPage() {
     userId !== "all" ? userId : undefined,
   );
   const deleteRun = useDeleteAdminCmsSyncRun();
+  const deleteRuns = useDeleteAdminCmsSyncRuns();
 
   useEffect(() => {
     if (integrationId === "all" || !integrations) return;
@@ -91,18 +105,66 @@ export default function AdminSyncRunsListPage() {
   const pagination = data?.pagination;
   const users = usersData?.data ?? [];
   const integrationOptions = integrations ?? [];
+  const selectedIds = useMemo(() => {
+    if (selectedKeys === "all") {
+      return new Set(runs.map((run) => run.id));
+    }
+    return new Set([...selectedKeys].map(String));
+  }, [selectedKeys, runs]);
+  const selectedCount = selectedIds.size;
+
+  const bulkActions = useMemo<TableRowAction[]>(
+    () => [
+      {
+        id: "delete",
+        label: "Delete selected",
+        variant: "danger",
+        icon: Trash2,
+        isDisabled: selectedCount < 1,
+      },
+    ],
+    [selectedCount],
+  );
+
+  const clearSelection = () => setSelectedKeys(new Set());
 
   const handleDelete = async () => {
     if (!deleteRunId) return;
     await deleteRun.mutateAsync(deleteRunId);
+    setSelectedKeys((prev) => {
+      if (prev === "all") {
+        return new Set(runs.map((run) => run.id).filter((id) => id !== deleteRunId));
+      }
+      const next = new Set(prev);
+      next.delete(deleteRunId);
+      return next;
+    });
     setDeleteRunId(null);
+  };
+
+  const handleBulkDelete = async () => {
+    await deleteRuns.mutateAsync({ cms_sync_run_ids: Array.from(selectedIds) });
+    clearSelection();
   };
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-2xl font-semibold tracking-tight text-foreground">Sync runs</p>
-        <p className="text-sm text-muted">CMS push outcomes across EstateWeb integrations.</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-2xl font-semibold tracking-tight text-foreground">Sync runs</p>
+          <p className="text-sm text-muted">CMS push outcomes across EstateWeb integrations.</p>
+        </div>
+        {canDelete ? (
+          <BulkActionsMenu
+            label={selectedCount > 0 ? `Actions (${selectedCount})` : "Actions"}
+            actions={bulkActions}
+            onAction={(actionId) => {
+              if (actionId === "delete") {
+                bulkDeleteConfirm.open();
+              }
+            }}
+          />
+        ) : null}
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -204,7 +266,7 @@ export default function AdminSyncRunsListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={canDelete ? 11 : 10} />
+        <TableSkeleton rows={8} columns={canDelete ? 13 : 11} />
       ) : runs.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No sync runs found.
@@ -213,8 +275,24 @@ export default function AdminSyncRunsListPage() {
         <div className="rounded-xl border border-border bg-surface overflow-hidden">
           <Table>
             <Table.ScrollContainer>
-              <Table.Content aria-label="Sync runs">
+              <Table.Content
+                aria-label="Sync runs"
+                selectionMode={canDelete ? "multiple" : undefined}
+                selectedKeys={canDelete ? selectedKeys : undefined}
+                onSelectionChange={canDelete ? setSelectedKeys : undefined}
+              >
                 <Table.Header>
+                  {canDelete ? (
+                    <Table.Column className="pr-0">
+                      <Checkbox aria-label="Select all sync runs on this page" slot="selection">
+                        <Checkbox.Content>
+                          <Checkbox.Control>
+                            <Checkbox.Indicator />
+                          </Checkbox.Control>
+                        </Checkbox.Content>
+                      </Checkbox>
+                    </Table.Column>
+                  ) : null}
                   <Table.Column isRowHeader>Agency</Table.Column>
                   <Table.Column>User</Table.Column>
                   <Table.Column>Integration</Table.Column>
@@ -224,21 +302,36 @@ export default function AdminSyncRunsListPage() {
                   <Table.Column>Removed</Table.Column>
                   <Table.Column>Failed</Table.Column>
                   <Table.Column>Attempt</Table.Column>
+                  <Table.Column>Duration</Table.Column>
                   <Table.Column>Started</Table.Column>
                   {canDelete ? <Table.Column>Options</Table.Column> : null}
                 </Table.Header>
                 <Table.Body>
                   {runs.map((run) => (
-                    <Table.Row
-                      key={run.id}
-                      id={run.id}
-                      onAction={() => navigate(Routes.admin.syncRuns.detail(run.id))}
-                      className="cursor-pointer"
-                    >
+                    <Table.Row key={run.id} id={run.id}>
+                      {canDelete ? (
+                        <Table.Cell className="pr-0">
+                          <Checkbox
+                            aria-label={`Select sync run ${run.id}`}
+                            slot="selection"
+                            variant="secondary"
+                          >
+                            <Checkbox.Content>
+                              <Checkbox.Control>
+                                <Checkbox.Indicator />
+                              </Checkbox.Control>
+                            </Checkbox.Content>
+                          </Checkbox>
+                        </Table.Cell>
+                      ) : null}
                       <Table.Cell>
-                        <span className="font-medium text-foreground">
+                        <button
+                          type="button"
+                          className="text-left font-medium text-foreground hover:text-accent transition-colors"
+                          onClick={() => navigate(Routes.admin.syncRuns.detail(run.id))}
+                        >
                           {run.crawl_run?.source_agency?.name ?? "—"}
-                        </span>
+                        </button>
                       </Table.Cell>
                       <Table.Cell>
                         <span className="text-sm text-foreground">
@@ -271,6 +364,11 @@ export default function AdminSyncRunsListPage() {
                         <span className="font-mono text-sm text-foreground">
                           {run.attempt}
                           {run.max_attempts != null ? `/${run.max_attempts}` : ""}
+                        </span>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span className="font-mono text-sm text-foreground">
+                          {formatDuration(durationMsFromRange(run.started_at, run.finished_at))}
                         </span>
                       </Table.Cell>
                       <Table.Cell>{formatDateTime(run.started_at ?? run.created_at)}</Table.Cell>
@@ -325,14 +423,24 @@ export default function AdminSyncRunsListPage() {
       )}
 
       {canDelete ? (
-        <ConfirmationDialog
-          state={deleteConfirm}
-          title="Delete this sync run?"
-          description="This will permanently delete the CMS sync run record. This cannot be undone."
-          confirmLabel="Delete"
-          onConfirm={handleDelete}
-          isPending={deleteRun.isPending}
-        />
+        <>
+          <ConfirmationDialog
+            state={deleteConfirm}
+            title="Delete this sync run?"
+            description="This will permanently delete the CMS sync run record. This cannot be undone."
+            confirmLabel="Delete"
+            onConfirm={handleDelete}
+            isPending={deleteRun.isPending}
+          />
+          <ConfirmationDialog
+            state={bulkDeleteConfirm}
+            title="Delete selected sync runs?"
+            description={`This will permanently delete ${selectedCount} sync ${selectedCount === 1 ? "run" : "runs"}. This cannot be undone.`}
+            confirmLabel="Delete"
+            onConfirm={handleBulkDelete}
+            isPending={deleteRuns.isPending}
+          />
+        </>
       ) : null}
     </div>
   );

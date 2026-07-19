@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -27,6 +28,7 @@ import {
   AdminCmsSyncRunQuerySchema,
   AdminCmsSyncRunQueryType,
 } from './dto/cms-sync-run-query.schema';
+import { DeleteCmsSyncRunsDto } from './dto/delete-cms-sync-runs.dto';
 
 @ApiTags('CMS Sync Runs')
 @ApiBearerAuth()
@@ -67,6 +69,16 @@ export class AdminCmsSyncRunsController {
     query: AdminCmsSyncRunIntegrationsQueryType,
   ) {
     return this.cmsSyncRunsService.listEstateWebIntegrations(query);
+  }
+
+  @Post('bulk-delete')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Delete multiple CMS sync runs' })
+  @ApiResponse({ status: 200, description: 'CMS sync runs deleted' })
+  @ApiResponse({ status: 400, description: 'Invalid CMS sync run ids' })
+  @ApiResponse({ status: 404, description: 'One or more CMS sync runs not found' })
+  removeMany(@Body() dto: DeleteCmsSyncRunsDto) {
+    return this.cmsSyncRunsService.removeMany(dto.cms_sync_run_ids);
   }
 
   @Get(':id')

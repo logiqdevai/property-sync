@@ -9,3 +9,12 @@ export function formatDuration(ms: number | null): string {
   const seconds = Math.round(totalSeconds % 60);
   return `${minutes}m ${seconds}s`;
 }
+
+export function durationMsFromRange(
+  startedAt: string | null | undefined,
+  finishedAt: string | null | undefined,
+): number | null {
+  if (!startedAt || !finishedAt) return null;
+  const ms = new Date(finishedAt).getTime() - new Date(startedAt).getTime();
+  return Number.isFinite(ms) && ms >= 0 ? ms : null;
+}

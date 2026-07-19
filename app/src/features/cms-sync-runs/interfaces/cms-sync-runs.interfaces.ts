@@ -65,6 +65,10 @@ export interface EstateWebIntegrationOption {
   user: { email: string };
 }
 
+export interface DeleteCmsSyncRunsPayload {
+  cms_sync_run_ids: string[];
+}
+
 export interface PaginationMeta {
   page: number;
   limit: number;

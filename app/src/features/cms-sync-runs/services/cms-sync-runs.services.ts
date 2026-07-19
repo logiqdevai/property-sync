@@ -4,6 +4,7 @@ import type {
   AdminCmsSyncRunListQuery,
   CmsSyncRun,
   CmsSyncRunListQuery,
+  DeleteCmsSyncRunsPayload,
   EstateWebIntegrationOption,
   PaginatedResponse,
 } from "../interfaces/cms-sync-runs.interfaces";
@@ -56,6 +57,22 @@ export const deleteAdminCmsSyncRun = async (id: string): Promise<void> => {
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message ?? "Failed to delete sync run. Please try again.",
+    );
+  }
+};
+
+export const deleteAdminCmsSyncRuns = async (
+  payload: DeleteCmsSyncRunsPayload,
+): Promise<{ deleted: number }> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.cmsSyncRuns.bulkDelete,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ?? "Failed to delete sync runs. Please try again.",
     );
   }
 };

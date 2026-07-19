@@ -89,8 +89,11 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     const previousResponse = (syncRun.response ??
       {}) as unknown as StoredResponse;
 
+    const attempt = Math.max(syncRun.attempt, job.attemptsMade + 1);
+    await this.cmsSyncRunsService.markAttemptStarted(cms_sync_run_id, attempt);
+
     const isRetry =
-      syncRun.attempt > 0 &&
+      attempt > 1 &&
       (previousResponse.failed_property_ids?.length ?? 0) > 0;
     const operations = isRetry
       ? this.filterFailedOperations(payload.operations, previousResponse)
@@ -167,7 +170,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     await this.crawlRunsService.recalculateCmsSyncTotals(crawl_run_id);
 
     if (mergedResult.failed > 0) {
-      if (syncRun.attempt + 1 >= (syncRun.max_attempts ?? 3)) {
+      if (attempt >= (syncRun.max_attempts ?? 3)) {
         this.notificationsService.create({
           type: NotificationType.CMS_SYNC_FAILURE,
           severity: NotificationSeverity.CRITICAL,
@@ -342,12 +345,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
           };
         }
         case 'UPDATE': {
-          const integrationId =
-            userProperty.integration_property_id ??
-            (await this.findSharedIntegrationPropertyId(
-              operation.duplicate_group_id,
-              userProperty.user_id,
-            ));
+          const integrationId = userProperty.integration_property_id;
           if (!integrationId) {
             throw new Error('No integration property id for update');
           }
@@ -384,7 +382,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
           }
           await adapter.pushRemove(userIntegrationId, integrationId);
           await this.clearIntegrationPropertyId(
-            operation.duplicate_group_id,
+            operation.user_property_id,
             userProperty.user_id,
           );
           this.logger.log(
@@ -472,29 +470,12 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
 
   private async stampIntegrationPropertyId(
     userPropertyId: string,
-    duplicateGroupId: string | null,
+    _duplicateGroupId: string | null,
     userId: string,
     integrationPropertyId: string,
   ): Promise<void> {
-    if (!duplicateGroupId) {
-      await this.prisma.userProperty.updateMany({
-        where: { user_id: userId, id: userPropertyId },
-        data: {
-          integration_property_id: integrationPropertyId,
-          pending_crm_update: false,
-        },
-      });
-      return;
-    }
-
     await this.prisma.userProperty.updateMany({
-      where: {
-        user_id: userId,
-        OR: [
-          { duplicate_group_id: duplicateGroupId },
-          { canonical_property: { duplicate_group_id: duplicateGroupId } },
-        ],
-      },
+      where: { user_id: userId, id: userPropertyId },
       data: {
         integration_property_id: integrationPropertyId,
         pending_crm_update: false,
@@ -503,42 +484,13 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
   }
 
   private async clearIntegrationPropertyId(
-    duplicateGroupId: string | null,
+    userPropertyId: string,
     userId: string,
   ): Promise<void> {
-    if (!duplicateGroupId) return;
-
     await this.prisma.userProperty.updateMany({
-      where: {
-        user_id: userId,
-        OR: [
-          { duplicate_group_id: duplicateGroupId },
-          { canonical_property: { duplicate_group_id: duplicateGroupId } },
-        ],
-      },
+      where: { user_id: userId, id: userPropertyId },
       data: { integration_property_id: null },
     });
-  }
-
-  private async findSharedIntegrationPropertyId(
-    duplicateGroupId: string | null,
-    userId: string,
-  ): Promise<string | null> {
-    if (!duplicateGroupId) return null;
-
-    const member = await this.prisma.userProperty.findFirst({
-      where: {
-        user_id: userId,
-        integration_property_id: { not: null },
-        OR: [
-          { duplicate_group_id: duplicateGroupId },
-          { canonical_property: { duplicate_group_id: duplicateGroupId } },
-        ],
-      },
-      select: { integration_property_id: true },
-    });
-
-    return member?.integration_property_id ?? null;
   }
 
   private async loadUserProperties(

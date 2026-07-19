@@ -12,6 +12,7 @@ import { CmsSyncStatusChip } from "./components/cms-sync-status-chip";
 import { CmsSyncStatusFilterOptions } from "@/config/constants/dropdowns/cms-sync-status-filter.options";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { formatDateTime } from "@/lib/date";
+import { durationMsFromRange, formatDuration } from "@/lib/duration";
 
 function toStartOfDayIso(date: string) {
   return new Date(`${date}T00:00:00.000Z`).toISOString();
@@ -152,7 +153,7 @@ export default function DashboardSyncRunsPage() {
                   <Table.Column>Updated</Table.Column>
                   <Table.Column>Removed</Table.Column>
                   <Table.Column>Failed</Table.Column>
-                  <Table.Column>Attempt</Table.Column>
+                  <Table.Column>Duration</Table.Column>
                   <Table.Column>Started</Table.Column>
                 </Table.Header>
                 <Table.Body>
@@ -187,8 +188,7 @@ export default function DashboardSyncRunsPage() {
                       </Table.Cell>
                       <Table.Cell>
                         <span className="font-mono text-sm text-foreground">
-                          {run.attempt}
-                          {run.max_attempts != null ? `/${run.max_attempts}` : ""}
+                          {formatDuration(durationMsFromRange(run.started_at, run.finished_at))}
                         </span>
                       </Table.Cell>
                       <Table.Cell>{formatDateTime(run.started_at ?? run.created_at)}</Table.Cell>

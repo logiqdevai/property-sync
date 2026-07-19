@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import {
   deleteAdminCmsSyncRun,
+  deleteAdminCmsSyncRuns,
   getAdminCmsSyncRun,
   getAdminCmsSyncRunIntegrations,
   getAdminCmsSyncRuns,
@@ -11,6 +12,7 @@ import {
 import type {
   AdminCmsSyncRunListQuery,
   CmsSyncRunListQuery,
+  DeleteCmsSyncRunsPayload,
 } from "../interfaces/cms-sync-runs.interfaces";
 import { CmsSyncStatuses } from "../interfaces/cms-sync-runs.interfaces";
 
@@ -74,6 +76,30 @@ export const useDeleteAdminCmsSyncRun = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not delete sync run",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDeleteAdminCmsSyncRuns = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: DeleteCmsSyncRunsPayload) => deleteAdminCmsSyncRuns(payload),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["cmsSyncRuns"] });
+      toast({
+        title: "Sync runs deleted",
+        description: `${data.deleted} ${data.deleted === 1 ? "run" : "runs"} removed`,
+        duration: 2000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not delete sync runs",
         description: error.message,
         variant: "error",
       });
