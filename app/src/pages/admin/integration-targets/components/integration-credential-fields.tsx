@@ -134,7 +134,7 @@ export function CredentialStatusIndicators({
       {username && <span>Username: {username}</span>}
       {hasApiKey && <span className="text-success">API key set</span>}
       {hasPassword && <span className="text-success"></span>}
-      {hasConfig && <span className="text-success">OAuth config set</span>}
+      {hasConfig && <span className="text-success"></span>}
     </div>
   );
 }

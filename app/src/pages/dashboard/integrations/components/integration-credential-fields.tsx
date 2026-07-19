@@ -270,7 +270,7 @@ export function CredentialStatusIndicators({
       {hasApiKey && <span className="text-success">API key set</span>}
       {hasWebhookKey && <span className="text-success">Webhook secret set</span>}
       {hasPassword && <span className="text-success"></span>}
-      {hasConfig && <span className="text-success">OAuth config set</span>}
+      {hasConfig && <span className="text-success"></span>}
     </div>
   );
 }

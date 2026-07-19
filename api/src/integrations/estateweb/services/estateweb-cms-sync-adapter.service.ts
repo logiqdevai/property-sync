@@ -13,6 +13,7 @@ import {
   EstateWebUpdatePropertyPayload,
   EstateWebUploadImagePayload,
 } from '../interfaces/estateweb-property.interface';
+import { ESTATEWEB_DEFAULT_PUSH_SITES } from '../constants/estateweb-agent-catalog.constants';
 import {
   ESTATEWEB_INIT_LANGUAGES,
   EstateWebScope,
@@ -161,7 +162,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         userProperty?.cms_fields,
         userProperty?.estateweb_type_id,
       ),
-      sites: [],
+      sites: [...ESTATEWEB_DEFAULT_PUSH_SITES],
       gateways: [],
       ads: this.buildAds(title, description),
       foreign_agents: [],

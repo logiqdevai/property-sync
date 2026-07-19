@@ -15,6 +15,17 @@ export interface EstateWebInitAgentSite {
   name: string;
 }
 
+export const ESTATEWEB_DEFAULT_PUSH_SITES = [
+  {
+    selected: true,
+    name: '1. re1.gr',
+    agent_site_id: 1002 as EstateWebAgentSiteId,
+    show_on_slider: 0 as const,
+    show_on_first_page: 0 as const,
+    show_on_relative_pages: 1 as const,
+  },
+];
+
 export const ESTATEWEB_INIT_GATEWAYS = [
   { agent_id: 2, name: 'Κρητικές Αγγελίες', logo: 'kritikes-aggelies' },
   { agent_id: 2, name: 'Spitogatos', logo: 'spitogatos' },
