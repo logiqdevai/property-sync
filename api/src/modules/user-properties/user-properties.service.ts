@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import { UserPropertyQueryType } from './dto/user-property-query.schema';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import { Prisma, Property, PropertyStatus } from 'generated/prisma';
@@ -27,7 +28,10 @@ export interface SyncForPropertyResult {
 
 @Injectable()
 export class UserPropertiesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
+  ) {}
 
   private async resolveFilterSourceAgencyId(
     userId: string,
@@ -219,12 +223,92 @@ export class UserPropertiesService {
   }
 
   async update(userId: string, id: string, dto: UpdateUserPropertyDto) {
-    await this.assertOwned(userId, id);
+    const existing = await this.prisma.userProperty.findFirst({
+      where: { id, user_id: userId },
+      include: {
+        canonical_property: {
+          include: {
+            source_links: {
+              include: {
+                source_property: { select: { source_agency_id: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const sourceAgencyId =
+      existing.canonical_property.source_links[0]?.source_property
+        .source_agency_id;
+    let pendingCrmUpdate = existing.pending_crm_update;
+
+    if (
+      existing.integration_property_id &&
+      sourceAgencyId &&
+      !pendingCrmUpdate
+    ) {
+      const tracker = await this.prisma.userTrackedAgency.findUnique({
+        where: {
+          user_id_source_agency_id: {
+            user_id: userId,
+            source_agency_id: sourceAgencyId,
+          },
+        },
+        select: { auto_update_to_crm: true, enabled: true },
+      });
+
+      if (tracker?.enabled && !tracker.auto_update_to_crm) {
+        pendingCrmUpdate = true;
+      }
+    }
 
     return serializePropertyForApi(
       await this.prisma.userProperty.update({
         where: { id },
-        data: dto,
+        data: {
+          ...dto,
+          is_modified: true,
+          pending_crm_update: pendingCrmUpdate,
+        },
+      }),
+    );
+  }
+
+  async pushToCrm(userId: string, id: string) {
+    const existing = await this.prisma.userProperty.findFirst({
+      where: { id, user_id: userId },
+      select: {
+        id: true,
+        integration_property_id: true,
+        pending_crm_update: true,
+      },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Property not found');
+    }
+    if (!existing.integration_property_id) {
+      throw new BadRequestException('Property is not in the CRM yet');
+    }
+
+    try {
+      await this.cmsSyncOrchestratorService.planAndEnqueueManualPropertyUpdate(
+        userId,
+        id,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(message);
+    }
+
+    return serializePropertyForApi(
+      await this.prisma.userProperty.findFirstOrThrow({
+        where: { id, user_id: userId },
       }),
     );
   }

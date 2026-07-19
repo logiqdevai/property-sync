@@ -2,6 +2,7 @@ export interface TrackingPrefs {
   track_new_listings: boolean;
   track_removed_listings: boolean;
   track_updated_listings: boolean;
+  auto_update_to_crm: boolean;
   use_ai_batching: boolean;
   enabled: boolean;
   user_integration_id?: string | null;
@@ -29,6 +30,7 @@ export interface TrackAgencyPayload {
   track_new_listings?: boolean;
   track_removed_listings?: boolean;
   track_updated_listings?: boolean;
+  auto_update_to_crm?: boolean;
   use_ai_batching?: boolean;
   enabled?: boolean;
   concurrent_insertions?: number;
@@ -67,6 +69,7 @@ export interface UserTrackedAgency {
   track_new_listings: boolean;
   track_removed_listings: boolean;
   track_updated_listings: boolean;
+  auto_update_to_crm: boolean;
   use_ai_batching: boolean;
 }
 

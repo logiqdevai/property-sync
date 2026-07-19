@@ -7,6 +7,7 @@ import {
   getUserProperties,
   getUserPropertiesCount,
   getUserProperty,
+  pushUserPropertyToCrm,
   updateUserProperty,
 } from "../services/user-properties.services";
 import type {
@@ -52,6 +53,31 @@ export const useUpdateUserProperty = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not save property",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const usePushUserPropertyToCrm = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => pushUserPropertyToCrm(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      queryClient.invalidateQueries({ queryKey: ["cmsSyncRuns"] });
+      toast({
+        title: "CRM update queued",
+        description: "The property will be updated in your CRM shortly.",
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not push to CRM",
         description: error.message,
         variant: "error",
       });

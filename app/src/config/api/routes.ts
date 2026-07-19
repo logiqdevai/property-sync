@@ -147,6 +147,8 @@ export const ApiRoutes = {
         list: "/properties",
         count: "/properties/count",
         detail: (id: string) => `/properties/${id}`,
+        resync: (id: string) => `/properties/${id}/resync`,
+        pushToCrm: (id: string) => `/properties/${id}/push-to-crm`,
         bulkDelete: "/properties/bulk-delete",
         dedupeGroups: "/properties/dedupe-groups",
     },

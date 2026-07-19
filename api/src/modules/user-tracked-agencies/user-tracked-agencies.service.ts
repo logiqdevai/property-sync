@@ -76,6 +76,7 @@ export class UserTrackedAgenciesService {
                 track_new_listings: tracker.track_new_listings,
                 track_removed_listings: tracker.track_removed_listings,
                 track_updated_listings: tracker.track_updated_listings,
+                auto_update_to_crm: tracker.auto_update_to_crm,
                 use_ai_batching: tracker.use_ai_batching,
                 enabled: tracker.enabled,
                 user_integration_id:
@@ -117,6 +118,7 @@ export class UserTrackedAgenciesService {
         track_new_listings: dto.track_new_listings ?? true,
         track_removed_listings: dto.track_removed_listings ?? true,
         track_updated_listings: dto.track_updated_listings ?? true,
+        auto_update_to_crm: dto.auto_update_to_crm ?? true,
         use_ai_batching: dto.use_ai_batching ?? false,
       },
       update: {
@@ -129,6 +131,9 @@ export class UserTrackedAgenciesService {
         }),
         ...(dto.track_updated_listings !== undefined && {
           track_updated_listings: dto.track_updated_listings,
+        }),
+        ...(dto.auto_update_to_crm !== undefined && {
+          auto_update_to_crm: dto.auto_update_to_crm,
         }),
         ...(dto.use_ai_batching !== undefined && {
           use_ai_batching: dto.use_ai_batching,
@@ -162,6 +167,9 @@ export class UserTrackedAgenciesService {
         }),
         ...(dto.track_updated_listings !== undefined && {
           track_updated_listings: dto.track_updated_listings,
+        }),
+        ...(dto.auto_update_to_crm !== undefined && {
+          auto_update_to_crm: dto.auto_update_to_crm,
         }),
         ...(dto.use_ai_batching !== undefined && {
           use_ai_batching: dto.use_ai_batching,

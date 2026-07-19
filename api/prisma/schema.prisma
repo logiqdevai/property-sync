@@ -367,6 +367,7 @@ model UserTrackedAgency {
   track_new_listings         Boolean  @default(true)
   track_removed_listings     Boolean  @default(true)
   track_updated_listings     Boolean  @default(true)
+  auto_update_to_crm         Boolean  @default(true) // when false, CRM updates are pushed manually from Properties
   use_ai_batching            Boolean  @default(false)
   created_at                 DateTime @default(now())
   updated_at                 DateTime @updatedAt
@@ -922,6 +923,7 @@ model UserProperty {
   price_web             Decimal?       @db.Decimal(14, 2)
   duplicate_group_id    String?
   is_modified           Boolean        @default(false)
+  pending_crm_update    Boolean        @default(false)
   last_synced_at     DateTime? // last time this copy was refreshed from canonical_property
   created_at         DateTime       @default(now())
   updated_at         DateTime       @updatedAt

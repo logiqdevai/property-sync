@@ -8786,6 +8786,7 @@ export namespace Prisma {
     track_new_listings: boolean | null
     track_removed_listings: boolean | null
     track_updated_listings: boolean | null
+    auto_update_to_crm: boolean | null
     use_ai_batching: boolean | null
     created_at: Date | null
     updated_at: Date | null
@@ -8802,6 +8803,7 @@ export namespace Prisma {
     track_new_listings: boolean | null
     track_removed_listings: boolean | null
     track_updated_listings: boolean | null
+    auto_update_to_crm: boolean | null
     use_ai_batching: boolean | null
     created_at: Date | null
     updated_at: Date | null
@@ -8819,6 +8821,7 @@ export namespace Prisma {
     track_new_listings: number
     track_removed_listings: number
     track_updated_listings: number
+    auto_update_to_crm: number
     use_ai_batching: number
     created_at: number
     updated_at: number
@@ -8849,6 +8852,7 @@ export namespace Prisma {
     track_new_listings?: true
     track_removed_listings?: true
     track_updated_listings?: true
+    auto_update_to_crm?: true
     use_ai_batching?: true
     created_at?: true
     updated_at?: true
@@ -8865,6 +8869,7 @@ export namespace Prisma {
     track_new_listings?: true
     track_removed_listings?: true
     track_updated_listings?: true
+    auto_update_to_crm?: true
     use_ai_batching?: true
     created_at?: true
     updated_at?: true
@@ -8882,6 +8887,7 @@ export namespace Prisma {
     track_new_listings?: true
     track_removed_listings?: true
     track_updated_listings?: true
+    auto_update_to_crm?: true
     use_ai_batching?: true
     created_at?: true
     updated_at?: true
@@ -8986,6 +8992,7 @@ export namespace Prisma {
     track_new_listings: boolean
     track_removed_listings: boolean
     track_updated_listings: boolean
+    auto_update_to_crm: boolean
     use_ai_batching: boolean
     created_at: Date
     updated_at: Date
@@ -9022,6 +9029,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -9044,6 +9052,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -9063,6 +9072,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -9082,12 +9092,13 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "concurrent_insertions" | "insertion_interval_minutes" | "max_properties" | "text_truncate_pieces" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "use_ai_batching" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
+  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "concurrent_insertions" | "insertion_interval_minutes" | "max_properties" | "text_truncate_pieces" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "auto_update_to_crm" | "use_ai_batching" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
   export type UserTrackedAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
@@ -9124,6 +9135,7 @@ export namespace Prisma {
       track_new_listings: boolean
       track_removed_listings: boolean
       track_updated_listings: boolean
+      auto_update_to_crm: boolean
       use_ai_batching: boolean
       created_at: Date
       updated_at: Date
@@ -9565,6 +9577,7 @@ export namespace Prisma {
     readonly track_new_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly track_removed_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly track_updated_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
+    readonly auto_update_to_crm: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly use_ai_batching: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly created_at: FieldRef<"UserTrackedAgency", 'DateTime'>
     readonly updated_at: FieldRef<"UserTrackedAgency", 'DateTime'>
@@ -30368,6 +30381,7 @@ export namespace Prisma {
     price_web: Decimal | null
     duplicate_group_id: string | null
     is_modified: boolean | null
+    pending_crm_update: boolean | null
     last_synced_at: Date | null
     created_at: Date | null
     updated_at: Date | null
@@ -30410,6 +30424,7 @@ export namespace Prisma {
     price_web: Decimal | null
     duplicate_group_id: string | null
     is_modified: boolean | null
+    pending_crm_update: boolean | null
     last_synced_at: Date | null
     created_at: Date | null
     updated_at: Date | null
@@ -30457,6 +30472,7 @@ export namespace Prisma {
     price_web: number
     duplicate_group_id: number
     is_modified: number
+    pending_crm_update: number
     last_synced_at: number
     created_at: number
     updated_at: number
@@ -30531,6 +30547,7 @@ export namespace Prisma {
     price_web?: true
     duplicate_group_id?: true
     is_modified?: true
+    pending_crm_update?: true
     last_synced_at?: true
     created_at?: true
     updated_at?: true
@@ -30573,6 +30590,7 @@ export namespace Prisma {
     price_web?: true
     duplicate_group_id?: true
     is_modified?: true
+    pending_crm_update?: true
     last_synced_at?: true
     created_at?: true
     updated_at?: true
@@ -30620,6 +30638,7 @@ export namespace Prisma {
     price_web?: true
     duplicate_group_id?: true
     is_modified?: true
+    pending_crm_update?: true
     last_synced_at?: true
     created_at?: true
     updated_at?: true
@@ -30754,6 +30773,7 @@ export namespace Prisma {
     price_web: Decimal | null
     duplicate_group_id: string | null
     is_modified: boolean
+    pending_crm_update: boolean
     last_synced_at: Date | null
     created_at: Date
     updated_at: Date
@@ -30820,6 +30840,7 @@ export namespace Prisma {
     price_web?: boolean
     duplicate_group_id?: boolean
     is_modified?: boolean
+    pending_crm_update?: boolean
     last_synced_at?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -30869,6 +30890,7 @@ export namespace Prisma {
     price_web?: boolean
     duplicate_group_id?: boolean
     is_modified?: boolean
+    pending_crm_update?: boolean
     last_synced_at?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -30918,6 +30940,7 @@ export namespace Prisma {
     price_web?: boolean
     duplicate_group_id?: boolean
     is_modified?: boolean
+    pending_crm_update?: boolean
     last_synced_at?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -30967,12 +30990,13 @@ export namespace Prisma {
     price_web?: boolean
     duplicate_group_id?: boolean
     is_modified?: boolean
+    pending_crm_update?: boolean
     last_synced_at?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type UserPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "canonical_property_id" | "property_id" | "internal_id" | "integration_property_id" | "title" | "description" | "listing_type" | "property_type" | "status" | "price" | "currency" | "city" | "district" | "address" | "postal_code" | "country" | "latitude" | "longitude" | "square_meters" | "bedrooms" | "bathrooms" | "floor" | "construction_year" | "renovation_year" | "features" | "images" | "normalized_data" | "estateweb_type_id" | "estateweb_location_id" | "cms_fields" | "cms_metadata" | "video_url" | "distance_airport" | "distance_port" | "distance_beach" | "price_start" | "price_web" | "duplicate_group_id" | "is_modified" | "last_synced_at" | "created_at" | "updated_at", ExtArgs["result"]["userProperty"]>
+  export type UserPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "canonical_property_id" | "property_id" | "internal_id" | "integration_property_id" | "title" | "description" | "listing_type" | "property_type" | "status" | "price" | "currency" | "city" | "district" | "address" | "postal_code" | "country" | "latitude" | "longitude" | "square_meters" | "bedrooms" | "bathrooms" | "floor" | "construction_year" | "renovation_year" | "features" | "images" | "normalized_data" | "estateweb_type_id" | "estateweb_location_id" | "cms_fields" | "cms_metadata" | "video_url" | "distance_airport" | "distance_port" | "distance_beach" | "price_start" | "price_web" | "duplicate_group_id" | "is_modified" | "pending_crm_update" | "last_synced_at" | "created_at" | "updated_at", ExtArgs["result"]["userProperty"]>
   export type UserPropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     canonical_property?: boolean | PropertyDefaultArgs<ExtArgs>
@@ -31034,6 +31058,7 @@ export namespace Prisma {
       price_web: Prisma.Decimal | null
       duplicate_group_id: string | null
       is_modified: boolean
+      pending_crm_update: boolean
       last_synced_at: Date | null
       created_at: Date
       updated_at: Date
@@ -31503,6 +31528,7 @@ export namespace Prisma {
     readonly price_web: FieldRef<"UserProperty", 'Decimal'>
     readonly duplicate_group_id: FieldRef<"UserProperty", 'String'>
     readonly is_modified: FieldRef<"UserProperty", 'Boolean'>
+    readonly pending_crm_update: FieldRef<"UserProperty", 'Boolean'>
     readonly last_synced_at: FieldRef<"UserProperty", 'DateTime'>
     readonly created_at: FieldRef<"UserProperty", 'DateTime'>
     readonly updated_at: FieldRef<"UserProperty", 'DateTime'>
@@ -34367,6 +34393,7 @@ export namespace Prisma {
     track_new_listings: 'track_new_listings',
     track_removed_listings: 'track_removed_listings',
     track_updated_listings: 'track_updated_listings',
+    auto_update_to_crm: 'auto_update_to_crm',
     use_ai_batching: 'use_ai_batching',
     created_at: 'created_at',
     updated_at: 'updated_at'
@@ -34745,6 +34772,7 @@ export namespace Prisma {
     price_web: 'price_web',
     duplicate_group_id: 'duplicate_group_id',
     is_modified: 'is_modified',
+    pending_crm_update: 'pending_crm_update',
     last_synced_at: 'last_synced_at',
     created_at: 'created_at',
     updated_at: 'updated_at'
@@ -35613,6 +35641,7 @@ export namespace Prisma {
     track_new_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
+    auto_update_to_crm?: BoolFilter<"UserTrackedAgency"> | boolean
     use_ai_batching?: BoolFilter<"UserTrackedAgency"> | boolean
     created_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
@@ -35634,6 +35663,7 @@ export namespace Prisma {
     track_new_listings?: SortOrder
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
+    auto_update_to_crm?: SortOrder
     use_ai_batching?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -35659,6 +35689,7 @@ export namespace Prisma {
     track_new_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
+    auto_update_to_crm?: BoolFilter<"UserTrackedAgency"> | boolean
     use_ai_batching?: BoolFilter<"UserTrackedAgency"> | boolean
     created_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
@@ -35680,6 +35711,7 @@ export namespace Prisma {
     track_new_listings?: SortOrder
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
+    auto_update_to_crm?: SortOrder
     use_ai_batching?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -35705,6 +35737,7 @@ export namespace Prisma {
     track_new_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     track_removed_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
+    auto_update_to_crm?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     use_ai_batching?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     created_at?: DateTimeWithAggregatesFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserTrackedAgency"> | Date | string
@@ -37523,6 +37556,7 @@ export namespace Prisma {
     price_web?: DecimalNullableFilter<"UserProperty"> | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: StringNullableFilter<"UserProperty"> | string | null
     is_modified?: BoolFilter<"UserProperty"> | boolean
+    pending_crm_update?: BoolFilter<"UserProperty"> | boolean
     last_synced_at?: DateTimeNullableFilter<"UserProperty"> | Date | string | null
     created_at?: DateTimeFilter<"UserProperty"> | Date | string
     updated_at?: DateTimeFilter<"UserProperty"> | Date | string
@@ -37572,6 +37606,7 @@ export namespace Prisma {
     price_web?: SortOrderInput | SortOrder
     duplicate_group_id?: SortOrderInput | SortOrder
     is_modified?: SortOrder
+    pending_crm_update?: SortOrder
     last_synced_at?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -37625,6 +37660,7 @@ export namespace Prisma {
     price_web?: DecimalNullableFilter<"UserProperty"> | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: StringNullableFilter<"UserProperty"> | string | null
     is_modified?: BoolFilter<"UserProperty"> | boolean
+    pending_crm_update?: BoolFilter<"UserProperty"> | boolean
     last_synced_at?: DateTimeNullableFilter<"UserProperty"> | Date | string | null
     created_at?: DateTimeFilter<"UserProperty"> | Date | string
     updated_at?: DateTimeFilter<"UserProperty"> | Date | string
@@ -37674,6 +37710,7 @@ export namespace Prisma {
     price_web?: SortOrderInput | SortOrder
     duplicate_group_id?: SortOrderInput | SortOrder
     is_modified?: SortOrder
+    pending_crm_update?: SortOrder
     last_synced_at?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -37729,6 +37766,7 @@ export namespace Prisma {
     price_web?: DecimalNullableWithAggregatesFilter<"UserProperty"> | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: StringNullableWithAggregatesFilter<"UserProperty"> | string | null
     is_modified?: BoolWithAggregatesFilter<"UserProperty"> | boolean
+    pending_crm_update?: BoolWithAggregatesFilter<"UserProperty"> | boolean
     last_synced_at?: DateTimeNullableWithAggregatesFilter<"UserProperty"> | Date | string | null
     created_at?: DateTimeWithAggregatesFilter<"UserProperty"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserProperty"> | Date | string
@@ -38356,6 +38394,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -38377,6 +38416,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -38394,6 +38434,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38415,6 +38456,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38434,6 +38476,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -38449,6 +38492,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38466,6 +38510,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40521,6 +40566,7 @@ export namespace Prisma {
     price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
+    pending_crm_update?: boolean
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -40570,6 +40616,7 @@ export namespace Prisma {
     price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
+    pending_crm_update?: boolean
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -40615,6 +40662,7 @@ export namespace Prisma {
     price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40664,6 +40712,7 @@ export namespace Prisma {
     price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40711,6 +40760,7 @@ export namespace Prisma {
     price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
+    pending_crm_update?: boolean
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -40756,6 +40806,7 @@ export namespace Prisma {
     price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40803,6 +40854,7 @@ export namespace Prisma {
     price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41567,6 +41619,7 @@ export namespace Prisma {
     track_new_listings?: SortOrder
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
+    auto_update_to_crm?: SortOrder
     use_ai_batching?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -41589,6 +41642,7 @@ export namespace Prisma {
     track_new_listings?: SortOrder
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
+    auto_update_to_crm?: SortOrder
     use_ai_batching?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -41605,6 +41659,7 @@ export namespace Prisma {
     track_new_listings?: SortOrder
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
+    auto_update_to_crm?: SortOrder
     use_ai_batching?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -43208,6 +43263,7 @@ export namespace Prisma {
     price_web?: SortOrder
     duplicate_group_id?: SortOrder
     is_modified?: SortOrder
+    pending_crm_update?: SortOrder
     last_synced_at?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -43265,6 +43321,7 @@ export namespace Prisma {
     price_web?: SortOrder
     duplicate_group_id?: SortOrder
     is_modified?: SortOrder
+    pending_crm_update?: SortOrder
     last_synced_at?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -43307,6 +43364,7 @@ export namespace Prisma {
     price_web?: SortOrder
     duplicate_group_id?: SortOrder
     is_modified?: SortOrder
+    pending_crm_update?: SortOrder
     last_synced_at?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -46232,6 +46290,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -46251,6 +46310,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -46308,6 +46368,7 @@ export namespace Prisma {
     price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
+    pending_crm_update?: boolean
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -46355,6 +46416,7 @@ export namespace Prisma {
     price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
+    pending_crm_update?: boolean
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -46445,6 +46507,7 @@ export namespace Prisma {
     track_new_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
+    auto_update_to_crm?: BoolFilter<"UserTrackedAgency"> | boolean
     use_ai_batching?: BoolFilter<"UserTrackedAgency"> | boolean
     created_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
@@ -46511,6 +46574,7 @@ export namespace Prisma {
     price_web?: DecimalNullableFilter<"UserProperty"> | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: StringNullableFilter<"UserProperty"> | string | null
     is_modified?: BoolFilter<"UserProperty"> | boolean
+    pending_crm_update?: BoolFilter<"UserProperty"> | boolean
     last_synced_at?: DateTimeNullableFilter<"UserProperty"> | Date | string | null
     created_at?: DateTimeFilter<"UserProperty"> | Date | string
     updated_at?: DateTimeFilter<"UserProperty"> | Date | string
@@ -46940,6 +47004,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -46959,6 +47024,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -47730,6 +47796,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -47750,6 +47817,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -47821,6 +47889,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -47841,6 +47910,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49694,6 +49764,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -49714,6 +49785,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -50091,6 +50163,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50111,6 +50184,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51763,6 +51837,7 @@ export namespace Prisma {
     price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
+    pending_crm_update?: boolean
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -51810,6 +51885,7 @@ export namespace Prisma {
     price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
+    pending_crm_update?: boolean
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -52922,6 +52998,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -52968,6 +53045,7 @@ export namespace Prisma {
     price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
+    pending_crm_update?: boolean
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -52998,6 +53076,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53017,6 +53096,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53035,6 +53115,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53080,6 +53161,7 @@ export namespace Prisma {
     price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53127,6 +53209,7 @@ export namespace Prisma {
     price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53173,6 +53256,7 @@ export namespace Prisma {
     price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53397,6 +53481,7 @@ export namespace Prisma {
     track_new_listings?: boolean
     track_removed_listings?: boolean
     track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
     use_ai_batching?: boolean
     created_at?: Date | string
     updated_at?: Date | string
@@ -53562,6 +53647,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53581,6 +53667,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53599,6 +53686,7 @@ export namespace Prisma {
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -54834,6 +54922,7 @@ export namespace Prisma {
     price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
     is_modified?: boolean
+    pending_crm_update?: boolean
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -54919,6 +55008,7 @@ export namespace Prisma {
     price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -54966,6 +55056,7 @@ export namespace Prisma {
     price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -55012,6 +55103,7 @@ export namespace Prisma {
     price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string

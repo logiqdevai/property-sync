@@ -71,6 +71,7 @@ export class Agency {
     track_new_listings: boolean;
     track_removed_listings: boolean;
     track_updated_listings: boolean;
+    auto_update_to_crm: boolean;
     use_ai_batching: boolean;
     created_at: Date;
     updated_at: Date;

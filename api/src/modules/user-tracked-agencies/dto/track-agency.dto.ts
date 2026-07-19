@@ -27,6 +27,16 @@ export class TrackAgencyDto {
   @IsBoolean()
   track_updated_listings?: boolean;
 
+  @ApiProperty({
+    required: false,
+    default: true,
+    description:
+      'When true, listing updates are pushed to the CRM automatically. When false, push from the Properties page.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  auto_update_to_crm?: boolean;
+
   @ApiProperty({ required: false, default: false })
   @IsOptional()
   @IsBoolean()

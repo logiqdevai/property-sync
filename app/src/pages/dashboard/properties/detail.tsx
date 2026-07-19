@@ -8,6 +8,7 @@ import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { PropertyDetailView } from "@/components/ui/property-detail-view";
 import {
+  usePushUserPropertyToCrm,
   useUpdateUserProperty,
   useUserProperty,
 } from "@/features/user-properties/hooks/use-user-properties";
@@ -23,6 +24,7 @@ export default function DashboardPropertyDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const { data: property, isPending } = useUserProperty(id);
   const updateProperty = useUpdateUserProperty();
+  const pushToCrm = usePushUserPropertyToCrm();
 
   const {
     register,
@@ -81,7 +83,26 @@ export default function DashboardPropertyDetailPage() {
   };
 
   return (
-    <PropertyDetailView
+    <div className="flex flex-col gap-4">
+      {property.pending_crm_update ? (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-warning/40 bg-warning/5 px-4 py-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-foreground">CRM update pending</p>
+            <p className="text-xs text-muted">
+              This listing has changes that are not in your CRM yet.
+            </p>
+          </div>
+          <ActionButtonWithPending
+            variant="primary"
+            isPending={pushToCrm.isPending}
+            onPress={() => pushToCrm.mutate(property.id)}
+          >
+            Update CRM
+          </ActionButtonWithPending>
+        </div>
+      ) : null}
+
+      <PropertyDetailView
       property={property}
       backHref={Routes.dashboard.properties.list}
       backLabel="← Back to my properties"
@@ -230,5 +251,6 @@ export default function DashboardPropertyDetailPage() {
         ) : undefined
       }
     />
+    </div>
   );
 }

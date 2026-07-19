@@ -108,6 +108,9 @@ export class UserPropertyEntity {
   @ApiProperty()
   is_modified: boolean;
 
+  @ApiProperty()
+  pending_crm_update: boolean;
+
   @ApiProperty({ nullable: true })
   last_synced_at: Date | null;
 

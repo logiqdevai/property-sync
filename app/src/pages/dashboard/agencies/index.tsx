@@ -157,6 +157,25 @@ function AgencyCard({
             </Switch>
           </div>
 
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-sm text-foreground">Auto-update CRM</span>
+              <span className="text-xs text-muted">
+                Push listing changes to your CRM automatically. When off, update from the Properties page.
+              </span>
+            </div>
+            <Switch
+              isSelected={prefs.auto_update_to_crm ?? true}
+              isDisabled={isControlsDisabled}
+              onChange={(isSelected) => savePrefs({ auto_update_to_crm: isSelected })}
+              aria-label="Auto-update CRM"
+            >
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch>
+          </div>
+
           {AppConfig.tracked_agency_admin_options_visible ? (
             <TrackerAdminOptionsPanel
               accordionId={`${agency.id}-admin-options`}

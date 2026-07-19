@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Pagination, Select, ListBox, Table, useOverlayState } from "@heroui/react";
+import { Button, Chip, Pagination, Select, ListBox, Table, useOverlayState } from "@heroui/react";
 import { Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
@@ -19,6 +19,7 @@ import {
   useDeleteUserProperties,
   useDeleteUserProperty,
   useDedupeUserPropertyGroups,
+  usePushUserPropertyToCrm,
   useUserProperties,
   useUserPropertiesCount,
 } from "@/features/user-properties/hooks/use-user-properties";
@@ -77,6 +78,7 @@ export default function DashboardPropertiesListPage() {
   const deleteUserProperty = useDeleteUserProperty();
   const deleteUserProperties = useDeleteUserProperties();
   const dedupeUserPropertyGroups = useDedupeUserPropertyGroups();
+  const pushToCrm = usePushUserPropertyToCrm();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
@@ -266,6 +268,7 @@ export default function DashboardPropertiesListPage() {
                   <Table.Column isRowHeader>City</Table.Column>
                   <Table.Column isRowHeader>Price</Table.Column>
                   <Table.Column isRowHeader>Status</Table.Column>
+                  <Table.Column isRowHeader>CRM</Table.Column>
                   <Table.Column isRowHeader>Group</Table.Column>
                   {canDelete ? <Table.Column isRowHeader>Actions</Table.Column> : null}
                 </Table.Header>
@@ -303,6 +306,30 @@ export default function DashboardPropertiesListPage() {
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>
                         <PropertyStatusChip status={property.status} />
+                      </Table.Cell>
+                      <Table.Cell className={groupCellClass}>
+                        {property.pending_crm_update ? (
+                          <div
+                            className="flex items-center gap-2"
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            <Chip size="sm" variant="soft" color="warning">
+                              Pending
+                            </Chip>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              isPending={
+                                pushToCrm.isPending && pushToCrm.variables === property.id
+                              }
+                              onPress={() => pushToCrm.mutate(property.id)}
+                            >
+                              Update CRM
+                            </Button>
+                          </div>
+                        ) : (
+                          "—"
+                        )}
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>
                         {property.duplicate_group_id ? (

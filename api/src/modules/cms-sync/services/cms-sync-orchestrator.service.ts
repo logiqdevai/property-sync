@@ -17,6 +17,10 @@ import { IntegrationType, PropertyStatus } from 'generated/prisma';
 
 const DEFAULT_MAX_ATTEMPTS = 3;
 
+interface ProcessTrackerBatchOptions {
+  includeUpdatesRegardlessOfAuto?: boolean;
+}
+
 interface TrackerGroup {
   tracker: {
     id: string;
@@ -25,6 +29,7 @@ interface TrackerGroup {
     track_new_listings: boolean;
     track_updated_listings: boolean;
     track_removed_listings: boolean;
+    auto_update_to_crm: boolean;
     concurrent_insertions: number;
     insertion_interval_minutes: number;
     max_properties: number | null;
@@ -151,6 +156,7 @@ export class CmsSyncOrchestratorService {
         track_new_listings: tracker.track_new_listings,
         track_updated_listings: tracker.track_updated_listings,
         track_removed_listings: tracker.track_removed_listings,
+        auto_update_to_crm: tracker.auto_update_to_crm,
         concurrent_insertions: tracker.concurrent_insertions,
         insertion_interval_minutes: tracker.insertion_interval_minutes,
         max_properties: tracker.max_properties,
@@ -312,6 +318,7 @@ export class CmsSyncOrchestratorService {
           track_new_listings: tracker.track_new_listings,
           track_updated_listings: tracker.track_updated_listings,
           track_removed_listings: tracker.track_removed_listings,
+          auto_update_to_crm: tracker.auto_update_to_crm,
           concurrent_insertions: tracker.concurrent_insertions,
           insertion_interval_minutes: tracker.insertion_interval_minutes,
           max_properties: tracker.max_properties,
@@ -326,17 +333,114 @@ export class CmsSyncOrchestratorService {
     return [...grouped.values()];
   }
 
+  async planAndEnqueueManualPropertyUpdate(
+    userId: string,
+    userPropertyId: string,
+  ): Promise<void> {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id: userPropertyId, user_id: userId },
+      include: {
+        canonical_property: {
+          include: {
+            source_links: {
+              include: {
+                source_property: { select: { source_agency_id: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!userProperty) {
+      throw new Error('Property not found');
+    }
+    if (!userProperty.integration_property_id) {
+      throw new Error('Property is not in the CRM yet');
+    }
+
+    const sourceAgencyId =
+      userProperty.canonical_property.source_links[0]?.source_property
+        .source_agency_id;
+    if (!sourceAgencyId) {
+      throw new Error('Property has no source agency');
+    }
+
+    const tracker = await this.prisma.userTrackedAgency.findUnique({
+      where: {
+        user_id_source_agency_id: {
+          user_id: userId,
+          source_agency_id: sourceAgencyId,
+        },
+      },
+    });
+
+    if (!tracker?.enabled) {
+      throw new Error('Agency is not being tracked');
+    }
+
+    const crawlRun = await this.crawlRunsService.createBackfillRun(
+      tracker.source_agency_id,
+      tracker.id,
+    );
+
+    await this.processTrackerBatch(
+      crawlRun.id,
+      {
+        tracker: {
+          id: tracker.id,
+          user_id: tracker.user_id,
+          source_agency_id: tracker.source_agency_id,
+          track_new_listings: tracker.track_new_listings,
+          track_updated_listings: true,
+          track_removed_listings: tracker.track_removed_listings,
+          auto_update_to_crm: tracker.auto_update_to_crm,
+          concurrent_insertions: tracker.concurrent_insertions,
+          insertion_interval_minutes: tracker.insertion_interval_minutes,
+          max_properties: tracker.max_properties,
+        },
+        affected: [
+          {
+            user_property_id: userProperty.id,
+            change_type: 'UPDATE',
+            user_property: userProperty,
+          },
+        ],
+      },
+      { includeUpdatesRegardlessOfAuto: true },
+    );
+  }
+
   private async processTrackerBatch(
     crawlRunId: string,
     trackerGroup: TrackerGroup,
+    options?: ProcessTrackerBatchOptions,
   ): Promise<void> {
+    const tracker = trackerGroup.tracker;
+
+    const heldBackUpdates = trackerGroup.affected.filter(
+      (a) =>
+        a.change_type === 'UPDATE' &&
+        tracker.track_updated_listings &&
+        !tracker.auto_update_to_crm &&
+        !options?.includeUpdatesRegardlessOfAuto,
+    );
+
+    if (heldBackUpdates.length > 0) {
+      await this.prisma.userProperty.updateMany({
+        where: {
+          id: { in: heldBackUpdates.map((a) => a.user_property_id) },
+        },
+        data: { pending_crm_update: true },
+      });
+    }
+
     const filtered = trackerGroup.affected.filter((a) =>
-      this.isChangeTypeEnabled(a.change_type, trackerGroup.tracker),
+      this.isChangeTypeEnabled(a.change_type, tracker, options),
     );
 
     if (filtered.length === 0) return;
 
-    const tracker = trackerGroup.tracker;
     const integration = await this.resolveLinkedIntegration(tracker.id);
     if (!integration) return;
 
@@ -402,12 +506,15 @@ export class CmsSyncOrchestratorService {
   private isChangeTypeEnabled(
     changeType: CmsSyncOperationType,
     tracker: TrackerGroup['tracker'],
+    options?: ProcessTrackerBatchOptions,
   ): boolean {
     switch (changeType) {
       case 'CREATE':
         return tracker.track_new_listings;
       case 'UPDATE':
-        return tracker.track_updated_listings;
+        if (!tracker.track_updated_listings) return false;
+        if (options?.includeUpdatesRegardlessOfAuto) return true;
+        return tracker.auto_update_to_crm;
       case 'REMOVE':
         return tracker.track_removed_listings;
     }

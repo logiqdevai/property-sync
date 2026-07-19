@@ -60,6 +60,15 @@ export const updateUserProperty = async (
   }
 };
 
+export const pushUserPropertyToCrm = async (id: string): Promise<UserProperty> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.userProperties.pushToCrm(id));
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to push property to CRM.");
+  }
+};
+
 export const deleteUserProperty = async (id: string): Promise<void> => {
   try {
     await axiosInstance.delete(ApiRoutes.userProperties.detail(id));

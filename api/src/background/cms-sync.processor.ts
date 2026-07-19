@@ -318,7 +318,10 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     if (!duplicateGroupId) {
       await this.prisma.userProperty.updateMany({
         where: { user_id: userId, id: userPropertyId },
-        data: { integration_property_id: integrationPropertyId },
+        data: {
+          integration_property_id: integrationPropertyId,
+          pending_crm_update: false,
+        },
       });
       return;
     }
@@ -331,7 +334,10 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
           { canonical_property: { duplicate_group_id: duplicateGroupId } },
         ],
       },
-      data: { integration_property_id: integrationPropertyId },
+      data: {
+        integration_property_id: integrationPropertyId,
+        pending_crm_update: false,
+      },
     });
   }
 

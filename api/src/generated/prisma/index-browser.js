@@ -188,6 +188,7 @@ exports.Prisma.UserTrackedAgencyScalarFieldEnum = {
   track_new_listings: 'track_new_listings',
   track_removed_listings: 'track_removed_listings',
   track_updated_listings: 'track_updated_listings',
+  auto_update_to_crm: 'auto_update_to_crm',
   use_ai_batching: 'use_ai_batching',
   created_at: 'created_at',
   updated_at: 'updated_at'
@@ -515,6 +516,7 @@ exports.Prisma.UserPropertyScalarFieldEnum = {
   price_web: 'price_web',
   duplicate_group_id: 'duplicate_group_id',
   is_modified: 'is_modified',
+  pending_crm_update: 'pending_crm_update',
   last_synced_at: 'last_synced_at',
   created_at: 'created_at',
   updated_at: 'updated_at'

@@ -145,6 +145,15 @@ export class UserPropertiesController {
     return this.userPropertiesService.resync(userId, id);
   }
 
+  @Post(':id/push-to-crm')
+  @ApiOperation({ summary: 'Manually push this property update to the CRM' })
+  @ApiResponse({ status: 200, type: UserPropertyEntity })
+  @ApiResponse({ status: 400, description: 'Cannot push to CRM' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  pushToCrm(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    return this.userPropertiesService.pushToCrm(userId, id);
+  }
+
   @Delete(':id')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)
