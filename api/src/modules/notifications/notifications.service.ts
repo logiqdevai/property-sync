@@ -20,12 +20,15 @@ export class NotificationsService {
   create(input: CreateNotificationInput): void {
     setImmediate(async () => {
       try {
-        const notification = await this.prisma.notification.create({ data: input });
+        const notification = await this.prisma.notification.create({
+          data: input,
+        });
 
         try {
           await this.telegramService.sendNotification(notification);
         } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
+          const message =
+            error instanceof Error ? error.message : String(error);
           this.logger.error(`Failed to send Telegram notification: ${message}`);
         }
       } catch (error) {
@@ -68,7 +71,9 @@ export class NotificationsService {
   }
 
   async markRead(id: string): Promise<NotificationModel> {
-    const existing = await this.prisma.notification.findUnique({ where: { id } });
+    const existing = await this.prisma.notification.findUnique({
+      where: { id },
+    });
 
     if (!existing) {
       throw new NotFoundException('Notification not found');
@@ -94,7 +99,9 @@ export class NotificationsService {
   }
 
   async remove(id: string): Promise<{ deleted: number }> {
-    const existing = await this.prisma.notification.findUnique({ where: { id } });
+    const existing = await this.prisma.notification.findUnique({
+      where: { id },
+    });
 
     if (!existing) {
       throw new NotFoundException('Notification not found');

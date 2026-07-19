@@ -6,10 +6,7 @@ import {
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import {
-  CRAWL_QUEUE,
-  GENERATION_QUEUE,
-} from '@/core/queues/queues.constants';
+import { CRAWL_QUEUE, GENERATION_QUEUE } from '@/core/queues/queues.constants';
 import { JobStatus, Prisma } from 'generated/prisma';
 import { JobLogQueryType } from './dto/job-log-query.schema';
 import { PaginatedResult } from './interfaces/job-log.interface';
@@ -171,9 +168,7 @@ export class JobsService {
       throw new NotFoundException('One or more job logs not found');
     }
 
-    if (
-      jobLogs.some((jobLog) => ACTIVE_JOB_STATUSES.includes(jobLog.status))
-    ) {
+    if (jobLogs.some((jobLog) => ACTIVE_JOB_STATUSES.includes(jobLog.status))) {
       throw new BadRequestException('Stop active jobs before deleting them');
     }
 

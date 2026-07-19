@@ -242,25 +242,21 @@ export class EstateWebPropertyService {
     userIntegrationId: string,
     propertyId: number | string,
   ): Promise<EstateWebPropertyResponse> {
-    return this.runValidatedOperation(
-      userIntegrationId,
-      'get-property',
-      () => {
-        assertValidPropertyId(propertyId);
+    return this.runValidatedOperation(userIntegrationId, 'get-property', () => {
+      assertValidPropertyId(propertyId);
 
-        return this.estateWebClientService.request<EstateWebPropertyResponse>(
-          userIntegrationId,
-          {
-            method: 'GET',
-            path: this.estateWebConfig
-              .getConfig()
-              .apiPaths.propertyById(propertyId),
-            operation: 'get-property',
-            propertyId,
-          },
-        );
-      },
-    );
+      return this.estateWebClientService.request<EstateWebPropertyResponse>(
+        userIntegrationId,
+        {
+          method: 'GET',
+          path: this.estateWebConfig
+            .getConfig()
+            .apiPaths.propertyById(propertyId),
+          operation: 'get-property',
+          propertyId,
+        },
+      );
+    });
   }
 
   private buildListQuery(

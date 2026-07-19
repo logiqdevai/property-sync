@@ -53,11 +53,15 @@ export class GenerationProcessor extends WorkerHost {
     }
   }
 
-  private async processGenerationJob(job: Job<GenerationJobData>): Promise<void> {
+  private async processGenerationJob(
+    job: Job<GenerationJobData>,
+  ): Promise<void> {
     const { runId } = job.data;
     this.logger.log(`generation job received: ${runId}`);
 
-    const run = await this.prisma.scraperGenerationRun.findUnique({ where: { id: runId } });
+    const run = await this.prisma.scraperGenerationRun.findUnique({
+      where: { id: runId },
+    });
 
     if (!run) {
       this.logger.error(`generation job ${runId}: run not found`);
@@ -65,7 +69,9 @@ export class GenerationProcessor extends WorkerHost {
     }
 
     if (run.status !== GenerationRunStatus.QUEUED) {
-      this.logger.warn(`generation job ${runId}: run is ${run.status}, not QUEUED — skipping`);
+      this.logger.warn(
+        `generation job ${runId}: run is ${run.status}, not QUEUED — skipping`,
+      );
       return;
     }
 
@@ -77,7 +83,9 @@ export class GenerationProcessor extends WorkerHost {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`generation job ${runId} crashed outside the orchestrator: ${message}`);
+      this.logger.error(
+        `generation job ${runId} crashed outside the orchestrator: ${message}`,
+      );
       throw error;
     }
   }

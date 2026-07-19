@@ -7,7 +7,13 @@ import { TemplateService } from './utils/templates.utils';
 
 @Module({
   imports: [ConfigModule],
-  providers: [ResendMailService, ResendConfig, ResendAdapter, TemplateService, Logger],
+  providers: [
+    ResendMailService,
+    ResendConfig,
+    ResendAdapter,
+    TemplateService,
+    Logger,
+  ],
   exports: [ResendMailService],
 })
 export class ResendModule {}

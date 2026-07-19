@@ -17,8 +17,14 @@ export function assertWebhookKeyAllowed(
   integrationType: IntegrationType,
   webhookKey?: string,
 ): void {
-  if (webhookKey !== undefined && webhookKey !== '' && !isAiIntegrationType(integrationType)) {
-    throw new BadRequestException('Webhook key is only supported for AI provider integrations');
+  if (
+    webhookKey !== undefined &&
+    webhookKey !== '' &&
+    !isAiIntegrationType(integrationType)
+  ) {
+    throw new BadRequestException(
+      'Webhook key is only supported for AI provider integrations',
+    );
   }
 }
 

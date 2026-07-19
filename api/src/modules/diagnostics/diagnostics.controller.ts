@@ -29,7 +29,10 @@ export class DiagnosticsController {
   @ApiOperation({
     summary: 'List diagnostics packages (paginated, filterable)',
   })
-  @ApiResponse({ status: 200, description: 'Paginated diagnostics package list' })
+  @ApiResponse({
+    status: 200,
+    description: 'Paginated diagnostics package list',
+  })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'scraper_id', required: false, type: String })

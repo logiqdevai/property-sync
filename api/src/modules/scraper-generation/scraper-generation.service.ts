@@ -48,9 +48,7 @@ export class ScraperGenerationService {
     @InjectQueue(GENERATION_QUEUE) private readonly generationQueue: Queue,
   ) {}
 
-  async findAll(
-    query: GenerationRunQueryType,
-  ): Promise<PaginatedResult<any>> {
+  async findAll(query: GenerationRunQueryType): Promise<PaginatedResult<any>> {
     const where = {
       ...(query.status && { status: query.status }),
       ...(query.trigger && { trigger: query.trigger }),
@@ -171,7 +169,10 @@ export class ScraperGenerationService {
   async approve(id: string) {
     const run = await this.ensureExists(id);
 
-    if (run.status !== GenerationRunStatus.AWAITING_REVIEW || !run.staged_config) {
+    if (
+      run.status !== GenerationRunStatus.AWAITING_REVIEW ||
+      !run.staged_config
+    ) {
       throw new BadRequestException(
         'Run must be AWAITING_REVIEW with a staged config to approve',
       );

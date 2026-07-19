@@ -70,7 +70,9 @@ export class EstateWebSessionService {
     await this.prisma.userIntegration.update({
       where: { id: userIntegrationId },
       data: {
-        config: mergeEstateWebConfig(integration.config, { session: undefined }),
+        config: mergeEstateWebConfig(integration.config, {
+          session: undefined,
+        }),
       },
     });
   }
@@ -232,9 +234,7 @@ export class EstateWebSessionService {
           userIntegrationId,
           operation: 'resolve-session',
           notificationType:
-            error instanceof EstateWebException
-              ? error.code
-              : undefined,
+            error instanceof EstateWebException ? error.code : undefined,
         },
         error,
       );
@@ -242,4 +242,3 @@ export class EstateWebSessionService {
     }
   }
 }
-

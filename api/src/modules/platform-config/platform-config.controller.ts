@@ -22,7 +22,9 @@ export class PlatformConfigController {
   constructor(private readonly platformConfigService: PlatformConfigService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get platform config (null fields fall back to defaults)' })
+  @ApiOperation({
+    summary: 'Get platform config (null fields fall back to defaults)',
+  })
   @ApiResponse({ status: 200, type: PlatformConfig })
   findOne() {
     return this.platformConfigService.getRaw();

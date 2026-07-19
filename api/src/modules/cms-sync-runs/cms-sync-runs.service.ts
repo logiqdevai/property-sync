@@ -1,6 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { IntegrationType, Prisma } from 'generated/prisma';
+import { CMS_SYNC_QUEUE } from '@/core/queues/queues.constants';
+import { CmsSyncStatus, IntegrationType, Prisma } from 'generated/prisma';
 import {
   AdminCmsSyncRunIntegrationsQueryType,
   AdminCmsSyncRunQueryType,
@@ -46,7 +49,10 @@ const listInclude = {
 
 @Injectable()
 export class CmsSyncRunsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @InjectQueue(CMS_SYNC_QUEUE) private readonly cmsSyncQueue: Queue,
+  ) {}
 
   async findAllForUser(
     userId: string,
@@ -67,7 +73,9 @@ export class CmsSyncRunsService {
     }
 
     if (query.user_integration_id) {
-      const ownsIntegration = integrationIds.includes(query.user_integration_id);
+      const ownsIntegration = integrationIds.includes(
+        query.user_integration_id,
+      );
       if (!ownsIntegration) {
         return emptyPage(query.page, query.limit);
       }
@@ -91,7 +99,9 @@ export class CmsSyncRunsService {
     return this.paginate(where, query.page, query.limit);
   }
 
-  async findAll(query: AdminCmsSyncRunQueryType): Promise<PaginatedResult<any>> {
+  async findAll(
+    query: AdminCmsSyncRunQueryType,
+  ): Promise<PaginatedResult<any>> {
     const where: Prisma.CmsSyncRunWhereInput = {
       user_integration: {
         integration_target: { integration_type: IntegrationType.ESTATEWEB },
@@ -128,6 +138,140 @@ export class CmsSyncRunsService {
         user: { select: { email: true } },
       },
       orderBy: { email: 'asc' },
+    });
+  }
+
+  async findOneById(id: string) {
+    const run = await this.prisma.cmsSyncRun.findUnique({
+      where: { id },
+      include: listInclude,
+    });
+    if (!run) throw new NotFoundException('CMS sync run not found');
+    return run;
+  }
+
+  async retry(id: string) {
+    const run = await this.prisma.cmsSyncRun.findUnique({
+      where: { id },
+      include: {
+        user_integration: {
+          select: {
+            integration_target: { select: { integration_type: true } },
+          },
+        },
+      },
+    });
+    if (!run) throw new NotFoundException('CMS sync run not found');
+
+    if (
+      run.status !== CmsSyncStatus.FAILED &&
+      run.status !== CmsSyncStatus.RETRYING
+    ) {
+      throw new Error('Only failed or retrying CMS sync runs can be retried');
+    }
+
+    const maxAttempts = run.max_attempts ?? 3;
+    if (run.attempt >= maxAttempts) {
+      throw new Error('Maximum retry attempts reached');
+    }
+
+    await this.resetForRetry(id, maxAttempts);
+
+    await this.cmsSyncQueue.add('cms-sync', {
+      cms_sync_run_id: run.id,
+      user_tracked_agency_id:
+        (run.payload as Record<string, string>)?.user_tracked_agency_id ?? '',
+      user_integration_id: run.user_integration_id,
+      crawl_run_id: run.crawl_run_id,
+    });
+
+    return this.findOneById(id);
+  }
+
+  async createBatch(params: {
+    crawlRunId: string;
+    userIntegrationId: string;
+    maxAttempts: number;
+    payload: Record<string, unknown>;
+  }) {
+    return this.prisma.cmsSyncRun.upsert({
+      where: {
+        crawl_run_id_user_integration_id: {
+          crawl_run_id: params.crawlRunId,
+          user_integration_id: params.userIntegrationId,
+        },
+      },
+      create: {
+        crawl_run_id: params.crawlRunId,
+        user_integration_id: params.userIntegrationId,
+        status: CmsSyncStatus.PENDING,
+        attempt: 0,
+        max_attempts: params.maxAttempts,
+        total_created: 0,
+        total_updated: 0,
+        total_removed: 0,
+        total_failed: 0,
+        payload: params.payload as Prisma.InputJsonValue,
+        response: null,
+        error_message: null,
+        started_at: new Date(),
+      },
+      update: {
+        status: CmsSyncStatus.PENDING,
+        payload: params.payload as Prisma.InputJsonValue,
+        error_message: null,
+        started_at: new Date(),
+        finished_at: null,
+      },
+    });
+  }
+
+  async updateBatchResult(
+    id: string,
+    result: {
+      total_created: number;
+      total_updated: number;
+      total_removed: number;
+      total_failed: number;
+      response: Record<string, unknown>;
+      status: CmsSyncStatus;
+      error_message?: string | null;
+    },
+  ) {
+    return this.prisma.cmsSyncRun.update({
+      where: { id },
+      data: {
+        total_created: result.total_created,
+        total_updated: result.total_updated,
+        total_removed: result.total_removed,
+        total_failed: result.total_failed,
+        response: result.response as Prisma.InputJsonValue,
+        status: result.status,
+        error_message: result.error_message ?? null,
+        finished_at:
+          result.status === CmsSyncStatus.SUCCESS ||
+          result.status === CmsSyncStatus.FAILED
+            ? new Date()
+            : null,
+        updated_at: new Date(),
+      },
+    });
+  }
+
+  async resetForRetry(id: string, maxAttempts: number) {
+    const run = await this.prisma.cmsSyncRun.findUnique({ where: { id } });
+    if (!run) throw new NotFoundException('CMS sync run not found');
+
+    return this.prisma.cmsSyncRun.update({
+      where: { id },
+      data: {
+        status: CmsSyncStatus.RETRYING,
+        attempt: { increment: 1 },
+        max_attempts: maxAttempts,
+        error_message: null,
+        started_at: new Date(),
+        finished_at: null,
+      },
     });
   }
 

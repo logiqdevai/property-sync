@@ -1,37 +1,38 @@
 export interface CreateEmail {
-    to: string;
-    subject: string;
-    text?: string;
-    from?: string;
-    html?: any;
-    attachments?: any[];
-    cc?: string[];
-    bcc?: string[];
-    replyTo?: string;
-    headers?: Record<string, string>;
-    template_id?: string;
-    dynamic_template_data?: Record<string, any>;
+  to: string;
+  subject: string;
+  text?: string;
+  from?: string;
+  html?: any;
+  attachments?: any[];
+  cc?: string[];
+  bcc?: string[];
+  replyTo?: string;
+  headers?: Record<string, string>;
+  template_id?: string;
+  dynamic_template_data?: Record<string, any>;
 }
 
 export interface EmailFromAddress {
-    verification: string;
-    confirmation: string;
-    alert: string;
+  verification: string;
+  confirmation: string;
+  alert: string;
 }
 
 export const EmailTemplates = {
-    CLIENT_BOOKING_CONFIRMATION: 'client-booking-confirmation',
-    CLIENT_BOOKING_COMPLETION: 'client-booking-completion',
-    CLIENT_BOOKING_UPDATE: 'client-booking-update',
-    CLIENT_BOOKING_CANCELLATION: 'client-booking-cancellation',
-    PROVIDER_BOOKING_CREATION: 'provider-booking-creation',
-    PROVIDER_BOOKING_CANCELLATION: 'provider-booking-cancellation',
-    CHAT_GROUP_MESSAGE: 'chat-group-message',
-    CHAT_INTERNAL_MESSAGE: 'chat-internal-message',
-    CHAT_CLIENT_MESSAGE_CONFIRMATION: 'chat-client-message-confirmation',
-    CAMPAIGN_MESSAGE: 'campaign-message',
-    WAITLIST: 'waitlist',
-    PASSWORD_RESET: 'password-reset',
+  CLIENT_BOOKING_CONFIRMATION: 'client-booking-confirmation',
+  CLIENT_BOOKING_COMPLETION: 'client-booking-completion',
+  CLIENT_BOOKING_UPDATE: 'client-booking-update',
+  CLIENT_BOOKING_CANCELLATION: 'client-booking-cancellation',
+  PROVIDER_BOOKING_CREATION: 'provider-booking-creation',
+  PROVIDER_BOOKING_CANCELLATION: 'provider-booking-cancellation',
+  CHAT_GROUP_MESSAGE: 'chat-group-message',
+  CHAT_INTERNAL_MESSAGE: 'chat-internal-message',
+  CHAT_CLIENT_MESSAGE_CONFIRMATION: 'chat-client-message-confirmation',
+  CAMPAIGN_MESSAGE: 'campaign-message',
+  WAITLIST: 'waitlist',
+  PASSWORD_RESET: 'password-reset',
 } as const;
 
-export type EmailTemplate = (typeof EmailTemplates)[keyof typeof EmailTemplates];
+export type EmailTemplate =
+  (typeof EmailTemplates)[keyof typeof EmailTemplates];

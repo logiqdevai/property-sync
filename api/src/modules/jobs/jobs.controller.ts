@@ -21,10 +21,7 @@ import { Roles } from '@/shared/decorators/roles.decorator';
 import { AuthRole, JobStatus } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { JobsService } from './jobs.service';
-import {
-  JobLogQuerySchema,
-  JobLogQueryType,
-} from './dto/job-log-query.schema';
+import { JobLogQuerySchema, JobLogQueryType } from './dto/job-log-query.schema';
 import { DeleteJobLogsDto } from './dto/delete-job-logs.dto';
 import { JobLog } from './entities/job-log.entity';
 

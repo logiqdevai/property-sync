@@ -31,7 +31,8 @@ export class CrawlRunWatchdogCron {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async failStaleRunningRuns(): Promise<void> {
-    const { crawl_job_timeout_ms } = await this.platformConfigService.getCrawlerConfig();
+    const { crawl_job_timeout_ms } =
+      await this.platformConfigService.getCrawlerConfig();
     const staleBefore = new Date(
       Date.now() - crawl_job_timeout_ms - STALE_GRACE_MS,
     );

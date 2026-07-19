@@ -19,6 +19,12 @@ export interface SyncForPropertyOptions {
   changeType: PropertySyncChangeType;
 }
 
+export interface SyncForPropertyResult {
+  user_property_id: string;
+  change_type: PropertySyncChangeType;
+  user_tracked_agency_id: string;
+}
+
 @Injectable()
 export class UserPropertiesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -59,7 +65,9 @@ export class UserPropertiesService {
     return {
       user_id: userId,
       ...(query.status && { status: query.status }),
-      ...(query.city && { city: { contains: query.city, mode: 'insensitive' } }),
+      ...(query.city && {
+        city: { contains: query.city, mode: 'insensitive' },
+      }),
       ...(hasCanonicalFilter && {
         canonical_property: {
           ...(sourceAgencyId && {
@@ -89,7 +97,10 @@ export class UserPropertiesService {
   }
 
   async findAll(userId: string, query: UserPropertyQueryType) {
-    const sourceAgencyId = await this.resolveFilterSourceAgencyId(userId, query);
+    const sourceAgencyId = await this.resolveFilterSourceAgencyId(
+      userId,
+      query,
+    );
 
     if (sourceAgencyId === null) {
       return {
@@ -141,7 +152,10 @@ export class UserPropertiesService {
   }
 
   async count(userId: string, query: UserPropertyQueryType) {
-    const sourceAgencyId = await this.resolveFilterSourceAgencyId(userId, query);
+    const sourceAgencyId = await this.resolveFilterSourceAgencyId(
+      userId,
+      query,
+    );
 
     if (sourceAgencyId === null) {
       return { total: 0 };
@@ -394,18 +408,17 @@ export class UserPropertiesService {
   async syncForProperty(
     propertyId: string,
     options: SyncForPropertyOptions,
-  ): Promise<void> {
+  ): Promise<SyncForPropertyResult[]> {
     const property = await this.prisma.property.findUnique({
       where: { id: propertyId },
     });
 
-    if (!property) return;
+    if (!property) return [];
 
     const sourceAgencyId =
-      options.sourceAgencyId ??
-      (await this.resolveSourceAgencyId(propertyId));
+      options.sourceAgencyId ?? (await this.resolveSourceAgencyId(propertyId));
 
-    if (!sourceAgencyId) return;
+    if (!sourceAgencyId) return [];
 
     const trackers = options.userTrackedAgencyId
       ? await this.prisma.userTrackedAgency.findMany({
@@ -421,25 +434,18 @@ export class UserPropertiesService {
           },
         });
 
+    const results: SyncForPropertyResult[] = [];
+
     for (const tracker of trackers) {
-      if (
-        options.changeType === 'created' &&
-        !tracker.track_new_listings
-      ) {
+      if (options.changeType === 'created' && !tracker.track_new_listings) {
         continue;
       }
 
-      if (
-        options.changeType === 'updated' &&
-        !tracker.track_updated_listings
-      ) {
+      if (options.changeType === 'updated' && !tracker.track_updated_listings) {
         continue;
       }
 
-      if (
-        options.changeType === 'removed' &&
-        !tracker.track_removed_listings
-      ) {
+      if (options.changeType === 'removed' && !tracker.track_removed_listings) {
         continue;
       }
 
@@ -459,12 +465,17 @@ export class UserPropertiesService {
 
       if (options.changeType === 'created') {
         if (existing) continue;
-        await this.prisma.userProperty.create({
+        const created = await this.prisma.userProperty.create({
           data: {
             user_id: tracker.user_id,
             canonical_property_id: propertyId,
             ...canonicalFields,
           },
+        });
+        results.push({
+          user_property_id: created.id,
+          change_type: 'created',
+          user_tracked_agency_id: tracker.id,
         });
         continue;
       }
@@ -478,17 +489,27 @@ export class UserPropertiesService {
             last_synced_at: new Date(),
           },
         });
+        results.push({
+          user_property_id: existing.id,
+          change_type: 'removed',
+          user_tracked_agency_id: tracker.id,
+        });
         continue;
       }
 
       if (!existing) {
         if (!tracker.track_new_listings) continue;
-        await this.prisma.userProperty.create({
+        const created = await this.prisma.userProperty.create({
           data: {
             user_id: tracker.user_id,
             canonical_property_id: propertyId,
             ...canonicalFields,
           },
+        });
+        results.push({
+          user_property_id: created.id,
+          change_type: 'created',
+          user_tracked_agency_id: tracker.id,
         });
         continue;
       }
@@ -497,13 +518,17 @@ export class UserPropertiesService {
         where: { id: existing.id },
         data: canonicalFields,
       });
+      results.push({
+        user_property_id: existing.id,
+        change_type: 'updated',
+        user_tracked_agency_id: tracker.id,
+      });
     }
+
+    return results;
   }
 
-  private mapFromCanonical(
-    property: Property,
-    textTruncatePieces?: string[],
-  ) {
+  private mapFromCanonical(property: Property, textTruncatePieces?: string[]) {
     return {
       property_id: property.property_id,
       internal_id: property.internal_id,
@@ -551,7 +576,9 @@ export class UserPropertiesService {
     };
   }
 
-  private async resolveSourceAgencyId(propertyId: string): Promise<string | null> {
+  private async resolveSourceAgencyId(
+    propertyId: string,
+  ): Promise<string | null> {
     const link = await this.prisma.propertySourceLink.findFirst({
       where: { property_id: propertyId },
       include: {

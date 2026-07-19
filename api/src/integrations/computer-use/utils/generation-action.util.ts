@@ -1,11 +1,17 @@
 import { ComputerActionType } from 'generated/prisma';
 import { GenerationAction } from '../interfaces/computer-use.interface';
 
-export function mapActionType(action: GenerationAction['action']): ComputerActionType {
-  return ComputerActionType[action.toUpperCase() as keyof typeof ComputerActionType];
+export function mapActionType(
+  action: GenerationAction['action'],
+): ComputerActionType {
+  return ComputerActionType[
+    action.toUpperCase() as keyof typeof ComputerActionType
+  ];
 }
 
-export function unmapActionType(actionType: ComputerActionType): GenerationAction['action'] {
+export function unmapActionType(
+  actionType: ComputerActionType,
+): GenerationAction['action'] {
   const key = actionType.toLowerCase() as GenerationAction['action'];
   if (
     key === 'click' ||
@@ -20,7 +26,9 @@ export function unmapActionType(actionType: ComputerActionType): GenerationActio
   ) {
     return key;
   }
-  throw new Error(`Unsupported action type for generation replay: ${actionType}`);
+  throw new Error(
+    `Unsupported action type for generation replay: ${actionType}`,
+  );
 }
 
 export function stepToGenerationAction(
@@ -32,16 +40,19 @@ export function stepToGenerationAction(
 
   if (action === 'done') {
     return {
-      reasoning: typeof payload.reasoning === 'string' ? payload.reasoning : undefined,
+      reasoning:
+        typeof payload.reasoning === 'string' ? payload.reasoning : undefined,
       action: 'done',
       config: payload.config as Record<string, unknown>,
     };
   }
 
   return {
-    reasoning: typeof payload.reasoning === 'string' ? payload.reasoning : undefined,
+    reasoning:
+      typeof payload.reasoning === 'string' ? payload.reasoning : undefined,
     action,
-    selector: typeof payload.selector === 'string' ? payload.selector : undefined,
+    selector:
+      typeof payload.selector === 'string' ? payload.selector : undefined,
     text: typeof payload.text === 'string' ? payload.text : undefined,
     url: typeof payload.url === 'string' ? payload.url : undefined,
   };
@@ -54,7 +65,10 @@ export function stepToAssistantText(
 ): string {
   const action = stepToGenerationAction(actionType, actionPayload);
   if (modelReasoning) {
-    action.reasoning = modelReasoning.replace(/\s*\[VERIFICATION FAILED\]\s*$/, '');
+    action.reasoning = modelReasoning.replace(
+      /\s*\[VERIFICATION FAILED\]\s*$/,
+      '',
+    );
   }
 
   if (action.action === 'done') {

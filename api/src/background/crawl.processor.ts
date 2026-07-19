@@ -9,9 +9,14 @@ import { CrawlerService } from '@/integrations/crawler/services/crawler.service'
 import { DetailEnrichmentService } from '@/integrations/crawler/services/detail-enrichment.service';
 import { ScraperConfig } from '@/integrations/crawler/interfaces/scraper-config.interface';
 import { DiagnosticsRunContext } from '@/integrations/diagnostics/interfaces/diagnostics.interfaces';
-import { contentHash, extractDenormalizedRawFields, extractSourcePropertyIds } from '@/integrations/crawler/utils/crawler.utils';
+import {
+  contentHash,
+  extractDenormalizedRawFields,
+  extractSourcePropertyIds,
+} from '@/integrations/crawler/utils/crawler.utils';
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import { ScraperFailureHandlerService } from '@/background/scraper-failure-handler.service';
 import {
   CrawlRunStatus,
@@ -39,6 +44,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
     private readonly notificationsService: NotificationsService,
     private readonly scraperFailureHandler: ScraperFailureHandlerService,
     private readonly platformConfigService: PlatformConfigService,
+    private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
   ) {
     super();
   }
@@ -48,7 +54,8 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
   // this applies the configured value once the app (and DB) are up. BullMQ's
   // Worker.concurrency setter takes effect immediately, no restart needed.
   async onModuleInit(): Promise<void> {
-    const { crawl_worker_concurrency } = await this.platformConfigService.getCrawlerConfig();
+    const { crawl_worker_concurrency } =
+      await this.platformConfigService.getCrawlerConfig();
     this.worker.concurrency = crawl_worker_concurrency;
   }
 
@@ -70,7 +77,8 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
 
   private async processCrawlJob(job: Job<CrawlJobData>): Promise<void> {
     const { crawlRunId, jobLogId } = job.data;
-    const { crawl_job_timeout_ms } = await this.platformConfigService.getCrawlerConfig();
+    const { crawl_job_timeout_ms } =
+      await this.platformConfigService.getCrawlerConfig();
     this.logger.log(`crawl job received: ${crawlRunId}`);
 
     if (!crawlRunId) {
@@ -138,7 +146,9 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       const activeVersion = scraper?.active_version;
 
       if (!scraper || !activeVersion?.config) {
-        throw new Error('Crawl run has no scraper with an active version config');
+        throw new Error(
+          'Crawl run has no scraper with an active version config',
+        );
       }
 
       const config = activeVersion.config as unknown as ScraperConfig;
@@ -350,7 +360,41 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
 
       if (!runFailed) {
         try {
-          await this.propertyNormalizationService.normalizeForCrawlRun(crawlRunId);
+          await this.propertyNormalizationService.normalizeForCrawlRun(
+            crawlRunId,
+            async (affected) => {
+              try {
+                await this.cmsSyncOrchestratorService.planAndEnqueueCrawlSync(
+                  crawlRunId,
+                  affected.map((a) => ({
+                    user_property_id: a.user_property_id,
+                    change_type: a.change_type.toUpperCase() as
+                      | 'CREATE'
+                      | 'UPDATE'
+                      | 'REMOVE',
+                    user_property: undefined,
+                  })),
+                );
+              } catch (syncError) {
+                const message =
+                  syncError instanceof Error
+                    ? syncError.message
+                    : String(syncError);
+                this.logger.error(
+                  `Crawl ${crawlRunId}: CMS sync enqueue failed after normalization: ${message}`,
+                );
+                this.notificationsService.create({
+                  type: NotificationType.CMS_SYNC_FAILURE,
+                  severity: NotificationSeverity.CRITICAL,
+                  title: 'CMS sync enqueue failed',
+                  message: `Crawl ${crawlRunId} normalized successfully but CMS sync enqueue failed: ${message}`,
+                  source_agency_id: run.source_agency_id,
+                  scraper_id: scraper.id,
+                  crawl_run_id: crawlRunId,
+                });
+              }
+            },
+          );
         } catch (normalizationError) {
           const normalizationMessage =
             normalizationError instanceof Error

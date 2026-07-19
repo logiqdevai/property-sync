@@ -63,8 +63,15 @@ export class PropertyAiBatchService {
     const chunks: string[][] = [];
     const lines: string[] = [];
 
-    for (let i = 0; i < params.sourceProperties.length; i += NORMALIZATION_BATCH_SIZE) {
-      const chunk = params.sourceProperties.slice(i, i + NORMALIZATION_BATCH_SIZE);
+    for (
+      let i = 0;
+      i < params.sourceProperties.length;
+      i += NORMALIZATION_BATCH_SIZE
+    ) {
+      const chunk = params.sourceProperties.slice(
+        i,
+        i + NORMALIZATION_BATCH_SIZE,
+      );
       const chunkIndex = chunks.length;
       chunks.push(chunk.map((sp) => sp.id));
 
@@ -121,7 +128,10 @@ export class PropertyAiBatchService {
         job_name: 'normalization-batch',
         status: JobStatus.WAITING,
         crawl_run_id: params.crawlRunId,
-        payload: { batch_id: batchId, source_count: params.sourceProperties.length },
+        payload: {
+          batch_id: batchId,
+          source_count: params.sourceProperties.length,
+        },
       },
     });
 
@@ -130,7 +140,10 @@ export class PropertyAiBatchService {
     );
   }
 
-  async enqueueBatchCompletion(batchId: string, crawlRunId: string): Promise<void> {
+  async enqueueBatchCompletion(
+    batchId: string,
+    crawlRunId: string,
+  ): Promise<void> {
     await this.aiBatchCompleteQueue.add('complete', { batchId, crawlRunId });
   }
 

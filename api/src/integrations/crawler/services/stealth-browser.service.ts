@@ -4,7 +4,13 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import { Browser, BrowserContext, BrowserContextOptions, chromium, Page } from 'playwright';
+import {
+  Browser,
+  BrowserContext,
+  BrowserContextOptions,
+  chromium,
+  Page,
+} from 'playwright';
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 
 const STEALTH_UA =

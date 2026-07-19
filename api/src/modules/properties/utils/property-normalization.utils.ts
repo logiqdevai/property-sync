@@ -89,11 +89,15 @@ export interface PropertyRecordInput {
   normalized_data: Prisma.InputJsonValue | null;
 }
 
-function readRawString(rawData: Record<string, unknown>, keys: string[]): string | null {
+function readRawString(
+  rawData: Record<string, unknown>,
+  keys: string[],
+): string | null {
   for (const key of keys) {
     const value = rawData[key];
     if (typeof value === 'string' && value.trim()) return value.trim();
-    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+    if (typeof value === 'number' && Number.isFinite(value))
+      return String(value);
   }
   return null;
 }
@@ -127,8 +131,14 @@ export function extractLatLng(rawData: unknown): {
     }
   }
 
-  const latitude = typeof data.latitude === 'number' ? data.latitude : parseFloat(String(data.latitude ?? ''));
-  const longitude = typeof data.longitude === 'number' ? data.longitude : parseFloat(String(data.longitude ?? ''));
+  const latitude =
+    typeof data.latitude === 'number'
+      ? data.latitude
+      : parseFloat(String(data.latitude ?? ''));
+  const longitude =
+    typeof data.longitude === 'number'
+      ? data.longitude
+      : parseFloat(String(data.longitude ?? ''));
 
   return {
     latitude: Number.isFinite(latitude) ? latitude : null,
@@ -136,9 +146,14 @@ export function extractLatLng(rawData: unknown): {
   };
 }
 
-export function parseFallbackPrice(rawPrice: string | null | undefined): number | null {
+export function parseFallbackPrice(
+  rawPrice: string | null | undefined,
+): number | null {
   if (!rawPrice) return null;
-  const cleaned = rawPrice.replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.');
+  const cleaned = rawPrice
+    .replace(/[^\d.,]/g, '')
+    .replace(/\./g, '')
+    .replace(',', '.');
   const value = parseFloat(cleaned);
   return Number.isFinite(value) ? value : null;
 }
@@ -170,13 +185,16 @@ export function buildFallbackNormalizedRow(sp: {
   };
 }
 
-export function buildNormalizedRowFromExistingProperty(property: Property): NormalizedAiRow {
+export function buildNormalizedRowFromExistingProperty(
+  property: Property,
+): NormalizedAiRow {
   return {
     title: property.title,
     listing_type: property.listing_type,
     property_type: property.property_type,
     price: property.price != null ? Number(property.price) : null,
-    price_start: property.price_start != null ? Number(property.price_start) : null,
+    price_start:
+      property.price_start != null ? Number(property.price_start) : null,
     price_web: property.price_web != null ? Number(property.price_web) : null,
     city: property.city,
     district: property.district,
@@ -184,7 +202,8 @@ export function buildNormalizedRowFromExistingProperty(property: Property): Norm
     postal_code: property.postal_code,
     latitude: property.latitude != null ? Number(property.latitude) : null,
     longitude: property.longitude != null ? Number(property.longitude) : null,
-    square_meters: property.square_meters != null ? Number(property.square_meters) : null,
+    square_meters:
+      property.square_meters != null ? Number(property.square_meters) : null,
     bedrooms: property.bedrooms,
     bathrooms: property.bathrooms,
     floor: property.floor,
@@ -199,7 +218,8 @@ export function buildNormalizedRowFromExistingProperty(property: Property): Norm
     cms_fields: Array.isArray(property.cms_fields)
       ? (property.cms_fields as unknown as CmsPropertyFieldEntry[])
       : null,
-    cms_metadata: property.cms_metadata as unknown as CmsPropertyMetadata | null,
+    cms_metadata:
+      property.cms_metadata as unknown as CmsPropertyMetadata | null,
     features: Array.isArray(property.features)
       ? (property.features as string[])
       : null,
@@ -244,13 +264,22 @@ export function buildPropertyRecord(
       : null;
   const latLng = extractLatLng(sp.raw_data);
   const structured = readDetailStructured(sp.raw_data);
-  const mergedCmsFields = mergeCmsFieldsFromNormalizedRow(n.cms_fields, n, structured);
+  const mergedCmsFields = mergeCmsFieldsFromNormalizedRow(
+    n.cms_fields,
+    n,
+    structured,
+  );
   const internalId =
     sp.internal_id ??
     extractInternalIdFromText(
       sp.raw_description,
       rawData
-        ? readRawString(rawData, ['_detail_text', 'detail_text', '_description', 'description'])
+        ? readRawString(rawData, [
+            '_detail_text',
+            'detail_text',
+            '_description',
+            'description',
+          ])
         : null,
     );
 
@@ -271,7 +300,9 @@ export function buildPropertyRecord(
     address: n.address ?? null,
     postal_code:
       n.postal_code ??
-      (rawData ? readRawString(rawData, ['postal_code', 'zip', '_postal_code']) : null),
+      (rawData
+        ? readRawString(rawData, ['postal_code', 'zip', '_postal_code'])
+        : null),
     country: 'GR',
     latitude: toDecimal(n.latitude ?? latLng.latitude),
     longitude: toDecimal(n.longitude ?? latLng.longitude),
@@ -286,13 +317,19 @@ export function buildPropertyRecord(
       (rawData ? readRawString(rawData, ['video_url', '_video_url']) : null),
     distance_airport:
       n.distance_airport ??
-      (rawData ? readRawString(rawData, ['distance_airport', '_distance_airport']) : null),
+      (rawData
+        ? readRawString(rawData, ['distance_airport', '_distance_airport'])
+        : null),
     distance_port:
       n.distance_port ??
-      (rawData ? readRawString(rawData, ['distance_port', '_distance_port']) : null),
+      (rawData
+        ? readRawString(rawData, ['distance_port', '_distance_port'])
+        : null),
     distance_beach:
       n.distance_beach ??
-      (rawData ? readRawString(rawData, ['distance_beach', '_distance_beach']) : null),
+      (rawData
+        ? readRawString(rawData, ['distance_beach', '_distance_beach'])
+        : null),
     estateweb_type_id: n.estateweb_type_id ?? null,
     estateweb_location_id: n.estateweb_location_id ?? null,
     cms_fields:
@@ -307,7 +344,12 @@ export function buildPropertyRecord(
 }
 
 export function detectDuplicates(
-  properties: Array<{ duplicate_group_id: string | null; title: string; city: string | null; price: Prisma.Decimal | null }>,
+  properties: Array<{
+    duplicate_group_id: string | null;
+    title: string;
+    city: string | null;
+    price: Prisma.Decimal | null;
+  }>,
 ): void {
   for (let i = 0; i < properties.length; i++) {
     for (let j = i + 1; j < properties.length; j++) {
@@ -318,9 +360,7 @@ export function detectDuplicates(
       const sameTitle =
         a.title.toLowerCase().trim() === b.title.toLowerCase().trim();
       const sameCity =
-        a.city &&
-        b.city &&
-        a.city.toLowerCase() === b.city.toLowerCase();
+        a.city && b.city && a.city.toLowerCase() === b.city.toLowerCase();
       const priceA = a.price ? Number(a.price) : null;
       const priceB = b.price ? Number(b.price) : null;
       const priceClose =
@@ -329,7 +369,8 @@ export function detectDuplicates(
         Math.abs(priceA - priceB) / Math.max(priceA, priceB) <= 0.01;
 
       if (sameTitle && sameCity && priceClose) {
-        const groupId = a.duplicate_group_id ?? b.duplicate_group_id ?? randomUUID();
+        const groupId =
+          a.duplicate_group_id ?? b.duplicate_group_id ?? randomUUID();
         a.duplicate_group_id = groupId;
         b.duplicate_group_id = groupId;
       }
@@ -351,7 +392,9 @@ function imagesArray(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === 'string');
 }
 
-function decimalString(value: Prisma.Decimal | null | undefined): string | null {
+function decimalString(
+  value: Prisma.Decimal | null | undefined,
+): string | null {
   if (value == null) return null;
   return value.toString();
 }
@@ -484,7 +527,8 @@ export function matchExistingDuplicateGroup(
   for (const candidate of existing) {
     if (!candidate.title || !record.title) continue;
     const sameTitle =
-      candidate.title.toLowerCase().trim() === record.title.toLowerCase().trim();
+      candidate.title.toLowerCase().trim() ===
+      record.title.toLowerCase().trim();
     const sameCity =
       candidate.city &&
       record.city &&

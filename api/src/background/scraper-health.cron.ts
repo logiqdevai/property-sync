@@ -1,11 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import {
-  CrawlRunStatus,
-  ScraperHealth,
-  ScraperStatus,
-} from 'generated/prisma';
+import { CrawlRunStatus, ScraperHealth, ScraperStatus } from 'generated/prisma';
 
 @Injectable()
 export class ScraperHealthCron {
@@ -47,7 +43,9 @@ export class ScraperHealthCron {
           run.status === CrawlRunStatus.SUCCESS ||
           run.status === CrawlRunStatus.PARTIAL_SUCCESS,
       ).length;
-      const successRate = Number(((successCount / runs.length) * 100).toFixed(2));
+      const successRate = Number(
+        ((successCount / runs.length) * 100).toFixed(2),
+      );
 
       const durations = runs
         .filter((run) => run.started_at && run.finished_at)

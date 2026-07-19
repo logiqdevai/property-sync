@@ -105,7 +105,10 @@ export class UserPropertiesController {
       'Keep one saved property per duplicate group and delete the rest (admin only)',
   })
   @ApiResponse({ status: 200, description: 'Duplicate group members deduped' })
-  @ApiResponse({ status: 400, description: 'No multi-member groups in selection' })
+  @ApiResponse({
+    status: 400,
+    description: 'No multi-member groups in selection',
+  })
   @ApiResponse({ status: 403, description: 'Admin only' })
   dedupeGroups(
     @CurrentUser('id') userId: string,

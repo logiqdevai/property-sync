@@ -44,7 +44,8 @@ const FIELD_TYPE_TO_KIND: Record<
 };
 
 function toAiFieldEntry(field: EstateWebInitField): EstateWebAiFieldEntry {
-  const kind = FIELD_TYPE_TO_KIND[field.type_id as EstateWebFieldType] ?? 'text';
+  const kind =
+    FIELD_TYPE_TO_KIND[field.type_id as EstateWebFieldType] ?? 'text';
   const entry: EstateWebAiFieldEntry = {
     id: field.id,
     name: field.name,

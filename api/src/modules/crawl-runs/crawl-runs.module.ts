@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import { CRAWL_QUEUE } from '@/core/queues/queues.constants';
@@ -12,6 +12,7 @@ import { ScraperFailureHandlerService } from '@/background/scraper-failure-handl
 import { ScraperGenerationModule } from '@/modules/scraper-generation/scraper-generation.module';
 import { PropertiesModule } from '@/modules/properties/properties.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
+import { CmsSyncModule } from '@/modules/cms-sync/cms-sync.module';
 import { CrawlRunsController } from './crawl-runs.controller';
 import { CrawlRunsService } from './crawl-runs.service';
 
@@ -24,6 +25,7 @@ import { CrawlRunsService } from './crawl-runs.service';
     PropertiesModule,
     NotificationsModule,
     BullModule.registerQueue({ name: CRAWL_QUEUE }),
+    forwardRef(() => CmsSyncModule),
   ],
   controllers: [CrawlRunsController],
   providers: [

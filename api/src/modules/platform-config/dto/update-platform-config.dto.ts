@@ -96,7 +96,8 @@ export class UpdatePlatformConfigDto {
 
   @ApiPropertyOptional({
     nullable: true,
-    description: 'Browser contexts created before recycling the shared Chromium instance',
+    description:
+      'Browser contexts created before recycling the shared Chromium instance',
     example: 250,
   })
   @IsOptional()

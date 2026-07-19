@@ -21,7 +21,9 @@ export class AiBatchCompleteProcessor extends WorkerHost {
 
   async process(job: Job<AiBatchCompleteJobData>): Promise<void> {
     const { batchId, crawlRunId } = job.data;
-    this.logger.log(`Processing batch completion ${batchId} for crawl ${crawlRunId}`);
+    this.logger.log(
+      `Processing batch completion ${batchId} for crawl ${crawlRunId}`,
+    );
 
     try {
       await this.propertyNormalizationService.completeBatchNormalization(

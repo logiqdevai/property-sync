@@ -21,4 +21,6 @@ export const IntegrationTargetQuerySchema = z.object({
   is_enabled: booleanQueryParam,
 });
 
-export type IntegrationTargetQueryType = z.infer<typeof IntegrationTargetQuerySchema>;
+export type IntegrationTargetQueryType = z.infer<
+  typeof IntegrationTargetQuerySchema
+>;

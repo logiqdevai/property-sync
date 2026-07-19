@@ -51,6 +51,7 @@ export class OpenAiWebhooksService {
       return;
     }
 
+    const startedAt = new Date();
     const client = new OpenAI({ apiKey: 'unused' });
     const event = (await client.webhooks.unwrap(
       rawBody,
@@ -58,6 +59,7 @@ export class OpenAiWebhooksService {
       secret,
     )) as { type: string; data: { id: string } };
 
+    const finishedAt = new Date();
     this.processedWebhookIds.add(dedupeKey);
     await this.prisma.jobLog.create({
       data: {
@@ -65,6 +67,9 @@ export class OpenAiWebhooksService {
         job_id: webhookId ?? dedupeKey,
         job_name: event.type,
         status: JobStatus.COMPLETED,
+        started_at: startedAt,
+        finished_at: finishedAt,
+        duration_ms: finishedAt.getTime() - startedAt.getTime(),
         payload: {
           event_type: event.type,
           batch_id: event.data.id,
@@ -74,7 +79,10 @@ export class OpenAiWebhooksService {
     });
 
     const batchId = event.data.id;
-    const crawlRun = await this.findCrawlRunForBatch(batchId, userIntegrationId);
+    const crawlRun = await this.findCrawlRunForBatch(
+      batchId,
+      userIntegrationId,
+    );
 
     if (!crawlRun) {
       this.logger.warn(`No crawl run found for batch ${batchId}`);
@@ -82,7 +90,10 @@ export class OpenAiWebhooksService {
     }
 
     if (event.type === 'batch.completed') {
-      await this.propertyAiBatchService.enqueueBatchCompletion(batchId, crawlRun.id);
+      await this.propertyAiBatchService.enqueueBatchCompletion(
+        batchId,
+        crawlRun.id,
+      );
       return;
     }
 
@@ -135,7 +146,9 @@ export class OpenAiWebhooksService {
     });
   }
 
-  private headerValue(value: string | string[] | undefined): string | undefined {
+  private headerValue(
+    value: string | string[] | undefined,
+  ): string | undefined {
     if (Array.isArray(value)) return value[0];
     return value;
   }

@@ -33,17 +33,31 @@ export class AnthropicNormalizationService {
     }>,
     apiKey: string,
     model: string,
-  ): Promise<{ results: Array<NormalizedAiRow | null>; usage: NormalizationUsage }> {
-    const results: Array<NormalizedAiRow | null> = new Array(sourceProperties.length).fill(null);
+  ): Promise<{
+    results: Array<NormalizedAiRow | null>;
+    usage: NormalizationUsage;
+  }> {
+    const results: Array<NormalizedAiRow | null> = new Array(
+      sourceProperties.length,
+    ).fill(null);
     const usage = emptyNormalizationUsage();
     const client = new Anthropic({ apiKey });
 
-    for (let i = 0; i < sourceProperties.length; i += NORMALIZATION_BATCH_SIZE) {
+    for (
+      let i = 0;
+      i < sourceProperties.length;
+      i += NORMALIZATION_BATCH_SIZE
+    ) {
       const batch = sourceProperties.slice(i, i + NORMALIZATION_BATCH_SIZE);
       const end = Math.min(i + batch.length, sourceProperties.length);
 
       try {
-        const normalized = await this.normalizeBatch(client, model, batch, usage);
+        const normalized = await this.normalizeBatch(
+          client,
+          model,
+          batch,
+          usage,
+        );
         for (const row of normalized) {
           if (row == null || row.index == null) continue;
           const sp = sourceProperties[i + row.index];
@@ -125,7 +139,9 @@ export class AnthropicNormalizationService {
   private parseNormalizationArray(text: string): NormalizedAiRow[] {
     const arrayMatch = text.match(/\[[\s\S]*\]/);
     if (!arrayMatch) {
-      throw new Error(`AI returned no JSON array. Response: ${text.slice(0, 300)}`);
+      throw new Error(
+        `AI returned no JSON array. Response: ${text.slice(0, 300)}`,
+      );
     }
 
     try {

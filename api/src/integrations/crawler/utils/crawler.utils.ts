@@ -11,11 +11,15 @@ export function contentHash(obj: Record<string, unknown>): string {
     .slice(0, 16);
 }
 
-function readRawString(raw: Record<string, unknown>, keys: string[]): string | null {
+function readRawString(
+  raw: Record<string, unknown>,
+  keys: string[],
+): string | null {
   for (const key of keys) {
     const value = raw[key];
     if (typeof value === 'string' && value.trim()) return value.trim();
-    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+    if (typeof value === 'number' && Number.isFinite(value))
+      return String(value);
   }
   return null;
 }
@@ -52,7 +56,8 @@ export function readDetailStructured(rawData: unknown): {
   const rawSpecs = data._detail_specs;
   if (rawSpecs && typeof rawSpecs === 'object' && !Array.isArray(rawSpecs)) {
     const entries = Object.entries(rawSpecs as Record<string, unknown>).filter(
-      (entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1].trim() !== '',
+      (entry): entry is [string, string] =>
+        typeof entry[1] === 'string' && entry[1].trim() !== '',
     );
     if (entries.length > 0) specs = Object.fromEntries(entries);
   }
@@ -83,8 +88,19 @@ export function extractDenormalizedRawFields(raw: Record<string, unknown>) {
       'transaction_type',
       '_transaction_type',
     ]),
-    raw_sqm: readRawString(raw, ['sqm', '_sqm', 'square_meters', '_square_meters', 'size']),
-    raw_bedrooms: readRawString(raw, ['bedrooms', '_bedrooms', 'rooms', '_rooms']),
+    raw_sqm: readRawString(raw, [
+      'sqm',
+      '_sqm',
+      'square_meters',
+      '_square_meters',
+      'size',
+    ]),
+    raw_bedrooms: readRawString(raw, [
+      'bedrooms',
+      '_bedrooms',
+      'rooms',
+      '_rooms',
+    ]),
     raw_bathrooms: readRawString(raw, ['bathrooms', '_bathrooms', 'wc', '_wc']),
   };
 }
@@ -103,7 +119,12 @@ export function extractSourcePropertyIds(
       'listing_code',
     ]) ??
     extractInternalIdFromText(
-      readRawString(raw, ['_detail_text', 'detail_text', '_description', 'description']),
+      readRawString(raw, [
+        '_detail_text',
+        'detail_text',
+        '_description',
+        'description',
+      ]),
       readRawString(raw, ['location', '_location', 'raw_location']),
     );
 

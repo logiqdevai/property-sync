@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { CreateEmail } from '../interfaces/mail.interfaces';
 import { ResendAdapter } from '../resend/resend.adapter';
 
@@ -21,11 +25,15 @@ export class ResendMailService {
 
   public async sendBulkEmails(createEmails: CreateEmail[]) {
     try {
-      const promises = createEmails.map(async (createEmail) => this.sendEmail(createEmail));
+      const promises = createEmails.map(async (createEmail) =>
+        this.sendEmail(createEmail),
+      );
       return await Promise.all(promises);
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException('Failed to send bulk emails with Resend');
+      throw new InternalServerErrorException(
+        'Failed to send bulk emails with Resend',
+      );
     }
   }
 }

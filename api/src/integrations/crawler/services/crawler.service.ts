@@ -225,7 +225,9 @@ export class CrawlerService {
         }
         await nextControl.click({ timeout: 8000 });
         await page
-          .waitForLoadState('domcontentloaded', { timeout: crawlerConfig.page_timeout_ms })
+          .waitForLoadState('domcontentloaded', {
+            timeout: crawlerConfig.page_timeout_ms,
+          })
           .catch(() => undefined);
         await page.waitForTimeout(2000);
         log('clicked_next', { url: page.url() });
@@ -261,17 +263,16 @@ export class CrawlerService {
 
       await nextPageLink.click({ timeout: 8000 });
       await page
-        .waitForLoadState('domcontentloaded', { timeout: crawlerConfig.page_timeout_ms })
+        .waitForLoadState('domcontentloaded', {
+          timeout: crawlerConfig.page_timeout_ms,
+        })
         .catch(() => undefined);
       await page.waitForTimeout(2000);
       log('clicked_page', { page: nextPageNum, url: page.url() });
       return true;
     }
 
-    if (
-      pagination.type === 'load_more' ||
-      pagination.type === 'LOAD_MORE'
-    ) {
+    if (pagination.type === 'load_more' || pagination.type === 'LOAD_MORE') {
       if (!pagination.selector) return false;
       const btn = page.locator(pagination.selector).first();
       const visible = await btn.isVisible().catch(() => false);
@@ -289,9 +290,7 @@ export class CrawlerService {
       pagination.type === 'INFINITE_SCROLL'
     ) {
       const prevHeight = await page.evaluate(() => document.body.scrollHeight);
-      await page.evaluate(() =>
-        window.scrollTo(0, document.body.scrollHeight),
-      );
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       await page.waitForTimeout(crawlerConfig.scroll_pause_ms);
       const newHeight = await page.evaluate(() => document.body.scrollHeight);
       if (newHeight === prevHeight) {
@@ -301,10 +300,7 @@ export class CrawlerService {
       return true;
     }
 
-    if (
-      pagination.type === 'url_param' ||
-      pagination.type === 'URL_PARAM'
-    ) {
+    if (pagination.type === 'url_param' || pagination.type === 'URL_PARAM') {
       const paramName = pagination.url_param ?? 'page';
       const url = new URL(page.url());
       url.searchParams.set(paramName, String(pageNum + 2));

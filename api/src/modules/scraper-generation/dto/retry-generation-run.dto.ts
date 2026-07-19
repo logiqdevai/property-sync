@@ -13,7 +13,8 @@ export class RetryGenerationRunDto {
 
   @ApiProperty({
     required: false,
-    description: 'Optional extra instructions appended to the run prompt before resuming.',
+    description:
+      'Optional extra instructions appended to the run prompt before resuming.',
   })
   @IsOptional()
   @IsString()

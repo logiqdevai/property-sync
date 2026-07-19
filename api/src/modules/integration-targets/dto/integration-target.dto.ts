@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsOptional, IsString, IsUrl, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MinLength,
+} from 'class-validator';
 import { AuthType, IntegrationType } from 'generated/prisma';
 
 export class CreateIntegrationTargetDto {

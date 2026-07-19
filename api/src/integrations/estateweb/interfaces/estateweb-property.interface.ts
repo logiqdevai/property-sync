@@ -168,7 +168,8 @@ export interface EstateWebPropertyPayload {
 
 export type EstateWebCreatePropertyPayload = EstateWebPropertyPayload;
 
-export interface EstateWebUpdatePropertyPayload extends EstateWebPropertyPayload {
+export interface EstateWebUpdatePropertyPayload
+  extends EstateWebPropertyPayload {
   id: number;
   agent_id?: number;
   group_id?: number;

@@ -16,10 +16,7 @@ export type UserIntegrationRecord = {
   updated_at: Date;
 };
 
-export type MaskedUserIntegration = Omit<
-  UserIntegrationRecord,
-  'config'
-> & {
+export type MaskedUserIntegration = Omit<UserIntegrationRecord, 'config'> & {
   has_api_key_secret: boolean;
   has_webhook_key: boolean;
   has_password: boolean;

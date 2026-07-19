@@ -194,7 +194,12 @@ function assertValidPayloadFields(
       );
     }
 
-    assertValidFieldValueShape(field.id, field.type_id, field.name, entry.value);
+    assertValidFieldValueShape(
+      field.id,
+      field.type_id,
+      field.name,
+      entry.value,
+    );
   }
 }
 

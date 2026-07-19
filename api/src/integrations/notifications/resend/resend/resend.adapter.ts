@@ -1,6 +1,10 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { EmailConfig } from '@/shared/constants/email';
-import { CreateEmail, EmailFromAddress, EmailTemplate } from '../interfaces/mail.interfaces';
+import {
+  CreateEmail,
+  EmailFromAddress,
+  EmailTemplate,
+} from '../interfaces/mail.interfaces';
 import { ResendConfig } from './resend.config';
 import { TemplateService } from '../utils/templates.utils';
 
@@ -53,7 +57,9 @@ export class ResendAdapter {
         throw error;
       }
 
-      throw new InternalServerErrorException('Failed to send email with Resend');
+      throw new InternalServerErrorException(
+        'Failed to send email with Resend',
+      );
     }
   }
 }

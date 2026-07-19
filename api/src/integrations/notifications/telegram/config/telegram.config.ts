@@ -13,7 +13,9 @@ export class TelegramConfig {
     this.chatId = this.configService.get<string>('TELEGRAM_CHAT_ID') ?? null;
 
     if (!this.botKey || !this.chatId) {
-      this.logger.error('TELEGRAM_BOT_KEY or TELEGRAM_CHAT_ID is not configured');
+      this.logger.error(
+        'TELEGRAM_BOT_KEY or TELEGRAM_CHAT_ID is not configured',
+      );
       this.apiBaseUrl = null;
       return;
     }

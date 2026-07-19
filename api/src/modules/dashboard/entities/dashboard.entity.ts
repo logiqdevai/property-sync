@@ -77,7 +77,16 @@ export class DashboardKpis {
 }
 
 export class ActivityFeedItem {
-  @ApiProperty({ enum: ['crawl', 'crawl_failed', 'listing_created', 'listing_removed', 'scraper_broken', 'generation'] })
+  @ApiProperty({
+    enum: [
+      'crawl',
+      'crawl_failed',
+      'listing_created',
+      'listing_removed',
+      'scraper_broken',
+      'generation',
+    ],
+  })
   type: ActivityFeedType;
 
   @ApiProperty()

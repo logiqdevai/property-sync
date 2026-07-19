@@ -19,7 +19,11 @@ import {
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
-import { AuthRole, NotificationSeverity, NotificationType } from 'generated/prisma';
+import {
+  AuthRole,
+  NotificationSeverity,
+  NotificationType,
+} from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { NotificationsService } from './notifications.service';
 import {
@@ -68,7 +72,9 @@ export class NotificationsController {
   }
 
   @Post('telegram/test')
-  @ApiOperation({ summary: 'Send a test message to the configured Telegram chat' })
+  @ApiOperation({
+    summary: 'Send a test message to the configured Telegram chat',
+  })
   @ApiResponse({ status: 200, description: 'Message sent' })
   @ApiResponse({ status: 503, description: 'Telegram is not configured' })
   sendTelegramTest(@Body() dto: SendTelegramTestDto) {

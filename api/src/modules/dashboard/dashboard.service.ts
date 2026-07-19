@@ -60,8 +60,12 @@ export class DashboardService {
       this.prisma.scraper.count({ where: { status: ScraperStatus.ACTIVE } }),
       this.prisma.scraper.count({ where: { status: ScraperStatus.BROKEN } }),
       this.prisma.sourceAgency.count(),
-      this.prisma.sourceAgency.count({ where: { is_visible: true, is_enabled: true } }),
-      this.prisma.sourceAgency.count({ where: { is_visible: true, is_enabled: false } }),
+      this.prisma.sourceAgency.count({
+        where: { is_visible: true, is_enabled: true },
+      }),
+      this.prisma.sourceAgency.count({
+        where: { is_visible: true, is_enabled: false },
+      }),
       this.prisma.sourceAgency.count({ where: { is_visible: false } }),
       this.prisma.crawlRun.count({ where: { status: CrawlRunStatus.RUNNING } }),
       this.prisma.crawlRun.count({
@@ -104,7 +108,9 @@ export class DashboardService {
       this.prisma.jobLog.count({ where: { status: JobStatus.FAILED } }),
       this.prisma.scraperGenerationRun.count({
         where: {
-          status: { in: [GenerationRunStatus.QUEUED, GenerationRunStatus.RUNNING] },
+          status: {
+            in: [GenerationRunStatus.QUEUED, GenerationRunStatus.RUNNING],
+          },
         },
       }),
       this.prisma.userIntegration.count({ where: { is_active: true } }),
@@ -190,10 +196,16 @@ export class DashboardService {
 
   private mergeActivityFeed(
     crawlRuns: Awaited<ReturnType<PrismaService['crawlRun']['findMany']>>,
-    createdHistory: Awaited<ReturnType<PrismaService['propertyHistory']['findMany']>>,
-    removedHistory: Awaited<ReturnType<PrismaService['propertyHistory']['findMany']>>,
+    createdHistory: Awaited<
+      ReturnType<PrismaService['propertyHistory']['findMany']>
+    >,
+    removedHistory: Awaited<
+      ReturnType<PrismaService['propertyHistory']['findMany']>
+    >,
     brokenScrapers: Awaited<ReturnType<PrismaService['scraper']['findMany']>>,
-    generationRuns: Awaited<ReturnType<PrismaService['scraperGenerationRun']['findMany']>>,
+    generationRuns: Awaited<
+      ReturnType<PrismaService['scraperGenerationRun']['findMany']>
+    >,
   ): ActivityFeedItem[] {
     const items: ActivityFeedItem[] = [];
 
@@ -236,7 +248,8 @@ export class DashboardService {
     }
 
     for (const scraper of brokenScrapers) {
-      const agencyName = (scraper as any).source_agency?.name ?? 'Unknown agency';
+      const agencyName =
+        (scraper as any).source_agency?.name ?? 'Unknown agency';
       items.push({
         type: 'scraper_broken',
         timestamp: scraper.updated_at,
@@ -248,7 +261,8 @@ export class DashboardService {
 
     for (const run of generationRuns) {
       const agencyName = (run as any).source_agency?.name ?? 'Unknown agency';
-      const triggerLabel = run.trigger === 'SELF_HEAL' ? 'Self-heal' : 'AI generation';
+      const triggerLabel =
+        run.trigger === 'SELF_HEAL' ? 'Self-heal' : 'AI generation';
       items.push({
         type: 'generation',
         timestamp: run.created_at,

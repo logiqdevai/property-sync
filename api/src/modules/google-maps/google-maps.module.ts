@@ -8,4 +8,4 @@ import { GoogleMapsModule as GoogleMapsUtilsModule } from '@/shared/services/goo
   controllers: [GoogleMapsController],
   providers: [GoogleMapsService],
 })
-export class GoogleMapsModule { }
+export class GoogleMapsModule {}

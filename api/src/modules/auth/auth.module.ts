@@ -8,13 +8,9 @@ import { ResendModule } from '@/integrations/notifications/resend/resend.module'
 import { PasswordResetService } from './services/password-reset.service';
 
 @Module({
-  imports: [
-    PrismaModule,
-    CreateJwtServiceModule,
-    ResendModule,
-  ],
+  imports: [PrismaModule, CreateJwtServiceModule, ResendModule],
   providers: [EmailAuthService, PasswordResetService, JwtStrategy, Logger],
   controllers: [EmailAuthController],
   exports: [PasswordResetService],
 })
-export class AuthModule { }
+export class AuthModule {}

@@ -1,5 +1,12 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
@@ -39,6 +46,22 @@ export class AdminCmsSyncRunsController {
     query: AdminCmsSyncRunQueryType,
   ) {
     return this.cmsSyncRunsService.findAll(query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a single CMS sync run detail' })
+  @ApiResponse({ status: 200, description: 'CMS sync run detail' })
+  @ApiParam({ name: 'id', type: String })
+  findOne(@Param('id') id: string) {
+    return this.cmsSyncRunsService.findOneById(id);
+  }
+
+  @Post(':id/retry')
+  @ApiOperation({ summary: 'Retry a failed CMS sync run' })
+  @ApiResponse({ status: 200, description: 'CMS sync run retried' })
+  @ApiParam({ name: 'id', type: String })
+  retry(@Param('id') id: string) {
+    return this.cmsSyncRunsService.retry(id);
   }
 
   @Get('integrations')

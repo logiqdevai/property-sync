@@ -26,7 +26,8 @@ export class SetEstateWebSessionDto {
   csrf?: string;
 
   @ApiPropertyOptional({
-    description: 'EstateWeb base URL override (defaults to integration target base URL)',
+    description:
+      'EstateWeb base URL override (defaults to integration target base URL)',
     example: 'https://app.estateweb.gr',
   })
   @IsOptional()

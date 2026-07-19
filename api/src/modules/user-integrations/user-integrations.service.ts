@@ -11,7 +11,10 @@ import {
   applyCredentialFields,
   validateCredentialsForAuthType,
 } from '@/modules/integration-targets/utils/credential-fields.util';
-import { assertWebhookKeyAllowed, validateAiIntegrationWebhookKey } from '@/modules/integration-targets/utils/ai-integration.util';
+import {
+  assertWebhookKeyAllowed,
+  validateAiIntegrationWebhookKey,
+} from '@/modules/integration-targets/utils/ai-integration.util';
 import { maskUserIntegration } from '@/modules/integration-targets/utils/mask-credentials.util';
 import {
   CreateUserIntegrationDto,
@@ -173,7 +176,11 @@ export class UserIntegrationsService {
 
     validateCredentialsForAuthType(target.auth_type, dto);
     assertWebhookKeyAllowed(target.integration_type, dto.webhook_key);
-    validateAiIntegrationWebhookKey(target.integration_type, target.auth_type, dto);
+    validateAiIntegrationWebhookKey(
+      target.integration_type,
+      target.auth_type,
+      dto,
+    );
 
     const existingCount = target.allow_multiple
       ? await this.prisma.userIntegration.count({
@@ -284,7 +291,8 @@ export class UserIntegrationsService {
     }
 
     if (
-      connection.integration_target.integration_type === IntegrationType.ESTATEWEB &&
+      connection.integration_target.integration_type ===
+        IntegrationType.ESTATEWEB &&
       userRole !== AuthRole.ADMIN &&
       userRole !== AuthRole.SUPER_ADMIN
     ) {
@@ -324,7 +332,9 @@ export class UserIntegrationsService {
     isDefault: boolean,
   ) {
     if (userRole !== AuthRole.ADMIN && userRole !== AuthRole.SUPER_ADMIN) {
-      throw new ForbiddenException('Only admins can change the default integration');
+      throw new ForbiddenException(
+        'Only admins can change the default integration',
+      );
     }
 
     const connection = await this.findOwnedConnection(userId, connectionId);

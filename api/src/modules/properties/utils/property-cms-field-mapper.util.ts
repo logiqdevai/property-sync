@@ -134,16 +134,25 @@ export function mergeCmsFieldsFromNormalizedRow(
   const fields = new Map<number, CmsPropertyFieldEntry>();
 
   for (const field of aiFields ?? []) {
-    if (field?.id == null || field.value == null || field.value === '') continue;
+    if (field?.id == null || field.value == null || field.value === '')
+      continue;
     fields.set(field.id, { id: field.id, value: field.value });
   }
 
   if (row.construction_year != null) {
-    upsertField(fields, ESTATEWEB_FIELD_CONSTRUCTION_YEAR, String(row.construction_year));
+    upsertField(
+      fields,
+      ESTATEWEB_FIELD_CONSTRUCTION_YEAR,
+      String(row.construction_year),
+    );
   }
 
   if (row.renovation_year != null) {
-    upsertField(fields, ESTATEWEB_FIELD_RENOVATION_YEAR, String(row.renovation_year));
+    upsertField(
+      fields,
+      ESTATEWEB_FIELD_RENOVATION_YEAR,
+      String(row.renovation_year),
+    );
   }
 
   if (row.bedrooms != null) {

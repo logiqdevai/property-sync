@@ -1,5 +1,21 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
@@ -19,75 +35,89 @@ import { Agency } from './entities/agency.entity';
 @UseGuards(JwtGuard, RolesGuard)
 @Roles(AuthRole.ADMIN, AuthRole.SUPPORT)
 export class AgenciesController {
-    constructor(private readonly agenciesService: AgenciesService) { }
+  constructor(private readonly agenciesService: AgenciesService) {}
 
-    @Get()
-    @ApiOperation({ summary: 'List agencies (paginated, searchable, filterable)' })
-    @ApiResponse({ status: 200, description: 'Paginated agency list' })
-    @ApiQuery({ name: 'page', required: false, type: Number })
-    @ApiQuery({ name: 'limit', required: false, type: Number })
-    @ApiQuery({ name: 'search', required: false, type: String })
-    @ApiQuery({ name: 'country', required: false, type: String })
-    @ApiQuery({ name: 'city', required: false, type: String })
-    @ApiQuery({ name: 'is_visible', required: false, enum: ['true', 'false'] })
-    @ApiQuery({ name: 'is_enabled', required: false, enum: ['true', 'false'] })
-    findAll(@Query(new ZodValidationPipe(AgencyQuerySchema)) query: AgencyQueryType) {
-        return this.agenciesService.findAll(query);
-    }
+  @Get()
+  @ApiOperation({
+    summary: 'List agencies (paginated, searchable, filterable)',
+  })
+  @ApiResponse({ status: 200, description: 'Paginated agency list' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'country', required: false, type: String })
+  @ApiQuery({ name: 'city', required: false, type: String })
+  @ApiQuery({ name: 'is_visible', required: false, enum: ['true', 'false'] })
+  @ApiQuery({ name: 'is_enabled', required: false, enum: ['true', 'false'] })
+  findAll(
+    @Query(new ZodValidationPipe(AgencyQuerySchema)) query: AgencyQueryType,
+  ) {
+    return this.agenciesService.findAll(query);
+  }
 
-    @Get(':id')
-    @ApiOperation({ summary: 'Get one agency with related counts' })
-    @ApiResponse({ status: 200, type: Agency })
-    @ApiResponse({ status: 404, description: 'Agency not found' })
-    findOne(@Param('id') id: string) {
-        return this.agenciesService.findOne(id);
-    }
+  @Get(':id')
+  @ApiOperation({ summary: 'Get one agency with related counts' })
+  @ApiResponse({ status: 200, type: Agency })
+  @ApiResponse({ status: 404, description: 'Agency not found' })
+  findOne(@Param('id') id: string) {
+    return this.agenciesService.findOne(id);
+  }
 
-    @Post()
-    @Roles(AuthRole.ADMIN)
-    @ApiOperation({ summary: 'Create an agency' })
-    @ApiResponse({ status: 201, type: Agency })
-    @ApiResponse({ status: 409, description: 'base_url already exists' })
-    create(@Body() dto: CreateAgencyDto) {
-        return this.agenciesService.create(dto);
-    }
+  @Post()
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Create an agency' })
+  @ApiResponse({ status: 201, type: Agency })
+  @ApiResponse({ status: 409, description: 'base_url already exists' })
+  create(@Body() dto: CreateAgencyDto) {
+    return this.agenciesService.create(dto);
+  }
 
-    @Patch(':id/trackers/:userId')
-    @Roles(AuthRole.ADMIN)
-    @ApiOperation({ summary: "Update admin-only tracker settings for a user's tracked agency" })
-    @ApiResponse({ status: 200, description: 'Updated UserTrackedAgency' })
-    @ApiResponse({ status: 404, description: 'User does not track this agency' })
-    updateTrackerAdminSettings(
-        @Param('id') id: string,
-        @Param('userId') userId: string,
-        @Body() dto: UpdateTrackerAdminSettingsDto,
-    ) {
-        return this.agenciesService.updateTrackerAdminSettings(id, userId, dto);
-    }
+  @Patch(':id/trackers/:userId')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary: "Update admin-only tracker settings for a user's tracked agency",
+  })
+  @ApiResponse({ status: 200, description: 'Updated UserTrackedAgency' })
+  @ApiResponse({ status: 404, description: 'User does not track this agency' })
+  updateTrackerAdminSettings(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Body() dto: UpdateTrackerAdminSettingsDto,
+  ) {
+    return this.agenciesService.updateTrackerAdminSettings(id, userId, dto);
+  }
 
-    @Patch(':id')
-    @Roles(AuthRole.ADMIN)
-    @ApiOperation({ summary: 'Update an agency' })
-    @ApiResponse({ status: 200, type: Agency })
-    @ApiResponse({ status: 404, description: 'Agency not found' })
-    update(@Param('id') id: string, @Body() dto: UpdateAgencyDto) {
-        return this.agenciesService.update(id, dto);
-    }
+  @Patch(':id')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Update an agency' })
+  @ApiResponse({ status: 200, type: Agency })
+  @ApiResponse({ status: 404, description: 'Agency not found' })
+  update(@Param('id') id: string, @Body() dto: UpdateAgencyDto) {
+    return this.agenciesService.update(id, dto);
+  }
 
-    @Patch(':id/visibility')
-    @Roles(AuthRole.ADMIN)
-    @ApiOperation({ summary: 'Update agency visibility flags' })
-    @ApiResponse({ status: 200, type: Agency })
-    updateVisibility(@Param('id') id: string, @Body() dto: UpdateAgencyVisibilityDto) {
-        return this.agenciesService.updateVisibility(id, dto);
-    }
+  @Patch(':id/visibility')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Update agency visibility flags' })
+  @ApiResponse({ status: 200, type: Agency })
+  updateVisibility(
+    @Param('id') id: string,
+    @Body() dto: UpdateAgencyVisibilityDto,
+  ) {
+    return this.agenciesService.updateVisibility(id, dto);
+  }
 
-    @Delete(':id')
-    @Roles(AuthRole.ADMIN)
-    @ApiOperation({ summary: 'Delete an agency (only if no scrapers/crawl runs exist)' })
-    @ApiResponse({ status: 200, description: 'Deleted' })
-    @ApiResponse({ status: 409, description: 'Agency has dependent scrapers or crawl runs' })
-    remove(@Param('id') id: string) {
-        return this.agenciesService.remove(id);
-    }
+  @Delete(':id')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary: 'Delete an agency (only if no scrapers/crawl runs exist)',
+  })
+  @ApiResponse({ status: 200, description: 'Deleted' })
+  @ApiResponse({
+    status: 409,
+    description: 'Agency has dependent scrapers or crawl runs',
+  })
+  remove(@Param('id') id: string) {
+    return this.agenciesService.remove(id);
+  }
 }

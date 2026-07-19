@@ -68,7 +68,9 @@ export class ScraperConfigVerificationService {
         const counts: Record<string, number> = {};
         document.querySelectorAll('*').forEach((el) => {
           const cls =
-            typeof el.className === 'string' ? el.className.trim().split(/\s+/)[0] : '';
+            typeof el.className === 'string'
+              ? el.className.trim().split(/\s+/)[0]
+              : '';
           if (!cls) return;
           const key = `.${cls}`;
           counts[key] = (counts[key] ?? 0) + 1;
@@ -90,7 +92,8 @@ export class ScraperConfigVerificationService {
     const firstCard = page.locator(config.listing_selector).first();
 
     for (const [field, rawDef] of Object.entries(config.fields ?? {})) {
-      const def: FieldDef = typeof rawDef === 'string' ? { selector: rawDef } : rawDef;
+      const def: FieldDef =
+        typeof rawDef === 'string' ? { selector: rawDef } : rawDef;
       const selector = def?.selector;
       const type = def?.type ?? 'text';
 
@@ -108,7 +111,9 @@ export class ScraperConfigVerificationService {
         } else if (type === 'src') {
           value = await el.getAttribute('src', { timeout: VERIFY_TIMEOUT_MS });
         } else if (type === 'background_image') {
-          const style = (await el.getAttribute('style', { timeout: VERIFY_TIMEOUT_MS })) ?? '';
+          const style =
+            (await el.getAttribute('style', { timeout: VERIFY_TIMEOUT_MS })) ??
+            '';
           const m = style.match(/background-image:\s*url\(['"]?(.*?)['"]?\)/);
           value = m ? m[1] : null;
         } else {
@@ -119,7 +124,10 @@ export class ScraperConfigVerificationService {
           const cardText = await firstCard
             .textContent({ timeout: VERIFY_TIMEOUT_MS })
             .catch(() => '');
-          const hint = (cardText ?? '').replace(/\s+/g, ' ').trim().slice(0, 200);
+          const hint = (cardText ?? '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 200);
           errors.push(
             `field "${field}": selector "${selector}" (type: ${type}) returned empty. Card text: "${hint}"`,
           );
@@ -216,13 +224,18 @@ export class ScraperConfigVerificationService {
           detailUrl = new URL(detailUrl, page.url()).href;
         }
       } catch (e) {
-        errors.push(`Cannot get detail URL for verification: ${(e as Error).message.slice(0, 80)}`);
+        errors.push(
+          `Cannot get detail URL for verification: ${(e as Error).message.slice(0, 80)}`,
+        );
       }
 
       if (detailUrl) {
         const detailPage = await context.newPage();
         try {
-          await detailPage.goto(detailUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
+          await detailPage.goto(detailUrl, {
+            waitUntil: 'domcontentloaded',
+            timeout: 20000,
+          });
           await detailPage.waitForTimeout(1500);
 
           if (dp.image_selector) {
@@ -231,11 +244,17 @@ export class ScraperConfigVerificationService {
               let imgVal: string | null = null;
               if ((dp.image_type ?? 'src') === 'background_image') {
                 const style =
-                  (await imgEl.getAttribute('style', { timeout: VERIFY_TIMEOUT_MS })) ?? '';
-                const m = style.match(/background-image:\s*url\(['"]?(.*?)['"]?\)/);
+                  (await imgEl.getAttribute('style', {
+                    timeout: VERIFY_TIMEOUT_MS,
+                  })) ?? '';
+                const m = style.match(
+                  /background-image:\s*url\(['"]?(.*?)['"]?\)/,
+                );
                 imgVal = m ? m[1] : null;
               } else {
-                imgVal = await imgEl.getAttribute('src', { timeout: VERIFY_TIMEOUT_MS });
+                imgVal = await imgEl.getAttribute('src', {
+                  timeout: VERIFY_TIMEOUT_MS,
+                });
               }
               if (!imgVal) {
                 errors.push(

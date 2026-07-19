@@ -1,7 +1,7 @@
 import {
-    Injectable,
-    NotFoundException,
-    UnauthorizedException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CreateJwtService } from '@/shared/utils/jwt/jwt.service';
@@ -15,97 +15,98 @@ export type PasswordResetReason = 'invite' | 'forgot';
 
 @Injectable()
 export class PasswordResetService {
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly jwtService: CreateJwtService,
-        private readonly mailService: ResendMailService,
-    ) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: CreateJwtService,
+    private readonly mailService: ResendMailService,
+  ) {}
 
-    async requestPasswordReset(email: string) {
-        const user = await this.prisma.user.findUnique({
-            where: { email },
-        });
+  async requestPasswordReset(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
 
-        if (user) {
-            await this.sendPasswordResetEmail(user.id, user.email, 'forgot');
-        }
-
-        return {
-            message: 'If an account exists for this email, a password reset link has been sent.',
-        };
+    if (user) {
+      await this.sendPasswordResetEmail(user.id, user.email, 'forgot');
     }
 
-    async sendPasswordResetForUserId(userId: string) {
-        const user = await this.prisma.user.findUnique({
-            where: { id: userId },
-        });
+    return {
+      message:
+        'If an account exists for this email, a password reset link has been sent.',
+    };
+  }
 
-        if (!user) {
-            throw new NotFoundException('User not found');
-        }
+  async sendPasswordResetForUserId(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
 
-        await this.sendPasswordResetEmail(user.id, user.email, 'forgot');
-
-        return {
-            message: 'Password reset link sent.',
-        };
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
-    async validatePasswordResetToken(token: string) {
-        await this.jwtService.verifyPasswordResetToken(token);
-        return { valid: true };
+    await this.sendPasswordResetEmail(user.id, user.email, 'forgot');
+
+    return {
+      message: 'Password reset link sent.',
+    };
+  }
+
+  async validatePasswordResetToken(token: string) {
+    await this.jwtService.verifyPasswordResetToken(token);
+    return { valid: true };
+  }
+
+  async resetPassword(token: string, password: string) {
+    const payload = await this.jwtService.verifyPasswordResetToken(token);
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.id },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid token');
     }
 
-    async resetPassword(token: string, password: string) {
-        const payload = await this.jwtService.verifyPasswordResetToken(token);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-        const user = await this.prisma.user.findUnique({
-            where: { id: payload.id },
-        });
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
 
-        if (!user) {
-            throw new UnauthorizedException('Invalid token');
-        }
+    return {
+      message: 'Password updated successfully.',
+    };
+  }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+  async sendPasswordResetEmail(
+    userId: string,
+    email: string,
+    reason: PasswordResetReason,
+  ) {
+    const token = await this.jwtService.signPasswordResetToken(userId);
+    const resetLink = `${AppUrls.setPassword}?token=${encodeURIComponent(token)}`;
+    const isInvite = reason === 'invite';
+    await this.mailService.sendEmail({
+      to: email,
+      from: EmailConfig.email_addresses.alert,
+      subject: isInvite
+        ? 'Set up your Property Sync password'
+        : EmailConfig.templates.password_reset.subject,
+      template_id: EmailConfig.templates.password_reset.template_id,
+      dynamic_template_data: {
+        resetLink,
+        headline: isInvite ? 'Welcome to Property Sync' : 'Reset your password',
+        intro: isInvite
+          ? 'An account was created for you. Use the button below to choose your password and sign in.'
+          : 'We received a request to reset your password. Use the button below to choose a new one.',
+        buttonLabel: isInvite ? 'Set password' : 'Reset password',
+      },
+    });
+  }
 
-        await this.prisma.user.update({
-            where: { id: user.id },
-            data: { password: hashedPassword },
-        });
-
-        return {
-            message: 'Password updated successfully.',
-        };
-    }
-
-    async sendPasswordResetEmail(
-        userId: string,
-        email: string,
-        reason: PasswordResetReason,
-    ) {
-        const token = await this.jwtService.signPasswordResetToken(userId);
-        const resetLink = `${AppUrls.setPassword}?token=${encodeURIComponent(token)}`;
-        const isInvite = reason === 'invite';
-        await this.mailService.sendEmail({
-            to: email,
-            from: EmailConfig.email_addresses.alert,
-            subject: isInvite
-                ? 'Set up your Property Sync password'
-                : EmailConfig.templates.password_reset.subject,
-            template_id: EmailConfig.templates.password_reset.template_id,
-            dynamic_template_data: {
-                resetLink,
-                headline: isInvite ? 'Welcome to Property Sync' : 'Reset your password',
-                intro: isInvite
-                    ? 'An account was created for you. Use the button below to choose your password and sign in.'
-                    : 'We received a request to reset your password. Use the button below to choose a new one.',
-                buttonLabel: isInvite ? 'Set password' : 'Reset password',
-            },
-        });
-    }
-
-    async createPlaceholderPasswordHash() {
-        return bcrypt.hash(randomBytes(32).toString('hex'), 10);
-    }
+  async createPlaceholderPasswordHash() {
+    return bcrypt.hash(randomBytes(32).toString('hex'), 10);
+  }
 }

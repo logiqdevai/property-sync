@@ -1,5 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { DiagnosticsMode, ScraperStatus, ScraperHealth } from 'generated/prisma';
+import {
+  DiagnosticsMode,
+  ScraperStatus,
+  ScraperHealth,
+} from 'generated/prisma';
 import { ScraperVersion } from './scraper-version.entity';
 
 export class Scraper {
@@ -27,7 +31,7 @@ export class Scraper {
   @ApiProperty({
     enum: DiagnosticsMode,
     example: DiagnosticsMode.PRODUCTION,
-    description: 'Debugging depth for this scraper\'s crawl runs',
+    description: "Debugging depth for this scraper's crawl runs",
   })
   diagnostics_mode: DiagnosticsMode;
 

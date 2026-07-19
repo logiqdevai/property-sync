@@ -74,7 +74,11 @@ export class UserTrackedAgenciesController {
     @Param('agencyId') agencyId: string,
     @Body() dto: TrackAgencyDto,
   ) {
-    return this.userTrackedAgenciesService.updateTracking(userId, agencyId, dto);
+    return this.userTrackedAgenciesService.updateTracking(
+      userId,
+      agencyId,
+      dto,
+    );
   }
 
   @Delete(':agencyId/track')
@@ -103,8 +107,14 @@ export class UserTrackedAgenciesController {
   @Put(':agencyId/track/integration')
   @ApiOperation({ summary: 'Link an integration to a tracked agency (1:1)' })
   @ApiResponse({ status: 200, description: 'Integration linked' })
-  @ApiResponse({ status: 404, description: 'Tracking or integration not found' })
-  @ApiResponse({ status: 409, description: 'Integration already linked elsewhere' })
+  @ApiResponse({
+    status: 404,
+    description: 'Tracking or integration not found',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Integration already linked elsewhere',
+  })
   linkIntegration(
     @CurrentUser('id') userId: string,
     @Param('agencyId') agencyId: string,

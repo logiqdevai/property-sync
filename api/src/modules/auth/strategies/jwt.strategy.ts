@@ -6,24 +6,22 @@ import { PASSWORD_RESET_PURPOSE } from '@/modules/auth/constants/password-reset.
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-    constructor(
-        config: ConfigService,
-    ) {
-        super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            secretOrKey: config.get('JWT_SECRET'),
-        });
+  constructor(config: ConfigService) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: config.get('JWT_SECRET'),
+    });
+  }
+
+  async validate(payload: { id: string; purpose?: string }) {
+    if (payload.purpose === PASSWORD_RESET_PURPOSE) {
+      throw new UnauthorizedException('Invalid token');
     }
 
-    async validate(payload: { id: string; purpose?: string }) {
-        if (payload.purpose === PASSWORD_RESET_PURPOSE) {
-            throw new UnauthorizedException('Invalid token');
-        }
-
-        if (payload.id) {
-            return payload;
-        }
-
-        throw new Error('Invalid token');
+    if (payload.id) {
+      return payload;
     }
+
+    throw new Error('Invalid token');
+  }
 }

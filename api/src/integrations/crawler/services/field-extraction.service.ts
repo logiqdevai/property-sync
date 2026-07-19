@@ -26,10 +26,14 @@ export class FieldExtractionService {
       const el = selector ? element.locator(selector).first() : element;
 
       if (type === 'href') {
-        return (await el.getAttribute('href', { timeout: FIELD_TIMEOUT })) ?? null;
+        return (
+          (await el.getAttribute('href', { timeout: FIELD_TIMEOUT })) ?? null
+        );
       }
       if (type === 'src') {
-        return (await el.getAttribute('src', { timeout: FIELD_TIMEOUT })) ?? null;
+        return (
+          (await el.getAttribute('src', { timeout: FIELD_TIMEOUT })) ?? null
+        );
       }
       if (type === 'background_image') {
         const style =

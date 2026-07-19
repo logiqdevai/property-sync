@@ -30,8 +30,8 @@ export const ESTATEWEB_INIT_LANGUAGES: EstateWebInitLanguage[] = [
 export type EstateWebBooleanFlag = 0 | 1;
 
 export const ESTATEWEB_PROPERTY_TYPE_LEAF_IDS = [
-  2, 3, 11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31,
-  32, 33, 901, 902, 1000,
+  2, 3, 11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32,
+  33, 901, 902, 1000,
 ] as const;
 
 export type EstateWebPropertyTypeId =

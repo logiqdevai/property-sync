@@ -42,7 +42,9 @@ export class UserIntegrationsController {
   ) {}
 
   @Get('targets')
-  @ApiOperation({ summary: 'List visible integration targets for the current user' })
+  @ApiOperation({
+    summary: 'List visible integration targets for the current user',
+  })
   @ApiResponse({ status: 200, type: [AvailableIntegrationTargetEntity] })
   findVisibleTargets(@CurrentUser('id') userId: string) {
     return this.userIntegrationsService.findVisibleTargets(userId);

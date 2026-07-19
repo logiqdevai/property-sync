@@ -15,7 +15,9 @@ import {
 export class TelegramService {
   constructor(private readonly telegramConfig: TelegramConfig) {}
 
-  async sendNotification(notification: TelegramNotificationPayload): Promise<void> {
+  async sendNotification(
+    notification: TelegramNotificationPayload,
+  ): Promise<void> {
     if (!this.telegramConfig.isConfigured()) {
       return;
     }
@@ -48,22 +50,28 @@ export class TelegramService {
       return;
     }
 
-    const response = await fetch(this.telegramConfig.getMethodUrl('sendMessage'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    const response = await fetch(
+      this.telegramConfig.getMethodUrl('sendMessage'),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      },
+    );
 
     const body = (await response.json()) as TelegramApiResponse;
 
     if (!response.ok || !body.ok) {
       throw new BadGatewayException(
-        body.description || `Telegram sendMessage failed with status ${response.status}`,
+        body.description ||
+          `Telegram sendMessage failed with status ${response.status}`,
       );
     }
   }
 
-  private formatNotification(notification: TelegramNotificationPayload): string {
+  private formatNotification(
+    notification: TelegramNotificationPayload,
+  ): string {
     const lines = [
       `<b>${this.escapeHtml(notification.severity)}</b> · ${this.escapeHtml(notification.type)}`,
       `<b>${this.escapeHtml(notification.title)}</b>`,
@@ -71,15 +79,21 @@ export class TelegramService {
     ];
 
     if (notification.source_agency_id) {
-      lines.push(`Agency: <code>${this.escapeHtml(notification.source_agency_id)}</code>`);
+      lines.push(
+        `Agency: <code>${this.escapeHtml(notification.source_agency_id)}</code>`,
+      );
     }
 
     if (notification.scraper_id) {
-      lines.push(`Scraper: <code>${this.escapeHtml(notification.scraper_id)}</code>`);
+      lines.push(
+        `Scraper: <code>${this.escapeHtml(notification.scraper_id)}</code>`,
+      );
     }
 
     if (notification.crawl_run_id) {
-      lines.push(`Crawl run: <code>${this.escapeHtml(notification.crawl_run_id)}</code>`);
+      lines.push(
+        `Crawl run: <code>${this.escapeHtml(notification.crawl_run_id)}</code>`,
+      );
     }
 
     return lines.join('\n');

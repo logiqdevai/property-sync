@@ -114,7 +114,9 @@ export interface NormalizationInputRow {
   detail_features: string[] | null;
 }
 
-export function sanitizeRawDescription(text: string | null | undefined): string | null {
+export function sanitizeRawDescription(
+  text: string | null | undefined,
+): string | null {
   if (!text) return null;
   const cleaned = text
     .split('')
@@ -180,6 +182,8 @@ export function buildNormalizationInput(
   });
 }
 
-export function buildNormalizationDynamicPrompt(input: NormalizationInputRow[]): string {
+export function buildNormalizationDynamicPrompt(
+  input: NormalizationInputRow[],
+): string {
   return `## Input listings:\n${JSON.stringify(input, null, 2)}`;
 }

@@ -51,7 +51,11 @@ export class IntegrationTargetsController {
   @ApiResponse({ status: 200, description: 'Paginated integration targets' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'integration_type', required: false, enum: IntegrationType })
+  @ApiQuery({
+    name: 'integration_type',
+    required: false,
+    enum: IntegrationType,
+  })
   @ApiQuery({ name: 'auth_type', required: false, enum: AuthType })
   @ApiQuery({ name: 'is_visible', required: false, enum: ['true', 'false'] })
   @ApiQuery({ name: 'is_enabled', required: false, enum: ['true', 'false'] })
@@ -117,7 +121,11 @@ export class IntegrationTargetsController {
     @Param('userIntegrationId') userIntegrationId: string,
     @Body() dto: UpdateUserIntegrationAccountDto,
   ) {
-    return this.integrationTargetsService.updateAccount(id, userIntegrationId, dto);
+    return this.integrationTargetsService.updateAccount(
+      id,
+      userIntegrationId,
+      dto,
+    );
   }
 
   @Delete(':id')

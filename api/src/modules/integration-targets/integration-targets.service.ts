@@ -17,7 +17,10 @@ import {
   applyCredentialFields,
   validateCredentialsForAuthType,
 } from './utils/credential-fields.util';
-import { assertWebhookKeyAllowed, validateAiIntegrationWebhookKey } from './utils/ai-integration.util';
+import {
+  assertWebhookKeyAllowed,
+  validateAiIntegrationWebhookKey,
+} from './utils/ai-integration.util';
 import { maskUserIntegration } from './utils/mask-credentials.util';
 
 @Injectable()
@@ -26,7 +29,9 @@ export class IntegrationTargetsService {
 
   async findAll(query: IntegrationTargetQueryType) {
     const where = {
-      ...(query.integration_type && { integration_type: query.integration_type }),
+      ...(query.integration_type && {
+        integration_type: query.integration_type,
+      }),
       ...(query.auth_type && { auth_type: query.auth_type }),
       ...(query.is_visible !== undefined && { is_visible: query.is_visible }),
       ...(query.is_enabled !== undefined && { is_enabled: query.is_enabled }),
@@ -94,7 +99,10 @@ export class IntegrationTargetsService {
     });
   }
 
-  async updateVisibility(id: string, dto: UpdateIntegrationTargetVisibilityDto) {
+  async updateVisibility(
+    id: string,
+    dto: UpdateIntegrationTargetVisibilityDto,
+  ) {
     await this.ensureTargetExists(id);
 
     return this.prisma.integrationTarget.update({
@@ -138,7 +146,11 @@ export class IntegrationTargetsService {
 
     validateCredentialsForAuthType(target.auth_type, dto);
     assertWebhookKeyAllowed(target.integration_type, dto.webhook_key);
-    validateAiIntegrationWebhookKey(target.integration_type, target.auth_type, dto);
+    validateAiIntegrationWebhookKey(
+      target.integration_type,
+      target.auth_type,
+      dto,
+    );
 
     const integration = await this.prisma.userIntegration.create({
       data: {
@@ -193,10 +205,7 @@ export class IntegrationTargetsService {
     return this.updateAccountRecord(integration.id, updateData);
   }
 
-  private async updateAccountRecord(
-    id: string,
-    data: Record<string, unknown>,
-  ) {
+  private async updateAccountRecord(id: string, data: Record<string, unknown>) {
     const integration = await this.prisma.userIntegration.update({
       where: { id },
       data,
@@ -223,7 +232,10 @@ export class IntegrationTargetsService {
     return target;
   }
 
-  private async ensureAccountOnTarget(targetId: string, userIntegrationId: string) {
+  private async ensureAccountOnTarget(
+    targetId: string,
+    userIntegrationId: string,
+  ) {
     const integration = await this.prisma.userIntegration.findFirst({
       where: {
         id: userIntegrationId,

@@ -2,10 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Anthropic from '@anthropic-ai/sdk';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import {
-  GenerationRunStatus,
-  Prisma,
-} from 'generated/prisma';
+import { GenerationRunStatus, Prisma } from 'generated/prisma';
 import { ComputerUseClientService } from './services/computer-use-client.service';
 import { PlaywrightDriverService } from './services/playwright-driver.service';
 import { ScraperConfigVerificationService } from './services/scraper-config-verification.service';
@@ -40,7 +37,10 @@ export class ComputerUseOrchestratorService {
     private readonly screenshotStorage: ScreenshotStorageService,
   ) {}
 
-  async run(generationRunId: string, options: GenerationRunOptions = {}): Promise<void> {
+  async run(
+    generationRunId: string,
+    options: GenerationRunOptions = {},
+  ): Promise<void> {
     const run = await this.prisma.scraperGenerationRun.findUniqueOrThrow({
       where: { id: generationRunId },
       include: {
@@ -58,7 +58,8 @@ export class ComputerUseOrchestratorService {
     });
 
     const model =
-      this.configService.get<string>('SCRAPER_GENERATION_MODEL') ?? DEFAULT_GENERATION_MODEL;
+      this.configService.get<string>('SCRAPER_GENERATION_MODEL') ??
+      DEFAULT_GENERATION_MODEL;
     const targetUrl = run.source_agency.base_url;
     const systemPrompt = this.buildSystemPrompt(run.prompt);
 
@@ -80,7 +81,10 @@ export class ComputerUseOrchestratorService {
 
         const resumeParts = [
           buildStepsSummaryText(run.steps),
-          this.buildRetryContext(options.retryError ?? run.error_message, options.retryPrompt),
+          this.buildRetryContext(
+            options.retryError ?? run.error_message,
+            options.retryPrompt,
+          ),
         ].filter(Boolean);
 
         messages.push({
@@ -118,7 +122,10 @@ export class ComputerUseOrchestratorService {
           ],
         });
 
-        const requestMessages = compactImageMessages(messages, MAX_IMAGE_TURNS_IN_CONTEXT);
+        const requestMessages = compactImageMessages(
+          messages,
+          MAX_IMAGE_TURNS_IN_CONTEXT,
+        );
         const { rawText } = await this.computerUseClient.sendStep(
           requestMessages,
           systemPrompt,
@@ -132,7 +139,8 @@ export class ComputerUseOrchestratorService {
         } catch {
           messages.push({
             role: 'user',
-            content: 'Your response was not valid JSON. Return ONLY a JSON object, no other text.',
+            content:
+              'Your response was not valid JSON. Return ONLY a JSON object, no other text.',
           });
           stepIndex += 1;
           continue;
@@ -145,7 +153,11 @@ export class ComputerUseOrchestratorService {
             action_type: mapActionType(action.action),
             action_payload: (action.action === 'done'
               ? { config: action.config }
-              : { selector: action.selector, url: action.url, text: action.text }) as Prisma.InputJsonValue,
+              : {
+                  selector: action.selector,
+                  url: action.url,
+                  text: action.text,
+                }) as Prisma.InputJsonValue,
             screenshot_before_id: screenshotBeforeId,
             model_reasoning: action.reasoning ?? null,
           },
@@ -210,8 +222,13 @@ export class ComputerUseOrchestratorService {
         stepIndex += 1;
       }
     } catch (error) {
-      failureReason = error instanceof Error ? error.message : 'Unknown error during generation run';
-      this.logger.error(`generation run ${generationRunId} failed: ${failureReason}`);
+      failureReason =
+        error instanceof Error
+          ? error.message
+          : 'Unknown error during generation run';
+      this.logger.error(
+        `generation run ${generationRunId} failed: ${failureReason}`,
+      );
     } finally {
       await driver.close();
     }
@@ -243,11 +260,16 @@ export class ComputerUseOrchestratorService {
     return `${GENERATION_SYSTEM_PROMPT}\n\n## Additional instructions:\n${prompt.trim()}`;
   }
 
-  private buildRetryContext(retryError?: string | null, retryPrompt?: string): string | null {
+  private buildRetryContext(
+    retryError?: string | null,
+    retryPrompt?: string,
+  ): string | null {
     const parts: string[] = [];
 
     if (retryError?.trim()) {
-      parts.push(`The previous attempt failed with this error:\n${retryError.trim()}`);
+      parts.push(
+        `The previous attempt failed with this error:\n${retryError.trim()}`,
+      );
     }
 
     if (retryPrompt?.trim()) {
@@ -258,7 +280,9 @@ export class ComputerUseOrchestratorService {
       return 'Continue the generation from the current browser state. Do not restart from scratch.';
     }
 
-    parts.push('Continue from the current browser state. Do not restart from scratch.');
+    parts.push(
+      'Continue from the current browser state. Do not restart from scratch.',
+    );
     return parts.join('\n\n');
   }
 }

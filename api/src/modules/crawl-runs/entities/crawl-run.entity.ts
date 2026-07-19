@@ -29,22 +29,39 @@ export class CrawlRun {
   @ApiProperty()
   total_found: number;
 
-  @ApiProperty({ description: 'Of total_found, how many were brand-new listings this scrape' })
+  @ApiProperty({
+    description: 'Of total_found, how many were brand-new listings this scrape',
+  })
   total_new_listings: number;
 
-  @ApiProperty({ description: 'Of total_found, how many were already-known listings re-seen this scrape' })
+  @ApiProperty({
+    description:
+      'Of total_found, how many were already-known listings re-seen this scrape',
+  })
   total_refreshed_listings: number;
 
-  @ApiProperty({ description: 'Sum of cms_sync_runs.total_created across every user for this run' })
+  @ApiProperty({
+    description:
+      'Sum of cms_sync_runs.total_created across every user for this run',
+  })
   total_created: number;
 
-  @ApiProperty({ description: 'Sum of cms_sync_runs.total_updated across every user for this run' })
+  @ApiProperty({
+    description:
+      'Sum of cms_sync_runs.total_updated across every user for this run',
+  })
   total_updated: number;
 
-  @ApiProperty({ description: 'Sum of cms_sync_runs.total_removed across every user for this run' })
+  @ApiProperty({
+    description:
+      'Sum of cms_sync_runs.total_removed across every user for this run',
+  })
   total_removed: number;
 
-  @ApiProperty({ description: 'Sum of cms_sync_runs.total_failed across every user for this run' })
+  @ApiProperty({
+    description:
+      'Sum of cms_sync_runs.total_failed across every user for this run',
+  })
   total_failed: number;
 
   @ApiProperty({ nullable: true })

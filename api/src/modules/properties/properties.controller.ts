@@ -115,7 +115,10 @@ export class PropertiesController {
     summary: 'Keep one property per duplicate group and delete the rest',
   })
   @ApiResponse({ status: 200, description: 'Duplicate group members deduped' })
-  @ApiResponse({ status: 400, description: 'No multi-member groups in selection' })
+  @ApiResponse({
+    status: 400,
+    description: 'No multi-member groups in selection',
+  })
   @ApiResponse({ status: 404, description: 'One or more properties not found' })
   dedupeGroups(@Body() dto: DeletePropertiesDto) {
     return this.propertiesService.dedupeGroups(dto.property_ids);

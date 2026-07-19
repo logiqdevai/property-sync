@@ -59,7 +59,8 @@ export class DetailEnrichmentService {
       for (let j = 0; j < batch.length; j++) {
         const item = batch[j];
         const detail = results[j];
-        const listingImages = (item.raw._all_images as string[] | undefined) ?? [];
+        const listingImages =
+          (item.raw._all_images as string[] | undefined) ?? [];
         item.raw._all_images = [
           ...new Set([...detail.images, ...listingImages]),
         ];
@@ -99,8 +100,7 @@ export class DetailEnrichmentService {
       raw_html_path: null,
     };
 
-    const { context, page } =
-      await this.stealthBrowserService.newStealthPage();
+    const { context, page } = await this.stealthBrowserService.newStealthPage();
 
     try {
       const response = await page.goto(item.source_url, {
@@ -232,10 +232,7 @@ export class DetailEnrichmentService {
             const anchor = node.querySelector('a');
             const text = cleanText(node.textContent);
             if (!text || text.length > 80) return;
-            if (
-              anchor &&
-              cleanText(anchor.textContent) === text
-            ) {
+            if (anchor && cleanText(anchor.textContent) === text) {
               return;
             }
             const match = text.match(/^(.{1,50}?)\s*[:：]\s*(.+)$/);

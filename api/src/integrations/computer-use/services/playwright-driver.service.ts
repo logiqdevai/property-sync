@@ -19,7 +19,10 @@ export class PlaywrightDriverService {
       viewport: { width: 1280, height: 800 },
     });
     this.page = await this.context.newPage();
-    await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await this.page.goto(url, {
+      waitUntil: 'domcontentloaded',
+      timeout: 30000,
+    });
     await this.page.waitForTimeout(2000);
   }
 
@@ -58,7 +61,10 @@ export class PlaywrightDriverService {
         const newPagePromise = context
           .waitForEvent('page', { timeout: 3000 })
           .catch(() => null);
-        await page.locator(action.selector as string).first().click({ timeout: 8000 });
+        await page
+          .locator(action.selector as string)
+          .first()
+          .click({ timeout: 8000 });
         const newPage = await newPagePromise;
         if (newPage) {
           await newPage

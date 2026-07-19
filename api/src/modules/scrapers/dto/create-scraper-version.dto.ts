@@ -4,7 +4,8 @@ import { IsObject, IsOptional, IsString } from 'class-validator';
 export class CreateScraperVersionDto {
   @ApiProperty({
     required: false,
-    description: 'Full scraper config for this version. Omit or leave empty to store an empty config object.',
+    description:
+      'Full scraper config for this version. Omit or leave empty to store an empty config object.',
   })
   @IsOptional()
   @IsObject()

@@ -63,7 +63,10 @@ export class ScrapersController {
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete multiple scrapers' })
   @ApiResponse({ status: 200, description: 'Scrapers deleted' })
-  @ApiResponse({ status: 400, description: 'One or more scrapers have an active crawl run' })
+  @ApiResponse({
+    status: 400,
+    description: 'One or more scrapers have an active crawl run',
+  })
   @ApiResponse({ status: 404, description: 'One or more scrapers not found' })
   removeMany(@Body() dto: DeleteScrapersDto) {
     return this.scrapersService.removeMany(dto.scraper_ids);

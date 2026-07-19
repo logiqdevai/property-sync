@@ -54,7 +54,8 @@ export class ScraperGenerationRun {
   @ApiProperty({
     required: false,
     type: [ComputerUseStep],
-    description: 'Present on GET /admin/generation-runs/:id, ordered by step_index asc',
+    description:
+      'Present on GET /admin/generation-runs/:id, ordered by step_index asc',
   })
   steps?: ComputerUseStep[];
 

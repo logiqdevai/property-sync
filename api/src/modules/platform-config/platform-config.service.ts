@@ -46,11 +46,13 @@ export class PlatformConfigService {
       selector_timeout_ms:
         row?.crawler_selector_timeout_ms ?? DEFAULT_SELECTOR_TIMEOUT_MS,
       scroll_pause_ms: row?.crawler_scroll_pause_ms ?? DEFAULT_SCROLL_PAUSE_MS,
-      detail_concurrency: row?.crawler_detail_concurrency ?? DEFAULT_DETAIL_CONCURRENCY,
+      detail_concurrency:
+        row?.crawler_detail_concurrency ?? DEFAULT_DETAIL_CONCURRENCY,
       detail_delay_ms: row?.crawler_detail_delay_ms ?? DEFAULT_DETAIL_DELAY_MS,
       crawl_worker_concurrency:
         row?.crawler_worker_concurrency ?? DEFAULT_CRAWL_WORKER_CONCURRENCY,
-      crawl_job_timeout_ms: row?.crawler_job_timeout_ms ?? DEFAULT_CRAWL_JOB_TIMEOUT_MS,
+      crawl_job_timeout_ms:
+        row?.crawler_job_timeout_ms ?? DEFAULT_CRAWL_JOB_TIMEOUT_MS,
       chromium_max_contexts_before_restart:
         row?.crawler_chromium_max_contexts_before_restart ??
         DEFAULT_CHROMIUM_MAX_CONTEXTS_BEFORE_RESTART,

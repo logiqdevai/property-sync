@@ -27,6 +27,7 @@ import { HealthModule } from './modules/health/health.module';
 import { QueuesModule } from './core/queues/queues.module';
 import { BullBoardModule } from './core/queues/bull-board.module';
 import { ConfigModule } from './shared/config/env/env.module';
+import { CmsSyncModule } from './modules/cms-sync/cms-sync.module';
 
 @Module({
   imports: [
@@ -57,8 +58,9 @@ import { ConfigModule } from './shared/config/env/env.module';
     DashboardModule,
     UserDashboardModule,
     EstateWebAdminModule,
+    CmsSyncModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

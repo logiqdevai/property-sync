@@ -61,19 +61,21 @@ const FIELD_OPTION_INDEX: Map<
   return idx;
 })();
 
-const FIELD_OPTION_BY_ID: Map<number, Map<number, EstateWebInitFieldOption>> =
-  (() => {
-    const idx = new Map<number, Map<number, EstateWebInitFieldOption>>();
-    for (const field of ESTATEWEB_INIT_FIELDS) {
-      if (field.field_options.length === 0) continue;
-      const inner = new Map<number, EstateWebInitFieldOption>();
-      for (const opt of field.field_options) {
-        inner.set(opt.id, opt);
-      }
-      idx.set(field.id, inner);
+const FIELD_OPTION_BY_ID: Map<
+  number,
+  Map<number, EstateWebInitFieldOption>
+> = (() => {
+  const idx = new Map<number, Map<number, EstateWebInitFieldOption>>();
+  for (const field of ESTATEWEB_INIT_FIELDS) {
+    if (field.field_options.length === 0) continue;
+    const inner = new Map<number, EstateWebInitFieldOption>();
+    for (const opt of field.field_options) {
+      inner.set(opt.id, opt);
     }
-    return idx;
-  })();
+    idx.set(field.id, inner);
+  }
+  return idx;
+})();
 
 /** Resolve a property type by numeric id. Walks the entire tree. */
 export function getEstateWebInitPropertyType(

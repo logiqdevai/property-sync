@@ -32,9 +32,8 @@ export class EstateWebClientService {
     const method = options.method ?? 'GET';
 
     try {
-      const session = await this.estateWebSessionService.getSession(
-        userIntegrationId,
-      );
+      const session =
+        await this.estateWebSessionService.getSession(userIntegrationId);
 
       this.assertSessionReady(session, options);
 
@@ -186,9 +185,7 @@ export class EstateWebClientService {
     error: unknown,
   ) {
     const statusCode =
-      error instanceof EstateWebException
-        ? error.getStatus()
-        : undefined;
+      error instanceof EstateWebException ? error.getStatus() : undefined;
 
     return {
       userIntegrationId,
@@ -238,4 +235,3 @@ export class EstateWebClientService {
     return form;
   }
 }
-

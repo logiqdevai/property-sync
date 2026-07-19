@@ -1,5 +1,20 @@
-import { Body, Controller, Delete, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
@@ -20,7 +35,9 @@ export class AdminUsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List users (paginated, searchable, filterable by role)' })
+  @ApiOperation({
+    summary: 'List users (paginated, searchable, filterable by role)',
+  })
   @ApiResponse({ status: 200, description: 'Paginated user list' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -31,7 +48,10 @@ export class AdminUsersController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get user with tracked agencies, saved properties, and integrations' })
+  @ApiOperation({
+    summary:
+      'Get user with tracked agencies, saved properties, and integrations',
+  })
   @ApiResponse({ status: 200, type: User })
   @ApiResponse({ status: 404, description: 'User not found' })
   findOne(@Param('id') id: string) {
@@ -57,7 +77,10 @@ export class AdminUsersController {
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 200, description: 'User deleted' })
-  @ApiResponse({ status: 403, description: 'Cannot delete your own account or a super admin account' })
+  @ApiResponse({
+    status: 403,
+    description: 'Cannot delete your own account or a super admin account',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
   remove(@Param('id') id: string, @CurrentUser('id') actorId: string) {
     return this.usersService.deleteAdmin(id, actorId);

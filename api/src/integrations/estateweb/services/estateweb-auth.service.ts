@@ -9,7 +9,10 @@ import {
   EstateWebLoginResult,
 } from '../interfaces/estateweb-auth.interface';
 import { EstateWebSession } from '../interfaces/estateweb-session.interface';
-import { extractAppToken, extractCsrfToken } from '../utils/estateweb-html.util';
+import {
+  extractAppToken,
+  extractCsrfToken,
+} from '../utils/estateweb-html.util';
 import { EstateWebNotificationService } from './estateweb-notification.service';
 
 @Injectable()
@@ -34,7 +37,8 @@ export class EstateWebAuthService {
     options: EstateWebLoginOptions = {},
   ): Promise<EstateWebLoginResult> {
     const baseUrl = this.estateWebConfig.normalizeBaseUrl(credentials.baseUrl);
-    const timeoutMs = options.timeoutMs ?? this.estateWebConfig.getLoginTimeoutMs();
+    const timeoutMs =
+      options.timeoutMs ?? this.estateWebConfig.getLoginTimeoutMs();
     const headless = options.headless ?? this.estateWebConfig.isHeadless();
 
     let browser;
@@ -294,4 +298,3 @@ export class EstateWebAuthService {
     };
   }
 }
-

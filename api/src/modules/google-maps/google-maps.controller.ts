@@ -1,10 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiQuery,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GoogleMapsService } from './google-maps.service';
 
 @ApiTags('Google Maps')

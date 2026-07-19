@@ -18,7 +18,11 @@ import {
 import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
-import { AuthRole, GenerationRunStatus, GenerationTrigger } from 'generated/prisma';
+import {
+  AuthRole,
+  GenerationRunStatus,
+  GenerationTrigger,
+} from 'generated/prisma';
 import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { ScraperGenerationService } from './scraper-generation.service';
@@ -120,7 +124,8 @@ export class ScraperGenerationController {
   @Post(':id/retry')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
-    summary: 'Retry a failed or cancelled generation run from its last recorded step',
+    summary:
+      'Retry a failed or cancelled generation run from its last recorded step',
   })
   @ApiResponse({ status: 200, type: ScraperGenerationRun })
   @ApiResponse({

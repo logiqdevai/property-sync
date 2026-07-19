@@ -20,7 +20,9 @@ function summarizeStep(step: StoredStepLike): string {
   const action = step.action_type.toLowerCase().replace(/_/g, ' ');
   const payload = (step.action_payload ?? {}) as Record<string, unknown>;
   const details = [
-    typeof payload.selector === 'string' ? `selector: ${payload.selector}` : null,
+    typeof payload.selector === 'string'
+      ? `selector: ${payload.selector}`
+      : null,
     typeof payload.url === 'string' ? `url: ${payload.url}` : null,
     typeof payload.text === 'string' ? `text: ${payload.text}` : null,
   ]
@@ -38,7 +40,10 @@ export function buildStepsSummaryText(steps: StoredStepLike[]): string {
   return `Previous session (${steps.length} steps):\n${steps.map(summarizeStep).join('\n')}`;
 }
 
-export function extractResumeUrl(steps: StoredStepLike[], fallback: string): string {
+export function extractResumeUrl(
+  steps: StoredStepLike[],
+  fallback: string,
+): string {
   for (let i = steps.length - 1; i >= 0; i--) {
     const payload = (steps[i].action_payload ?? {}) as Record<string, unknown>;
     if (typeof payload.url === 'string' && payload.url.startsWith('http')) {
@@ -56,9 +61,14 @@ function summarizeTurn(
   const hint =
     typeof userMessage.content === 'string'
       ? userMessage.content
-      : userMessage.content.find((block) => block.type === 'text' && 'text' in block)?.type ===
-          'text'
-        ? (userMessage.content.find((block) => block.type === 'text') as { text: string }).text
+      : userMessage.content.find(
+            (block) => block.type === 'text' && 'text' in block,
+          )?.type === 'text'
+        ? (
+            userMessage.content.find((block) => block.type === 'text') as {
+              text: string;
+            }
+          ).text
         : 'Screenshot step';
 
   const assistantText =
@@ -89,7 +99,9 @@ export function compactImageMessages(
 
     if (hasImageContent(message)) {
       const assistant =
-        messages[index + 1]?.role === 'assistant' ? messages[index + 1] : undefined;
+        messages[index + 1]?.role === 'assistant'
+          ? messages[index + 1]
+          : undefined;
       imageTurns.push({ user: message, assistant });
       index += assistant ? 2 : 1;
       continue;

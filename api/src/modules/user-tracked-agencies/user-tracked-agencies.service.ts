@@ -2,26 +2,28 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { UserIntegrationsService } from '@/modules/user-integrations/user-integrations.service';
+import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import { BrowseAgencyQueryType } from './dto/agency-query.schema';
 import { TrackAgencyDto } from './dto/track-agency.dto';
-import {
-  IntegrationType,
-  Prisma,
-} from 'generated/prisma';
+import { IntegrationType, Prisma } from 'generated/prisma';
 import { normalizeTextTruncatePieces } from './utils/apply-text-truncate-pieces.util';
 
 const LINKABLE_INTEGRATION_TYPE = IntegrationType.ESTATEWEB;
 
 @Injectable()
 export class UserTrackedAgenciesService {
+  private readonly logger = new Logger(UserTrackedAgenciesService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly userIntegrationsService: UserIntegrationsService,
+    private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
   ) {}
 
   async findAll(userId: string, query: BrowseAgencyQueryType) {
@@ -69,9 +71,8 @@ export class UserTrackedAgenciesService {
           ...agency,
           is_tracked: Boolean(tracker?.enabled),
           user_tracked_agency_id: tracker?.id ?? null,
-          tracking_prefs:
-            tracker?.enabled
-              ? {
+          tracking_prefs: tracker?.enabled
+            ? {
                 track_new_listings: tracker.track_new_listings,
                 track_removed_listings: tracker.track_removed_listings,
                 track_updated_listings: tracker.track_updated_listings,
@@ -83,7 +84,7 @@ export class UserTrackedAgenciesService {
                 insertion_interval_minutes: tracker.insertion_interval_minutes,
                 text_truncate_pieces: tracker.text_truncate_pieces,
               }
-              : undefined,
+            : undefined,
         };
       }),
       pagination: {
@@ -172,7 +173,9 @@ export class UserTrackedAgenciesService {
           insertion_interval_minutes: dto.insertion_interval_minutes,
         }),
         ...(dto.text_truncate_pieces !== undefined && {
-          text_truncate_pieces: normalizeTextTruncatePieces(dto.text_truncate_pieces),
+          text_truncate_pieces: normalizeTextTruncatePieces(
+            dto.text_truncate_pieces,
+          ),
         }),
       },
     });
@@ -240,12 +243,23 @@ export class UserTrackedAgenciesService {
       return existingTrackerLink;
     }
 
-    return this.prisma.userTrackedAgencyIntegrationLink.create({
+    const link = await this.prisma.userTrackedAgencyIntegrationLink.create({
       data: {
         user_tracked_agency_id: tracker.id,
         user_integration_id: integration.id,
       },
     });
+
+    try {
+      await this.cmsSyncOrchestratorService.planAndEnqueueBackfill(tracker.id);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Backfill failed after linking tracker ${tracker.id}: ${message}`,
+      );
+    }
+
+    return link;
   }
 
   async unlinkIntegration(userId: string, agencyId: string) {
@@ -337,7 +351,9 @@ export class UserTrackedAgenciesService {
     }
 
     if (!agency.is_visible) {
-      throw new BadRequestException('This agency is not available for tracking');
+      throw new BadRequestException(
+        'This agency is not available for tracking',
+      );
     }
 
     if (!agency.is_enabled) {
@@ -349,7 +365,9 @@ export class UserTrackedAgenciesService {
     return agency;
   }
 
-  private async assertUserHasDefaultAiIntegration(userId: string): Promise<void> {
+  private async assertUserHasDefaultAiIntegration(
+    userId: string,
+  ): Promise<void> {
     try {
       await this.userIntegrationsService.resolveActiveApiKey(
         userId,

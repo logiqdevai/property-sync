@@ -1,13 +1,7 @@
-import {
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
-import {
-  NotificationSeverity,
-  NotificationType,
-} from 'generated/prisma';
+import { NotificationSeverity, NotificationType } from 'generated/prisma';
 import { EstateWebException } from '../exceptions/estateweb.exception';
 import { EstateWebErrorContext } from '../interfaces/estateweb-notification.interface';
 import {
@@ -75,10 +69,7 @@ export class EstateWebNotificationService {
     return `EstateWeb ${context.operation} failed (${notificationType})`;
   }
 
-  private buildMessage(
-    context: EstateWebErrorContext,
-    error: unknown,
-  ): string {
+  private buildMessage(context: EstateWebErrorContext, error: unknown): string {
     const parts = [formatEstateWebError(error)];
 
     if (context.userIntegrationId) {

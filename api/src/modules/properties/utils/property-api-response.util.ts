@@ -21,9 +21,13 @@ function formatCmsFieldDisplayValue(
       return rawValue === 1 || rawValue === '1' ? 'Yes' : 'No';
     case EstateWebFieldType.SELECT: {
       const optionId =
-        typeof rawValue === 'number' ? rawValue : Number.parseInt(String(rawValue), 10);
+        typeof rawValue === 'number'
+          ? rawValue
+          : Number.parseInt(String(rawValue), 10);
       if (Number.isFinite(optionId)) {
-        return getEstateWebFieldOptionName(fieldId, optionId) ?? String(rawValue);
+        return (
+          getEstateWebFieldOptionName(fieldId, optionId) ?? String(rawValue)
+        );
       }
       return String(rawValue);
     }
@@ -79,7 +83,9 @@ export function serializePropertyForApi<T extends Record<string, unknown>>(
   estateweb_location_name: string | null;
 } {
   const estatewebTypeId =
-    typeof property.estateweb_type_id === 'number' ? property.estateweb_type_id : null;
+    typeof property.estateweb_type_id === 'number'
+      ? property.estateweb_type_id
+      : null;
 
   return {
     ...property,

@@ -42,7 +42,9 @@ export const AdminCmsSyncRunQuerySchema = z.object({
   ...dateFields,
 });
 
-export type AdminCmsSyncRunQueryType = z.infer<typeof AdminCmsSyncRunQuerySchema>;
+export type AdminCmsSyncRunQueryType = z.infer<
+  typeof AdminCmsSyncRunQuerySchema
+>;
 
 export const AdminCmsSyncRunIntegrationsQuerySchema = z.object({
   user_id: z.string().uuid().optional(),

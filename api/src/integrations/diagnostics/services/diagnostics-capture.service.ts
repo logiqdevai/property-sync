@@ -104,7 +104,11 @@ export class DiagnosticsCaptureService {
     const success = outcome?.success ?? false;
     const errorSummary =
       outcome?.errorSummary ??
-      (thrown instanceof Error ? thrown.message : thrown ? String(thrown) : null);
+      (thrown instanceof Error
+        ? thrown.message
+        : thrown
+          ? String(thrown)
+          : null);
     const shouldKeep = !success;
 
     const artifacts: PendingArtifact[] = [];
@@ -147,7 +151,9 @@ export class DiagnosticsCaptureService {
     await context.close().catch(() => undefined);
 
     if (!shouldKeep) {
-      await rm(workDir, { recursive: true, force: true }).catch(() => undefined);
+      await rm(workDir, { recursive: true, force: true }).catch(
+        () => undefined,
+      );
       if (thrown) throw thrown;
       return outcome as T;
     }
@@ -171,7 +177,9 @@ export class DiagnosticsCaptureService {
         .video()
         ?.path()
         .catch(() => null);
-      const videoBuffer = videoPath ? await readFile(videoPath).catch(() => null) : null;
+      const videoBuffer = videoPath
+        ? await readFile(videoPath).catch(() => null)
+        : null;
       if (videoBuffer) {
         artifacts.push({
           kind: DiagnosticsArtifactKind.VIDEO,
@@ -199,7 +207,8 @@ export class DiagnosticsCaptureService {
       startedAt,
       finishedAt,
       failureReason: errorSummary,
-      exception: thrown instanceof Error ? thrown.stack ?? thrown.message : null,
+      exception:
+        thrown instanceof Error ? (thrown.stack ?? thrown.message) : null,
       browserVersion,
       artifacts,
     });

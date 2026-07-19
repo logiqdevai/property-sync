@@ -26,7 +26,9 @@ export class PropertiesService {
       ...(query.status && { status: query.status }),
       ...(query.listing_type && { listing_type: query.listing_type }),
       ...(query.property_type && { property_type: query.property_type }),
-      ...(query.city && { city: { contains: query.city, mode: 'insensitive' } }),
+      ...(query.city && {
+        city: { contains: query.city, mode: 'insensitive' },
+      }),
       ...(query.duplicate_group_id
         ? { duplicate_group_id: query.duplicate_group_id }
         : query.has_duplicate_group === true
@@ -177,7 +179,9 @@ export class PropertiesService {
       throw new NotFoundException('One or more properties not found');
     }
 
-    const existingGroup = properties.find((p) => p.duplicate_group_id)?.duplicate_group_id;
+    const existingGroup = properties.find(
+      (p) => p.duplicate_group_id,
+    )?.duplicate_group_id;
     const groupId = existingGroup ?? randomUUID();
 
     await this.prisma.property.updateMany({
@@ -190,9 +194,11 @@ export class PropertiesService {
       data: { duplicate_group_id: groupId },
     });
 
-    return this.prisma.property.findMany({
-      where: { id: { in: dto.property_ids } },
-    }).then((items) => items.map((item) => serializePropertyForApi(item)));
+    return this.prisma.property
+      .findMany({
+        where: { id: { in: dto.property_ids } },
+      })
+      .then((items) => items.map((item) => serializePropertyForApi(item)));
   }
 
   async split(id: string) {
