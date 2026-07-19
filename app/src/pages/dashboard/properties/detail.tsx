@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@heroui/react";
+import { Button, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { PropertyDetailView } from "@/components/ui/property-detail-view";
 import {
   usePushUserPropertyToCrm,
+  useTruncateUserPropertyDescriptions,
   useUpdateUserProperty,
   useUserProperty,
 } from "@/features/user-properties/hooks/use-user-properties";
@@ -22,9 +24,11 @@ const fieldClassName = "rounded-lg border border-border bg-background px-3 py-2"
 export default function DashboardPropertyDetailPage() {
   const { id = "" } = useParams();
   const [isEditing, setIsEditing] = useState(false);
+  const truncateConfirm = useOverlayState();
   const { data: property, isPending } = useUserProperty(id);
   const updateProperty = useUpdateUserProperty();
   const pushToCrm = usePushUserPropertyToCrm();
+  const truncateDescriptions = useTruncateUserPropertyDescriptions();
 
   const {
     register,
@@ -82,6 +86,13 @@ export default function DashboardPropertyDetailPage() {
     setIsEditing(false);
   };
 
+  const handleTruncate = async (text: string) => {
+    await truncateDescriptions.mutateAsync({
+      ids: [property.id],
+      text,
+    });
+  };
+
   return (
     <div className="flex flex-col gap-4">
       {property.pending_crm_update ? (
@@ -108,15 +119,20 @@ export default function DashboardPropertyDetailPage() {
       backLabel="← Back to my properties"
       showFieldDiff
       headerActions={
-        isEditing ? (
-          <Button variant="secondary" onPress={handleCancelEdit}>
-            Cancel
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" onPress={truncateConfirm.open}>
+            Truncate text
           </Button>
-        ) : (
-          <Button variant="secondary" onPress={() => setIsEditing(true)}>
-            Edit
-          </Button>
-        )
+          {isEditing ? (
+            <Button variant="secondary" onPress={handleCancelEdit}>
+              Cancel
+            </Button>
+          ) : (
+            <Button variant="secondary" onPress={() => setIsEditing(true)}>
+              Edit
+            </Button>
+          )}
+        </div>
       }
       details={
         isEditing ? (
@@ -249,6 +265,14 @@ export default function DashboardPropertyDetailPage() {
             </div>
           </form>
         ) : undefined
+      }
+      footer={
+        <TruncateDescriptionDialog
+          state={truncateConfirm}
+          propertyCount={1}
+          onConfirm={handleTruncate}
+          isPending={truncateDescriptions.isPending}
+        />
       }
     />
     </div>

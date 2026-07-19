@@ -11,6 +11,8 @@ import type {
   PropertyCountResponse,
   PropertyDetail,
   PropertyListQuery,
+  TruncatePropertyDescriptionsPayload,
+  TruncatePropertyDescriptionsResult,
 } from "../interfaces/properties.interfaces";
 
 export const getProperties = async (
@@ -99,6 +101,22 @@ export const dedupePropertyGroups = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to keep one property per group.",
+    );
+  }
+};
+
+export const truncatePropertyDescriptions = async (
+  payload: TruncatePropertyDescriptionsPayload,
+): Promise<TruncatePropertyDescriptionsResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.properties.truncateDescriptions,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to truncate property descriptions.",
     );
   }
 };

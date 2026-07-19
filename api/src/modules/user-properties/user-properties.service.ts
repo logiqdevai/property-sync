@@ -10,7 +10,10 @@ import { UserPropertyQueryType } from './dto/user-property-query.schema';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import { Prisma, Property, PropertyStatus } from 'generated/prisma';
 import { serializePropertyForApi } from '@/modules/properties/utils/property-api-response.util';
-import { applyTextTruncatePieces } from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
+import {
+  applyTextTruncatePieces,
+  normalizeTextTruncatePieces,
+} from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
 
 export type PropertySyncChangeType = 'created' | 'updated' | 'removed';
 
@@ -390,6 +393,101 @@ export class UserPropertiesService {
     await this.clearSingletonUserDuplicateGroups(userId, groupIds);
 
     return { deleted: uniqueIds.length };
+  }
+
+  async truncateDescriptions(userId: string, ids: string[], text: string) {
+    const pieces = normalizeTextTruncatePieces([text]);
+    if (pieces.length === 0) {
+      throw new BadRequestException('Truncate text is required');
+    }
+
+    const uniqueIds = [...new Set(ids)];
+    const properties = await this.prisma.userProperty.findMany({
+      where: { user_id: userId, id: { in: uniqueIds } },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        canonical_property_id: true,
+      },
+    });
+
+    if (properties.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more properties not found');
+    }
+
+    let updated = 0;
+    const sourceAgencyIds = new Set<string>();
+
+    await this.prisma.$transaction(async (tx) => {
+      for (const property of properties) {
+        const nextTitle =
+          applyTextTruncatePieces(property.title, pieces) ?? property.title;
+        const nextDescription = applyTextTruncatePieces(
+          property.description,
+          pieces,
+        );
+
+        if (
+          nextTitle === property.title &&
+          nextDescription === property.description
+        ) {
+          continue;
+        }
+
+        await tx.userProperty.update({
+          where: { id: property.id },
+          data: {
+            title: nextTitle,
+            description: nextDescription,
+          },
+        });
+        updated += 1;
+      }
+
+      for (const property of properties) {
+        const link = await tx.propertySourceLink.findFirst({
+          where: { property_id: property.canonical_property_id },
+          include: {
+            source_property: { select: { source_agency_id: true } },
+          },
+        });
+        const agencyId = link?.source_property.source_agency_id;
+        if (agencyId) sourceAgencyIds.add(agencyId);
+      }
+
+      if (sourceAgencyIds.size === 0) return;
+
+      const trackers = await tx.userTrackedAgency.findMany({
+        where: {
+          user_id: userId,
+          source_agency_id: { in: [...sourceAgencyIds] },
+        },
+        select: { id: true, text_truncate_pieces: true },
+      });
+
+      for (const tracker of trackers) {
+        const nextPieces = normalizeTextTruncatePieces([
+          ...tracker.text_truncate_pieces,
+          ...pieces,
+        ]);
+        if (
+          nextPieces.length === tracker.text_truncate_pieces.length &&
+          nextPieces.every(
+            (piece, index) => piece === tracker.text_truncate_pieces[index],
+          )
+        ) {
+          continue;
+        }
+
+        await tx.userTrackedAgency.update({
+          where: { id: tracker.id },
+          data: { text_truncate_pieces: nextPieces },
+        });
+      }
+    });
+
+    return { updated, total: uniqueIds.length };
   }
 
   async dedupeGroups(userId: string, ids: string[]) {

@@ -177,3 +177,13 @@ export interface DedupePropertiesResult {
   deleted: number;
   kept: string[];
 }
+
+export interface TruncatePropertyDescriptionsPayload {
+  property_ids: string[];
+  text: string;
+}
+
+export interface TruncatePropertyDescriptionsResult {
+  updated: number;
+  total: number;
+}

@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
 import {
@@ -18,6 +19,7 @@ import {
   useMergeProperties,
   useProperties,
   usePropertiesCount,
+  useTruncatePropertyDescriptions,
 } from "@/features/properties/hooks/use-properties";
 import {
   type ListingType,
@@ -45,6 +47,7 @@ export default function PropertiesListPage() {
   const deleteConfirm = useOverlayState();
   const bulkDeleteConfirm = useOverlayState();
   const dedupeConfirm = useOverlayState();
+  const truncateConfirm = useOverlayState();
 
   const [status, setStatus] = useState<PropertyStatus | "all">("all");
   const [listingType, setListingType] = useState<ListingType | "all">("all");
@@ -84,12 +87,15 @@ export default function PropertiesListPage() {
   const deleteProperty = useDeleteProperty();
   const deleteProperties = useDeleteProperties();
   const dedupePropertyGroups = useDedupePropertyGroups();
+  const truncateDescriptions = useTruncatePropertyDescriptions();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
   const total = countData?.total;
   const agencies = agenciesData?.data ?? [];
   const selectedCount = selectedIds.size;
+  const allVisibleSelected =
+    properties.length > 0 && properties.every((property) => selectedIds.has(property.id));
 
   const dedupePlan = useMemo(
     () => getDuplicateGroupDedupePlan(properties, selectedIds),
@@ -102,6 +108,23 @@ export default function PropertiesListPage() {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        for (const property of properties) {
+          next.delete(property.id);
+        }
+        return next;
+      }
+
+      for (const property of properties) {
+        next.add(property.id);
+      }
       return next;
     });
   };
@@ -130,6 +153,14 @@ export default function PropertiesListPage() {
   const handleDedupeGroups = async () => {
     await dedupePropertyGroups.mutateAsync({
       property_ids: Array.from(selectedIds),
+    });
+    setSelectedIds(new Set());
+  };
+
+  const handleTruncateDescriptions = async (text: string) => {
+    await truncateDescriptions.mutateAsync({
+      property_ids: Array.from(selectedIds),
+      text,
     });
     setSelectedIds(new Set());
   };
@@ -171,6 +202,13 @@ export default function PropertiesListPage() {
               Keep one per group ({dedupeDeleteCount})
             </Button>
           ) : null}
+          <Button
+            variant="secondary"
+            isDisabled={selectedCount < 1}
+            onPress={truncateConfirm.open}
+          >
+            Truncate text ({selectedCount})
+          </Button>
           <Button
             variant="danger"
             isDisabled={selectedCount < 1}
@@ -328,7 +366,14 @@ export default function PropertiesListPage() {
             <Table.ScrollContainer>
               <Table.Content aria-label="Properties">
                 <Table.Header>
-                  <Table.Column isRowHeader>Select</Table.Column>
+                  <Table.Column isRowHeader>
+                    <input
+                      type="checkbox"
+                      checked={allVisibleSelected}
+                      onChange={toggleSelectAllVisible}
+                      aria-label="Select all properties on this page"
+                    />
+                  </Table.Column>
                   <Table.Column isRowHeader>Title</Table.Column>
                   <Table.Column isRowHeader>City</Table.Column>
                   <Table.Column isRowHeader>Price</Table.Column>
@@ -470,6 +515,13 @@ export default function PropertiesListPage() {
         confirmLabel="Keep one"
         onConfirm={handleDedupeGroups}
         isPending={dedupePropertyGroups.isPending}
+      />
+
+      <TruncateDescriptionDialog
+        state={truncateConfirm}
+        propertyCount={selectedCount}
+        onConfirm={handleTruncateDescriptions}
+        isPending={truncateDescriptions.isPending}
       />
     </div>
   );

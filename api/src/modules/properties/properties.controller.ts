@@ -32,6 +32,7 @@ import {
 } from './dto/property-query.schema';
 import { MergePropertiesDto } from './dto/merge-properties.dto';
 import { DeletePropertiesDto } from './dto/delete-properties.dto';
+import { TruncatePropertyDescriptionsDto } from './dto/truncate-property-descriptions.dto';
 import { PropertyEntity } from './entities/property.entity';
 
 @ApiTags('Properties')
@@ -107,6 +108,21 @@ export class PropertiesController {
   @ApiResponse({ status: 400, description: 'Invalid property ids' })
   removeMany(@Body() dto: DeletePropertiesDto) {
     return this.propertiesService.removeMany(dto.property_ids);
+  }
+
+  @Post('truncate-descriptions')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary: 'Remove exact text from selected property titles and descriptions',
+  })
+  @ApiResponse({ status: 200, description: 'Descriptions truncated' })
+  @ApiResponse({ status: 400, description: 'Invalid truncate payload' })
+  @ApiResponse({ status: 404, description: 'One or more properties not found' })
+  truncateDescriptions(@Body() dto: TruncatePropertyDescriptionsDto) {
+    return this.propertiesService.truncateDescriptions(
+      dto.property_ids,
+      dto.text,
+    );
   }
 
   @Post('dedupe-groups')

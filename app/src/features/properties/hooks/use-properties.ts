@@ -9,6 +9,7 @@ import {
   getProperty,
   mergeProperties,
   splitProperty,
+  truncatePropertyDescriptions,
 } from "../services/properties.services";
 import type {
   DeletePropertiesPayload,
@@ -16,6 +17,7 @@ import type {
   MergePropertiesPayload,
   PropertyCountQuery,
   PropertyListQuery,
+  TruncatePropertyDescriptionsPayload,
 } from "../interfaces/properties.interfaces";
 
 export const useProperties = (query: PropertyListQuery) => {
@@ -133,6 +135,32 @@ export const useDedupePropertyGroups = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not keep one per group",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useTruncatePropertyDescriptions = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: TruncatePropertyDescriptionsPayload) =>
+      truncatePropertyDescriptions(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["properties"] });
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      toast({
+        title: "Text truncated",
+        description: `Updated ${result.updated} of ${result.total} ${result.total === 1 ? "property" : "properties"}.`,
+        duration: 2000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not truncate text",
         description: error.message,
         variant: "error",
       });

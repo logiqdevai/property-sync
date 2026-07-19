@@ -25,6 +25,7 @@ import { AuthRole, PropertyStatus } from 'generated/prisma';
 import { UserPropertiesService } from './user-properties.service';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import { DeleteUserPropertiesDto } from './dto/delete-user-properties.dto';
+import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
 import {
   UserPropertyQuerySchema,
   UserPropertyQueryType,
@@ -115,6 +116,24 @@ export class UserPropertiesController {
     @Body() dto: DeleteUserPropertiesDto,
   ) {
     return this.userPropertiesService.dedupeGroups(userId, dto.ids);
+  }
+
+  @Post('truncate-descriptions')
+  @ApiOperation({
+    summary: 'Remove exact text from selected saved property titles and descriptions',
+  })
+  @ApiResponse({ status: 200, description: 'Descriptions truncated' })
+  @ApiResponse({ status: 400, description: 'Invalid truncate payload' })
+  @ApiResponse({ status: 404, description: 'One or more properties not found' })
+  truncateDescriptions(
+    @CurrentUser('id') userId: string,
+    @Body() dto: TruncateUserPropertyDescriptionsDto,
+  ) {
+    return this.userPropertiesService.truncateDescriptions(
+      userId,
+      dto.ids,
+      dto.text,
+    );
   }
 
   @Get(':id')

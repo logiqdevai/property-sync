@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
 import { RoleGate } from "@/components/providers/role-gate";
@@ -20,6 +21,7 @@ import {
   useDeleteUserProperty,
   useDedupeUserPropertyGroups,
   usePushUserPropertyToCrm,
+  useTruncateUserPropertyDescriptions,
   useUserProperties,
   useUserPropertiesCount,
 } from "@/features/user-properties/hooks/use-user-properties";
@@ -44,6 +46,7 @@ export default function DashboardPropertiesListPage() {
   const deleteConfirm = useOverlayState();
   const bulkDeleteConfirm = useOverlayState();
   const dedupeConfirm = useOverlayState();
+  const truncateConfirm = useOverlayState();
   const role = useAuthStore((state) => state.role);
   const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
 
@@ -78,6 +81,7 @@ export default function DashboardPropertiesListPage() {
   const deleteUserProperty = useDeleteUserProperty();
   const deleteUserProperties = useDeleteUserProperties();
   const dedupeUserPropertyGroups = useDedupeUserPropertyGroups();
+  const truncateDescriptions = useTruncateUserPropertyDescriptions();
   const pushToCrm = usePushUserPropertyToCrm();
 
   const properties = data?.data ?? [];
@@ -87,6 +91,8 @@ export default function DashboardPropertiesListPage() {
   const trackedAgencies = (agenciesData?.data ?? []).filter(
     (agency) => agency.is_tracked && agency.user_tracked_agency_id,
   );
+  const allVisibleSelected =
+    properties.length > 0 && properties.every((property) => selectedIds.has(property.id));
 
   const dedupePlan = useMemo(
     () => getDuplicateGroupDedupePlan(properties, selectedIds),
@@ -99,6 +105,23 @@ export default function DashboardPropertiesListPage() {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        for (const property of properties) {
+          next.delete(property.id);
+        }
+        return next;
+      }
+
+      for (const property of properties) {
+        next.add(property.id);
+      }
       return next;
     });
   };
@@ -122,6 +145,14 @@ export default function DashboardPropertiesListPage() {
   const handleDedupeGroups = async () => {
     await dedupeUserPropertyGroups.mutateAsync({
       ids: Array.from(selectedIds),
+    });
+    setSelectedIds(new Set());
+  };
+
+  const handleTruncateDescriptions = async (text: string) => {
+    await truncateDescriptions.mutateAsync({
+      ids: Array.from(selectedIds),
+      text,
     });
     setSelectedIds(new Set());
   };
@@ -153,8 +184,15 @@ export default function DashboardPropertiesListPage() {
             )}
           </p>
         </div>
-        <RoleGate roles={[RoleTypes.ADMIN]}>
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            isDisabled={selectedCount < 1}
+            onPress={truncateConfirm.open}
+          >
+            Truncate text ({selectedCount})
+          </Button>
+          <RoleGate roles={[RoleTypes.ADMIN]}>
             {duplicateGroup === "true" ? (
               <Button
                 variant="secondary"
@@ -171,8 +209,8 @@ export default function DashboardPropertiesListPage() {
             >
               Delete selected ({selectedCount})
             </Button>
-          </div>
-        </RoleGate>
+          </RoleGate>
+        </div>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -263,7 +301,14 @@ export default function DashboardPropertiesListPage() {
             <Table.ScrollContainer>
               <Table.Content aria-label="My properties">
                 <Table.Header>
-                  {canDelete ? <Table.Column isRowHeader>Select</Table.Column> : null}
+                  <Table.Column isRowHeader>
+                    <input
+                      type="checkbox"
+                      checked={allVisibleSelected}
+                      onChange={toggleSelectAllVisible}
+                      aria-label="Select all properties on this page"
+                    />
+                  </Table.Column>
                   <Table.Column isRowHeader>Title</Table.Column>
                   <Table.Column isRowHeader>City</Table.Column>
                   <Table.Column isRowHeader>Price</Table.Column>
@@ -285,18 +330,16 @@ export default function DashboardPropertiesListPage() {
                       onAction={() => navigate(Routes.dashboard.properties.detail(property.id))}
                       className="cursor-pointer"
                     >
-                      {canDelete ? (
-                        <Table.Cell className={groupCellClass}>
-                          <div onClick={(event) => event.stopPropagation()}>
-                            <input
-                              type="checkbox"
-                              checked={selectedIds.has(property.id)}
-                              onChange={() => toggleSelection(property.id)}
-                              aria-label={`Select ${property.title}`}
-                            />
-                          </div>
-                        </Table.Cell>
-                      ) : null}
+                      <Table.Cell className={groupCellClass}>
+                        <div onClick={(event) => event.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(property.id)}
+                            onChange={() => toggleSelection(property.id)}
+                            aria-label={`Select ${property.title}`}
+                          />
+                        </div>
+                      </Table.Cell>
                       <Table.Cell className={groupCellClass}>
                         <span className="font-medium text-foreground">{property.title}</span>
                       </Table.Cell>
@@ -417,6 +460,13 @@ export default function DashboardPropertiesListPage() {
           />
         </>
       ) : null}
+
+      <TruncateDescriptionDialog
+        state={truncateConfirm}
+        propertyCount={selectedCount}
+        onConfirm={handleTruncateDescriptions}
+        isPending={truncateDescriptions.isPending}
+      />
     </div>
   );
 }

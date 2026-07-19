@@ -122,3 +122,13 @@ export interface DedupeUserPropertiesResult {
   deleted: number;
   kept: string[];
 }
+
+export interface TruncateUserPropertyDescriptionsPayload {
+  ids: string[];
+  text: string;
+}
+
+export interface TruncateUserPropertyDescriptionsResult {
+  updated: number;
+  total: number;
+}

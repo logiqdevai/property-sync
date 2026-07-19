@@ -7,6 +7,10 @@ import {
 import { randomUUID } from 'crypto';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
+import {
+  applyTextTruncatePieces,
+  normalizeTextTruncatePieces,
+} from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
 import { PropertyQueryType } from './dto/property-query.schema';
 import { MergePropertiesDto } from './dto/merge-properties.dto';
 import { Prisma } from 'generated/prisma';
@@ -269,6 +273,85 @@ export class PropertiesService {
     await this.clearSingletonDuplicateGroups(groupIds);
 
     return { deleted: uniqueIds.length };
+  }
+
+  async truncateDescriptions(propertyIds: string[], text: string) {
+    const pieces = normalizeTextTruncatePieces([text]);
+    if (pieces.length === 0) {
+      throw new BadRequestException('Truncate text is required');
+    }
+
+    const uniqueIds = [...new Set(propertyIds)];
+    const properties = await this.prisma.property.findMany({
+      where: { id: { in: uniqueIds } },
+      select: { id: true, title: true, description: true },
+    });
+
+    if (properties.length !== uniqueIds.length) {
+      throw new NotFoundException('One or more properties not found');
+    }
+
+    let updated = 0;
+
+    await this.prisma.$transaction(async (tx) => {
+      for (const property of properties) {
+        const nextTitle =
+          applyTextTruncatePieces(property.title, pieces) ?? property.title;
+        const nextDescription = applyTextTruncatePieces(
+          property.description,
+          pieces,
+        );
+
+        if (
+          nextTitle === property.title &&
+          nextDescription === property.description
+        ) {
+          continue;
+        }
+
+        await tx.property.update({
+          where: { id: property.id },
+          data: {
+            title: nextTitle,
+            description: nextDescription,
+          },
+        });
+
+        const linked = await tx.userProperty.findMany({
+          where: { canonical_property_id: property.id },
+          select: { id: true, title: true, description: true },
+        });
+
+        for (const userProperty of linked) {
+          const linkedTitle =
+            applyTextTruncatePieces(userProperty.title, pieces) ??
+            userProperty.title;
+          const linkedDescription = applyTextTruncatePieces(
+            userProperty.description,
+            pieces,
+          );
+
+          if (
+            linkedTitle === userProperty.title &&
+            linkedDescription === userProperty.description
+          ) {
+            continue;
+          }
+
+          await tx.userProperty.update({
+            where: { id: userProperty.id },
+            data: {
+              title: linkedTitle,
+              description: linkedDescription,
+            },
+          });
+        }
+
+        updated += 1;
+      }
+    });
+
+    return { updated, total: uniqueIds.length };
   }
 
   async dedupeGroups(propertyIds: string[]) {

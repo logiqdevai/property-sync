@@ -8,11 +8,13 @@ import {
   getUserPropertiesCount,
   getUserProperty,
   pushUserPropertyToCrm,
+  truncateUserPropertyDescriptions,
   updateUserProperty,
 } from "../services/user-properties.services";
 import type {
   DeleteUserPropertiesPayload,
   DedupeUserPropertiesPayload,
+  TruncateUserPropertyDescriptionsPayload,
   UpdateUserPropertyPayload,
   UserPropertyCountQuery,
   UserPropertyListQuery,
@@ -141,6 +143,32 @@ export const useDedupeUserPropertyGroups = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not keep one per group",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useTruncateUserPropertyDescriptions = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: TruncateUserPropertyDescriptionsPayload) =>
+      truncateUserPropertyDescriptions(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      queryClient.invalidateQueries({ queryKey: ["trackableAgencies"] });
+      toast({
+        title: "Text truncated",
+        description: `Updated ${result.updated} of ${result.total} ${result.total === 1 ? "property" : "properties"}.`,
+        duration: 2000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not truncate text",
         description: error.message,
         variant: "error",
       });
