@@ -50,6 +50,16 @@ export const retryAdminCmsSyncRun = async (id: string): Promise<CmsSyncRun> => {
   }
 };
 
+export const deleteAdminCmsSyncRun = async (id: string): Promise<void> => {
+  try {
+    await axiosInstance.delete(ApiRoutes.admin.cmsSyncRuns.detail(id));
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ?? "Failed to delete sync run. Please try again.",
+    );
+  }
+};
+
 export const getAdminCmsSyncRunIntegrations = async (query?: {
   user_id?: string;
 }): Promise<EstateWebIntegrationOption[]> => {

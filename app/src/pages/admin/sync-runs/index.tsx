@@ -1,12 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, Select, ListBox, Pagination } from "@heroui/react";
+import { Trash2 } from "lucide-react";
+import { Table, Select, ListBox, Pagination, useOverlayState } from "@heroui/react";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import {
+  TableRowActionsMenu,
+  type TableRowAction,
+} from "@/components/ui/table-row-actions-menu";
 import { Routes } from "@/routes/routes";
+import { useAuthStore } from "@/stores/auth";
+import { RoleTypes } from "@/features/user/interfaces/user.interface";
 import { useAdminUsers } from "@/features/users/hooks/use-admin-users";
 import {
   useAdminCmsSyncRunIntegrations,
   useAdminCmsSyncRuns,
+  useDeleteAdminCmsSyncRun,
 } from "@/features/cms-sync-runs/hooks/use-cms-sync-runs";
 import type {
   AdminCmsSyncRunListQuery,
@@ -15,6 +24,10 @@ import type {
 import { CmsSyncStatusChip } from "./components/cms-sync-status-chip";
 import { CmsSyncStatusFilterOptions } from "@/config/constants/dropdowns/cms-sync-status-filter.options";
 import { formatDateTime } from "@/lib/date";
+
+const SYNC_RUN_DELETE_ACTIONS: TableRowAction[] = [
+  { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
+];
 
 function toStartOfDayIso(date: string) {
   return new Date(`${date}T00:00:00.000Z`).toISOString();
@@ -33,12 +46,17 @@ function connectionEmail(connection: {
 
 export default function AdminSyncRunsListPage() {
   const navigate = useNavigate();
+  const deleteConfirm = useOverlayState();
+  const role = useAuthStore((state) => state.role);
+  const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
+
   const [status, setStatus] = useState<CmsSyncStatus | "all">("all");
   const [userId, setUserId] = useState<string | "all">("all");
   const [integrationId, setIntegrationId] = useState<string | "all">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
+  const [deleteRunId, setDeleteRunId] = useState<string | null>(null);
 
   const query = useMemo<AdminCmsSyncRunListQuery>(
     () => ({
@@ -58,6 +76,7 @@ export default function AdminSyncRunsListPage() {
   const { data: integrations } = useAdminCmsSyncRunIntegrations(
     userId !== "all" ? userId : undefined,
   );
+  const deleteRun = useDeleteAdminCmsSyncRun();
 
   useEffect(() => {
     if (integrationId === "all" || !integrations) return;
@@ -71,6 +90,12 @@ export default function AdminSyncRunsListPage() {
   const pagination = data?.pagination;
   const users = usersData?.data ?? [];
   const integrationOptions = integrations ?? [];
+
+  const handleDelete = async () => {
+    if (!deleteRunId) return;
+    await deleteRun.mutateAsync(deleteRunId);
+    setDeleteRunId(null);
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -182,7 +207,7 @@ export default function AdminSyncRunsListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={10} />
+        <TableSkeleton rows={8} columns={canDelete ? 11 : 10} />
       ) : runs.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No sync runs found.
@@ -203,6 +228,7 @@ export default function AdminSyncRunsListPage() {
                   <Table.Column>Failed</Table.Column>
                   <Table.Column>Attempt</Table.Column>
                   <Table.Column>Started</Table.Column>
+                  {canDelete ? <Table.Column>Options</Table.Column> : null}
                 </Table.Header>
                 <Table.Body>
                   {runs.map((run) => (
@@ -251,6 +277,19 @@ export default function AdminSyncRunsListPage() {
                         </span>
                       </Table.Cell>
                       <Table.Cell>{formatDateTime(run.started_at ?? run.created_at)}</Table.Cell>
+                      {canDelete ? (
+                        <Table.Cell>
+                          <TableRowActionsMenu
+                            actions={SYNC_RUN_DELETE_ACTIONS}
+                            onAction={(actionId) => {
+                              if (actionId !== "delete") return;
+                              setDeleteRunId(run.id);
+                              deleteConfirm.open();
+                            }}
+                            ariaLabel={`Actions for sync run ${run.id}`}
+                          />
+                        </Table.Cell>
+                      ) : null}
                     </Table.Row>
                   ))}
                 </Table.Body>
@@ -287,6 +326,17 @@ export default function AdminSyncRunsListPage() {
           </Pagination.Content>
         </Pagination>
       )}
+
+      {canDelete ? (
+        <ConfirmationDialog
+          state={deleteConfirm}
+          title="Delete this sync run?"
+          description="This will permanently delete the CMS sync run record. This cannot be undone."
+          confirmLabel="Delete"
+          onConfirm={handleDelete}
+          isPending={deleteRun.isPending}
+        />
+      ) : null}
     </div>
   );
 }

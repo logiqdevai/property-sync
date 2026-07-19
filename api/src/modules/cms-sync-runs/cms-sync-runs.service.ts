@@ -156,6 +156,17 @@ export class CmsSyncRunsService {
     return run;
   }
 
+  async delete(id: string) {
+    const run = await this.prisma.cmsSyncRun.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!run) throw new NotFoundException('CMS sync run not found');
+
+    await this.prisma.cmsSyncRun.delete({ where: { id } });
+    return { deleted: true };
+  }
+
   async retry(id: string) {
     const run = await this.prisma.cmsSyncRun.findUnique({
       where: { id },

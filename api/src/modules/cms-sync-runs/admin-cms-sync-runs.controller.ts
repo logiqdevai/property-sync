@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -75,5 +83,14 @@ export class AdminCmsSyncRunsController {
   @ApiParam({ name: 'id', type: String })
   retry(@Param('id') id: string) {
     return this.cmsSyncRunsService.retry(id);
+  }
+
+  @Delete(':id')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Delete a CMS sync run' })
+  @ApiResponse({ status: 200, description: 'CMS sync run deleted' })
+  @ApiParam({ name: 'id', type: String })
+  remove(@Param('id') id: string) {
+    return this.cmsSyncRunsService.delete(id);
   }
 }

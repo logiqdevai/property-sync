@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import {
+  deleteAdminCmsSyncRun,
   getAdminCmsSyncRun,
   getAdminCmsSyncRunIntegrations,
   getAdminCmsSyncRuns,
@@ -54,6 +55,25 @@ export const useRetryAdminCmsSyncRun = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not retry sync run",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDeleteAdminCmsSyncRun = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteAdminCmsSyncRun(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cmsSyncRuns"] });
+      toast({ title: "Sync run deleted", duration: 2000, variant: "success" });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not delete sync run",
         description: error.message,
         variant: "error",
       });
