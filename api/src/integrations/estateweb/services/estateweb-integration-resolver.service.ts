@@ -48,6 +48,35 @@ export class EstateWebIntegrationResolverService {
     return this.toResolvedIntegration(integration);
   }
 
+  async resolveDefaultForUser(
+    userId: string,
+  ): Promise<ResolvedEstateWebIntegration> {
+    const integration = await this.prisma.userIntegration.findFirst({
+      where: {
+        user_id: userId,
+        is_default: true,
+        is_active: true,
+        integration_target: {
+          integration_type: IntegrationType.ESTATEWEB,
+        },
+      },
+      include: {
+        integration_target: true,
+      },
+    });
+
+    if (!integration) {
+      throw new EstateWebException(
+        'Default EstateWeb integration connection not found',
+        NotificationType.ESTATEWEB_INTEGRATION_NOT_FOUND,
+        HttpStatus.NOT_FOUND,
+        { userId },
+      );
+    }
+
+    return this.toResolvedIntegration(integration);
+  }
+
   async resolveForTrackedAgency(
     userId: string,
     sourceAgencyId: string,

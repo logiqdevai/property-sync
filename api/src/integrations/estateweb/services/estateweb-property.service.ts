@@ -19,6 +19,7 @@ import { EstateWebException } from '../exceptions/estateweb.exception';
 import {
   EstateWebCreatePropertyPayload,
   EstateWebCreatePropertyResponse,
+  EstateWebPropertyListItem,
   EstateWebPropertyListQuery,
   EstateWebPropertyListResponse,
   EstateWebPropertyResponse,
@@ -44,7 +45,10 @@ import {
   assertValidUpdatePayload,
 } from '../utils/estateweb-property-validation.util';
 import { EstateWebClientService } from './estateweb-client.service';
+import { EstateWebIntegrationResolverService } from './estateweb-integration-resolver.service';
 import { EstateWebNotificationService } from './estateweb-notification.service';
+
+const LIST_ALL_PAGE_SIZE = 200;
 
 @Injectable()
 export class EstateWebPropertyService {
@@ -52,6 +56,7 @@ export class EstateWebPropertyService {
     private readonly estateWebClientService: EstateWebClientService,
     private readonly estateWebConfig: EstateWebConfig,
     private readonly estateWebNotificationService: EstateWebNotificationService,
+    private readonly estateWebIntegrationResolverService: EstateWebIntegrationResolverService,
   ) {}
 
   getInitFields(): EstateWebInitField[] {
@@ -138,6 +143,51 @@ export class EstateWebPropertyService {
         );
       },
     );
+  }
+
+  async listAllProperties(
+    userId: string,
+    query: EstateWebPropertyListQuery = {},
+  ): Promise<EstateWebPropertyListResponse> {
+    const { userIntegrationId } =
+      await this.estateWebIntegrationResolverService.resolveDefaultForUser(
+        userId,
+      );
+
+    const list: EstateWebPropertyListItem[] = [];
+    let page = 1;
+    let total = 0;
+    let debug: unknown;
+
+    while (true) {
+      const response = await this.listProperties(userIntegrationId, {
+        ...query,
+        page,
+        rpp: LIST_ALL_PAGE_SIZE,
+      });
+
+      total = response.total;
+      if (response.debug !== undefined) {
+        debug = response.debug;
+      }
+      list.push(...response.list);
+
+      if (
+        response.list.length === 0 ||
+        list.length >= total ||
+        response.list.length < LIST_ALL_PAGE_SIZE
+      ) {
+        break;
+      }
+
+      page += 1;
+    }
+
+    return {
+      total,
+      ...(debug !== undefined ? { debug } : {}),
+      list,
+    };
   }
 
   createProperty(
