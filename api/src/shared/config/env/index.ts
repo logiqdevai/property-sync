@@ -29,4 +29,5 @@ export default () => ({
   SCRAPER_GENERATION_MODEL: process.env.SCRAPER_GENERATION_MODEL,
   BULL_BOARD_USER: process.env.BULL_BOARD_USER,
   BULL_BOARD_PASSWORD: process.env.BULL_BOARD_PASSWORD,
+  CRAWL_SCHEDULE_TZ: process.env.CRAWL_SCHEDULE_TZ || 'Europe/Athens',
 });

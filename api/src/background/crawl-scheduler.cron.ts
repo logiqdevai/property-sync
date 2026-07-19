@@ -13,6 +13,8 @@ const MANUAL_ONLY_CRAWL_ENVS: ReadonlySet<EnvConfig['NODE_ENV']> = new Set([
   'staging',
 ]);
 
+const DEFAULT_CRAWL_SCHEDULE_TZ = 'Europe/Athens';
+
 @Injectable()
 export class CrawlSchedulerCron {
   private readonly logger = new Logger(CrawlSchedulerCron.name);
@@ -31,6 +33,9 @@ export class CrawlSchedulerCron {
     }
 
     const now = new Date();
+    const scheduleTz =
+      this.configService.get<string>('CRAWL_SCHEDULE_TZ') ??
+      DEFAULT_CRAWL_SCHEDULE_TZ;
 
     // Scheduling is per-agency, not per-tracker: a crawl scrapes the agency's
     // site once, regardless of how many users track it. Fan-out to individual
@@ -46,7 +51,7 @@ export class CrawlSchedulerCron {
     });
 
     for (const agency of agencies) {
-      if (!this.isCronDue(agency.crawl_interval, now)) {
+      if (!this.isCronDue(agency.crawl_interval, now, scheduleTz)) {
         continue;
       }
 
@@ -85,10 +90,15 @@ export class CrawlSchedulerCron {
     }
   }
 
-  private isCronDue(cronExpression: string, now: Date): boolean {
+  private isCronDue(
+    cronExpression: string,
+    now: Date,
+    tz: string,
+  ): boolean {
     try {
       const interval = parseExpression(cronExpression, {
         currentDate: now,
+        tz,
       });
       const prev = interval.prev().toDate();
       const msSincePrev = now.getTime() - prev.getTime();
