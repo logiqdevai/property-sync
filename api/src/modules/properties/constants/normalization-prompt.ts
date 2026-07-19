@@ -31,7 +31,7 @@ ${buildEstateWebTypeCatalogJson()}
 
 {
   "index": <same as input index>,
-  "title": string (clean title: property type + size, no agency codes or extra whitespace),
+  "title": string (preserve raw_title; only collapse extra whitespace and strip obvious agency codes/boilerplate — never invent a short type+size summary, never use description as title),
   "listing_type": ListingType,
   "property_type": PropertyType,
   "price": number | null (CURRENT asking/sale price only — numeric, no symbols: "100.000€" → 100000, "450 €/μήνα" → 450),
@@ -83,6 +83,7 @@ ${buildEstateWebTypeCatalogJson()}
   - price_web = the website display price (= price when only one public figure)
   - Never set price_start below price; if unsure which is current, prefer the value next to "Τιμή:" in raw_description / detail text over a lone higher raw_price
 - Do NOT return a description field. The listing description is stored separately from the scrape; use raw_description only as a signal for other fields (city, district, features, price, etc.)
+- title MUST come from raw_title (lightly cleaned). Never replace it with a generated "Διαμέρισμα 80 τ.μ." style summary, and never copy raw_description into title
 - city/district: prefer values from raw_description (Υποπεριοχή/Γειτονιά) over raw_location when available
 - cms_metadata is mainly for rentals (guarantee, income terms, contract period, has_keys)
 - Only include cms_fields entries you are confident about; omit unknown custom fields

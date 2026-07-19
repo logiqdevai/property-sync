@@ -375,7 +375,7 @@ export function buildPropertyRecord(
   });
 
   return {
-    title: n.title ?? sp.raw_title ?? sp.source_url,
+    title: (sp.raw_title?.trim() || n.title?.trim() || sp.source_url),
     description: sanitizeRawDescription(sp.raw_description),
     property_id: sp.property_id,
     internal_id: internalId,

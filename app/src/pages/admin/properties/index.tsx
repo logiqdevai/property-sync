@@ -277,7 +277,7 @@ export default function PropertiesListPage() {
 
       <div className="flex items-center gap-3 flex-wrap">
         <Input
-          placeholder="Search title or city…"
+          placeholder="Search id, title, or city…"
           value={search}
           onChange={(e) => {
             setPage(1);

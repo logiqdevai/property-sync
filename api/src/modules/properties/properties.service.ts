@@ -42,6 +42,9 @@ export class PropertiesService {
             : {}),
       ...(query.search && {
         OR: [
+          { id: { equals: query.search } },
+          { property_id: { contains: query.search, mode: 'insensitive' } },
+          { internal_id: { contains: query.search, mode: 'insensitive' } },
           { title: { contains: query.search, mode: 'insensitive' } },
           { city: { contains: query.search, mode: 'insensitive' } },
           { district: { contains: query.search, mode: 'insensitive' } },
