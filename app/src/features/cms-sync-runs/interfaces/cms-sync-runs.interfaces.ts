@@ -7,6 +7,32 @@ export const CmsSyncStatuses = {
 
 export type CmsSyncStatus = (typeof CmsSyncStatuses)[keyof typeof CmsSyncStatuses];
 
+export const CmsSyncOperationTypes = {
+  CREATE: "CREATE",
+  UPDATE: "UPDATE",
+  REMOVE: "REMOVE",
+} as const;
+
+export type CmsSyncOperationType =
+  (typeof CmsSyncOperationTypes)[keyof typeof CmsSyncOperationTypes];
+
+export interface CmsSyncOperationResult {
+  user_property_id: string;
+  operation: CmsSyncOperationType;
+  success: boolean;
+  property_title?: string | null;
+  integration_property_id?: string | null;
+  error?: string;
+  reconciled?: boolean;
+  skipped_push?: boolean;
+}
+
+export interface CmsSyncRunResponse {
+  failed_property_ids: string[];
+  skipped_duplicate_property_ids: string[];
+  operation_results: CmsSyncOperationResult[];
+}
+
 export interface CmsSyncRun {
   id: string;
   crawl_run_id: string;
@@ -19,7 +45,7 @@ export interface CmsSyncRun {
   total_removed: number;
   total_failed: number;
   payload: Record<string, unknown> | null;
-  response: Record<string, unknown> | null;
+  response: CmsSyncRunResponse | null;
   error_message: string | null;
   started_at: string | null;
   finished_at: string | null;

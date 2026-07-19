@@ -253,9 +253,12 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         user_property_id: operation.user_property_id,
         operation: operation.operation,
         success: false,
+        property_title: null,
         error: 'User property not found',
       };
     }
+
+    const propertyTitle = userProperty.title;
 
     this.logger.log(
       `CMS sync op start: property=${operation.user_property_id} operation=${operation.operation} integration=${userIntegrationId} type_id=${userProperty.estateweb_type_id ?? 'null'} location_id=${userProperty.estateweb_location_id ?? 'null'}`,
@@ -269,6 +272,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
               user_property_id: operation.user_property_id,
               operation: 'CREATE',
               success: false,
+              property_title: propertyTitle,
               error:
                 'EstateWeb default catalog unavailable; refusing CREATE to avoid duplicates. Ensure a default EstateWeb UserIntegration exists and can list all properties.',
             };
@@ -306,6 +310,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
                 user_property_id: operation.user_property_id,
                 operation: 'UPDATE',
                 success: true,
+                property_title: propertyTitle,
                 integration_property_id: integrationPropertyId,
                 reconciled: true,
               };
@@ -318,6 +323,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
               user_property_id: operation.user_property_id,
               operation: 'CREATE',
               success: true,
+              property_title: propertyTitle,
               integration_property_id: integrationPropertyId,
               reconciled: true,
               skipped_push: true,
@@ -341,6 +347,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             user_property_id: operation.user_property_id,
             operation: 'CREATE',
             success: true,
+            property_title: propertyTitle,
             integration_property_id: createResult.integration_property_id,
           };
         }
@@ -367,6 +374,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             user_property_id: operation.user_property_id,
             operation: 'UPDATE',
             success: true,
+            property_title: propertyTitle,
             integration_property_id: integrationId,
           };
         }
@@ -377,6 +385,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
               user_property_id: operation.user_property_id,
               operation: 'REMOVE',
               success: false,
+              property_title: propertyTitle,
               error: 'No integration property id for remove',
             };
           }
@@ -392,6 +401,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             user_property_id: operation.user_property_id,
             operation: 'REMOVE',
             success: true,
+            property_title: propertyTitle,
             integration_property_id: null,
           };
         }
@@ -406,6 +416,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         user_property_id: operation.user_property_id,
         operation: operation.operation,
         success: false,
+        property_title: propertyTitle,
         error: message,
       };
     }

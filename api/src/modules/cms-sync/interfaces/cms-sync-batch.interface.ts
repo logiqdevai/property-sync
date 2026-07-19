@@ -42,6 +42,7 @@ export interface CmsSyncOperationResult {
   user_property_id: string;
   operation: CmsSyncOperationType;
   success: boolean;
+  property_title?: string | null;
   integration_property_id?: string | null;
   error?: string;
   reconciled?: boolean;

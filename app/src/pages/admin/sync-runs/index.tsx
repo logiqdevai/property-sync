@@ -13,6 +13,7 @@ import {
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { CmsSyncRunFailuresModal } from "@/components/ui/cms-sync-run-failures-modal";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import {
   TableRowActionsMenu,
@@ -30,6 +31,7 @@ import {
 } from "@/features/cms-sync-runs/hooks/use-cms-sync-runs";
 import type {
   AdminCmsSyncRunListQuery,
+  CmsSyncRun,
   CmsSyncStatus,
 } from "@/features/cms-sync-runs/interfaces/cms-sync-runs.interfaces";
 import { CmsSyncStatusChip } from "./components/cms-sync-status-chip";
@@ -60,6 +62,7 @@ export default function AdminSyncRunsListPage() {
   const navigate = useNavigate();
   const deleteConfirm = useOverlayState();
   const bulkDeleteConfirm = useOverlayState();
+  const failuresModal = useOverlayState();
   const role = useAuthStore((state) => state.role);
   const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
 
@@ -71,6 +74,12 @@ export default function AdminSyncRunsListPage() {
   const [page, setPage] = useState(1);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deleteRunId, setDeleteRunId] = useState<string | null>(null);
+  const [selectedRun, setSelectedRun] = useState<CmsSyncRun | null>(null);
+
+  const openFailures = (run: CmsSyncRun) => {
+    setSelectedRun(run);
+    failuresModal.open();
+  };
 
   const query = useMemo<AdminCmsSyncRunListQuery>(
     () => ({
@@ -358,7 +367,17 @@ export default function AdminSyncRunsListPage() {
                         <span className="font-mono text-sm text-foreground">{run.total_removed}</span>
                       </Table.Cell>
                       <Table.Cell>
-                        <span className="font-mono text-sm text-foreground">{run.total_failed}</span>
+                        {run.total_failed > 0 ? (
+                          <button
+                            type="button"
+                            className="font-mono text-sm text-danger hover:underline"
+                            onClick={() => openFailures(run)}
+                          >
+                            {run.total_failed}
+                          </button>
+                        ) : (
+                          <span className="font-mono text-sm text-foreground">{run.total_failed}</span>
+                        )}
                       </Table.Cell>
                       <Table.Cell>
                         <span className="font-mono text-sm text-foreground">
@@ -442,6 +461,8 @@ export default function AdminSyncRunsListPage() {
           />
         </>
       ) : null}
+
+      <CmsSyncRunFailuresModal state={failuresModal} run={selectedRun} />
     </div>
   );
 }

@@ -32,6 +32,45 @@ export class CmsSyncRun {
   @ApiProperty()
   total_failed: number;
 
+  @ApiProperty({
+    nullable: true,
+    description: 'Batch payload with operations queued for CMS push',
+  })
+  payload: Record<string, unknown> | null;
+
+  @ApiProperty({
+    nullable: true,
+    description:
+      'Batch outcome including failed_property_ids and operation_results with per-property errors',
+    example: {
+      failed_property_ids: ['123e4567-e89b-12d3-a456-426614174000'],
+      skipped_duplicate_property_ids: [],
+      operation_results: [
+        {
+          user_property_id: '123e4567-e89b-12d3-a456-426614174000',
+          operation: 'CREATE',
+          success: false,
+          property_title: 'Villa with sea view',
+          error: 'VALIDATION_ERROR: Missing estateweb_type_id',
+        },
+      ],
+    },
+  })
+  response: {
+    failed_property_ids: string[];
+    skipped_duplicate_property_ids: string[];
+    operation_results: Array<{
+      user_property_id: string;
+      operation: string;
+      success: boolean;
+      property_title?: string | null;
+      integration_property_id?: string | null;
+      error?: string;
+      reconciled?: boolean;
+      skipped_push?: boolean;
+    }>;
+  } | null;
+
   @ApiProperty({ nullable: true })
   error_message: string | null;
 
