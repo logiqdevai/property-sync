@@ -8,6 +8,7 @@ import { EstateWebCmsSyncAdapter } from './services/estateweb-cms-sync-adapter.s
 import { EstateWebIntegrationResolverService } from './services/estateweb-integration-resolver.service';
 import { EstateWebNotificationService } from './services/estateweb-notification.service';
 import { EstateWebPropertyService } from './services/estateweb-property.service';
+import { EstateWebPropertyReconciliationService } from './services/estateweb-property-reconciliation.service';
 import { EstateWebSessionService } from './services/estateweb-session.service';
 
 @Module({
@@ -19,6 +20,7 @@ import { EstateWebSessionService } from './services/estateweb-session.service';
     EstateWebSessionService,
     EstateWebClientService,
     EstateWebPropertyService,
+    EstateWebPropertyReconciliationService,
     EstateWebIntegrationResolverService,
     EstateWebCmsSyncAdapter,
   ],
@@ -29,6 +31,7 @@ import { EstateWebSessionService } from './services/estateweb-session.service';
     EstateWebSessionService,
     EstateWebClientService,
     EstateWebPropertyService,
+    EstateWebPropertyReconciliationService,
     EstateWebIntegrationResolverService,
     EstateWebCmsSyncAdapter,
   ],

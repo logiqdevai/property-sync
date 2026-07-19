@@ -44,4 +44,6 @@ export interface CmsSyncOperationResult {
   success: boolean;
   integration_property_id?: string | null;
   error?: string;
+  reconciled?: boolean;
+  skipped_push?: boolean;
 }

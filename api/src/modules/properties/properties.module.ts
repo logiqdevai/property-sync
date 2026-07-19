@@ -14,6 +14,7 @@ import { AnthropicNormalizationService } from './services/anthropic-normalizatio
 import { AiBatchCompleteProcessor } from '@/background/ai-batch-complete.processor';
 import { UserPropertiesModule } from '@/modules/user-properties/user-properties.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
+import { CmsSyncModule } from '@/modules/cms-sync/cms-sync.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { NotificationsModule } from '@/modules/notifications/notifications.modul
     NotificationsModule,
     GcsIntegrationModule,
     PlatformConfigModule,
+    CmsSyncModule,
     BullModule.registerQueue({ name: AI_BATCH_COMPLETE_QUEUE }),
   ],
   controllers: [PropertiesController],

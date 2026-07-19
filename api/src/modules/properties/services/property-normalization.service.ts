@@ -516,6 +516,7 @@ export class PropertyNormalizationService {
   async completeBatchNormalization(
     crawlRunId: string,
     batchId: string,
+    onSync?: CmsSyncCallback,
   ): Promise<void> {
     const crawlRun = await this.prisma.crawlRun.findUnique({
       where: { id: crawlRunId },
@@ -605,6 +606,7 @@ export class PropertyNormalizationService {
       provider: IntegrationType.OPENAI,
       openAiUsage: { inputTokens, outputTokens },
       userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
+      onSync,
     });
   }
 
