@@ -293,7 +293,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
           filename: image.filename,
           show_on_site: 1,
           show_on_groups: 1,
-          show_on_foreign_agents: 1,
+          show_on_foreign_agents: 0,
           zindex: index + 1,
         };
 
