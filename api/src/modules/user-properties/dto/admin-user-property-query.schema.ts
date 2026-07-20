@@ -32,6 +32,8 @@ export const AdminUserPropertyQuerySchema = z.object({
   user_id: z.string().uuid().optional(),
   agency_id: z.string().uuid().optional(),
   has_duplicate_group: booleanQueryParam,
+  pushed_to_crm: booleanQueryParam,
+  pending_crm_update: booleanQueryParam,
   date_from: z
     .string()
     .datetime()

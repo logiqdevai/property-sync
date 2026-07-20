@@ -118,6 +118,15 @@ export class UserPropertiesService {
             },
           }
         : {}),
+      ...(query.pushed_to_crm === true && {
+        integration_property_id: { not: null },
+      }),
+      ...(query.pushed_to_crm === false && {
+        integration_property_id: null,
+      }),
+      ...(query.pending_crm_update !== undefined && {
+        pending_crm_update: query.pending_crm_update,
+      }),
     };
   }
 
@@ -1031,6 +1040,15 @@ export class UserPropertiesService {
             },
           }
         : {}),
+      ...(query.pushed_to_crm === true && {
+        integration_property_id: { not: null },
+      }),
+      ...(query.pushed_to_crm === false && {
+        integration_property_id: null,
+      }),
+      ...(query.pending_crm_update !== undefined && {
+        pending_crm_update: query.pending_crm_update,
+      }),
     };
   }
 

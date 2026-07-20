@@ -53,6 +53,16 @@ export class UserPropertiesController {
     required: false,
     enum: ['true', 'false'],
   })
+  @ApiQuery({
+    name: 'pushed_to_crm',
+    required: false,
+    enum: ['true', 'false'],
+  })
+  @ApiQuery({
+    name: 'pending_crm_update',
+    required: false,
+    enum: ['true', 'false'],
+  })
   @ApiQuery({ name: 'agency_id', required: false, type: String })
   @ApiQuery({ name: 'user_tracked_agency_id', required: false, type: String })
   @ApiQuery({ name: 'date_from', required: false, type: String })
@@ -74,6 +84,16 @@ export class UserPropertiesController {
   @ApiQuery({ name: 'price_max', required: false, type: Number })
   @ApiQuery({
     name: 'has_duplicate_group',
+    required: false,
+    enum: ['true', 'false'],
+  })
+  @ApiQuery({
+    name: 'pushed_to_crm',
+    required: false,
+    enum: ['true', 'false'],
+  })
+  @ApiQuery({
+    name: 'pending_crm_update',
     required: false,
     enum: ['true', 'false'],
   })

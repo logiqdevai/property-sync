@@ -46,6 +46,8 @@ import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/proper
 import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/listing-type-filter.options";
 import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/property-type-filter.options";
 import { PropertyDuplicateGroupFilterOptions } from "@/config/constants/dropdowns/property-duplicate-group-filter.options";
+import { PropertyCrmPushFilterOptions } from "@/config/constants/dropdowns/property-crm-push-filter.options";
+import { PropertyPendingCrmUpdateFilterOptions } from "@/config/constants/dropdowns/property-pending-crm-update-filter.options";
 import { TablePageSizeOptions } from "@/config/constants/dropdowns/table-page-size.options";
 import { useAdminUsers } from "@/features/users/hooks/use-admin-users";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
@@ -76,6 +78,10 @@ export function UserPropertiesListPanel() {
   const [duplicateGroup, setDuplicateGroup] = useState<"all" | "true" | "false">(
     "all",
   );
+  const [pushedToCrm, setPushedToCrm] = useState<"all" | "true" | "false">("all");
+  const [pendingCrmUpdate, setPendingCrmUpdate] = useState<"all" | "true" | "false">(
+    "all",
+  );
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [limit, setLimit] = useState(20);
@@ -96,6 +102,12 @@ export function UserPropertiesListPanel() {
       ...(duplicateGroup !== "all" && {
         has_duplicate_group: duplicateGroup === "true",
       }),
+      ...(pushedToCrm !== "all" && {
+        pushed_to_crm: pushedToCrm === "true",
+      }),
+      ...(pendingCrmUpdate !== "all" && {
+        pending_crm_update: pendingCrmUpdate === "true",
+      }),
       ...(dateFrom && { date_from: toStartOfDayIso(dateFrom) }),
       ...(dateTo && { date_to: toEndOfDayIso(dateTo) }),
     }),
@@ -109,6 +121,8 @@ export function UserPropertiesListPanel() {
       userId,
       agencyId,
       duplicateGroup,
+      pushedToCrm,
+      pendingCrmUpdate,
       dateFrom,
       dateTo,
     ],
@@ -432,6 +446,52 @@ export function UserPropertiesListPanel() {
           <Select.Popover>
             <ListBox>
               {PropertyDuplicateGroupFilterOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+        <Select
+          aria-label="Filter by CRM push"
+          selectedKey={pushedToCrm}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setPushedToCrm(key as "all" | "true" | "false");
+          }}
+          className="w-44"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {PropertyCrmPushFilterOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+        <Select
+          aria-label="Filter by pending CRM update"
+          selectedKey={pendingCrmUpdate}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setPendingCrmUpdate(key as "all" | "true" | "false");
+          }}
+          className="w-48"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {PropertyPendingCrmUpdateFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

@@ -58,6 +58,16 @@ export class AdminUserPropertiesController {
     required: false,
     enum: ['true', 'false'],
   })
+  @ApiQuery({
+    name: 'pushed_to_crm',
+    required: false,
+    enum: ['true', 'false'],
+  })
+  @ApiQuery({
+    name: 'pending_crm_update',
+    required: false,
+    enum: ['true', 'false'],
+  })
   @ApiQuery({ name: 'date_from', required: false, type: String })
   @ApiQuery({ name: 'date_to', required: false, type: String })
   findAll(
@@ -78,6 +88,16 @@ export class AdminUserPropertiesController {
   @ApiQuery({ name: 'agency_id', required: false, type: String })
   @ApiQuery({
     name: 'has_duplicate_group',
+    required: false,
+    enum: ['true', 'false'],
+  })
+  @ApiQuery({
+    name: 'pushed_to_crm',
+    required: false,
+    enum: ['true', 'false'],
+  })
+  @ApiQuery({
+    name: 'pending_crm_update',
     required: false,
     enum: ['true', 'false'],
   })

@@ -97,6 +97,8 @@ export interface UserPropertyListQuery {
   price_min?: number;
   price_max?: number;
   has_duplicate_group?: boolean;
+  pushed_to_crm?: boolean;
+  pending_crm_update?: boolean;
   agency_id?: string;
   user_tracked_agency_id?: string;
   date_from?: string;
@@ -113,6 +115,8 @@ export interface AdminUserPropertyListQuery {
   user_id?: string;
   agency_id?: string;
   has_duplicate_group?: boolean;
+  pushed_to_crm?: boolean;
+  pending_crm_update?: boolean;
   date_from?: string;
   date_to?: string;
 }
