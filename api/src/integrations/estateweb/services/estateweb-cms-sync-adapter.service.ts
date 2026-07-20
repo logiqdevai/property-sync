@@ -99,12 +99,18 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   async pushRemove(
     userIntegrationId: string,
     integrationPropertyId: string,
+    userProperty: UserProperty,
   ): Promise<void> {
+    this.assertRequiredFields(userProperty);
+
     const payload = this.buildPayload(
-      undefined,
+      userProperty,
       Number(integrationPropertyId),
     ) as EstateWebUpdatePropertyPayload;
-    payload.status_id = 0;
+    payload.sites = ESTATEWEB_DEFAULT_PUSH_SITES.map((site) => ({
+      ...site,
+      selected: false,
+    }));
 
     await this.estateWebPropertyService.updateProperty(
       userIntegrationId,

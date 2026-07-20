@@ -17,5 +17,6 @@ export interface CmsSyncAdapter {
   pushRemove(
     userIntegrationId: string,
     integrationPropertyId: string,
+    userProperty: UserProperty,
   ): Promise<void>;
 }

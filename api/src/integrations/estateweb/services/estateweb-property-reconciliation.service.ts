@@ -6,6 +6,7 @@ import {
   UserProperty,
 } from 'generated/prisma';
 import { EstateWebScope } from '../constants/estateweb-enums.constants';
+import { ESTATEWEB_DEFAULT_PUSH_SITES } from '../constants/estateweb-agent-catalog.constants';
 import { resolveEstateWebScopeId } from '../utils/estateweb-catalog.util';
 import {
   EstateWebPropertyListItem,
@@ -187,12 +188,25 @@ export class EstateWebPropertyReconciliationService {
 
     if (
       userProperty.status === PropertyStatus.REMOVED &&
-      listing.status_id !== 0
+      this.hasSelectedDefaultPushSite(listing)
     ) {
       return true;
     }
 
     return false;
+  }
+
+  private hasSelectedDefaultPushSite(
+    listing: EstateWebPropertyListItem,
+  ): boolean {
+    const defaultSiteIds = new Set<number>(
+      ESTATEWEB_DEFAULT_PUSH_SITES.map((site) => site.agent_site_id),
+    );
+    return (listing.sites ?? []).some(
+      (site) =>
+        defaultSiteIds.has(Number(site.agent_site_id)) &&
+        site.selected === true,
+    );
   }
 
   private resolveScopeId(userProperty: UserProperty): EstateWebScope {

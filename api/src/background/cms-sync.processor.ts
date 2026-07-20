@@ -430,10 +430,10 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
               error: 'No integration property id for remove',
             };
           }
-          await adapter.pushRemove(userIntegrationId, integrationId);
-          await this.clearIntegrationPropertyId(
-            operation.user_property_id,
-            userProperty.user_id,
+          await adapter.pushRemove(
+            userIntegrationId,
+            integrationId,
+            userProperty,
           );
           this.logger.log(
             `CMS sync op success: property=${operation.user_property_id} operation=REMOVE integration_property_id=${integrationId}`,
@@ -443,7 +443,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             operation: 'REMOVE',
             success: true,
             property_title: propertyTitle,
-            integration_property_id: null,
+            integration_property_id: integrationId,
           };
         }
       }
@@ -532,16 +532,6 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         integration_property_id: integrationPropertyId,
         pending_crm_update: false,
       },
-    });
-  }
-
-  private async clearIntegrationPropertyId(
-    userPropertyId: string,
-    userId: string,
-  ): Promise<void> {
-    await this.prisma.userProperty.updateMany({
-      where: { user_id: userId, id: userPropertyId },
-      data: { integration_property_id: null },
     });
   }
 
