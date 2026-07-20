@@ -163,6 +163,7 @@ export const ApiRoutes = {
     cmsSyncRuns: {
         prefix: "/cms-sync-runs",
         list: "/cms-sync-runs",
+        detail: (id: string) => `/cms-sync-runs/${id}`,
     },
     userProperties: {
         prefix: "/properties",

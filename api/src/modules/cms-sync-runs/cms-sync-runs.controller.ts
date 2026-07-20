@@ -1,7 +1,8 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -44,5 +45,14 @@ export class CmsSyncRunsController {
     @CurrentUser('id') userId: string,
   ) {
     return this.cmsSyncRunsService.findAllForUser(userId, query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: "Get a single CMS sync run for the current user" })
+  @ApiResponse({ status: 200, description: 'CMS sync run detail' })
+  @ApiResponse({ status: 404, description: 'CMS sync run not found' })
+  @ApiParam({ name: 'id', type: String })
+  findOne(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    return this.cmsSyncRunsService.findOneForUser(userId, id);
   }
 }

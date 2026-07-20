@@ -13,7 +13,10 @@ export const Routes = {
             detail: (id: string) => `/dashboard/properties/${id}`,
         },
         integrations: "/dashboard/integrations",
-        syncRuns: "/dashboard/sync-runs",
+        syncRuns: {
+            list: "/dashboard/sync-runs",
+            detail: (id: string) => `/dashboard/sync-runs/${id}`,
+        },
         account: "/dashboard/account",
     },
     admin: {

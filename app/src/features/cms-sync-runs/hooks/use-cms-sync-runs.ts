@@ -6,6 +6,7 @@ import {
   getAdminCmsSyncRun,
   getAdminCmsSyncRunIntegrations,
   getAdminCmsSyncRuns,
+  getUserCmsSyncRun,
   getUserCmsSyncRuns,
   retryAdminCmsSyncRun,
 } from "../services/cms-sync-runs.services";
@@ -20,6 +21,20 @@ export const useUserCmsSyncRuns = (query: CmsSyncRunListQuery) => {
   return useQuery({
     queryKey: ["cmsSyncRuns", "userList", query],
     queryFn: () => getUserCmsSyncRuns(query),
+  });
+};
+
+export const useUserCmsSyncRun = (id: string) => {
+  return useQuery({
+    queryKey: ["cmsSyncRuns", "userDetail", id],
+    queryFn: () => getUserCmsSyncRun(id),
+    enabled: !!id,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === CmsSyncStatuses.PENDING || status === CmsSyncStatuses.RETRYING
+        ? 2000
+        : false;
+    },
   });
 };
 

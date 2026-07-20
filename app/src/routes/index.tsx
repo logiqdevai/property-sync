@@ -33,6 +33,7 @@ import DashboardPropertiesListPage from "@/pages/dashboard/properties";
 import DashboardPropertyDetailPage from "@/pages/dashboard/properties/detail";
 import DashboardIntegrationsPage from "@/pages/dashboard/integrations";
 import DashboardSyncRunsPage from "@/pages/dashboard/sync-runs";
+import DashboardSyncRunDetailPage from "@/pages/dashboard/sync-runs/detail";
 import DashboardAccountPage from "@/pages/dashboard/account";
 import IntegrationTargetsListPage from "@/pages/admin/integration-targets";
 import IntegrationTargetDetailPage from "@/pages/admin/integration-targets/detail";
@@ -75,7 +76,8 @@ export default function AppRoutes() {
         <Route path="properties/:id" element={<DashboardPropertyDetailPage />} />
         <Route path="integrations" element={<DashboardIntegrationsPage />} />
         <Route path="sync-runs" element={<DashboardSyncRunsPage />} />
-        <Route path="crawl-runs" element={<Navigate to={Routes.dashboard.syncRuns} replace />} />
+        <Route path="sync-runs/:id" element={<DashboardSyncRunDetailPage />} />
+        <Route path="crawl-runs" element={<Navigate to={Routes.dashboard.syncRuns.list} replace />} />
         <Route path="account" element={<DashboardAccountPage />} />
       </Route>
 

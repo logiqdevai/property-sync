@@ -156,6 +156,21 @@ export class CmsSyncRunsService {
     return run;
   }
 
+  async findOneForUser(userId: string, id: string) {
+    const run = await this.prisma.cmsSyncRun.findFirst({
+      where: {
+        id,
+        user_integration: {
+          user_id: userId,
+          integration_target: { integration_type: IntegrationType.ESTATEWEB },
+        },
+      },
+      include: listInclude,
+    });
+    if (!run) throw new NotFoundException('CMS sync run not found');
+    return run;
+  }
+
   async delete(id: string) {
     const run = await this.prisma.cmsSyncRun.findUnique({
       where: { id },

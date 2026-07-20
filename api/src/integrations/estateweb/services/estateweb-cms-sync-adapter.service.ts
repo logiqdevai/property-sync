@@ -58,6 +58,10 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     this.assertRequiredFields(userProperty);
 
     const payload = this.buildPayload(userProperty);
+    payload.sites = ESTATEWEB_DEFAULT_PUSH_SITES.map((site) => ({
+      ...site,
+      selected: false,
+    }));
     this.logger.log(
       `EstateWeb CREATE payload: type_id=${payload.type_id} location_id=${payload.location_id} scope_id=${payload.scope_id} fields=${payload.fields?.length ?? 0} price=${payload.price ?? 'null'}`,
     );
@@ -83,6 +87,10 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       userProperty,
       Number(integrationPropertyId),
     ) as EstateWebUpdatePropertyPayload;
+    payload.sites = ESTATEWEB_DEFAULT_PUSH_SITES.map((site) => ({
+      ...site,
+      selected: false,
+    }));
     await this.estateWebPropertyService.updateProperty(
       userIntegrationId,
       integrationPropertyId,
@@ -142,7 +150,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       coop_id: 0,
       to_client_id: 0,
       code: userProperty?.internal_id ?? userProperty?.property_id ?? '',
-      address: userProperty?.address ?? '',
+      address: '',
       zip: userProperty?.postal_code ?? '',
       price_start: priceStart,
       price,

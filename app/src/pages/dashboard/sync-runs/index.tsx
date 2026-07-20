@@ -1,18 +1,18 @@
 import { useMemo, useState } from "react";
-import { Table, Select, ListBox, Pagination, useOverlayState } from "@heroui/react";
+import { useNavigate } from "react-router-dom";
+import { Table, Select, ListBox, Pagination } from "@heroui/react";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { CmsSyncRunFailuresModal } from "@/components/ui/cms-sync-run-failures-modal";
 import { useUserIntegrationConnections } from "@/features/user-integrations/hooks/use-user-integrations";
 import { useUserCmsSyncRuns } from "@/features/cms-sync-runs/hooks/use-cms-sync-runs";
 import type {
   CmsSyncStatus,
-  CmsSyncRun,
   CmsSyncRunListQuery,
 } from "@/features/cms-sync-runs/interfaces/cms-sync-runs.interfaces";
 import { CmsSyncStatusChip } from "./components/cms-sync-status-chip";
 import { CmsSyncStatusFilterOptions } from "@/config/constants/dropdowns/cms-sync-status-filter.options";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
+import { Routes } from "@/routes/routes";
 import { formatDateTime } from "@/lib/date";
 import { durationMsFromRange, formatDuration } from "@/lib/duration";
 
@@ -32,18 +32,12 @@ function connectionEmail(connection: {
 }
 
 export default function DashboardSyncRunsPage() {
-  const failuresModal = useOverlayState();
-  const [selectedRun, setSelectedRun] = useState<CmsSyncRun | null>(null);
+  const navigate = useNavigate();
   const [status, setStatus] = useState<CmsSyncStatus | "all">("all");
   const [integrationId, setIntegrationId] = useState<string | "all">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
-
-  const openFailures = (run: CmsSyncRun) => {
-    setSelectedRun(run);
-    failuresModal.open();
-  };
 
   const query = useMemo<CmsSyncRunListQuery>(
     () => ({
@@ -169,9 +163,13 @@ export default function DashboardSyncRunsPage() {
                   {runs.map((run) => (
                     <Table.Row key={run.id} id={run.id}>
                       <Table.Cell>
-                        <span className="font-medium text-foreground">
-                          {run.crawl_run?.source_agency?.name ?? "—"}
-                        </span>
+                        <button
+                          type="button"
+                          className="font-medium text-accent hover:underline text-left"
+                          onClick={() => navigate(Routes.dashboard.syncRuns.detail(run.id))}
+                        >
+                          {run.crawl_run?.source_agency?.name ?? "View run"}
+                        </button>
                       </Table.Cell>
                       <Table.Cell>
                         <span className="text-sm text-foreground">
@@ -193,17 +191,11 @@ export default function DashboardSyncRunsPage() {
                         <span className="font-mono text-sm text-foreground">{run.total_removed}</span>
                       </Table.Cell>
                       <Table.Cell>
-                        {run.total_failed > 0 ? (
-                          <button
-                            type="button"
-                            className="font-mono text-sm text-danger hover:underline"
-                            onClick={() => openFailures(run)}
-                          >
-                            {run.total_failed}
-                          </button>
-                        ) : (
-                          <span className="font-mono text-sm text-foreground">{run.total_failed}</span>
-                        )}
+                        <span
+                          className={`font-mono text-sm ${run.total_failed > 0 ? "text-danger" : "text-foreground"}`}
+                        >
+                          {run.total_failed}
+                        </span>
                       </Table.Cell>
                       <Table.Cell>
                         <span className="font-mono text-sm text-foreground">
@@ -247,8 +239,6 @@ export default function DashboardSyncRunsPage() {
           </Pagination.Content>
         </Pagination>
       )}
-
-      <CmsSyncRunFailuresModal state={failuresModal} run={selectedRun} />
     </div>
   );
 }
