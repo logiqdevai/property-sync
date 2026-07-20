@@ -93,6 +93,7 @@ export interface UserPropertyListQuery {
   page?: number;
   limit?: number;
   status?: PropertyStatus;
+  search?: string;
   city?: string;
   price_min?: number;
   price_max?: number;

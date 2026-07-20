@@ -17,6 +17,7 @@ import {
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
+import { toCmsSyncOperationType } from '@/modules/cms-sync/interfaces/cms-sync-batch.interface';
 import { ScraperFailureHandlerService } from '@/background/scraper-failure-handler.service';
 import {
   CrawlRunStatus,
@@ -368,10 +369,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
                   crawlRunId,
                   affected.map((a) => ({
                     user_property_id: a.user_property_id,
-                    change_type: a.change_type.toUpperCase() as
-                      | 'CREATE'
-                      | 'UPDATE'
-                      | 'REMOVE',
+                    change_type: toCmsSyncOperationType(a.change_type),
                     user_property: undefined,
                   })),
                 );

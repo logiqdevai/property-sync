@@ -82,6 +82,22 @@ export class UserPropertiesService {
     return {
       user_id: userId,
       ...(query.status && { status: query.status }),
+      ...(query.search && {
+        OR: [
+          { id: { equals: query.search } },
+          { property_id: { contains: query.search, mode: 'insensitive' } },
+          { internal_id: { contains: query.search, mode: 'insensitive' } },
+          {
+            integration_property_id: {
+              contains: query.search,
+              mode: 'insensitive',
+            },
+          },
+          { title: { contains: query.search, mode: 'insensitive' } },
+          { city: { contains: query.search, mode: 'insensitive' } },
+          { district: { contains: query.search, mode: 'insensitive' } },
+        ],
+      }),
       ...(query.city && {
         city: { contains: query.city, mode: 'insensitive' },
       }),
@@ -1005,6 +1021,12 @@ export class UserPropertiesService {
           { id: { equals: query.search } },
           { property_id: { contains: query.search, mode: 'insensitive' } },
           { internal_id: { contains: query.search, mode: 'insensitive' } },
+          {
+            integration_property_id: {
+              contains: query.search,
+              mode: 'insensitive',
+            },
+          },
           { title: { contains: query.search, mode: 'insensitive' } },
           { city: { contains: query.search, mode: 'insensitive' } },
           { district: { contains: query.search, mode: 'insensitive' } },

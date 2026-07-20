@@ -6,6 +6,7 @@ import {
 export const NotificationTypeLabels: Record<NotificationType, string> = {
   [NotificationTypes.BROKEN_SCRAPER]: "Broken scraper",
   [NotificationTypes.CMS_SYNC_FAILURE]: "CMS sync failure",
+  [NotificationTypes.CMS_SYNC_SUCCESS]: "CMS sync completed",
   [NotificationTypes.PROPERTY_REMOVAL_SPIKE]: "Removal spike",
   [NotificationTypes.LARGE_CRAWL_FAILURE]: "Crawl failure",
   [NotificationTypes.QUEUE_FAILURE]: "Queue failure",

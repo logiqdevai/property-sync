@@ -4,6 +4,7 @@ import {
   Button,
   Checkbox,
   Chip,
+  Input,
   Pagination,
   Select,
   ListBox,
@@ -24,7 +25,10 @@ import {
   TableRowActionsMenu,
   type TableRowAction,
 } from "@/components/ui/table-row-actions-menu";
-import type { PropertyStatus } from "@/features/properties/interfaces/properties.interfaces";
+import {
+  PropertyStatuses,
+  type PropertyStatus,
+} from "@/features/properties/interfaces/properties.interfaces";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
 import { PropertyDuplicateGroupFilterOptions } from "@/config/constants/dropdowns/property-duplicate-group-filter.options";
 import { PropertyCrmPushFilterOptions } from "@/config/constants/dropdowns/property-crm-push-filter.options";
@@ -79,6 +83,7 @@ export default function DashboardPropertiesListPage() {
   const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
 
   const [status, setStatus] = useState<PropertyStatus | "all">("all");
+  const [search, setSearch] = useState("");
   const [trackedAgencyId, setTrackedAgencyId] = useState<string | "all">("all");
   const [duplicateGroup, setDuplicateGroup] = useState<"all" | "true" | "false">("all");
   const [pushedToCrm, setPushedToCrm] = useState<"all" | "true" | "false">("all");
@@ -95,6 +100,7 @@ export default function DashboardPropertiesListPage() {
       page,
       limit,
       ...(status !== "all" && { status }),
+      ...(search.trim() && { search: search.trim() }),
       ...(trackedAgencyId !== "all" && { user_tracked_agency_id: trackedAgencyId }),
       ...(duplicateGroup !== "all" && {
         has_duplicate_group: duplicateGroup === "true",
@@ -112,6 +118,7 @@ export default function DashboardPropertiesListPage() {
       page,
       limit,
       status,
+      search,
       trackedAgencyId,
       duplicateGroup,
       pushedToCrm,
@@ -317,6 +324,15 @@ export default function DashboardPropertiesListPage() {
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
+        <Input
+          placeholder="Search property id, internal id, CRM id, title, or city…"
+          value={search}
+          onChange={(e) => {
+            setPage(1);
+            setSearch(e.target.value);
+          }}
+          className="w-80"
+        />
         <Select
           aria-label="Filter by status"
           selectedKey={status}
@@ -521,9 +537,13 @@ export default function DashboardPropertiesListPage() {
                 </Table.Header>
                 <Table.Body>
                   {properties.map((property) => {
-                    const groupCellClass = property.duplicate_group_id
-                      ? getDuplicateGroupRowClasses(property.duplicate_group_id)
-                      : undefined;
+                    const isRemoved = property.status === PropertyStatuses.REMOVED;
+                    const groupCellClass = cn(
+                      property.duplicate_group_id
+                        ? getDuplicateGroupRowClasses(property.duplicate_group_id)
+                        : undefined,
+                      isRemoved && "opacity-60",
+                    );
                     const rowActions: TableRowAction[] = [
                       {
                         ...PROPERTY_PUSH_ACTION,
@@ -554,7 +574,14 @@ export default function DashboardPropertiesListPage() {
                         </Checkbox>
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>
-                        <span className="font-medium text-foreground">{property.title}</span>
+                        <span
+                          className={cn(
+                            "font-medium text-foreground",
+                            isRemoved && "line-through",
+                          )}
+                        >
+                          {property.title}
+                        </span>
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>{property.city ?? "—"}</Table.Cell>
                       <Table.Cell className={groupCellClass}>

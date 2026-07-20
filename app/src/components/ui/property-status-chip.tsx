@@ -1,6 +1,5 @@
 import { Chip } from "@heroui/react";
-import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
-import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
+import { getPropertyStatusLabel } from "@/config/constants/dropdowns/property-status-form.options";
 import {
   PropertyStatuses,
   type PropertyStatus,
@@ -22,7 +21,7 @@ interface PropertyStatusChipProps {
 export function PropertyStatusChip({ status }: PropertyStatusChipProps) {
   return (
     <Chip color={statusColor[status]} size="sm" variant="soft">
-      <Chip.Label>{getDropdownOptionLabel(PropertyStatusFilterOptions, status)}</Chip.Label>
+      <Chip.Label>{getPropertyStatusLabel(status)}</Chip.Label>
     </Chip>
   );
 }

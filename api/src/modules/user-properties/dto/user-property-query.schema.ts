@@ -22,6 +22,7 @@ export const UserPropertyQuerySchema = z.object({
       return Math.min(parsed, 100);
     }),
   status: z.nativeEnum(PropertyStatus).optional(),
+  search: z.string().optional(),
   city: z.string().optional(),
   price_min: z
     .string()

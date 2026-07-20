@@ -112,6 +112,14 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         status: CmsSyncStatus.SUCCESS,
       });
       await this.crawlRunsService.recalculateCmsSyncTotals(crawl_run_id);
+      this.notifySyncCompleted({
+        cmsSyncRunId: cms_sync_run_id,
+        crawlRunId: crawl_run_id,
+        sourceAgencyId: syncRun.crawl_run?.source_agency_id ?? payload.source_agency_id,
+        created: syncRun.total_created,
+        updated: syncRun.total_updated,
+        removed: syncRun.total_removed,
+      });
       return;
     }
 
@@ -177,13 +185,46 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
           title: 'CMS sync batch failed',
           message: `CmsSyncRun ${cms_sync_run_id} exhausted all retries. ${failureSummary}`,
           crawl_run_id: crawl_run_id,
+          source_agency_id:
+            syncRun.crawl_run?.source_agency_id ?? payload.source_agency_id,
         });
       } else {
         throw new Error(
           `CmsSyncRun ${cms_sync_run_id}: ${mergedResult.failed} property push(es) failed; scheduling retry. ${failureSummary}`,
         );
       }
+      return;
     }
+
+    this.notifySyncCompleted({
+      cmsSyncRunId: cms_sync_run_id,
+      crawlRunId: crawl_run_id,
+      sourceAgencyId:
+        syncRun.crawl_run?.source_agency_id ?? payload.source_agency_id,
+      created: mergedResult.created,
+      updated: mergedResult.updated,
+      removed: mergedResult.removed,
+    });
+  }
+
+  private notifySyncCompleted(params: {
+    cmsSyncRunId: string;
+    crawlRunId: string;
+    sourceAgencyId?: string;
+    created: number;
+    updated: number;
+    removed: number;
+  }): void {
+    const { cmsSyncRunId, crawlRunId, sourceAgencyId, created, updated, removed } =
+      params;
+    this.notificationsService.create({
+      type: NotificationType.CMS_SYNC_SUCCESS,
+      severity: NotificationSeverity.INFO,
+      title: 'CMS sync completed',
+      message: `CmsSyncRun ${cmsSyncRunId} completed. Created ${created}, updated ${updated}, removed ${removed}.`,
+      crawl_run_id: crawlRunId,
+      source_agency_id: sourceAgencyId,
+    });
   }
 
   private async executeOperations(

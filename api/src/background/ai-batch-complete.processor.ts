@@ -4,6 +4,7 @@ import { Job } from 'bullmq';
 import { AI_BATCH_COMPLETE_QUEUE } from '@/core/queues/queues.constants';
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
+import { toCmsSyncOperationType } from '@/modules/cms-sync/interfaces/cms-sync-batch.interface';
 import {
   NotificationSeverity,
   NotificationType,
@@ -43,10 +44,7 @@ export class AiBatchCompleteProcessor extends WorkerHost {
               crawlRunId,
               affected.map((a) => ({
                 user_property_id: a.user_property_id,
-                change_type: a.change_type.toUpperCase() as
-                  | 'CREATE'
-                  | 'UPDATE'
-                  | 'REMOVE',
+                change_type: toCmsSyncOperationType(a.change_type),
                 user_property: undefined,
               })),
             );

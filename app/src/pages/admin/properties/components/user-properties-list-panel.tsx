@@ -37,10 +37,11 @@ import type {
   AdminUserPropertyCountQuery,
   AdminUserPropertyListQuery,
 } from "@/features/user-properties/interfaces/user-properties.interfaces";
-import type {
-  ListingType,
-  PropertyStatus,
-  PropertyType,
+import {
+  PropertyStatuses,
+  type ListingType,
+  type PropertyStatus,
+  type PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
 import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/listing-type-filter.options";
@@ -301,13 +302,13 @@ export function UserPropertiesListPanel() {
 
       <div className="flex items-center gap-3 flex-wrap">
         <Input
-          placeholder="Search id, title, city, or email…"
+          placeholder="Search property id, internal id, CRM id, title, city, or email…"
           value={search}
           onChange={(e) => {
             setPage(1);
             setSearch(e.target.value);
           }}
-          className="w-64"
+          className="w-80"
         />
         <Select
           aria-label="Filter by user"
@@ -587,9 +588,13 @@ export function UserPropertiesListPanel() {
                 </Table.Header>
                 <Table.Body>
                   {properties.map((property) => {
-                    const groupCellClass = property.duplicate_group_id
-                      ? getDuplicateGroupRowClasses(property.duplicate_group_id)
-                      : undefined;
+                    const isRemoved = property.status === PropertyStatuses.REMOVED;
+                    const groupCellClass = cn(
+                      property.duplicate_group_id
+                        ? getDuplicateGroupRowClasses(property.duplicate_group_id)
+                        : undefined,
+                      isRemoved && "opacity-60",
+                    );
 
                     return (
                       <Table.Row key={property.id} id={property.id}>
@@ -609,7 +614,10 @@ export function UserPropertiesListPanel() {
                         <Table.Cell className={groupCellClass}>
                           <button
                             type="button"
-                            className="text-left text-foreground hover:text-accent transition-colors font-medium"
+                            className={cn(
+                              "text-left text-foreground hover:text-accent transition-colors font-medium",
+                              isRemoved && "line-through",
+                            )}
                             onClick={() =>
                               navigate(
                                 Routes.admin.properties.userDetail(property.id),

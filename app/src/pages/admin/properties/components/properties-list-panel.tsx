@@ -35,6 +35,7 @@ import {
   useTruncatePropertyDescriptions,
 } from "@/features/properties/hooks/use-properties";
 import {
+  PropertyStatuses,
   type ListingType,
   type PropertyCountQuery,
   type PropertyListQuery,
@@ -277,13 +278,13 @@ export function PropertiesListPanel() {
 
       <div className="flex items-center gap-3 flex-wrap">
         <Input
-          placeholder="Search id, title, or city…"
+          placeholder="Search property id, internal id, title, or city…"
           value={search}
           onChange={(e) => {
             setPage(1);
             setSearch(e.target.value);
           }}
-          className="w-56"
+          className="w-72"
         />
         <Select
           aria-label="Filter by status"
@@ -487,9 +488,13 @@ export function PropertiesListPanel() {
                 </Table.Header>
                 <Table.Body>
                   {properties.map((property) => {
-                    const groupCellClass = property.duplicate_group_id
-                      ? getDuplicateGroupRowClasses(property.duplicate_group_id)
-                      : undefined;
+                    const isRemoved = property.status === PropertyStatuses.REMOVED;
+                    const groupCellClass = cn(
+                      property.duplicate_group_id
+                        ? getDuplicateGroupRowClasses(property.duplicate_group_id)
+                        : undefined,
+                      isRemoved && "opacity-60",
+                    );
 
                     return (
                     <Table.Row key={property.id} id={property.id}>
@@ -509,7 +514,10 @@ export function PropertiesListPanel() {
                       <Table.Cell className={groupCellClass}>
                         <button
                           type="button"
-                          className="text-left text-foreground hover:text-accent transition-colors font-medium"
+                          className={cn(
+                            "text-left text-foreground hover:text-accent transition-colors font-medium",
+                            isRemoved && "line-through",
+                          )}
                           onClick={() => navigate(Routes.admin.properties.detail(property.id))}
                         >
                           {property.title}

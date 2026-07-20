@@ -2,6 +2,23 @@ import { UserProperty } from 'generated/prisma';
 
 export type CmsSyncOperationType = 'CREATE' | 'UPDATE' | 'REMOVE';
 
+export type PropertySyncChangeType = 'created' | 'updated' | 'removed';
+
+const PROPERTY_SYNC_TO_CMS_OPERATION: Record<
+  PropertySyncChangeType,
+  CmsSyncOperationType
+> = {
+  created: 'CREATE',
+  updated: 'UPDATE',
+  removed: 'REMOVE',
+};
+
+export function toCmsSyncOperationType(
+  changeType: PropertySyncChangeType,
+): CmsSyncOperationType {
+  return PROPERTY_SYNC_TO_CMS_OPERATION[changeType];
+}
+
 export interface AffectedUserProperty {
   user_property_id: string;
   change_type: CmsSyncOperationType;
