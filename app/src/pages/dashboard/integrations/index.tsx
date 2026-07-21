@@ -36,6 +36,7 @@ import { integrationSupportsWebhookUrl } from "@/lib/integration-webhook-url";
 import { LinkConnectionToAgencyModal } from "./components/link-connection-to-agency-modal";
 import { AllConnectionsModal } from "./components/all-connections-modal";
 import { IntegrationConnectionItem } from "./components/integration-connection-item";
+import { IntegrationSettingsModal } from "./components/integration-settings-modal";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
@@ -62,6 +63,7 @@ function TargetCard({
   onToggleActive,
   onSetDefault,
   onShowAll,
+  onConfigure,
   isPending,
   isAdmin,
 }: {
@@ -73,6 +75,7 @@ function TargetCard({
   onToggleActive: (connection: MaskedUserIntegrationConnection, next: boolean) => void;
   onSetDefault: (connection: MaskedUserIntegrationConnection) => void;
   onShowAll: (target: AvailableIntegrationTarget) => void;
+  onConfigure: (target: AvailableIntegrationTarget) => void;
   isPending: boolean;
   isAdmin: boolean;
 }) {
@@ -94,11 +97,23 @@ function TargetCard({
           <p className="text-xs text-muted">{getAuthTypeLabel(target.auth_type)}</p>
           {target.base_url && <p className="text-xs text-muted truncate">{target.base_url}</p>}
         </div>
-        {(!target.is_connected || target.allow_multiple) ? (
-          <ActionButtonWithPending size="sm" onPress={() => onConnect(target)} isDisabled={isPending}>
-            Connect
-          </ActionButtonWithPending>
-        ) : null}
+        <div className="flex flex-col items-end gap-2">
+          {(!target.is_connected || target.allow_multiple) ? (
+            <ActionButtonWithPending size="sm" onPress={() => onConnect(target)} isDisabled={isPending}>
+              Connect
+            </ActionButtonWithPending>
+          ) : null}
+          {target.is_connected && target.integration_type === IntegrationTypes.ESTATEWEB ? (
+            <ActionButtonWithPending
+              size="sm"
+              variant="secondary"
+              onPress={() => onConfigure(target)}
+              isDisabled={isPending}
+            >
+              Configure
+            </ActionButtonWithPending>
+          ) : null}
+        </div>
       </div>
 
       {targetConnections.length > 0 && (
@@ -150,9 +165,13 @@ export default function DashboardIntegrationsPage() {
   const disconnectConfirm = useOverlayState();
   const linkAgencyModal = useOverlayState();
   const showAllModal = useOverlayState();
+  const settingsModal = useOverlayState();
 
   const [selectedTarget, setSelectedTarget] = useState<AvailableIntegrationTarget | null>(null);
   const [showAllTarget, setShowAllTarget] = useState<AvailableIntegrationTarget | null>(null);
+  const [configuringTarget, setConfiguringTarget] = useState<AvailableIntegrationTarget | null>(
+    null,
+  );
   const [editingConnection, setEditingConnection] = useState<MaskedUserIntegrationConnection | null>(
     null,
   );
@@ -244,6 +263,11 @@ export default function DashboardIntegrationsPage() {
   const openShowAll = (target: AvailableIntegrationTarget) => {
     setShowAllTarget(target);
     showAllModal.open();
+  };
+
+  const openConfigure = (target: AvailableIntegrationTarget) => {
+    setConfiguringTarget(target);
+    settingsModal.open();
   };
 
   const showAllConnections = useMemo(() => {
@@ -382,6 +406,7 @@ export default function DashboardIntegrationsPage() {
                 updateDefault.mutate({ id: connection.id, isDefault: true })
               }
               onShowAll={openShowAll}
+              onConfigure={openConfigure}
               isPending={isPending}
               isAdmin={isAdmin}
             />
@@ -576,6 +601,8 @@ export default function DashboardIntegrationsPage() {
         }
         isAdmin={isAdmin}
       />
+
+      <IntegrationSettingsModal state={settingsModal} target={configuringTarget} />
     </div>
   );
 }

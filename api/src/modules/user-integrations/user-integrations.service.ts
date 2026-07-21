@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { AuthRole, IntegrationType } from 'generated/prisma';
+import { AuthRole, IntegrationType, Prisma } from 'generated/prisma';
 import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import {
   applyCredentialFields,
@@ -16,10 +16,12 @@ import {
   validateAiIntegrationWebhookKey,
 } from '@/modules/integration-targets/utils/ai-integration.util';
 import { maskUserIntegration } from '@/modules/integration-targets/utils/mask-credentials.util';
+import { ensureUserIntegrationSettings } from '@/modules/integration-targets/utils/user-integration-settings.util';
 import {
   CreateUserIntegrationDto,
   UpdateUserIntegrationDto,
 } from './dto/user-integration.dto';
+import { UpdateUserIntegrationSettingsDto } from './dto/user-integration-settings.dto';
 import {
   ResolvedApiKey,
   ResolvedSourceAgencyApiKey,
@@ -131,13 +133,76 @@ export class UserIntegrationsService {
             is_enabled: true,
           },
         },
+        settings: true,
       },
     });
 
     return connections.map((connection) => ({
       ...maskUserIntegration(connection),
       integration_target: connection.integration_target,
+      settings: connection.settings,
     }));
+  }
+
+  async getSettings(userId: string, targetId: string) {
+    await this.ensureVisibleTarget(targetId);
+
+    const settings = await this.prisma.userIntegrationSettings.findUnique({
+      where: {
+        user_id_integration_target_id: {
+          user_id: userId,
+          integration_target_id: targetId,
+        },
+      },
+    });
+
+    return (
+      settings ?? {
+        id: null,
+        user_id: userId,
+        integration_target_id: targetId,
+        settings: null,
+        created_at: null,
+        updated_at: null,
+      }
+    );
+  }
+
+  async updateSettings(
+    userId: string,
+    targetId: string,
+    dto: UpdateUserIntegrationSettingsDto,
+  ) {
+    await this.ensureVisibleTarget(targetId);
+
+    return this.prisma.userIntegrationSettings.upsert({
+      where: {
+        user_id_integration_target_id: {
+          user_id: userId,
+          integration_target_id: targetId,
+        },
+      },
+      create: {
+        user_id: userId,
+        integration_target_id: targetId,
+        settings: (dto.settings ?? {}) as Prisma.InputJsonValue,
+      },
+      update: {
+        settings: dto.settings as Prisma.InputJsonValue | undefined,
+      },
+    });
+  }
+
+  private async ensureVisibleTarget(targetId: string) {
+    const target = await this.prisma.integrationTarget.findUnique({
+      where: { id: targetId },
+    });
+
+    if (!target || !target.is_visible) {
+      throw new NotFoundException('Integration target not found');
+    }
+
+    return target;
   }
 
   async createConnection(
@@ -191,10 +256,17 @@ export class UserIntegrationsService {
         })
       : 0;
 
+    const settings = await ensureUserIntegrationSettings(
+      this.prisma,
+      userId,
+      target.id,
+    );
+
     const connection = await this.prisma.userIntegration.create({
       data: {
         user_id: userId,
         integration_target_id: target.id,
+        user_integration_settings_id: settings.id,
         is_default: target.allow_multiple && existingCount === 0,
         ...applyCredentialFields(dto),
       },

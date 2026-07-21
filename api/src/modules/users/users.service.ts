@@ -229,6 +229,7 @@ export class UsersService {
                 base_url: true,
               },
             },
+            settings: true,
           },
           orderBy: { created_at: 'desc' },
         },

@@ -33,6 +33,26 @@ export class AvailableIntegrationTargetEntity {
   updated_at: Date;
 }
 
+export class UserIntegrationSettingsEntity {
+  @ApiProperty({ nullable: true })
+  id: string | null;
+
+  @ApiProperty()
+  integration_target_id: string;
+
+  @ApiProperty()
+  user_id: string;
+
+  @ApiProperty({ nullable: true, type: Object })
+  settings: Record<string, unknown> | null;
+
+  @ApiProperty({ nullable: true })
+  created_at: Date | null;
+
+  @ApiProperty({ nullable: true })
+  updated_at: Date | null;
+}
+
 export class UserIntegrationConnectionEntity {
   @ApiProperty()
   id: string;
@@ -42,6 +62,9 @@ export class UserIntegrationConnectionEntity {
 
   @ApiProperty()
   user_id: string;
+
+  @ApiProperty()
+  user_integration_settings_id: string;
 
   @ApiProperty({ nullable: true })
   api_key_secret: string | null;
@@ -92,4 +115,7 @@ export class UserIntegrationConnectionEntity {
     is_visible: boolean;
     is_enabled: boolean;
   };
+
+  @ApiProperty({ type: UserIntegrationSettingsEntity })
+  settings: UserIntegrationSettingsEntity;
 }

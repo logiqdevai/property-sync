@@ -1,5 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class UserIntegrationSettingsEntity {
+  @ApiProperty({ nullable: true })
+  id: string | null;
+
+  @ApiProperty()
+  integration_target_id: string;
+
+  @ApiProperty()
+  user_id: string;
+
+  @ApiProperty({ nullable: true, type: Object })
+  settings: Record<string, unknown> | null;
+
+  @ApiProperty({ nullable: true })
+  created_at: Date | null;
+
+  @ApiProperty({ nullable: true })
+  updated_at: Date | null;
+}
+
 export class MaskedUserIntegrationEntity {
   @ApiProperty()
   id: string;
@@ -51,4 +71,7 @@ export class MaskedUserIntegrationEntity {
     id: string;
     email: string;
   };
+
+  @ApiProperty({ type: UserIntegrationSettingsEntity, required: false })
+  settings?: UserIntegrationSettingsEntity;
 }

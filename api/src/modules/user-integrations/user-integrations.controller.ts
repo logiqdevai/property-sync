@@ -27,9 +27,11 @@ import {
   UpdateUserIntegrationDefaultDto,
   UpdateUserIntegrationStatusDto,
 } from './dto/user-integration.dto';
+import { UpdateUserIntegrationSettingsDto } from './dto/user-integration-settings.dto';
 import {
   AvailableIntegrationTargetEntity,
   UserIntegrationConnectionEntity,
+  UserIntegrationSettingsEntity,
 } from './entities/user-integration-connection.entity';
 
 @ApiTags('Integrations')
@@ -120,6 +122,35 @@ export class UserIntegrationsController {
       id,
       dto.is_default,
     );
+  }
+
+  @Get('targets/:targetId/settings')
+  @ApiOperation({
+    summary:
+      'Get the shared configuration for the current user\'s connection to an integration target',
+  })
+  @ApiResponse({ status: 200, type: UserIntegrationSettingsEntity })
+  @ApiResponse({ status: 404, description: 'Integration target not found' })
+  getSettings(
+    @CurrentUser('id') userId: string,
+    @Param('targetId') targetId: string,
+  ) {
+    return this.userIntegrationsService.getSettings(userId, targetId);
+  }
+
+  @Patch('targets/:targetId/settings')
+  @ApiOperation({
+    summary:
+      'Update the shared configuration for the current user\'s connection to an integration target',
+  })
+  @ApiResponse({ status: 200, type: UserIntegrationSettingsEntity })
+  @ApiResponse({ status: 404, description: 'Integration target not found' })
+  updateSettings(
+    @CurrentUser('id') userId: string,
+    @Param('targetId') targetId: string,
+    @Body() dto: UpdateUserIntegrationSettingsDto,
+  ) {
+    return this.userIntegrationsService.updateSettings(userId, targetId, dto);
   }
 
   @Delete('connections/:id')

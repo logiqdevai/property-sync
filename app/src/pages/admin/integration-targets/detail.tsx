@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Pencil } from "lucide-react";
+import { Pencil, Settings } from "lucide-react";
 import { Form, Input, Label, Modal, Switch, Table, useOverlayState } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import { Routes } from "@/routes/routes";
@@ -16,7 +16,10 @@ import {
   useUpdateIntegrationTarget,
   useUpdateIntegrationTargetAccount,
 } from "@/features/integration-targets/hooks/use-integration-targets";
-import type { MaskedUserIntegration } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
+import {
+  IntegrationTypes,
+  type MaskedUserIntegration,
+} from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import {
   CredentialStatusIndicators,
   IntegrationCredentialFields,
@@ -30,6 +33,7 @@ import {
 } from "@/features/user-integrations/validation-schemas/user-integrations.schema";
 import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
 import { getAuthTypeLabel } from "@/config/constants/dropdowns/auth-type-form.options";
+import { IntegrationTargetSettingsModal } from "./components/integration-target-settings-modal";
 
 type AddAccountFormValues = ConnectCredentialsFormValues & { user_id: string };
 
@@ -39,8 +43,12 @@ export default function IntegrationTargetDetailPage() {
   const deleteConfirm = useOverlayState();
   const addAccountModal = useOverlayState();
   const editAccountModal = useOverlayState();
+  const settingsModal = useOverlayState();
 
   const [editingAccount, setEditingAccount] = useState<MaskedUserIntegration | null>(null);
+  const [configuringAccount, setConfiguringAccount] = useState<MaskedUserIntegration | null>(
+    null,
+  );
 
   const { data: target, isPending } = useIntegrationTarget(id);
   const updateTarget = useUpdateIntegrationTarget();
@@ -85,6 +93,11 @@ export default function IntegrationTargetDetailPage() {
   const openEditAccount = (account: MaskedUserIntegration) => {
     setEditingAccount(account);
     editAccountModal.open();
+  };
+
+  const openConfigureAccount = (account: MaskedUserIntegration) => {
+    setConfiguringAccount(account);
+    settingsModal.open();
   };
 
   const handleDelete = async () => {
@@ -240,8 +253,21 @@ export default function IntegrationTargetDetailPage() {
                                 icon: Pencil,
                                 isDisabled: updateAccount.isPending,
                               },
+                              ...(target.integration_type === IntegrationTypes.ESTATEWEB
+                                ? [
+                                    {
+                                      id: "configure",
+                                      label: "Configure",
+                                      icon: Settings,
+                                    },
+                                  ]
+                                : []),
                             ]}
-                            onAction={() => openEditAccount(account)}
+                            onAction={(actionId) =>
+                              actionId === "configure"
+                                ? openConfigureAccount(account)
+                                : openEditAccount(account)
+                            }
                             ariaLabel={`Actions for ${account.user?.email ?? account.user_id}`}
                           />
                         </Table.Cell>
@@ -352,6 +378,13 @@ export default function IntegrationTargetDetailPage() {
           </Modal.Container>
         </Modal.Backdrop>
       </Modal>
+
+      <IntegrationTargetSettingsModal
+        state={settingsModal}
+        targetId={id}
+        userId={configuringAccount?.user_id ?? null}
+        userLabel={configuringAccount?.user?.email ?? configuringAccount?.user_id}
+      />
     </div>
   );
 }

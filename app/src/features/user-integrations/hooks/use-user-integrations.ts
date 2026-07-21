@@ -5,13 +5,16 @@ import {
   deleteUserIntegrationConnection,
   getIntegrationTargetsForUser,
   getUserIntegrationConnections,
+  getUserIntegrationSettings,
   updateUserIntegrationConnection,
   updateUserIntegrationConnectionDefault,
   updateUserIntegrationConnectionStatus,
+  updateUserIntegrationSettings,
 } from "../services/user-integrations.services";
 import type {
   CreateConnectionPayload,
   UpdateConnectionPayload,
+  UpdateSettingsPayload,
 } from "../interfaces/user-integrations.interfaces";
 
 export const useAvailableIntegrationTargets = () => {
@@ -101,6 +104,35 @@ export const useUpdateUserIntegrationConnectionDefault = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not update default integration",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useUserIntegrationSettings = (targetId: string | undefined) => {
+  return useQuery({
+    queryKey: ["userIntegrationSettings", targetId],
+    queryFn: () => getUserIntegrationSettings(targetId as string),
+    enabled: !!targetId,
+  });
+};
+
+export const useUpdateUserIntegrationSettings = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ targetId, payload }: { targetId: string; payload: UpdateSettingsPayload }) =>
+      updateUserIntegrationSettings(targetId, payload),
+    onSuccess: (_data, { targetId }) => {
+      queryClient.invalidateQueries({ queryKey: ["userIntegrationSettings", targetId] });
+      queryClient.invalidateQueries({ queryKey: ["userIntegrationsConnections"] });
+      toast({ title: "Integration settings updated", duration: 2000, variant: "success" });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not update integration settings",
         description: error.message,
         variant: "error",
       });

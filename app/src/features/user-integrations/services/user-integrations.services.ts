@@ -5,6 +5,8 @@ import type {
   CreateConnectionPayload,
   MaskedUserIntegrationConnection,
   UpdateConnectionPayload,
+  UpdateSettingsPayload,
+  UserIntegrationSettings,
 } from "../interfaces/user-integrations.interfaces";
 
 export const getIntegrationTargetsForUser = async (): Promise<AvailableIntegrationTarget[]> => {
@@ -90,6 +92,34 @@ export const deleteUserIntegrationConnection = async (id: string): Promise<void>
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to disconnect integration. Please try again.",
+    );
+  }
+};
+
+export const getUserIntegrationSettings = async (
+  targetId: string,
+): Promise<UserIntegrationSettings> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.integrations.settings(targetId));
+    return response.data;
+  } catch {
+    throw new Error("Failed to fetch integration settings. Please try again.");
+  }
+};
+
+export const updateUserIntegrationSettings = async (
+  targetId: string,
+  payload: UpdateSettingsPayload,
+): Promise<UserIntegrationSettings> => {
+  try {
+    const response = await axiosInstance.patch(
+      ApiRoutes.integrations.settings(targetId),
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to update integration settings. Please try again.",
     );
   }
 };

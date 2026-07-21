@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { Prisma } from 'generated/prisma';
 import { IntegrationTargetQueryType } from './dto/integration-target-query.schema';
 import {
   CreateIntegrationTargetDto,
@@ -22,6 +23,8 @@ import {
   validateAiIntegrationWebhookKey,
 } from './utils/ai-integration.util';
 import { maskUserIntegration } from './utils/mask-credentials.util';
+import { ensureUserIntegrationSettings } from './utils/user-integration-settings.util';
+import { UpdateUserIntegrationSettingsDto } from './dto/user-integration-settings.dto';
 
 @Injectable()
 export class IntegrationTargetsService {
@@ -64,6 +67,7 @@ export class IntegrationTargetsService {
           orderBy: { created_at: 'desc' },
           include: {
             user: { select: { id: true, email: true } },
+            settings: true,
           },
         },
         _count: { select: { user_integrations: true } },
@@ -82,6 +86,7 @@ export class IntegrationTargetsService {
       user_integrations: user_integrations.map((integration) => ({
         ...maskUserIntegration(integration),
         user: integration.user,
+        settings: integration.settings,
       })),
     };
   }
@@ -152,10 +157,17 @@ export class IntegrationTargetsService {
       dto,
     );
 
+    const settings = await ensureUserIntegrationSettings(
+      this.prisma,
+      dto.user_id,
+      targetId,
+    );
+
     const integration = await this.prisma.userIntegration.create({
       data: {
         integration_target_id: targetId,
         user_id: dto.user_id,
+        user_integration_settings_id: settings.id,
         ...applyCredentialFields(dto),
       },
       include: {
@@ -203,6 +215,55 @@ export class IntegrationTargetsService {
     }
 
     return this.updateAccountRecord(integration.id, updateData);
+  }
+
+  async getUserSettings(targetId: string, userId: string) {
+    await this.ensureTargetExists(targetId);
+
+    const settings = await this.prisma.userIntegrationSettings.findUnique({
+      where: {
+        user_id_integration_target_id: {
+          user_id: userId,
+          integration_target_id: targetId,
+        },
+      },
+    });
+
+    return (
+      settings ?? {
+        id: null,
+        user_id: userId,
+        integration_target_id: targetId,
+        settings: null,
+        created_at: null,
+        updated_at: null,
+      }
+    );
+  }
+
+  async updateUserSettings(
+    targetId: string,
+    userId: string,
+    dto: UpdateUserIntegrationSettingsDto,
+  ) {
+    await this.ensureTargetExists(targetId);
+
+    return this.prisma.userIntegrationSettings.upsert({
+      where: {
+        user_id_integration_target_id: {
+          user_id: userId,
+          integration_target_id: targetId,
+        },
+      },
+      create: {
+        user_id: userId,
+        integration_target_id: targetId,
+        settings: (dto.settings ?? {}) as Prisma.InputJsonValue,
+      },
+      update: {
+        settings: dto.settings as Prisma.InputJsonValue | undefined,
+      },
+    });
   }
 
   private async updateAccountRecord(id: string, data: Record<string, unknown>) {

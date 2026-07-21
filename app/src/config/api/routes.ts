@@ -133,6 +133,8 @@ export const ApiRoutes = {
             accounts: (id: string) => `/admin/integration-targets/${id}/accounts`,
             account: (id: string, userIntegrationId: string) =>
                 `/admin/integration-targets/${id}/accounts/${userIntegrationId}`,
+            userSettings: (id: string, userId: string) =>
+                `/admin/integration-targets/${id}/users/${userId}/settings`,
         },
         dashboard: {
             root: "/admin/dashboard",
@@ -153,6 +155,7 @@ export const ApiRoutes = {
         connection: (id: string) => `/integrations/connections/${id}`,
         connectionStatus: (id: string) => `/integrations/connections/${id}/status`,
         connectionDefault: (id: string) => `/integrations/connections/${id}/default`,
+        settings: (targetId: string) => `/integrations/targets/${targetId}/settings`,
     },
     agencies: {
         prefix: "/agencies",

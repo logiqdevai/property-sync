@@ -44,6 +44,15 @@ export interface IntegrationTarget {
   };
 }
 
+export interface UserIntegrationSettings {
+  id: string | null;
+  integration_target_id: string;
+  user_id: string;
+  settings: Record<string, unknown> | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
 export interface MaskedUserIntegration {
   id: string;
   integration_target_id: string;
@@ -64,6 +73,7 @@ export interface MaskedUserIntegration {
     id: string;
     email: string;
   };
+  settings?: UserIntegrationSettings;
 }
 
 export interface IntegrationTargetDetail extends IntegrationTarget {
@@ -107,6 +117,10 @@ export interface UpdateUserIntegrationAccountPayload {
   username?: string;
   password?: string;
   config?: Record<string, unknown>;
+}
+
+export interface UpdateUserIntegrationSettingsPayload {
+  settings?: Record<string, unknown>;
 }
 
 export interface PaginatedResponse<T> {

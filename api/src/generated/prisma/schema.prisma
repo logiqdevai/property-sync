@@ -270,9 +270,10 @@ model User {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  tracked_agencies  UserTrackedAgency[]
-  saved_properties  UserProperty[]
-  user_integrations UserIntegration[]
+  tracked_agencies          UserTrackedAgency[]
+  saved_properties          UserProperty[]
+  user_integrations         UserIntegration[]
+  user_integration_settings UserIntegrationSettings[]
 
   @@index([email])
   @@index([phone])
@@ -291,30 +292,53 @@ model IntegrationTarget {
   created_at       DateTime        @default(now())
   updated_at       DateTime        @updatedAt
 
-  user_integrations UserIntegration[]
+  user_integrations         UserIntegration[]
+  user_integration_settings UserIntegrationSettings[]
 
   @@map("integration_targets")
 }
 
-model UserIntegration {
+/// Shared configuration for a user's connection to one IntegrationTarget, independent of which
+/// UserIntegration (account) is used. Exists so that integration-wide settings (e.g. EstateWeb
+/// sync behavior) are edited once per (user, integration_target) instead of duplicated across
+/// every connected account allowed by IntegrationTarget.allow_multiple.
+model UserIntegrationSettings {
   id                    String   @id @default(uuid())
   integration_target_id String
   user_id               String
-  api_key_secret        String?
-  webhook_key           String?
-  email                 String?
-  username              String?
-  password              String?
-  config                Json?
-  is_active             Boolean  @default(true)
-  is_default            Boolean  @default(false)
+  settings              Json?
   created_at            DateTime @default(now())
   updated_at            DateTime @updatedAt
+
+  user               User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  integration_target IntegrationTarget @relation(fields: [integration_target_id], references: [id], onDelete: Cascade)
+  accounts           UserIntegration[]
+
+  @@unique([user_id, integration_target_id])
+  @@map("user_integration_settings")
+}
+
+model UserIntegration {
+  id                           String   @id @default(uuid())
+  integration_target_id        String
+  user_id                      String
+  user_integration_settings_id String
+  api_key_secret               String?
+  webhook_key                  String?
+  email                        String?
+  username                     String?
+  password                     String?
+  config                       Json?
+  is_active                    Boolean  @default(true)
+  is_default                   Boolean  @default(false)
+  created_at                   DateTime @default(now())
+  updated_at                   DateTime @updatedAt
 
   sync_runs           CmsSyncRun[]
   tracked_agency_link UserTrackedAgencyIntegrationLink?
   user                User                              @relation(fields: [user_id], references: [id], onDelete: Cascade)
   integration_target  IntegrationTarget                 @relation(fields: [integration_target_id], references: [id], onDelete: Cascade)
+  settings            UserIntegrationSettings           @relation(fields: [user_integration_settings_id], references: [id], onDelete: Cascade)
 
   @@map("user_integrations")
 }

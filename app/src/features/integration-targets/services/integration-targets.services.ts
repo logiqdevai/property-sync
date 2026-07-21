@@ -9,7 +9,9 @@ import type {
   PaginatedResponse,
   UpdateIntegrationTargetPayload,
   UpdateUserIntegrationAccountPayload,
+  UpdateUserIntegrationSettingsPayload,
   MaskedUserIntegration,
+  UserIntegrationSettings,
 } from "../interfaces/integration-targets.interfaces";
 
 export const getIntegrationTargets = async (
@@ -123,6 +125,39 @@ export const updateIntegrationTargetAccount = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to update user connection. Please try again.",
+    );
+  }
+};
+
+export const getIntegrationTargetUserSettings = async (
+  targetId: string,
+  userId: string,
+): Promise<UserIntegrationSettings> => {
+  try {
+    const response = await axiosInstance.get(
+      ApiRoutes.admin.integrationTargets.userSettings(targetId, userId),
+    );
+    return response.data;
+  } catch {
+    throw new Error("Failed to fetch user integration settings. Please try again.");
+  }
+};
+
+export const updateIntegrationTargetUserSettings = async (
+  targetId: string,
+  userId: string,
+  payload: UpdateUserIntegrationSettingsPayload,
+): Promise<UserIntegrationSettings> => {
+  try {
+    const response = await axiosInstance.patch(
+      ApiRoutes.admin.integrationTargets.userSettings(targetId, userId),
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to update user integration settings. Please try again.",
     );
   }
 };

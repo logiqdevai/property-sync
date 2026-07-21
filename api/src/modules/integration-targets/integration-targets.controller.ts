@@ -29,12 +29,16 @@ import {
   UpdateIntegrationTargetVisibilityDto,
   UpdateUserIntegrationAccountDto,
 } from './dto/integration-target.dto';
+import { UpdateUserIntegrationSettingsDto } from './dto/user-integration-settings.dto';
 import {
   IntegrationTargetQuerySchema,
   IntegrationTargetQueryType,
 } from './dto/integration-target-query.schema';
 import { IntegrationTarget } from './entities/integration-target.entity';
-import { MaskedUserIntegrationEntity } from './entities/user-integration.entity';
+import {
+  MaskedUserIntegrationEntity,
+  UserIntegrationSettingsEntity,
+} from './entities/user-integration.entity';
 
 @ApiTags('Integration Targets')
 @ApiBearerAuth()
@@ -126,6 +130,36 @@ export class IntegrationTargetsController {
       userIntegrationId,
       dto,
     );
+  }
+
+  @Get(':id/users/:userId/settings')
+  @ApiOperation({
+    summary:
+      "Get the shared configuration for a user's connection to this integration target",
+  })
+  @ApiResponse({ status: 200, type: UserIntegrationSettingsEntity })
+  @ApiResponse({ status: 404, description: 'Integration target not found' })
+  getUserSettings(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+  ) {
+    return this.integrationTargetsService.getUserSettings(id, userId);
+  }
+
+  @Patch(':id/users/:userId/settings')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      "Update the shared configuration for a user's connection to this integration target",
+  })
+  @ApiResponse({ status: 200, type: UserIntegrationSettingsEntity })
+  @ApiResponse({ status: 404, description: 'Integration target not found' })
+  updateUserSettings(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Body() dto: UpdateUserIntegrationSettingsDto,
+  ) {
+    return this.integrationTargetsService.updateUserSettings(id, userId, dto);
   }
 
   @Delete(':id')

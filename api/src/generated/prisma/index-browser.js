@@ -142,10 +142,20 @@ exports.Prisma.IntegrationTargetScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.UserIntegrationSettingsScalarFieldEnum = {
+  id: 'id',
+  integration_target_id: 'integration_target_id',
+  user_id: 'user_id',
+  settings: 'settings',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.UserIntegrationScalarFieldEnum = {
   id: 'id',
   integration_target_id: 'integration_target_id',
   user_id: 'user_id',
+  user_integration_settings_id: 'user_integration_settings_id',
   api_key_secret: 'api_key_secret',
   webhook_key: 'webhook_key',
   email: 'email',
@@ -795,6 +805,7 @@ exports.DocumentType = exports.$Enums.DocumentType = {
 exports.Prisma.ModelName = {
   User: 'User',
   IntegrationTarget: 'IntegrationTarget',
+  UserIntegrationSettings: 'UserIntegrationSettings',
   UserIntegration: 'UserIntegration',
   SourceAgency: 'SourceAgency',
   UserTrackedAgency: 'UserTrackedAgency',

@@ -15,10 +15,20 @@ export interface AvailableIntegrationTarget {
   updated_at: string;
 }
 
+export interface UserIntegrationSettings {
+  id: string | null;
+  integration_target_id: string;
+  user_id: string;
+  settings: Record<string, unknown> | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
 export interface MaskedUserIntegrationConnection {
   id: string;
   integration_target_id: string;
   user_id: string;
+  user_integration_settings_id: string;
   api_key_secret: string | null;
   webhook_key: string | null;
   email: string | null;
@@ -41,6 +51,7 @@ export interface MaskedUserIntegrationConnection {
     is_visible: boolean;
     is_enabled: boolean;
   };
+  settings: UserIntegrationSettings;
 }
 
 export interface CreateConnectionPayload {
@@ -60,4 +71,8 @@ export interface UpdateConnectionPayload {
   username?: string;
   password?: string;
   config?: Record<string, unknown>;
+}
+
+export interface UpdateSettingsPayload {
+  settings?: Record<string, unknown>;
 }

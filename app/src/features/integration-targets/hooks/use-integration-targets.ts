@@ -6,8 +6,10 @@ import {
   deleteIntegrationTarget,
   getIntegrationTarget,
   getIntegrationTargets,
+  getIntegrationTargetUserSettings,
   updateIntegrationTarget,
   updateIntegrationTargetAccount,
+  updateIntegrationTargetUserSettings,
   updateIntegrationTargetVisibility,
 } from "../services/integration-targets.services";
 import type {
@@ -16,6 +18,7 @@ import type {
   IntegrationTargetListQuery,
   UpdateIntegrationTargetPayload,
   UpdateUserIntegrationAccountPayload,
+  UpdateUserIntegrationSettingsPayload,
 } from "../interfaces/integration-targets.interfaces";
 
 export const useIntegrationTargets = (query: IntegrationTargetListQuery) => {
@@ -161,6 +164,47 @@ export const useUpdateIntegrationTargetAccount = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not update user connection",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useIntegrationTargetUserSettings = (
+  targetId: string | undefined,
+  userId: string | undefined,
+) => {
+  return useQuery({
+    queryKey: ["integrationTargets", "userSettings", targetId, userId],
+    queryFn: () => getIntegrationTargetUserSettings(targetId as string, userId as string),
+    enabled: !!targetId && !!userId,
+  });
+};
+
+export const useUpdateIntegrationTargetUserSettings = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      targetId,
+      userId,
+      payload,
+    }: {
+      targetId: string;
+      userId: string;
+      payload: UpdateUserIntegrationSettingsPayload;
+    }) => updateIntegrationTargetUserSettings(targetId, userId, payload),
+    onSuccess: (_data, { targetId, userId }) => {
+      queryClient.invalidateQueries({
+        queryKey: ["integrationTargets", "userSettings", targetId, userId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["integrationTargets"] });
+      toast({ title: "User integration settings updated", duration: 2000, variant: "success" });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not update user integration settings",
         description: error.message,
         variant: "error",
       });
