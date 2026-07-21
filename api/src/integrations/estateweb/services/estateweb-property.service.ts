@@ -25,6 +25,7 @@ import {
   EstateWebPropertyResponse,
   EstateWebUpdatePropertyPayload,
   EstateWebUploadImagePayload,
+  EstateWebUpdateImagePayload,
 } from '../interfaces/estateweb-property.interface';
 import {
   getEstateWebFieldOptionName,
@@ -324,6 +325,27 @@ export class EstateWebPropertyService {
           operation: 'upload-property-image',
           propertyId,
           formData,
+        });
+      },
+    );
+  }
+
+  updatePropertyImage(
+    userIntegrationId: string,
+    imageId: number | string,
+    payload: EstateWebUpdateImagePayload,
+  ): Promise<unknown> {
+    return this.runValidatedOperation(
+      userIntegrationId,
+      'update-property-image',
+      () => {
+        assertValidPropertyId(imageId);
+
+        return this.estateWebClientService.request(userIntegrationId, {
+          method: 'PATCH',
+          path: this.estateWebConfig.getConfig().apiPaths.imageById(imageId),
+          operation: 'update-property-image',
+          body: payload,
         });
       },
     );

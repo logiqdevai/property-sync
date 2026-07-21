@@ -211,6 +211,14 @@ export interface EstateWebUploadImagePayload {
   zindex?: number;
 }
 
+export interface EstateWebUpdateImagePayload {
+  show_on_site?: EstateWebBooleanFlag | boolean;
+  show_on_groups?: EstateWebBooleanFlag | boolean;
+  show_on_foreign_agents?: EstateWebBooleanFlag | boolean;
+  filename?: string;
+  zindex?: number;
+}
+
 export interface EstateWebCreatePropertyResponse {
   id: number;
   code?: string;

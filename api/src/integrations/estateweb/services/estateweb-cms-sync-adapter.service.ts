@@ -96,12 +96,6 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       integrationPropertyId,
       payload,
     );
-
-    await this.uploadImages(
-      userIntegrationId,
-      Number(integrationPropertyId),
-      userProperty,
-    );
   }
 
   async pushRemove(
@@ -282,7 +276,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     propertyId: number,
     userProperty: UserProperty,
   ): Promise<void> {
-    const images = this.parseImages(userProperty.images);
+    const images = this.parseImages(userProperty.images, propertyId);
     for (let index = 0; index < images.length; index++) {
       const image = images[index];
       try {
@@ -310,14 +304,36 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     }
   }
 
-  private parseImages(imagesJson: unknown): ImageEntry[] {
+  private parseImages(imagesJson: unknown, propertyId: number): ImageEntry[] {
     if (!Array.isArray(imagesJson)) return [];
     return imagesJson
       .filter((item): item is string => typeof item === 'string')
       .map((url, index) => ({
         url,
-        filename: `image-${index + 1}.jpg`,
+        filename: this.buildUniqueImageFilename(url, propertyId, index),
       }));
+  }
+
+  private buildUniqueImageFilename(
+    url: string,
+    propertyId: number,
+    index: number,
+  ): string {
+    let ext = '.jpg';
+    let base = `image-${index + 1}`;
+    try {
+      const name = new URL(url).pathname.split('/').pop() ?? '';
+      const match = name.match(/^(.+?)(\.[a-zA-Z0-9]+)?$/);
+      if (match?.[1]) {
+        base = match[1].replace(/[^a-zA-Z0-9_-]/g, '_');
+      }
+      if (match?.[2]) {
+        ext = match[2].toLowerCase();
+      }
+    } catch {
+      // keep defaults
+    }
+    return `${propertyId}-${index + 1}-${base}${ext}`;
   }
 
   private async downloadImage(url: string): Promise<Buffer | null> {
