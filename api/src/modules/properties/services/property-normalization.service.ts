@@ -510,6 +510,9 @@ export class PropertyNormalizationService {
           },
         },
       });
+      await this.propertyAiBatchService.markBatchJobCompleted(
+        String(metadata.ai_batch_id),
+      );
     }
   }
 
@@ -522,16 +525,22 @@ export class PropertyNormalizationService {
       where: { id: crawlRunId },
     });
 
-    if (!crawlRun?.started_at) return;
+    if (!crawlRun?.started_at) {
+      await this.propertyAiBatchService.markBatchJobFailed(
+        batchId,
+        `Crawl run ${crawlRunId} missing started_at`,
+      );
+      return;
+    }
 
     const metadata = (crawlRun.metadata ?? {}) as Record<string, unknown>;
     const userIntegrationId = metadata.user_integration_id as
       | string
       | undefined;
     if (!userIntegrationId) {
-      this.logger.error(
-        `Batch ${batchId}: missing user_integration_id on crawl run ${crawlRunId}`,
-      );
+      const message = `Batch ${batchId}: missing user_integration_id on crawl run ${crawlRunId}`;
+      this.logger.error(message);
+      await this.markBatchFailed(crawlRunId, 'failed', message);
       return;
     }
 
@@ -540,9 +549,9 @@ export class PropertyNormalizationService {
     });
 
     if (!integration?.api_key_secret) {
-      this.logger.error(
-        `Batch ${batchId}: integration ${userIntegrationId} has no API key`,
-      );
+      const message = `Batch ${batchId}: integration ${userIntegrationId} has no API key`;
+      this.logger.error(message);
+      await this.markBatchFailed(crawlRunId, 'failed', message);
       return;
     }
 
@@ -630,6 +639,13 @@ export class PropertyNormalizationService {
         },
       },
     });
+
+    if (typeof metadata.ai_batch_id === 'string') {
+      await this.propertyAiBatchService.markBatchJobFailed(
+        metadata.ai_batch_id,
+        errorMessage,
+      );
+    }
   }
 
   private async resolveDefaultTrackerForAgency(sourceAgencyId: string) {

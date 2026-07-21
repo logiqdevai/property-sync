@@ -10,10 +10,12 @@ import {
 } from "@/features/cms-sync-runs/hooks/use-cms-sync-runs";
 import {
   CmsSyncStatuses,
+  type CmsSyncOperationResult,
   type CmsSyncRunResponse,
   type CmsSyncStatus,
 } from "@/features/cms-sync-runs/interfaces/cms-sync-runs.interfaces";
 import { getFailedCmsSyncOperations } from "@/features/cms-sync-runs/utils/parse-cms-sync-failures";
+import { getCmsSyncOperationLabel } from "@/config/constants/dropdowns/cms-sync-operation-form.options";
 import { CmsSyncStatusChip } from "./components/cms-sync-status-chip";
 import { formatDateTime } from "@/lib/date";
 import { durationMsFromRange, formatDuration } from "@/lib/duration";
@@ -38,27 +40,19 @@ function connectionLabel(connection?: {
   return connection.email || connection.username || "—";
 }
 
-function getUserPropertyIds(payload: Record<string, unknown> | null): string[] {
-  if (!payload) return [];
-  const ids = payload.user_property_ids;
-  if (!Array.isArray(ids)) return [];
-  return [...new Set(ids.filter((id): id is string => typeof id === "string"))];
-}
-
-function getPropertyTitleById(
+function getSyncedProperties(
   response: CmsSyncRunResponse | null | undefined,
-): Map<string, string> {
-  const titles = new Map<string, string>();
-  if (!response?.operation_results) return titles;
-
-  for (const result of response.operation_results) {
-    const title = result.property_title?.trim();
-    if (title && !titles.has(result.user_property_id)) {
-      titles.set(result.user_property_id, title);
-    }
+): CmsSyncOperationResult[] {
+  if (!response?.operation_results || !Array.isArray(response.operation_results)) {
+    return [];
   }
 
-  return titles;
+  return response.operation_results.filter((op) => op && op.success !== false);
+}
+
+function propertyLabel(result: CmsSyncOperationResult) {
+  const title = result.property_title?.trim();
+  return title || result.user_property_id;
 }
 
 const RETRYABLE: CmsSyncStatus[] = [CmsSyncStatuses.FAILED, CmsSyncStatuses.RETRYING];
@@ -83,8 +77,7 @@ export default function AdminSyncRunDetailPage() {
   const userId = run.user_integration?.user_id ?? run.user_integration?.user?.id;
   const integrationTargetId = run.user_integration?.integration_target?.id;
   const failures = getFailedCmsSyncOperations(run.response);
-  const userPropertyIds = getUserPropertyIds(run.payload);
-  const propertyTitleById = getPropertyTitleById(run.response);
+  const syncedProperties = getSyncedProperties(run.response);
 
   return (
     <div className="flex flex-col gap-6">
@@ -250,33 +243,56 @@ export default function AdminSyncRunDetailPage() {
         )}
       </div>
 
-      {userPropertyIds.length > 0 ? (
+      {syncedProperties.length > 0 ? (
         <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-3">
           <p className="text-sm font-medium text-foreground">User properties</p>
-          <ul className="flex flex-col gap-2">
-            {userPropertyIds.map((userPropertyId) => {
-              const title = propertyTitleById.get(userPropertyId);
-              return (
-                <li key={userPropertyId}>
-                  <button
-                    className="flex flex-col items-start gap-0.5 text-left"
-                    onClick={() =>
-                      navigate(Routes.admin.properties.userDetail(userPropertyId))
-                    }
-                  >
-                    <span className="text-sm text-accent hover:underline">
-                      {title || userPropertyId}
-                    </span>
-                    {title ? (
-                      <span className="text-xs font-mono text-muted break-all">
-                        {userPropertyId}
-                      </span>
-                    ) : null}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="rounded-xl border border-border overflow-hidden">
+            <Table>
+              <Table.ScrollContainer>
+                <Table.Content aria-label="User properties">
+                  <Table.Header>
+                    <Table.Column isRowHeader>Property</Table.Column>
+                    <Table.Column>Operation</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    {syncedProperties.map((result) => (
+                      <Table.Row
+                        key={`${result.user_property_id}-${result.operation}`}
+                        id={`${result.user_property_id}-${result.operation}`}
+                      >
+                        <Table.Cell>
+                          <button
+                            className="flex flex-col items-start gap-0.5 text-left"
+                            onClick={() =>
+                              navigate(
+                                Routes.admin.properties.userDetail(
+                                  result.user_property_id,
+                                ),
+                              )
+                            }
+                          >
+                            <span className="text-sm text-accent hover:underline">
+                              {propertyLabel(result)}
+                            </span>
+                            {result.property_title?.trim() ? (
+                              <span className="text-xs font-mono text-muted break-all">
+                                {result.user_property_id}
+                              </span>
+                            ) : null}
+                          </button>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <span className="font-mono text-sm text-foreground">
+                            {getCmsSyncOperationLabel(result.operation)}
+                          </span>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
+            </Table>
+          </div>
         </div>
       ) : null}
 

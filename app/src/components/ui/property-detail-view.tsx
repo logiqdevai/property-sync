@@ -15,7 +15,10 @@ import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/listing-t
 import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/property-type-filter.options";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
-import { formatPropertyHistoryLabel } from "@/features/properties/utils/format-property-history";
+import {
+  formatPropertyHistoryLabel,
+  formatPropertyHistoryValue,
+} from "@/features/properties/utils/format-property-history";
 import type {
   CmsPropertyFieldEntry,
   CmsPropertyMetadata,
@@ -505,8 +508,8 @@ export function PropertyDetailView({
                     </span>
                     {entry.field && (
                       <span className="text-xs text-muted">
-                        {entry.field}: {String(entry.old_value ?? "—")} →{" "}
-                        {String(entry.new_value ?? "—")}
+                        {entry.field}: {formatPropertyHistoryValue(entry.old_value)} →{" "}
+                        {formatPropertyHistoryValue(entry.new_value)}
                       </span>
                     )}
                   </div>

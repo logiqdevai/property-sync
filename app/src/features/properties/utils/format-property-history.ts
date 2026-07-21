@@ -5,10 +5,16 @@ type PropertyHistoryLabelInput = Pick<
   "event_type" | "old_value" | "new_value"
 >;
 
-function formatValue(value: unknown): string {
+export function formatPropertyHistoryValue(value: unknown): string {
   if (value == null) return "—";
   if (typeof value === "string" || typeof value === "number") return String(value);
-  if (Array.isArray(value)) return value.length > 0 ? value.join(", ") : "—";
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "—";
+    if (value.every((item) => typeof item === "string" || typeof item === "number")) {
+      return value.join(", ");
+    }
+    return JSON.stringify(value);
+  }
   return JSON.stringify(value);
 }
 
@@ -19,13 +25,13 @@ export function formatPropertyHistoryLabel(entry: PropertyHistoryLabelInput): st
     case "UPDATED":
       return "Property details updated";
     case "PRICE_CHANGED":
-      return `Price changed from ${formatValue(entry.old_value)} to ${formatValue(entry.new_value)}`;
+      return `Price changed from ${formatPropertyHistoryValue(entry.old_value)} to ${formatPropertyHistoryValue(entry.new_value)}`;
     case "IMAGE_ADDED":
       return "Images added";
     case "IMAGE_REMOVED":
       return "Images removed";
     case "STATUS_CHANGED":
-      return `Status changed from ${formatValue(entry.old_value)} to ${formatValue(entry.new_value)}`;
+      return `Status changed from ${formatPropertyHistoryValue(entry.old_value)} to ${formatPropertyHistoryValue(entry.new_value)}`;
     case "REMOVED":
       return "Listing removed from source";
     case "REAPPEARED":

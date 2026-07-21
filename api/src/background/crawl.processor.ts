@@ -2,7 +2,7 @@ import { Logger, OnModuleInit } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { CRAWL_QUEUE } from '@/core/queues/queues.constants';
+import { CRAWL_QUEUE, OPENAI_BATCH_QUEUE } from '@/core/queues/queues.constants';
 import { DEFAULT_CRAWL_WORKER_CONCURRENCY } from '@/integrations/crawler/constants/crawler.constants';
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import { CrawlerService } from '@/integrations/crawler/services/crawler.service';
@@ -412,7 +412,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
           // completely invisible: no JobLog, no notification, nothing but a server log line.
           await this.prisma.jobLog.create({
             data: {
-              queue_name: 'openai-batch',
+              queue_name: OPENAI_BATCH_QUEUE,
               job_name: 'normalization',
               status: JobStatus.FAILED,
               crawl_run_id: crawlRunId,

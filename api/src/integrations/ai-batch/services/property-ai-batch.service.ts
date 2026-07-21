@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { AI_BATCH_COMPLETE_QUEUE } from '@/core/queues/queues.constants';
+import {
+  AI_BATCH_COMPLETE_QUEUE,
+  OPENAI_BATCH_QUEUE,
+} from '@/core/queues/queues.constants';
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import { AiBatchClientService } from './ai-batch-client.service';
 import {
@@ -123,7 +126,7 @@ export class PropertyAiBatchService {
 
     await this.prisma.jobLog.create({
       data: {
-        queue_name: 'openai-batch',
+        queue_name: OPENAI_BATCH_QUEUE,
         job_id: batchId,
         job_name: 'normalization-batch',
         status: JobStatus.WAITING,
@@ -144,7 +147,89 @@ export class PropertyAiBatchService {
     batchId: string,
     crawlRunId: string,
   ): Promise<void> {
+    await this.markBatchJobActive(batchId);
     await this.aiBatchCompleteQueue.add('complete', { batchId, crawlRunId });
+  }
+
+  async markBatchJobActive(batchId: string): Promise<void> {
+    await this.prisma.jobLog.updateMany({
+      where: {
+        queue_name: OPENAI_BATCH_QUEUE,
+        job_id: batchId,
+        status: { in: [JobStatus.WAITING, JobStatus.DELAYED, JobStatus.PAUSED] },
+      },
+      data: {
+        status: JobStatus.ACTIVE,
+        started_at: new Date(),
+        error_message: null,
+        stack_trace: null,
+      },
+    });
+  }
+
+  async markBatchJobCompleted(batchId: string): Promise<void> {
+    const finishedAt = new Date();
+    const logs = await this.prisma.jobLog.findMany({
+      where: {
+        queue_name: OPENAI_BATCH_QUEUE,
+        job_id: batchId,
+        status: { in: [JobStatus.WAITING, JobStatus.ACTIVE] },
+      },
+      select: { id: true, started_at: true, created_at: true },
+    });
+
+    await Promise.all(
+      logs.map((log) => {
+        const startedAt = log.started_at ?? log.created_at;
+        return this.prisma.jobLog.update({
+          where: { id: log.id },
+          data: {
+            status: JobStatus.COMPLETED,
+            finished_at: finishedAt,
+            duration_ms: finishedAt.getTime() - startedAt.getTime(),
+            error_message: null,
+            stack_trace: null,
+          },
+        });
+      }),
+    );
+  }
+
+  async markBatchJobFailed(
+    batchId: string,
+    errorMessage: string,
+  ): Promise<void> {
+    const finishedAt = new Date();
+    const logs = await this.prisma.jobLog.findMany({
+      where: {
+        queue_name: OPENAI_BATCH_QUEUE,
+        job_id: batchId,
+        status: {
+          in: [
+            JobStatus.WAITING,
+            JobStatus.ACTIVE,
+            JobStatus.DELAYED,
+            JobStatus.PAUSED,
+          ],
+        },
+      },
+      select: { id: true, started_at: true, created_at: true },
+    });
+
+    await Promise.all(
+      logs.map((log) => {
+        const startedAt = log.started_at ?? log.created_at;
+        return this.prisma.jobLog.update({
+          where: { id: log.id },
+          data: {
+            status: JobStatus.FAILED,
+            finished_at: finishedAt,
+            duration_ms: finishedAt.getTime() - startedAt.getTime(),
+            error_message: errorMessage,
+          },
+        });
+      }),
+    );
   }
 
   parseBatchOutputLine(line: string): {

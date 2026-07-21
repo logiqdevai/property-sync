@@ -494,6 +494,21 @@ function valuesEqual(a: unknown, b: unknown): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
+function serializeHistoryValue(
+  value: unknown,
+): Prisma.InputJsonValue | null {
+  if (value === undefined || value === null) return null;
+  if (value instanceof Prisma.Decimal) return value.toString();
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return value;
+  }
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
 export function diffPropertyChanges(
   oldProperty: Property,
   newData: PropertyRecordInput,
@@ -566,6 +581,7 @@ export function diffPropertyChanges(
     'floor',
     'construction_year',
     'renovation_year',
+    'features',
     'video_url',
     'distance_airport',
     'distance_port',
@@ -578,7 +594,6 @@ export function diffPropertyChanges(
     'cms_metadata',
   ];
 
-  let otherChanged = false;
   for (const field of trackedFields) {
     const oldVal = oldProperty[field as keyof Property];
     const newVal = newData[field];
@@ -587,19 +602,14 @@ export function diffPropertyChanges(
     const newSerialized =
       newVal instanceof Prisma.Decimal ? newVal.toString() : newVal;
     if (!valuesEqual(oldSerialized, newSerialized)) {
-      otherChanged = true;
-      break;
+      events.push({
+        ...base,
+        event_type: PropertyHistoryEventType.UPDATED,
+        field,
+        old_value: serializeHistoryValue(oldSerialized),
+        new_value: serializeHistoryValue(newSerialized),
+      });
     }
-  }
-
-  if (otherChanged && events.length === 0) {
-    events.push({
-      ...base,
-      event_type: PropertyHistoryEventType.UPDATED,
-      field: null,
-      old_value: null,
-      new_value: null,
-    });
   }
 
   return events;

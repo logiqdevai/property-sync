@@ -20,7 +20,6 @@ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
-import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
 import {
   TableRowActionsMenu,
   type TableRowAction,
@@ -532,7 +531,7 @@ export default function DashboardPropertiesListPage() {
                   <Table.Column isRowHeader>Price</Table.Column>
                   <Table.Column isRowHeader>Status</Table.Column>
                   <Table.Column isRowHeader>CRM</Table.Column>
-                  <Table.Column isRowHeader>Group</Table.Column>
+                  <Table.Column isRowHeader>Integration ID</Table.Column>
                   <Table.Column isRowHeader>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
@@ -619,11 +618,7 @@ export default function DashboardPropertiesListPage() {
                         )}
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>
-                        {property.duplicate_group_id ? (
-                          <PropertyDuplicateGroupChip groupId={property.duplicate_group_id} />
-                        ) : (
-                          "—"
-                        )}
+                        {property.integration_property_id ?? "—"}
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>
                         <TableRowActionsMenu
