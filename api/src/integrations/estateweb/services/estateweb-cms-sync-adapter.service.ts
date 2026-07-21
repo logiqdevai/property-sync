@@ -13,7 +13,7 @@ import {
   EstateWebUpdatePropertyPayload,
   EstateWebUploadImagePayload,
 } from '../interfaces/estateweb-property.interface';
-import { ESTATEWEB_DEFAULT_PUSH_SITES } from '../constants/estateweb-agent-catalog.constants';
+import { EstateWebPushSiteSetting } from '../interfaces/estateweb-integration-settings.interface';
 import {
   ESTATEWEB_INIT_LANGUAGES,
   EstateWebScope,
@@ -23,6 +23,7 @@ import { resolveEstateWebScopeId } from '../utils/estateweb-catalog.util';
 import { getEstateWebInitFieldsForType } from '../utils/estateweb-init-lookup.util';
 import { EstateWebException } from '../exceptions/estateweb.exception';
 import { NotificationType } from 'generated/prisma';
+import { EstateWebIntegrationResolverService } from './estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from './estateweb-property.service';
 
 interface ImageEntry {
@@ -49,6 +50,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
   constructor(
     private readonly estateWebPropertyService: EstateWebPropertyService,
+    private readonly estateWebIntegrationResolverService: EstateWebIntegrationResolverService,
   ) {}
 
   async pushCreate(
@@ -57,11 +59,11 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   ): Promise<CmsPushCreateResult> {
     this.assertRequiredFields(userProperty);
 
-    const payload = this.buildPayload(userProperty);
-    payload.sites = ESTATEWEB_DEFAULT_PUSH_SITES.map((site) => ({
-      ...site,
-      selected: false,
-    }));
+    const pushSites =
+      await this.estateWebIntegrationResolverService.resolvePushSites(
+        userIntegrationId,
+      );
+    const payload = this.buildPayload(pushSites, userProperty);
     this.logger.log(
       `EstateWeb CREATE payload: type_id=${payload.type_id} location_id=${payload.location_id} scope_id=${payload.scope_id} fields=${payload.fields?.length ?? 0} price=${payload.price ?? 'null'}`,
     );
@@ -83,14 +85,15 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   ): Promise<void> {
     this.assertRequiredFields(userProperty);
 
+    const pushSites =
+      await this.estateWebIntegrationResolverService.resolvePushSites(
+        userIntegrationId,
+      );
     const payload = this.buildPayload(
+      pushSites,
       userProperty,
       Number(integrationPropertyId),
     ) as EstateWebUpdatePropertyPayload;
-    payload.sites = ESTATEWEB_DEFAULT_PUSH_SITES.map((site) => ({
-      ...site,
-      selected: false,
-    }));
     await this.estateWebPropertyService.updateProperty(
       userIntegrationId,
       integrationPropertyId,
@@ -105,14 +108,15 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   ): Promise<void> {
     this.assertRequiredFields(userProperty);
 
+    const pushSites =
+      await this.estateWebIntegrationResolverService.resolvePushSites(
+        userIntegrationId,
+      );
     const payload = this.buildPayload(
+      pushSites,
       userProperty,
       Number(integrationPropertyId),
     ) as EstateWebUpdatePropertyPayload;
-    payload.sites = ESTATEWEB_DEFAULT_PUSH_SITES.map((site) => ({
-      ...site,
-      selected: false,
-    }));
 
     await this.estateWebPropertyService.updateProperty(
       userIntegrationId,
@@ -122,6 +126,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   }
 
   private buildPayload(
+    pushSites: EstateWebPushSiteSetting[],
     userProperty?: UserProperty,
     integrationPropertyId?: number,
   ): EstateWebPropertyPayload {
@@ -171,7 +176,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         userProperty?.cms_fields,
         userProperty?.estateweb_type_id,
       ),
-      sites: [...ESTATEWEB_DEFAULT_PUSH_SITES],
+      sites: pushSites.map((site) => ({ ...site, selected: false })),
       gateways: [],
       ads: this.buildAds(title, description),
       foreign_agents: [],

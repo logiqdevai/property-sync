@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { FieldError, Form, Label, Modal, TextArea, useOverlayState } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
+import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import type { AvailableIntegrationTarget } from "@/features/user-integrations/interfaces/user-integrations.interfaces";
 import {
   useUpdateUserIntegrationSettings,
   useUserIntegrationSettings,
 } from "@/features/user-integrations/hooks/use-user-integrations";
+import { EstateWebPushSitesSettingsForm } from "./estateweb-push-sites-settings-form";
 
 function parseSettingsInput(value: string): Record<string, unknown> | null {
   const trimmed = value.trim();
@@ -28,7 +30,10 @@ interface IntegrationSettingsModalProps {
 }
 
 export function IntegrationSettingsModal({ state, target }: IntegrationSettingsModalProps) {
-  const { data: settings, isPending: settingsPending } = useUserIntegrationSettings(target?.id);
+  const isEstateWeb = target?.integration_type === IntegrationTypes.ESTATEWEB;
+  const { data: settings, isPending: settingsPending } = useUserIntegrationSettings(
+    !isEstateWeb ? target?.id : undefined,
+  );
   const updateSettings = useUpdateUserIntegrationSettings();
 
   const [value, setValue] = useState("");
@@ -80,40 +85,44 @@ export function IntegrationSettingsModal({ state, target }: IntegrationSettingsM
               </Modal.Heading>
             </Modal.Header>
             <Modal.Body>
-              <Form onSubmit={handleSubmit} className="grid gap-4">
-                <p className="text-sm text-muted">
-                  Shared by every connected account for this integration — set once, applies to
-                  all.
-                </p>
-                <div className="flex flex-col gap-1">
-                  <Label htmlFor="integration-settings-json">Configuration (JSON)</Label>
-                  <TextArea
-                    id="integration-settings-json"
-                    value={value}
-                    onChange={(event) => {
-                      setValue(event.target.value);
-                      setError(null);
-                    }}
-                    rows={8}
-                    placeholder="{}"
-                    disabled={settingsPending}
-                  />
-                  {error && <FieldError>{error}</FieldError>}
-                </div>
-                <div className="flex justify-end gap-2">
-                  <ActionButtonWithPending
-                    type="button"
-                    variant="secondary"
-                    onPress={state.close}
-                    isDisabled={updateSettings.isPending}
-                  >
-                    Cancel
-                  </ActionButtonWithPending>
-                  <ActionButtonWithPending type="submit" isPending={updateSettings.isPending}>
-                    Save
-                  </ActionButtonWithPending>
-                </div>
-              </Form>
+              {isEstateWeb && target ? (
+                <EstateWebPushSitesSettingsForm targetId={target.id} onClose={state.close} />
+              ) : (
+                <Form onSubmit={handleSubmit} className="grid gap-4">
+                  <p className="text-sm text-muted">
+                    Shared by every connected account for this integration — set once, applies to
+                    all.
+                  </p>
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="integration-settings-json">Configuration (JSON)</Label>
+                    <TextArea
+                      id="integration-settings-json"
+                      value={value}
+                      onChange={(event) => {
+                        setValue(event.target.value);
+                        setError(null);
+                      }}
+                      rows={8}
+                      placeholder="{}"
+                      disabled={settingsPending}
+                    />
+                    {error && <FieldError>{error}</FieldError>}
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <ActionButtonWithPending
+                      type="button"
+                      variant="secondary"
+                      onPress={state.close}
+                      isDisabled={updateSettings.isPending}
+                    >
+                      Cancel
+                    </ActionButtonWithPending>
+                    <ActionButtonWithPending type="submit" isPending={updateSettings.isPending}>
+                      Save
+                    </ActionButtonWithPending>
+                  </div>
+                </Form>
+              )}
             </Modal.Body>
           </Modal.Dialog>
         </Modal.Container>

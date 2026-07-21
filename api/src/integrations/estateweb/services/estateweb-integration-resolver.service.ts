@@ -5,6 +5,8 @@ import { NotificationType } from 'generated/prisma';
 import { EstateWebConfig } from '../config/estateweb.config';
 import { EstateWebException } from '../exceptions/estateweb.exception';
 import { ResolvedEstateWebIntegration } from '../interfaces/estateweb-integration.interface';
+import { EstateWebPushSiteSetting } from '../interfaces/estateweb-integration-settings.interface';
+import { resolveEstateWebPushSites } from '../utils/estateweb-integration-settings.util';
 import { EstateWebAuthService } from './estateweb-auth.service';
 import { EstateWebNotificationService } from './estateweb-notification.service';
 import { EstateWebSessionService } from './estateweb-session.service';
@@ -201,6 +203,17 @@ export class EstateWebIntegrationResolverService {
       trackerEnabled: link.user_tracked_agency.enabled,
       integration: this.toResolvedIntegration(link.user_integration),
     }));
+  }
+
+  async resolvePushSites(
+    userIntegrationId: string,
+  ): Promise<EstateWebPushSiteSetting[]> {
+    const integration = await this.prisma.userIntegration.findUnique({
+      where: { id: userIntegrationId },
+      include: { settings: true },
+    });
+
+    return resolveEstateWebPushSites(integration?.settings?.settings);
   }
 
   async testConnection(userIntegrationId: string, userId?: string) {

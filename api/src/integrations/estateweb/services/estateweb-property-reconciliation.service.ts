@@ -6,7 +6,6 @@ import {
   UserProperty,
 } from 'generated/prisma';
 import { EstateWebScope } from '../constants/estateweb-enums.constants';
-import { ESTATEWEB_DEFAULT_PUSH_SITES } from '../constants/estateweb-agent-catalog.constants';
 import { resolveEstateWebScopeId } from '../utils/estateweb-catalog.util';
 import {
   EstateWebPropertyListItem,
@@ -26,6 +25,7 @@ const CMS_RELEVANT_HISTORY_EVENTS: PropertyHistoryEventType[] = [
 export interface EstateWebPropertyCatalog {
   defaultUserIntegrationId: string;
   byCode: Map<string, EstateWebPropertyListItem>;
+  pushSiteIds: Set<number>;
 }
 
 export interface ReconcileCreateOutcome {
@@ -51,12 +51,17 @@ export class EstateWebPropertyReconciliationService {
         await this.estateWebIntegrationResolverService.resolveDefaultForUser(
           userId,
         );
-      const response =
-        await this.estateWebPropertyService.listAllProperties(userId);
+      const [response, pushSites] = await Promise.all([
+        this.estateWebPropertyService.listAllProperties(userId),
+        this.estateWebIntegrationResolverService.resolvePushSites(
+          userIntegrationId,
+        ),
+      ]);
 
       return {
         defaultUserIntegrationId: userIntegrationId,
         byCode: this.buildCodeIndex(response.list),
+        pushSiteIds: new Set(pushSites.map((site) => site.agent_site_id)),
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -81,6 +86,7 @@ export class EstateWebPropertyReconciliationService {
     const shouldUpdate = await this.shouldPushUpdate(
       userProperty,
       listing,
+      catalog.pushSiteIds,
       crawlRunId,
     );
 
@@ -138,13 +144,14 @@ export class EstateWebPropertyReconciliationService {
   private async shouldPushUpdate(
     userProperty: UserProperty,
     listing: EstateWebPropertyListItem,
+    pushSiteIds: Set<number>,
     crawlRunId?: string,
   ): Promise<boolean> {
     if (userProperty.pending_crm_update) {
       return true;
     }
 
-    if (this.differsFromListing(userProperty, listing)) {
+    if (this.differsFromListing(userProperty, listing, pushSiteIds)) {
       return true;
     }
 
@@ -167,6 +174,7 @@ export class EstateWebPropertyReconciliationService {
   private differsFromListing(
     userProperty: UserProperty,
     listing: EstateWebPropertyListItem,
+    pushSiteIds: Set<number>,
   ): boolean {
     if (!this.pricesEqual(userProperty.price, listing.price)) {
       return true;
@@ -188,7 +196,7 @@ export class EstateWebPropertyReconciliationService {
 
     if (
       userProperty.status === PropertyStatus.REMOVED &&
-      this.hasSelectedDefaultPushSite(listing)
+      this.hasSelectedPushSite(listing, pushSiteIds)
     ) {
       return true;
     }
@@ -196,15 +204,13 @@ export class EstateWebPropertyReconciliationService {
     return false;
   }
 
-  private hasSelectedDefaultPushSite(
+  private hasSelectedPushSite(
     listing: EstateWebPropertyListItem,
+    pushSiteIds: Set<number>,
   ): boolean {
-    const defaultSiteIds = new Set<number>(
-      ESTATEWEB_DEFAULT_PUSH_SITES.map((site) => site.agent_site_id),
-    );
     return (listing.sites ?? []).some(
       (site) =>
-        defaultSiteIds.has(Number(site.agent_site_id)) &&
+        pushSiteIds.has(Number(site.agent_site_id)) &&
         site.selected === true,
     );
   }
