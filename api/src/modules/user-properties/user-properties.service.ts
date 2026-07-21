@@ -447,11 +447,29 @@ export class UserPropertiesService {
       throw new NotFoundException('Property not found');
     }
 
+    const sourceAgencyId = await this.resolveSourceAgencyId(
+      userProperty.canonical_property_id,
+    );
+    const tracker = sourceAgencyId
+      ? await this.prisma.userTrackedAgency.findUnique({
+          where: {
+            user_id_source_agency_id: {
+              user_id: userId,
+              source_agency_id: sourceAgencyId,
+            },
+          },
+          select: { text_truncate_pieces: true },
+        })
+      : null;
+
     return serializePropertyForApi(
       await this.prisma.userProperty.update({
         where: { id },
         data: {
-          ...this.mapFromCanonical(userProperty.canonical_property),
+          ...this.mapFromCanonical(
+            userProperty.canonical_property,
+            tracker?.text_truncate_pieces,
+          ),
           is_modified: false,
           last_synced_at: new Date(),
         },

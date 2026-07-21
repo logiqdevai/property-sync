@@ -158,7 +158,7 @@ export function TrackerAdminOptionsPanel({
                 <div className="flex flex-col gap-0.5">
                   <span className="text-sm text-foreground">Text truncate pieces</span>
                   <span className="text-xs text-muted">
-                    Removed from title and description before the user property is created.
+                    Removed from title and description before the user property is created. Matching ignores extra spaces and line breaks.
                   </span>
                 </div>
                 {pieces.length > 0 ? (
@@ -180,24 +180,19 @@ export function TrackerAdminOptionsPanel({
                     ))}
                   </div>
                 ) : null}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                    placeholder="Exact text to remove"
+                <div className="flex flex-col gap-2">
+                  <textarea
+                    className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                    placeholder="Paste exact phrase or multi-line block to remove"
                     value={draftPiece}
                     disabled={disabled}
+                    rows={4}
                     onChange={(e) => setDraftPiece(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        commitPiece();
-                      }
-                    }}
                   />
                   <Button
                     size="sm"
                     variant="secondary"
+                    className="self-end"
                     isDisabled={disabled || !draftPiece.trim()}
                     onPress={commitPiece}
                   >
