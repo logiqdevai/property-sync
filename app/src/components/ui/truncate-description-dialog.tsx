@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Button, Label, Modal, TextArea, useOverlayState } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { TruncateMatchField } from "@/components/ui/truncate-match-field";
+import { encodeTruncatePiece, type TruncatePieceMode } from "@/lib/truncate-pieces";
 
 export type TruncateDescriptionDialogState = ReturnType<typeof useOverlayState>;
 
@@ -22,11 +24,13 @@ export function TruncateDescriptionDialog({
   onConfirm,
   isPending = false,
 }: TruncateDescriptionDialogProps) {
+  const [mode, setMode] = useState<TruncatePieceMode>("text");
   const [text, setText] = useState("");
   const [replacement, setReplacement] = useState("");
 
   useEffect(() => {
     if (!state.isOpen) {
+      setMode("text");
       setText("");
       setReplacement("");
     }
@@ -42,7 +46,7 @@ export function TruncateDescriptionDialog({
     try {
       await Promise.resolve(
         onConfirm({
-          text: trimmed,
+          text: encodeTruncatePiece(mode, trimmed),
           ...(trimmedReplacement ? { replacement: trimmedReplacement } : {}),
         }),
       );
@@ -56,28 +60,27 @@ export function TruncateDescriptionDialog({
     <Modal state={state}>
       <Modal.Backdrop isDismissable={!isPending}>
         <Modal.Container>
-          <Modal.Dialog className="max-w-lg">
+          <Modal.Dialog className="max-w-2xl">
             <Modal.Header>
               <Modal.Heading>Truncate description text</Modal.Heading>
             </Modal.Header>
             <Modal.Body>
               <div className="flex flex-col gap-3">
                 <p className="text-sm text-muted">
-                  Exact text below is found in title and description on {countLabel}. Leave
-                  replacement empty to remove it, or enter text to replace it.
+                  Text matching the rule below is found in title and description on {countLabel}.
+                  Leave replacement empty to remove it, or enter text to replace it.
                 </p>
-                <div className="flex flex-col gap-1">
-                  <Label htmlFor="truncate-description-text">Text to find</Label>
-                  <TextArea
-                    id="truncate-description-text"
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    rows={5}
-                    fullWidth
-                    placeholder="Paste the exact phrase or block to find…"
-                    disabled={isPending}
-                  />
-                </div>
+
+                <TruncateMatchField
+                  idPrefix="truncate-description"
+                  mode={mode}
+                  onModeChange={setMode}
+                  value={text}
+                  onChange={setText}
+                  disabled={isPending}
+                  rows={5}
+                />
+
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="truncate-description-replacement">
                     Replacement text{" "}

@@ -1,3 +1,20 @@
+const PATTERN_PREFIX = 'pattern:';
+const WILDCARD_MARKER = '@@TRUNCATE_WILDCARD@@';
+const NUMBER_MARKER = '@@TRUNCATE_NUMBER@@';
+
+export type TruncatePieceMode = 'text' | 'pattern';
+
+export function encodeTruncatePiece(mode: TruncatePieceMode, value: string): string {
+  return mode === 'pattern' ? `${PATTERN_PREFIX}${value}` : value;
+}
+
+function parsePiece(piece: string): { mode: TruncatePieceMode; value: string } {
+  if (piece.startsWith(PATTERN_PREFIX)) {
+    return { mode: 'pattern', value: piece.slice(PATTERN_PREFIX.length) };
+  }
+  return { mode: 'text', value: piece };
+}
+
 function normalizeTruncateText(text: string): string {
   return text
     .normalize('NFC')
@@ -19,16 +36,35 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function buildPatternRegExp(pattern: string): RegExp {
+  const withMarkers = pattern
+    .replace(/\*/g, WILDCARD_MARKER)
+    .replace(/#/g, NUMBER_MARKER);
+  const source = escapeRegExp(withMarkers)
+    .replace(/\s+/g, '\\s+')
+    .split(WILDCARD_MARKER)
+    .join('[\\s\\S]*?')
+    .split(NUMBER_MARKER)
+    .join('[0-9]+(?:-[0-9]+)*');
+  return new RegExp(source, 'g');
+}
+
 function removePiece(
   text: string,
   piece: string,
   replacement: string,
 ): string {
-  if (text.includes(piece)) {
-    return text.split(piece).join(replacement);
+  const { mode, value } = parsePiece(piece);
+
+  if (mode === 'pattern') {
+    return text.replace(buildPatternRegExp(value), replacement);
   }
 
-  const pattern = escapeRegExp(piece).replace(/\s+/g, '\\s+');
+  if (text.includes(value)) {
+    return text.split(value).join(replacement);
+  }
+
+  const pattern = escapeRegExp(value).replace(/\s+/g, '\\s+');
   return text.replace(new RegExp(pattern, 'g'), replacement);
 }
 
@@ -41,9 +77,11 @@ export function applyTextTruncatePieces(
 
   let result = text;
   for (const piece of pieces ?? []) {
-    const normalized = normalizeTruncateText(piece ?? '');
-    if (!normalized) continue;
-    result = removePiece(result, normalized, replacement);
+    if (typeof piece !== 'string' || !piece) continue;
+    const { mode, value } = parsePiece(piece);
+    const normalizedValue = normalizeTruncateText(value);
+    if (!normalizedValue) continue;
+    result = removePiece(result, encodeTruncatePiece(mode, normalizedValue), replacement);
   }
 
   const cleaned = normalizeTruncateText(result);
@@ -59,11 +97,14 @@ export function normalizeTextTruncatePieces(
   const normalized: string[] = [];
 
   for (const piece of pieces) {
-    const cleaned =
-      typeof piece === 'string' ? normalizeTruncateText(piece) : '';
-    if (!cleaned || seen.has(cleaned)) continue;
-    seen.add(cleaned);
-    normalized.push(cleaned);
+    if (typeof piece !== 'string') continue;
+    const { mode, value } = parsePiece(piece);
+    const cleaned = normalizeTruncateText(value);
+    if (!cleaned) continue;
+    const stored = encodeTruncatePiece(mode, cleaned);
+    if (seen.has(stored)) continue;
+    seen.add(stored);
+    normalized.push(stored);
   }
 
   return normalized;

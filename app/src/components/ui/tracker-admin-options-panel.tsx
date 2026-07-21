@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Accordion, Button, Chip, CloseButton, Switch } from "@heroui/react";
+import { Accordion, Button, Switch, useOverlayState } from "@heroui/react";
+import { TruncateRulesModal } from "@/components/ui/truncate-rules-modal";
 import type { UpdateTrackerAdminSettingsPayload } from "@/features/agencies/interfaces/agencies.interfaces";
 import type { TrackAgencyPayload } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
 
@@ -27,27 +27,12 @@ export function TrackerAdminOptionsPanel({
   onPrefsChange,
   onAdminSettingsChange,
 }: TrackerAdminOptionsPanelProps) {
-  const [draftPiece, setDraftPiece] = useState("");
   const pieces = values.text_truncate_pieces ?? [];
-
-  const commitPiece = () => {
-    const trimmed = draftPiece.trim();
-    if (!trimmed || pieces.includes(trimmed)) {
-      setDraftPiece("");
-      return;
-    }
-    onAdminSettingsChange({ text_truncate_pieces: [...pieces, trimmed] });
-    setDraftPiece("");
-  };
-
-  const removePiece = (piece: string) => {
-    onAdminSettingsChange({
-      text_truncate_pieces: pieces.filter((item) => item !== piece),
-    });
-  };
+  const rulesModalState = useOverlayState();
 
   return (
-    <Accordion defaultExpandedKeys={[]} hideSeparator>
+    <>
+      <Accordion defaultExpandedKeys={[]} hideSeparator>
       <Accordion.Item id={accordionId}>
         <Accordion.Heading>
           <Accordion.Trigger className="text-sm font-medium text-foreground">
@@ -154,58 +139,35 @@ export function TrackerAdminOptionsPanel({
                 />
               </label>
 
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm text-foreground">Text truncate pieces</span>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 flex-col gap-0.5">
+                  <span className="text-sm text-foreground">Text truncate rules</span>
                   <span className="text-xs text-muted">
-                    Removed from title and description before the user property is created. Matching ignores extra spaces and line breaks.
+                    {pieces.length > 0
+                      ? `${pieces.length} rule${pieces.length === 1 ? "" : "s"} configured`
+                      : "No rules configured"}
                   </span>
                 </div>
-                {pieces.length > 0 ? (
-                  <div className="flex flex-wrap gap-1.5">
-                    {pieces.map((piece) => (
-                      <Chip
-                        key={piece}
-                        size="sm"
-                        variant="soft"
-                        className="max-w-full"
-                      >
-                        <span className="truncate">{piece}</span>
-                        <CloseButton
-                          isDisabled={disabled}
-                          onPress={() => removePiece(piece)}
-                          aria-label={`Remove truncate piece ${piece}`}
-                        />
-                      </Chip>
-                    ))}
-                  </div>
-                ) : null}
-                <div className="flex flex-col gap-2">
-                  <textarea
-                    className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                    placeholder="Paste exact phrase or multi-line block to remove"
-                    value={draftPiece}
-                    disabled={disabled}
-                    rows={4}
-                    onChange={(e) => setDraftPiece(e.target.value)}
-                  />
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    className="self-end"
-                    isDisabled={disabled || !draftPiece.trim()}
-                    onPress={commitPiece}
-                  >
-                    Add
-                  </Button>
-                </div>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  isDisabled={disabled}
+                  onPress={rulesModalState.open}
+                >
+                  Manage rules
+                </Button>
               </div>
-
-
             </div>
           </Accordion.Body>
         </Accordion.Panel>
       </Accordion.Item>
-    </Accordion>
+      </Accordion>
+      <TruncateRulesModal
+        state={rulesModalState}
+        rules={pieces}
+        disabled={disabled}
+        onChange={(next) => onAdminSettingsChange({ text_truncate_pieces: next })}
+      />
+    </>
   );
 }
