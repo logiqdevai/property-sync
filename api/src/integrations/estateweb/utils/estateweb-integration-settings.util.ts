@@ -20,9 +20,11 @@ export function resolveEstateWebPushSites(
 ): EstateWebPushSiteSetting[] {
   const configured =
     parseUserIntegrationSettingsData(settings)?.estateweb_default_sites;
-  const pushSites = Array.isArray(configured)
-    ? configured
-    : ESTATEWEB_DEFAULT_PUSH_SITES;
+  return Array.isArray(configured) ? configured : ESTATEWEB_DEFAULT_PUSH_SITES;
+}
 
-  return pushSites.filter((site) => site.selected);
+export function resolveEstateWebSelectedPushSites(
+  settings: Prisma.JsonValue | null | undefined,
+): EstateWebPushSiteSetting[] {
+  return resolveEstateWebPushSites(settings).filter((site) => site.selected);
 }

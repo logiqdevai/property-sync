@@ -65,7 +65,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       );
     const payload = this.buildPayload(pushSites, userProperty);
     this.logger.log(
-      `EstateWeb CREATE payload: type_id=${payload.type_id} location_id=${payload.location_id} scope_id=${payload.scope_id} fields=${payload.fields?.length ?? 0} price=${payload.price ?? 'null'}`,
+      `EstateWeb CREATE payload: type_id=${payload.type_id} location_id=${payload.location_id} scope_id=${payload.scope_id} fields=${payload.fields?.length ?? 0} price=${payload.price ?? 'null'} sites=${payload.sites.map((s) => `${s.agent_site_id}:${s.selected ? 1 : 0}`).join(',')}`,
     );
 
     const result = await this.estateWebPropertyService.createProperty(
@@ -113,7 +113,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         userIntegrationId,
       );
     const payload = this.buildPayload(
-      pushSites,
+      pushSites.map((site) => ({ ...site, selected: false })),
       userProperty,
       Number(integrationPropertyId),
     ) as EstateWebUpdatePropertyPayload;
@@ -176,7 +176,14 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         userProperty?.cms_fields,
         userProperty?.estateweb_type_id,
       ),
-      sites: pushSites.map((site) => ({ ...site, selected: false })),
+      sites: pushSites.map((site) => ({
+        selected: site.selected,
+        name: site.name,
+        agent_site_id: site.agent_site_id,
+        show_on_slider: site.show_on_slider,
+        show_on_first_page: site.show_on_first_page,
+        show_on_relative_pages: site.show_on_relative_pages,
+      })),
       gateways: [],
       ads: this.buildAds(title, description),
       foreign_agents: [],

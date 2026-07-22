@@ -61,7 +61,11 @@ export class EstateWebPropertyReconciliationService {
       return {
         defaultUserIntegrationId: userIntegrationId,
         byCode: this.buildCodeIndex(response.list),
-        pushSiteIds: new Set(pushSites.map((site) => site.agent_site_id)),
+        pushSiteIds: new Set(
+          pushSites
+            .filter((site) => site.selected)
+            .map((site) => site.agent_site_id),
+        ),
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
