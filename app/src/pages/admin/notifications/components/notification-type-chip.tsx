@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { getNotificationTypeLabel } from "@/config/constants/dropdowns/notification-type-filter.options";
+import { getNotificationTypeLabel } from "@/config/constants/dropdowns/notifications/notification-type-filter.options";
 import type { NotificationType } from "@/features/notifications/interfaces/notifications.interfaces";
 
 interface NotificationTypeChipProps {

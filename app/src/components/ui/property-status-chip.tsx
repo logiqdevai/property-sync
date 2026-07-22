@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { getPropertyStatusLabel } from "@/config/constants/dropdowns/property-status-form.options";
+import { getPropertyStatusLabel } from "@/config/constants/dropdowns/properties/property-status-form.options";
 import {
   PropertyStatuses,
   type PropertyStatus,

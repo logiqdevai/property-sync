@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { CmsSyncStatusFilterOptions } from "@/config/constants/dropdowns/cms-sync-status-filter.options";
+import { CmsSyncStatusFilterOptions } from "@/config/constants/dropdowns/integrations/cms-sync-status-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import {
   CmsSyncStatuses,

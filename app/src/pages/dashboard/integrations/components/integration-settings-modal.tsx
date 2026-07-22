@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FieldError, Form, Label, Modal, TextArea, useOverlayState } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
+import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integrations/integration-type-form.options";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import type {
   AvailableIntegrationTarget,

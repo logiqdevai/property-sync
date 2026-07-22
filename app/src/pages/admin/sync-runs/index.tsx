@@ -35,7 +35,7 @@ import type {
   CmsSyncStatus,
 } from "@/features/cms-sync-runs/interfaces/cms-sync-runs.interfaces";
 import { CmsSyncStatusChip } from "./components/cms-sync-status-chip";
-import { CmsSyncStatusFilterOptions } from "@/config/constants/dropdowns/cms-sync-status-filter.options";
+import { CmsSyncStatusFilterOptions } from "@/config/constants/dropdowns/integrations/cms-sync-status-filter.options";
 import { formatDateTime } from "@/lib/date";
 import { durationMsFromRange, formatDuration } from "@/lib/duration";
 

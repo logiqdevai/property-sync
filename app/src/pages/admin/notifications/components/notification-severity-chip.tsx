@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { NotificationSeverityFilterOptions } from "@/config/constants/dropdowns/notification-severity-filter.options";
+import { NotificationSeverityFilterOptions } from "@/config/constants/dropdowns/notifications/notification-severity-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import {
   NotificationSeverities,

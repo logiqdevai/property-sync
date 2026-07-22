@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { ScraperStatusFilterOptions } from "@/config/constants/dropdowns/scraper-status-filter.options";
+import { ScraperStatusFilterOptions } from "@/config/constants/dropdowns/scrapers/scraper-status-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { ScraperStatuses, type ScraperStatus } from "@/features/scrapers/interfaces/scrapers.interfaces";
 

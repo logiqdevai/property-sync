@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { ScraperHealthFilterOptions } from "@/config/constants/dropdowns/scraper-health-filter.options";
+import { ScraperHealthFilterOptions } from "@/config/constants/dropdowns/scrapers/scraper-health-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { ScraperHealths, type ScraperHealth } from "@/features/scrapers/interfaces/scrapers.interfaces";
 

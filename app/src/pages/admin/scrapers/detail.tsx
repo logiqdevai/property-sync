@@ -24,8 +24,8 @@ import {
   type ScraperStatus,
   type DiagnosticsMode,
 } from "@/features/scrapers/interfaces/scrapers.interfaces";
-import { ScraperStatusFormOptions } from "@/config/constants/dropdowns/scraper-status-form.options";
-import { DiagnosticsModeFormOptions } from "@/config/constants/dropdowns/diagnostics-mode-form.options";
+import { ScraperStatusFormOptions } from "@/config/constants/dropdowns/scrapers/scraper-status-form.options";
+import { DiagnosticsModeFormOptions } from "@/config/constants/dropdowns/scrapers/diagnostics-mode-form.options";
 import { CreateGenerationRunForm } from "./components/create-generation-run-form";
 import { GenerationRunStatusChip } from "./components/generation-run-status-chip";
 import { GenerationRunTriggerChip } from "./components/generation-run-trigger-chip";

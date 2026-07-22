@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { CrawlRunStatusFilterOptions } from "@/config/constants/dropdowns/crawl-run-status-filter.options";
+import { CrawlRunStatusFilterOptions } from "@/config/constants/dropdowns/agencies/crawl-run-status-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { CrawlRunStatuses, type CrawlRunStatus } from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
 

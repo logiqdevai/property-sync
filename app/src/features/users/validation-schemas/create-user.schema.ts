@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   UserPasswordSetupModes,
-} from "@/config/constants/dropdowns/user-password-setup-form.options";
+} from "@/config/constants/dropdowns/users/user-password-setup-form.options";
 
 export const createUserSchema = z
   .object({

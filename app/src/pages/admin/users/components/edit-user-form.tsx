@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, Label, Input, FieldError, Select, ListBox } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { PasswordInput } from "@/components/ui/password-input";
-import { RoleTypeFormOptions } from "@/config/constants/dropdowns/role-type-form.options";
+import { RoleTypeFormOptions } from "@/config/constants/dropdowns/users/role-type-form.options";
 import {
   updateUserSchema,
   type UpdateUserFormValues,

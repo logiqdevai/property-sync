@@ -34,8 +34,8 @@ import {
   type ScraperListQuery,
   type ScraperStatus,
 } from "@/features/scrapers/interfaces/scrapers.interfaces";
-import { ScraperStatusFilterOptions } from "@/config/constants/dropdowns/scraper-status-filter.options";
-import { ScraperHealthFilterOptions } from "@/config/constants/dropdowns/scraper-health-filter.options";
+import { ScraperStatusFilterOptions } from "@/config/constants/dropdowns/scrapers/scraper-status-filter.options";
+import { ScraperHealthFilterOptions } from "@/config/constants/dropdowns/scrapers/scraper-health-filter.options";
 import { formatDate } from "@/lib/date";
 import { useDebouncedValue } from "./hooks/use-debounced-value";
 

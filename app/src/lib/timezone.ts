@@ -1,4 +1,4 @@
-import { TimezoneOptions } from "@/config/constants/dropdowns/timezone.options";
+import { TimezoneOptions } from "@/config/constants/dropdowns/shared/timezone.options";
 
 export const getBrowserTimezone = (): string | undefined => {
   try {

@@ -19,7 +19,7 @@ import {
   type RoleType,
 } from "@/features/user/interfaces/user.interface";
 import type { AdminUser, AdminUserListQuery } from "@/features/users/interfaces/admin-users.interfaces";
-import { RoleTypeFilterOptions } from "@/config/constants/dropdowns/role-type-filter.options";
+import { RoleTypeFilterOptions } from "@/config/constants/dropdowns/users/role-type-filter.options";
 import { formatDate } from "@/lib/date";
 import { useAuthStore } from "@/stores/auth";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";

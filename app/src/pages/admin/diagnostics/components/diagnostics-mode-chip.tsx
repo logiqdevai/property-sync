@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { DiagnosticsModeFilterOptions } from "@/config/constants/dropdowns/diagnostics-mode-filter.options";
+import { DiagnosticsModeFilterOptions } from "@/config/constants/dropdowns/scrapers/diagnostics-mode-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import {
   DiagnosticsModes,

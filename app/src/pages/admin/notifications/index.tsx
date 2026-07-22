@@ -42,9 +42,9 @@ import {
   type NotificationType,
 } from "@/features/notifications/interfaces/notifications.interfaces";
 import type { SendTelegramTestFormValues } from "@/features/notifications/validation-schemas/notifications.schema";
-import { NotificationTypeFilterOptions } from "@/config/constants/dropdowns/notification-type-filter.options";
-import { NotificationSeverityFilterOptions } from "@/config/constants/dropdowns/notification-severity-filter.options";
-import { ReadFilterOptions } from "@/config/constants/dropdowns/read-filter.options";
+import { NotificationTypeFilterOptions } from "@/config/constants/dropdowns/notifications/notification-type-filter.options";
+import { NotificationSeverityFilterOptions } from "@/config/constants/dropdowns/notifications/notification-severity-filter.options";
+import { ReadFilterOptions } from "@/config/constants/dropdowns/notifications/read-filter.options";
 
 function resolveNotificationLink(notification: Notification): string | null {
   if (notification.source_agency_id) {

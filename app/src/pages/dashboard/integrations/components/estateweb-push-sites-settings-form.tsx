@@ -4,11 +4,11 @@ import { ActionButtonWithPending } from "@/components/ui/action-button-with-pend
 import {
   ESTATEWEB_DEFAULT_AD_LANGUAGES,
   EstateWebAdLanguageFormOptions,
-} from "@/config/constants/dropdowns/estateweb-ad-language-form.options";
+} from "@/config/constants/dropdowns/integrations/estateweb-ad-language-form.options";
 import {
   ESTATEWEB_DEFAULT_LISTING_TYPES,
   EstateWebListingTypeFormOptions,
-} from "@/config/constants/dropdowns/listing-type-form.options";
+} from "@/config/constants/dropdowns/properties/listing-type-form.options";
 import type {
   EstateWebIntegrationSettings,
   EstateWebLanguageId,

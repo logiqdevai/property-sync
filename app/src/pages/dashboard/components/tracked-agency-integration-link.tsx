@@ -13,7 +13,7 @@ import {
   getIntegrationConnectionLabel,
   getLinkableConnections,
 } from "@/features/user-tracked-agencies/utils/integration-link.utils";
-import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
+import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integrations/integration-type-form.options";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { Routes } from "@/routes/routes";
 import { CmsIntegrationDescription } from "./cms-integration-description";

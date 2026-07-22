@@ -11,11 +11,11 @@ import {
   parseCrawlIntervalBuilderState,
   type CrawlIntervalBuilderFrequency,
   type CrawlIntervalBuilderState,
-} from "@/config/constants/dropdowns/crawl-interval-builder.options";
+} from "@/config/constants/dropdowns/agencies/crawl-interval-builder.options";
 import {
   CrawlIntervalPresetOptions,
   isCrawlIntervalPreset,
-} from "@/config/constants/dropdowns/crawl-interval-preset.options";
+} from "@/config/constants/dropdowns/agencies/crawl-interval-preset.options";
 
 const CrawlIntervalModes = {
   PRESET: "preset",

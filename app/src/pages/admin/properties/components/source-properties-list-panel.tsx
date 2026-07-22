@@ -33,8 +33,8 @@ import type {
   SourcePropertyListQuery,
 } from "@/features/source-properties/interfaces/source-properties.interfaces";
 import type { PropertyStatus } from "@/features/properties/interfaces/properties.interfaces";
-import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
-import { TablePageSizeOptions } from "@/config/constants/dropdowns/table-page-size.options";
+import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/properties/property-status-filter.options";
+import { TablePageSizeOptions } from "@/config/constants/dropdowns/shared/table-page-size.options";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { formatDateTime, toEndOfDayIso, toStartOfDayIso } from "@/lib/date";
 

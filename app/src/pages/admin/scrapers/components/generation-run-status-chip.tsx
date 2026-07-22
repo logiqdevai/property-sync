@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { GenerationRunStatusFilterOptions } from "@/config/constants/dropdowns/generation-run-status-filter.options";
+import { GenerationRunStatusFilterOptions } from "@/config/constants/dropdowns/scrapers/generation-run-status-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { GenerationRunStatuses, type GenerationRunStatus } from "@/features/scraper-generation/interfaces/scraper-generation.interfaces";
 

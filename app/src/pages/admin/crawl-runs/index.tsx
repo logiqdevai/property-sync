@@ -29,7 +29,7 @@ import {
   type CrawlRunListQuery,
   type CrawlRunStatus,
 } from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
-import { CrawlRunStatusFilterOptions } from "@/config/constants/dropdowns/crawl-run-status-filter.options";
+import { CrawlRunStatusFilterOptions } from "@/config/constants/dropdowns/agencies/crawl-run-status-filter.options";
 import { formatDateTime } from "@/lib/date";
 import { formatDuration } from "@/lib/duration";
 

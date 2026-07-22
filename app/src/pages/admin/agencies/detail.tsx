@@ -6,7 +6,7 @@ import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TrackerAdminOptionsPanel } from "@/components/ui/tracker-admin-options-panel";
-import { getCrawlIntervalPresetLabel } from "@/config/constants/dropdowns/crawl-interval-preset.options";
+import { getCrawlIntervalPresetLabel } from "@/config/constants/dropdowns/agencies/crawl-interval-preset.options";
 import { AgencyForm } from "./components/agency-form";
 import { AgencyCrawlIntervalPanel } from "./components/agency-crawl-interval-panel";
 import {

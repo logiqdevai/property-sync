@@ -28,9 +28,9 @@ import {
   type ConnectCredentialsFormValues,
   type WebhookSetupFormValues,
 } from "@/features/user-integrations/validation-schemas/user-integrations.schema";
-import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
-import { getIntegrationTypeDescription } from "@/config/constants/dropdowns/integration-type-description.options";
-import { getAuthTypeLabel } from "@/config/constants/dropdowns/auth-type-form.options";
+import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integrations/integration-type-form.options";
+import { getIntegrationTypeDescription } from "@/config/constants/dropdowns/integrations/integration-type-description.options";
+import { getAuthTypeLabel } from "@/config/constants/dropdowns/integrations/auth-type-form.options";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { integrationSupportsWebhookUrl } from "@/lib/integration-webhook-url";
 import { LinkConnectionToAgencyModal } from "./components/link-connection-to-agency-modal";

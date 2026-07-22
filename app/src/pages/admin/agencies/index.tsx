@@ -31,7 +31,7 @@ import {
   AgencyVisibilityFilterOptions,
   agencyVisibilityFilterToQuery,
   type AgencyVisibilityFilter,
-} from "@/config/constants/dropdowns/agency-visibility-filter.options";
+} from "@/config/constants/dropdowns/agencies/agency-visibility-filter.options";
 import { formatDate } from "@/lib/date";
 import { useDebouncedValue } from "./hooks/use-debounced-value";
 

@@ -12,8 +12,8 @@ import {
   Ruler,
 } from "lucide-react";
 import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
-import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/listing-type-filter.options";
-import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/property-type-filter.options";
+import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/properties/listing-type-filter.options";
+import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/properties/property-type-filter.options";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
 import {

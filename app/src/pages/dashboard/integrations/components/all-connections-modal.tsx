@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Modal, Pagination, useOverlayState } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
-import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
+import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integrations/integration-type-form.options";
 import type { AvailableIntegrationTarget } from "@/features/user-integrations/interfaces/user-integrations.interfaces";
 import type { MaskedUserIntegrationConnection } from "@/features/user-integrations/interfaces/user-integrations.interfaces";
 import { IntegrationConnectionItem } from "./integration-connection-item";

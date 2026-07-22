@@ -17,12 +17,12 @@ import {
   type RoleType,
 } from "@/features/user/interfaces/user.interface";
 import { useAuthStore } from "@/stores/auth";
-import { RoleTypeFilterOptions } from "@/config/constants/dropdowns/role-type-filter.options";
+import { RoleTypeFilterOptions } from "@/config/constants/dropdowns/users/role-type-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { CredentialStatusIndicators } from "./components/integration-credential-fields";
 import { EditUserForm } from "./components/edit-user-form";
-import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
-import { getAuthTypeLabel } from "@/config/constants/dropdowns/auth-type-form.options";
+import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integrations/integration-type-form.options";
+import { getAuthTypeLabel } from "@/config/constants/dropdowns/integrations/auth-type-form.options";
 import { formatDate } from "@/lib/date";
 import { formatPrice } from "@/lib/price";
 

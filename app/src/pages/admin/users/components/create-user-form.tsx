@@ -7,7 +7,7 @@ import {
   UserPasswordSetupFormOptions,
   UserPasswordSetupModes,
   type UserPasswordSetupMode,
-} from "@/config/constants/dropdowns/user-password-setup-form.options";
+} from "@/config/constants/dropdowns/users/user-password-setup-form.options";
 import {
   createUserSchema,
   type CreateUserFormValues,

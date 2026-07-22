@@ -18,8 +18,8 @@ import {
   type GenerationRunStatus,
   type GenerationTrigger,
 } from "@/features/scraper-generation/interfaces/scraper-generation.interfaces";
-import { GenerationRunStatusFilterOptions } from "@/config/constants/dropdowns/generation-run-status-filter.options";
-import { GenerationTriggerFilterOptions } from "@/config/constants/dropdowns/generation-trigger-filter.options";
+import { GenerationRunStatusFilterOptions } from "@/config/constants/dropdowns/scrapers/generation-run-status-filter.options";
+import { GenerationTriggerFilterOptions } from "@/config/constants/dropdowns/scrapers/generation-trigger-filter.options";
 import { formatDateTime } from "@/lib/date";
 import { formatDuration } from "@/lib/duration";
 

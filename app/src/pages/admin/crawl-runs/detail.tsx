@@ -18,7 +18,7 @@ import {
   type CrawlRunDetail,
   type CrawlRunStatus,
 } from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
-import { getCmsSyncOperationLabel } from "@/config/constants/dropdowns/cms-sync-operation-form.options";
+import { getCmsSyncOperationLabel } from "@/config/constants/dropdowns/integrations/cms-sync-operation-form.options";
 import type { PropertyHistoryEntry } from "@/features/properties/interfaces/properties.interfaces";
 import { JobStatusChip } from "./components/job-status-chip";
 import type { JobStatus } from "@/features/jobs/interfaces/jobs.interfaces";

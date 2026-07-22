@@ -1,4 +1,4 @@
-import { CountryOptions } from "@/config/constants/dropdowns/country.options";
+import { CountryOptions } from "@/config/constants/dropdowns/shared/country.options";
 
 const countryNameToCodeMap = new Map<string, string>();
 

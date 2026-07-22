@@ -10,8 +10,8 @@ import {
   type CmsSyncRunResponse,
 } from "@/features/cms-sync-runs/interfaces/cms-sync-runs.interfaces";
 import { getFailedCmsSyncOperations } from "@/features/cms-sync-runs/utils/parse-cms-sync-failures";
-import { getCmsSyncOperationLabel } from "@/config/constants/dropdowns/cms-sync-operation-form.options";
-import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
+import { getCmsSyncOperationLabel } from "@/config/constants/dropdowns/integrations/cms-sync-operation-form.options";
+import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integrations/integration-type-form.options";
 import { PropertyHistorySummary } from "@/components/ui/property-history-summary";
 import { CmsSyncStatusChip } from "./components/cms-sync-status-chip";
 import { formatDateTime } from "@/lib/date";

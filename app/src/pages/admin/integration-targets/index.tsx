@@ -24,11 +24,11 @@ import {
   type IntegrationTargetListQuery,
   type IntegrationType,
 } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
-import { IntegrationTypeFilterOptions } from "@/config/constants/dropdowns/integration-type-filter.options";
-import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
-import { getAuthTypeLabel } from "@/config/constants/dropdowns/auth-type-form.options";
-import { AuthTypeFilterOptions } from "@/config/constants/dropdowns/auth-type-filter.options";
-import { VisibilityFilterOptions } from "@/config/constants/dropdowns/visibility-filter.options";
+import { IntegrationTypeFilterOptions } from "@/config/constants/dropdowns/integrations/integration-type-filter.options";
+import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integrations/integration-type-form.options";
+import { getAuthTypeLabel } from "@/config/constants/dropdowns/integrations/auth-type-form.options";
+import { AuthTypeFilterOptions } from "@/config/constants/dropdowns/integrations/auth-type-filter.options";
+import { VisibilityFilterOptions } from "@/config/constants/dropdowns/integrations/visibility-filter.options";
 
 export default function IntegrationTargetsListPage() {
   const navigate = useNavigate();

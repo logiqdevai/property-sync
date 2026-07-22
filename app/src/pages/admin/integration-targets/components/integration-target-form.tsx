@@ -10,8 +10,8 @@ import {
   type CreateIntegrationTargetPayload,
   type IntegrationType,
 } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
-import { IntegrationTypeFormOptions } from "@/config/constants/dropdowns/integration-type-form.options";
-import { AuthTypeFormOptions } from "@/config/constants/dropdowns/auth-type-form.options";
+import { IntegrationTypeFormOptions } from "@/config/constants/dropdowns/integrations/integration-type-form.options";
+import { AuthTypeFormOptions } from "@/config/constants/dropdowns/integrations/auth-type-form.options";
 
 const integrationTargetFormSchema = z.object({
   integration_type: z.enum([

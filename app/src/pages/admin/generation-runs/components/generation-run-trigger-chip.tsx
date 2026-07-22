@@ -1,5 +1,5 @@
 import { Chip } from "@heroui/react";
-import { GenerationTriggerFilterOptions } from "@/config/constants/dropdowns/generation-trigger-filter.options";
+import { GenerationTriggerFilterOptions } from "@/config/constants/dropdowns/scrapers/generation-trigger-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { GenerationTriggers, type GenerationTrigger } from "@/features/scraper-generation/interfaces/scraper-generation.interfaces";
 

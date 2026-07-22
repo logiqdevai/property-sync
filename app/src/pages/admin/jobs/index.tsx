@@ -22,8 +22,8 @@ import {
   type JobLogListQuery,
   type JobStatus,
 } from "@/features/jobs/interfaces/jobs.interfaces";
-import { JobStatusFilterOptions } from "@/config/constants/dropdowns/job-status-filter.options";
-import { JobQueueFilterOptions } from "@/config/constants/dropdowns/job-queue-filter.options";
+import { JobStatusFilterOptions } from "@/config/constants/dropdowns/jobs/job-status-filter.options";
+import { JobQueueFilterOptions } from "@/config/constants/dropdowns/jobs/job-queue-filter.options";
 import { formatDateTime } from "@/lib/date";
 import { formatDuration } from "@/lib/duration";
 

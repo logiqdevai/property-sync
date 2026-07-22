@@ -43,17 +43,17 @@ import {
   type PropertyStatus,
   type PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
-import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
+import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/properties/property-status-filter.options";
 import {
   PropertyChangeFilterOptions,
   type PropertyChangeFilter,
-} from "@/config/constants/dropdowns/property-change-filter.options";
-import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/listing-type-filter.options";
-import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/property-type-filter.options";
-import { PropertyDuplicateGroupFilterOptions } from "@/config/constants/dropdowns/property-duplicate-group-filter.options";
-import { PropertyCrmPushFilterOptions } from "@/config/constants/dropdowns/property-crm-push-filter.options";
-import { PropertyPendingCrmUpdateFilterOptions } from "@/config/constants/dropdowns/property-pending-crm-update-filter.options";
-import { TablePageSizeOptions } from "@/config/constants/dropdowns/table-page-size.options";
+} from "@/config/constants/dropdowns/properties/property-change-filter.options";
+import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/properties/listing-type-filter.options";
+import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/properties/property-type-filter.options";
+import { PropertyDuplicateGroupFilterOptions } from "@/config/constants/dropdowns/properties/property-duplicate-group-filter.options";
+import { PropertyCrmPushFilterOptions } from "@/config/constants/dropdowns/properties/property-crm-push-filter.options";
+import { PropertyPendingCrmUpdateFilterOptions } from "@/config/constants/dropdowns/properties/property-pending-crm-update-filter.options";
+import { TablePageSizeOptions } from "@/config/constants/dropdowns/shared/table-page-size.options";
 import { useAdminUsers } from "@/features/users/hooks/use-admin-users";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { formatPrice } from "@/lib/price";

@@ -29,7 +29,7 @@ src/
 │   ├── environments/
 │   │   └── index.ts               # Typed and exported env vars
 │   └── constants/                 # Static maps and dropdown options
-│       └── dropdowns/             # Select/ListBox option arrays (one file per type)
+│       └── dropdowns/             # Select/ListBox option arrays by domain folder
 ├── features/                      # Domain modules (see Feature Module Pattern)
 ├── pages/                         # Route-level page components
 ├── components/
@@ -91,7 +91,9 @@ pages/<section>/
 - Chip/badge/table display labels for enum values
 - `get<Entity><Field>Label()` / `get<Entity><Field>Description()` helpers tied to that vocabulary
 
-**Canonical location:** `src/config/constants/dropdowns/<domain>-<context>.options.ts`
+**Canonical location:** `src/config/constants/dropdowns/<domain-folder>/<domain>-<context>.options.ts`
+
+Domain folders: `agencies`, `scrapers`, `properties`, `integrations`, `notifications`, `users`, `jobs`, `shared`.
 
 **Never put this data in:**
 
@@ -105,14 +107,14 @@ pages/<section>/
 
 #### File naming
 
-One file per option set. Use a suffix that matches usage:
+One file per option set, under the matching domain folder. Use a suffix that matches usage:
 
 | Suffix | Purpose | Example |
 | --- | --- | --- |
-| `-filter.options.ts` | Toolbar/filter `<Select>` with `{ id: T \| "all", label }` | `agency-status-filter.options.ts` |
-| `-form.options.ts` | Form `<Select>` with `{ id: T, label }` — often the **canonical label source** | `integration-type-form.options.ts` |
-| `-description.options.ts` | Card/help copy keyed by enum | `integration-type-description.options.ts` |
-| `.options.ts` (no suffix) | Shared static lists not tied to filter/form | `country.options.ts`, `timezone.options.ts` |
+| `-filter.options.ts` | Toolbar/filter `<Select>` with `{ id: T \| "all", label }` | `agencies/agency-status-filter.options.ts` |
+| `-form.options.ts` | Form `<Select>` with `{ id: T, label }` — often the **canonical label source** | `integrations/integration-type-form.options.ts` |
+| `-description.options.ts` | Card/help copy keyed by enum | `integrations/integration-type-description.options.ts` |
+| `.options.ts` (no suffix) | Shared static lists not tied to filter/form | `shared/country.options.ts`, `shared/timezone.options.ts` |
 
 **Export naming:** `PascalCase` + `Options` suffix (`AgencyStatusFilterOptions`, `IntegrationTypeFormOptions`).
 
@@ -156,7 +158,7 @@ const statusLabel: Record<AgencyStatus, string> = {
 **Correct:**
 
 ```tsx
-import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agency-status-filter.options";
+import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agencies/agency-status-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 
 <Chip.Label>{getDropdownOptionLabel(AgencyStatusFilterOptions, status)}</Chip.Label>
@@ -183,7 +185,7 @@ Chip color maps (`Record<Enum, ChipColor>`) may stay in the chip component — o
 
 #### Agent checklist (before finishing any UI task)
 
-1. Adding or changing enum display text? → edit/create `config/constants/dropdowns/*.options.ts` first.
+1. Adding or changing enum display text? → edit/create `config/constants/dropdowns/<domain>/*.options.ts` first.
 2. Need a label in a chip, table cell, modal title, or card? → import from dropdowns; never add a local `Record<..., string>`.
 3. Filter and form share labels? → one canonical file; filter spreads it.
 4. Tempted to add `features/.../utils/...label...`? → stop; use dropdowns.
@@ -575,8 +577,8 @@ export function getIntegrationTypeLabel(type: IntegrationType | string): string 
   return IntegrationTypeFormOptions.find((option) => option.id === type)?.label ?? type;
 }
 
-// integration-type-filter.options.ts
-import { IntegrationTypeFormOptions } from "@/config/constants/dropdowns/integration-type-form.options";
+// integrations/integration-type-filter.options.ts
+import { IntegrationTypeFormOptions } from "@/config/constants/dropdowns/integrations/integration-type-form.options";
 
 export const IntegrationTypeFilterOptions: { id: IntegrationType | "all"; label: string }[] = [
   { id: "all", label: "All types" },
@@ -584,10 +586,10 @@ export const IntegrationTypeFilterOptions: { id: IntegrationType | "all"; label:
 ];
 ```
 
-**Descriptions (separate file, same folder):**
+**Descriptions (separate file, same domain folder):**
 
 ```ts
-// integration-type-description.options.ts
+// integrations/integration-type-description.options.ts
 export const IntegrationTypeDescriptionOptions: { id: IntegrationType; description: string }[] = [
   { id: IntegrationTypes.OPENAI, description: "Generate and normalize listing content..." },
   ...
@@ -601,7 +603,7 @@ export function getIntegrationTypeDescription(type: IntegrationType | string): s
 **Chip display text from dropdowns:**
 
 ```tsx
-import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agency-status-filter.options";
+import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agencies/agency-status-filter.options";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 
 <Chip.Label>{getDropdownOptionLabel(AgencyStatusFilterOptions, status)}</Chip.Label>
@@ -610,7 +612,7 @@ import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 **Select usage:**
 
 ```tsx
-import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agency-status-filter.options";
+import { AgencyStatusFilterOptions } from "@/config/constants/dropdowns/agencies/agency-status-filter.options";
 
 <Select aria-label="Filter by status" selectedKey={status} onSelectionChange={setStatus}>
   <Select.Trigger>...</Select.Trigger>
