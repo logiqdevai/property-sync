@@ -1,10 +1,11 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { useOverlayState } from "@heroui/react";
+import { Table, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { PropertyHistorySummary } from "@/components/ui/property-history-summary";
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import {
   useCancelCrawlRun,
@@ -14,10 +15,17 @@ import {
 } from "@/features/crawl-runs/hooks/use-crawl-runs";
 import {
   CrawlRunStatuses,
+  type CrawlRunDetail,
   type CrawlRunStatus,
 } from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
+import { getCmsSyncOperationLabel } from "@/config/constants/dropdowns/cms-sync-operation-form.options";
+import type { PropertyHistoryEntry } from "@/features/properties/interfaces/properties.interfaces";
 import { JobStatusChip } from "./components/job-status-chip";
 import type { JobStatus } from "@/features/jobs/interfaces/jobs.interfaces";
+import {
+  formatPropertyHistoryLabel,
+  formatPropertyHistoryValue,
+} from "@/features/properties/utils/format-property-history";
 import { formatDateTime } from "@/lib/date";
 import { formatDuration } from "@/lib/duration";
 
@@ -31,6 +39,36 @@ function formatUsd(value: string | null) {
   const num = Number(value);
   if (Number.isNaN(num)) return value;
   return `$${num.toFixed(6)}`;
+}
+
+function getCrawlUserProperties(run: CrawlRunDetail) {
+  const rows: Array<{
+    key: string;
+    sync_run_id: string;
+    user_property_id: string;
+    property_title: string;
+    operation: string;
+    user_email: string | null;
+    history?: PropertyHistoryEntry[];
+  }> = [];
+
+  for (const syncRun of run.cms_sync_runs ?? []) {
+    const results = syncRun.response?.operation_results ?? [];
+    for (const result of results) {
+      if (!result || result.success === false) continue;
+      rows.push({
+        key: `${syncRun.id}-${result.user_property_id}-${result.operation}`,
+        sync_run_id: syncRun.id,
+        user_property_id: result.user_property_id,
+        property_title: result.property_title?.trim() || result.user_property_id,
+        operation: result.operation,
+        user_email: syncRun.user_integration?.user?.email ?? null,
+        history: result.history,
+      });
+    }
+  }
+
+  return rows;
 }
 
 export default function CrawlRunDetailPage() {
@@ -51,6 +89,8 @@ export default function CrawlRunDetailPage() {
   const isActive = ACTIVE_STATUSES.includes(run.status);
   const traces = run.execution_traces ?? [];
   const jobLogs = run.job_logs ?? [];
+  const userProperties = getCrawlUserProperties(run);
+  const propertyHistory = run.property_history ?? [];
   const hasAiCost = run.ai_total_cost !== null;
   const metadata = run.metadata ?? {};
   const batchChunks = Array.isArray(metadata.batch_chunks)
@@ -266,6 +306,111 @@ export default function CrawlRunDetailPage() {
           </pre>
         </div>
       )}
+
+      {userProperties.length > 0 ? (
+        <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-3">
+          <p className="text-sm font-medium text-foreground">User properties</p>
+          <div className="rounded-xl border border-border overflow-hidden">
+            <Table>
+              <Table.ScrollContainer>
+                <Table.Content aria-label="User properties">
+                  <Table.Header>
+                    <Table.Column isRowHeader>Property</Table.Column>
+                    <Table.Column>User</Table.Column>
+                    <Table.Column>Operation</Table.Column>
+                    <Table.Column>History</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    {userProperties.map((row) => (
+                      <Table.Row key={row.key} id={row.key}>
+                        <Table.Cell>
+                          <button
+                            className="text-sm text-accent hover:underline text-left"
+                            onClick={() =>
+                              navigate(Routes.admin.properties.userDetail(row.user_property_id))
+                            }
+                          >
+                            {row.property_title}
+                          </button>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <span className="text-sm text-foreground">{row.user_email ?? "—"}</span>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <span className="font-mono text-sm text-foreground">
+                            {getCmsSyncOperationLabel(row.operation)}
+                          </span>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <PropertyHistorySummary history={row.history} />
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
+            </Table>
+          </div>
+        </div>
+      ) : null}
+
+      {propertyHistory.length > 0 ? (
+        <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-3">
+          <p className="text-sm font-medium text-foreground">Property history</p>
+          <div className="rounded-xl border border-border overflow-hidden">
+            <Table>
+              <Table.ScrollContainer>
+                <Table.Content aria-label="Property history">
+                  <Table.Header>
+                    <Table.Column isRowHeader>Property</Table.Column>
+                    <Table.Column>Change</Table.Column>
+                    <Table.Column>When</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    {propertyHistory.map((entry) => (
+                      <Table.Row key={entry.id} id={entry.id}>
+                        <Table.Cell>
+                          <button
+                            className="text-sm text-accent hover:underline text-left"
+                            onClick={() =>
+                              navigate(Routes.admin.properties.detail(entry.property_id))
+                            }
+                          >
+                            {entry.property?.title ?? entry.property_id}
+                          </button>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-sm text-foreground">
+                              {formatPropertyHistoryLabel(entry)}
+                            </span>
+                            {entry.field ? (
+                              <span className="text-xs text-muted break-words">
+                                {entry.field}: {formatPropertyHistoryValue(entry.old_value)} →{" "}
+                                {formatPropertyHistoryValue(entry.new_value)}
+                              </span>
+                            ) : entry.old_value != null || entry.new_value != null ? (
+                              <span className="text-xs text-muted break-words">
+                                {formatPropertyHistoryValue(entry.old_value)} →{" "}
+                                {formatPropertyHistoryValue(entry.new_value)}
+                              </span>
+                            ) : null}
+                          </div>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <span className="text-xs text-muted whitespace-nowrap">
+                            {formatDateTime(entry.created_at)}
+                          </span>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
+            </Table>
+          </div>
+        </div>
+      ) : null}
 
       <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-4">
         <div className="flex items-center justify-between">

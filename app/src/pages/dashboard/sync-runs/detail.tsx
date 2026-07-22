@@ -12,6 +12,7 @@ import {
 import { getFailedCmsSyncOperations } from "@/features/cms-sync-runs/utils/parse-cms-sync-failures";
 import { getCmsSyncOperationLabel } from "@/config/constants/dropdowns/cms-sync-operation-form.options";
 import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
+import { PropertyHistorySummary } from "@/components/ui/property-history-summary";
 import { CmsSyncStatusChip } from "./components/cms-sync-status-chip";
 import { formatDateTime } from "@/lib/date";
 import { durationMsFromRange, formatDuration } from "@/lib/duration";
@@ -151,6 +152,7 @@ export default function DashboardSyncRunDetailPage() {
                   <Table.Header>
                     <Table.Column isRowHeader>Property</Table.Column>
                     <Table.Column>Result</Table.Column>
+                    <Table.Column>History</Table.Column>
                   </Table.Header>
                   <Table.Body>
                     {syncedProperties.map((result) => (
@@ -175,6 +177,9 @@ export default function DashboardSyncRunDetailPage() {
                           <span className="text-sm text-foreground">
                             {getCmsSyncOperationLabel(result.operation)}
                           </span>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <PropertyHistorySummary history={result.history} />
                         </Table.Cell>
                       </Table.Row>
                     ))}

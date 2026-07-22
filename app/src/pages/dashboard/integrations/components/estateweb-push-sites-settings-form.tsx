@@ -54,9 +54,7 @@ export function EstateWebPushSitesSettingsForm({
   const [sites, setSites] = useState<EstateWebPushSiteSetting[]>([]);
 
   useEffect(() => {
-    const configured = (settings?.settings as EstateWebIntegrationSettings | null)
-      ?.estateweb_default_sites;
-    setSites(configured ?? []);
+    setSites(settings?.settings?.estateweb_default_sites ?? []);
   }, [settings]);
 
   const addSite = () => {
@@ -79,7 +77,7 @@ export function EstateWebPushSitesSettingsForm({
     const payload: EstateWebIntegrationSettings = { estateweb_default_sites: sites };
 
     updateSettings.mutate(
-      { targetId, payload: { settings: payload as unknown as Record<string, unknown> } },
+      { targetId, payload: { settings: payload } },
       { onSuccess: onClose },
     );
   };

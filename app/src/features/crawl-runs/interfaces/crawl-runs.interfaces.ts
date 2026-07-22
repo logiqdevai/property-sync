@@ -1,3 +1,5 @@
+import type { PropertyHistoryEntry } from "@/features/properties/interfaces/properties.interfaces";
+
 export const CrawlRunStatuses = {
   QUEUED: "QUEUED",
   RUNNING: "RUNNING",
@@ -71,6 +73,47 @@ export interface CrawlRunDetail extends CrawlRun {
   execution_traces: ScraperExecutionTrace[];
   job_logs: CrawlRunJobLogSummary[];
   diagnostics_package?: { id: string; mode: string } | null;
+  property_history?: CrawlRunPropertyHistoryEntry[];
+  cms_sync_runs?: CrawlRunCmsSyncRunSummary[];
+}
+
+export interface CrawlRunPropertyHistoryEntry extends PropertyHistoryEntry {
+  property?: {
+    id: string;
+    title: string;
+    user_property_copies?: Array<{
+      id: string;
+      title: string;
+      user?: { email: string };
+    }>;
+  };
+}
+
+export interface CrawlRunCmsSyncRunSummary {
+  id: string;
+  status: string;
+  total_created: number;
+  total_updated: number;
+  total_removed: number;
+  total_failed: number;
+  response: {
+    failed_property_ids?: string[];
+    skipped_duplicate_property_ids?: string[];
+    operation_results?: Array<{
+      user_property_id: string;
+      operation: string;
+      success: boolean;
+      property_title?: string | null;
+      error?: string;
+      history?: PropertyHistoryEntry[];
+    }>;
+  } | null;
+  user_integration?: {
+    id: string;
+    email: string | null;
+    username: string | null;
+    user?: { id: string; email: string };
+  };
 }
 
 export interface CrawlRunListQuery {

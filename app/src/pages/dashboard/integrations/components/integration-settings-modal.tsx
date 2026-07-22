@@ -3,14 +3,17 @@ import { FieldError, Form, Label, Modal, TextArea, useOverlayState } from "@hero
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integration-type-form.options";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
-import type { AvailableIntegrationTarget } from "@/features/user-integrations/interfaces/user-integrations.interfaces";
+import type {
+  AvailableIntegrationTarget,
+  UserIntegrationSettingsData,
+} from "@/features/user-integrations/interfaces/user-integrations.interfaces";
 import {
   useUpdateUserIntegrationSettings,
   useUserIntegrationSettings,
 } from "@/features/user-integrations/hooks/use-user-integrations";
 import { EstateWebPushSitesSettingsForm } from "./estateweb-push-sites-settings-form";
 
-function parseSettingsInput(value: string): Record<string, unknown> | null {
+function parseSettingsInput(value: string): UserIntegrationSettingsData | null {
   const trimmed = value.trim();
   if (trimmed.length === 0) {
     return {};
@@ -21,7 +24,7 @@ function parseSettingsInput(value: string): Record<string, unknown> | null {
     return null;
   }
 
-  return parsed as Record<string, unknown>;
+  return parsed as UserIntegrationSettingsData;
 }
 
 interface IntegrationSettingsModalProps {
@@ -53,7 +56,7 @@ export function IntegrationSettingsModal({ state, target }: IntegrationSettingsM
       return;
     }
 
-    let parsed: Record<string, unknown> | null;
+    let parsed: UserIntegrationSettingsData | null;
     try {
       parsed = parseSettingsInput(value);
     } catch {

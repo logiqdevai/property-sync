@@ -1,3 +1,5 @@
+import type { EstateWebIntegrationSettings } from "@/features/estateweb/interfaces/estateweb-integration-settings.interfaces";
+
 export const IntegrationTypes = {
   ESTATEWEB: "ESTATEWEB",
   OPENAI: "OPENAI",
@@ -29,6 +31,8 @@ export const AuthTypes = {
 
 export type AuthType = (typeof AuthTypes)[keyof typeof AuthTypes];
 
+export type UserIntegrationSettingsData = Partial<EstateWebIntegrationSettings>;
+
 export interface IntegrationTarget {
   id: string;
   integration_type: IntegrationType;
@@ -48,7 +52,7 @@ export interface UserIntegrationSettings {
   id: string | null;
   integration_target_id: string;
   user_id: string;
-  settings: Record<string, unknown> | null;
+  settings: UserIntegrationSettingsData | null;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -120,7 +124,7 @@ export interface UpdateUserIntegrationAccountPayload {
 }
 
 export interface UpdateUserIntegrationSettingsPayload {
-  settings?: Record<string, unknown>;
+  settings?: UserIntegrationSettingsData;
 }
 
 export interface PaginatedResponse<T> {

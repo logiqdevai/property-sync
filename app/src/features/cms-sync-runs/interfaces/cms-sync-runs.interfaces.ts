@@ -1,3 +1,5 @@
+import type { PropertyHistoryEntry } from "@/features/properties/interfaces/properties.interfaces";
+
 export const CmsSyncStatuses = {
   PENDING: "PENDING",
   SUCCESS: "SUCCESS",
@@ -25,6 +27,7 @@ export interface CmsSyncOperationResult {
   error?: string;
   reconciled?: boolean;
   skipped_push?: boolean;
+  history?: PropertyHistoryEntry[];
 }
 
 export interface CmsSyncRunResponse {

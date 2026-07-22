@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AuthType, IntegrationType } from 'generated/prisma';
+import { UserIntegrationSettingsData } from '../interfaces/user-integration-settings.interface';
 
 export class AvailableIntegrationTargetEntity {
   @ApiProperty()
@@ -43,8 +44,23 @@ export class UserIntegrationSettingsEntity {
   @ApiProperty()
   user_id: string;
 
-  @ApiProperty({ nullable: true, type: Object })
-  settings: Record<string, unknown> | null;
+  @ApiProperty({
+    nullable: true,
+    type: Object,
+    example: {
+      estateweb_default_sites: [
+        {
+          selected: true,
+          name: '1. re1.gr',
+          agent_site_id: 1002,
+          show_on_slider: 0,
+          show_on_first_page: 0,
+          show_on_relative_pages: 1,
+        },
+      ],
+    },
+  })
+  settings: UserIntegrationSettingsData | null;
 
   @ApiProperty({ nullable: true })
   created_at: Date | null;

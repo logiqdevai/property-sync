@@ -1,6 +1,10 @@
-import type { AuthType, IntegrationType } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
+import type {
+  AuthType,
+  IntegrationType,
+  UserIntegrationSettingsData,
+} from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 
-export type { AuthType, IntegrationType };
+export type { AuthType, IntegrationType, UserIntegrationSettingsData };
 
 export interface AvailableIntegrationTarget {
   id: string;
@@ -19,7 +23,7 @@ export interface UserIntegrationSettings {
   id: string | null;
   integration_target_id: string;
   user_id: string;
-  settings: Record<string, unknown> | null;
+  settings: UserIntegrationSettingsData | null;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -74,5 +78,5 @@ export interface UpdateConnectionPayload {
 }
 
 export interface UpdateSettingsPayload {
-  settings?: Record<string, unknown>;
+  settings?: UserIntegrationSettingsData;
 }

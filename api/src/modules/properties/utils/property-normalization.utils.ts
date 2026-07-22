@@ -473,8 +473,8 @@ export interface HistoryWriteInput {
   property_id: string;
   event_type: PropertyHistoryEventType;
   field?: string | null;
-  old_value?: Prisma.InputJsonValue | null;
-  new_value?: Prisma.InputJsonValue | null;
+  old_value?: Prisma.InputJsonValue | typeof Prisma.JsonNull | null;
+  new_value?: Prisma.InputJsonValue | typeof Prisma.JsonNull | null;
   crawl_run_id?: string | null;
 }
 
@@ -494,19 +494,35 @@ function valuesEqual(a: unknown, b: unknown): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-function serializeHistoryValue(
-  value: unknown,
-): Prisma.InputJsonValue | null {
+function toHistoryComparable(value: unknown): unknown {
   if (value === undefined || value === null) return null;
   if (value instanceof Prisma.Decimal) return value.toString();
   if (
-    typeof value === 'string' ||
-    typeof value === 'number' ||
-    typeof value === 'boolean'
+    typeof value === 'object' &&
+    value !== null &&
+    'toFixed' in value &&
+    typeof (value as { toString: () => string }).toString === 'function' &&
+    (value as { constructor?: { name?: string } }).constructor?.name ===
+      'Decimal'
   ) {
-    return value;
+    return (value as { toString: () => string }).toString();
   }
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+  return value;
+}
+
+function serializeHistoryValue(
+  value: unknown,
+): Prisma.InputJsonValue | typeof Prisma.JsonNull {
+  const comparable = toHistoryComparable(value);
+  if (comparable === null) return Prisma.JsonNull;
+  if (
+    typeof comparable === 'string' ||
+    typeof comparable === 'number' ||
+    typeof comparable === 'boolean'
+  ) {
+    return comparable;
+  }
+  return JSON.parse(JSON.stringify(comparable)) as Prisma.InputJsonValue;
 }
 
 export function diffPropertyChanges(
@@ -575,6 +591,8 @@ export function diffPropertyChanges(
     'district',
     'address',
     'postal_code',
+    'latitude',
+    'longitude',
     'square_meters',
     'bedrooms',
     'bathrooms',
@@ -595,19 +613,17 @@ export function diffPropertyChanges(
   ];
 
   for (const field of trackedFields) {
-    const oldVal = oldProperty[field as keyof Property];
-    const newVal = newData[field];
-    const oldSerialized =
-      oldVal instanceof Prisma.Decimal ? oldVal.toString() : oldVal;
-    const newSerialized =
-      newVal instanceof Prisma.Decimal ? newVal.toString() : newVal;
-    if (!valuesEqual(oldSerialized, newSerialized)) {
+    const oldComparable = toHistoryComparable(
+      oldProperty[field as keyof Property],
+    );
+    const newComparable = toHistoryComparable(newData[field]);
+    if (!valuesEqual(oldComparable, newComparable)) {
       events.push({
         ...base,
         event_type: PropertyHistoryEventType.UPDATED,
         field,
-        old_value: serializeHistoryValue(oldSerialized),
-        new_value: serializeHistoryValue(newSerialized),
+        old_value: serializeHistoryValue(oldComparable),
+        new_value: serializeHistoryValue(newComparable),
       });
     }
   }

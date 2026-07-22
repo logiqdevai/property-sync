@@ -156,6 +156,52 @@ export class CrawlRunsService {
         diagnostics_package: {
           select: { id: true, mode: true },
         },
+        property_history: {
+          orderBy: { created_at: 'desc' },
+          select: {
+            id: true,
+            property_id: true,
+            event_type: true,
+            field: true,
+            old_value: true,
+            new_value: true,
+            crawl_run_id: true,
+            created_at: true,
+            property: {
+              select: {
+                id: true,
+                title: true,
+                user_property_copies: {
+                  select: {
+                    id: true,
+                    title: true,
+                    user: { select: { email: true } },
+                  },
+                },
+              },
+            },
+          },
+        },
+        cms_sync_runs: {
+          orderBy: { created_at: 'asc' },
+          select: {
+            id: true,
+            status: true,
+            total_created: true,
+            total_updated: true,
+            total_removed: true,
+            total_failed: true,
+            response: true,
+            user_integration: {
+              select: {
+                id: true,
+                email: true,
+                username: true,
+                user: { select: { id: true, email: true } },
+              },
+            },
+          },
+        },
       },
     });
 
@@ -163,7 +209,104 @@ export class CrawlRunsService {
       throw new NotFoundException('Crawl run not found');
     }
 
-    return run;
+    return this.attachCmsSyncRunHistory(run);
+  }
+
+  private async attachCmsSyncRunHistory<
+    T extends {
+      id: string;
+      property_history: Array<{
+        property_id: string;
+        id: string;
+        event_type: string;
+        field: string | null;
+        old_value: Prisma.JsonValue;
+        new_value: Prisma.JsonValue;
+        crawl_run_id: string | null;
+        created_at: Date;
+      }>;
+      cms_sync_runs: Array<{
+        response: Prisma.JsonValue | null;
+        [key: string]: unknown;
+      }>;
+    },
+  >(run: T): Promise<T> {
+    const historyByCanonical = new Map<string, T['property_history']>();
+    for (const row of run.property_history) {
+      const list = historyByCanonical.get(row.property_id) ?? [];
+      list.push(row);
+      historyByCanonical.set(row.property_id, list);
+    }
+
+    const allUserPropertyIds = new Set<string>();
+    for (const syncRun of run.cms_sync_runs) {
+      const response =
+        syncRun.response &&
+        typeof syncRun.response === 'object' &&
+        !Array.isArray(syncRun.response)
+          ? (syncRun.response as {
+              operation_results?: Array<Record<string, unknown>>;
+            })
+          : null;
+      for (const op of response?.operation_results ?? []) {
+        if (typeof op.user_property_id === 'string') {
+          allUserPropertyIds.add(op.user_property_id);
+        }
+      }
+    }
+
+    const userProperties =
+      allUserPropertyIds.size === 0
+        ? []
+        : await this.prisma.userProperty.findMany({
+            where: { id: { in: [...allUserPropertyIds] } },
+            select: { id: true, canonical_property_id: true },
+          });
+
+    const canonicalByUserProperty = new Map(
+      userProperties.map((up) => [up.id, up.canonical_property_id]),
+    );
+
+    return {
+      ...run,
+      cms_sync_runs: run.cms_sync_runs.map((syncRun) => {
+        const response =
+          syncRun.response &&
+          typeof syncRun.response === 'object' &&
+          !Array.isArray(syncRun.response)
+            ? (syncRun.response as {
+                operation_results?: Array<Record<string, unknown>>;
+                [key: string]: unknown;
+              })
+            : null;
+
+        if (!response?.operation_results) {
+          return syncRun;
+        }
+
+        return {
+          ...syncRun,
+          response: {
+            ...response,
+            operation_results: response.operation_results.map((op) => {
+              const userPropertyId =
+                typeof op.user_property_id === 'string'
+                  ? op.user_property_id
+                  : null;
+              const canonicalId = userPropertyId
+                ? canonicalByUserProperty.get(userPropertyId)
+                : undefined;
+              return {
+                ...op,
+                history: canonicalId
+                  ? (historyByCanonical.get(canonicalId) ?? [])
+                  : [],
+              };
+            }),
+          },
+        };
+      }),
+    };
   }
 
   async rerun(id: string) {

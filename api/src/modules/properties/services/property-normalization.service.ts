@@ -385,8 +385,14 @@ export class PropertyNormalizationService {
               property_id: event.property_id,
               event_type: event.event_type,
               field: event.field ?? null,
-              old_value: event.old_value ?? undefined,
-              new_value: event.new_value ?? undefined,
+              old_value:
+                event.old_value === undefined || event.old_value === null
+                  ? Prisma.JsonNull
+                  : event.old_value,
+              new_value:
+                event.new_value === undefined || event.new_value === null
+                  ? Prisma.JsonNull
+                  : event.new_value,
               crawl_run_id: event.crawl_run_id ?? null,
             })),
           });

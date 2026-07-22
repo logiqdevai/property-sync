@@ -153,7 +153,7 @@ export class CmsSyncRunsService {
       include: listInclude,
     });
     if (!run) throw new NotFoundException('CMS sync run not found');
-    return run;
+    return this.attachOperationHistory(run);
   }
 
   async findOneForUser(userId: string, id: string) {
@@ -168,7 +168,7 @@ export class CmsSyncRunsService {
       include: listInclude,
     });
     if (!run) throw new NotFoundException('CMS sync run not found');
-    return run;
+    return this.attachOperationHistory(run);
   }
 
   async delete(id: string) {
@@ -371,6 +371,101 @@ export class CmsSyncRunsService {
         total_pages: Math.ceil(total / limit),
         has_next: page < Math.ceil(total / limit),
         has_prev: page > 1,
+      },
+    };
+  }
+
+  private async attachOperationHistory<
+    T extends {
+      crawl_run_id: string;
+      response: Prisma.JsonValue | null;
+    },
+  >(run: T): Promise<T> {
+    const response =
+      run.response && typeof run.response === 'object' && !Array.isArray(run.response)
+        ? (run.response as {
+            operation_results?: Array<Record<string, unknown>>;
+            [key: string]: unknown;
+          })
+        : null;
+
+    const operationResults = Array.isArray(response?.operation_results)
+      ? response.operation_results
+      : null;
+
+    if (!response || !operationResults || operationResults.length === 0) {
+      return run;
+    }
+
+    const userPropertyIds = [
+      ...new Set(
+        operationResults
+          .map((op) => op.user_property_id)
+          .filter((id): id is string => typeof id === 'string'),
+      ),
+    ];
+
+    if (userPropertyIds.length === 0) {
+      return run;
+    }
+
+    const userProperties = await this.prisma.userProperty.findMany({
+      where: { id: { in: userPropertyIds } },
+      select: { id: true, canonical_property_id: true },
+    });
+
+    const canonicalByUserProperty = new Map(
+      userProperties.map((up) => [up.id, up.canonical_property_id]),
+    );
+    const canonicalIds = [
+      ...new Set(userProperties.map((up) => up.canonical_property_id)),
+    ];
+
+    const historyRows =
+      canonicalIds.length === 0
+        ? []
+        : await this.prisma.propertyHistory.findMany({
+            where: {
+              crawl_run_id: run.crawl_run_id,
+              property_id: { in: canonicalIds },
+            },
+            orderBy: { created_at: 'desc' },
+            select: {
+              id: true,
+              property_id: true,
+              event_type: true,
+              field: true,
+              old_value: true,
+              new_value: true,
+              crawl_run_id: true,
+              created_at: true,
+            },
+          });
+
+    const historyByCanonical = new Map<string, typeof historyRows>();
+    for (const row of historyRows) {
+      const list = historyByCanonical.get(row.property_id) ?? [];
+      list.push(row);
+      historyByCanonical.set(row.property_id, list);
+    }
+
+    return {
+      ...run,
+      response: {
+        ...response,
+        operation_results: operationResults.map((op) => {
+          const userPropertyId =
+            typeof op.user_property_id === 'string' ? op.user_property_id : null;
+          const canonicalId = userPropertyId
+            ? canonicalByUserProperty.get(userPropertyId)
+            : undefined;
+          return {
+            ...op,
+            history: canonicalId
+              ? (historyByCanonical.get(canonicalId) ?? [])
+              : [],
+          };
+        }),
       },
     };
   }

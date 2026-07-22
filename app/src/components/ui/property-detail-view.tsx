@@ -11,6 +11,7 @@ import {
   Maximize2,
   Ruler,
 } from "lucide-react";
+import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
 import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/listing-type-filter.options";
 import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/property-type-filter.options";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
@@ -195,6 +196,9 @@ export function PropertyDetailView({
   const primaryLink =
     sourceLinks.find((link) => link.is_primary_source) ?? sourceLinks[0] ?? null;
   const hasPrice = property.price != null && property.price !== "";
+  const crmPropertyAppUrl = property.integration_property_id
+    ? getCrmPropertyAppUrl(property.integration_property_id)
+    : null;
 
   const specs = [
     property.bedrooms != null
@@ -244,6 +248,17 @@ export function PropertyDetailView({
         </Link>
         <div className="flex items-center gap-2 flex-wrap">
           {details ? headerExtra : null}
+          {crmPropertyAppUrl ? (
+            <a
+              href={crmPropertyAppUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-accent hover:underline"
+            >
+              Open in CRM
+              <ExternalLink className="size-3.5" />
+            </a>
+          ) : null}
           {headerActions}
         </div>
       </div>
@@ -352,10 +367,26 @@ export function PropertyDetailView({
               <div className="grid grid-cols-1 gap-3 border-t border-border pt-4 sm:grid-cols-3">
                 <MetaItem label="Property ID" value={property.property_id ?? "—"} />
                 <MetaItem label="Internal ID" value={property.internal_id ?? "—"} />
-                <MetaItem
-                  label="CMS ID"
-                  value={property.integration_property_id ?? "—"}
-                />
+                <div className="flex flex-col gap-0.5 min-w-0">
+                  <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
+                    CMS ID
+                  </span>
+                  {crmPropertyAppUrl && property.integration_property_id ? (
+                    <a
+                      href={crmPropertyAppUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 font-mono text-sm text-accent hover:underline truncate"
+                    >
+                      <span className="truncate">{property.integration_property_id}</span>
+                      <ExternalLink className="size-3.5 shrink-0" />
+                    </a>
+                  ) : (
+                    <span className="font-mono text-sm text-foreground truncate">
+                      {property.integration_property_id ?? "—"}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {(property.price_start || property.price_web) && (

@@ -2,7 +2,7 @@ import type { PropertyHistoryEntry } from "../interfaces/properties.interfaces";
 
 type PropertyHistoryLabelInput = Pick<
   PropertyHistoryEntry,
-  "event_type" | "old_value" | "new_value"
+  "event_type" | "field" | "old_value" | "new_value"
 >;
 
 export function formatPropertyHistoryValue(value: unknown): string {
@@ -23,6 +23,9 @@ export function formatPropertyHistoryLabel(entry: PropertyHistoryLabelInput): st
     case "CREATED":
       return "Property created from crawl";
     case "UPDATED":
+      if (entry.field) {
+        return `${entry.field} changed from ${formatPropertyHistoryValue(entry.old_value)} to ${formatPropertyHistoryValue(entry.new_value)}`;
+      }
       return "Property details updated";
     case "PRICE_CHANGED":
       return `Price changed from ${formatPropertyHistoryValue(entry.old_value)} to ${formatPropertyHistoryValue(entry.new_value)}`;

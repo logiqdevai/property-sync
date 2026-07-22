@@ -337,9 +337,12 @@ export default function CrawlRunsListPage() {
                         <CrawlRunStatusChip status={run.status} />
                       </Table.Cell>
                       <Table.Cell>
-                        <span className="text-xs text-muted font-mono">
-                          {run.total_found}/{run.total_created}/{run.total_updated}/
-                          {run.total_removed}/{run.total_failed}
+                        <span
+                          className="text-xs text-muted font-mono"
+                          title="found / new / refreshed"
+                        >
+                          {run.total_found}/{run.total_new_listings}/
+                          {run.total_refreshed_listings}
                         </span>
                       </Table.Cell>
                       <Table.Cell>

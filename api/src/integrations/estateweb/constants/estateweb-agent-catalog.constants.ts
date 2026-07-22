@@ -1,3 +1,5 @@
+import { EstateWebPushSiteSetting } from '../interfaces/estateweb-integration-settings.interface';
+
 export const ESTATEWEB_INIT_AGENT_SITES = [
   { id: 1002, name: '1. re1.gr' },
   { id: 1004, name: '2. synergazomenoi-mesites.gr' },
@@ -15,14 +17,14 @@ export interface EstateWebInitAgentSite {
   name: string;
 }
 
-export const ESTATEWEB_DEFAULT_PUSH_SITES = [
+export const ESTATEWEB_DEFAULT_PUSH_SITES: EstateWebPushSiteSetting[] = [
   {
     selected: true,
     name: '1. re1.gr',
-    agent_site_id: 1002 as EstateWebAgentSiteId,
-    show_on_slider: 0 as const,
-    show_on_first_page: 0 as const,
-    show_on_relative_pages: 1 as const,
+    agent_site_id: 1002,
+    show_on_slider: 0,
+    show_on_first_page: 0,
+    show_on_relative_pages: 1,
   },
 ];
 
