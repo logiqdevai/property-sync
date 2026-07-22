@@ -1,7 +1,17 @@
 import { Prisma } from 'generated/prisma';
 import { UserIntegrationSettingsData } from '@/modules/user-integrations/interfaces/user-integration-settings.interface';
 import { ESTATEWEB_DEFAULT_PUSH_SITES } from '../constants/estateweb-agent-catalog.constants';
+import {
+  ESTATEWEB_INIT_LANGUAGES,
+  EstateWebLanguageId,
+} from '../constants/estateweb-enums.constants';
 import { EstateWebPushSiteSetting } from '../interfaces/estateweb-integration-settings.interface';
+
+export const ESTATEWEB_DEFAULT_AD_LANGUAGES: EstateWebLanguageId[] = [1];
+
+const VALID_LANGUAGE_IDS = new Set<EstateWebLanguageId>(
+  ESTATEWEB_INIT_LANGUAGES.map((lang) => lang.id),
+);
 
 export function parseUserIntegrationSettingsData(
   settings: Prisma.JsonValue | null | undefined,
@@ -27,4 +37,26 @@ export function resolveEstateWebSelectedPushSites(
   settings: Prisma.JsonValue | null | undefined,
 ): EstateWebPushSiteSetting[] {
   return resolveEstateWebPushSites(settings).filter((site) => site.selected);
+}
+
+export function resolveEstateWebAdLanguages(
+  settings: Prisma.JsonValue | null | undefined,
+): EstateWebLanguageId[] {
+  const configured =
+    parseUserIntegrationSettingsData(settings)?.estateweb_ad_languages;
+  if (!Array.isArray(configured)) {
+    return ESTATEWEB_DEFAULT_AD_LANGUAGES;
+  }
+
+  const selected = [
+    ...new Set(
+      configured.filter(
+        (id): id is EstateWebLanguageId =>
+          typeof id === 'number' &&
+          VALID_LANGUAGE_IDS.has(id as EstateWebLanguageId),
+      ),
+    ),
+  ];
+
+  return selected.length > 0 ? selected : ESTATEWEB_DEFAULT_AD_LANGUAGES;
 }

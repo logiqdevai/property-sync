@@ -16,6 +16,7 @@ export class UpdateUserIntegrationSettingsDto {
           show_on_relative_pages: 1,
         },
       ],
+      estateweb_ad_languages: [1, 2],
     },
   })
   @IsOptional()

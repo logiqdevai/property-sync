@@ -1,4 +1,7 @@
-import { EstateWebBooleanFlag } from '../constants/estateweb-enums.constants';
+import {
+  EstateWebBooleanFlag,
+  EstateWebLanguageId,
+} from '../constants/estateweb-enums.constants';
 
 export interface EstateWebPushSiteSetting {
   selected: boolean;
@@ -11,4 +14,5 @@ export interface EstateWebPushSiteSetting {
 
 export interface EstateWebIntegrationSettings {
   estateweb_default_sites: EstateWebPushSiteSetting[];
+  estateweb_ad_languages: EstateWebLanguageId[];
 }

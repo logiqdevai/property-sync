@@ -6,7 +6,11 @@ import { EstateWebConfig } from '../config/estateweb.config';
 import { EstateWebException } from '../exceptions/estateweb.exception';
 import { ResolvedEstateWebIntegration } from '../interfaces/estateweb-integration.interface';
 import { EstateWebPushSiteSetting } from '../interfaces/estateweb-integration-settings.interface';
-import { resolveEstateWebPushSites } from '../utils/estateweb-integration-settings.util';
+import {
+  resolveEstateWebAdLanguages,
+  resolveEstateWebPushSites,
+} from '../utils/estateweb-integration-settings.util';
+import { EstateWebLanguageId } from '../constants/estateweb-enums.constants';
 import { EstateWebAuthService } from './estateweb-auth.service';
 import { EstateWebNotificationService } from './estateweb-notification.service';
 import { EstateWebSessionService } from './estateweb-session.service';
@@ -214,6 +218,17 @@ export class EstateWebIntegrationResolverService {
     });
 
     return resolveEstateWebPushSites(integration?.settings?.settings);
+  }
+
+  async resolveAdLanguages(
+    userIntegrationId: string,
+  ): Promise<EstateWebLanguageId[]> {
+    const integration = await this.prisma.userIntegration.findUnique({
+      where: { id: userIntegrationId },
+      include: { settings: true },
+    });
+
+    return resolveEstateWebAdLanguages(integration?.settings?.settings);
   }
 
   async testConnection(userIntegrationId: string, userId?: string) {

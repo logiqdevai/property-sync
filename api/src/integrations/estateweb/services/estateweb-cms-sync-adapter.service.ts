@@ -16,6 +16,7 @@ import {
 import { EstateWebPushSiteSetting } from '../interfaces/estateweb-integration-settings.interface';
 import {
   ESTATEWEB_INIT_LANGUAGES,
+  EstateWebLanguageId,
   EstateWebScope,
 } from '../constants/estateweb-enums.constants';
 import { resolveEstateWebLocationId } from '../utils/estateweb-location-lookup.util';
@@ -59,13 +60,17 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   ): Promise<CmsPushCreateResult> {
     this.assertRequiredFields(userProperty);
 
-    const pushSites =
-      await this.estateWebIntegrationResolverService.resolvePushSites(
+    const [pushSites, adLanguages] = await Promise.all([
+      this.estateWebIntegrationResolverService.resolvePushSites(
         userIntegrationId,
-      );
-    const payload = this.buildPayload(pushSites, userProperty);
+      ),
+      this.estateWebIntegrationResolverService.resolveAdLanguages(
+        userIntegrationId,
+      ),
+    ]);
+    const payload = this.buildPayload(pushSites, adLanguages, userProperty);
     this.logger.log(
-      `EstateWeb CREATE payload: type_id=${payload.type_id} location_id=${payload.location_id} scope_id=${payload.scope_id} fields=${payload.fields?.length ?? 0} price=${payload.price ?? 'null'} sites=${payload.sites.map((s) => `${s.agent_site_id}:${s.selected ? 1 : 0}`).join(',')}`,
+      `EstateWeb CREATE payload: type_id=${payload.type_id} location_id=${payload.location_id} scope_id=${payload.scope_id} fields=${payload.fields?.length ?? 0} price=${payload.price ?? 'null'} sites=${payload.sites.map((s) => `${s.agent_site_id}:${s.selected ? 1 : 0}`).join(',')} langs=${adLanguages.join(',')}`,
     );
 
     const result = await this.estateWebPropertyService.createProperty(
@@ -85,12 +90,17 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   ): Promise<void> {
     this.assertRequiredFields(userProperty);
 
-    const pushSites =
-      await this.estateWebIntegrationResolverService.resolvePushSites(
+    const [pushSites, adLanguages] = await Promise.all([
+      this.estateWebIntegrationResolverService.resolvePushSites(
         userIntegrationId,
-      );
+      ),
+      this.estateWebIntegrationResolverService.resolveAdLanguages(
+        userIntegrationId,
+      ),
+    ]);
     const payload = this.buildPayload(
       pushSites,
+      adLanguages,
       userProperty,
       Number(integrationPropertyId),
     ) as EstateWebUpdatePropertyPayload;
@@ -108,12 +118,17 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   ): Promise<void> {
     this.assertRequiredFields(userProperty);
 
-    const pushSites =
-      await this.estateWebIntegrationResolverService.resolvePushSites(
+    const [pushSites, adLanguages] = await Promise.all([
+      this.estateWebIntegrationResolverService.resolvePushSites(
         userIntegrationId,
-      );
+      ),
+      this.estateWebIntegrationResolverService.resolveAdLanguages(
+        userIntegrationId,
+      ),
+    ]);
     const payload = this.buildPayload(
       pushSites.map((site) => ({ ...site, selected: false })),
+      adLanguages,
       userProperty,
       Number(integrationPropertyId),
     ) as EstateWebUpdatePropertyPayload;
@@ -127,6 +142,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
   private buildPayload(
     pushSites: EstateWebPushSiteSetting[],
+    adLanguages: EstateWebLanguageId[],
     userProperty?: UserProperty,
     integrationPropertyId?: number,
   ): EstateWebPropertyPayload {
@@ -185,7 +201,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         show_on_relative_pages: site.show_on_relative_pages,
       })),
       gateways: [],
-      ads: this.buildAds(title, description),
+      ads: this.buildAds(title, description, adLanguages),
       foreign_agents: [],
       history: [],
       notes: [],
@@ -194,9 +210,14 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     };
   }
 
-  private buildAds(title: string, description: string): EstateWebPropertyAd[] {
+  private buildAds(
+    title: string,
+    description: string,
+    adLanguages: EstateWebLanguageId[],
+  ): EstateWebPropertyAd[] {
+    const selected = new Set(adLanguages);
     return ESTATEWEB_INIT_LANGUAGES.map((lang) =>
-      lang.id === 1
+      selected.has(lang.id)
         ? {
             lang_id: lang.id,
             title,
