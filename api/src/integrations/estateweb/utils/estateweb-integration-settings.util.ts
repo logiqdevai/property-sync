@@ -1,4 +1,4 @@
-import { Prisma } from 'generated/prisma';
+import { ListingType, Prisma } from 'generated/prisma';
 import { UserIntegrationSettingsData } from '@/modules/user-integrations/interfaces/user-integration-settings.interface';
 import { ESTATEWEB_DEFAULT_PUSH_SITES } from '../constants/estateweb-agent-catalog.constants';
 import {
@@ -9,8 +9,17 @@ import { EstateWebPushSiteSetting } from '../interfaces/estateweb-integration-se
 
 export const ESTATEWEB_DEFAULT_AD_LANGUAGES: EstateWebLanguageId[] = [1];
 
+export const ESTATEWEB_DEFAULT_LISTING_TYPES: ListingType[] = [
+  ListingType.SALE,
+  ListingType.RENT,
+];
+
 const VALID_LANGUAGE_IDS = new Set<EstateWebLanguageId>(
   ESTATEWEB_INIT_LANGUAGES.map((lang) => lang.id),
+);
+
+const VALID_LISTING_TYPES = new Set<ListingType>(
+  Object.values(ListingType),
 );
 
 export function parseUserIntegrationSettingsData(
@@ -59,4 +68,37 @@ export function resolveEstateWebAdLanguages(
   ];
 
   return selected.length > 0 ? selected : ESTATEWEB_DEFAULT_AD_LANGUAGES;
+}
+
+export function resolveEstateWebListingTypes(
+  settings: Prisma.JsonValue | null | undefined,
+): ListingType[] | null {
+  const configured =
+    parseUserIntegrationSettingsData(settings)?.estateweb_listing_types;
+  if (!Array.isArray(configured)) {
+    return null;
+  }
+
+  const selected = [
+    ...new Set(
+      configured.filter(
+        (type): type is ListingType =>
+          typeof type === 'string' &&
+          VALID_LISTING_TYPES.has(type as ListingType),
+      ),
+    ),
+  ];
+
+  return selected.length > 0 ? selected : null;
+}
+
+export function isEstateWebListingTypeAllowed(
+  settings: Prisma.JsonValue | null | undefined,
+  listingType: ListingType,
+): boolean {
+  const allowed = resolveEstateWebListingTypes(settings);
+  if (allowed === null) {
+    return true;
+  }
+  return allowed.includes(listingType);
 }

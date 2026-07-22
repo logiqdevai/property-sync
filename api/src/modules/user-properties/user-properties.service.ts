@@ -9,11 +9,17 @@ import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync
 import { UserPropertyQueryType } from './dto/user-property-query.schema';
 import { AdminUserPropertyQueryType } from './dto/admin-user-property-query.schema';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
-import { Prisma, Property, PropertyStatus } from 'generated/prisma';
+import {
+  IntegrationType,
+  Prisma,
+  Property,
+  PropertyStatus,
+} from 'generated/prisma';
 import {
   listingTypeFromEstateWebScopeId,
   resolveEstateWebScopeId,
 } from '@/integrations/estateweb/utils/estateweb-catalog.util';
+import { isEstateWebListingTypeAllowed } from '@/integrations/estateweb/utils/estateweb-integration-settings.util';
 import { serializePropertyForApi } from '@/modules/properties/utils/property-api-response.util';
 import { buildHistoryChangeFilter } from '@/modules/properties/utils/property-change-filter.util';
 import {
@@ -867,6 +873,10 @@ export class UserPropertiesService {
         });
 
     const results: SyncForPropertyResult[] = [];
+    const estateWebSettingsByUserId =
+      await this.loadEstateWebSettingsByUserIds(
+        trackers.map((tracker) => tracker.user_id),
+      );
 
     for (const tracker of trackers) {
       if (options.changeType === 'created' && !tracker.track_new_listings) {
@@ -894,9 +904,13 @@ export class UserPropertiesService {
         property,
         tracker.text_truncate_pieces,
       );
+      const listingTypeAllowed = isEstateWebListingTypeAllowed(
+        estateWebSettingsByUserId.get(tracker.user_id),
+        property.listing_type,
+      );
 
       if (options.changeType === 'created') {
-        if (existing) continue;
+        if (existing || !listingTypeAllowed) continue;
         const created = await this.prisma.userProperty.create({
           data: {
             user_id: tracker.user_id,
@@ -930,7 +944,7 @@ export class UserPropertiesService {
       }
 
       if (!existing) {
-        if (!tracker.track_new_listings) continue;
+        if (!tracker.track_new_listings || !listingTypeAllowed) continue;
         const created = await this.prisma.userProperty.create({
           data: {
             user_id: tracker.user_id,
@@ -958,6 +972,25 @@ export class UserPropertiesService {
     }
 
     return results;
+  }
+
+  private async loadEstateWebSettingsByUserIds(
+    userIds: string[],
+  ): Promise<Map<string, Prisma.JsonValue | null>> {
+    const uniqueUserIds = [...new Set(userIds.filter(Boolean))];
+    if (uniqueUserIds.length === 0) {
+      return new Map();
+    }
+
+    const rows = await this.prisma.userIntegrationSettings.findMany({
+      where: {
+        user_id: { in: uniqueUserIds },
+        integration_target: { integration_type: IntegrationType.ESTATEWEB },
+      },
+      select: { user_id: true, settings: true },
+    });
+
+    return new Map(rows.map((row) => [row.user_id, row.settings]));
   }
 
   private mapFromCanonical(property: Property, textTruncatePieces?: string[]) {

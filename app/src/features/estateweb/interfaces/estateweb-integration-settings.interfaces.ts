@@ -1,3 +1,5 @@
+import type { ListingType } from "@/features/properties/interfaces/properties.interfaces";
+
 export type EstateWebLanguageId = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface EstateWebPushSiteSetting {
@@ -12,4 +14,5 @@ export interface EstateWebPushSiteSetting {
 export interface EstateWebIntegrationSettings {
   estateweb_default_sites: EstateWebPushSiteSetting[];
   estateweb_ad_languages: EstateWebLanguageId[];
+  estateweb_listing_types: ListingType[];
 }

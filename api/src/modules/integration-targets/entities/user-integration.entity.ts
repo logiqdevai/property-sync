@@ -26,6 +26,7 @@ export class UserIntegrationSettingsEntity {
         },
       ],
       estateweb_ad_languages: [1, 2],
+      estateweb_listing_types: ['SALE', 'RENT'],
     },
   })
   settings: UserIntegrationSettingsData | null;

@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
-import { Form, Input, Label, Switch } from "@heroui/react";
+import { Accordion, Form, Input, Label, Switch } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import {
   ESTATEWEB_DEFAULT_AD_LANGUAGES,
   EstateWebAdLanguageFormOptions,
 } from "@/config/constants/dropdowns/estateweb-ad-language-form.options";
+import {
+  ESTATEWEB_DEFAULT_LISTING_TYPES,
+  EstateWebListingTypeFormOptions,
+} from "@/config/constants/dropdowns/listing-type-form.options";
 import type {
   EstateWebIntegrationSettings,
   EstateWebLanguageId,
   EstateWebPushSiteSetting,
 } from "@/features/estateweb/interfaces/estateweb-integration-settings.interfaces";
+import type { ListingType } from "@/features/properties/interfaces/properties.interfaces";
 import {
   useUpdateUserIntegrationSettings,
   useUserIntegrationSettings,
@@ -23,6 +28,10 @@ const EMPTY_SITE: EstateWebPushSiteSetting = {
   show_on_first_page: 0,
   show_on_relative_pages: 0,
 };
+
+const ALLOWED_LISTING_TYPE_IDS = new Set(
+  EstateWebListingTypeFormOptions.map((option) => option.id),
+);
 
 type SiteFlagKey = "show_on_slider" | "show_on_first_page" | "show_on_relative_pages";
 
@@ -60,14 +69,26 @@ export function EstateWebPushSitesSettingsForm({
   const [adLanguages, setAdLanguages] = useState<EstateWebLanguageId[]>(
     ESTATEWEB_DEFAULT_AD_LANGUAGES,
   );
+  const [listingTypes, setListingTypes] = useState<ListingType[]>(
+    ESTATEWEB_DEFAULT_LISTING_TYPES,
+  );
 
   useEffect(() => {
     setSites(settings?.settings?.estateweb_default_sites ?? []);
-    const stored = settings?.settings?.estateweb_ad_languages;
+    const storedLanguages = settings?.settings?.estateweb_ad_languages;
     setAdLanguages(
-      Array.isArray(stored) && stored.length > 0
-        ? stored
+      Array.isArray(storedLanguages) && storedLanguages.length > 0
+        ? storedLanguages
         : ESTATEWEB_DEFAULT_AD_LANGUAGES,
+    );
+    const storedListingTypes = settings?.settings?.estateweb_listing_types;
+    const filteredListingTypes = Array.isArray(storedListingTypes)
+      ? storedListingTypes.filter((type) => ALLOWED_LISTING_TYPE_IDS.has(type))
+      : [];
+    setListingTypes(
+      filteredListingTypes.length > 0
+        ? filteredListingTypes
+        : ESTATEWEB_DEFAULT_LISTING_TYPES,
     );
   }, [settings]);
 
@@ -94,6 +115,15 @@ export function EstateWebPushSitesSettingsForm({
     });
   };
 
+  const toggleListingType = (id: ListingType, enabled: boolean) => {
+    setListingTypes((current) => {
+      if (enabled) {
+        return current.includes(id) ? current : [...current, id];
+      }
+      return current.filter((type) => type !== id);
+    });
+  };
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -101,6 +131,8 @@ export function EstateWebPushSitesSettingsForm({
       estateweb_default_sites: sites,
       estateweb_ad_languages:
         adLanguages.length > 0 ? adLanguages : ESTATEWEB_DEFAULT_AD_LANGUAGES,
+      estateweb_listing_types:
+        listingTypes.length > 0 ? listingTypes : ESTATEWEB_DEFAULT_LISTING_TYPES,
     };
 
     updateSettings.mutate(
@@ -111,135 +143,220 @@ export function EstateWebPushSitesSettingsForm({
 
   return (
     <Form onSubmit={handleSubmit} className="grid gap-6">
-      <div className="grid gap-3">
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-foreground">Languages</span>
-          <p className="text-sm text-muted">
-            Languages that receive title and description when pushing properties.
-          </p>
-        </div>
-
-        {settingsPending ? null : (
-          <div className="flex flex-col gap-3">
-            {EstateWebAdLanguageFormOptions.map((option) => (
-              <div key={option.id} className="flex items-center justify-between gap-3">
-                <span className="text-sm text-foreground">{option.label}</span>
-                <Switch
-                  isSelected={adLanguages.includes(option.id)}
-                  onChange={(isSelected) => toggleLanguage(option.id, isSelected)}
-                  aria-label={option.label}
-                >
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
-                </Switch>
+      <Accordion allowsMultipleExpanded defaultExpandedKeys={[]} className="w-full">
+        <Accordion.Item id="listing-types">
+          <Accordion.Heading>
+            <Accordion.Trigger className="text-sm font-medium text-foreground">
+              Listing types
+              <Accordion.Indicator />
+            </Accordion.Trigger>
+          </Accordion.Heading>
+          <Accordion.Panel>
+            <Accordion.Body>
+              <div className="grid gap-3 pb-2">
+                <p className="text-sm text-muted">
+                  Only matching listing types become user properties after each crawl.
+                </p>
+                {settingsPending ? null : (
+                  <div className="flex flex-col gap-3">
+                    {EstateWebListingTypeFormOptions.map((option) => (
+                      <div
+                        key={option.id}
+                        className="flex items-center justify-between gap-3"
+                      >
+                        <span className="text-sm text-foreground">{option.label}</span>
+                        <Switch
+                          isSelected={listingTypes.includes(option.id)}
+                          onChange={(isSelected) =>
+                            toggleListingType(option.id, isSelected)
+                          }
+                          aria-label={option.label}
+                        >
+                          <Switch.Control>
+                            <Switch.Thumb />
+                          </Switch.Control>
+                        </Switch>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </Accordion.Body>
+          </Accordion.Panel>
+        </Accordion.Item>
 
-      <div className="grid gap-3 border-t border-border pt-6">
-        <p className="text-sm text-muted">
-          Agencies properties get pushed to. Shared by every connected account for this
-          integration.
-        </p>
-
-        {settingsPending ? null : (
-          <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
-            {sites.length === 0 ? (
-              <p className="text-sm text-muted py-4 text-center">No agencies added yet.</p>
-            ) : (
-              sites.map((site, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col gap-4 rounded-xl border border-border bg-surface-secondary p-4"
-                >
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex flex-col gap-1">
-                      <Label htmlFor={`site-name-${index}`}>Name</Label>
-                      <Input
-                        id={`site-name-${index}`}
-                        value={site.name}
-                        onChange={(event) => updateSite(index, { name: event.target.value })}
-                        placeholder="e.g. re1.gr"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <Label htmlFor={`site-agent-id-${index}`}>Agent site ID</Label>
-                      <Input
-                        id={`site-agent-id-${index}`}
-                        type="number"
-                        value={String(site.agent_site_id)}
-                        onChange={(event) =>
-                          updateSite(index, { agent_site_id: Number(event.target.value) || 0 })
-                        }
-                      />
-                    </div>
+        <Accordion.Item id="languages">
+          <Accordion.Heading>
+            <Accordion.Trigger className="text-sm font-medium text-foreground">
+              Languages
+              <Accordion.Indicator />
+            </Accordion.Trigger>
+          </Accordion.Heading>
+          <Accordion.Panel>
+            <Accordion.Body>
+              <div className="grid gap-3 pb-2">
+                <p className="text-sm text-muted">
+                  Languages that receive title and description when pushing properties.
+                </p>
+                {settingsPending ? null : (
+                  <div className="flex flex-col gap-3">
+                    {EstateWebAdLanguageFormOptions.map((option) => (
+                      <div
+                        key={option.id}
+                        className="flex items-center justify-between gap-3"
+                      >
+                        <span className="text-sm text-foreground">{option.label}</span>
+                        <Switch
+                          isSelected={adLanguages.includes(option.id)}
+                          onChange={(isSelected) =>
+                            toggleLanguage(option.id, isSelected)
+                          }
+                          aria-label={option.label}
+                        >
+                          <Switch.Control>
+                            <Switch.Thumb />
+                          </Switch.Control>
+                        </Switch>
+                      </div>
+                    ))}
                   </div>
+                )}
+              </div>
+            </Accordion.Body>
+          </Accordion.Panel>
+        </Accordion.Item>
 
-                  <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
-                    <div className="flex min-w-0 flex-col gap-0.5">
-                      <span className="text-sm text-foreground">Selected</span>
-                      <span className="text-xs text-muted">
-                        Include this agency when pushing properties.
-                      </span>
-                    </div>
-                    <Switch
-                      isSelected={site.selected}
-                      onChange={(isSelected) => updateSite(index, { selected: isSelected })}
-                      aria-label="Selected"
-                    >
-                      <Switch.Control>
-                        <Switch.Thumb />
-                      </Switch.Control>
-                    </Switch>
-                  </div>
+        <Accordion.Item id="agencies">
+          <Accordion.Heading>
+            <Accordion.Trigger className="text-sm font-medium text-foreground">
+              Agencies
+              <Accordion.Indicator />
+            </Accordion.Trigger>
+          </Accordion.Heading>
+          <Accordion.Panel>
+            <Accordion.Body>
+              <div className="grid gap-3 pb-2">
+                <p className="text-sm text-muted">
+                  Agencies properties get pushed to. Shared by every connected account for
+                  this integration.
+                </p>
 
-                  {site.selected ? (
-                    <div className="flex flex-col gap-3 border-t border-border pt-3">
-                      {SITE_FLAGS.map((flag) => (
-                        <div key={flag.key} className="flex items-center justify-between gap-3">
-                          <div className="flex min-w-0 flex-col gap-0.5">
-                            <span className="text-sm text-foreground">{flag.label}</span>
-                            <span className="text-xs text-muted">{flag.description}</span>
+                {settingsPending ? null : (
+                  <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
+                    {sites.length === 0 ? (
+                      <p className="text-sm text-muted py-4 text-center">
+                        No agencies added yet.
+                      </p>
+                    ) : (
+                      sites.map((site, index) => (
+                        <div
+                          key={index}
+                          className="flex flex-col gap-4 rounded-xl border border-border bg-surface-secondary p-4"
+                        >
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="flex flex-col gap-1">
+                              <Label htmlFor={`site-name-${index}`}>Name</Label>
+                              <Input
+                                id={`site-name-${index}`}
+                                value={site.name}
+                                onChange={(event) =>
+                                  updateSite(index, { name: event.target.value })
+                                }
+                                placeholder="e.g. re1.gr"
+                              />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <Label htmlFor={`site-agent-id-${index}`}>Agent site ID</Label>
+                              <Input
+                                id={`site-agent-id-${index}`}
+                                type="number"
+                                value={String(site.agent_site_id)}
+                                onChange={(event) =>
+                                  updateSite(index, {
+                                    agent_site_id: Number(event.target.value) || 0,
+                                  })
+                                }
+                              />
+                            </div>
                           </div>
-                          <Switch
-                            isSelected={site[flag.key] === 1}
-                            onChange={(isSelected) =>
-                              updateSite(index, { [flag.key]: isSelected ? 1 : 0 })
-                            }
-                            aria-label={flag.label}
-                          >
-                            <Switch.Control>
-                              <Switch.Thumb />
-                            </Switch.Control>
-                          </Switch>
+
+                          <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
+                            <div className="flex min-w-0 flex-col gap-0.5">
+                              <span className="text-sm text-foreground">Selected</span>
+                              <span className="text-xs text-muted">
+                                Include this agency when pushing properties.
+                              </span>
+                            </div>
+                            <Switch
+                              isSelected={site.selected}
+                              onChange={(isSelected) =>
+                                updateSite(index, { selected: isSelected })
+                              }
+                              aria-label="Selected"
+                            >
+                              <Switch.Control>
+                                <Switch.Thumb />
+                              </Switch.Control>
+                            </Switch>
+                          </div>
+
+                          {site.selected ? (
+                            <div className="flex flex-col gap-3 border-t border-border pt-3">
+                              {SITE_FLAGS.map((flag) => (
+                                <div
+                                  key={flag.key}
+                                  className="flex items-center justify-between gap-3"
+                                >
+                                  <div className="flex min-w-0 flex-col gap-0.5">
+                                    <span className="text-sm text-foreground">
+                                      {flag.label}
+                                    </span>
+                                    <span className="text-xs text-muted">
+                                      {flag.description}
+                                    </span>
+                                  </div>
+                                  <Switch
+                                    isSelected={site[flag.key] === 1}
+                                    onChange={(isSelected) =>
+                                      updateSite(index, {
+                                        [flag.key]: isSelected ? 1 : 0,
+                                      })
+                                    }
+                                    aria-label={flag.label}
+                                  >
+                                    <Switch.Control>
+                                      <Switch.Thumb />
+                                    </Switch.Control>
+                                  </Switch>
+                                </div>
+                              ))}
+                            </div>
+                          ) : null}
+
+                          <div className="flex justify-end border-t border-border pt-3">
+                            <ActionButtonWithPending
+                              type="button"
+                              size="sm"
+                              variant="danger"
+                              onPress={() => removeSite(index)}
+                            >
+                              Remove
+                            </ActionButtonWithPending>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : null}
-
-                  <div className="flex justify-end border-t border-border pt-3">
-                    <ActionButtonWithPending
-                      type="button"
-                      size="sm"
-                      variant="danger"
-                      onPress={() => removeSite(index)}
-                    >
-                      Remove
-                    </ActionButtonWithPending>
+                      ))
+                    )}
                   </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
+                )}
 
-        <ActionButtonWithPending type="button" variant="secondary" onPress={addSite}>
-          Add agency
-        </ActionButtonWithPending>
-      </div>
+                <ActionButtonWithPending type="button" variant="secondary" onPress={addSite}>
+                  Add agency
+                </ActionButtonWithPending>
+              </div>
+            </Accordion.Body>
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
 
       <div className="flex justify-end gap-2">
         <ActionButtonWithPending

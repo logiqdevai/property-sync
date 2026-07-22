@@ -1,3 +1,4 @@
+import { ListingType } from 'generated/prisma';
 import {
   EstateWebBooleanFlag,
   EstateWebLanguageId,
@@ -15,4 +16,5 @@ export interface EstateWebPushSiteSetting {
 export interface EstateWebIntegrationSettings {
   estateweb_default_sites: EstateWebPushSiteSetting[];
   estateweb_ad_languages: EstateWebLanguageId[];
+  estateweb_listing_types: ListingType[];
 }
