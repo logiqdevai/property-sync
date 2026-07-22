@@ -93,6 +93,7 @@ export interface UserPropertyListQuery {
   page?: number;
   limit?: number;
   status?: PropertyStatus;
+  change?: "new" | "updated";
   search?: string;
   city?: string;
   price_min?: number;
@@ -110,6 +111,7 @@ export interface AdminUserPropertyListQuery {
   page?: number;
   limit?: number;
   status?: PropertyStatus;
+  change?: "new" | "updated";
   listing_type?: ListingType;
   property_type?: PropertyType;
   search?: string;

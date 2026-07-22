@@ -15,6 +15,7 @@ import {
   resolveEstateWebScopeId,
 } from '@/integrations/estateweb/utils/estateweb-catalog.util';
 import { serializePropertyForApi } from '@/modules/properties/utils/property-api-response.util';
+import { buildHistoryChangeFilter } from '@/modules/properties/utils/property-change-filter.util';
 import {
   syncEstateWebFeaturesInCmsFields,
   upsertEstateWebEnergyClassInCmsFields,
@@ -76,8 +77,15 @@ export class UserPropertiesService {
     query: UserPropertyQueryType,
     sourceAgencyId?: string,
   ): Prisma.UserPropertyWhereInput {
+    const historyFilter = buildHistoryChangeFilter({
+      change: query.change,
+      dateFrom: query.date_from,
+      dateTo: query.date_to,
+    });
     const hasCanonicalFilter =
-      !!sourceAgencyId || query.has_duplicate_group !== undefined;
+      !!sourceAgencyId ||
+      query.has_duplicate_group !== undefined ||
+      !!historyFilter;
 
     return {
       user_id: userId,
@@ -116,6 +124,7 @@ export class UserPropertiesService {
           ...(query.has_duplicate_group === false && {
             duplicate_group_id: null,
           }),
+          ...(historyFilter && { history: historyFilter }),
         },
       }),
       ...(query.price_min != null || query.price_max != null
@@ -126,7 +135,7 @@ export class UserPropertiesService {
             },
           }
         : {}),
-      ...(query.date_from || query.date_to
+      ...(!query.change && (query.date_from || query.date_to)
         ? {
             created_at: {
               ...(query.date_from && { gte: query.date_from }),
@@ -1026,8 +1035,15 @@ export class UserPropertiesService {
   private buildAdminWhere(
     query: AdminUserPropertyQueryType,
   ): Prisma.UserPropertyWhereInput {
+    const historyFilter = buildHistoryChangeFilter({
+      change: query.change,
+      dateFrom: query.date_from,
+      dateTo: query.date_to,
+    });
     const hasCanonicalFilter =
-      !!query.agency_id || query.has_duplicate_group !== undefined;
+      !!query.agency_id ||
+      query.has_duplicate_group !== undefined ||
+      !!historyFilter;
 
     return {
       ...(query.user_id && { user_id: query.user_id }),
@@ -1070,9 +1086,10 @@ export class UserPropertiesService {
           ...(query.has_duplicate_group === false && {
             duplicate_group_id: null,
           }),
+          ...(historyFilter && { history: historyFilter }),
         },
       }),
-      ...(query.date_from || query.date_to
+      ...(!query.change && (query.date_from || query.date_to)
         ? {
             created_at: {
               ...(query.date_from && { gte: query.date_from }),

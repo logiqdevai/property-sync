@@ -29,6 +29,10 @@ import {
   type PropertyStatus,
 } from "@/features/properties/interfaces/properties.interfaces";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/property-status-filter.options";
+import {
+  PropertyChangeFilterOptions,
+  type PropertyChangeFilter,
+} from "@/config/constants/dropdowns/property-change-filter.options";
 import { PropertyDuplicateGroupFilterOptions } from "@/config/constants/dropdowns/property-duplicate-group-filter.options";
 import { PropertyCrmPushFilterOptions } from "@/config/constants/dropdowns/property-crm-push-filter.options";
 import { PropertyPendingCrmUpdateFilterOptions } from "@/config/constants/dropdowns/property-pending-crm-update-filter.options";
@@ -82,6 +86,7 @@ export default function DashboardPropertiesListPage() {
   const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
 
   const [status, setStatus] = useState<PropertyStatus | "all">("all");
+  const [change, setChange] = useState<PropertyChangeFilter | "all">("all");
   const [search, setSearch] = useState("");
   const [trackedAgencyId, setTrackedAgencyId] = useState<string | "all">("all");
   const [duplicateGroup, setDuplicateGroup] = useState<"all" | "true" | "false">("all");
@@ -99,6 +104,7 @@ export default function DashboardPropertiesListPage() {
       page,
       limit,
       ...(status !== "all" && { status }),
+      ...(change !== "all" && { change }),
       ...(search.trim() && { search: search.trim() }),
       ...(trackedAgencyId !== "all" && { user_tracked_agency_id: trackedAgencyId }),
       ...(duplicateGroup !== "all" && {
@@ -117,6 +123,7 @@ export default function DashboardPropertiesListPage() {
       page,
       limit,
       status,
+      change,
       search,
       trackedAgencyId,
       duplicateGroup,
@@ -348,6 +355,29 @@ export default function DashboardPropertiesListPage() {
           <Select.Popover>
             <ListBox>
               {PropertyStatusFilterOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+        <Select
+          aria-label="Filter by change"
+          selectedKey={change}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setChange(key as PropertyChangeFilter | "all");
+          }}
+          className="w-44"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {PropertyChangeFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

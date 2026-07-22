@@ -10,6 +10,7 @@ export enum EstateWebScope {
   RENT = 2,
 }
 
+// 1: Greek, 2: English, 3: German, 4: French, 5: Italian, 6: Russian
 export type EstateWebLanguageId = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface EstateWebInitLanguage {

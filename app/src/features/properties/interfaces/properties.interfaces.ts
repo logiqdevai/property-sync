@@ -132,6 +132,7 @@ export interface PropertyListQuery {
   page?: number;
   limit?: number;
   status?: PropertyStatus;
+  change?: "new" | "updated";
   listing_type?: ListingType;
   property_type?: PropertyType;
   city?: string;

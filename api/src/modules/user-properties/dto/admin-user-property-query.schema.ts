@@ -26,6 +26,7 @@ export const AdminUserPropertyQuerySchema = z.object({
       return Math.min(parsed, 100);
     }),
   status: z.nativeEnum(PropertyStatus).optional(),
+  change: z.enum(['new', 'updated']).optional(),
   listing_type: z.nativeEnum(ListingType).optional(),
   property_type: z.nativeEnum(PropertyType).optional(),
   search: z.string().optional(),

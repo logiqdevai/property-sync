@@ -15,6 +15,7 @@ import { PropertyQueryType } from './dto/property-query.schema';
 import { MergePropertiesDto } from './dto/merge-properties.dto';
 import { Prisma } from 'generated/prisma';
 import { serializePropertyForApi } from './utils/property-api-response.util';
+import { buildHistoryChangeFilter } from './utils/property-change-filter.util';
 
 @Injectable()
 export class PropertiesService {
@@ -26,6 +27,12 @@ export class PropertiesService {
   ) {}
 
   private buildWhere(query: PropertyQueryType): Prisma.PropertyWhereInput {
+    const historyFilter = buildHistoryChangeFilter({
+      change: query.change,
+      dateFrom: query.date_from,
+      dateTo: query.date_to,
+    });
+
     return {
       ...(query.status && { status: query.status }),
       ...(query.listing_type && { listing_type: query.listing_type }),
@@ -65,7 +72,8 @@ export class PropertiesService {
           },
         },
       }),
-      ...(query.date_from || query.date_to
+      ...(historyFilter && { history: historyFilter }),
+      ...(!query.change && (query.date_from || query.date_to)
         ? {
             created_at: {
               ...(query.date_from && { gte: query.date_from }),
