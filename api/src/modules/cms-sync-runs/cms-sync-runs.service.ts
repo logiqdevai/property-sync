@@ -201,16 +201,7 @@ export class CmsSyncRunsService {
   }
 
   async retry(id: string) {
-    const run = await this.prisma.cmsSyncRun.findUnique({
-      where: { id },
-      include: {
-        user_integration: {
-          select: {
-            integration_target: { select: { integration_type: true } },
-          },
-        },
-      },
-    });
+    const run = await this.prisma.cmsSyncRun.findUnique({ where: { id } });
     if (!run) throw new NotFoundException('CMS sync run not found');
 
     if (
@@ -228,16 +219,78 @@ export class CmsSyncRunsService {
     }
 
     await this.resetForRetry(id, maxAttempts);
+    await this.enqueueCmsSyncJob(run);
+
+    return this.findOneById(id);
+  }
+
+  async rerun(id: string) {
+    const run = await this.prisma.cmsSyncRun.findUnique({ where: { id } });
+    if (!run) throw new NotFoundException('CMS sync run not found');
+
+    if (
+      run.status === CmsSyncStatus.PENDING ||
+      run.status === CmsSyncStatus.RETRYING
+    ) {
+      throw new BadRequestException(
+        'Cannot rerun a CMS sync run that is already in progress',
+      );
+    }
+
+    const payload = run.payload;
+    if (
+      !payload ||
+      typeof payload !== 'object' ||
+      Array.isArray(payload) ||
+      !Array.isArray((payload as { operations?: unknown }).operations) ||
+      (payload as { operations: unknown[] }).operations.length === 0
+    ) {
+      throw new BadRequestException(
+        'CMS sync run has no stored operations to rerun',
+      );
+    }
+
+    await this.prisma.cmsSyncRun.update({
+      where: { id },
+      data: {
+        status: CmsSyncStatus.PENDING,
+        attempt: 0,
+        total_created: 0,
+        total_updated: 0,
+        total_removed: 0,
+        total_failed: 0,
+        response: null,
+        error_message: null,
+        started_at: new Date(),
+        finished_at: null,
+      },
+    });
+
+    await this.enqueueCmsSyncJob(run);
+
+    return this.findOneById(id);
+  }
+
+  private async enqueueCmsSyncJob(run: {
+    id: string;
+    user_integration_id: string;
+    crawl_run_id: string;
+    payload: Prisma.JsonValue | null;
+  }) {
+    const payload =
+      run.payload && typeof run.payload === 'object' && !Array.isArray(run.payload)
+        ? (run.payload as Record<string, unknown>)
+        : {};
 
     await this.cmsSyncQueue.add('cms-sync', {
       cms_sync_run_id: run.id,
       user_tracked_agency_id:
-        (run.payload as Record<string, string>)?.user_tracked_agency_id ?? '',
+        typeof payload.user_tracked_agency_id === 'string'
+          ? payload.user_tracked_agency_id
+          : '',
       user_integration_id: run.user_integration_id,
       crawl_run_id: run.crawl_run_id,
     });
-
-    return this.findOneById(id);
   }
 
   async createBatch(params: {

@@ -60,6 +60,17 @@ export const retryAdminCmsSyncRun = async (id: string): Promise<CmsSyncRun> => {
   }
 };
 
+export const rerunAdminCmsSyncRun = async (id: string): Promise<CmsSyncRun> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.cmsSyncRuns.rerun(id));
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ?? "Failed to rerun sync run. Please try again.",
+    );
+  }
+};
+
 export const deleteAdminCmsSyncRun = async (id: string): Promise<void> => {
   try {
     await axiosInstance.delete(ApiRoutes.admin.cmsSyncRuns.detail(id));

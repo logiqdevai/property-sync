@@ -6,6 +6,7 @@ import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import {
   useAdminCmsSyncRun,
+  useRerunAdminCmsSyncRun,
   useRetryAdminCmsSyncRun,
 } from "@/features/cms-sync-runs/hooks/use-cms-sync-runs";
 import {
@@ -64,6 +65,7 @@ export default function AdminSyncRunDetailPage() {
 
   const { data: run, isPending } = useAdminCmsSyncRun(id!);
   const retry = useRetryAdminCmsSyncRun();
+  const rerun = useRerunAdminCmsSyncRun();
 
   if (isPending || !run) {
     return <DetailSkeleton fieldCount={8} showSubTable subTableRows={2} />;
@@ -74,6 +76,7 @@ export default function AdminSyncRunDetailPage() {
   const canRetry =
     RETRYABLE.includes(run.status) &&
     (run.max_attempts == null || run.attempt < run.max_attempts);
+  const canRerun = !isActive;
   const agencyId = run.crawl_run?.source_agency_id ?? run.crawl_run?.source_agency?.id;
   const userId = run.user_integration?.user_id ?? run.user_integration?.user?.id;
   const integrationTargetId = run.user_integration?.integration_target?.id;
@@ -98,15 +101,27 @@ export default function AdminSyncRunDetailPage() {
           <CmsSyncStatusChip status={run.status} />
           {isActive && <Loader2 className="h-4 w-4 animate-spin text-muted" />}
         </div>
-        {canRetry && (
-          <ActionButtonWithPending
-            isPending={retry.isPending}
-            isDisabled={retry.isPending}
-            onPress={() => retry.mutate(run.id)}
-          >
-            Retry
-          </ActionButtonWithPending>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {canRerun ? (
+            <ActionButtonWithPending
+              variant="secondary"
+              isPending={rerun.isPending}
+              isDisabled={rerun.isPending || retry.isPending}
+              onPress={() => rerun.mutate(run.id)}
+            >
+              Rerun
+            </ActionButtonWithPending>
+          ) : null}
+          {canRetry ? (
+            <ActionButtonWithPending
+              isPending={retry.isPending}
+              isDisabled={retry.isPending || rerun.isPending}
+              onPress={() => retry.mutate(run.id)}
+            >
+              Retry
+            </ActionButtonWithPending>
+          ) : null}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

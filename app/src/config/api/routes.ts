@@ -68,6 +68,7 @@ export const ApiRoutes = {
             list: "/admin/cms-sync-runs",
             detail: (id: string) => `/admin/cms-sync-runs/${id}`,
             retry: (id: string) => `/admin/cms-sync-runs/${id}/retry`,
+            rerun: (id: string) => `/admin/cms-sync-runs/${id}/rerun`,
             integrations: "/admin/cms-sync-runs/integrations",
             bulkDelete: "/admin/cms-sync-runs/bulk-delete",
         },

@@ -97,6 +97,17 @@ export class AdminCmsSyncRunsController {
     return this.cmsSyncRunsService.retry(id);
   }
 
+  @Post(':id/rerun')
+  @ApiOperation({
+    summary: 'Rerun a finished CMS sync run with all stored operations',
+  })
+  @ApiResponse({ status: 200, description: 'CMS sync run rerun queued' })
+  @ApiResponse({ status: 400, description: 'Run is in progress or has no operations' })
+  @ApiParam({ name: 'id', type: String })
+  rerun(@Param('id') id: string) {
+    return this.cmsSyncRunsService.rerun(id);
+  }
+
   @Delete(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete a CMS sync run' })

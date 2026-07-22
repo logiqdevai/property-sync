@@ -9,6 +9,7 @@ import {
   getUserCmsSyncRun,
   getUserCmsSyncRuns,
   retryAdminCmsSyncRun,
+  rerunAdminCmsSyncRun,
 } from "../services/cms-sync-runs.services";
 import type {
   AdminCmsSyncRunListQuery,
@@ -72,6 +73,26 @@ export const useRetryAdminCmsSyncRun = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not retry sync run",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useRerunAdminCmsSyncRun = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => rerunAdminCmsSyncRun(id),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ["cmsSyncRuns"] });
+      queryClient.invalidateQueries({ queryKey: ["cmsSyncRuns", "adminDetail", id] });
+      toast({ title: "Sync run rerun queued", duration: 2000, variant: "success" });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not rerun sync run",
         description: error.message,
         variant: "error",
       });
