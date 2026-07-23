@@ -239,6 +239,29 @@ export class UserIntegrationsService {
       }
     }
 
+    if (target.integration_type === IntegrationType.DEWATERMARK) {
+      if (target.allow_multiple) {
+        throw new BadRequestException(
+          'Dewatermark integrations cannot allow multiple connections',
+        );
+      }
+
+      const existingDewatermark = await this.prisma.userIntegration.findFirst({
+        where: {
+          user_id: userId,
+          integration_target: {
+            integration_type: IntegrationType.DEWATERMARK,
+          },
+        },
+      });
+
+      if (existingDewatermark) {
+        throw new BadRequestException(
+          'You already have a Dewatermark integration connected',
+        );
+      }
+    }
+
     validateCredentialsForAuthType(target.auth_type, dto);
     assertWebhookKeyAllowed(target.integration_type, dto.webhook_key);
     validateAiIntegrationWebhookKey(

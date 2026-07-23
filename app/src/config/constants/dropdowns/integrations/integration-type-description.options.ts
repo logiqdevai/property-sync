@@ -24,6 +24,10 @@ export const IntegrationTypeDescriptionOptions: { id: IntegrationType; descripti
     id: IntegrationTypes.DEEPSEEK,
     description: "Normalize property listings with your DeepSeek API key.",
   },
+  {
+    id: IntegrationTypes.DEWATERMARK,
+    description: "Remove watermarks from listing images with your Dewatermark API key.",
+  },
 ];
 
 export function getIntegrationTypeDescription(type: IntegrationType | string): string {

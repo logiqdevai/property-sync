@@ -30,6 +30,8 @@ const EnvSchema = z.object({
   BULL_BOARD_USER: z.string().optional(),
   BULL_BOARD_PASSWORD: z.string().optional(),
   CRAWL_SCHEDULE_TZ: z.string().default('Europe/Athens'),
+  DEWATERMARK_BASE_URL: z.string().url().optional(),
+  DEWATERMARK_PREDICT_MODE: z.enum(['old', '3.0', '4.0']).optional(),
 });
 
 export function validateEnv(config: Record<string, unknown>) {

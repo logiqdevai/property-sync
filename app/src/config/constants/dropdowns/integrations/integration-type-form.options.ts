@@ -9,6 +9,7 @@ export const IntegrationTypeFormOptions: { id: IntegrationType; label: string }[
   { id: IntegrationTypes.ANTHROPIC, label: "Anthropic" },
   { id: IntegrationTypes.GEMINI, label: "Google Gemini" },
   { id: IntegrationTypes.DEEPSEEK, label: "DeepSeek" },
+  { id: IntegrationTypes.DEWATERMARK, label: "Dewatermark" },
 ];
 
 export function getIntegrationTypeLabel(type: IntegrationType | string): string {

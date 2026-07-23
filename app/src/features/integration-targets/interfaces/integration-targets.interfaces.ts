@@ -6,6 +6,7 @@ export const IntegrationTypes = {
   ANTHROPIC: "ANTHROPIC",
   GEMINI: "GEMINI",
   DEEPSEEK: "DEEPSEEK",
+  DEWATERMARK: "DEWATERMARK",
 } as const;
 
 export type IntegrationType = (typeof IntegrationTypes)[keyof typeof IntegrationTypes];

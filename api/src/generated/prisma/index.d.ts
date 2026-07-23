@@ -384,7 +384,8 @@ export const IntegrationType: {
   OPENAI: 'OPENAI',
   ANTHROPIC: 'ANTHROPIC',
   GEMINI: 'GEMINI',
-  DEEPSEEK: 'DEEPSEEK'
+  DEEPSEEK: 'DEEPSEEK',
+  DEWATERMARK: 'DEWATERMARK'
 };
 
 export type IntegrationType = (typeof IntegrationType)[keyof typeof IntegrationType]

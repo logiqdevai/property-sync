@@ -13,21 +13,15 @@ import {
 import { IntegrationTypeFormOptions } from "@/config/constants/dropdowns/integrations/integration-type-form.options";
 import { AuthTypeFormOptions } from "@/config/constants/dropdowns/integrations/auth-type-form.options";
 
+const integrationTypeValues = Object.values(IntegrationTypes) as [
+  IntegrationType,
+  ...IntegrationType[],
+];
+const authTypeValues = Object.values(AuthTypes) as [AuthType, ...AuthType[]];
+
 const integrationTargetFormSchema = z.object({
-  integration_type: z.enum([
-    IntegrationTypes.ESTATEWEB,
-    IntegrationTypes.OPENAI,
-    IntegrationTypes.ANTHROPIC,
-    IntegrationTypes.GEMINI,
-    IntegrationTypes.DEEPSEEK,
-  ]),
-  auth_type: z.enum([
-    AuthTypes.EMAIL_PASSWORD,
-    AuthTypes.USERNAME_PASSWORD,
-    AuthTypes.BEARER_TOKEN,
-    AuthTypes.API_KEY,
-    AuthTypes.OAUTH,
-  ]),
+  integration_type: z.enum(integrationTypeValues),
+  auth_type: z.enum(authTypeValues),
   base_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   allow_multiple: z.boolean(),
   is_visible: z.boolean(),
@@ -74,12 +68,16 @@ export function IntegrationTargetForm({
   const isEnabled = watch("is_enabled");
   const integrationType = watch("integration_type");
   const authType = watch("auth_type");
+  const isDewatermark = integrationType === IntegrationTypes.DEWATERMARK;
 
   const submit = (values: IntegrationTargetFormValues) => {
     onSubmit({
       integration_type: values.integration_type,
       auth_type: values.auth_type,
-      allow_multiple: values.allow_multiple,
+      allow_multiple:
+        values.integration_type === IntegrationTypes.DEWATERMARK
+          ? false
+          : values.allow_multiple,
       is_visible: values.is_visible,
       is_enabled: values.is_enabled,
       ...(values.base_url ? { base_url: values.base_url } : {}),
@@ -91,9 +89,14 @@ export function IntegrationTargetForm({
       <div className="flex flex-col gap-1">
         <Select
           selectedKey={integrationType}
-          onSelectionChange={(key) =>
-            setValue("integration_type", key as IntegrationType, { shouldValidate: true })
-          }
+          onSelectionChange={(key) => {
+            const nextType = key as IntegrationType;
+            setValue("integration_type", nextType, { shouldValidate: true });
+            if (nextType === IntegrationTypes.DEWATERMARK) {
+              setValue("auth_type", AuthTypes.API_KEY, { shouldValidate: true });
+              setValue("allow_multiple", false);
+            }
+          }}
         >
           <Label>Integration type</Label>
           <Select.Trigger>
@@ -116,6 +119,7 @@ export function IntegrationTargetForm({
       <div className="flex flex-col gap-1">
         <Select
           selectedKey={authType}
+          isDisabled={isDewatermark}
           onSelectionChange={(key) => setValue("auth_type", key as AuthType, { shouldValidate: true })}
         >
           <Label>Auth type</Label>
@@ -147,7 +151,11 @@ export function IntegrationTargetForm({
         {errors.base_url && <FieldError>{errors.base_url.message}</FieldError>}
       </div>
 
-      <Switch isSelected={allowMultiple} onChange={(value) => setValue("allow_multiple", value)}>
+      <Switch
+        isSelected={allowMultiple}
+        isDisabled={isDewatermark}
+        onChange={(value) => setValue("allow_multiple", value)}
+      >
         <Switch.Control>
           <Switch.Thumb />
         </Switch.Control>

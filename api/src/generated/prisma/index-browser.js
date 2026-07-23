@@ -615,7 +615,8 @@ exports.IntegrationType = exports.$Enums.IntegrationType = {
   OPENAI: 'OPENAI',
   ANTHROPIC: 'ANTHROPIC',
   GEMINI: 'GEMINI',
-  DEEPSEEK: 'DEEPSEEK'
+  DEEPSEEK: 'DEEPSEEK',
+  DEWATERMARK: 'DEWATERMARK'
 };
 
 exports.AuthType = exports.$Enums.AuthType = {

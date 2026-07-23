@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { Prisma } from 'generated/prisma';
+import { IntegrationType, Prisma } from 'generated/prisma';
 import { IntegrationTargetQueryType } from './dto/integration-target-query.schema';
 import {
   CreateIntegrationTargetDto,
@@ -92,15 +92,34 @@ export class IntegrationTargetsService {
   }
 
   async create(dto: CreateIntegrationTargetDto) {
-    return this.prisma.integrationTarget.create({ data: dto });
+    this.assertDewatermarkTargetRules(dto.integration_type, dto.allow_multiple);
+
+    return this.prisma.integrationTarget.create({
+      data: {
+        ...dto,
+        ...(dto.integration_type === IntegrationType.DEWATERMARK && {
+          allow_multiple: false,
+        }),
+      },
+    });
   }
 
   async update(id: string, dto: UpdateIntegrationTargetDto) {
-    await this.ensureTargetExists(id);
+    const target = await this.ensureTargetExists(id);
+    const nextType = dto.integration_type ?? target.integration_type;
+    const nextAllowMultiple =
+      dto.allow_multiple ?? target.allow_multiple;
+
+    this.assertDewatermarkTargetRules(nextType, nextAllowMultiple);
 
     return this.prisma.integrationTarget.update({
       where: { id },
-      data: dto,
+      data: {
+        ...dto,
+        ...(nextType === IntegrationType.DEWATERMARK && {
+          allow_multiple: false,
+        }),
+      },
     });
   }
 
@@ -148,6 +167,28 @@ export class IntegrationTargetsService {
     }
 
     await this.ensureAllowMultiple(target, dto.user_id);
+
+    if (target.integration_type === IntegrationType.DEWATERMARK) {
+      this.assertDewatermarkTargetRules(
+        target.integration_type,
+        target.allow_multiple,
+      );
+
+      const existingDewatermark = await this.prisma.userIntegration.findFirst({
+        where: {
+          user_id: dto.user_id,
+          integration_target: {
+            integration_type: IntegrationType.DEWATERMARK,
+          },
+        },
+      });
+
+      if (existingDewatermark) {
+        throw new BadRequestException(
+          'User already has a Dewatermark integration connected',
+        );
+      }
+    }
 
     validateCredentialsForAuthType(target.auth_type, dto);
     assertWebhookKeyAllowed(target.integration_type, dto.webhook_key);
@@ -291,6 +332,20 @@ export class IntegrationTargetsService {
     }
 
     return target;
+  }
+
+  private assertDewatermarkTargetRules(
+    integrationType: IntegrationType,
+    allowMultiple?: boolean,
+  ) {
+    if (
+      integrationType === IntegrationType.DEWATERMARK &&
+      allowMultiple === true
+    ) {
+      throw new BadRequestException(
+        'Dewatermark integrations cannot allow multiple connections',
+      );
+    }
   }
 
   private async ensureAccountOnTarget(

@@ -178,6 +178,7 @@ enum IntegrationType {
   ANTHROPIC
   GEMINI
   DEEPSEEK
+  DEWATERMARK
 }
 
 enum AuthType {
