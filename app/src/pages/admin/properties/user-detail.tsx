@@ -14,6 +14,7 @@ import {
   useDeleteAdminUserProperty,
   useDeleteAdminUserPropertyIntegrationImages,
   useCreateAdminUserPropertyIntegrationImages,
+  useUpdateAdminUserPropertyIntegrationImages,
   useMigrateAdminUserPropertyIntegrationImages,
 } from "@/features/user-properties/hooks/use-user-properties";
 
@@ -26,6 +27,7 @@ export default function UserPropertyDetailPage() {
   const migrateImages = useMigrateAdminUserPropertyIntegrationImages();
   const deleteIntegrationImages = useDeleteAdminUserPropertyIntegrationImages();
   const createIntegrationImages = useCreateAdminUserPropertyIntegrationImages();
+  const updateIntegrationImages = useUpdateAdminUserPropertyIntegrationImages();
 
   const headerActions = useMemo<TableRowAction[]>(() => {
     if (!property) return [];
@@ -106,6 +108,17 @@ export default function UserPropertyDetailPage() {
         });
       }}
       isDeletingIntegrationImages={deleteIntegrationImages.isPending}
+      canUpdateEstateWebImageOptions={Boolean(
+        property.integration_property_id,
+      )}
+      onUpdateEstateWebImageOptions={async (imageIds, options) => {
+        await updateIntegrationImages.mutateAsync({
+          id: property.id,
+          image_ids: imageIds,
+          ...options,
+        });
+      }}
+      isUpdatingEstateWebImageOptions={updateIntegrationImages.isPending}
       canCreateIntegrationImages
       onCreateIntegrationImages={async (imageIndexes) => {
         await createIntegrationImages.mutateAsync({
@@ -131,7 +144,8 @@ export default function UserPropertyDetailPage() {
               migrateImages.isPending ||
               deleteUserProperty.isPending ||
               deleteIntegrationImages.isPending ||
-              createIntegrationImages.isPending
+              createIntegrationImages.isPending ||
+              updateIntegrationImages.isPending
             }
           />
         </div>

@@ -7,6 +7,7 @@ import {
   Building2,
   Calendar,
   ExternalLink,
+  Eye,
   Images,
   MapPin,
   Maximize2,
@@ -20,6 +21,10 @@ import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import {
+  EstateWebImageOptionsModal,
+  type EstateWebImageOptions,
+} from "@/components/ui/estateweb-image-options-modal";
 import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
 import {
   formatPropertyHistoryLabel,
@@ -176,20 +181,29 @@ function PropertyImagesGrid({
   title,
   selectable = false,
   canCreateFromPropertyImages = false,
+  canUpdateEstateWebImageOptions = false,
   onDeleteSelected,
   onCreateSelected,
+  onUpdateEstateWebImageOptions,
   isDeletePending = false,
   isCreatePending = false,
+  isUpdateEstateWebImageOptionsPending = false,
 }: {
   images: PropertyDisplayImage[];
   fallbackImages: string[];
   title: string;
   selectable?: boolean;
   canCreateFromPropertyImages?: boolean;
+  canUpdateEstateWebImageOptions?: boolean;
   onDeleteSelected?: (imageIds: number[]) => Promise<void> | void;
   onCreateSelected?: (imageIndexes: number[]) => Promise<void> | void;
+  onUpdateEstateWebImageOptions?: (
+    imageIds: number[],
+    options: EstateWebImageOptions,
+  ) => Promise<void> | void;
   isDeletePending?: boolean;
   isCreatePending?: boolean;
+  isUpdateEstateWebImageOptionsPending?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(
@@ -197,13 +211,19 @@ function PropertyImagesGrid({
   );
   const deleteConfirm = useOverlayState();
   const createConfirm = useOverlayState();
+  const estateWebOptionsModal = useOverlayState();
   const canExpand = images.length > 2;
-  const isPending = isDeletePending || isCreatePending;
+  const isPending =
+    isDeletePending ||
+    isCreatePending ||
+    isUpdateEstateWebImageOptionsPending;
   const canSelect =
     selectable &&
     images.length > 0 &&
     (Boolean(onDeleteSelected) ||
-      (canCreateFromPropertyImages && Boolean(onCreateSelected)));
+      (canCreateFromPropertyImages && Boolean(onCreateSelected)) ||
+      (canUpdateEstateWebImageOptions &&
+        Boolean(onUpdateEstateWebImageOptions)));
   const allSelected =
     canSelect &&
     images.length > 0 &&
@@ -216,6 +236,26 @@ function PropertyImagesGrid({
         .filter((id): id is number => id != null),
     ),
   ];
+  const selectedCrmImages = images.filter(
+    (image, index) =>
+      selectedIndexes.has(index) && image.crmImageId != null,
+  );
+  const selectedEstateWebOptions: EstateWebImageOptions =
+    selectedCrmImages.length === 0
+      ? {
+          show_on_site: false,
+          show_on_groups: false,
+          show_on_foreign_agents: false,
+        }
+      : {
+          show_on_site: selectedCrmImages.every((image) => image.show_on_site),
+          show_on_groups: selectedCrmImages.every(
+            (image) => image.show_on_groups,
+          ),
+          show_on_foreign_agents: selectedCrmImages.every(
+            (image) => image.show_on_foreign_agents,
+          ),
+        };
   const selectedPropertyIndexes = [
     ...new Set(
       [...selectedIndexes]
@@ -233,13 +273,13 @@ function PropertyImagesGrid({
   };
 
   const bulkActions: TableRowAction[] = [
-    ...(onDeleteSelected
+    ...(canUpdateEstateWebImageOptions && onUpdateEstateWebImageOptions
       ? [
           {
-            id: "delete",
-            label: `Delete${selectedCrmIds.length > 0 ? ` (${selectedCrmIds.length})` : ""}`,
-            variant: "danger" as const,
-            icon: Trash2,
+            id: "estateweb-options",
+            label: `EstateWeb options${selectedCrmIds.length > 0 ? ` (${selectedCrmIds.length})` : ""}`,
+            variant: "accent" as const,
+            icon: Eye,
             isDisabled: isPending || selectedCrmIds.length === 0,
           },
         ]
@@ -255,6 +295,17 @@ function PropertyImagesGrid({
           },
         ]
       : []),
+    ...(onDeleteSelected
+      ? [
+          {
+            id: "delete",
+            label: `Delete${selectedCrmIds.length > 0 ? ` (${selectedCrmIds.length})` : ""}`,
+            variant: "danger" as const,
+            icon: Trash2,
+            isDisabled: isPending || selectedCrmIds.length === 0,
+          },
+        ]
+      : []),
   ];
 
   const handleDeleteConfirm = async () => {
@@ -266,6 +317,14 @@ function PropertyImagesGrid({
   const handleCreateConfirm = async () => {
     if (!onCreateSelected || selectedPropertyIndexes.length === 0) return;
     await onCreateSelected(selectedPropertyIndexes);
+    setSelectedIndexes(new Set());
+  };
+
+  const handleEstateWebOptionsConfirm = async (
+    options: EstateWebImageOptions,
+  ) => {
+    if (!onUpdateEstateWebImageOptions || selectedCrmIds.length === 0) return;
+    await onUpdateEstateWebImageOptions(selectedCrmIds, options);
     setSelectedIndexes(new Set());
   };
 
@@ -288,6 +347,8 @@ function PropertyImagesGrid({
               onAction={(actionId) => {
                 if (actionId === "delete") deleteConfirm.open();
                 if (actionId === "create-from-property") createConfirm.open();
+                if (actionId === "estateweb-options")
+                  estateWebOptionsModal.open();
               }}
               isPending={isPending}
               label="Actions"
@@ -396,6 +457,15 @@ function PropertyImagesGrid({
           isPending={isCreatePending}
         />
       ) : null}
+      {canUpdateEstateWebImageOptions && onUpdateEstateWebImageOptions ? (
+        <EstateWebImageOptionsModal
+          state={estateWebOptionsModal}
+          selectedCount={selectedCrmIds.length}
+          initialOptions={selectedEstateWebOptions}
+          onConfirm={handleEstateWebOptionsConfirm}
+          isPending={isUpdateEstateWebImageOptionsPending}
+        />
+      ) : null}
     </div>
   );
 }
@@ -414,9 +484,15 @@ interface PropertyDetailViewProps {
   onCreateIntegrationImages?: (
     imageIndexes: number[],
   ) => Promise<void> | void;
+  onUpdateEstateWebImageOptions?: (
+    imageIds: number[],
+    options: EstateWebImageOptions,
+  ) => Promise<void> | void;
   isDeletingIntegrationImages?: boolean;
   isCreatingIntegrationImages?: boolean;
+  isUpdatingEstateWebImageOptions?: boolean;
   canCreateIntegrationImages?: boolean;
+  canUpdateEstateWebImageOptions?: boolean;
 }
 
 export function PropertyDetailView({
@@ -431,9 +507,12 @@ export function PropertyDetailView({
   footer,
   onDeleteIntegrationImages,
   onCreateIntegrationImages,
+  onUpdateEstateWebImageOptions,
   isDeletingIntegrationImages = false,
   isCreatingIntegrationImages = false,
+  isUpdatingEstateWebImageOptions = false,
   canCreateIntegrationImages = false,
+  canUpdateEstateWebImageOptions = false,
 }: PropertyDetailViewProps) {
   const sourceLinks = property.source_links ?? [];
   const cmsFieldEntries = (property.cms_fields ?? []) as CmsPropertyFieldEntry[];
@@ -450,6 +529,9 @@ export function PropertyDetailView({
   const heroFallback = fallbackImages[0] ?? null;
   const canManageIntegrationImages =
     (Boolean(onDeleteIntegrationImages) &&
+      displayImages.some((image) => image.crmImageId != null)) ||
+    (canUpdateEstateWebImageOptions &&
+      Boolean(onUpdateEstateWebImageOptions) &&
       displayImages.some((image) => image.crmImageId != null)) ||
     (canCreateIntegrationImages &&
       Boolean(onCreateIntegrationImages) &&
@@ -759,10 +841,18 @@ export function PropertyDetailView({
               Boolean(onCreateIntegrationImages) &&
               Boolean(property.integration_property_id)
             }
+            canUpdateEstateWebImageOptions={
+              canUpdateEstateWebImageOptions &&
+              Boolean(onUpdateEstateWebImageOptions)
+            }
             onDeleteSelected={onDeleteIntegrationImages}
             onCreateSelected={onCreateIntegrationImages}
+            onUpdateEstateWebImageOptions={onUpdateEstateWebImageOptions}
             isDeletePending={isDeletingIntegrationImages}
             isCreatePending={isCreatingIntegrationImages}
+            isUpdateEstateWebImageOptionsPending={
+              isUpdatingEstateWebImageOptions
+            }
           />
         )}
       </section>

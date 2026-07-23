@@ -19,6 +19,7 @@ import type {
   UserPropertyListQuery,
   TruncateUserPropertyDescriptionsPayload,
   TruncateUserPropertyDescriptionsResult,
+  UpdateIntegrationImagesPayload,
 } from "../interfaces/user-properties.interfaces";
 
 export const getUserProperties = async (
@@ -210,6 +211,40 @@ export const createAdminUserPropertyIntegrationImages = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to create CRM images.",
+    );
+  }
+};
+
+export const updateUserPropertyIntegrationImages = async (
+  id: string,
+  payload: UpdateIntegrationImagesPayload,
+): Promise<UserPropertyDetail> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.updateIntegrationImages(id),
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to update CRM image options.",
+    );
+  }
+};
+
+export const updateAdminUserPropertyIntegrationImages = async (
+  id: string,
+  payload: UpdateIntegrationImagesPayload,
+): Promise<UserPropertyDetail> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.updateIntegrationImages(id),
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to update CRM image options.",
     );
   }
 };

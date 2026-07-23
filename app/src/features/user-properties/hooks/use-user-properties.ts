@@ -21,6 +21,8 @@ import {
   deleteUserPropertyIntegrationImages,
   createAdminUserPropertyIntegrationImages,
   createUserPropertyIntegrationImages,
+  updateAdminUserPropertyIntegrationImages,
+  updateUserPropertyIntegrationImages,
   splitAdminUserProperties,
   splitUserProperties,
   truncateAdminUserPropertyDescriptions,
@@ -36,6 +38,7 @@ import type {
   PushUserPropertiesToCrmResult,
   SplitUserPropertiesPayload,
   TruncateUserPropertyDescriptionsPayload,
+  UpdateIntegrationImagesPayload,
   UpdateUserPropertyPayload,
   UserPropertyCountQuery,
   UserPropertyListQuery,
@@ -301,6 +304,66 @@ export const useCreateAdminUserPropertyIntegrationImages = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not upload photos",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useUpdateUserPropertyIntegrationImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...payload
+    }: { id: string } & UpdateIntegrationImagesPayload) =>
+      updateUserPropertyIntegrationImages(id, payload),
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(["userProperties", "detail", data.id], data);
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      const count = variables.image_ids.length;
+      toast({
+        title: "CRM image options updated",
+        description: `Updated ${count} ${count === 1 ? "image" : "images"}.`,
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not update CRM image options",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useUpdateAdminUserPropertyIntegrationImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...payload
+    }: { id: string } & UpdateIntegrationImagesPayload) =>
+      updateAdminUserPropertyIntegrationImages(id, payload),
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(["adminUserProperties", "detail", data.id], data);
+      queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
+      const count = variables.image_ids.length;
+      toast({
+        title: "CRM image options updated",
+        description: `Updated ${count} ${count === 1 ? "image" : "images"}.`,
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not update CRM image options",
         description: error.message,
         variant: "error",
       });

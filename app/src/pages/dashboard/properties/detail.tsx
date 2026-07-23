@@ -26,6 +26,7 @@ import {
   useMigrateUserPropertyIntegrationImages,
   useDeleteUserPropertyIntegrationImages,
   useCreateUserPropertyIntegrationImages,
+  useUpdateUserPropertyIntegrationImages,
   usePushUserPropertyToCrm,
   useTruncateUserPropertyDescriptions,
   useUpdateUserProperty,
@@ -110,6 +111,7 @@ export default function DashboardPropertyDetailPage() {
   const migrateImages = useMigrateUserPropertyIntegrationImages();
   const deleteIntegrationImages = useDeleteUserPropertyIntegrationImages();
   const createIntegrationImages = useCreateUserPropertyIntegrationImages();
+  const updateIntegrationImages = useUpdateUserPropertyIntegrationImages();
   const truncateDescriptions = useTruncateUserPropertyDescriptions();
   const { data: locationCatalog = [] } = useEstateWebLocationCatalog(isEditing);
   const { data: floorCatalog = [], isPending: floorCatalogPending } =
@@ -383,6 +385,17 @@ export default function DashboardPropertyDetailPage() {
           });
         }}
         isDeletingIntegrationImages={deleteIntegrationImages.isPending}
+        canUpdateEstateWebImageOptions={Boolean(
+          property.integration_property_id,
+        )}
+        onUpdateEstateWebImageOptions={async (imageIds, options) => {
+          await updateIntegrationImages.mutateAsync({
+            id: property.id,
+            image_ids: imageIds,
+            ...options,
+          });
+        }}
+        isUpdatingEstateWebImageOptions={updateIntegrationImages.isPending}
         canCreateIntegrationImages={
           role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN
         }
@@ -401,7 +414,8 @@ export default function DashboardPropertyDetailPage() {
               pushToCrm.isPending ||
               migrateImages.isPending ||
               deleteIntegrationImages.isPending ||
-              createIntegrationImages.isPending
+              createIntegrationImages.isPending ||
+              updateIntegrationImages.isPending
             }
           />
         }

@@ -602,6 +602,61 @@ export class UserPropertiesService {
     return this.findOne(userId, id);
   }
 
+  async updateIntegrationImages(
+    userId: string,
+    id: string,
+    imageIds: number[],
+    options: {
+      show_on_site: boolean;
+      show_on_groups: boolean;
+      show_on_foreign_agents: boolean;
+    },
+  ) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id, user_id: userId },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    await this.runUpdateIntegrationImages(userProperty, imageIds, options);
+    return this.findOne(userId, id);
+  }
+
+  async adminUpdateIntegrationImages(
+    id: string,
+    imageIds: number[],
+    options: {
+      show_on_site: boolean;
+      show_on_groups: boolean;
+      show_on_foreign_agents: boolean;
+    },
+  ) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    await this.runUpdateIntegrationImages(userProperty, imageIds, options);
+    return this.adminFindOne(id);
+  }
+
   private async runCreateIntegrationImages(
     userProperty: {
       id: string;
@@ -692,6 +747,59 @@ export class UserPropertiesService {
         crmPropertyId: userProperty.integration_property_id,
         userPropertyId: userProperty.id,
         imageIds: uniqueIds,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(message);
+    }
+  }
+
+  private async runUpdateIntegrationImages(
+    userProperty: {
+      id: string;
+      user_id: string;
+      canonical_property_id: string;
+      integration_property_id: string | null;
+    },
+    imageIds: number[],
+    options: {
+      show_on_site: boolean;
+      show_on_groups: boolean;
+      show_on_foreign_agents: boolean;
+    },
+  ) {
+    if (!userProperty.integration_property_id) {
+      throw new BadRequestException('Property is not linked to a CRM');
+    }
+
+    const uniqueIds = [
+      ...new Set(
+        imageIds.filter((id) => Number.isFinite(id) && id > 0),
+      ),
+    ];
+    if (uniqueIds.length === 0) {
+      throw new BadRequestException('No valid image ids provided');
+    }
+
+    const { userIntegrationId, integrationType } =
+      await this.resolveCmsIntegrationForProperty(userProperty);
+
+    if (integrationType !== IntegrationType.ESTATEWEB) {
+      throw new BadRequestException(
+        'Image visibility options are only supported for EstateWeb',
+      );
+    }
+
+    try {
+      const adapter = this.cmsSyncAdapterFactory.getAdapter(integrationType);
+      await adapter.updateImages({
+        userIntegrationId,
+        crmPropertyId: userProperty.integration_property_id,
+        userPropertyId: userProperty.id,
+        imageIds: uniqueIds,
+        show_on_site: options.show_on_site,
+        show_on_groups: options.show_on_groups,
+        show_on_foreign_agents: options.show_on_foreign_agents,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

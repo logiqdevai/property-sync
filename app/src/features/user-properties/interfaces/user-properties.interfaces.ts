@@ -190,3 +190,10 @@ export interface TruncateUserPropertyDescriptionsResult {
   updated: number;
   total: number;
 }
+
+export interface UpdateIntegrationImagesPayload {
+  image_ids: number[];
+  show_on_site: boolean;
+  show_on_groups: boolean;
+  show_on_foreign_agents: boolean;
+}

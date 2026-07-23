@@ -33,6 +33,7 @@ import {
 import { DeleteUserPropertiesDto } from './dto/delete-user-properties.dto';
 import { DeleteIntegrationImagesDto } from './dto/delete-integration-images.dto';
 import { CreateIntegrationImagesDto } from './dto/create-integration-images.dto';
+import { UpdateIntegrationImagesDto } from './dto/update-integration-images.dto';
 import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
 import { UserPropertyEntity } from './entities/user-property.entity';
 
@@ -224,6 +225,30 @@ export class AdminUserPropertiesController {
     return this.userPropertiesService.adminCreateIntegrationImages(
       id,
       dto.image_indexes,
+    );
+  }
+
+  @Post(':id/update-integration-images')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Update EstateWeb visibility options for selected CRM images via the linked integration adapter',
+  })
+  @ApiResponse({ status: 200, type: UserPropertyEntity })
+  @ApiResponse({ status: 400, description: 'Cannot update images' })
+  @ApiResponse({ status: 404, description: 'User property not found' })
+  updateIntegrationImages(
+    @Param('id') id: string,
+    @Body() dto: UpdateIntegrationImagesDto,
+  ) {
+    return this.userPropertiesService.adminUpdateIntegrationImages(
+      id,
+      dto.image_ids,
+      {
+        show_on_site: dto.show_on_site,
+        show_on_groups: dto.show_on_groups,
+        show_on_foreign_agents: dto.show_on_foreign_agents,
+      },
     );
   }
 

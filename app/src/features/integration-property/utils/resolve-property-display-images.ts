@@ -8,6 +8,9 @@ export type PropertyDisplayImage = {
   crmImageId: number | null;
   propertyImageIndex: number | null;
   url: string;
+  show_on_site: boolean;
+  show_on_groups: boolean;
+  show_on_foreign_agents: boolean;
 };
 
 function resolveIntegrationImageDisplayUrl(
@@ -66,6 +69,9 @@ export function getIntegrationPropertyDisplayImages(
         propertyImages,
       ),
       url,
+      show_on_site: Boolean(image.show_on_site),
+      show_on_groups: Boolean(image.show_on_groups),
+      show_on_foreign_agents: Boolean(image.show_on_foreign_agents),
     });
   }
 
@@ -90,5 +96,8 @@ export function resolvePropertyDisplayImages(params: {
     crmImageId: null,
     propertyImageIndex: index,
     url,
+    show_on_site: false,
+    show_on_groups: false,
+    show_on_foreign_agents: false,
   }));
 }

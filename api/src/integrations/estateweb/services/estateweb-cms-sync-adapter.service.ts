@@ -6,6 +6,7 @@ import {
   CmsSyncAdapter,
   CmsSyncCreateImagesParams,
   CmsSyncDeleteImagesParams,
+  CmsSyncUpdateImagesParams,
 } from '@/modules/cms-sync/interfaces/cms-sync-adapter.interface';
 import { CmsPropertyFieldEntry } from '@/modules/properties/interfaces/cms-property.interface';
 import { coerceCmsFieldValueForEstateWeb } from '@/modules/properties/utils/property-cms-field-mapper.util';
@@ -165,6 +166,43 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       await this.estateWebPropertyService.deletePropertyImage(
         params.userIntegrationId,
         imageId,
+      );
+    }
+
+    await this.syncIntegrationPropertyImages({
+      userIntegrationId: params.userIntegrationId,
+      userPropertyId: params.userPropertyId,
+      estateWebPropertyId: params.crmPropertyId,
+    });
+  }
+
+  async updateImages(params: CmsSyncUpdateImagesParams): Promise<void> {
+    const uniqueIds = [
+      ...new Set(
+        params.imageIds
+          .map((id) => Number(id))
+          .filter((id) => Number.isFinite(id) && id > 0),
+      ),
+    ];
+    if (uniqueIds.length === 0) {
+      throw new EstateWebException(
+        'No valid CRM image ids provided',
+        NotificationType.ESTATEWEB_VALIDATION_FAILED,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const payload = {
+      show_on_site: params.show_on_site ? 1 : 0,
+      show_on_groups: params.show_on_groups ? 1 : 0,
+      show_on_foreign_agents: params.show_on_foreign_agents ? 1 : 0,
+    } as const;
+
+    for (const imageId of uniqueIds) {
+      await this.estateWebPropertyService.updatePropertyImage(
+        params.userIntegrationId,
+        imageId,
+        payload,
       );
     }
 

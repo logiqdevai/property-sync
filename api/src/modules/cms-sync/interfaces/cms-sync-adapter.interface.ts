@@ -18,6 +18,16 @@ export interface CmsSyncCreateImagesParams {
   sourceImageUrls: string[];
 }
 
+export interface CmsSyncUpdateImagesParams {
+  userIntegrationId: string;
+  crmPropertyId: string;
+  userPropertyId: string;
+  imageIds: Array<number | string>;
+  show_on_site: boolean;
+  show_on_groups: boolean;
+  show_on_foreign_agents: boolean;
+}
+
 export interface CmsSyncAdapter {
   pushCreate(
     userIntegrationId: string,
@@ -35,4 +45,5 @@ export interface CmsSyncAdapter {
   ): Promise<void>;
   deleteImages(params: CmsSyncDeleteImagesParams): Promise<void>;
   createImages(params: CmsSyncCreateImagesParams): Promise<void>;
+  updateImages(params: CmsSyncUpdateImagesParams): Promise<void>;
 }
