@@ -64,6 +64,16 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
     return { context, page };
   }
 
+  async closeContext(
+    context: BrowserContext,
+    timeoutMs = 10_000,
+  ): Promise<void> {
+    await Promise.race([
+      context.close().catch(() => undefined),
+      new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
+    ]);
+  }
+
   private async ensureBrowser(): Promise<Browser> {
     if (this.browser?.isConnected()) {
       // Recycle only when fully idle -- closing the shared browser while another

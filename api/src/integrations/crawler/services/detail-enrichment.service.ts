@@ -4,6 +4,10 @@ import { PlatformConfigService } from '@/modules/platform-config/platform-config
 import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
 import { GcsFolders } from '@/shared/config/gcs-folders';
 import {
+  CONTEXT_CLOSE_TIMEOUT_MS,
+  DETAIL_HTML_UPLOAD_TIMEOUT_MS,
+} from '../constants/crawler.constants';
+import {
   CrawlItem,
   DetailPageConfig,
 } from '../interfaces/scraper-config.interface';
@@ -17,6 +21,11 @@ interface DetailEnrichmentResult {
   external_id: string | null;
   raw_html_path: string | null;
   error?: string;
+}
+
+export interface DetailEnrichmentOptions {
+  deadlineAt?: number;
+  onBatchComplete?: () => void | Promise<void>;
 }
 
 @Injectable()
@@ -33,6 +42,7 @@ export class DetailEnrichmentService {
     items: CrawlItem[],
     detailConfig?: DetailPageConfig | null,
     sourceAgencyId?: string,
+    options?: DetailEnrichmentOptions,
   ): Promise<void> {
     if (items.length === 0) return;
 
@@ -44,6 +54,13 @@ export class DetailEnrichmentService {
     );
 
     for (let i = 0; i < items.length; i += detail_concurrency) {
+      if (options?.deadlineAt != null && Date.now() >= options.deadlineAt) {
+        this.logger.warn(
+          `Detail enrichment soft-stopped at ${i}/${items.length} (deadline reached)`,
+        );
+        break;
+      }
+
       const batch = items.slice(i, i + detail_concurrency);
       const results = await Promise.all(
         batch.map((item) =>
@@ -77,6 +94,10 @@ export class DetailEnrichmentService {
         if (detail.raw_html_path) {
           item.raw._raw_html_path = detail.raw_html_path;
         }
+      }
+
+      if (options?.onBatchComplete) {
+        await options.onBatchComplete();
       }
 
       if (i + detail_concurrency < items.length) {
@@ -285,7 +306,10 @@ export class DetailEnrichmentService {
       const message = err instanceof Error ? err.message : String(err);
       return { ...empty, error: message };
     } finally {
-      await context.close().catch(() => undefined);
+      await this.stealthBrowserService.closeContext(
+        context,
+        CONTEXT_CLOSE_TIMEOUT_MS,
+      );
     }
   }
 
@@ -304,14 +328,19 @@ export class DetailEnrichmentService {
       const agencySegment = sourceAgencyId ?? 'unknown';
       const filename = `${agencySegment}/${urlHash}.html`;
 
-      const upload = await this.gcsService.uploadImageFromBuffer(
-        Buffer.from(html, 'utf8'),
-        filename,
-        'text/html; charset=utf-8',
-        GcsFolders.sourcePropertyHtml,
-      );
+      const upload = await Promise.race([
+        this.gcsService.uploadImageFromBuffer(
+          Buffer.from(html, 'utf8'),
+          filename,
+          'text/html; charset=utf-8',
+          GcsFolders.sourcePropertyHtml,
+        ),
+        new Promise<null>((resolve) =>
+          setTimeout(() => resolve(null), DETAIL_HTML_UPLOAD_TIMEOUT_MS),
+        ),
+      ]);
 
-      return upload.path;
+      return upload?.path ?? null;
     } catch (error) {
       this.logger.warn(
         `Failed to upload detail HTML for ${sourceUrl}: ${error instanceof Error ? error.message : error}`,
