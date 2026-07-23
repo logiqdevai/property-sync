@@ -140,11 +140,6 @@ export type SourceProperty = $Result.DefaultSelection<Prisma.$SourcePropertyPayl
  */
 export type Property = $Result.DefaultSelection<Prisma.$PropertyPayload>
 /**
- * Model IntegrationProperty
- * 
- */
-export type IntegrationProperty = $Result.DefaultSelection<Prisma.$IntegrationPropertyPayload>
-/**
  * Model PropertySourceLink
  * Mapping layer between normalized Property and the raw SourceProperty rows it was built from.
  */
@@ -163,6 +158,11 @@ export type PropertyHistory = $Result.DefaultSelection<Prisma.$PropertyHistoryPa
  * can show a "this differs from the source listing" banner and offer a manual re-sync.
  */
 export type UserProperty = $Result.DefaultSelection<Prisma.$UserPropertyPayload>
+/**
+ * Model IntegrationProperty
+ * 
+ */
+export type IntegrationProperty = $Result.DefaultSelection<Prisma.$IntegrationPropertyPayload>
 /**
  * Model PlatformConfig
  * Singleton table (single row, fixed id) holding tunable admin-editable parameters for the
@@ -891,16 +891,6 @@ export class PrismaClient<
   get property(): Prisma.PropertyDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.integrationProperty`: Exposes CRUD operations for the **IntegrationProperty** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more IntegrationProperties
-    * const integrationProperties = await prisma.integrationProperty.findMany()
-    * ```
-    */
-  get integrationProperty(): Prisma.IntegrationPropertyDelegate<ExtArgs, ClientOptions>;
-
-  /**
    * `prisma.propertySourceLink`: Exposes CRUD operations for the **PropertySourceLink** model.
     * Example usage:
     * ```ts
@@ -929,6 +919,16 @@ export class PrismaClient<
     * ```
     */
   get userProperty(): Prisma.UserPropertyDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.integrationProperty`: Exposes CRUD operations for the **IntegrationProperty** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more IntegrationProperties
+    * const integrationProperties = await prisma.integrationProperty.findMany()
+    * ```
+    */
+  get integrationProperty(): Prisma.IntegrationPropertyDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.platformConfig`: Exposes CRUD operations for the **PlatformConfig** model.
@@ -1403,10 +1403,10 @@ export namespace Prisma {
     CmsSyncRun: 'CmsSyncRun',
     SourceProperty: 'SourceProperty',
     Property: 'Property',
-    IntegrationProperty: 'IntegrationProperty',
     PropertySourceLink: 'PropertySourceLink',
     PropertyHistory: 'PropertyHistory',
     UserProperty: 'UserProperty',
+    IntegrationProperty: 'IntegrationProperty',
     PlatformConfig: 'PlatformConfig',
     Document: 'Document'
   };
@@ -1424,7 +1424,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "notification" | "cmsSyncRun" | "sourceProperty" | "property" | "integrationProperty" | "propertySourceLink" | "propertyHistory" | "userProperty" | "platformConfig" | "document"
+      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "notification" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "integrationProperty" | "platformConfig" | "document"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2908,80 +2908,6 @@ export namespace Prisma {
           }
         }
       }
-      IntegrationProperty: {
-        payload: Prisma.$IntegrationPropertyPayload<ExtArgs>
-        fields: Prisma.IntegrationPropertyFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.IntegrationPropertyFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.IntegrationPropertyFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>
-          }
-          findFirst: {
-            args: Prisma.IntegrationPropertyFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.IntegrationPropertyFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>
-          }
-          findMany: {
-            args: Prisma.IntegrationPropertyFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>[]
-          }
-          create: {
-            args: Prisma.IntegrationPropertyCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>
-          }
-          createMany: {
-            args: Prisma.IntegrationPropertyCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.IntegrationPropertyCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>[]
-          }
-          delete: {
-            args: Prisma.IntegrationPropertyDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>
-          }
-          update: {
-            args: Prisma.IntegrationPropertyUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>
-          }
-          deleteMany: {
-            args: Prisma.IntegrationPropertyDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.IntegrationPropertyUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.IntegrationPropertyUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>[]
-          }
-          upsert: {
-            args: Prisma.IntegrationPropertyUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>
-          }
-          aggregate: {
-            args: Prisma.IntegrationPropertyAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateIntegrationProperty>
-          }
-          groupBy: {
-            args: Prisma.IntegrationPropertyGroupByArgs<ExtArgs>
-            result: $Utils.Optional<IntegrationPropertyGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.IntegrationPropertyCountArgs<ExtArgs>
-            result: $Utils.Optional<IntegrationPropertyCountAggregateOutputType> | number
-          }
-        }
-      }
       PropertySourceLink: {
         payload: Prisma.$PropertySourceLinkPayload<ExtArgs>
         fields: Prisma.PropertySourceLinkFieldRefs
@@ -3201,6 +3127,80 @@ export namespace Prisma {
           count: {
             args: Prisma.UserPropertyCountArgs<ExtArgs>
             result: $Utils.Optional<UserPropertyCountAggregateOutputType> | number
+          }
+        }
+      }
+      IntegrationProperty: {
+        payload: Prisma.$IntegrationPropertyPayload<ExtArgs>
+        fields: Prisma.IntegrationPropertyFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.IntegrationPropertyFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.IntegrationPropertyFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>
+          }
+          findFirst: {
+            args: Prisma.IntegrationPropertyFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.IntegrationPropertyFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>
+          }
+          findMany: {
+            args: Prisma.IntegrationPropertyFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>[]
+          }
+          create: {
+            args: Prisma.IntegrationPropertyCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>
+          }
+          createMany: {
+            args: Prisma.IntegrationPropertyCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.IntegrationPropertyCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>[]
+          }
+          delete: {
+            args: Prisma.IntegrationPropertyDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>
+          }
+          update: {
+            args: Prisma.IntegrationPropertyUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>
+          }
+          deleteMany: {
+            args: Prisma.IntegrationPropertyDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.IntegrationPropertyUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.IntegrationPropertyUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>[]
+          }
+          upsert: {
+            args: Prisma.IntegrationPropertyUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IntegrationPropertyPayload>
+          }
+          aggregate: {
+            args: Prisma.IntegrationPropertyAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateIntegrationProperty>
+          }
+          groupBy: {
+            args: Prisma.IntegrationPropertyGroupByArgs<ExtArgs>
+            result: $Utils.Optional<IntegrationPropertyGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.IntegrationPropertyCountArgs<ExtArgs>
+            result: $Utils.Optional<IntegrationPropertyCountAggregateOutputType> | number
           }
         }
       }
@@ -3480,10 +3480,10 @@ export namespace Prisma {
     cmsSyncRun?: CmsSyncRunOmit
     sourceProperty?: SourcePropertyOmit
     property?: PropertyOmit
-    integrationProperty?: IntegrationPropertyOmit
     propertySourceLink?: PropertySourceLinkOmit
     propertyHistory?: PropertyHistoryOmit
     userProperty?: UserPropertyOmit
+    integrationProperty?: IntegrationPropertyOmit
     platformConfig?: PlatformConfigOmit
     document?: DocumentOmit
   }
@@ -10289,12 +10289,14 @@ export namespace Prisma {
     concurrent_insertions: number | null
     insertion_interval_minutes: number | null
     max_properties: number | null
+    watermark_image_count: number | null
   }
 
   export type UserTrackedAgencySumAggregateOutputType = {
     concurrent_insertions: number | null
     insertion_interval_minutes: number | null
     max_properties: number | null
+    watermark_image_count: number | null
   }
 
   export type UserTrackedAgencyMinAggregateOutputType = {
@@ -10310,6 +10312,8 @@ export namespace Prisma {
     track_updated_listings: boolean | null
     auto_update_to_crm: boolean | null
     use_ai_batching: boolean | null
+    remove_watermark: boolean | null
+    watermark_image_count: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -10327,6 +10331,8 @@ export namespace Prisma {
     track_updated_listings: boolean | null
     auto_update_to_crm: boolean | null
     use_ai_batching: boolean | null
+    remove_watermark: boolean | null
+    watermark_image_count: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -10345,6 +10351,8 @@ export namespace Prisma {
     track_updated_listings: number
     auto_update_to_crm: number
     use_ai_batching: number
+    remove_watermark: number
+    watermark_image_count: number
     created_at: number
     updated_at: number
     _all: number
@@ -10355,12 +10363,14 @@ export namespace Prisma {
     concurrent_insertions?: true
     insertion_interval_minutes?: true
     max_properties?: true
+    watermark_image_count?: true
   }
 
   export type UserTrackedAgencySumAggregateInputType = {
     concurrent_insertions?: true
     insertion_interval_minutes?: true
     max_properties?: true
+    watermark_image_count?: true
   }
 
   export type UserTrackedAgencyMinAggregateInputType = {
@@ -10376,6 +10386,8 @@ export namespace Prisma {
     track_updated_listings?: true
     auto_update_to_crm?: true
     use_ai_batching?: true
+    remove_watermark?: true
+    watermark_image_count?: true
     created_at?: true
     updated_at?: true
   }
@@ -10393,6 +10405,8 @@ export namespace Prisma {
     track_updated_listings?: true
     auto_update_to_crm?: true
     use_ai_batching?: true
+    remove_watermark?: true
+    watermark_image_count?: true
     created_at?: true
     updated_at?: true
   }
@@ -10411,6 +10425,8 @@ export namespace Prisma {
     track_updated_listings?: true
     auto_update_to_crm?: true
     use_ai_batching?: true
+    remove_watermark?: true
+    watermark_image_count?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -10516,6 +10532,8 @@ export namespace Prisma {
     track_updated_listings: boolean
     auto_update_to_crm: boolean
     use_ai_batching: boolean
+    remove_watermark: boolean
+    watermark_image_count: number
     created_at: Date
     updated_at: Date
     _count: UserTrackedAgencyCountAggregateOutputType | null
@@ -10553,6 +10571,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -10576,6 +10596,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -10596,6 +10618,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -10616,11 +10640,13 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "concurrent_insertions" | "insertion_interval_minutes" | "max_properties" | "text_truncate_pieces" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "auto_update_to_crm" | "use_ai_batching" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
+  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "concurrent_insertions" | "insertion_interval_minutes" | "max_properties" | "text_truncate_pieces" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "auto_update_to_crm" | "use_ai_batching" | "remove_watermark" | "watermark_image_count" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
   export type UserTrackedAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
@@ -10659,6 +10685,8 @@ export namespace Prisma {
       track_updated_listings: boolean
       auto_update_to_crm: boolean
       use_ai_batching: boolean
+      remove_watermark: boolean
+      watermark_image_count: number
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["userTrackedAgency"]>
@@ -11101,6 +11129,8 @@ export namespace Prisma {
     readonly track_updated_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly auto_update_to_crm: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly use_ai_batching: FieldRef<"UserTrackedAgency", 'Boolean'>
+    readonly remove_watermark: FieldRef<"UserTrackedAgency", 'Boolean'>
+    readonly watermark_image_count: FieldRef<"UserTrackedAgency", 'Int'>
     readonly created_at: FieldRef<"UserTrackedAgency", 'DateTime'>
     readonly updated_at: FieldRef<"UserTrackedAgency", 'DateTime'>
   }
@@ -29587,1102 +29617,6 @@ export namespace Prisma {
 
 
   /**
-   * Model IntegrationProperty
-   */
-
-  export type AggregateIntegrationProperty = {
-    _count: IntegrationPropertyCountAggregateOutputType | null
-    _min: IntegrationPropertyMinAggregateOutputType | null
-    _max: IntegrationPropertyMaxAggregateOutputType | null
-  }
-
-  export type IntegrationPropertyMinAggregateOutputType = {
-    id: string | null
-    user_id: string | null
-    user_integration_settings_id: string | null
-    user_property_id: string | null
-    created_at: Date | null
-    updated_at: Date | null
-  }
-
-  export type IntegrationPropertyMaxAggregateOutputType = {
-    id: string | null
-    user_id: string | null
-    user_integration_settings_id: string | null
-    user_property_id: string | null
-    created_at: Date | null
-    updated_at: Date | null
-  }
-
-  export type IntegrationPropertyCountAggregateOutputType = {
-    id: number
-    user_id: number
-    user_integration_settings_id: number
-    user_property_id: number
-    images: number
-    created_at: number
-    updated_at: number
-    _all: number
-  }
-
-
-  export type IntegrationPropertyMinAggregateInputType = {
-    id?: true
-    user_id?: true
-    user_integration_settings_id?: true
-    user_property_id?: true
-    created_at?: true
-    updated_at?: true
-  }
-
-  export type IntegrationPropertyMaxAggregateInputType = {
-    id?: true
-    user_id?: true
-    user_integration_settings_id?: true
-    user_property_id?: true
-    created_at?: true
-    updated_at?: true
-  }
-
-  export type IntegrationPropertyCountAggregateInputType = {
-    id?: true
-    user_id?: true
-    user_integration_settings_id?: true
-    user_property_id?: true
-    images?: true
-    created_at?: true
-    updated_at?: true
-    _all?: true
-  }
-
-  export type IntegrationPropertyAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which IntegrationProperty to aggregate.
-     */
-    where?: IntegrationPropertyWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of IntegrationProperties to fetch.
-     */
-    orderBy?: IntegrationPropertyOrderByWithRelationInput | IntegrationPropertyOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: IntegrationPropertyWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` IntegrationProperties from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` IntegrationProperties.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned IntegrationProperties
-    **/
-    _count?: true | IntegrationPropertyCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: IntegrationPropertyMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: IntegrationPropertyMaxAggregateInputType
-  }
-
-  export type GetIntegrationPropertyAggregateType<T extends IntegrationPropertyAggregateArgs> = {
-        [P in keyof T & keyof AggregateIntegrationProperty]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateIntegrationProperty[P]>
-      : GetScalarType<T[P], AggregateIntegrationProperty[P]>
-  }
-
-
-
-
-  export type IntegrationPropertyGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: IntegrationPropertyWhereInput
-    orderBy?: IntegrationPropertyOrderByWithAggregationInput | IntegrationPropertyOrderByWithAggregationInput[]
-    by: IntegrationPropertyScalarFieldEnum[] | IntegrationPropertyScalarFieldEnum
-    having?: IntegrationPropertyScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: IntegrationPropertyCountAggregateInputType | true
-    _min?: IntegrationPropertyMinAggregateInputType
-    _max?: IntegrationPropertyMaxAggregateInputType
-  }
-
-  export type IntegrationPropertyGroupByOutputType = {
-    id: string
-    user_id: string
-    user_integration_settings_id: string
-    user_property_id: string
-    images: JsonValue | null
-    created_at: Date
-    updated_at: Date
-    _count: IntegrationPropertyCountAggregateOutputType | null
-    _min: IntegrationPropertyMinAggregateOutputType | null
-    _max: IntegrationPropertyMaxAggregateOutputType | null
-  }
-
-  type GetIntegrationPropertyGroupByPayload<T extends IntegrationPropertyGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<IntegrationPropertyGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof IntegrationPropertyGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], IntegrationPropertyGroupByOutputType[P]>
-            : GetScalarType<T[P], IntegrationPropertyGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type IntegrationPropertySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    user_id?: boolean
-    user_integration_settings_id?: boolean
-    user_property_id?: boolean
-    images?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
-    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["integrationProperty"]>
-
-  export type IntegrationPropertySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    user_id?: boolean
-    user_integration_settings_id?: boolean
-    user_property_id?: boolean
-    images?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
-    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["integrationProperty"]>
-
-  export type IntegrationPropertySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    user_id?: boolean
-    user_integration_settings_id?: boolean
-    user_property_id?: boolean
-    images?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
-    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["integrationProperty"]>
-
-  export type IntegrationPropertySelectScalar = {
-    id?: boolean
-    user_id?: boolean
-    user_integration_settings_id?: boolean
-    user_property_id?: boolean
-    images?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-  }
-
-  export type IntegrationPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "user_integration_settings_id" | "user_property_id" | "images" | "created_at" | "updated_at", ExtArgs["result"]["integrationProperty"]>
-  export type IntegrationPropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
-    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
-  }
-  export type IntegrationPropertyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
-    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
-  }
-  export type IntegrationPropertyIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
-    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
-  }
-
-  export type $IntegrationPropertyPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "IntegrationProperty"
-    objects: {
-      user: Prisma.$UserPayload<ExtArgs>
-      user_integration_settings: Prisma.$UserIntegrationSettingsPayload<ExtArgs>
-      user_property: Prisma.$UserPropertyPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      user_id: string
-      user_integration_settings_id: string
-      user_property_id: string
-      images: Prisma.JsonValue | null
-      created_at: Date
-      updated_at: Date
-    }, ExtArgs["result"]["integrationProperty"]>
-    composites: {}
-  }
-
-  type IntegrationPropertyGetPayload<S extends boolean | null | undefined | IntegrationPropertyDefaultArgs> = $Result.GetResult<Prisma.$IntegrationPropertyPayload, S>
-
-  type IntegrationPropertyCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<IntegrationPropertyFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: IntegrationPropertyCountAggregateInputType | true
-    }
-
-  export interface IntegrationPropertyDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['IntegrationProperty'], meta: { name: 'IntegrationProperty' } }
-    /**
-     * Find zero or one IntegrationProperty that matches the filter.
-     * @param {IntegrationPropertyFindUniqueArgs} args - Arguments to find a IntegrationProperty
-     * @example
-     * // Get one IntegrationProperty
-     * const integrationProperty = await prisma.integrationProperty.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends IntegrationPropertyFindUniqueArgs>(args: SelectSubset<T, IntegrationPropertyFindUniqueArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one IntegrationProperty that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {IntegrationPropertyFindUniqueOrThrowArgs} args - Arguments to find a IntegrationProperty
-     * @example
-     * // Get one IntegrationProperty
-     * const integrationProperty = await prisma.integrationProperty.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends IntegrationPropertyFindUniqueOrThrowArgs>(args: SelectSubset<T, IntegrationPropertyFindUniqueOrThrowArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first IntegrationProperty that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IntegrationPropertyFindFirstArgs} args - Arguments to find a IntegrationProperty
-     * @example
-     * // Get one IntegrationProperty
-     * const integrationProperty = await prisma.integrationProperty.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends IntegrationPropertyFindFirstArgs>(args?: SelectSubset<T, IntegrationPropertyFindFirstArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first IntegrationProperty that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IntegrationPropertyFindFirstOrThrowArgs} args - Arguments to find a IntegrationProperty
-     * @example
-     * // Get one IntegrationProperty
-     * const integrationProperty = await prisma.integrationProperty.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends IntegrationPropertyFindFirstOrThrowArgs>(args?: SelectSubset<T, IntegrationPropertyFindFirstOrThrowArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more IntegrationProperties that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IntegrationPropertyFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all IntegrationProperties
-     * const integrationProperties = await prisma.integrationProperty.findMany()
-     * 
-     * // Get first 10 IntegrationProperties
-     * const integrationProperties = await prisma.integrationProperty.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const integrationPropertyWithIdOnly = await prisma.integrationProperty.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends IntegrationPropertyFindManyArgs>(args?: SelectSubset<T, IntegrationPropertyFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a IntegrationProperty.
-     * @param {IntegrationPropertyCreateArgs} args - Arguments to create a IntegrationProperty.
-     * @example
-     * // Create one IntegrationProperty
-     * const IntegrationProperty = await prisma.integrationProperty.create({
-     *   data: {
-     *     // ... data to create a IntegrationProperty
-     *   }
-     * })
-     * 
-     */
-    create<T extends IntegrationPropertyCreateArgs>(args: SelectSubset<T, IntegrationPropertyCreateArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many IntegrationProperties.
-     * @param {IntegrationPropertyCreateManyArgs} args - Arguments to create many IntegrationProperties.
-     * @example
-     * // Create many IntegrationProperties
-     * const integrationProperty = await prisma.integrationProperty.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends IntegrationPropertyCreateManyArgs>(args?: SelectSubset<T, IntegrationPropertyCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many IntegrationProperties and returns the data saved in the database.
-     * @param {IntegrationPropertyCreateManyAndReturnArgs} args - Arguments to create many IntegrationProperties.
-     * @example
-     * // Create many IntegrationProperties
-     * const integrationProperty = await prisma.integrationProperty.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many IntegrationProperties and only return the `id`
-     * const integrationPropertyWithIdOnly = await prisma.integrationProperty.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends IntegrationPropertyCreateManyAndReturnArgs>(args?: SelectSubset<T, IntegrationPropertyCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a IntegrationProperty.
-     * @param {IntegrationPropertyDeleteArgs} args - Arguments to delete one IntegrationProperty.
-     * @example
-     * // Delete one IntegrationProperty
-     * const IntegrationProperty = await prisma.integrationProperty.delete({
-     *   where: {
-     *     // ... filter to delete one IntegrationProperty
-     *   }
-     * })
-     * 
-     */
-    delete<T extends IntegrationPropertyDeleteArgs>(args: SelectSubset<T, IntegrationPropertyDeleteArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one IntegrationProperty.
-     * @param {IntegrationPropertyUpdateArgs} args - Arguments to update one IntegrationProperty.
-     * @example
-     * // Update one IntegrationProperty
-     * const integrationProperty = await prisma.integrationProperty.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends IntegrationPropertyUpdateArgs>(args: SelectSubset<T, IntegrationPropertyUpdateArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more IntegrationProperties.
-     * @param {IntegrationPropertyDeleteManyArgs} args - Arguments to filter IntegrationProperties to delete.
-     * @example
-     * // Delete a few IntegrationProperties
-     * const { count } = await prisma.integrationProperty.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends IntegrationPropertyDeleteManyArgs>(args?: SelectSubset<T, IntegrationPropertyDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more IntegrationProperties.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IntegrationPropertyUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many IntegrationProperties
-     * const integrationProperty = await prisma.integrationProperty.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends IntegrationPropertyUpdateManyArgs>(args: SelectSubset<T, IntegrationPropertyUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more IntegrationProperties and returns the data updated in the database.
-     * @param {IntegrationPropertyUpdateManyAndReturnArgs} args - Arguments to update many IntegrationProperties.
-     * @example
-     * // Update many IntegrationProperties
-     * const integrationProperty = await prisma.integrationProperty.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more IntegrationProperties and only return the `id`
-     * const integrationPropertyWithIdOnly = await prisma.integrationProperty.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends IntegrationPropertyUpdateManyAndReturnArgs>(args: SelectSubset<T, IntegrationPropertyUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one IntegrationProperty.
-     * @param {IntegrationPropertyUpsertArgs} args - Arguments to update or create a IntegrationProperty.
-     * @example
-     * // Update or create a IntegrationProperty
-     * const integrationProperty = await prisma.integrationProperty.upsert({
-     *   create: {
-     *     // ... data to create a IntegrationProperty
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the IntegrationProperty we want to update
-     *   }
-     * })
-     */
-    upsert<T extends IntegrationPropertyUpsertArgs>(args: SelectSubset<T, IntegrationPropertyUpsertArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of IntegrationProperties.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IntegrationPropertyCountArgs} args - Arguments to filter IntegrationProperties to count.
-     * @example
-     * // Count the number of IntegrationProperties
-     * const count = await prisma.integrationProperty.count({
-     *   where: {
-     *     // ... the filter for the IntegrationProperties we want to count
-     *   }
-     * })
-    **/
-    count<T extends IntegrationPropertyCountArgs>(
-      args?: Subset<T, IntegrationPropertyCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], IntegrationPropertyCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a IntegrationProperty.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IntegrationPropertyAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends IntegrationPropertyAggregateArgs>(args: Subset<T, IntegrationPropertyAggregateArgs>): Prisma.PrismaPromise<GetIntegrationPropertyAggregateType<T>>
-
-    /**
-     * Group by IntegrationProperty.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {IntegrationPropertyGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends IntegrationPropertyGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: IntegrationPropertyGroupByArgs['orderBy'] }
-        : { orderBy?: IntegrationPropertyGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, IntegrationPropertyGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetIntegrationPropertyGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the IntegrationProperty model
-   */
-  readonly fields: IntegrationPropertyFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for IntegrationProperty.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__IntegrationPropertyClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    user_integration_settings<T extends UserIntegrationSettingsDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserIntegrationSettingsDefaultArgs<ExtArgs>>): Prisma__UserIntegrationSettingsClient<$Result.GetResult<Prisma.$UserIntegrationSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    user_property<T extends UserPropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserPropertyDefaultArgs<ExtArgs>>): Prisma__UserPropertyClient<$Result.GetResult<Prisma.$UserPropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the IntegrationProperty model
-   */
-  interface IntegrationPropertyFieldRefs {
-    readonly id: FieldRef<"IntegrationProperty", 'String'>
-    readonly user_id: FieldRef<"IntegrationProperty", 'String'>
-    readonly user_integration_settings_id: FieldRef<"IntegrationProperty", 'String'>
-    readonly user_property_id: FieldRef<"IntegrationProperty", 'String'>
-    readonly images: FieldRef<"IntegrationProperty", 'Json'>
-    readonly created_at: FieldRef<"IntegrationProperty", 'DateTime'>
-    readonly updated_at: FieldRef<"IntegrationProperty", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * IntegrationProperty findUnique
-   */
-  export type IntegrationPropertyFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IntegrationProperty
-     */
-    select?: IntegrationPropertySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the IntegrationProperty
-     */
-    omit?: IntegrationPropertyOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: IntegrationPropertyInclude<ExtArgs> | null
-    /**
-     * Filter, which IntegrationProperty to fetch.
-     */
-    where: IntegrationPropertyWhereUniqueInput
-  }
-
-  /**
-   * IntegrationProperty findUniqueOrThrow
-   */
-  export type IntegrationPropertyFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IntegrationProperty
-     */
-    select?: IntegrationPropertySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the IntegrationProperty
-     */
-    omit?: IntegrationPropertyOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: IntegrationPropertyInclude<ExtArgs> | null
-    /**
-     * Filter, which IntegrationProperty to fetch.
-     */
-    where: IntegrationPropertyWhereUniqueInput
-  }
-
-  /**
-   * IntegrationProperty findFirst
-   */
-  export type IntegrationPropertyFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IntegrationProperty
-     */
-    select?: IntegrationPropertySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the IntegrationProperty
-     */
-    omit?: IntegrationPropertyOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: IntegrationPropertyInclude<ExtArgs> | null
-    /**
-     * Filter, which IntegrationProperty to fetch.
-     */
-    where?: IntegrationPropertyWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of IntegrationProperties to fetch.
-     */
-    orderBy?: IntegrationPropertyOrderByWithRelationInput | IntegrationPropertyOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for IntegrationProperties.
-     */
-    cursor?: IntegrationPropertyWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` IntegrationProperties from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` IntegrationProperties.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of IntegrationProperties.
-     */
-    distinct?: IntegrationPropertyScalarFieldEnum | IntegrationPropertyScalarFieldEnum[]
-  }
-
-  /**
-   * IntegrationProperty findFirstOrThrow
-   */
-  export type IntegrationPropertyFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IntegrationProperty
-     */
-    select?: IntegrationPropertySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the IntegrationProperty
-     */
-    omit?: IntegrationPropertyOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: IntegrationPropertyInclude<ExtArgs> | null
-    /**
-     * Filter, which IntegrationProperty to fetch.
-     */
-    where?: IntegrationPropertyWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of IntegrationProperties to fetch.
-     */
-    orderBy?: IntegrationPropertyOrderByWithRelationInput | IntegrationPropertyOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for IntegrationProperties.
-     */
-    cursor?: IntegrationPropertyWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` IntegrationProperties from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` IntegrationProperties.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of IntegrationProperties.
-     */
-    distinct?: IntegrationPropertyScalarFieldEnum | IntegrationPropertyScalarFieldEnum[]
-  }
-
-  /**
-   * IntegrationProperty findMany
-   */
-  export type IntegrationPropertyFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IntegrationProperty
-     */
-    select?: IntegrationPropertySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the IntegrationProperty
-     */
-    omit?: IntegrationPropertyOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: IntegrationPropertyInclude<ExtArgs> | null
-    /**
-     * Filter, which IntegrationProperties to fetch.
-     */
-    where?: IntegrationPropertyWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of IntegrationProperties to fetch.
-     */
-    orderBy?: IntegrationPropertyOrderByWithRelationInput | IntegrationPropertyOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing IntegrationProperties.
-     */
-    cursor?: IntegrationPropertyWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` IntegrationProperties from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` IntegrationProperties.
-     */
-    skip?: number
-    distinct?: IntegrationPropertyScalarFieldEnum | IntegrationPropertyScalarFieldEnum[]
-  }
-
-  /**
-   * IntegrationProperty create
-   */
-  export type IntegrationPropertyCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IntegrationProperty
-     */
-    select?: IntegrationPropertySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the IntegrationProperty
-     */
-    omit?: IntegrationPropertyOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: IntegrationPropertyInclude<ExtArgs> | null
-    /**
-     * The data needed to create a IntegrationProperty.
-     */
-    data: XOR<IntegrationPropertyCreateInput, IntegrationPropertyUncheckedCreateInput>
-  }
-
-  /**
-   * IntegrationProperty createMany
-   */
-  export type IntegrationPropertyCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many IntegrationProperties.
-     */
-    data: IntegrationPropertyCreateManyInput | IntegrationPropertyCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * IntegrationProperty createManyAndReturn
-   */
-  export type IntegrationPropertyCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IntegrationProperty
-     */
-    select?: IntegrationPropertySelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the IntegrationProperty
-     */
-    omit?: IntegrationPropertyOmit<ExtArgs> | null
-    /**
-     * The data used to create many IntegrationProperties.
-     */
-    data: IntegrationPropertyCreateManyInput | IntegrationPropertyCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: IntegrationPropertyIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * IntegrationProperty update
-   */
-  export type IntegrationPropertyUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IntegrationProperty
-     */
-    select?: IntegrationPropertySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the IntegrationProperty
-     */
-    omit?: IntegrationPropertyOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: IntegrationPropertyInclude<ExtArgs> | null
-    /**
-     * The data needed to update a IntegrationProperty.
-     */
-    data: XOR<IntegrationPropertyUpdateInput, IntegrationPropertyUncheckedUpdateInput>
-    /**
-     * Choose, which IntegrationProperty to update.
-     */
-    where: IntegrationPropertyWhereUniqueInput
-  }
-
-  /**
-   * IntegrationProperty updateMany
-   */
-  export type IntegrationPropertyUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update IntegrationProperties.
-     */
-    data: XOR<IntegrationPropertyUpdateManyMutationInput, IntegrationPropertyUncheckedUpdateManyInput>
-    /**
-     * Filter which IntegrationProperties to update
-     */
-    where?: IntegrationPropertyWhereInput
-    /**
-     * Limit how many IntegrationProperties to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * IntegrationProperty updateManyAndReturn
-   */
-  export type IntegrationPropertyUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IntegrationProperty
-     */
-    select?: IntegrationPropertySelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the IntegrationProperty
-     */
-    omit?: IntegrationPropertyOmit<ExtArgs> | null
-    /**
-     * The data used to update IntegrationProperties.
-     */
-    data: XOR<IntegrationPropertyUpdateManyMutationInput, IntegrationPropertyUncheckedUpdateManyInput>
-    /**
-     * Filter which IntegrationProperties to update
-     */
-    where?: IntegrationPropertyWhereInput
-    /**
-     * Limit how many IntegrationProperties to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: IntegrationPropertyIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * IntegrationProperty upsert
-   */
-  export type IntegrationPropertyUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IntegrationProperty
-     */
-    select?: IntegrationPropertySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the IntegrationProperty
-     */
-    omit?: IntegrationPropertyOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: IntegrationPropertyInclude<ExtArgs> | null
-    /**
-     * The filter to search for the IntegrationProperty to update in case it exists.
-     */
-    where: IntegrationPropertyWhereUniqueInput
-    /**
-     * In case the IntegrationProperty found by the `where` argument doesn't exist, create a new IntegrationProperty with this data.
-     */
-    create: XOR<IntegrationPropertyCreateInput, IntegrationPropertyUncheckedCreateInput>
-    /**
-     * In case the IntegrationProperty was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<IntegrationPropertyUpdateInput, IntegrationPropertyUncheckedUpdateInput>
-  }
-
-  /**
-   * IntegrationProperty delete
-   */
-  export type IntegrationPropertyDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IntegrationProperty
-     */
-    select?: IntegrationPropertySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the IntegrationProperty
-     */
-    omit?: IntegrationPropertyOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: IntegrationPropertyInclude<ExtArgs> | null
-    /**
-     * Filter which IntegrationProperty to delete.
-     */
-    where: IntegrationPropertyWhereUniqueInput
-  }
-
-  /**
-   * IntegrationProperty deleteMany
-   */
-  export type IntegrationPropertyDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which IntegrationProperties to delete
-     */
-    where?: IntegrationPropertyWhereInput
-    /**
-     * Limit how many IntegrationProperties to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * IntegrationProperty without action
-   */
-  export type IntegrationPropertyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IntegrationProperty
-     */
-    select?: IntegrationPropertySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the IntegrationProperty
-     */
-    omit?: IntegrationPropertyOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: IntegrationPropertyInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model PropertySourceLink
    */
 
@@ -34629,6 +33563,1102 @@ export namespace Prisma {
 
 
   /**
+   * Model IntegrationProperty
+   */
+
+  export type AggregateIntegrationProperty = {
+    _count: IntegrationPropertyCountAggregateOutputType | null
+    _min: IntegrationPropertyMinAggregateOutputType | null
+    _max: IntegrationPropertyMaxAggregateOutputType | null
+  }
+
+  export type IntegrationPropertyMinAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    user_integration_settings_id: string | null
+    user_property_id: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type IntegrationPropertyMaxAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    user_integration_settings_id: string | null
+    user_property_id: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type IntegrationPropertyCountAggregateOutputType = {
+    id: number
+    user_id: number
+    user_integration_settings_id: number
+    user_property_id: number
+    images: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type IntegrationPropertyMinAggregateInputType = {
+    id?: true
+    user_id?: true
+    user_integration_settings_id?: true
+    user_property_id?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type IntegrationPropertyMaxAggregateInputType = {
+    id?: true
+    user_id?: true
+    user_integration_settings_id?: true
+    user_property_id?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type IntegrationPropertyCountAggregateInputType = {
+    id?: true
+    user_id?: true
+    user_integration_settings_id?: true
+    user_property_id?: true
+    images?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type IntegrationPropertyAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which IntegrationProperty to aggregate.
+     */
+    where?: IntegrationPropertyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IntegrationProperties to fetch.
+     */
+    orderBy?: IntegrationPropertyOrderByWithRelationInput | IntegrationPropertyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: IntegrationPropertyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IntegrationProperties from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IntegrationProperties.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned IntegrationProperties
+    **/
+    _count?: true | IntegrationPropertyCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: IntegrationPropertyMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: IntegrationPropertyMaxAggregateInputType
+  }
+
+  export type GetIntegrationPropertyAggregateType<T extends IntegrationPropertyAggregateArgs> = {
+        [P in keyof T & keyof AggregateIntegrationProperty]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateIntegrationProperty[P]>
+      : GetScalarType<T[P], AggregateIntegrationProperty[P]>
+  }
+
+
+
+
+  export type IntegrationPropertyGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: IntegrationPropertyWhereInput
+    orderBy?: IntegrationPropertyOrderByWithAggregationInput | IntegrationPropertyOrderByWithAggregationInput[]
+    by: IntegrationPropertyScalarFieldEnum[] | IntegrationPropertyScalarFieldEnum
+    having?: IntegrationPropertyScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: IntegrationPropertyCountAggregateInputType | true
+    _min?: IntegrationPropertyMinAggregateInputType
+    _max?: IntegrationPropertyMaxAggregateInputType
+  }
+
+  export type IntegrationPropertyGroupByOutputType = {
+    id: string
+    user_id: string
+    user_integration_settings_id: string
+    user_property_id: string
+    images: JsonValue | null
+    created_at: Date
+    updated_at: Date
+    _count: IntegrationPropertyCountAggregateOutputType | null
+    _min: IntegrationPropertyMinAggregateOutputType | null
+    _max: IntegrationPropertyMaxAggregateOutputType | null
+  }
+
+  type GetIntegrationPropertyGroupByPayload<T extends IntegrationPropertyGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<IntegrationPropertyGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof IntegrationPropertyGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], IntegrationPropertyGroupByOutputType[P]>
+            : GetScalarType<T[P], IntegrationPropertyGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type IntegrationPropertySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    user_integration_settings_id?: boolean
+    user_property_id?: boolean
+    images?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["integrationProperty"]>
+
+  export type IntegrationPropertySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    user_integration_settings_id?: boolean
+    user_property_id?: boolean
+    images?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["integrationProperty"]>
+
+  export type IntegrationPropertySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    user_integration_settings_id?: boolean
+    user_property_id?: boolean
+    images?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["integrationProperty"]>
+
+  export type IntegrationPropertySelectScalar = {
+    id?: boolean
+    user_id?: boolean
+    user_integration_settings_id?: boolean
+    user_property_id?: boolean
+    images?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type IntegrationPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "user_integration_settings_id" | "user_property_id" | "images" | "created_at" | "updated_at", ExtArgs["result"]["integrationProperty"]>
+  export type IntegrationPropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
+  }
+  export type IntegrationPropertyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
+  }
+  export type IntegrationPropertyIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
+  }
+
+  export type $IntegrationPropertyPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "IntegrationProperty"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      user_integration_settings: Prisma.$UserIntegrationSettingsPayload<ExtArgs>
+      user_property: Prisma.$UserPropertyPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      user_id: string
+      user_integration_settings_id: string
+      user_property_id: string
+      images: Prisma.JsonValue | null
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["integrationProperty"]>
+    composites: {}
+  }
+
+  type IntegrationPropertyGetPayload<S extends boolean | null | undefined | IntegrationPropertyDefaultArgs> = $Result.GetResult<Prisma.$IntegrationPropertyPayload, S>
+
+  type IntegrationPropertyCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<IntegrationPropertyFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: IntegrationPropertyCountAggregateInputType | true
+    }
+
+  export interface IntegrationPropertyDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['IntegrationProperty'], meta: { name: 'IntegrationProperty' } }
+    /**
+     * Find zero or one IntegrationProperty that matches the filter.
+     * @param {IntegrationPropertyFindUniqueArgs} args - Arguments to find a IntegrationProperty
+     * @example
+     * // Get one IntegrationProperty
+     * const integrationProperty = await prisma.integrationProperty.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends IntegrationPropertyFindUniqueArgs>(args: SelectSubset<T, IntegrationPropertyFindUniqueArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one IntegrationProperty that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {IntegrationPropertyFindUniqueOrThrowArgs} args - Arguments to find a IntegrationProperty
+     * @example
+     * // Get one IntegrationProperty
+     * const integrationProperty = await prisma.integrationProperty.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends IntegrationPropertyFindUniqueOrThrowArgs>(args: SelectSubset<T, IntegrationPropertyFindUniqueOrThrowArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first IntegrationProperty that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IntegrationPropertyFindFirstArgs} args - Arguments to find a IntegrationProperty
+     * @example
+     * // Get one IntegrationProperty
+     * const integrationProperty = await prisma.integrationProperty.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends IntegrationPropertyFindFirstArgs>(args?: SelectSubset<T, IntegrationPropertyFindFirstArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first IntegrationProperty that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IntegrationPropertyFindFirstOrThrowArgs} args - Arguments to find a IntegrationProperty
+     * @example
+     * // Get one IntegrationProperty
+     * const integrationProperty = await prisma.integrationProperty.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends IntegrationPropertyFindFirstOrThrowArgs>(args?: SelectSubset<T, IntegrationPropertyFindFirstOrThrowArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more IntegrationProperties that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IntegrationPropertyFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all IntegrationProperties
+     * const integrationProperties = await prisma.integrationProperty.findMany()
+     * 
+     * // Get first 10 IntegrationProperties
+     * const integrationProperties = await prisma.integrationProperty.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const integrationPropertyWithIdOnly = await prisma.integrationProperty.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends IntegrationPropertyFindManyArgs>(args?: SelectSubset<T, IntegrationPropertyFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a IntegrationProperty.
+     * @param {IntegrationPropertyCreateArgs} args - Arguments to create a IntegrationProperty.
+     * @example
+     * // Create one IntegrationProperty
+     * const IntegrationProperty = await prisma.integrationProperty.create({
+     *   data: {
+     *     // ... data to create a IntegrationProperty
+     *   }
+     * })
+     * 
+     */
+    create<T extends IntegrationPropertyCreateArgs>(args: SelectSubset<T, IntegrationPropertyCreateArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many IntegrationProperties.
+     * @param {IntegrationPropertyCreateManyArgs} args - Arguments to create many IntegrationProperties.
+     * @example
+     * // Create many IntegrationProperties
+     * const integrationProperty = await prisma.integrationProperty.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends IntegrationPropertyCreateManyArgs>(args?: SelectSubset<T, IntegrationPropertyCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many IntegrationProperties and returns the data saved in the database.
+     * @param {IntegrationPropertyCreateManyAndReturnArgs} args - Arguments to create many IntegrationProperties.
+     * @example
+     * // Create many IntegrationProperties
+     * const integrationProperty = await prisma.integrationProperty.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many IntegrationProperties and only return the `id`
+     * const integrationPropertyWithIdOnly = await prisma.integrationProperty.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends IntegrationPropertyCreateManyAndReturnArgs>(args?: SelectSubset<T, IntegrationPropertyCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a IntegrationProperty.
+     * @param {IntegrationPropertyDeleteArgs} args - Arguments to delete one IntegrationProperty.
+     * @example
+     * // Delete one IntegrationProperty
+     * const IntegrationProperty = await prisma.integrationProperty.delete({
+     *   where: {
+     *     // ... filter to delete one IntegrationProperty
+     *   }
+     * })
+     * 
+     */
+    delete<T extends IntegrationPropertyDeleteArgs>(args: SelectSubset<T, IntegrationPropertyDeleteArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one IntegrationProperty.
+     * @param {IntegrationPropertyUpdateArgs} args - Arguments to update one IntegrationProperty.
+     * @example
+     * // Update one IntegrationProperty
+     * const integrationProperty = await prisma.integrationProperty.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends IntegrationPropertyUpdateArgs>(args: SelectSubset<T, IntegrationPropertyUpdateArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more IntegrationProperties.
+     * @param {IntegrationPropertyDeleteManyArgs} args - Arguments to filter IntegrationProperties to delete.
+     * @example
+     * // Delete a few IntegrationProperties
+     * const { count } = await prisma.integrationProperty.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends IntegrationPropertyDeleteManyArgs>(args?: SelectSubset<T, IntegrationPropertyDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more IntegrationProperties.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IntegrationPropertyUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many IntegrationProperties
+     * const integrationProperty = await prisma.integrationProperty.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends IntegrationPropertyUpdateManyArgs>(args: SelectSubset<T, IntegrationPropertyUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more IntegrationProperties and returns the data updated in the database.
+     * @param {IntegrationPropertyUpdateManyAndReturnArgs} args - Arguments to update many IntegrationProperties.
+     * @example
+     * // Update many IntegrationProperties
+     * const integrationProperty = await prisma.integrationProperty.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more IntegrationProperties and only return the `id`
+     * const integrationPropertyWithIdOnly = await prisma.integrationProperty.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends IntegrationPropertyUpdateManyAndReturnArgs>(args: SelectSubset<T, IntegrationPropertyUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one IntegrationProperty.
+     * @param {IntegrationPropertyUpsertArgs} args - Arguments to update or create a IntegrationProperty.
+     * @example
+     * // Update or create a IntegrationProperty
+     * const integrationProperty = await prisma.integrationProperty.upsert({
+     *   create: {
+     *     // ... data to create a IntegrationProperty
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the IntegrationProperty we want to update
+     *   }
+     * })
+     */
+    upsert<T extends IntegrationPropertyUpsertArgs>(args: SelectSubset<T, IntegrationPropertyUpsertArgs<ExtArgs>>): Prisma__IntegrationPropertyClient<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of IntegrationProperties.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IntegrationPropertyCountArgs} args - Arguments to filter IntegrationProperties to count.
+     * @example
+     * // Count the number of IntegrationProperties
+     * const count = await prisma.integrationProperty.count({
+     *   where: {
+     *     // ... the filter for the IntegrationProperties we want to count
+     *   }
+     * })
+    **/
+    count<T extends IntegrationPropertyCountArgs>(
+      args?: Subset<T, IntegrationPropertyCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], IntegrationPropertyCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a IntegrationProperty.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IntegrationPropertyAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends IntegrationPropertyAggregateArgs>(args: Subset<T, IntegrationPropertyAggregateArgs>): Prisma.PrismaPromise<GetIntegrationPropertyAggregateType<T>>
+
+    /**
+     * Group by IntegrationProperty.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IntegrationPropertyGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends IntegrationPropertyGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: IntegrationPropertyGroupByArgs['orderBy'] }
+        : { orderBy?: IntegrationPropertyGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, IntegrationPropertyGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetIntegrationPropertyGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the IntegrationProperty model
+   */
+  readonly fields: IntegrationPropertyFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for IntegrationProperty.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__IntegrationPropertyClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user_integration_settings<T extends UserIntegrationSettingsDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserIntegrationSettingsDefaultArgs<ExtArgs>>): Prisma__UserIntegrationSettingsClient<$Result.GetResult<Prisma.$UserIntegrationSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user_property<T extends UserPropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserPropertyDefaultArgs<ExtArgs>>): Prisma__UserPropertyClient<$Result.GetResult<Prisma.$UserPropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the IntegrationProperty model
+   */
+  interface IntegrationPropertyFieldRefs {
+    readonly id: FieldRef<"IntegrationProperty", 'String'>
+    readonly user_id: FieldRef<"IntegrationProperty", 'String'>
+    readonly user_integration_settings_id: FieldRef<"IntegrationProperty", 'String'>
+    readonly user_property_id: FieldRef<"IntegrationProperty", 'String'>
+    readonly images: FieldRef<"IntegrationProperty", 'Json'>
+    readonly created_at: FieldRef<"IntegrationProperty", 'DateTime'>
+    readonly updated_at: FieldRef<"IntegrationProperty", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * IntegrationProperty findUnique
+   */
+  export type IntegrationPropertyFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IntegrationProperty
+     */
+    select?: IntegrationPropertySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IntegrationProperty
+     */
+    omit?: IntegrationPropertyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IntegrationPropertyInclude<ExtArgs> | null
+    /**
+     * Filter, which IntegrationProperty to fetch.
+     */
+    where: IntegrationPropertyWhereUniqueInput
+  }
+
+  /**
+   * IntegrationProperty findUniqueOrThrow
+   */
+  export type IntegrationPropertyFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IntegrationProperty
+     */
+    select?: IntegrationPropertySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IntegrationProperty
+     */
+    omit?: IntegrationPropertyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IntegrationPropertyInclude<ExtArgs> | null
+    /**
+     * Filter, which IntegrationProperty to fetch.
+     */
+    where: IntegrationPropertyWhereUniqueInput
+  }
+
+  /**
+   * IntegrationProperty findFirst
+   */
+  export type IntegrationPropertyFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IntegrationProperty
+     */
+    select?: IntegrationPropertySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IntegrationProperty
+     */
+    omit?: IntegrationPropertyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IntegrationPropertyInclude<ExtArgs> | null
+    /**
+     * Filter, which IntegrationProperty to fetch.
+     */
+    where?: IntegrationPropertyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IntegrationProperties to fetch.
+     */
+    orderBy?: IntegrationPropertyOrderByWithRelationInput | IntegrationPropertyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for IntegrationProperties.
+     */
+    cursor?: IntegrationPropertyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IntegrationProperties from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IntegrationProperties.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of IntegrationProperties.
+     */
+    distinct?: IntegrationPropertyScalarFieldEnum | IntegrationPropertyScalarFieldEnum[]
+  }
+
+  /**
+   * IntegrationProperty findFirstOrThrow
+   */
+  export type IntegrationPropertyFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IntegrationProperty
+     */
+    select?: IntegrationPropertySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IntegrationProperty
+     */
+    omit?: IntegrationPropertyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IntegrationPropertyInclude<ExtArgs> | null
+    /**
+     * Filter, which IntegrationProperty to fetch.
+     */
+    where?: IntegrationPropertyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IntegrationProperties to fetch.
+     */
+    orderBy?: IntegrationPropertyOrderByWithRelationInput | IntegrationPropertyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for IntegrationProperties.
+     */
+    cursor?: IntegrationPropertyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IntegrationProperties from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IntegrationProperties.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of IntegrationProperties.
+     */
+    distinct?: IntegrationPropertyScalarFieldEnum | IntegrationPropertyScalarFieldEnum[]
+  }
+
+  /**
+   * IntegrationProperty findMany
+   */
+  export type IntegrationPropertyFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IntegrationProperty
+     */
+    select?: IntegrationPropertySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IntegrationProperty
+     */
+    omit?: IntegrationPropertyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IntegrationPropertyInclude<ExtArgs> | null
+    /**
+     * Filter, which IntegrationProperties to fetch.
+     */
+    where?: IntegrationPropertyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IntegrationProperties to fetch.
+     */
+    orderBy?: IntegrationPropertyOrderByWithRelationInput | IntegrationPropertyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing IntegrationProperties.
+     */
+    cursor?: IntegrationPropertyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IntegrationProperties from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IntegrationProperties.
+     */
+    skip?: number
+    distinct?: IntegrationPropertyScalarFieldEnum | IntegrationPropertyScalarFieldEnum[]
+  }
+
+  /**
+   * IntegrationProperty create
+   */
+  export type IntegrationPropertyCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IntegrationProperty
+     */
+    select?: IntegrationPropertySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IntegrationProperty
+     */
+    omit?: IntegrationPropertyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IntegrationPropertyInclude<ExtArgs> | null
+    /**
+     * The data needed to create a IntegrationProperty.
+     */
+    data: XOR<IntegrationPropertyCreateInput, IntegrationPropertyUncheckedCreateInput>
+  }
+
+  /**
+   * IntegrationProperty createMany
+   */
+  export type IntegrationPropertyCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many IntegrationProperties.
+     */
+    data: IntegrationPropertyCreateManyInput | IntegrationPropertyCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * IntegrationProperty createManyAndReturn
+   */
+  export type IntegrationPropertyCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IntegrationProperty
+     */
+    select?: IntegrationPropertySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the IntegrationProperty
+     */
+    omit?: IntegrationPropertyOmit<ExtArgs> | null
+    /**
+     * The data used to create many IntegrationProperties.
+     */
+    data: IntegrationPropertyCreateManyInput | IntegrationPropertyCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IntegrationPropertyIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * IntegrationProperty update
+   */
+  export type IntegrationPropertyUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IntegrationProperty
+     */
+    select?: IntegrationPropertySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IntegrationProperty
+     */
+    omit?: IntegrationPropertyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IntegrationPropertyInclude<ExtArgs> | null
+    /**
+     * The data needed to update a IntegrationProperty.
+     */
+    data: XOR<IntegrationPropertyUpdateInput, IntegrationPropertyUncheckedUpdateInput>
+    /**
+     * Choose, which IntegrationProperty to update.
+     */
+    where: IntegrationPropertyWhereUniqueInput
+  }
+
+  /**
+   * IntegrationProperty updateMany
+   */
+  export type IntegrationPropertyUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update IntegrationProperties.
+     */
+    data: XOR<IntegrationPropertyUpdateManyMutationInput, IntegrationPropertyUncheckedUpdateManyInput>
+    /**
+     * Filter which IntegrationProperties to update
+     */
+    where?: IntegrationPropertyWhereInput
+    /**
+     * Limit how many IntegrationProperties to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * IntegrationProperty updateManyAndReturn
+   */
+  export type IntegrationPropertyUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IntegrationProperty
+     */
+    select?: IntegrationPropertySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the IntegrationProperty
+     */
+    omit?: IntegrationPropertyOmit<ExtArgs> | null
+    /**
+     * The data used to update IntegrationProperties.
+     */
+    data: XOR<IntegrationPropertyUpdateManyMutationInput, IntegrationPropertyUncheckedUpdateManyInput>
+    /**
+     * Filter which IntegrationProperties to update
+     */
+    where?: IntegrationPropertyWhereInput
+    /**
+     * Limit how many IntegrationProperties to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IntegrationPropertyIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * IntegrationProperty upsert
+   */
+  export type IntegrationPropertyUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IntegrationProperty
+     */
+    select?: IntegrationPropertySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IntegrationProperty
+     */
+    omit?: IntegrationPropertyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IntegrationPropertyInclude<ExtArgs> | null
+    /**
+     * The filter to search for the IntegrationProperty to update in case it exists.
+     */
+    where: IntegrationPropertyWhereUniqueInput
+    /**
+     * In case the IntegrationProperty found by the `where` argument doesn't exist, create a new IntegrationProperty with this data.
+     */
+    create: XOR<IntegrationPropertyCreateInput, IntegrationPropertyUncheckedCreateInput>
+    /**
+     * In case the IntegrationProperty was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<IntegrationPropertyUpdateInput, IntegrationPropertyUncheckedUpdateInput>
+  }
+
+  /**
+   * IntegrationProperty delete
+   */
+  export type IntegrationPropertyDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IntegrationProperty
+     */
+    select?: IntegrationPropertySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IntegrationProperty
+     */
+    omit?: IntegrationPropertyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IntegrationPropertyInclude<ExtArgs> | null
+    /**
+     * Filter which IntegrationProperty to delete.
+     */
+    where: IntegrationPropertyWhereUniqueInput
+  }
+
+  /**
+   * IntegrationProperty deleteMany
+   */
+  export type IntegrationPropertyDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which IntegrationProperties to delete
+     */
+    where?: IntegrationPropertyWhereInput
+    /**
+     * Limit how many IntegrationProperties to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * IntegrationProperty without action
+   */
+  export type IntegrationPropertyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IntegrationProperty
+     */
+    select?: IntegrationPropertySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IntegrationProperty
+     */
+    omit?: IntegrationPropertyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IntegrationPropertyInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model PlatformConfig
    */
 
@@ -37090,6 +37120,8 @@ export namespace Prisma {
     track_updated_listings: 'track_updated_listings',
     auto_update_to_crm: 'auto_update_to_crm',
     use_ai_batching: 'use_ai_batching',
+    remove_watermark: 'remove_watermark',
+    watermark_image_count: 'watermark_image_count',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -37398,19 +37430,6 @@ export namespace Prisma {
   export type PropertyScalarFieldEnum = (typeof PropertyScalarFieldEnum)[keyof typeof PropertyScalarFieldEnum]
 
 
-  export const IntegrationPropertyScalarFieldEnum: {
-    id: 'id',
-    user_id: 'user_id',
-    user_integration_settings_id: 'user_integration_settings_id',
-    user_property_id: 'user_property_id',
-    images: 'images',
-    created_at: 'created_at',
-    updated_at: 'updated_at'
-  };
-
-  export type IntegrationPropertyScalarFieldEnum = (typeof IntegrationPropertyScalarFieldEnum)[keyof typeof IntegrationPropertyScalarFieldEnum]
-
-
   export const PropertySourceLinkScalarFieldEnum: {
     id: 'id',
     property_id: 'property_id',
@@ -37489,6 +37508,19 @@ export namespace Prisma {
   };
 
   export type UserPropertyScalarFieldEnum = (typeof UserPropertyScalarFieldEnum)[keyof typeof UserPropertyScalarFieldEnum]
+
+
+  export const IntegrationPropertyScalarFieldEnum: {
+    id: 'id',
+    user_id: 'user_id',
+    user_integration_settings_id: 'user_integration_settings_id',
+    user_property_id: 'user_property_id',
+    images: 'images',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type IntegrationPropertyScalarFieldEnum = (typeof IntegrationPropertyScalarFieldEnum)[keyof typeof IntegrationPropertyScalarFieldEnum]
 
 
   export const PlatformConfigScalarFieldEnum: {
@@ -38440,6 +38472,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     auto_update_to_crm?: BoolFilter<"UserTrackedAgency"> | boolean
     use_ai_batching?: BoolFilter<"UserTrackedAgency"> | boolean
+    remove_watermark?: BoolFilter<"UserTrackedAgency"> | boolean
+    watermark_image_count?: IntFilter<"UserTrackedAgency"> | number
     created_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -38462,6 +38496,8 @@ export namespace Prisma {
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
     use_ai_batching?: SortOrder
+    remove_watermark?: SortOrder
+    watermark_image_count?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -38488,6 +38524,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     auto_update_to_crm?: BoolFilter<"UserTrackedAgency"> | boolean
     use_ai_batching?: BoolFilter<"UserTrackedAgency"> | boolean
+    remove_watermark?: BoolFilter<"UserTrackedAgency"> | boolean
+    watermark_image_count?: IntFilter<"UserTrackedAgency"> | number
     created_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -38510,6 +38548,8 @@ export namespace Prisma {
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
     use_ai_batching?: SortOrder
+    remove_watermark?: SortOrder
+    watermark_image_count?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: UserTrackedAgencyCountOrderByAggregateInput
@@ -38536,6 +38576,8 @@ export namespace Prisma {
     track_updated_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     auto_update_to_crm?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     use_ai_batching?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
+    remove_watermark?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
+    watermark_image_count?: IntWithAggregatesFilter<"UserTrackedAgency"> | number
     created_at?: DateTimeWithAggregatesFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserTrackedAgency"> | Date | string
   }
@@ -40164,78 +40206,6 @@ export namespace Prisma {
     updated_at?: DateTimeWithAggregatesFilter<"Property"> | Date | string
   }
 
-  export type IntegrationPropertyWhereInput = {
-    AND?: IntegrationPropertyWhereInput | IntegrationPropertyWhereInput[]
-    OR?: IntegrationPropertyWhereInput[]
-    NOT?: IntegrationPropertyWhereInput | IntegrationPropertyWhereInput[]
-    id?: StringFilter<"IntegrationProperty"> | string
-    user_id?: StringFilter<"IntegrationProperty"> | string
-    user_integration_settings_id?: StringFilter<"IntegrationProperty"> | string
-    user_property_id?: StringFilter<"IntegrationProperty"> | string
-    images?: JsonNullableFilter<"IntegrationProperty">
-    created_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
-    updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    user_integration_settings?: XOR<UserIntegrationSettingsScalarRelationFilter, UserIntegrationSettingsWhereInput>
-    user_property?: XOR<UserPropertyScalarRelationFilter, UserPropertyWhereInput>
-  }
-
-  export type IntegrationPropertyOrderByWithRelationInput = {
-    id?: SortOrder
-    user_id?: SortOrder
-    user_integration_settings_id?: SortOrder
-    user_property_id?: SortOrder
-    images?: SortOrderInput | SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-    user?: UserOrderByWithRelationInput
-    user_integration_settings?: UserIntegrationSettingsOrderByWithRelationInput
-    user_property?: UserPropertyOrderByWithRelationInput
-  }
-
-  export type IntegrationPropertyWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    user_id_user_integration_settings_id_user_property_id?: IntegrationPropertyUser_idUser_integration_settings_idUser_property_idCompoundUniqueInput
-    AND?: IntegrationPropertyWhereInput | IntegrationPropertyWhereInput[]
-    OR?: IntegrationPropertyWhereInput[]
-    NOT?: IntegrationPropertyWhereInput | IntegrationPropertyWhereInput[]
-    user_id?: StringFilter<"IntegrationProperty"> | string
-    user_integration_settings_id?: StringFilter<"IntegrationProperty"> | string
-    user_property_id?: StringFilter<"IntegrationProperty"> | string
-    images?: JsonNullableFilter<"IntegrationProperty">
-    created_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
-    updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    user_integration_settings?: XOR<UserIntegrationSettingsScalarRelationFilter, UserIntegrationSettingsWhereInput>
-    user_property?: XOR<UserPropertyScalarRelationFilter, UserPropertyWhereInput>
-  }, "id" | "user_id_user_integration_settings_id_user_property_id">
-
-  export type IntegrationPropertyOrderByWithAggregationInput = {
-    id?: SortOrder
-    user_id?: SortOrder
-    user_integration_settings_id?: SortOrder
-    user_property_id?: SortOrder
-    images?: SortOrderInput | SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-    _count?: IntegrationPropertyCountOrderByAggregateInput
-    _max?: IntegrationPropertyMaxOrderByAggregateInput
-    _min?: IntegrationPropertyMinOrderByAggregateInput
-  }
-
-  export type IntegrationPropertyScalarWhereWithAggregatesInput = {
-    AND?: IntegrationPropertyScalarWhereWithAggregatesInput | IntegrationPropertyScalarWhereWithAggregatesInput[]
-    OR?: IntegrationPropertyScalarWhereWithAggregatesInput[]
-    NOT?: IntegrationPropertyScalarWhereWithAggregatesInput | IntegrationPropertyScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
-    user_id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
-    user_integration_settings_id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
-    user_property_id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
-    images?: JsonNullableWithAggregatesFilter<"IntegrationProperty">
-    created_at?: DateTimeWithAggregatesFilter<"IntegrationProperty"> | Date | string
-    updated_at?: DateTimeWithAggregatesFilter<"IntegrationProperty"> | Date | string
-  }
-
   export type PropertySourceLinkWhereInput = {
     AND?: PropertySourceLinkWhereInput | PropertySourceLinkWhereInput[]
     OR?: PropertySourceLinkWhereInput[]
@@ -40652,6 +40622,78 @@ export namespace Prisma {
     last_synced_at?: DateTimeNullableWithAggregatesFilter<"UserProperty"> | Date | string | null
     created_at?: DateTimeWithAggregatesFilter<"UserProperty"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserProperty"> | Date | string
+  }
+
+  export type IntegrationPropertyWhereInput = {
+    AND?: IntegrationPropertyWhereInput | IntegrationPropertyWhereInput[]
+    OR?: IntegrationPropertyWhereInput[]
+    NOT?: IntegrationPropertyWhereInput | IntegrationPropertyWhereInput[]
+    id?: StringFilter<"IntegrationProperty"> | string
+    user_id?: StringFilter<"IntegrationProperty"> | string
+    user_integration_settings_id?: StringFilter<"IntegrationProperty"> | string
+    user_property_id?: StringFilter<"IntegrationProperty"> | string
+    images?: JsonNullableFilter<"IntegrationProperty">
+    created_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
+    updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    user_integration_settings?: XOR<UserIntegrationSettingsScalarRelationFilter, UserIntegrationSettingsWhereInput>
+    user_property?: XOR<UserPropertyScalarRelationFilter, UserPropertyWhereInput>
+  }
+
+  export type IntegrationPropertyOrderByWithRelationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    user_integration_settings_id?: SortOrder
+    user_property_id?: SortOrder
+    images?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    user?: UserOrderByWithRelationInput
+    user_integration_settings?: UserIntegrationSettingsOrderByWithRelationInput
+    user_property?: UserPropertyOrderByWithRelationInput
+  }
+
+  export type IntegrationPropertyWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    user_id_user_integration_settings_id_user_property_id?: IntegrationPropertyUser_idUser_integration_settings_idUser_property_idCompoundUniqueInput
+    AND?: IntegrationPropertyWhereInput | IntegrationPropertyWhereInput[]
+    OR?: IntegrationPropertyWhereInput[]
+    NOT?: IntegrationPropertyWhereInput | IntegrationPropertyWhereInput[]
+    user_id?: StringFilter<"IntegrationProperty"> | string
+    user_integration_settings_id?: StringFilter<"IntegrationProperty"> | string
+    user_property_id?: StringFilter<"IntegrationProperty"> | string
+    images?: JsonNullableFilter<"IntegrationProperty">
+    created_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
+    updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    user_integration_settings?: XOR<UserIntegrationSettingsScalarRelationFilter, UserIntegrationSettingsWhereInput>
+    user_property?: XOR<UserPropertyScalarRelationFilter, UserPropertyWhereInput>
+  }, "id" | "user_id_user_integration_settings_id_user_property_id">
+
+  export type IntegrationPropertyOrderByWithAggregationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    user_integration_settings_id?: SortOrder
+    user_property_id?: SortOrder
+    images?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: IntegrationPropertyCountOrderByAggregateInput
+    _max?: IntegrationPropertyMaxOrderByAggregateInput
+    _min?: IntegrationPropertyMinOrderByAggregateInput
+  }
+
+  export type IntegrationPropertyScalarWhereWithAggregatesInput = {
+    AND?: IntegrationPropertyScalarWhereWithAggregatesInput | IntegrationPropertyScalarWhereWithAggregatesInput[]
+    OR?: IntegrationPropertyScalarWhereWithAggregatesInput[]
+    NOT?: IntegrationPropertyScalarWhereWithAggregatesInput | IntegrationPropertyScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
+    user_id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
+    user_integration_settings_id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
+    user_property_id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
+    images?: JsonNullableWithAggregatesFilter<"IntegrationProperty">
+    created_at?: DateTimeWithAggregatesFilter<"IntegrationProperty"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"IntegrationProperty"> | Date | string
   }
 
   export type PlatformConfigWhereInput = {
@@ -41365,6 +41407,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -41387,6 +41431,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -41405,6 +41451,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -41427,6 +41475,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -41447,6 +41497,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -41463,6 +41515,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41481,6 +41535,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43352,73 +43408,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type IntegrationPropertyCreateInput = {
-    id?: string
-    images?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: Date | string
-    updated_at?: Date | string
-    user: UserCreateNestedOneWithoutIntegration_propertiesInput
-    user_integration_settings: UserIntegrationSettingsCreateNestedOneWithoutIntegration_propertiesInput
-    user_property: UserPropertyCreateNestedOneWithoutIntegration_propertiesInput
-  }
-
-  export type IntegrationPropertyUncheckedCreateInput = {
-    id?: string
-    user_id: string
-    user_integration_settings_id: string
-    user_property_id: string
-    images?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
-  export type IntegrationPropertyUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    images?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutIntegration_propertiesNestedInput
-    user_integration_settings?: UserIntegrationSettingsUpdateOneRequiredWithoutIntegration_propertiesNestedInput
-    user_property?: UserPropertyUpdateOneRequiredWithoutIntegration_propertiesNestedInput
-  }
-
-  export type IntegrationPropertyUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    user_id?: StringFieldUpdateOperationsInput | string
-    user_integration_settings_id?: StringFieldUpdateOperationsInput | string
-    user_property_id?: StringFieldUpdateOperationsInput | string
-    images?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type IntegrationPropertyCreateManyInput = {
-    id?: string
-    user_id: string
-    user_integration_settings_id: string
-    user_property_id: string
-    images?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
-  export type IntegrationPropertyUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    images?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type IntegrationPropertyUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    user_id?: StringFieldUpdateOperationsInput | string
-    user_integration_settings_id?: StringFieldUpdateOperationsInput | string
-    user_property_id?: StringFieldUpdateOperationsInput | string
-    images?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type PropertySourceLinkCreateInput = {
     id?: string
     confidence_score?: Decimal | DecimalJsLike | number | string | null
@@ -43910,6 +43899,73 @@ export namespace Prisma {
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IntegrationPropertyCreateInput = {
+    id?: string
+    images?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutIntegration_propertiesInput
+    user_integration_settings: UserIntegrationSettingsCreateNestedOneWithoutIntegration_propertiesInput
+    user_property: UserPropertyCreateNestedOneWithoutIntegration_propertiesInput
+  }
+
+  export type IntegrationPropertyUncheckedCreateInput = {
+    id?: string
+    user_id: string
+    user_integration_settings_id: string
+    user_property_id: string
+    images?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type IntegrationPropertyUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    images?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutIntegration_propertiesNestedInput
+    user_integration_settings?: UserIntegrationSettingsUpdateOneRequiredWithoutIntegration_propertiesNestedInput
+    user_property?: UserPropertyUpdateOneRequiredWithoutIntegration_propertiesNestedInput
+  }
+
+  export type IntegrationPropertyUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    user_integration_settings_id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: StringFieldUpdateOperationsInput | string
+    images?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IntegrationPropertyCreateManyInput = {
+    id?: string
+    user_id: string
+    user_integration_settings_id: string
+    user_property_id: string
+    images?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type IntegrationPropertyUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    images?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IntegrationPropertyUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    user_integration_settings_id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: StringFieldUpdateOperationsInput | string
+    images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -44733,6 +44789,8 @@ export namespace Prisma {
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
     use_ai_batching?: SortOrder
+    remove_watermark?: SortOrder
+    watermark_image_count?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -44741,6 +44799,7 @@ export namespace Prisma {
     concurrent_insertions?: SortOrder
     insertion_interval_minutes?: SortOrder
     max_properties?: SortOrder
+    watermark_image_count?: SortOrder
   }
 
   export type UserTrackedAgencyMaxOrderByAggregateInput = {
@@ -44756,6 +44815,8 @@ export namespace Prisma {
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
     use_ai_batching?: SortOrder
+    remove_watermark?: SortOrder
+    watermark_image_count?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -44773,6 +44834,8 @@ export namespace Prisma {
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
     use_ai_batching?: SortOrder
+    remove_watermark?: SortOrder
+    watermark_image_count?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -44781,6 +44844,7 @@ export namespace Prisma {
     concurrent_insertions?: SortOrder
     insertion_interval_minutes?: SortOrder
     max_properties?: SortOrder
+    watermark_image_count?: SortOrder
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -46231,45 +46295,6 @@ export namespace Prisma {
     _max?: NestedEnumPropertyTypeFilter<$PrismaModel>
   }
 
-  export type UserPropertyScalarRelationFilter = {
-    is?: UserPropertyWhereInput
-    isNot?: UserPropertyWhereInput
-  }
-
-  export type IntegrationPropertyUser_idUser_integration_settings_idUser_property_idCompoundUniqueInput = {
-    user_id: string
-    user_integration_settings_id: string
-    user_property_id: string
-  }
-
-  export type IntegrationPropertyCountOrderByAggregateInput = {
-    id?: SortOrder
-    user_id?: SortOrder
-    user_integration_settings_id?: SortOrder
-    user_property_id?: SortOrder
-    images?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-  }
-
-  export type IntegrationPropertyMaxOrderByAggregateInput = {
-    id?: SortOrder
-    user_id?: SortOrder
-    user_integration_settings_id?: SortOrder
-    user_property_id?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-  }
-
-  export type IntegrationPropertyMinOrderByAggregateInput = {
-    id?: SortOrder
-    user_id?: SortOrder
-    user_integration_settings_id?: SortOrder
-    user_property_id?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-  }
-
   export type PropertyScalarRelationFilter = {
     is?: PropertyWhereInput
     isNot?: PropertyWhereInput
@@ -46544,6 +46569,45 @@ export namespace Prisma {
     estateweb_scope_id?: SortOrder
     price_start?: SortOrder
     price_web?: SortOrder
+  }
+
+  export type UserPropertyScalarRelationFilter = {
+    is?: UserPropertyWhereInput
+    isNot?: UserPropertyWhereInput
+  }
+
+  export type IntegrationPropertyUser_idUser_integration_settings_idUser_property_idCompoundUniqueInput = {
+    user_id: string
+    user_integration_settings_id: string
+    user_property_id: string
+  }
+
+  export type IntegrationPropertyCountOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    user_integration_settings_id?: SortOrder
+    user_property_id?: SortOrder
+    images?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type IntegrationPropertyMaxOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    user_integration_settings_id?: SortOrder
+    user_property_id?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type IntegrationPropertyMinOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    user_integration_settings_id?: SortOrder
+    user_property_id?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
   }
 
   export type PlatformConfigCountOrderByAggregateInput = {
@@ -48884,48 +48948,6 @@ export namespace Prisma {
     deleteMany?: PropertyHistoryScalarWhereInput | PropertyHistoryScalarWhereInput[]
   }
 
-  export type UserCreateNestedOneWithoutIntegration_propertiesInput = {
-    create?: XOR<UserCreateWithoutIntegration_propertiesInput, UserUncheckedCreateWithoutIntegration_propertiesInput>
-    connectOrCreate?: UserCreateOrConnectWithoutIntegration_propertiesInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type UserIntegrationSettingsCreateNestedOneWithoutIntegration_propertiesInput = {
-    create?: XOR<UserIntegrationSettingsCreateWithoutIntegration_propertiesInput, UserIntegrationSettingsUncheckedCreateWithoutIntegration_propertiesInput>
-    connectOrCreate?: UserIntegrationSettingsCreateOrConnectWithoutIntegration_propertiesInput
-    connect?: UserIntegrationSettingsWhereUniqueInput
-  }
-
-  export type UserPropertyCreateNestedOneWithoutIntegration_propertiesInput = {
-    create?: XOR<UserPropertyCreateWithoutIntegration_propertiesInput, UserPropertyUncheckedCreateWithoutIntegration_propertiesInput>
-    connectOrCreate?: UserPropertyCreateOrConnectWithoutIntegration_propertiesInput
-    connect?: UserPropertyWhereUniqueInput
-  }
-
-  export type UserUpdateOneRequiredWithoutIntegration_propertiesNestedInput = {
-    create?: XOR<UserCreateWithoutIntegration_propertiesInput, UserUncheckedCreateWithoutIntegration_propertiesInput>
-    connectOrCreate?: UserCreateOrConnectWithoutIntegration_propertiesInput
-    upsert?: UserUpsertWithoutIntegration_propertiesInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutIntegration_propertiesInput, UserUpdateWithoutIntegration_propertiesInput>, UserUncheckedUpdateWithoutIntegration_propertiesInput>
-  }
-
-  export type UserIntegrationSettingsUpdateOneRequiredWithoutIntegration_propertiesNestedInput = {
-    create?: XOR<UserIntegrationSettingsCreateWithoutIntegration_propertiesInput, UserIntegrationSettingsUncheckedCreateWithoutIntegration_propertiesInput>
-    connectOrCreate?: UserIntegrationSettingsCreateOrConnectWithoutIntegration_propertiesInput
-    upsert?: UserIntegrationSettingsUpsertWithoutIntegration_propertiesInput
-    connect?: UserIntegrationSettingsWhereUniqueInput
-    update?: XOR<XOR<UserIntegrationSettingsUpdateToOneWithWhereWithoutIntegration_propertiesInput, UserIntegrationSettingsUpdateWithoutIntegration_propertiesInput>, UserIntegrationSettingsUncheckedUpdateWithoutIntegration_propertiesInput>
-  }
-
-  export type UserPropertyUpdateOneRequiredWithoutIntegration_propertiesNestedInput = {
-    create?: XOR<UserPropertyCreateWithoutIntegration_propertiesInput, UserPropertyUncheckedCreateWithoutIntegration_propertiesInput>
-    connectOrCreate?: UserPropertyCreateOrConnectWithoutIntegration_propertiesInput
-    upsert?: UserPropertyUpsertWithoutIntegration_propertiesInput
-    connect?: UserPropertyWhereUniqueInput
-    update?: XOR<XOR<UserPropertyUpdateToOneWithWhereWithoutIntegration_propertiesInput, UserPropertyUpdateWithoutIntegration_propertiesInput>, UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput>
-  }
-
   export type PropertyCreateNestedOneWithoutSource_linksInput = {
     create?: XOR<PropertyCreateWithoutSource_linksInput, PropertyUncheckedCreateWithoutSource_linksInput>
     connectOrCreate?: PropertyCreateOrConnectWithoutSource_linksInput
@@ -49056,6 +49078,48 @@ export namespace Prisma {
     update?: IntegrationPropertyUpdateWithWhereUniqueWithoutUser_propertyInput | IntegrationPropertyUpdateWithWhereUniqueWithoutUser_propertyInput[]
     updateMany?: IntegrationPropertyUpdateManyWithWhereWithoutUser_propertyInput | IntegrationPropertyUpdateManyWithWhereWithoutUser_propertyInput[]
     deleteMany?: IntegrationPropertyScalarWhereInput | IntegrationPropertyScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutIntegration_propertiesInput = {
+    create?: XOR<UserCreateWithoutIntegration_propertiesInput, UserUncheckedCreateWithoutIntegration_propertiesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutIntegration_propertiesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserIntegrationSettingsCreateNestedOneWithoutIntegration_propertiesInput = {
+    create?: XOR<UserIntegrationSettingsCreateWithoutIntegration_propertiesInput, UserIntegrationSettingsUncheckedCreateWithoutIntegration_propertiesInput>
+    connectOrCreate?: UserIntegrationSettingsCreateOrConnectWithoutIntegration_propertiesInput
+    connect?: UserIntegrationSettingsWhereUniqueInput
+  }
+
+  export type UserPropertyCreateNestedOneWithoutIntegration_propertiesInput = {
+    create?: XOR<UserPropertyCreateWithoutIntegration_propertiesInput, UserPropertyUncheckedCreateWithoutIntegration_propertiesInput>
+    connectOrCreate?: UserPropertyCreateOrConnectWithoutIntegration_propertiesInput
+    connect?: UserPropertyWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutIntegration_propertiesNestedInput = {
+    create?: XOR<UserCreateWithoutIntegration_propertiesInput, UserUncheckedCreateWithoutIntegration_propertiesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutIntegration_propertiesInput
+    upsert?: UserUpsertWithoutIntegration_propertiesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutIntegration_propertiesInput, UserUpdateWithoutIntegration_propertiesInput>, UserUncheckedUpdateWithoutIntegration_propertiesInput>
+  }
+
+  export type UserIntegrationSettingsUpdateOneRequiredWithoutIntegration_propertiesNestedInput = {
+    create?: XOR<UserIntegrationSettingsCreateWithoutIntegration_propertiesInput, UserIntegrationSettingsUncheckedCreateWithoutIntegration_propertiesInput>
+    connectOrCreate?: UserIntegrationSettingsCreateOrConnectWithoutIntegration_propertiesInput
+    upsert?: UserIntegrationSettingsUpsertWithoutIntegration_propertiesInput
+    connect?: UserIntegrationSettingsWhereUniqueInput
+    update?: XOR<XOR<UserIntegrationSettingsUpdateToOneWithWhereWithoutIntegration_propertiesInput, UserIntegrationSettingsUpdateWithoutIntegration_propertiesInput>, UserIntegrationSettingsUncheckedUpdateWithoutIntegration_propertiesInput>
+  }
+
+  export type UserPropertyUpdateOneRequiredWithoutIntegration_propertiesNestedInput = {
+    create?: XOR<UserPropertyCreateWithoutIntegration_propertiesInput, UserPropertyUncheckedCreateWithoutIntegration_propertiesInput>
+    connectOrCreate?: UserPropertyCreateOrConnectWithoutIntegration_propertiesInput
+    upsert?: UserPropertyUpsertWithoutIntegration_propertiesInput
+    connect?: UserPropertyWhereUniqueInput
+    update?: XOR<XOR<UserPropertyUpdateToOneWithWhereWithoutIntegration_propertiesInput, UserPropertyUpdateWithoutIntegration_propertiesInput>, UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput>
   }
 
   export type ComputerUseStepCreateNestedManyWithoutScreenshot_beforeInput = {
@@ -49789,6 +49853,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
     created_at?: Date | string
     updated_at?: Date | string
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
@@ -49809,6 +49875,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -50070,6 +50138,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     auto_update_to_crm?: BoolFilter<"UserTrackedAgency"> | boolean
     use_ai_batching?: BoolFilter<"UserTrackedAgency"> | boolean
+    remove_watermark?: BoolFilter<"UserTrackedAgency"> | boolean
+    watermark_image_count?: IntFilter<"UserTrackedAgency"> | number
     created_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
   }
@@ -50988,6 +51058,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -51008,6 +51080,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -51788,6 +51862,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -51809,6 +51885,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -51883,6 +51961,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -51904,6 +51984,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -53760,6 +53842,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -53781,6 +53865,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
     created_at?: Date | string
     updated_at?: Date | string
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
@@ -54159,6 +54245,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -54180,6 +54268,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
@@ -55981,346 +56071,6 @@ export namespace Prisma {
     data: XOR<PropertyHistoryUpdateManyMutationInput, PropertyHistoryUncheckedUpdateManyWithoutPropertyInput>
   }
 
-  export type UserCreateWithoutIntegration_propertiesInput = {
-    id?: string
-    email: string
-    phone?: string | null
-    password: string
-    role: $Enums.AuthRole
-    created_at?: Date | string
-    updated_at?: Date | string
-    tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutUserInput
-    saved_properties?: UserPropertyCreateNestedManyWithoutUserInput
-    user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
-    user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
-  }
-
-  export type UserUncheckedCreateWithoutIntegration_propertiesInput = {
-    id?: string
-    email: string
-    phone?: string | null
-    password: string
-    role: $Enums.AuthRole
-    created_at?: Date | string
-    updated_at?: Date | string
-    tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutUserInput
-    saved_properties?: UserPropertyUncheckedCreateNestedManyWithoutUserInput
-    user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
-    user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
-  }
-
-  export type UserCreateOrConnectWithoutIntegration_propertiesInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutIntegration_propertiesInput, UserUncheckedCreateWithoutIntegration_propertiesInput>
-  }
-
-  export type UserIntegrationSettingsCreateWithoutIntegration_propertiesInput = {
-    id?: string
-    settings?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: Date | string
-    updated_at?: Date | string
-    user: UserCreateNestedOneWithoutUser_integration_settingsInput
-    integration_target: IntegrationTargetCreateNestedOneWithoutUser_integration_settingsInput
-    accounts?: UserIntegrationCreateNestedManyWithoutSettingsInput
-  }
-
-  export type UserIntegrationSettingsUncheckedCreateWithoutIntegration_propertiesInput = {
-    id?: string
-    integration_target_id: string
-    user_id: string
-    settings?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: Date | string
-    updated_at?: Date | string
-    accounts?: UserIntegrationUncheckedCreateNestedManyWithoutSettingsInput
-  }
-
-  export type UserIntegrationSettingsCreateOrConnectWithoutIntegration_propertiesInput = {
-    where: UserIntegrationSettingsWhereUniqueInput
-    create: XOR<UserIntegrationSettingsCreateWithoutIntegration_propertiesInput, UserIntegrationSettingsUncheckedCreateWithoutIntegration_propertiesInput>
-  }
-
-  export type UserPropertyCreateWithoutIntegration_propertiesInput = {
-    id?: string
-    property_id: string
-    internal_id?: string | null
-    integration_property_id?: string | null
-    title: string
-    description?: string | null
-    listing_type?: $Enums.ListingType
-    property_type?: $Enums.PropertyType
-    status?: $Enums.PropertyStatus
-    price?: Decimal | DecimalJsLike | number | string | null
-    currency?: string | null
-    city?: string | null
-    district?: string | null
-    address?: string | null
-    postal_code?: string | null
-    country?: string | null
-    latitude?: Decimal | DecimalJsLike | number | string | null
-    longitude?: Decimal | DecimalJsLike | number | string | null
-    square_meters?: Decimal | DecimalJsLike | number | string | null
-    bedrooms?: number | null
-    bathrooms?: number | null
-    floor?: string | null
-    construction_year?: number | null
-    renovation_year?: number | null
-    features?: NullableJsonNullValueInput | InputJsonValue
-    images?: NullableJsonNullValueInput | InputJsonValue
-    normalized_data?: NullableJsonNullValueInput | InputJsonValue
-    estateweb_type_id?: number | null
-    estateweb_location_id?: number | null
-    estateweb_scope_id?: number | null
-    cms_fields?: NullableJsonNullValueInput | InputJsonValue
-    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
-    video_url?: string | null
-    distance_airport?: string | null
-    distance_port?: string | null
-    distance_beach?: string | null
-    price_start?: Decimal | DecimalJsLike | number | string | null
-    price_web?: Decimal | DecimalJsLike | number | string | null
-    duplicate_group_id?: string | null
-    is_modified?: boolean
-    pending_crm_update?: boolean
-    last_synced_at?: Date | string | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    user: UserCreateNestedOneWithoutSaved_propertiesInput
-    canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
-  }
-
-  export type UserPropertyUncheckedCreateWithoutIntegration_propertiesInput = {
-    id?: string
-    user_id: string
-    canonical_property_id: string
-    property_id: string
-    internal_id?: string | null
-    integration_property_id?: string | null
-    title: string
-    description?: string | null
-    listing_type?: $Enums.ListingType
-    property_type?: $Enums.PropertyType
-    status?: $Enums.PropertyStatus
-    price?: Decimal | DecimalJsLike | number | string | null
-    currency?: string | null
-    city?: string | null
-    district?: string | null
-    address?: string | null
-    postal_code?: string | null
-    country?: string | null
-    latitude?: Decimal | DecimalJsLike | number | string | null
-    longitude?: Decimal | DecimalJsLike | number | string | null
-    square_meters?: Decimal | DecimalJsLike | number | string | null
-    bedrooms?: number | null
-    bathrooms?: number | null
-    floor?: string | null
-    construction_year?: number | null
-    renovation_year?: number | null
-    features?: NullableJsonNullValueInput | InputJsonValue
-    images?: NullableJsonNullValueInput | InputJsonValue
-    normalized_data?: NullableJsonNullValueInput | InputJsonValue
-    estateweb_type_id?: number | null
-    estateweb_location_id?: number | null
-    estateweb_scope_id?: number | null
-    cms_fields?: NullableJsonNullValueInput | InputJsonValue
-    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
-    video_url?: string | null
-    distance_airport?: string | null
-    distance_port?: string | null
-    distance_beach?: string | null
-    price_start?: Decimal | DecimalJsLike | number | string | null
-    price_web?: Decimal | DecimalJsLike | number | string | null
-    duplicate_group_id?: string | null
-    is_modified?: boolean
-    pending_crm_update?: boolean
-    last_synced_at?: Date | string | null
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
-  export type UserPropertyCreateOrConnectWithoutIntegration_propertiesInput = {
-    where: UserPropertyWhereUniqueInput
-    create: XOR<UserPropertyCreateWithoutIntegration_propertiesInput, UserPropertyUncheckedCreateWithoutIntegration_propertiesInput>
-  }
-
-  export type UserUpsertWithoutIntegration_propertiesInput = {
-    update: XOR<UserUpdateWithoutIntegration_propertiesInput, UserUncheckedUpdateWithoutIntegration_propertiesInput>
-    create: XOR<UserCreateWithoutIntegration_propertiesInput, UserUncheckedCreateWithoutIntegration_propertiesInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutIntegration_propertiesInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutIntegration_propertiesInput, UserUncheckedUpdateWithoutIntegration_propertiesInput>
-  }
-
-  export type UserUpdateWithoutIntegration_propertiesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
-    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    tracked_agencies?: UserTrackedAgencyUpdateManyWithoutUserNestedInput
-    saved_properties?: UserPropertyUpdateManyWithoutUserNestedInput
-    user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
-    user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutIntegration_propertiesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
-    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutUserNestedInput
-    saved_properties?: UserPropertyUncheckedUpdateManyWithoutUserNestedInput
-    user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
-    user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserIntegrationSettingsUpsertWithoutIntegration_propertiesInput = {
-    update: XOR<UserIntegrationSettingsUpdateWithoutIntegration_propertiesInput, UserIntegrationSettingsUncheckedUpdateWithoutIntegration_propertiesInput>
-    create: XOR<UserIntegrationSettingsCreateWithoutIntegration_propertiesInput, UserIntegrationSettingsUncheckedCreateWithoutIntegration_propertiesInput>
-    where?: UserIntegrationSettingsWhereInput
-  }
-
-  export type UserIntegrationSettingsUpdateToOneWithWhereWithoutIntegration_propertiesInput = {
-    where?: UserIntegrationSettingsWhereInput
-    data: XOR<UserIntegrationSettingsUpdateWithoutIntegration_propertiesInput, UserIntegrationSettingsUncheckedUpdateWithoutIntegration_propertiesInput>
-  }
-
-  export type UserIntegrationSettingsUpdateWithoutIntegration_propertiesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    settings?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutUser_integration_settingsNestedInput
-    integration_target?: IntegrationTargetUpdateOneRequiredWithoutUser_integration_settingsNestedInput
-    accounts?: UserIntegrationUpdateManyWithoutSettingsNestedInput
-  }
-
-  export type UserIntegrationSettingsUncheckedUpdateWithoutIntegration_propertiesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    integration_target_id?: StringFieldUpdateOperationsInput | string
-    user_id?: StringFieldUpdateOperationsInput | string
-    settings?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    accounts?: UserIntegrationUncheckedUpdateManyWithoutSettingsNestedInput
-  }
-
-  export type UserPropertyUpsertWithoutIntegration_propertiesInput = {
-    update: XOR<UserPropertyUpdateWithoutIntegration_propertiesInput, UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput>
-    create: XOR<UserPropertyCreateWithoutIntegration_propertiesInput, UserPropertyUncheckedCreateWithoutIntegration_propertiesInput>
-    where?: UserPropertyWhereInput
-  }
-
-  export type UserPropertyUpdateToOneWithWhereWithoutIntegration_propertiesInput = {
-    where?: UserPropertyWhereInput
-    data: XOR<UserPropertyUpdateWithoutIntegration_propertiesInput, UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput>
-  }
-
-  export type UserPropertyUpdateWithoutIntegration_propertiesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    property_id?: StringFieldUpdateOperationsInput | string
-    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
-    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
-    property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
-    status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
-    price?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    currency?: NullableStringFieldUpdateOperationsInput | string | null
-    city?: NullableStringFieldUpdateOperationsInput | string | null
-    district?: NullableStringFieldUpdateOperationsInput | string | null
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    postal_code?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    latitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    longitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    square_meters?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    bedrooms?: NullableIntFieldUpdateOperationsInput | number | null
-    bathrooms?: NullableIntFieldUpdateOperationsInput | number | null
-    floor?: NullableStringFieldUpdateOperationsInput | string | null
-    construction_year?: NullableIntFieldUpdateOperationsInput | number | null
-    renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
-    features?: NullableJsonNullValueInput | InputJsonValue
-    images?: NullableJsonNullValueInput | InputJsonValue
-    normalized_data?: NullableJsonNullValueInput | InputJsonValue
-    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
-    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
-    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
-    cms_fields?: NullableJsonNullValueInput | InputJsonValue
-    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
-    video_url?: NullableStringFieldUpdateOperationsInput | string | null
-    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
-    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
-    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
-    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
-    is_modified?: BoolFieldUpdateOperationsInput | boolean
-    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
-    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
-    canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
-  }
-
-  export type UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    user_id?: StringFieldUpdateOperationsInput | string
-    canonical_property_id?: StringFieldUpdateOperationsInput | string
-    property_id?: StringFieldUpdateOperationsInput | string
-    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
-    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
-    property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
-    status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
-    price?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    currency?: NullableStringFieldUpdateOperationsInput | string | null
-    city?: NullableStringFieldUpdateOperationsInput | string | null
-    district?: NullableStringFieldUpdateOperationsInput | string | null
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    postal_code?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    latitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    longitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    square_meters?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    bedrooms?: NullableIntFieldUpdateOperationsInput | number | null
-    bathrooms?: NullableIntFieldUpdateOperationsInput | number | null
-    floor?: NullableStringFieldUpdateOperationsInput | string | null
-    construction_year?: NullableIntFieldUpdateOperationsInput | number | null
-    renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
-    features?: NullableJsonNullValueInput | InputJsonValue
-    images?: NullableJsonNullValueInput | InputJsonValue
-    normalized_data?: NullableJsonNullValueInput | InputJsonValue
-    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
-    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
-    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
-    cms_fields?: NullableJsonNullValueInput | InputJsonValue
-    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
-    video_url?: NullableStringFieldUpdateOperationsInput | string | null
-    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
-    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
-    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
-    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
-    is_modified?: BoolFieldUpdateOperationsInput | boolean
-    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
-    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type PropertyCreateWithoutSource_linksInput = {
     id?: string
     title: string
@@ -57297,6 +57047,346 @@ export namespace Prisma {
     data: XOR<IntegrationPropertyUpdateManyMutationInput, IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyInput>
   }
 
+  export type UserCreateWithoutIntegration_propertiesInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutUserInput
+    saved_properties?: UserPropertyCreateNestedManyWithoutUserInput
+    user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
+    user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutIntegration_propertiesInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutUserInput
+    saved_properties?: UserPropertyUncheckedCreateNestedManyWithoutUserInput
+    user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
+    user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutIntegration_propertiesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutIntegration_propertiesInput, UserUncheckedCreateWithoutIntegration_propertiesInput>
+  }
+
+  export type UserIntegrationSettingsCreateWithoutIntegration_propertiesInput = {
+    id?: string
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutUser_integration_settingsInput
+    integration_target: IntegrationTargetCreateNestedOneWithoutUser_integration_settingsInput
+    accounts?: UserIntegrationCreateNestedManyWithoutSettingsInput
+  }
+
+  export type UserIntegrationSettingsUncheckedCreateWithoutIntegration_propertiesInput = {
+    id?: string
+    integration_target_id: string
+    user_id: string
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+    accounts?: UserIntegrationUncheckedCreateNestedManyWithoutSettingsInput
+  }
+
+  export type UserIntegrationSettingsCreateOrConnectWithoutIntegration_propertiesInput = {
+    where: UserIntegrationSettingsWhereUniqueInput
+    create: XOR<UserIntegrationSettingsCreateWithoutIntegration_propertiesInput, UserIntegrationSettingsUncheckedCreateWithoutIntegration_propertiesInput>
+  }
+
+  export type UserPropertyCreateWithoutIntegration_propertiesInput = {
+    id?: string
+    property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
+    title: string
+    description?: string | null
+    listing_type?: $Enums.ListingType
+    property_type?: $Enums.PropertyType
+    status?: $Enums.PropertyStatus
+    price?: Decimal | DecimalJsLike | number | string | null
+    currency?: string | null
+    city?: string | null
+    district?: string | null
+    address?: string | null
+    postal_code?: string | null
+    country?: string | null
+    latitude?: Decimal | DecimalJsLike | number | string | null
+    longitude?: Decimal | DecimalJsLike | number | string | null
+    square_meters?: Decimal | DecimalJsLike | number | string | null
+    bedrooms?: number | null
+    bathrooms?: number | null
+    floor?: string | null
+    construction_year?: number | null
+    renovation_year?: number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: string | null
+    is_modified?: boolean
+    pending_crm_update?: boolean
+    last_synced_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutSaved_propertiesInput
+    canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
+  }
+
+  export type UserPropertyUncheckedCreateWithoutIntegration_propertiesInput = {
+    id?: string
+    user_id: string
+    canonical_property_id: string
+    property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
+    title: string
+    description?: string | null
+    listing_type?: $Enums.ListingType
+    property_type?: $Enums.PropertyType
+    status?: $Enums.PropertyStatus
+    price?: Decimal | DecimalJsLike | number | string | null
+    currency?: string | null
+    city?: string | null
+    district?: string | null
+    address?: string | null
+    postal_code?: string | null
+    country?: string | null
+    latitude?: Decimal | DecimalJsLike | number | string | null
+    longitude?: Decimal | DecimalJsLike | number | string | null
+    square_meters?: Decimal | DecimalJsLike | number | string | null
+    bedrooms?: number | null
+    bathrooms?: number | null
+    floor?: string | null
+    construction_year?: number | null
+    renovation_year?: number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: string | null
+    is_modified?: boolean
+    pending_crm_update?: boolean
+    last_synced_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserPropertyCreateOrConnectWithoutIntegration_propertiesInput = {
+    where: UserPropertyWhereUniqueInput
+    create: XOR<UserPropertyCreateWithoutIntegration_propertiesInput, UserPropertyUncheckedCreateWithoutIntegration_propertiesInput>
+  }
+
+  export type UserUpsertWithoutIntegration_propertiesInput = {
+    update: XOR<UserUpdateWithoutIntegration_propertiesInput, UserUncheckedUpdateWithoutIntegration_propertiesInput>
+    create: XOR<UserCreateWithoutIntegration_propertiesInput, UserUncheckedCreateWithoutIntegration_propertiesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutIntegration_propertiesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutIntegration_propertiesInput, UserUncheckedUpdateWithoutIntegration_propertiesInput>
+  }
+
+  export type UserUpdateWithoutIntegration_propertiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    tracked_agencies?: UserTrackedAgencyUpdateManyWithoutUserNestedInput
+    saved_properties?: UserPropertyUpdateManyWithoutUserNestedInput
+    user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
+    user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutIntegration_propertiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutUserNestedInput
+    saved_properties?: UserPropertyUncheckedUpdateManyWithoutUserNestedInput
+    user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
+    user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserIntegrationSettingsUpsertWithoutIntegration_propertiesInput = {
+    update: XOR<UserIntegrationSettingsUpdateWithoutIntegration_propertiesInput, UserIntegrationSettingsUncheckedUpdateWithoutIntegration_propertiesInput>
+    create: XOR<UserIntegrationSettingsCreateWithoutIntegration_propertiesInput, UserIntegrationSettingsUncheckedCreateWithoutIntegration_propertiesInput>
+    where?: UserIntegrationSettingsWhereInput
+  }
+
+  export type UserIntegrationSettingsUpdateToOneWithWhereWithoutIntegration_propertiesInput = {
+    where?: UserIntegrationSettingsWhereInput
+    data: XOR<UserIntegrationSettingsUpdateWithoutIntegration_propertiesInput, UserIntegrationSettingsUncheckedUpdateWithoutIntegration_propertiesInput>
+  }
+
+  export type UserIntegrationSettingsUpdateWithoutIntegration_propertiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutUser_integration_settingsNestedInput
+    integration_target?: IntegrationTargetUpdateOneRequiredWithoutUser_integration_settingsNestedInput
+    accounts?: UserIntegrationUpdateManyWithoutSettingsNestedInput
+  }
+
+  export type UserIntegrationSettingsUncheckedUpdateWithoutIntegration_propertiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    integration_target_id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: UserIntegrationUncheckedUpdateManyWithoutSettingsNestedInput
+  }
+
+  export type UserPropertyUpsertWithoutIntegration_propertiesInput = {
+    update: XOR<UserPropertyUpdateWithoutIntegration_propertiesInput, UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput>
+    create: XOR<UserPropertyCreateWithoutIntegration_propertiesInput, UserPropertyUncheckedCreateWithoutIntegration_propertiesInput>
+    where?: UserPropertyWhereInput
+  }
+
+  export type UserPropertyUpdateToOneWithWhereWithoutIntegration_propertiesInput = {
+    where?: UserPropertyWhereInput
+    data: XOR<UserPropertyUpdateWithoutIntegration_propertiesInput, UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput>
+  }
+
+  export type UserPropertyUpdateWithoutIntegration_propertiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
+    property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
+    status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
+    price?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    district?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    postal_code?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    longitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    square_meters?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    bedrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    bathrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    construction_year?: NullableIntFieldUpdateOperationsInput | number | null
+    renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
+    is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
+    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
+    canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
+  }
+
+  export type UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    canonical_property_id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
+    property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
+    status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
+    price?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    district?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    postal_code?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    longitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    square_meters?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    bedrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    bathrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    construction_year?: NullableIntFieldUpdateOperationsInput | number | null
+    renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
+    is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
+    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ComputerUseStepCreateWithoutScreenshot_beforeInput = {
     id?: string
     step_index: number
@@ -57406,6 +57496,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -57503,6 +57595,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
@@ -57523,6 +57617,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -57542,6 +57638,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58115,6 +58213,8 @@ export namespace Prisma {
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
     use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -58281,6 +58381,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -58301,6 +58403,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -58320,6 +58424,8 @@ export namespace Prisma {
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
     use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }

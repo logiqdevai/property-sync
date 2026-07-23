@@ -80,4 +80,25 @@ export class TrackAgencyDto {
   @IsString({ each: true })
   @MaxLength(2000, { each: true })
   text_truncate_pieces?: string[];
+
+  @ApiProperty({
+    required: false,
+    default: false,
+    description: 'When true, remove watermarks from listing images',
+  })
+  @IsOptional()
+  @IsBoolean()
+  remove_watermark?: boolean;
+
+  @ApiProperty({
+    required: false,
+    default: 10,
+    minimum: 1,
+    description: 'How many images per listing to remove watermarks from',
+    example: 10,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  watermark_image_count?: number;
 }

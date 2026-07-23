@@ -396,6 +396,8 @@ model UserTrackedAgency {
   track_updated_listings     Boolean  @default(true)
   auto_update_to_crm         Boolean  @default(true) // when false, CRM updates are pushed manually from Properties
   use_ai_batching            Boolean  @default(false)
+  remove_watermark           Boolean  @default(false)
+  watermark_image_count      Int      @default(10)
   created_at                 DateTime @default(now())
   updated_at                 DateTime @updatedAt
 
@@ -862,26 +864,6 @@ model Property {
   @@map("properties")
 }
 
-model IntegrationProperty {
-  id                           String   @id @default(uuid())
-  user_id                      String
-  user_integration_settings_id String
-  user_property_id             String
-  images                       Json?
-  created_at                   DateTime @default(now())
-  updated_at                   DateTime @updatedAt
-
-  user                      User                    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  user_integration_settings UserIntegrationSettings @relation(fields: [user_integration_settings_id], references: [id], onDelete: Cascade)
-  user_property             UserProperty            @relation(fields: [user_property_id], references: [id], onDelete: Cascade)
-
-  @@unique([user_id, user_integration_settings_id, user_property_id], map: "integration_properties_user_settings_user_property_key")
-  @@index([user_id])
-  @@index([user_property_id])
-  @@index([user_integration_settings_id])
-  @@map("integration_properties")
-}
-
 /// Mapping layer between normalized Property and the raw SourceProperty rows it was built from.
 model PropertySourceLink {
   id                   String   @id @default(uuid())
@@ -986,6 +968,26 @@ model UserProperty {
   @@index([canonical_property_id])
   @@index([property_id])
   @@map("user_properties")
+}
+
+model IntegrationProperty {
+  id                           String   @id @default(uuid())
+  user_id                      String
+  user_integration_settings_id String
+  user_property_id             String
+  images                       Json?
+  created_at                   DateTime @default(now())
+  updated_at                   DateTime @updatedAt
+
+  user                      User                    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_integration_settings UserIntegrationSettings @relation(fields: [user_integration_settings_id], references: [id], onDelete: Cascade)
+  user_property             UserProperty            @relation(fields: [user_property_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, user_integration_settings_id, user_property_id], map: "integration_properties_user_settings_user_property_key")
+  @@index([user_id])
+  @@index([user_property_id])
+  @@index([user_integration_settings_id])
+  @@map("integration_properties")
 }
 
 /// Singleton table (single row, fixed id) holding tunable admin-editable parameters for the

@@ -59,6 +59,8 @@ export interface AdminUserTrackedAgency {
   track_updated_listings: boolean;
   auto_update_to_crm: boolean;
   use_ai_batching: boolean;
+  remove_watermark: boolean;
+  watermark_image_count: number;
   created_at: string;
   updated_at: string;
   source_agency: {

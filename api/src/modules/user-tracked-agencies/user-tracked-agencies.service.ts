@@ -85,6 +85,8 @@ export class UserTrackedAgenciesService {
                 insertion_interval_minutes: tracker.insertion_interval_minutes,
                 max_properties: tracker.max_properties,
                 text_truncate_pieces: tracker.text_truncate_pieces,
+                remove_watermark: tracker.remove_watermark,
+                watermark_image_count: tracker.watermark_image_count,
               }
             : undefined,
         };
@@ -120,6 +122,8 @@ export class UserTrackedAgenciesService {
         track_updated_listings: dto.track_updated_listings ?? true,
         auto_update_to_crm: dto.auto_update_to_crm ?? true,
         use_ai_batching: dto.use_ai_batching ?? false,
+        remove_watermark: dto.remove_watermark ?? false,
+        watermark_image_count: dto.watermark_image_count ?? 10,
       },
       update: {
         enabled: true,
@@ -137,6 +141,12 @@ export class UserTrackedAgenciesService {
         }),
         ...(dto.use_ai_batching !== undefined && {
           use_ai_batching: dto.use_ai_batching,
+        }),
+        ...(dto.remove_watermark !== undefined && {
+          remove_watermark: dto.remove_watermark,
+        }),
+        ...(dto.watermark_image_count !== undefined && {
+          watermark_image_count: dto.watermark_image_count,
         }),
       },
     });
@@ -188,6 +198,12 @@ export class UserTrackedAgenciesService {
           text_truncate_pieces: normalizeTextTruncatePieces(
             dto.text_truncate_pieces,
           ),
+        }),
+        ...(dto.remove_watermark !== undefined && {
+          remove_watermark: dto.remove_watermark,
+        }),
+        ...(dto.watermark_image_count !== undefined && {
+          watermark_image_count: dto.watermark_image_count,
         }),
       },
     });

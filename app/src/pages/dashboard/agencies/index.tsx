@@ -176,6 +176,53 @@ function AgencyCard({
             </Switch>
           </div>
 
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="text-sm text-foreground">Remove watermark</span>
+                <span className="text-xs text-muted">
+                  Strip watermarks from listing images before syncing to your CRM.
+                </span>
+              </div>
+              <Switch
+                isSelected={prefs.remove_watermark ?? false}
+                isDisabled={isControlsDisabled}
+                onChange={(isSelected) => savePrefs({ remove_watermark: isSelected })}
+                aria-label="Remove watermark"
+              >
+                <Switch.Control>
+                  <Switch.Thumb />
+                </Switch.Control>
+              </Switch>
+            </div>
+            {prefs.remove_watermark ? (
+              <label className="flex flex-col gap-1 text-sm pl-0">
+                <span className="text-foreground">Images to process</span>
+                <span className="text-xs text-muted">
+                  How many images per listing get watermark removal.
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  className="rounded-lg border border-border bg-background px-3 py-2"
+                  defaultValue={prefs.watermark_image_count ?? 10}
+                  disabled={isControlsDisabled}
+                  key={`${agency.id}-watermark-count-${prefs.watermark_image_count ?? 10}`}
+                  onBlur={(e) => {
+                    const value = Number.parseInt(e.target.value, 10);
+                    if (
+                      Number.isFinite(value) &&
+                      value >= 1 &&
+                      value !== (prefs.watermark_image_count ?? 10)
+                    ) {
+                      savePrefs({ watermark_image_count: value });
+                    }
+                  }}
+                />
+              </label>
+            ) : null}
+          </div>
+
           {AppConfig.tracked_agency_admin_options_visible ? (
             <TrackerAdminOptionsPanel
               accordionId={`${agency.id}-admin-options`}

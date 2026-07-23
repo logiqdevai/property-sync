@@ -10,6 +10,8 @@ export interface TrackingPrefs {
   insertion_interval_minutes?: number;
   max_properties?: number | null;
   text_truncate_pieces?: string[];
+  remove_watermark: boolean;
+  watermark_image_count: number;
 }
 
 export interface TrackableAgency {
@@ -37,6 +39,8 @@ export interface TrackAgencyPayload {
   insertion_interval_minutes?: number;
   max_properties?: number | null;
   text_truncate_pieces?: string[];
+  remove_watermark?: boolean;
+  watermark_image_count?: number;
 }
 
 export interface AgencyListQuery {
@@ -71,6 +75,8 @@ export interface UserTrackedAgency {
   track_updated_listings: boolean;
   auto_update_to_crm: boolean;
   use_ai_batching: boolean;
+  remove_watermark: boolean;
+  watermark_image_count: number;
 }
 
 export interface TrackedAgencyIntegrationLink {

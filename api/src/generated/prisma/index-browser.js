@@ -200,6 +200,8 @@ exports.Prisma.UserTrackedAgencyScalarFieldEnum = {
   track_updated_listings: 'track_updated_listings',
   auto_update_to_crm: 'auto_update_to_crm',
   use_ai_batching: 'use_ai_batching',
+  remove_watermark: 'remove_watermark',
+  watermark_image_count: 'watermark_image_count',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };
@@ -463,16 +465,6 @@ exports.Prisma.PropertyScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
-exports.Prisma.IntegrationPropertyScalarFieldEnum = {
-  id: 'id',
-  user_id: 'user_id',
-  user_integration_settings_id: 'user_integration_settings_id',
-  user_property_id: 'user_property_id',
-  images: 'images',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
-};
-
 exports.Prisma.PropertySourceLinkScalarFieldEnum = {
   id: 'id',
   property_id: 'property_id',
@@ -540,6 +532,16 @@ exports.Prisma.UserPropertyScalarFieldEnum = {
   is_modified: 'is_modified',
   pending_crm_update: 'pending_crm_update',
   last_synced_at: 'last_synced_at',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.IntegrationPropertyScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  user_integration_settings_id: 'user_integration_settings_id',
+  user_property_id: 'user_property_id',
+  images: 'images',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };
@@ -833,10 +835,10 @@ exports.Prisma.ModelName = {
   CmsSyncRun: 'CmsSyncRun',
   SourceProperty: 'SourceProperty',
   Property: 'Property',
-  IntegrationProperty: 'IntegrationProperty',
   PropertySourceLink: 'PropertySourceLink',
   PropertyHistory: 'PropertyHistory',
   UserProperty: 'UserProperty',
+  IntegrationProperty: 'IntegrationProperty',
   PlatformConfig: 'PlatformConfig',
   Document: 'Document'
 };
