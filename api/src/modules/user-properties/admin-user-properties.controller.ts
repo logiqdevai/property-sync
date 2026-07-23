@@ -31,6 +31,7 @@ import {
   AdminUserPropertyQueryType,
 } from './dto/admin-user-property-query.schema';
 import { DeleteUserPropertiesDto } from './dto/delete-user-properties.dto';
+import { DeleteIntegrationImagesDto } from './dto/delete-integration-images.dto';
 import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
 import { UserPropertyEntity } from './entities/user-property.entity';
 
@@ -186,6 +187,24 @@ export class AdminUserPropertiesController {
   @ApiResponse({ status: 404, description: 'User property not found' })
   migrateIntegrationImages(@Param('id') id: string) {
     return this.userPropertiesService.adminMigrateIntegrationImages(id);
+  }
+
+  @Post(':id/delete-integration-images')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary: 'Delete selected CRM images via the linked integration adapter',
+  })
+  @ApiResponse({ status: 200, type: UserPropertyEntity })
+  @ApiResponse({ status: 400, description: 'Cannot delete images' })
+  @ApiResponse({ status: 404, description: 'User property not found' })
+  deleteIntegrationImages(
+    @Param('id') id: string,
+    @Body() dto: DeleteIntegrationImagesDto,
+  ) {
+    return this.userPropertiesService.adminDeleteIntegrationImages(
+      id,
+      dto.image_ids,
+    );
   }
 
   @Delete(':id')

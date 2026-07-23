@@ -25,6 +25,7 @@ import { AuthRole, PropertyStatus } from 'generated/prisma';
 import { UserPropertiesService } from './user-properties.service';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import { DeleteUserPropertiesDto } from './dto/delete-user-properties.dto';
+import { DeleteIntegrationImagesDto } from './dto/delete-integration-images.dto';
 import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
 import {
   UserPropertyQuerySchema,
@@ -257,6 +258,25 @@ export class UserPropertiesController {
     @Param('id') id: string,
   ) {
     return this.userPropertiesService.migrateIntegrationImages(userId, id);
+  }
+
+  @Post(':id/delete-integration-images')
+  @ApiOperation({
+    summary: 'Delete selected CRM images via the linked integration adapter',
+  })
+  @ApiResponse({ status: 200, type: UserPropertyEntity })
+  @ApiResponse({ status: 400, description: 'Cannot delete images' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  deleteIntegrationImages(
+    @CurrentUser('id') userId: string,
+    @Param('id') id: string,
+    @Body() dto: DeleteIntegrationImagesDto,
+  ) {
+    return this.userPropertiesService.deleteIntegrationImages(
+      userId,
+      id,
+      dto.image_ids,
+    );
   }
 
   @Delete(':id')

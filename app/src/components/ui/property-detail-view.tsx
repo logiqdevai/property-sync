@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Button, Chip } from "@heroui/react";
+import { Button, Checkbox, Chip, useOverlayState } from "@heroui/react";
 import {
   Bath,
   BedDouble,
@@ -10,12 +10,16 @@ import {
   MapPin,
   Maximize2,
   Ruler,
+  Trash2,
 } from "lucide-react";
 import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
 import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/properties/listing-type-filter.options";
 import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/properties/property-type-filter.options";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
+import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
 import {
   formatPropertyHistoryLabel,
   formatPropertyHistoryValue,
@@ -33,7 +37,10 @@ import type {
   PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
 import type { IntegrationProperty } from "@/features/integration-property/interfaces/integration-property.interfaces";
-import { resolvePropertyDisplayImages } from "@/features/integration-property/utils/resolve-property-display-images";
+import {
+  resolvePropertyDisplayImages,
+  type PropertyDisplayImage,
+} from "@/features/integration-property/utils/resolve-property-display-images";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { formatDateTime } from "@/lib/date";
 import { formatPrice } from "@/lib/price";
@@ -166,16 +173,83 @@ function PropertyImagesGrid({
   images,
   fallbackImages,
   title,
+  selectable = false,
+  onDeleteSelected,
+  isDeletePending = false,
 }: {
-  images: string[];
+  images: PropertyDisplayImage[];
   fallbackImages: string[];
   title: string;
+  selectable?: boolean;
+  onDeleteSelected?: (imageIds: number[]) => Promise<void> | void;
+  isDeletePending?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const deleteConfirm = useOverlayState();
   const canExpand = images.length > 2;
+  const selectableIds = images
+    .map((image) => image.crmImageId)
+    .filter((id): id is number => id != null);
+  const canSelect = selectable && selectableIds.length > 0 && Boolean(onDeleteSelected);
+  const allSelected =
+    canSelect &&
+    selectableIds.length > 0 &&
+    selectableIds.every((id) => selectedIds.has(id));
+  const selectedCount = selectedIds.size;
+
+  const selectAll = () => {
+    setSelectedIds(new Set(selectableIds));
+  };
+
+  const deselectAll = () => {
+    setSelectedIds(new Set());
+  };
+
+  const bulkActions: TableRowAction[] = [
+    {
+      id: "delete",
+      label: `Delete${selectedCount > 0 ? ` (${selectedCount})` : ""}`,
+      variant: "danger",
+      icon: Trash2,
+      isDisabled: isDeletePending || selectedCount === 0,
+    },
+  ];
+
+  const handleDeleteConfirm = async () => {
+    if (!onDeleteSelected || selectedCount === 0) return;
+    await onDeleteSelected([...selectedIds]);
+    setSelectedIds(new Set());
+  };
 
   return (
     <div className="@container flex flex-col gap-3">
+      {canSelect ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            isDisabled={isDeletePending || selectableIds.length === 0}
+            onPress={allSelected ? deselectAll : selectAll}
+          >
+            {allSelected ? "Deselect all" : "Select all"}
+          </Button>
+          {selectedCount > 0 ? (
+            <BulkActionsMenu
+              actions={bulkActions}
+              onAction={(actionId) => {
+                if (actionId === "delete") deleteConfirm.open();
+              }}
+              isPending={isDeletePending}
+              label="Actions"
+            />
+          ) : null}
+          {selectedCount > 0 ? (
+            <span className="text-xs text-muted">{selectedCount} selected</span>
+          ) : null}
+        </div>
+      ) : null}
       <div
         className={cn(
           "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3",
@@ -184,19 +258,66 @@ function PropertyImagesGrid({
             : "overflow-hidden max-h-[calc((100cqi-0.75rem)/2)] sm:max-h-[calc((100cqi-1.5rem)/3)] md:max-h-[calc((100cqi-2.25rem)/4)]",
         )}
       >
-        {images.map((src, index) => (
-          <div
-            key={`${src}-${index}`}
-            className="aspect-square overflow-hidden rounded-lg border border-border"
-          >
-            <PropertyPhoto
-              src={src}
-              fallbackSrc={fallbackImages[index] ?? fallbackImages[0] ?? null}
-              alt={`${title} photo ${index + 1}`}
-              className="size-full object-cover"
-            />
-          </div>
-        ))}
+        {images.map((image, index) => {
+          const isSelected =
+            image.crmImageId != null && selectedIds.has(image.crmImageId);
+          const showCheckbox = canSelect && image.crmImageId != null;
+
+          return (
+            <div
+              key={image.key}
+              className={cn(
+                "group relative aspect-square overflow-hidden rounded-lg border transition-colors",
+                isSelected
+                  ? "border-accent ring-2 ring-accent/40"
+                  : "border-border hover:border-accent/50",
+              )}
+            >
+              <PropertyPhoto
+                src={image.url}
+                fallbackSrc={fallbackImages[index] ?? fallbackImages[0] ?? null}
+                alt={`${title} photo ${index + 1}`}
+                className="size-full object-cover"
+              />
+              {showCheckbox ? (
+                <div
+                  className={cn(
+                    "absolute left-2 top-2 z-10 transition-opacity",
+                    isSelected || selectedCount > 0
+                      ? "opacity-100"
+                      : "opacity-0 group-hover:opacity-100 focus-within:opacity-100",
+                  )}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                  onKeyDown={(event) => event.stopPropagation()}
+                >
+                  <Checkbox
+                    aria-label={`Select photo ${index + 1}`}
+                    isSelected={isSelected}
+                    onChange={(selected) => {
+                      if (image.crmImageId == null) return;
+                      setSelectedIds((current) => {
+                        const next = new Set(current);
+                        if (selected) next.add(image.crmImageId!);
+                        else next.delete(image.crmImageId!);
+                        return next;
+                      });
+                    }}
+                    className="rounded-md bg-background/90 p-1 shadow-sm backdrop-blur-sm"
+                  >
+                    <Checkbox.Content>
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                    </Checkbox.Content>
+                  </Checkbox>
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
       </div>
       {canExpand ? (
         <Button
@@ -208,6 +329,16 @@ function PropertyImagesGrid({
         >
           {expanded ? "Show less" : "Show more"}
         </Button>
+      ) : null}
+      {canSelect ? (
+        <ConfirmationDialog
+          state={deleteConfirm}
+          title={`Delete ${selectedCount} CRM ${selectedCount === 1 ? "image" : "images"}?`}
+          description="Selected images will be removed from the linked CRM and refreshed locally."
+          confirmLabel="Delete"
+          onConfirm={handleDeleteConfirm}
+          isPending={isDeletePending}
+        />
       ) : null}
     </div>
   );
@@ -223,6 +354,8 @@ interface PropertyDetailViewProps {
   details?: ReactNode;
   showFieldDiff?: boolean;
   footer?: ReactNode;
+  onDeleteIntegrationImages?: (imageIds: number[]) => Promise<void> | void;
+  isDeletingIntegrationImages?: boolean;
 }
 
 export function PropertyDetailView({
@@ -235,6 +368,8 @@ export function PropertyDetailView({
   details,
   showFieldDiff = false,
   footer,
+  onDeleteIntegrationImages,
+  isDeletingIntegrationImages = false,
 }: PropertyDetailViewProps) {
   const sourceLinks = property.source_links ?? [];
   const cmsFieldEntries = (property.cms_fields ?? []) as CmsPropertyFieldEntry[];
@@ -249,6 +384,9 @@ export function PropertyDetailView({
   );
   const heroImage = displayImages[0] ?? null;
   const heroFallback = fallbackImages[0] ?? null;
+  const canManageIntegrationImages =
+    Boolean(onDeleteIntegrationImages) &&
+    displayImages.some((image) => image.crmImageId != null);
   const primaryLink =
     sourceLinks.find((link) => link.is_primary_source) ?? sourceLinks[0] ?? null;
   const hasPrice = property.price != null && property.price !== "";
@@ -317,7 +455,7 @@ export function PropertyDetailView({
               {heroImage ? (
                 <div className="absolute inset-0">
                   <PropertyPhoto
-                    src={heroImage}
+                    src={heroImage.url}
                     fallbackSrc={heroFallback}
                     alt={property.title}
                     className="size-full object-cover"
@@ -547,6 +685,9 @@ export function PropertyDetailView({
             images={displayImages}
             fallbackImages={fallbackImages}
             title={property.title}
+            selectable={canManageIntegrationImages}
+            onDeleteSelected={onDeleteIntegrationImages}
+            isDeletePending={isDeletingIntegrationImages}
           />
         )}
       </section>

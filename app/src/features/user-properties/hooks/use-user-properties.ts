@@ -17,6 +17,8 @@ import {
   pushUserPropertyToCrm,
   migrateAdminUserPropertyIntegrationImages,
   migrateUserPropertyIntegrationImages,
+  deleteAdminUserPropertyIntegrationImages,
+  deleteUserPropertyIntegrationImages,
   splitAdminUserProperties,
   splitUserProperties,
   truncateAdminUserPropertyDescriptions,
@@ -179,6 +181,60 @@ export const useMigrateAdminUserPropertyIntegrationImages = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not migrate CRM images",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDeleteUserPropertyIntegrationImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, imageIds }: { id: string; imageIds: number[] }) =>
+      deleteUserPropertyIntegrationImages(id, imageIds),
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(["userProperties", "detail", data.id], data);
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      const count = variables.imageIds.length;
+      toast({
+        title: "CRM images deleted",
+        description: `Removed ${count} ${count === 1 ? "image" : "images"} from CRM.`,
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not delete CRM images",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useDeleteAdminUserPropertyIntegrationImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, imageIds }: { id: string; imageIds: number[] }) =>
+      deleteAdminUserPropertyIntegrationImages(id, imageIds),
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(["adminUserProperties", "detail", data.id], data);
+      queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
+      const count = variables.imageIds.length;
+      toast({
+        title: "CRM images deleted",
+        description: `Removed ${count} ${count === 1 ? "image" : "images"} from CRM.`,
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not delete CRM images",
         description: error.message,
         variant: "error",
       });

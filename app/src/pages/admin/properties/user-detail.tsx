@@ -12,6 +12,7 @@ import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
 import {
   useAdminUserProperty,
   useDeleteAdminUserProperty,
+  useDeleteAdminUserPropertyIntegrationImages,
   useMigrateAdminUserPropertyIntegrationImages,
 } from "@/features/user-properties/hooks/use-user-properties";
 
@@ -22,6 +23,7 @@ export default function UserPropertyDetailPage() {
   const { data: property, isPending } = useAdminUserProperty(id);
   const deleteUserProperty = useDeleteAdminUserProperty();
   const migrateImages = useMigrateAdminUserPropertyIntegrationImages();
+  const deleteIntegrationImages = useDeleteAdminUserPropertyIntegrationImages();
 
   const headerActions = useMemo<TableRowAction[]>(() => {
     if (!property) return [];
@@ -95,6 +97,13 @@ export default function UserPropertyDetailPage() {
       property={property}
       backHref={Routes.admin.properties.userList}
       backLabel="← Back to user properties"
+      onDeleteIntegrationImages={async (imageIds) => {
+        await deleteIntegrationImages.mutateAsync({
+          id: property.id,
+          imageIds,
+        });
+      }}
+      isDeletingIntegrationImages={deleteIntegrationImages.isPending}
       headerActions={
         <div className="flex items-center gap-2 flex-wrap">
           {property.user ? (
@@ -108,7 +117,11 @@ export default function UserPropertyDetailPage() {
           <BulkActionsMenu
             actions={headerActions}
             onAction={handleHeaderAction}
-            isPending={migrateImages.isPending || deleteUserProperty.isPending}
+            isPending={
+              migrateImages.isPending ||
+              deleteUserProperty.isPending ||
+              deleteIntegrationImages.isPending
+            }
           />
         </div>
       }

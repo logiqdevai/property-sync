@@ -24,6 +24,7 @@ import {
 } from "@/features/estateweb/hooks/use-estateweb";
 import {
   useMigrateUserPropertyIntegrationImages,
+  useDeleteUserPropertyIntegrationImages,
   usePushUserPropertyToCrm,
   useTruncateUserPropertyDescriptions,
   useUpdateUserProperty,
@@ -106,6 +107,7 @@ export default function DashboardPropertyDetailPage() {
   const updateProperty = useUpdateUserProperty();
   const pushToCrm = usePushUserPropertyToCrm();
   const migrateImages = useMigrateUserPropertyIntegrationImages();
+  const deleteIntegrationImages = useDeleteUserPropertyIntegrationImages();
   const truncateDescriptions = useTruncateUserPropertyDescriptions();
   const { data: locationCatalog = [] } = useEstateWebLocationCatalog(isEditing);
   const { data: floorCatalog = [], isPending: floorCatalogPending } =
@@ -372,11 +374,22 @@ export default function DashboardPropertyDetailPage() {
         backHref={Routes.dashboard.properties.list}
         backLabel="← Back to my properties"
         showFieldDiff
+        onDeleteIntegrationImages={async (imageIds) => {
+          await deleteIntegrationImages.mutateAsync({
+            id: property.id,
+            imageIds,
+          });
+        }}
+        isDeletingIntegrationImages={deleteIntegrationImages.isPending}
         headerActions={
           <BulkActionsMenu
             actions={headerActions}
             onAction={handleHeaderAction}
-            isPending={pushToCrm.isPending || migrateImages.isPending}
+            isPending={
+              pushToCrm.isPending ||
+              migrateImages.isPending ||
+              deleteIntegrationImages.isPending
+            }
           />
         }
         details={

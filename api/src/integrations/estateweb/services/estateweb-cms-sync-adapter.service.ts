@@ -4,6 +4,7 @@ import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
   CmsPushCreateResult,
   CmsSyncAdapter,
+  CmsSyncDeleteImagesParams,
 } from '@/modules/cms-sync/interfaces/cms-sync-adapter.interface';
 import { CmsPropertyFieldEntry } from '@/modules/properties/interfaces/cms-property.interface';
 import { coerceCmsFieldValueForEstateWeb } from '@/modules/properties/utils/property-cms-field-mapper.util';
@@ -141,6 +142,36 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       integrationPropertyId,
       payload,
     );
+  }
+
+  async deleteImages(params: CmsSyncDeleteImagesParams): Promise<void> {
+    const uniqueIds = [
+      ...new Set(
+        params.imageIds
+          .map((id) => Number(id))
+          .filter((id) => Number.isFinite(id) && id > 0),
+      ),
+    ];
+    if (uniqueIds.length === 0) {
+      throw new EstateWebException(
+        'No valid CRM image ids provided',
+        NotificationType.ESTATEWEB_VALIDATION_FAILED,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    for (const imageId of uniqueIds) {
+      await this.estateWebPropertyService.deletePropertyImage(
+        params.userIntegrationId,
+        imageId,
+      );
+    }
+
+    await this.syncIntegrationPropertyImages({
+      userIntegrationId: params.userIntegrationId,
+      canonicalPropertyId: params.canonicalPropertyId,
+      estateWebPropertyId: params.crmPropertyId,
+    });
   }
 
   private buildPayload(
@@ -462,7 +493,6 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     const existingSourceById = this.buildExistingSourceImageById(
       options?.existingImages,
     );
-    const seen = new Set<string>();
     const normalized: EstateWebPropertyImage[] = [];
     let sourceIndex = 0;
 
@@ -481,8 +511,6 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         filename: image.filename,
         agentId,
       });
-      if (seen.has(url)) continue;
-      seen.add(url);
 
       const sourceFromFilename = options?.sourceByFilename?.get(image.filename);
       const sourceFromIndex = options?.sourceImageUrls?.[sourceIndex];

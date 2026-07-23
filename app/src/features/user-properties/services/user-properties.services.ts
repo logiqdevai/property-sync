@@ -146,6 +146,40 @@ export const migrateAdminUserPropertyIntegrationImages = async (
   }
 };
 
+export const deleteUserPropertyIntegrationImages = async (
+  id: string,
+  imageIds: number[],
+): Promise<UserPropertyDetail> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.deleteIntegrationImages(id),
+      { image_ids: imageIds },
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to delete CRM images.",
+    );
+  }
+};
+
+export const deleteAdminUserPropertyIntegrationImages = async (
+  id: string,
+  imageIds: number[],
+): Promise<UserPropertyDetail> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.deleteIntegrationImages(id),
+      { image_ids: imageIds },
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to delete CRM images.",
+    );
+  }
+};
+
 export const pushUserPropertiesToCrm = async (
   payload: PushUserPropertiesToCrmPayload,
 ): Promise<UserProperty | PushUserPropertiesToCrmResult> => {

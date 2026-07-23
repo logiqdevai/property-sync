@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
+import { CmsSyncAdapterFactory } from '@/modules/cms-sync/services/cms-sync-adapter.factory';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import { UserPropertyQueryType } from './dto/user-property-query.schema';
 import { AdminUserPropertyQueryType } from './dto/admin-user-property-query.schema';
@@ -53,6 +54,7 @@ export class UserPropertiesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
+    private readonly cmsSyncAdapterFactory: CmsSyncAdapterFactory,
     private readonly estateWebCmsSyncAdapter: EstateWebCmsSyncAdapter,
     private readonly estateWebIntegrationResolver: EstateWebIntegrationResolverService,
   ) {}
@@ -513,6 +515,146 @@ export class UserPropertiesService {
 
     await this.runMigrateIntegrationImages(userProperty);
     return this.adminFindOne(id);
+  }
+
+  async deleteIntegrationImages(
+    userId: string,
+    id: string,
+    imageIds: number[],
+  ) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id, user_id: userId },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    await this.runDeleteIntegrationImages(userProperty, imageIds);
+    return this.findOne(userId, id);
+  }
+
+  async adminDeleteIntegrationImages(id: string, imageIds: number[]) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    await this.runDeleteIntegrationImages(userProperty, imageIds);
+    return this.adminFindOne(id);
+  }
+
+  private async runDeleteIntegrationImages(
+    userProperty: {
+      id: string;
+      user_id: string;
+      canonical_property_id: string;
+      integration_property_id: string | null;
+    },
+    imageIds: number[],
+  ) {
+    if (!userProperty.integration_property_id) {
+      throw new BadRequestException('Property is not linked to a CRM');
+    }
+
+    const uniqueIds = [
+      ...new Set(
+        imageIds.filter((id) => Number.isFinite(id) && id > 0),
+      ),
+    ];
+    if (uniqueIds.length === 0) {
+      throw new BadRequestException('No valid image ids provided');
+    }
+
+    const { userIntegrationId, integrationType } =
+      await this.resolveCmsIntegrationForProperty(userProperty);
+
+    try {
+      const adapter = this.cmsSyncAdapterFactory.getAdapter(integrationType);
+      await adapter.deleteImages({
+        userIntegrationId,
+        crmPropertyId: userProperty.integration_property_id,
+        canonicalPropertyId: userProperty.canonical_property_id,
+        imageIds: uniqueIds,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(message);
+    }
+  }
+
+  private async resolveCmsIntegrationForProperty(userProperty: {
+    user_id: string;
+    canonical_property_id: string;
+  }): Promise<{
+    userIntegrationId: string;
+    integrationType: IntegrationType;
+  }> {
+    const sourceAgencyId = await this.resolveSourceAgencyId(
+      userProperty.canonical_property_id,
+    );
+
+    let userIntegrationId: string;
+    try {
+      if (sourceAgencyId) {
+        try {
+          const resolved =
+            await this.estateWebIntegrationResolver.resolveForTrackedAgency(
+              userProperty.user_id,
+              sourceAgencyId,
+            );
+          userIntegrationId = resolved.userIntegrationId;
+        } catch {
+          const resolved =
+            await this.estateWebIntegrationResolver.resolveDefaultForUser(
+              userProperty.user_id,
+            );
+          userIntegrationId = resolved.userIntegrationId;
+        }
+      } else {
+        const resolved =
+          await this.estateWebIntegrationResolver.resolveDefaultForUser(
+            userProperty.user_id,
+          );
+        userIntegrationId = resolved.userIntegrationId;
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(message);
+    }
+
+    const integration = await this.prisma.userIntegration.findUnique({
+      where: { id: userIntegrationId },
+      select: {
+        integration_target: {
+          select: { integration_type: true },
+        },
+      },
+    });
+
+    if (!integration) {
+      throw new BadRequestException('CRM integration connection not found');
+    }
+
+    return {
+      userIntegrationId,
+      integrationType: integration.integration_target.integration_type,
+    };
   }
 
   private async runMigrateIntegrationImages(userProperty: {

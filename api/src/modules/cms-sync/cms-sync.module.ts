@@ -28,6 +28,10 @@ import { AdminCmsSyncController } from './admin-cms-sync.controller';
     CmsSyncBatchService,
     CmsSyncProcessor,
   ],
-  exports: [CmsSyncOrchestratorService, CmsSyncBatchService],
+  exports: [
+    CmsSyncOrchestratorService,
+    CmsSyncBatchService,
+    CmsSyncAdapterFactory,
+  ],
 })
 export class CmsSyncModule {}
