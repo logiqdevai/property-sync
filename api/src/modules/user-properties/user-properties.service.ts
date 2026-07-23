@@ -255,6 +255,10 @@ export class UserPropertiesService {
     const userProperty = await this.prisma.userProperty.findFirst({
       where: { id, user_id: userId },
       include: {
+        integration_properties: {
+          orderBy: { updated_at: 'desc' },
+          take: 1,
+        },
         canonical_property: {
           include: {
             source_links: {
@@ -283,11 +287,6 @@ export class UserPropertiesService {
             history: {
               orderBy: { created_at: 'desc' },
             },
-            integration_properties: {
-              where: { user_id: userId },
-              orderBy: { updated_at: 'desc' },
-              take: 1,
-            },
           },
         },
       },
@@ -297,9 +296,9 @@ export class UserPropertiesService {
       throw new NotFoundException('Property not found');
     }
 
-    const { canonical_property, ...rest } = userProperty;
-    const integrationProperty =
-      canonical_property.integration_properties[0] ?? null;
+    const { canonical_property, integration_properties, ...rest } =
+      userProperty;
+    const integrationProperty = integration_properties[0] ?? null;
 
     return serializePropertyForApi({
       ...rest,
@@ -312,7 +311,7 @@ export class UserPropertiesService {
             user_id: integrationProperty.user_id,
             user_integration_settings_id:
               integrationProperty.user_integration_settings_id,
-            property_id: integrationProperty.property_id,
+            user_property_id: integrationProperty.user_property_id,
             images: integrationProperty.images,
             created_at: integrationProperty.created_at,
             updated_at: integrationProperty.updated_at,
@@ -652,7 +651,7 @@ export class UserPropertiesService {
       await adapter.createImages({
         userIntegrationId,
         crmPropertyId: userProperty.integration_property_id,
-        canonicalPropertyId: userProperty.canonical_property_id,
+        userPropertyId: userProperty.id,
         sourceImageUrls,
       });
     } catch (error) {
@@ -691,7 +690,7 @@ export class UserPropertiesService {
       await adapter.deleteImages({
         userIntegrationId,
         crmPropertyId: userProperty.integration_property_id,
-        canonicalPropertyId: userProperty.canonical_property_id,
+        userPropertyId: userProperty.id,
         imageIds: uniqueIds,
       });
     } catch (error) {
@@ -808,7 +807,7 @@ export class UserPropertiesService {
     try {
       await this.estateWebCmsSyncAdapter.syncOrRepairIntegrationPropertyImages({
         userIntegrationId,
-        canonicalPropertyId: userProperty.canonical_property_id,
+        userPropertyId: userProperty.id,
         estateWebPropertyId: userProperty.integration_property_id,
         sourceImages: userProperty.images,
       });
@@ -1571,6 +1570,9 @@ export class UserPropertiesService {
       where: { id },
       include: {
         user: { select: { id: true, email: true, role: true } },
+        integration_properties: {
+          orderBy: { updated_at: 'desc' },
+        },
         canonical_property: {
           include: {
             source_links: {
@@ -1599,9 +1601,6 @@ export class UserPropertiesService {
             history: {
               orderBy: { created_at: 'desc' },
             },
-            integration_properties: {
-              orderBy: { updated_at: 'desc' },
-            },
           },
         },
       },
@@ -1611,11 +1610,11 @@ export class UserPropertiesService {
       throw new NotFoundException('User property not found');
     }
 
-    const { canonical_property, user, ...rest } = userProperty;
+    const { canonical_property, user, integration_properties, ...rest } =
+      userProperty;
     const integrationProperty =
-      canonical_property.integration_properties.find(
-        (row) => row.user_id === userProperty.user_id,
-      ) ?? null;
+      integration_properties.find((row) => row.user_id === userProperty.user_id) ??
+      null;
 
     return serializePropertyForApi({
       ...rest,
@@ -1629,7 +1628,7 @@ export class UserPropertiesService {
             user_id: integrationProperty.user_id,
             user_integration_settings_id:
               integrationProperty.user_integration_settings_id,
-            property_id: integrationProperty.property_id,
+            user_property_id: integrationProperty.user_property_id,
             images: integrationProperty.images,
             created_at: integrationProperty.created_at,
             updated_at: integrationProperty.updated_at,

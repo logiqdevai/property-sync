@@ -170,7 +170,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
     await this.syncIntegrationPropertyImages({
       userIntegrationId: params.userIntegrationId,
-      canonicalPropertyId: params.canonicalPropertyId,
+      userPropertyId: params.userPropertyId,
       estateWebPropertyId: params.crmPropertyId,
     });
   }
@@ -236,7 +236,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
     await this.syncIntegrationPropertyImages({
       userIntegrationId: params.userIntegrationId,
-      canonicalPropertyId: params.canonicalPropertyId,
+      userPropertyId: params.userPropertyId,
       estateWebPropertyId: params.crmPropertyId,
       sourceByFilename,
       sourceImageUrls,
@@ -449,7 +449,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     try {
       await this.syncIntegrationPropertyImages({
         userIntegrationId,
-        canonicalPropertyId: userProperty.canonical_property_id,
+        userPropertyId: userProperty.id,
         estateWebPropertyId: propertyId,
         sourceByFilename,
         sourceImageUrls: images.map((image) => image.url),
@@ -463,7 +463,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
   async syncIntegrationPropertyImages(params: {
     userIntegrationId: string;
-    canonicalPropertyId: string;
+    userPropertyId: string;
     estateWebPropertyId: number | string;
     sourceByFilename?: Map<string, string>;
     sourceImageUrls?: string[];
@@ -486,11 +486,11 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
     const existing = await this.prisma.integrationProperty.findUnique({
       where: {
-        user_id_user_integration_settings_id_property_id: {
+        user_id_user_integration_settings_id_user_property_id: {
           user_id: integration.user_id,
           user_integration_settings_id:
             integration.user_integration_settings_id,
-          property_id: params.canonicalPropertyId,
+          user_property_id: params.userPropertyId,
         },
       },
       select: { images: true },
@@ -512,17 +512,17 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
     await this.prisma.integrationProperty.upsert({
       where: {
-        user_id_user_integration_settings_id_property_id: {
+        user_id_user_integration_settings_id_user_property_id: {
           user_id: integration.user_id,
           user_integration_settings_id:
             integration.user_integration_settings_id,
-          property_id: params.canonicalPropertyId,
+          user_property_id: params.userPropertyId,
         },
       },
       create: {
         user_id: integration.user_id,
         user_integration_settings_id: integration.user_integration_settings_id,
-        property_id: params.canonicalPropertyId,
+        user_property_id: params.userPropertyId,
         images: images as unknown as Prisma.InputJsonValue,
       },
       update: {
@@ -535,14 +535,14 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
   async syncOrRepairIntegrationPropertyImages(params: {
     userIntegrationId: string;
-    canonicalPropertyId: string;
+    userPropertyId: string;
     estateWebPropertyId: number | string;
     sourceImages?: unknown;
   }): Promise<EstateWebPropertyImage[]> {
     const sourceImageUrls = this.parseSourceImageUrls(params.sourceImages);
     return this.syncIntegrationPropertyImages({
       userIntegrationId: params.userIntegrationId,
-      canonicalPropertyId: params.canonicalPropertyId,
+      userPropertyId: params.userPropertyId,
       estateWebPropertyId: params.estateWebPropertyId,
       sourceImageUrls,
     });

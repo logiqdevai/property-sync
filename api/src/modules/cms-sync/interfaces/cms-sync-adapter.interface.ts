@@ -7,14 +7,14 @@ export interface CmsPushCreateResult {
 export interface CmsSyncDeleteImagesParams {
   userIntegrationId: string;
   crmPropertyId: string;
-  canonicalPropertyId: string;
+  userPropertyId: string;
   imageIds: Array<number | string>;
 }
 
 export interface CmsSyncCreateImagesParams {
   userIntegrationId: string;
   crmPropertyId: string;
-  canonicalPropertyId: string;
+  userPropertyId: string;
   sourceImageUrls: string[];
 }
 

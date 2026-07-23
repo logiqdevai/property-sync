@@ -13,7 +13,7 @@ export interface IntegrationProperty {
   id: string;
   user_id: string;
   user_integration_settings_id: string;
-  property_id: string;
+  user_property_id: string;
   images: IntegrationPropertyImage[] | null;
   created_at: string;
   updated_at: string;

@@ -4090,14 +4090,12 @@ export namespace Prisma {
     source_links: number
     user_property_copies: number
     history: number
-    integration_properties: number
   }
 
   export type PropertyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     source_links?: boolean | PropertyCountOutputTypeCountSource_linksArgs
     user_property_copies?: boolean | PropertyCountOutputTypeCountUser_property_copiesArgs
     history?: boolean | PropertyCountOutputTypeCountHistoryArgs
-    integration_properties?: boolean | PropertyCountOutputTypeCountIntegration_propertiesArgs
   }
 
   // Custom InputTypes
@@ -4132,10 +4130,34 @@ export namespace Prisma {
     where?: PropertyHistoryWhereInput
   }
 
+
   /**
-   * PropertyCountOutputType without action
+   * Count Type UserPropertyCountOutputType
    */
-  export type PropertyCountOutputTypeCountIntegration_propertiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+
+  export type UserPropertyCountOutputType = {
+    integration_properties: number
+  }
+
+  export type UserPropertyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    integration_properties?: boolean | UserPropertyCountOutputTypeCountIntegration_propertiesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * UserPropertyCountOutputType without action
+   */
+  export type UserPropertyCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPropertyCountOutputType
+     */
+    select?: UserPropertyCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * UserPropertyCountOutputType without action
+   */
+  export type UserPropertyCountOutputTypeCountIntegration_propertiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: IntegrationPropertyWhereInput
   }
 
@@ -28430,7 +28452,6 @@ export namespace Prisma {
     source_links?: boolean | Property$source_linksArgs<ExtArgs>
     user_property_copies?: boolean | Property$user_property_copiesArgs<ExtArgs>
     history?: boolean | Property$historyArgs<ExtArgs>
-    integration_properties?: boolean | Property$integration_propertiesArgs<ExtArgs>
     _count?: boolean | PropertyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["property"]>
 
@@ -28568,7 +28589,6 @@ export namespace Prisma {
     source_links?: boolean | Property$source_linksArgs<ExtArgs>
     user_property_copies?: boolean | Property$user_property_copiesArgs<ExtArgs>
     history?: boolean | Property$historyArgs<ExtArgs>
-    integration_properties?: boolean | Property$integration_propertiesArgs<ExtArgs>
     _count?: boolean | PropertyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PropertyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -28580,7 +28600,6 @@ export namespace Prisma {
       source_links: Prisma.$PropertySourceLinkPayload<ExtArgs>[]
       user_property_copies: Prisma.$UserPropertyPayload<ExtArgs>[]
       history: Prisma.$PropertyHistoryPayload<ExtArgs>[]
-      integration_properties: Prisma.$IntegrationPropertyPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -29020,7 +29039,6 @@ export namespace Prisma {
     source_links<T extends Property$source_linksArgs<ExtArgs> = {}>(args?: Subset<T, Property$source_linksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertySourceLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     user_property_copies<T extends Property$user_property_copiesArgs<ExtArgs> = {}>(args?: Subset<T, Property$user_property_copiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     history<T extends Property$historyArgs<ExtArgs> = {}>(args?: Subset<T, Property$historyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    integration_properties<T extends Property$integration_propertiesArgs<ExtArgs> = {}>(args?: Subset<T, Property$integration_propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -29550,30 +29568,6 @@ export namespace Prisma {
   }
 
   /**
-   * Property.integration_properties
-   */
-  export type Property$integration_propertiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the IntegrationProperty
-     */
-    select?: IntegrationPropertySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the IntegrationProperty
-     */
-    omit?: IntegrationPropertyOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: IntegrationPropertyInclude<ExtArgs> | null
-    where?: IntegrationPropertyWhereInput
-    orderBy?: IntegrationPropertyOrderByWithRelationInput | IntegrationPropertyOrderByWithRelationInput[]
-    cursor?: IntegrationPropertyWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: IntegrationPropertyScalarFieldEnum | IntegrationPropertyScalarFieldEnum[]
-  }
-
-  /**
    * Property without action
    */
   export type PropertyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -29606,7 +29600,7 @@ export namespace Prisma {
     id: string | null
     user_id: string | null
     user_integration_settings_id: string | null
-    property_id: string | null
+    user_property_id: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -29615,7 +29609,7 @@ export namespace Prisma {
     id: string | null
     user_id: string | null
     user_integration_settings_id: string | null
-    property_id: string | null
+    user_property_id: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -29624,7 +29618,7 @@ export namespace Prisma {
     id: number
     user_id: number
     user_integration_settings_id: number
-    property_id: number
+    user_property_id: number
     images: number
     created_at: number
     updated_at: number
@@ -29636,7 +29630,7 @@ export namespace Prisma {
     id?: true
     user_id?: true
     user_integration_settings_id?: true
-    property_id?: true
+    user_property_id?: true
     created_at?: true
     updated_at?: true
   }
@@ -29645,7 +29639,7 @@ export namespace Prisma {
     id?: true
     user_id?: true
     user_integration_settings_id?: true
-    property_id?: true
+    user_property_id?: true
     created_at?: true
     updated_at?: true
   }
@@ -29654,7 +29648,7 @@ export namespace Prisma {
     id?: true
     user_id?: true
     user_integration_settings_id?: true
-    property_id?: true
+    user_property_id?: true
     images?: true
     created_at?: true
     updated_at?: true
@@ -29737,7 +29731,7 @@ export namespace Prisma {
     id: string
     user_id: string
     user_integration_settings_id: string
-    property_id: string
+    user_property_id: string
     images: JsonValue | null
     created_at: Date
     updated_at: Date
@@ -29764,66 +29758,66 @@ export namespace Prisma {
     id?: boolean
     user_id?: boolean
     user_integration_settings_id?: boolean
-    property_id?: boolean
+    user_property_id?: boolean
     images?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["integrationProperty"]>
 
   export type IntegrationPropertySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     user_id?: boolean
     user_integration_settings_id?: boolean
-    property_id?: boolean
+    user_property_id?: boolean
     images?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["integrationProperty"]>
 
   export type IntegrationPropertySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     user_id?: boolean
     user_integration_settings_id?: boolean
-    property_id?: boolean
+    user_property_id?: boolean
     images?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["integrationProperty"]>
 
   export type IntegrationPropertySelectScalar = {
     id?: boolean
     user_id?: boolean
     user_integration_settings_id?: boolean
-    property_id?: boolean
+    user_property_id?: boolean
     images?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type IntegrationPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "user_integration_settings_id" | "property_id" | "images" | "created_at" | "updated_at", ExtArgs["result"]["integrationProperty"]>
+  export type IntegrationPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "user_integration_settings_id" | "user_property_id" | "images" | "created_at" | "updated_at", ExtArgs["result"]["integrationProperty"]>
   export type IntegrationPropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
   }
   export type IntegrationPropertyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
   }
   export type IntegrationPropertyIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
   }
 
   export type $IntegrationPropertyPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -29831,13 +29825,13 @@ export namespace Prisma {
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       user_integration_settings: Prisma.$UserIntegrationSettingsPayload<ExtArgs>
-      property: Prisma.$PropertyPayload<ExtArgs>
+      user_property: Prisma.$UserPropertyPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       user_id: string
       user_integration_settings_id: string
-      property_id: string
+      user_property_id: string
       images: Prisma.JsonValue | null
       created_at: Date
       updated_at: Date
@@ -30237,7 +30231,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     user_integration_settings<T extends UserIntegrationSettingsDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserIntegrationSettingsDefaultArgs<ExtArgs>>): Prisma__UserIntegrationSettingsClient<$Result.GetResult<Prisma.$UserIntegrationSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    property<T extends PropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyDefaultArgs<ExtArgs>>): Prisma__PropertyClient<$Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user_property<T extends UserPropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserPropertyDefaultArgs<ExtArgs>>): Prisma__UserPropertyClient<$Result.GetResult<Prisma.$UserPropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -30270,7 +30264,7 @@ export namespace Prisma {
     readonly id: FieldRef<"IntegrationProperty", 'String'>
     readonly user_id: FieldRef<"IntegrationProperty", 'String'>
     readonly user_integration_settings_id: FieldRef<"IntegrationProperty", 'String'>
-    readonly property_id: FieldRef<"IntegrationProperty", 'String'>
+    readonly user_property_id: FieldRef<"IntegrationProperty", 'String'>
     readonly images: FieldRef<"IntegrationProperty", 'Json'>
     readonly created_at: FieldRef<"IntegrationProperty", 'DateTime'>
     readonly updated_at: FieldRef<"IntegrationProperty", 'DateTime'>
@@ -33499,6 +33493,8 @@ export namespace Prisma {
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     canonical_property?: boolean | PropertyDefaultArgs<ExtArgs>
+    integration_properties?: boolean | UserProperty$integration_propertiesArgs<ExtArgs>
+    _count?: boolean | UserPropertyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userProperty"]>
 
   export type UserPropertySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -33656,6 +33652,8 @@ export namespace Prisma {
   export type UserPropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     canonical_property?: boolean | PropertyDefaultArgs<ExtArgs>
+    integration_properties?: boolean | UserProperty$integration_propertiesArgs<ExtArgs>
+    _count?: boolean | UserPropertyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserPropertyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -33671,6 +33669,7 @@ export namespace Prisma {
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       canonical_property: Prisma.$PropertyPayload<ExtArgs>
+      integration_properties: Prisma.$IntegrationPropertyPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -34115,6 +34114,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     canonical_property<T extends PropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyDefaultArgs<ExtArgs>>): Prisma__PropertyClient<$Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    integration_properties<T extends UserProperty$integration_propertiesArgs<ExtArgs> = {}>(args?: Subset<T, UserProperty$integration_propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -34583,6 +34583,30 @@ export namespace Prisma {
      * Limit how many UserProperties to delete.
      */
     limit?: number
+  }
+
+  /**
+   * UserProperty.integration_properties
+   */
+  export type UserProperty$integration_propertiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IntegrationProperty
+     */
+    select?: IntegrationPropertySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IntegrationProperty
+     */
+    omit?: IntegrationPropertyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IntegrationPropertyInclude<ExtArgs> | null
+    where?: IntegrationPropertyWhereInput
+    orderBy?: IntegrationPropertyOrderByWithRelationInput | IntegrationPropertyOrderByWithRelationInput[]
+    cursor?: IntegrationPropertyWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: IntegrationPropertyScalarFieldEnum | IntegrationPropertyScalarFieldEnum[]
   }
 
   /**
@@ -37378,7 +37402,7 @@ export namespace Prisma {
     id: 'id',
     user_id: 'user_id',
     user_integration_settings_id: 'user_integration_settings_id',
-    property_id: 'property_id',
+    user_property_id: 'user_property_id',
     images: 'images',
     created_at: 'created_at',
     updated_at: 'updated_at'
@@ -39949,7 +39973,6 @@ export namespace Prisma {
     source_links?: PropertySourceLinkListRelationFilter
     user_property_copies?: UserPropertyListRelationFilter
     history?: PropertyHistoryListRelationFilter
-    integration_properties?: IntegrationPropertyListRelationFilter
   }
 
   export type PropertyOrderByWithRelationInput = {
@@ -39996,7 +40019,6 @@ export namespace Prisma {
     source_links?: PropertySourceLinkOrderByRelationAggregateInput
     user_property_copies?: UserPropertyOrderByRelationAggregateInput
     history?: PropertyHistoryOrderByRelationAggregateInput
-    integration_properties?: IntegrationPropertyOrderByRelationAggregateInput
   }
 
   export type PropertyWhereUniqueInput = Prisma.AtLeast<{
@@ -40046,7 +40068,6 @@ export namespace Prisma {
     source_links?: PropertySourceLinkListRelationFilter
     user_property_copies?: UserPropertyListRelationFilter
     history?: PropertyHistoryListRelationFilter
-    integration_properties?: IntegrationPropertyListRelationFilter
   }, "id">
 
   export type PropertyOrderByWithAggregationInput = {
@@ -40150,50 +40171,50 @@ export namespace Prisma {
     id?: StringFilter<"IntegrationProperty"> | string
     user_id?: StringFilter<"IntegrationProperty"> | string
     user_integration_settings_id?: StringFilter<"IntegrationProperty"> | string
-    property_id?: StringFilter<"IntegrationProperty"> | string
+    user_property_id?: StringFilter<"IntegrationProperty"> | string
     images?: JsonNullableFilter<"IntegrationProperty">
     created_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     user_integration_settings?: XOR<UserIntegrationSettingsScalarRelationFilter, UserIntegrationSettingsWhereInput>
-    property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
+    user_property?: XOR<UserPropertyScalarRelationFilter, UserPropertyWhereInput>
   }
 
   export type IntegrationPropertyOrderByWithRelationInput = {
     id?: SortOrder
     user_id?: SortOrder
     user_integration_settings_id?: SortOrder
-    property_id?: SortOrder
+    user_property_id?: SortOrder
     images?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     user?: UserOrderByWithRelationInput
     user_integration_settings?: UserIntegrationSettingsOrderByWithRelationInput
-    property?: PropertyOrderByWithRelationInput
+    user_property?: UserPropertyOrderByWithRelationInput
   }
 
   export type IntegrationPropertyWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    user_id_user_integration_settings_id_property_id?: IntegrationPropertyUser_idUser_integration_settings_idProperty_idCompoundUniqueInput
+    user_id_user_integration_settings_id_user_property_id?: IntegrationPropertyUser_idUser_integration_settings_idUser_property_idCompoundUniqueInput
     AND?: IntegrationPropertyWhereInput | IntegrationPropertyWhereInput[]
     OR?: IntegrationPropertyWhereInput[]
     NOT?: IntegrationPropertyWhereInput | IntegrationPropertyWhereInput[]
     user_id?: StringFilter<"IntegrationProperty"> | string
     user_integration_settings_id?: StringFilter<"IntegrationProperty"> | string
-    property_id?: StringFilter<"IntegrationProperty"> | string
+    user_property_id?: StringFilter<"IntegrationProperty"> | string
     images?: JsonNullableFilter<"IntegrationProperty">
     created_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     user_integration_settings?: XOR<UserIntegrationSettingsScalarRelationFilter, UserIntegrationSettingsWhereInput>
-    property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
-  }, "id" | "user_id_user_integration_settings_id_property_id">
+    user_property?: XOR<UserPropertyScalarRelationFilter, UserPropertyWhereInput>
+  }, "id" | "user_id_user_integration_settings_id_user_property_id">
 
   export type IntegrationPropertyOrderByWithAggregationInput = {
     id?: SortOrder
     user_id?: SortOrder
     user_integration_settings_id?: SortOrder
-    property_id?: SortOrder
+    user_property_id?: SortOrder
     images?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -40209,7 +40230,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
     user_id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
     user_integration_settings_id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
-    property_id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
+    user_property_id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
     images?: JsonNullableWithAggregatesFilter<"IntegrationProperty">
     created_at?: DateTimeWithAggregatesFilter<"IntegrationProperty"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"IntegrationProperty"> | Date | string
@@ -40416,6 +40437,7 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"UserProperty"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     canonical_property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
+    integration_properties?: IntegrationPropertyListRelationFilter
   }
 
   export type UserPropertyOrderByWithRelationInput = {
@@ -40467,6 +40489,7 @@ export namespace Prisma {
     updated_at?: SortOrder
     user?: UserOrderByWithRelationInput
     canonical_property?: PropertyOrderByWithRelationInput
+    integration_properties?: IntegrationPropertyOrderByRelationAggregateInput
   }
 
   export type UserPropertyWhereUniqueInput = Prisma.AtLeast<{
@@ -40522,6 +40545,7 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"UserProperty"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     canonical_property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
+    integration_properties?: IntegrationPropertyListRelationFilter
   }, "id" | "user_id_canonical_property_id">
 
   export type UserPropertyOrderByWithAggregationInput = {
@@ -43059,7 +43083,6 @@ export namespace Prisma {
     source_links?: PropertySourceLinkCreateNestedManyWithoutPropertyInput
     user_property_copies?: UserPropertyCreateNestedManyWithoutCanonical_propertyInput
     history?: PropertyHistoryCreateNestedManyWithoutPropertyInput
-    integration_properties?: IntegrationPropertyCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateInput = {
@@ -43106,7 +43129,6 @@ export namespace Prisma {
     source_links?: PropertySourceLinkUncheckedCreateNestedManyWithoutPropertyInput
     user_property_copies?: UserPropertyUncheckedCreateNestedManyWithoutCanonical_propertyInput
     history?: PropertyHistoryUncheckedCreateNestedManyWithoutPropertyInput
-    integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUpdateInput = {
@@ -43153,7 +43175,6 @@ export namespace Prisma {
     source_links?: PropertySourceLinkUpdateManyWithoutPropertyNestedInput
     user_property_copies?: UserPropertyUpdateManyWithoutCanonical_propertyNestedInput
     history?: PropertyHistoryUpdateManyWithoutPropertyNestedInput
-    integration_properties?: IntegrationPropertyUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateInput = {
@@ -43200,7 +43221,6 @@ export namespace Prisma {
     source_links?: PropertySourceLinkUncheckedUpdateManyWithoutPropertyNestedInput
     user_property_copies?: UserPropertyUncheckedUpdateManyWithoutCanonical_propertyNestedInput
     history?: PropertyHistoryUncheckedUpdateManyWithoutPropertyNestedInput
-    integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyCreateManyInput = {
@@ -43339,14 +43359,14 @@ export namespace Prisma {
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutIntegration_propertiesInput
     user_integration_settings: UserIntegrationSettingsCreateNestedOneWithoutIntegration_propertiesInput
-    property: PropertyCreateNestedOneWithoutIntegration_propertiesInput
+    user_property: UserPropertyCreateNestedOneWithoutIntegration_propertiesInput
   }
 
   export type IntegrationPropertyUncheckedCreateInput = {
     id?: string
     user_id: string
     user_integration_settings_id: string
-    property_id: string
+    user_property_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
@@ -43359,14 +43379,14 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutIntegration_propertiesNestedInput
     user_integration_settings?: UserIntegrationSettingsUpdateOneRequiredWithoutIntegration_propertiesNestedInput
-    property?: PropertyUpdateOneRequiredWithoutIntegration_propertiesNestedInput
+    user_property?: UserPropertyUpdateOneRequiredWithoutIntegration_propertiesNestedInput
   }
 
   export type IntegrationPropertyUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     user_integration_settings_id?: StringFieldUpdateOperationsInput | string
-    property_id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43376,7 +43396,7 @@ export namespace Prisma {
     id?: string
     user_id: string
     user_integration_settings_id: string
-    property_id: string
+    user_property_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
@@ -43393,7 +43413,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     user_integration_settings_id?: StringFieldUpdateOperationsInput | string
-    property_id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43596,6 +43616,7 @@ export namespace Prisma {
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutSaved_propertiesInput
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
+    integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateInput = {
@@ -43645,6 +43666,7 @@ export namespace Prisma {
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
+    integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUpdateInput = {
@@ -43694,6 +43716,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
+    integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateInput = {
@@ -43743,6 +43766,7 @@ export namespace Prisma {
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyCreateManyInput = {
@@ -46207,22 +46231,22 @@ export namespace Prisma {
     _max?: NestedEnumPropertyTypeFilter<$PrismaModel>
   }
 
-  export type PropertyScalarRelationFilter = {
-    is?: PropertyWhereInput
-    isNot?: PropertyWhereInput
+  export type UserPropertyScalarRelationFilter = {
+    is?: UserPropertyWhereInput
+    isNot?: UserPropertyWhereInput
   }
 
-  export type IntegrationPropertyUser_idUser_integration_settings_idProperty_idCompoundUniqueInput = {
+  export type IntegrationPropertyUser_idUser_integration_settings_idUser_property_idCompoundUniqueInput = {
     user_id: string
     user_integration_settings_id: string
-    property_id: string
+    user_property_id: string
   }
 
   export type IntegrationPropertyCountOrderByAggregateInput = {
     id?: SortOrder
     user_id?: SortOrder
     user_integration_settings_id?: SortOrder
-    property_id?: SortOrder
+    user_property_id?: SortOrder
     images?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -46232,7 +46256,7 @@ export namespace Prisma {
     id?: SortOrder
     user_id?: SortOrder
     user_integration_settings_id?: SortOrder
-    property_id?: SortOrder
+    user_property_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -46241,9 +46265,14 @@ export namespace Prisma {
     id?: SortOrder
     user_id?: SortOrder
     user_integration_settings_id?: SortOrder
-    property_id?: SortOrder
+    user_property_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+  }
+
+  export type PropertyScalarRelationFilter = {
+    is?: PropertyWhereInput
+    isNot?: PropertyWhereInput
   }
 
   export type SourcePropertyScalarRelationFilter = {
@@ -48742,13 +48771,6 @@ export namespace Prisma {
     connect?: PropertyHistoryWhereUniqueInput | PropertyHistoryWhereUniqueInput[]
   }
 
-  export type IntegrationPropertyCreateNestedManyWithoutPropertyInput = {
-    create?: XOR<IntegrationPropertyCreateWithoutPropertyInput, IntegrationPropertyUncheckedCreateWithoutPropertyInput> | IntegrationPropertyCreateWithoutPropertyInput[] | IntegrationPropertyUncheckedCreateWithoutPropertyInput[]
-    connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutPropertyInput | IntegrationPropertyCreateOrConnectWithoutPropertyInput[]
-    createMany?: IntegrationPropertyCreateManyPropertyInputEnvelope
-    connect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
-  }
-
   export type PropertySourceLinkUncheckedCreateNestedManyWithoutPropertyInput = {
     create?: XOR<PropertySourceLinkCreateWithoutPropertyInput, PropertySourceLinkUncheckedCreateWithoutPropertyInput> | PropertySourceLinkCreateWithoutPropertyInput[] | PropertySourceLinkUncheckedCreateWithoutPropertyInput[]
     connectOrCreate?: PropertySourceLinkCreateOrConnectWithoutPropertyInput | PropertySourceLinkCreateOrConnectWithoutPropertyInput[]
@@ -48768,13 +48790,6 @@ export namespace Prisma {
     connectOrCreate?: PropertyHistoryCreateOrConnectWithoutPropertyInput | PropertyHistoryCreateOrConnectWithoutPropertyInput[]
     createMany?: PropertyHistoryCreateManyPropertyInputEnvelope
     connect?: PropertyHistoryWhereUniqueInput | PropertyHistoryWhereUniqueInput[]
-  }
-
-  export type IntegrationPropertyUncheckedCreateNestedManyWithoutPropertyInput = {
-    create?: XOR<IntegrationPropertyCreateWithoutPropertyInput, IntegrationPropertyUncheckedCreateWithoutPropertyInput> | IntegrationPropertyCreateWithoutPropertyInput[] | IntegrationPropertyUncheckedCreateWithoutPropertyInput[]
-    connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutPropertyInput | IntegrationPropertyCreateOrConnectWithoutPropertyInput[]
-    createMany?: IntegrationPropertyCreateManyPropertyInputEnvelope
-    connect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
   }
 
   export type EnumListingTypeFieldUpdateOperationsInput = {
@@ -48827,20 +48842,6 @@ export namespace Prisma {
     deleteMany?: PropertyHistoryScalarWhereInput | PropertyHistoryScalarWhereInput[]
   }
 
-  export type IntegrationPropertyUpdateManyWithoutPropertyNestedInput = {
-    create?: XOR<IntegrationPropertyCreateWithoutPropertyInput, IntegrationPropertyUncheckedCreateWithoutPropertyInput> | IntegrationPropertyCreateWithoutPropertyInput[] | IntegrationPropertyUncheckedCreateWithoutPropertyInput[]
-    connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutPropertyInput | IntegrationPropertyCreateOrConnectWithoutPropertyInput[]
-    upsert?: IntegrationPropertyUpsertWithWhereUniqueWithoutPropertyInput | IntegrationPropertyUpsertWithWhereUniqueWithoutPropertyInput[]
-    createMany?: IntegrationPropertyCreateManyPropertyInputEnvelope
-    set?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
-    disconnect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
-    delete?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
-    connect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
-    update?: IntegrationPropertyUpdateWithWhereUniqueWithoutPropertyInput | IntegrationPropertyUpdateWithWhereUniqueWithoutPropertyInput[]
-    updateMany?: IntegrationPropertyUpdateManyWithWhereWithoutPropertyInput | IntegrationPropertyUpdateManyWithWhereWithoutPropertyInput[]
-    deleteMany?: IntegrationPropertyScalarWhereInput | IntegrationPropertyScalarWhereInput[]
-  }
-
   export type PropertySourceLinkUncheckedUpdateManyWithoutPropertyNestedInput = {
     create?: XOR<PropertySourceLinkCreateWithoutPropertyInput, PropertySourceLinkUncheckedCreateWithoutPropertyInput> | PropertySourceLinkCreateWithoutPropertyInput[] | PropertySourceLinkUncheckedCreateWithoutPropertyInput[]
     connectOrCreate?: PropertySourceLinkCreateOrConnectWithoutPropertyInput | PropertySourceLinkCreateOrConnectWithoutPropertyInput[]
@@ -48883,20 +48884,6 @@ export namespace Prisma {
     deleteMany?: PropertyHistoryScalarWhereInput | PropertyHistoryScalarWhereInput[]
   }
 
-  export type IntegrationPropertyUncheckedUpdateManyWithoutPropertyNestedInput = {
-    create?: XOR<IntegrationPropertyCreateWithoutPropertyInput, IntegrationPropertyUncheckedCreateWithoutPropertyInput> | IntegrationPropertyCreateWithoutPropertyInput[] | IntegrationPropertyUncheckedCreateWithoutPropertyInput[]
-    connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutPropertyInput | IntegrationPropertyCreateOrConnectWithoutPropertyInput[]
-    upsert?: IntegrationPropertyUpsertWithWhereUniqueWithoutPropertyInput | IntegrationPropertyUpsertWithWhereUniqueWithoutPropertyInput[]
-    createMany?: IntegrationPropertyCreateManyPropertyInputEnvelope
-    set?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
-    disconnect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
-    delete?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
-    connect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
-    update?: IntegrationPropertyUpdateWithWhereUniqueWithoutPropertyInput | IntegrationPropertyUpdateWithWhereUniqueWithoutPropertyInput[]
-    updateMany?: IntegrationPropertyUpdateManyWithWhereWithoutPropertyInput | IntegrationPropertyUpdateManyWithWhereWithoutPropertyInput[]
-    deleteMany?: IntegrationPropertyScalarWhereInput | IntegrationPropertyScalarWhereInput[]
-  }
-
   export type UserCreateNestedOneWithoutIntegration_propertiesInput = {
     create?: XOR<UserCreateWithoutIntegration_propertiesInput, UserUncheckedCreateWithoutIntegration_propertiesInput>
     connectOrCreate?: UserCreateOrConnectWithoutIntegration_propertiesInput
@@ -48909,10 +48896,10 @@ export namespace Prisma {
     connect?: UserIntegrationSettingsWhereUniqueInput
   }
 
-  export type PropertyCreateNestedOneWithoutIntegration_propertiesInput = {
-    create?: XOR<PropertyCreateWithoutIntegration_propertiesInput, PropertyUncheckedCreateWithoutIntegration_propertiesInput>
-    connectOrCreate?: PropertyCreateOrConnectWithoutIntegration_propertiesInput
-    connect?: PropertyWhereUniqueInput
+  export type UserPropertyCreateNestedOneWithoutIntegration_propertiesInput = {
+    create?: XOR<UserPropertyCreateWithoutIntegration_propertiesInput, UserPropertyUncheckedCreateWithoutIntegration_propertiesInput>
+    connectOrCreate?: UserPropertyCreateOrConnectWithoutIntegration_propertiesInput
+    connect?: UserPropertyWhereUniqueInput
   }
 
   export type UserUpdateOneRequiredWithoutIntegration_propertiesNestedInput = {
@@ -48931,12 +48918,12 @@ export namespace Prisma {
     update?: XOR<XOR<UserIntegrationSettingsUpdateToOneWithWhereWithoutIntegration_propertiesInput, UserIntegrationSettingsUpdateWithoutIntegration_propertiesInput>, UserIntegrationSettingsUncheckedUpdateWithoutIntegration_propertiesInput>
   }
 
-  export type PropertyUpdateOneRequiredWithoutIntegration_propertiesNestedInput = {
-    create?: XOR<PropertyCreateWithoutIntegration_propertiesInput, PropertyUncheckedCreateWithoutIntegration_propertiesInput>
-    connectOrCreate?: PropertyCreateOrConnectWithoutIntegration_propertiesInput
-    upsert?: PropertyUpsertWithoutIntegration_propertiesInput
-    connect?: PropertyWhereUniqueInput
-    update?: XOR<XOR<PropertyUpdateToOneWithWhereWithoutIntegration_propertiesInput, PropertyUpdateWithoutIntegration_propertiesInput>, PropertyUncheckedUpdateWithoutIntegration_propertiesInput>
+  export type UserPropertyUpdateOneRequiredWithoutIntegration_propertiesNestedInput = {
+    create?: XOR<UserPropertyCreateWithoutIntegration_propertiesInput, UserPropertyUncheckedCreateWithoutIntegration_propertiesInput>
+    connectOrCreate?: UserPropertyCreateOrConnectWithoutIntegration_propertiesInput
+    upsert?: UserPropertyUpsertWithoutIntegration_propertiesInput
+    connect?: UserPropertyWhereUniqueInput
+    update?: XOR<XOR<UserPropertyUpdateToOneWithWhereWithoutIntegration_propertiesInput, UserPropertyUpdateWithoutIntegration_propertiesInput>, UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput>
   }
 
   export type PropertyCreateNestedOneWithoutSource_linksInput = {
@@ -49013,6 +49000,20 @@ export namespace Prisma {
     connect?: PropertyWhereUniqueInput
   }
 
+  export type IntegrationPropertyCreateNestedManyWithoutUser_propertyInput = {
+    create?: XOR<IntegrationPropertyCreateWithoutUser_propertyInput, IntegrationPropertyUncheckedCreateWithoutUser_propertyInput> | IntegrationPropertyCreateWithoutUser_propertyInput[] | IntegrationPropertyUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutUser_propertyInput | IntegrationPropertyCreateOrConnectWithoutUser_propertyInput[]
+    createMany?: IntegrationPropertyCreateManyUser_propertyInputEnvelope
+    connect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
+  }
+
+  export type IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput = {
+    create?: XOR<IntegrationPropertyCreateWithoutUser_propertyInput, IntegrationPropertyUncheckedCreateWithoutUser_propertyInput> | IntegrationPropertyCreateWithoutUser_propertyInput[] | IntegrationPropertyUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutUser_propertyInput | IntegrationPropertyCreateOrConnectWithoutUser_propertyInput[]
+    createMany?: IntegrationPropertyCreateManyUser_propertyInputEnvelope
+    connect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
+  }
+
   export type UserUpdateOneRequiredWithoutSaved_propertiesNestedInput = {
     create?: XOR<UserCreateWithoutSaved_propertiesInput, UserUncheckedCreateWithoutSaved_propertiesInput>
     connectOrCreate?: UserCreateOrConnectWithoutSaved_propertiesInput
@@ -49027,6 +49028,34 @@ export namespace Prisma {
     upsert?: PropertyUpsertWithoutUser_property_copiesInput
     connect?: PropertyWhereUniqueInput
     update?: XOR<XOR<PropertyUpdateToOneWithWhereWithoutUser_property_copiesInput, PropertyUpdateWithoutUser_property_copiesInput>, PropertyUncheckedUpdateWithoutUser_property_copiesInput>
+  }
+
+  export type IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput = {
+    create?: XOR<IntegrationPropertyCreateWithoutUser_propertyInput, IntegrationPropertyUncheckedCreateWithoutUser_propertyInput> | IntegrationPropertyCreateWithoutUser_propertyInput[] | IntegrationPropertyUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutUser_propertyInput | IntegrationPropertyCreateOrConnectWithoutUser_propertyInput[]
+    upsert?: IntegrationPropertyUpsertWithWhereUniqueWithoutUser_propertyInput | IntegrationPropertyUpsertWithWhereUniqueWithoutUser_propertyInput[]
+    createMany?: IntegrationPropertyCreateManyUser_propertyInputEnvelope
+    set?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
+    disconnect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
+    delete?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
+    connect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
+    update?: IntegrationPropertyUpdateWithWhereUniqueWithoutUser_propertyInput | IntegrationPropertyUpdateWithWhereUniqueWithoutUser_propertyInput[]
+    updateMany?: IntegrationPropertyUpdateManyWithWhereWithoutUser_propertyInput | IntegrationPropertyUpdateManyWithWhereWithoutUser_propertyInput[]
+    deleteMany?: IntegrationPropertyScalarWhereInput | IntegrationPropertyScalarWhereInput[]
+  }
+
+  export type IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput = {
+    create?: XOR<IntegrationPropertyCreateWithoutUser_propertyInput, IntegrationPropertyUncheckedCreateWithoutUser_propertyInput> | IntegrationPropertyCreateWithoutUser_propertyInput[] | IntegrationPropertyUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutUser_propertyInput | IntegrationPropertyCreateOrConnectWithoutUser_propertyInput[]
+    upsert?: IntegrationPropertyUpsertWithWhereUniqueWithoutUser_propertyInput | IntegrationPropertyUpsertWithWhereUniqueWithoutUser_propertyInput[]
+    createMany?: IntegrationPropertyCreateManyUser_propertyInputEnvelope
+    set?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
+    disconnect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
+    delete?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
+    connect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
+    update?: IntegrationPropertyUpdateWithWhereUniqueWithoutUser_propertyInput | IntegrationPropertyUpdateWithWhereUniqueWithoutUser_propertyInput[]
+    updateMany?: IntegrationPropertyUpdateManyWithWhereWithoutUser_propertyInput | IntegrationPropertyUpdateManyWithWhereWithoutUser_propertyInput[]
+    deleteMany?: IntegrationPropertyScalarWhereInput | IntegrationPropertyScalarWhereInput[]
   }
 
   export type ComputerUseStepCreateNestedManyWithoutScreenshot_beforeInput = {
@@ -49842,6 +49871,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
+    integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutUserInput = {
@@ -49890,6 +49920,7 @@ export namespace Prisma {
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
+    integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutUserInput = {
@@ -49984,13 +50015,13 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     user_integration_settings: UserIntegrationSettingsCreateNestedOneWithoutIntegration_propertiesInput
-    property: PropertyCreateNestedOneWithoutIntegration_propertiesInput
+    user_property: UserPropertyCreateNestedOneWithoutIntegration_propertiesInput
   }
 
   export type IntegrationPropertyUncheckedCreateWithoutUserInput = {
     id?: string
     user_integration_settings_id: string
-    property_id: string
+    user_property_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
@@ -50198,7 +50229,7 @@ export namespace Prisma {
     id?: StringFilter<"IntegrationProperty"> | string
     user_id?: StringFilter<"IntegrationProperty"> | string
     user_integration_settings_id?: StringFilter<"IntegrationProperty"> | string
-    property_id?: StringFilter<"IntegrationProperty"> | string
+    user_property_id?: StringFilter<"IntegrationProperty"> | string
     images?: JsonNullableFilter<"IntegrationProperty">
     created_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
@@ -50428,13 +50459,13 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutIntegration_propertiesInput
-    property: PropertyCreateNestedOneWithoutIntegration_propertiesInput
+    user_property: UserPropertyCreateNestedOneWithoutIntegration_propertiesInput
   }
 
   export type IntegrationPropertyUncheckedCreateWithoutUser_integration_settingsInput = {
     id?: string
     user_id: string
-    property_id: string
+    user_property_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
@@ -55810,6 +55841,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutSaved_propertiesInput
+    integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutCanonical_propertyInput = {
@@ -55858,6 +55890,7 @@ export namespace Prisma {
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
+    integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutCanonical_propertyInput = {
@@ -55897,34 +55930,6 @@ export namespace Prisma {
 
   export type PropertyHistoryCreateManyPropertyInputEnvelope = {
     data: PropertyHistoryCreateManyPropertyInput | PropertyHistoryCreateManyPropertyInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type IntegrationPropertyCreateWithoutPropertyInput = {
-    id?: string
-    images?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: Date | string
-    updated_at?: Date | string
-    user: UserCreateNestedOneWithoutIntegration_propertiesInput
-    user_integration_settings: UserIntegrationSettingsCreateNestedOneWithoutIntegration_propertiesInput
-  }
-
-  export type IntegrationPropertyUncheckedCreateWithoutPropertyInput = {
-    id?: string
-    user_id: string
-    user_integration_settings_id: string
-    images?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
-  export type IntegrationPropertyCreateOrConnectWithoutPropertyInput = {
-    where: IntegrationPropertyWhereUniqueInput
-    create: XOR<IntegrationPropertyCreateWithoutPropertyInput, IntegrationPropertyUncheckedCreateWithoutPropertyInput>
-  }
-
-  export type IntegrationPropertyCreateManyPropertyInputEnvelope = {
-    data: IntegrationPropertyCreateManyPropertyInput | IntegrationPropertyCreateManyPropertyInput[]
     skipDuplicates?: boolean
   }
 
@@ -55974,22 +55979,6 @@ export namespace Prisma {
   export type PropertyHistoryUpdateManyWithWhereWithoutPropertyInput = {
     where: PropertyHistoryScalarWhereInput
     data: XOR<PropertyHistoryUpdateManyMutationInput, PropertyHistoryUncheckedUpdateManyWithoutPropertyInput>
-  }
-
-  export type IntegrationPropertyUpsertWithWhereUniqueWithoutPropertyInput = {
-    where: IntegrationPropertyWhereUniqueInput
-    update: XOR<IntegrationPropertyUpdateWithoutPropertyInput, IntegrationPropertyUncheckedUpdateWithoutPropertyInput>
-    create: XOR<IntegrationPropertyCreateWithoutPropertyInput, IntegrationPropertyUncheckedCreateWithoutPropertyInput>
-  }
-
-  export type IntegrationPropertyUpdateWithWhereUniqueWithoutPropertyInput = {
-    where: IntegrationPropertyWhereUniqueInput
-    data: XOR<IntegrationPropertyUpdateWithoutPropertyInput, IntegrationPropertyUncheckedUpdateWithoutPropertyInput>
-  }
-
-  export type IntegrationPropertyUpdateManyWithWhereWithoutPropertyInput = {
-    where: IntegrationPropertyScalarWhereInput
-    data: XOR<IntegrationPropertyUpdateManyMutationInput, IntegrationPropertyUncheckedUpdateManyWithoutPropertyInput>
   }
 
   export type UserCreateWithoutIntegration_propertiesInput = {
@@ -56050,12 +56039,13 @@ export namespace Prisma {
     create: XOR<UserIntegrationSettingsCreateWithoutIntegration_propertiesInput, UserIntegrationSettingsUncheckedCreateWithoutIntegration_propertiesInput>
   }
 
-  export type PropertyCreateWithoutIntegration_propertiesInput = {
+  export type UserPropertyCreateWithoutIntegration_propertiesInput = {
     id?: string
-    title: string
-    description?: string | null
     property_id: string
     internal_id?: string | null
+    integration_property_id?: string | null
+    title: string
+    description?: string | null
     listing_type?: $Enums.ListingType
     property_type?: $Enums.PropertyType
     status?: $Enums.PropertyStatus
@@ -56089,19 +56079,24 @@ export namespace Prisma {
     price_start?: Decimal | DecimalJsLike | number | string | null
     price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
+    is_modified?: boolean
+    pending_crm_update?: boolean
+    last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
-    source_links?: PropertySourceLinkCreateNestedManyWithoutPropertyInput
-    user_property_copies?: UserPropertyCreateNestedManyWithoutCanonical_propertyInput
-    history?: PropertyHistoryCreateNestedManyWithoutPropertyInput
+    user: UserCreateNestedOneWithoutSaved_propertiesInput
+    canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
   }
 
-  export type PropertyUncheckedCreateWithoutIntegration_propertiesInput = {
+  export type UserPropertyUncheckedCreateWithoutIntegration_propertiesInput = {
     id?: string
-    title: string
-    description?: string | null
+    user_id: string
+    canonical_property_id: string
     property_id: string
     internal_id?: string | null
+    integration_property_id?: string | null
+    title: string
+    description?: string | null
     listing_type?: $Enums.ListingType
     property_type?: $Enums.PropertyType
     status?: $Enums.PropertyStatus
@@ -56135,16 +56130,16 @@ export namespace Prisma {
     price_start?: Decimal | DecimalJsLike | number | string | null
     price_web?: Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: string | null
+    is_modified?: boolean
+    pending_crm_update?: boolean
+    last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
-    source_links?: PropertySourceLinkUncheckedCreateNestedManyWithoutPropertyInput
-    user_property_copies?: UserPropertyUncheckedCreateNestedManyWithoutCanonical_propertyInput
-    history?: PropertyHistoryUncheckedCreateNestedManyWithoutPropertyInput
   }
 
-  export type PropertyCreateOrConnectWithoutIntegration_propertiesInput = {
-    where: PropertyWhereUniqueInput
-    create: XOR<PropertyCreateWithoutIntegration_propertiesInput, PropertyUncheckedCreateWithoutIntegration_propertiesInput>
+  export type UserPropertyCreateOrConnectWithoutIntegration_propertiesInput = {
+    where: UserPropertyWhereUniqueInput
+    create: XOR<UserPropertyCreateWithoutIntegration_propertiesInput, UserPropertyUncheckedCreateWithoutIntegration_propertiesInput>
   }
 
   export type UserUpsertWithoutIntegration_propertiesInput = {
@@ -56217,23 +56212,24 @@ export namespace Prisma {
     accounts?: UserIntegrationUncheckedUpdateManyWithoutSettingsNestedInput
   }
 
-  export type PropertyUpsertWithoutIntegration_propertiesInput = {
-    update: XOR<PropertyUpdateWithoutIntegration_propertiesInput, PropertyUncheckedUpdateWithoutIntegration_propertiesInput>
-    create: XOR<PropertyCreateWithoutIntegration_propertiesInput, PropertyUncheckedCreateWithoutIntegration_propertiesInput>
-    where?: PropertyWhereInput
+  export type UserPropertyUpsertWithoutIntegration_propertiesInput = {
+    update: XOR<UserPropertyUpdateWithoutIntegration_propertiesInput, UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput>
+    create: XOR<UserPropertyCreateWithoutIntegration_propertiesInput, UserPropertyUncheckedCreateWithoutIntegration_propertiesInput>
+    where?: UserPropertyWhereInput
   }
 
-  export type PropertyUpdateToOneWithWhereWithoutIntegration_propertiesInput = {
-    where?: PropertyWhereInput
-    data: XOR<PropertyUpdateWithoutIntegration_propertiesInput, PropertyUncheckedUpdateWithoutIntegration_propertiesInput>
+  export type UserPropertyUpdateToOneWithWhereWithoutIntegration_propertiesInput = {
+    where?: UserPropertyWhereInput
+    data: XOR<UserPropertyUpdateWithoutIntegration_propertiesInput, UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput>
   }
 
-  export type PropertyUpdateWithoutIntegration_propertiesInput = {
+  export type UserPropertyUpdateWithoutIntegration_propertiesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
     property_id?: StringFieldUpdateOperationsInput | string
     internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
     property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
@@ -56267,19 +56263,24 @@ export namespace Prisma {
     price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
+    is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
+    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    source_links?: PropertySourceLinkUpdateManyWithoutPropertyNestedInput
-    user_property_copies?: UserPropertyUpdateManyWithoutCanonical_propertyNestedInput
-    history?: PropertyHistoryUpdateManyWithoutPropertyNestedInput
+    user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
+    canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
   }
 
-  export type PropertyUncheckedUpdateWithoutIntegration_propertiesInput = {
+  export type UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
+    user_id?: StringFieldUpdateOperationsInput | string
+    canonical_property_id?: StringFieldUpdateOperationsInput | string
     property_id?: StringFieldUpdateOperationsInput | string
     internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
     property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
@@ -56313,11 +56314,11 @@ export namespace Prisma {
     price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
+    is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
+    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    source_links?: PropertySourceLinkUncheckedUpdateManyWithoutPropertyNestedInput
-    user_property_copies?: UserPropertyUncheckedUpdateManyWithoutCanonical_propertyNestedInput
-    history?: PropertyHistoryUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyCreateWithoutSource_linksInput = {
@@ -56363,7 +56364,6 @@ export namespace Prisma {
     updated_at?: Date | string
     user_property_copies?: UserPropertyCreateNestedManyWithoutCanonical_propertyInput
     history?: PropertyHistoryCreateNestedManyWithoutPropertyInput
-    integration_properties?: IntegrationPropertyCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutSource_linksInput = {
@@ -56409,7 +56409,6 @@ export namespace Prisma {
     updated_at?: Date | string
     user_property_copies?: UserPropertyUncheckedCreateNestedManyWithoutCanonical_propertyInput
     history?: PropertyHistoryUncheckedCreateNestedManyWithoutPropertyInput
-    integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutSource_linksInput = {
@@ -56528,7 +56527,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_property_copies?: UserPropertyUpdateManyWithoutCanonical_propertyNestedInput
     history?: PropertyHistoryUpdateManyWithoutPropertyNestedInput
-    integration_properties?: IntegrationPropertyUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutSource_linksInput = {
@@ -56574,7 +56572,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_property_copies?: UserPropertyUncheckedUpdateManyWithoutCanonical_propertyNestedInput
     history?: PropertyHistoryUncheckedUpdateManyWithoutPropertyNestedInput
-    integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type SourcePropertyUpsertWithoutProperty_linksInput = {
@@ -56683,7 +56680,6 @@ export namespace Prisma {
     updated_at?: Date | string
     source_links?: PropertySourceLinkCreateNestedManyWithoutPropertyInput
     user_property_copies?: UserPropertyCreateNestedManyWithoutCanonical_propertyInput
-    integration_properties?: IntegrationPropertyCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutHistoryInput = {
@@ -56729,7 +56725,6 @@ export namespace Prisma {
     updated_at?: Date | string
     source_links?: PropertySourceLinkUncheckedCreateNestedManyWithoutPropertyInput
     user_property_copies?: UserPropertyUncheckedCreateNestedManyWithoutCanonical_propertyInput
-    integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutHistoryInput = {
@@ -56864,7 +56859,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_links?: PropertySourceLinkUpdateManyWithoutPropertyNestedInput
     user_property_copies?: UserPropertyUpdateManyWithoutCanonical_propertyNestedInput
-    integration_properties?: IntegrationPropertyUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutHistoryInput = {
@@ -56910,7 +56904,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_links?: PropertySourceLinkUncheckedUpdateManyWithoutPropertyNestedInput
     user_property_copies?: UserPropertyUncheckedUpdateManyWithoutCanonical_propertyNestedInput
-    integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type CrawlRunUpsertWithoutProperty_historyInput = {
@@ -57068,7 +57061,6 @@ export namespace Prisma {
     updated_at?: Date | string
     source_links?: PropertySourceLinkCreateNestedManyWithoutPropertyInput
     history?: PropertyHistoryCreateNestedManyWithoutPropertyInput
-    integration_properties?: IntegrationPropertyCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutUser_property_copiesInput = {
@@ -57114,12 +57106,39 @@ export namespace Prisma {
     updated_at?: Date | string
     source_links?: PropertySourceLinkUncheckedCreateNestedManyWithoutPropertyInput
     history?: PropertyHistoryUncheckedCreateNestedManyWithoutPropertyInput
-    integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutUser_property_copiesInput = {
     where: PropertyWhereUniqueInput
     create: XOR<PropertyCreateWithoutUser_property_copiesInput, PropertyUncheckedCreateWithoutUser_property_copiesInput>
+  }
+
+  export type IntegrationPropertyCreateWithoutUser_propertyInput = {
+    id?: string
+    images?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutIntegration_propertiesInput
+    user_integration_settings: UserIntegrationSettingsCreateNestedOneWithoutIntegration_propertiesInput
+  }
+
+  export type IntegrationPropertyUncheckedCreateWithoutUser_propertyInput = {
+    id?: string
+    user_id: string
+    user_integration_settings_id: string
+    images?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type IntegrationPropertyCreateOrConnectWithoutUser_propertyInput = {
+    where: IntegrationPropertyWhereUniqueInput
+    create: XOR<IntegrationPropertyCreateWithoutUser_propertyInput, IntegrationPropertyUncheckedCreateWithoutUser_propertyInput>
+  }
+
+  export type IntegrationPropertyCreateManyUser_propertyInputEnvelope = {
+    data: IntegrationPropertyCreateManyUser_propertyInput | IntegrationPropertyCreateManyUser_propertyInput[]
+    skipDuplicates?: boolean
   }
 
   export type UserUpsertWithoutSaved_propertiesInput = {
@@ -57215,7 +57234,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_links?: PropertySourceLinkUpdateManyWithoutPropertyNestedInput
     history?: PropertyHistoryUpdateManyWithoutPropertyNestedInput
-    integration_properties?: IntegrationPropertyUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutUser_property_copiesInput = {
@@ -57261,7 +57279,22 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_links?: PropertySourceLinkUncheckedUpdateManyWithoutPropertyNestedInput
     history?: PropertyHistoryUncheckedUpdateManyWithoutPropertyNestedInput
-    integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutPropertyNestedInput
+  }
+
+  export type IntegrationPropertyUpsertWithWhereUniqueWithoutUser_propertyInput = {
+    where: IntegrationPropertyWhereUniqueInput
+    update: XOR<IntegrationPropertyUpdateWithoutUser_propertyInput, IntegrationPropertyUncheckedUpdateWithoutUser_propertyInput>
+    create: XOR<IntegrationPropertyCreateWithoutUser_propertyInput, IntegrationPropertyUncheckedCreateWithoutUser_propertyInput>
+  }
+
+  export type IntegrationPropertyUpdateWithWhereUniqueWithoutUser_propertyInput = {
+    where: IntegrationPropertyWhereUniqueInput
+    data: XOR<IntegrationPropertyUpdateWithoutUser_propertyInput, IntegrationPropertyUncheckedUpdateWithoutUser_propertyInput>
+  }
+
+  export type IntegrationPropertyUpdateManyWithWhereWithoutUser_propertyInput = {
+    where: IntegrationPropertyScalarWhereInput
+    data: XOR<IntegrationPropertyUpdateManyMutationInput, IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyInput>
   }
 
   export type ComputerUseStepCreateWithoutScreenshot_beforeInput = {
@@ -57452,7 +57485,7 @@ export namespace Prisma {
   export type IntegrationPropertyCreateManyUserInput = {
     id?: string
     user_integration_settings_id: string
-    property_id: string
+    user_property_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
@@ -57559,6 +57592,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
+    integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutUserInput = {
@@ -57607,6 +57641,7 @@ export namespace Prisma {
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateManyWithoutUserInput = {
@@ -57743,13 +57778,13 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_integration_settings?: UserIntegrationSettingsUpdateOneRequiredWithoutIntegration_propertiesNestedInput
-    property?: PropertyUpdateOneRequiredWithoutIntegration_propertiesNestedInput
+    user_property?: UserPropertyUpdateOneRequiredWithoutIntegration_propertiesNestedInput
   }
 
   export type IntegrationPropertyUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     user_integration_settings_id?: StringFieldUpdateOperationsInput | string
-    property_id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -57758,7 +57793,7 @@ export namespace Prisma {
   export type IntegrationPropertyUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     user_integration_settings_id?: StringFieldUpdateOperationsInput | string
-    property_id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -57887,7 +57922,7 @@ export namespace Prisma {
   export type IntegrationPropertyCreateManyUser_integration_settingsInput = {
     id?: string
     user_id: string
-    property_id: string
+    user_property_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
@@ -57951,13 +57986,13 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutIntegration_propertiesNestedInput
-    property?: PropertyUpdateOneRequiredWithoutIntegration_propertiesNestedInput
+    user_property?: UserPropertyUpdateOneRequiredWithoutIntegration_propertiesNestedInput
   }
 
   export type IntegrationPropertyUncheckedUpdateWithoutUser_integration_settingsInput = {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
-    property_id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -57966,7 +58001,7 @@ export namespace Prisma {
   export type IntegrationPropertyUncheckedUpdateManyWithoutUser_integration_settingsInput = {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
-    property_id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -59536,15 +59571,6 @@ export namespace Prisma {
     created_at?: Date | string
   }
 
-  export type IntegrationPropertyCreateManyPropertyInput = {
-    id?: string
-    user_id: string
-    user_integration_settings_id: string
-    images?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
   export type PropertySourceLinkUpdateWithoutPropertyInput = {
     id?: StringFieldUpdateOperationsInput | string
     confidence_score?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -59621,6 +59647,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
+    integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutCanonical_propertyInput = {
@@ -59669,6 +59696,7 @@ export namespace Prisma {
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateManyWithoutCanonical_propertyInput = {
@@ -59749,7 +59777,16 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type IntegrationPropertyUpdateWithoutPropertyInput = {
+  export type IntegrationPropertyCreateManyUser_propertyInput = {
+    id?: string
+    user_id: string
+    user_integration_settings_id: string
+    images?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type IntegrationPropertyUpdateWithoutUser_propertyInput = {
     id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -59758,7 +59795,7 @@ export namespace Prisma {
     user_integration_settings?: UserIntegrationSettingsUpdateOneRequiredWithoutIntegration_propertiesNestedInput
   }
 
-  export type IntegrationPropertyUncheckedUpdateWithoutPropertyInput = {
+  export type IntegrationPropertyUncheckedUpdateWithoutUser_propertyInput = {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     user_integration_settings_id?: StringFieldUpdateOperationsInput | string
@@ -59767,7 +59804,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type IntegrationPropertyUncheckedUpdateManyWithoutPropertyInput = {
+  export type IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyInput = {
     id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
     user_integration_settings_id?: StringFieldUpdateOperationsInput | string
