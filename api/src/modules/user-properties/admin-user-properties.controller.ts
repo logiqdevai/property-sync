@@ -32,6 +32,7 @@ import {
 } from './dto/admin-user-property-query.schema';
 import { DeleteUserPropertiesDto } from './dto/delete-user-properties.dto';
 import { DeleteIntegrationImagesDto } from './dto/delete-integration-images.dto';
+import { CreateIntegrationImagesDto } from './dto/create-integration-images.dto';
 import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
 import { UserPropertyEntity } from './entities/user-property.entity';
 
@@ -204,6 +205,25 @@ export class AdminUserPropertiesController {
     return this.userPropertiesService.adminDeleteIntegrationImages(
       id,
       dto.image_ids,
+    );
+  }
+
+  @Post(':id/create-integration-images')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Upload selected Property.images into CRM via the linked integration adapter',
+  })
+  @ApiResponse({ status: 200, type: UserPropertyEntity })
+  @ApiResponse({ status: 400, description: 'Cannot create images' })
+  @ApiResponse({ status: 404, description: 'User property not found' })
+  createIntegrationImages(
+    @Param('id') id: string,
+    @Body() dto: CreateIntegrationImagesDto,
+  ) {
+    return this.userPropertiesService.adminCreateIntegrationImages(
+      id,
+      dto.image_indexes,
     );
   }
 

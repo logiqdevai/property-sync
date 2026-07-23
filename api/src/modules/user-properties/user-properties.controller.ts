@@ -26,6 +26,7 @@ import { UserPropertiesService } from './user-properties.service';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import { DeleteUserPropertiesDto } from './dto/delete-user-properties.dto';
 import { DeleteIntegrationImagesDto } from './dto/delete-integration-images.dto';
+import { CreateIntegrationImagesDto } from './dto/create-integration-images.dto';
 import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
 import {
   UserPropertyQuerySchema,
@@ -276,6 +277,29 @@ export class UserPropertiesController {
       userId,
       id,
       dto.image_ids,
+    );
+  }
+
+  @Post(':id/create-integration-images')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Upload selected Property.images into CRM via the linked integration adapter (admin only)',
+  })
+  @ApiResponse({ status: 200, type: UserPropertyEntity })
+  @ApiResponse({ status: 400, description: 'Cannot create images' })
+  @ApiResponse({ status: 403, description: 'Admin only' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  createIntegrationImages(
+    @CurrentUser('id') userId: string,
+    @Param('id') id: string,
+    @Body() dto: CreateIntegrationImagesDto,
+  ) {
+    return this.userPropertiesService.createIntegrationImages(
+      userId,
+      id,
+      dto.image_indexes,
     );
   }
 

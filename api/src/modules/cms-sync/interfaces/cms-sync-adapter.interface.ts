@@ -11,6 +11,13 @@ export interface CmsSyncDeleteImagesParams {
   imageIds: Array<number | string>;
 }
 
+export interface CmsSyncCreateImagesParams {
+  userIntegrationId: string;
+  crmPropertyId: string;
+  canonicalPropertyId: string;
+  sourceImageUrls: string[];
+}
+
 export interface CmsSyncAdapter {
   pushCreate(
     userIntegrationId: string,
@@ -27,4 +34,5 @@ export interface CmsSyncAdapter {
     userProperty: UserProperty,
   ): Promise<void>;
   deleteImages(params: CmsSyncDeleteImagesParams): Promise<void>;
+  createImages(params: CmsSyncCreateImagesParams): Promise<void>;
 }

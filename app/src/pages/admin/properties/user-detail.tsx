@@ -13,6 +13,7 @@ import {
   useAdminUserProperty,
   useDeleteAdminUserProperty,
   useDeleteAdminUserPropertyIntegrationImages,
+  useCreateAdminUserPropertyIntegrationImages,
   useMigrateAdminUserPropertyIntegrationImages,
 } from "@/features/user-properties/hooks/use-user-properties";
 
@@ -24,6 +25,7 @@ export default function UserPropertyDetailPage() {
   const deleteUserProperty = useDeleteAdminUserProperty();
   const migrateImages = useMigrateAdminUserPropertyIntegrationImages();
   const deleteIntegrationImages = useDeleteAdminUserPropertyIntegrationImages();
+  const createIntegrationImages = useCreateAdminUserPropertyIntegrationImages();
 
   const headerActions = useMemo<TableRowAction[]>(() => {
     if (!property) return [];
@@ -104,6 +106,14 @@ export default function UserPropertyDetailPage() {
         });
       }}
       isDeletingIntegrationImages={deleteIntegrationImages.isPending}
+      canCreateIntegrationImages
+      onCreateIntegrationImages={async (imageIndexes) => {
+        await createIntegrationImages.mutateAsync({
+          id: property.id,
+          imageIndexes,
+        });
+      }}
+      isCreatingIntegrationImages={createIntegrationImages.isPending}
       headerActions={
         <div className="flex items-center gap-2 flex-wrap">
           {property.user ? (
@@ -120,7 +130,8 @@ export default function UserPropertyDetailPage() {
             isPending={
               migrateImages.isPending ||
               deleteUserProperty.isPending ||
-              deleteIntegrationImages.isPending
+              deleteIntegrationImages.isPending ||
+              createIntegrationImages.isPending
             }
           />
         </div>

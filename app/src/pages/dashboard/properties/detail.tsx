@@ -25,6 +25,7 @@ import {
 import {
   useMigrateUserPropertyIntegrationImages,
   useDeleteUserPropertyIntegrationImages,
+  useCreateUserPropertyIntegrationImages,
   usePushUserPropertyToCrm,
   useTruncateUserPropertyDescriptions,
   useUpdateUserProperty,
@@ -108,6 +109,7 @@ export default function DashboardPropertyDetailPage() {
   const pushToCrm = usePushUserPropertyToCrm();
   const migrateImages = useMigrateUserPropertyIntegrationImages();
   const deleteIntegrationImages = useDeleteUserPropertyIntegrationImages();
+  const createIntegrationImages = useCreateUserPropertyIntegrationImages();
   const truncateDescriptions = useTruncateUserPropertyDescriptions();
   const { data: locationCatalog = [] } = useEstateWebLocationCatalog(isEditing);
   const { data: floorCatalog = [], isPending: floorCatalogPending } =
@@ -381,6 +383,16 @@ export default function DashboardPropertyDetailPage() {
           });
         }}
         isDeletingIntegrationImages={deleteIntegrationImages.isPending}
+        canCreateIntegrationImages={
+          role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN
+        }
+        onCreateIntegrationImages={async (imageIndexes) => {
+          await createIntegrationImages.mutateAsync({
+            id: property.id,
+            imageIndexes,
+          });
+        }}
+        isCreatingIntegrationImages={createIntegrationImages.isPending}
         headerActions={
           <BulkActionsMenu
             actions={headerActions}
@@ -388,7 +400,8 @@ export default function DashboardPropertyDetailPage() {
             isPending={
               pushToCrm.isPending ||
               migrateImages.isPending ||
-              deleteIntegrationImages.isPending
+              deleteIntegrationImages.isPending ||
+              createIntegrationImages.isPending
             }
           />
         }

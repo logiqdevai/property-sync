@@ -6,6 +6,7 @@ import type {
 export type PropertyDisplayImage = {
   key: string;
   crmImageId: number | null;
+  propertyImageIndex: number | null;
   url: string;
 };
 
@@ -29,8 +30,25 @@ function resolveIntegrationImageDisplayUrl(
   return null;
 }
 
+function resolvePropertyImageIndex(
+  image: IntegrationPropertyImage,
+  index: number,
+  propertyImages: string[],
+): number | null {
+  if (
+    typeof image.source_image === "string" &&
+    image.source_image.length > 0
+  ) {
+    const matched = propertyImages.indexOf(image.source_image);
+    if (matched >= 0) return matched;
+  }
+  if (index >= 0 && index < propertyImages.length) return index;
+  return null;
+}
+
 export function getIntegrationPropertyDisplayImages(
   integrationProperty: IntegrationProperty | null | undefined,
+  propertyImages: string[] = [],
 ): PropertyDisplayImage[] {
   if (!integrationProperty?.images?.length) return [];
 
@@ -42,6 +60,11 @@ export function getIntegrationPropertyDisplayImages(
     items.push({
       key: `${image.id}-${index}`,
       crmImageId: typeof image.id === "number" ? image.id : null,
+      propertyImageIndex: resolvePropertyImageIndex(
+        image,
+        index,
+        propertyImages,
+      ),
       url,
     });
   }
@@ -53,16 +76,19 @@ export function resolvePropertyDisplayImages(params: {
   integrationProperty?: IntegrationProperty | null;
   fallbackImages?: string[] | null;
 }): PropertyDisplayImage[] {
+  const propertyImages = (params.fallbackImages ?? []).filter(
+    (url): url is string => typeof url === "string" && url.length > 0,
+  );
   const integrationItems = getIntegrationPropertyDisplayImages(
     params.integrationProperty,
+    propertyImages,
   );
   if (integrationItems.length > 0) return integrationItems;
-  if (!params.fallbackImages?.length) return [];
-  return params.fallbackImages
-    .filter((url): url is string => typeof url === "string" && url.length > 0)
-    .map((url, index) => ({
-      key: `fallback-${index}`,
-      crmImageId: null,
-      url,
-    }));
+  if (!propertyImages.length) return [];
+  return propertyImages.map((url, index) => ({
+    key: `fallback-${index}`,
+    crmImageId: null,
+    propertyImageIndex: index,
+    url,
+  }));
 }

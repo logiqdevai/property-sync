@@ -4,6 +4,7 @@ import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
   CmsPushCreateResult,
   CmsSyncAdapter,
+  CmsSyncCreateImagesParams,
   CmsSyncDeleteImagesParams,
 } from '@/modules/cms-sync/interfaces/cms-sync-adapter.interface';
 import { CmsPropertyFieldEntry } from '@/modules/properties/interfaces/cms-property.interface';
@@ -171,6 +172,74 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       userIntegrationId: params.userIntegrationId,
       canonicalPropertyId: params.canonicalPropertyId,
       estateWebPropertyId: params.crmPropertyId,
+    });
+  }
+
+  async createImages(params: CmsSyncCreateImagesParams): Promise<void> {
+    const sourceImageUrls = [
+      ...new Set(
+        params.sourceImageUrls.filter(
+          (url): url is string => typeof url === 'string' && url.length > 0,
+        ),
+      ),
+    ];
+    if (sourceImageUrls.length === 0) {
+      throw new EstateWebException(
+        'No source image urls provided',
+        NotificationType.ESTATEWEB_VALIDATION_FAILED,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const propertyId = Number(params.crmPropertyId);
+    const sourceByFilename = new Map<string, string>();
+    let uploadedCount = 0;
+
+    for (let index = 0; index < sourceImageUrls.length; index++) {
+      const url = sourceImageUrls[index];
+      try {
+        const buffer = await this.downloadImage(url);
+        if (!buffer?.length) continue;
+
+        const filename = this.buildUniqueImageFilename(url, propertyId, index);
+        const payload: EstateWebUploadImagePayload = {
+          filename,
+          show_on_site: 1,
+          show_on_groups: 1,
+          show_on_foreign_agents: 0,
+          zindex: index + 1,
+        };
+
+        await this.estateWebPropertyService.uploadPropertyImage(
+          params.userIntegrationId,
+          propertyId,
+          buffer,
+          payload,
+          'image/jpeg',
+        );
+        sourceByFilename.set(filename, url);
+        uploadedCount += 1;
+      } catch (error) {
+        this.logger.warn(
+          `Failed to upload source image for CRM property=${params.crmPropertyId}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    if (uploadedCount === 0) {
+      throw new EstateWebException(
+        'Failed to upload any source images to CRM',
+        NotificationType.ESTATEWEB_EMPTY_IMAGE,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.syncIntegrationPropertyImages({
+      userIntegrationId: params.userIntegrationId,
+      canonicalPropertyId: params.canonicalPropertyId,
+      estateWebPropertyId: params.crmPropertyId,
+      sourceByFilename,
+      sourceImageUrls,
     });
   }
 

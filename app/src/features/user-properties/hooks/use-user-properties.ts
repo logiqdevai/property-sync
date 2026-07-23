@@ -19,6 +19,8 @@ import {
   migrateUserPropertyIntegrationImages,
   deleteAdminUserPropertyIntegrationImages,
   deleteUserPropertyIntegrationImages,
+  createAdminUserPropertyIntegrationImages,
+  createUserPropertyIntegrationImages,
   splitAdminUserProperties,
   splitUserProperties,
   truncateAdminUserPropertyDescriptions,
@@ -235,6 +237,70 @@ export const useDeleteAdminUserPropertyIntegrationImages = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not delete CRM images",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useCreateUserPropertyIntegrationImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      imageIndexes,
+    }: {
+      id: string;
+      imageIndexes: number[];
+    }) => createUserPropertyIntegrationImages(id, imageIndexes),
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(["userProperties", "detail", data.id], data);
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      const count = variables.imageIndexes.length;
+      toast({
+        title: "Photos uploaded to CRM",
+        description: `Uploaded ${count} ${count === 1 ? "photo" : "photos"}.`,
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not upload photos",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useCreateAdminUserPropertyIntegrationImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      imageIndexes,
+    }: {
+      id: string;
+      imageIndexes: number[];
+    }) => createAdminUserPropertyIntegrationImages(id, imageIndexes),
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(["adminUserProperties", "detail", data.id], data);
+      queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
+      const count = variables.imageIndexes.length;
+      toast({
+        title: "Photos uploaded to CRM",
+        description: `Uploaded ${count} ${count === 1 ? "photo" : "photos"}.`,
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not upload photos",
         description: error.message,
         variant: "error",
       });

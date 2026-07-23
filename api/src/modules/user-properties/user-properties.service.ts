@@ -559,6 +559,108 @@ export class UserPropertiesService {
     return this.adminFindOne(id);
   }
 
+  async adminCreateIntegrationImages(id: string, imageIndexes: number[]) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+        images: true,
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    await this.runCreateIntegrationImages(userProperty, imageIndexes);
+    return this.adminFindOne(id);
+  }
+
+  async createIntegrationImages(
+    userId: string,
+    id: string,
+    imageIndexes: number[],
+  ) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id, user_id: userId },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+        images: true,
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    await this.runCreateIntegrationImages(userProperty, imageIndexes);
+    return this.findOne(userId, id);
+  }
+
+  private async runCreateIntegrationImages(
+    userProperty: {
+      id: string;
+      user_id: string;
+      canonical_property_id: string;
+      integration_property_id: string | null;
+      images: unknown;
+    },
+    imageIndexes: number[],
+  ) {
+    if (!userProperty.integration_property_id) {
+      throw new BadRequestException('Property is not linked to a CRM');
+    }
+
+    const propertyImages = Array.isArray(userProperty.images)
+      ? userProperty.images.filter(
+          (item): item is string => typeof item === 'string' && item.length > 0,
+        )
+      : [];
+
+    const uniqueIndexes = [
+      ...new Set(
+        imageIndexes.filter(
+          (index) =>
+            Number.isInteger(index) &&
+            index >= 0 &&
+            index < propertyImages.length,
+        ),
+      ),
+    ].sort((a, b) => a - b);
+
+    if (uniqueIndexes.length === 0) {
+      throw new BadRequestException(
+        'No valid Property.images indexes provided',
+      );
+    }
+
+    const sourceImageUrls = uniqueIndexes.map(
+      (index) => propertyImages[index],
+    );
+
+    const { userIntegrationId, integrationType } =
+      await this.resolveCmsIntegrationForProperty(userProperty);
+
+    try {
+      const adapter = this.cmsSyncAdapterFactory.getAdapter(integrationType);
+      await adapter.createImages({
+        userIntegrationId,
+        crmPropertyId: userProperty.integration_property_id,
+        canonicalPropertyId: userProperty.canonical_property_id,
+        sourceImageUrls,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(message);
+    }
+  }
+
   private async runDeleteIntegrationImages(
     userProperty: {
       id: string;

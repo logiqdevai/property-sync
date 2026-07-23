@@ -7,6 +7,7 @@ import {
   Building2,
   Calendar,
   ExternalLink,
+  Images,
   MapPin,
   Maximize2,
   Ruler,
@@ -174,52 +175,98 @@ function PropertyImagesGrid({
   fallbackImages,
   title,
   selectable = false,
+  canCreateFromPropertyImages = false,
   onDeleteSelected,
+  onCreateSelected,
   isDeletePending = false,
+  isCreatePending = false,
 }: {
   images: PropertyDisplayImage[];
   fallbackImages: string[];
   title: string;
   selectable?: boolean;
+  canCreateFromPropertyImages?: boolean;
   onDeleteSelected?: (imageIds: number[]) => Promise<void> | void;
+  onCreateSelected?: (imageIndexes: number[]) => Promise<void> | void;
   isDeletePending?: boolean;
+  isCreatePending?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(
+    new Set(),
+  );
   const deleteConfirm = useOverlayState();
+  const createConfirm = useOverlayState();
   const canExpand = images.length > 2;
-  const selectableIds = images
-    .map((image) => image.crmImageId)
-    .filter((id): id is number => id != null);
-  const canSelect = selectable && selectableIds.length > 0 && Boolean(onDeleteSelected);
+  const isPending = isDeletePending || isCreatePending;
+  const canSelect =
+    selectable &&
+    images.length > 0 &&
+    (Boolean(onDeleteSelected) ||
+      (canCreateFromPropertyImages && Boolean(onCreateSelected)));
   const allSelected =
     canSelect &&
-    selectableIds.length > 0 &&
-    selectableIds.every((id) => selectedIds.has(id));
-  const selectedCount = selectedIds.size;
+    images.length > 0 &&
+    images.every((_, index) => selectedIndexes.has(index));
+  const selectedCount = selectedIndexes.size;
+  const selectedCrmIds = [
+    ...new Set(
+      [...selectedIndexes]
+        .map((index) => images[index]?.crmImageId)
+        .filter((id): id is number => id != null),
+    ),
+  ];
+  const selectedPropertyIndexes = [
+    ...new Set(
+      [...selectedIndexes]
+        .map((index) => images[index]?.propertyImageIndex)
+        .filter((index): index is number => index != null),
+    ),
+  ].sort((a, b) => a - b);
 
   const selectAll = () => {
-    setSelectedIds(new Set(selectableIds));
+    setSelectedIndexes(new Set(images.map((_, index) => index)));
   };
 
   const deselectAll = () => {
-    setSelectedIds(new Set());
+    setSelectedIndexes(new Set());
   };
 
   const bulkActions: TableRowAction[] = [
-    {
-      id: "delete",
-      label: `Delete${selectedCount > 0 ? ` (${selectedCount})` : ""}`,
-      variant: "danger",
-      icon: Trash2,
-      isDisabled: isDeletePending || selectedCount === 0,
-    },
+    ...(onDeleteSelected
+      ? [
+          {
+            id: "delete",
+            label: `Delete${selectedCrmIds.length > 0 ? ` (${selectedCrmIds.length})` : ""}`,
+            variant: "danger" as const,
+            icon: Trash2,
+            isDisabled: isPending || selectedCrmIds.length === 0,
+          },
+        ]
+      : []),
+    ...(canCreateFromPropertyImages && onCreateSelected
+      ? [
+          {
+            id: "create-from-property",
+            label: `Upload to CRM${selectedPropertyIndexes.length > 0 ? ` (${selectedPropertyIndexes.length})` : ""}`,
+            variant: "accent" as const,
+            icon: Images,
+            isDisabled: isPending || selectedPropertyIndexes.length === 0,
+          },
+        ]
+      : []),
   ];
 
   const handleDeleteConfirm = async () => {
-    if (!onDeleteSelected || selectedCount === 0) return;
-    await onDeleteSelected([...selectedIds]);
-    setSelectedIds(new Set());
+    if (!onDeleteSelected || selectedCrmIds.length === 0) return;
+    await onDeleteSelected(selectedCrmIds);
+    setSelectedIndexes(new Set());
+  };
+
+  const handleCreateConfirm = async () => {
+    if (!onCreateSelected || selectedPropertyIndexes.length === 0) return;
+    await onCreateSelected(selectedPropertyIndexes);
+    setSelectedIndexes(new Set());
   };
 
   return (
@@ -230,18 +277,19 @@ function PropertyImagesGrid({
             type="button"
             variant="secondary"
             size="sm"
-            isDisabled={isDeletePending || selectableIds.length === 0}
+            isDisabled={isPending || images.length === 0}
             onPress={allSelected ? deselectAll : selectAll}
           >
             {allSelected ? "Deselect all" : "Select all"}
           </Button>
-          {selectedCount > 0 ? (
+          {selectedCount > 0 && bulkActions.length > 0 ? (
             <BulkActionsMenu
               actions={bulkActions}
               onAction={(actionId) => {
                 if (actionId === "delete") deleteConfirm.open();
+                if (actionId === "create-from-property") createConfirm.open();
               }}
-              isPending={isDeletePending}
+              isPending={isPending}
               label="Actions"
             />
           ) : null}
@@ -259,9 +307,8 @@ function PropertyImagesGrid({
         )}
       >
         {images.map((image, index) => {
-          const isSelected =
-            image.crmImageId != null && selectedIds.has(image.crmImageId);
-          const showCheckbox = canSelect && image.crmImageId != null;
+          const isSelected = selectedIndexes.has(index);
+          const showCheckbox = canSelect;
 
           return (
             <div
@@ -297,11 +344,10 @@ function PropertyImagesGrid({
                     aria-label={`Select photo ${index + 1}`}
                     isSelected={isSelected}
                     onChange={(selected) => {
-                      if (image.crmImageId == null) return;
-                      setSelectedIds((current) => {
+                      setSelectedIndexes((current) => {
                         const next = new Set(current);
-                        if (selected) next.add(image.crmImageId!);
-                        else next.delete(image.crmImageId!);
+                        if (selected) next.add(index);
+                        else next.delete(index);
                         return next;
                       });
                     }}
@@ -330,14 +376,24 @@ function PropertyImagesGrid({
           {expanded ? "Show less" : "Show more"}
         </Button>
       ) : null}
-      {canSelect ? (
+      {onDeleteSelected ? (
         <ConfirmationDialog
           state={deleteConfirm}
-          title={`Delete ${selectedCount} CRM ${selectedCount === 1 ? "image" : "images"}?`}
+          title={`Delete ${selectedCrmIds.length} CRM ${selectedCrmIds.length === 1 ? "image" : "images"}?`}
           description="Selected images will be removed from the linked CRM and refreshed locally."
           confirmLabel="Delete"
           onConfirm={handleDeleteConfirm}
           isPending={isDeletePending}
+        />
+      ) : null}
+      {canCreateFromPropertyImages && onCreateSelected ? (
+        <ConfirmationDialog
+          state={createConfirm}
+          title={`Upload ${selectedPropertyIndexes.length} ${selectedPropertyIndexes.length === 1 ? "photo" : "photos"} to CRM?`}
+          description="Selected scraped photos will be uploaded to the linked CRM."
+          confirmLabel="Upload"
+          onConfirm={handleCreateConfirm}
+          isPending={isCreatePending}
         />
       ) : null}
     </div>
@@ -355,7 +411,12 @@ interface PropertyDetailViewProps {
   showFieldDiff?: boolean;
   footer?: ReactNode;
   onDeleteIntegrationImages?: (imageIds: number[]) => Promise<void> | void;
+  onCreateIntegrationImages?: (
+    imageIndexes: number[],
+  ) => Promise<void> | void;
   isDeletingIntegrationImages?: boolean;
+  isCreatingIntegrationImages?: boolean;
+  canCreateIntegrationImages?: boolean;
 }
 
 export function PropertyDetailView({
@@ -369,7 +430,10 @@ export function PropertyDetailView({
   showFieldDiff = false,
   footer,
   onDeleteIntegrationImages,
+  onCreateIntegrationImages,
   isDeletingIntegrationImages = false,
+  isCreatingIntegrationImages = false,
+  canCreateIntegrationImages = false,
 }: PropertyDetailViewProps) {
   const sourceLinks = property.source_links ?? [];
   const cmsFieldEntries = (property.cms_fields ?? []) as CmsPropertyFieldEntry[];
@@ -385,8 +449,12 @@ export function PropertyDetailView({
   const heroImage = displayImages[0] ?? null;
   const heroFallback = fallbackImages[0] ?? null;
   const canManageIntegrationImages =
-    Boolean(onDeleteIntegrationImages) &&
-    displayImages.some((image) => image.crmImageId != null);
+    (Boolean(onDeleteIntegrationImages) &&
+      displayImages.some((image) => image.crmImageId != null)) ||
+    (canCreateIntegrationImages &&
+      Boolean(onCreateIntegrationImages) &&
+      Boolean(property.integration_property_id) &&
+      fallbackImages.length > 0);
   const primaryLink =
     sourceLinks.find((link) => link.is_primary_source) ?? sourceLinks[0] ?? null;
   const hasPrice = property.price != null && property.price !== "";
@@ -686,8 +754,15 @@ export function PropertyDetailView({
             fallbackImages={fallbackImages}
             title={property.title}
             selectable={canManageIntegrationImages}
+            canCreateFromPropertyImages={
+              canCreateIntegrationImages &&
+              Boolean(onCreateIntegrationImages) &&
+              Boolean(property.integration_property_id)
+            }
             onDeleteSelected={onDeleteIntegrationImages}
+            onCreateSelected={onCreateIntegrationImages}
             isDeletePending={isDeletingIntegrationImages}
+            isCreatePending={isCreatingIntegrationImages}
           />
         )}
       </section>

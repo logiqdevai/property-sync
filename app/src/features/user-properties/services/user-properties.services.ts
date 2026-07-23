@@ -180,6 +180,40 @@ export const deleteAdminUserPropertyIntegrationImages = async (
   }
 };
 
+export const createUserPropertyIntegrationImages = async (
+  id: string,
+  imageIndexes: number[],
+): Promise<UserPropertyDetail> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.createIntegrationImages(id),
+      { image_indexes: imageIndexes },
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to create CRM images.",
+    );
+  }
+};
+
+export const createAdminUserPropertyIntegrationImages = async (
+  id: string,
+  imageIndexes: number[],
+): Promise<UserPropertyDetail> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.createIntegrationImages(id),
+      { image_indexes: imageIndexes },
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to create CRM images.",
+    );
+  }
+};
+
 export const pushUserPropertiesToCrm = async (
   payload: PushUserPropertiesToCrmPayload,
 ): Promise<UserProperty | PushUserPropertiesToCrmResult> => {
