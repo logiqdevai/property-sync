@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Button,
   Checkbox,
@@ -76,7 +76,6 @@ const PROPERTY_DELETE_ACTION: TableRowAction = {
 };
 
 export default function DashboardPropertiesListPage() {
-  const navigate = useNavigate();
   const deleteConfirm = useOverlayState();
   const bulkDeleteConfirm = useOverlayState();
   const dedupeConfirm = useOverlayState();
@@ -586,8 +585,6 @@ export default function DashboardPropertiesListPage() {
                     <Table.Row
                       key={property.id}
                       id={property.id}
-                      onAction={() => navigate(Routes.dashboard.properties.detail(property.id))}
-                      className="cursor-pointer"
                     >
                       <Table.Cell className={cn("pr-0", groupCellClass)}>
                         <Checkbox
@@ -603,14 +600,15 @@ export default function DashboardPropertiesListPage() {
                         </Checkbox>
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>
-                        <span
+                        <Link
+                          to={Routes.dashboard.properties.detail(property.id)}
                           className={cn(
-                            "font-medium text-foreground",
+                            "font-medium text-foreground hover:text-accent transition-colors",
                             isRemoved && "line-through",
                           )}
                         >
                           {property.title}
-                        </span>
+                        </Link>
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>{property.city ?? "—"}</Table.Cell>
                       <Table.Cell className={groupCellClass}>
@@ -621,10 +619,7 @@ export default function DashboardPropertiesListPage() {
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>
                         {property.pending_crm_update ? (
-                          <div
-                            className="flex items-center gap-2"
-                            onClick={(event) => event.stopPropagation()}
-                          >
+                          <div className="flex items-center gap-2">
                             <Chip size="sm" variant="soft" color="warning">
                               Pending
                             </Chip>

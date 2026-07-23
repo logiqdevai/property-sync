@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Checkbox,
   Chip,
@@ -67,7 +67,6 @@ const USER_PROPERTY_DELETE_ACTIONS: TableRowAction[] = [
 ];
 
 export function UserPropertiesListPanel() {
-  const navigate = useNavigate();
   const deleteConfirm = useOverlayState();
   const bulkDeleteConfirm = useOverlayState();
   const dedupeConfirm = useOverlayState();
@@ -642,20 +641,15 @@ export function UserPropertiesListPanel() {
                           </Checkbox>
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
-                          <button
-                            type="button"
+                          <Link
+                            to={Routes.admin.properties.userDetail(property.id)}
                             className={cn(
                               "text-left text-foreground hover:text-accent transition-colors font-medium",
                               isRemoved && "line-through",
                             )}
-                            onClick={() =>
-                              navigate(
-                                Routes.admin.properties.userDetail(property.id),
-                              )
-                            }
                           >
                             {property.title}
-                          </button>
+                          </Link>
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
                           {property.user?.email ?? "—"}

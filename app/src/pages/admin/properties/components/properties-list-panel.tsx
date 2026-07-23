@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Checkbox,
   Chip,
@@ -63,7 +63,6 @@ const PROPERTY_DELETE_ACTIONS: TableRowAction[] = [
 ];
 
 export function PropertiesListPanel() {
-  const navigate = useNavigate();
   const mergeConfirm = useOverlayState();
   const deleteConfirm = useOverlayState();
   const bulkDeleteConfirm = useOverlayState();
@@ -541,16 +540,15 @@ export function PropertiesListPanel() {
                         </Checkbox>
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>
-                        <button
-                          type="button"
+                        <Link
+                          to={Routes.admin.properties.detail(property.id)}
                           className={cn(
                             "text-left text-foreground hover:text-accent transition-colors font-medium",
                             isRemoved && "line-through",
                           )}
-                          onClick={() => navigate(Routes.admin.properties.detail(property.id))}
                         >
                           {property.title}
-                        </button>
+                        </Link>
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>{property.city ?? "—"}</Table.Cell>
                       <Table.Cell className={groupCellClass}>
