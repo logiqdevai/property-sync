@@ -463,6 +463,16 @@ exports.Prisma.PropertyScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.IntegrationPropertyScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  user_integration_settings_id: 'user_integration_settings_id',
+  property_id: 'property_id',
+  images: 'images',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.PropertySourceLinkScalarFieldEnum = {
   id: 'id',
   property_id: 'property_id',
@@ -823,6 +833,7 @@ exports.Prisma.ModelName = {
   CmsSyncRun: 'CmsSyncRun',
   SourceProperty: 'SourceProperty',
   Property: 'Property',
+  IntegrationProperty: 'IntegrationProperty',
   PropertySourceLink: 'PropertySourceLink',
   PropertyHistory: 'PropertyHistory',
   UserProperty: 'UserProperty',

@@ -90,6 +90,8 @@ export interface EstateWebPropertyImage {
   show_on_site: boolean;
   show_on_groups: boolean;
   show_on_foreign_agents: boolean;
+  url?: string;
+  source_image?: string;
 }
 
 export interface EstateWebPropertyHistorySiteChange {

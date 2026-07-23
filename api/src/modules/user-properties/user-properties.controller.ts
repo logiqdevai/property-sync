@@ -241,6 +241,24 @@ export class UserPropertiesController {
     return this.userPropertiesService.pushToCrm(userId, id);
   }
 
+  @Post(':id/migrate-integration-images')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Fetch EstateWeb CRM images and upsert IntegrationProperty.images (admin only)',
+  })
+  @ApiResponse({ status: 200, type: UserPropertyEntity })
+  @ApiResponse({ status: 400, description: 'Cannot migrate images' })
+  @ApiResponse({ status: 403, description: 'Admin only' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  migrateIntegrationImages(
+    @CurrentUser('id') userId: string,
+    @Param('id') id: string,
+  ) {
+    return this.userPropertiesService.migrateIntegrationImages(userId, id);
+  }
+
   @Delete(':id')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)

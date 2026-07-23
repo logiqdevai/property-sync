@@ -53,7 +53,7 @@ export class DiagnosticsCaptureService {
       try {
         return await fn(page);
       } finally {
-        await context.close().catch(() => undefined);
+        await this.stealthBrowserService.closeContext(context);
       }
     }
 
@@ -147,8 +147,7 @@ export class DiagnosticsCaptureService {
       browserVersion = undefined;
     }
 
-    // Video/HAR files only finalize once the context (and its pages) close.
-    await context.close().catch(() => undefined);
+    await this.stealthBrowserService.closeContext(context);
 
     if (!shouldKeep) {
       await rm(workDir, { recursive: true, force: true }).catch(

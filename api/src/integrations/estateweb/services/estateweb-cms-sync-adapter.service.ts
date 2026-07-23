@@ -1,5 +1,6 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { UserProperty } from 'generated/prisma';
+import { NotificationType, Prisma, UserProperty } from 'generated/prisma';
+import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
   CmsPushCreateResult,
   CmsSyncAdapter,
@@ -9,6 +10,7 @@ import { coerceCmsFieldValueForEstateWeb } from '@/modules/properties/utils/prop
 import {
   EstateWebPropertyAd,
   EstateWebPropertyFieldValue,
+  EstateWebPropertyImage,
   EstateWebPropertyPayload,
   EstateWebUpdatePropertyPayload,
   EstateWebUploadImagePayload,
@@ -22,8 +24,8 @@ import {
 import { resolveEstateWebLocationId } from '../utils/estateweb-location-lookup.util';
 import { resolveEstateWebScopeId } from '../utils/estateweb-catalog.util';
 import { getEstateWebInitFieldsForType } from '../utils/estateweb-init-lookup.util';
+import { buildEstateWebImageUrl } from '../utils/estateweb-image-url.util';
 import { EstateWebException } from '../exceptions/estateweb.exception';
-import { NotificationType } from 'generated/prisma';
 import { EstateWebIntegrationResolverService } from './estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from './estateweb-property.service';
 
@@ -50,6 +52,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   private readonly logger = new Logger(EstateWebCmsSyncAdapter.name);
 
   constructor(
+    private readonly prisma: PrismaService,
     private readonly estateWebPropertyService: EstateWebPropertyService,
     private readonly estateWebIntegrationResolverService: EstateWebIntegrationResolverService,
   ) {}
@@ -310,6 +313,10 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     userProperty: UserProperty,
   ): Promise<void> {
     const images = this.parseImages(userProperty.images, propertyId);
+    if (images.length === 0) return;
+
+    const sourceByFilename = new Map<string, string>();
+    let uploadedCount = 0;
     for (let index = 0; index < images.length; index++) {
       const image = images[index];
       try {
@@ -331,10 +338,207 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
           payload,
           'image/jpeg',
         );
+        sourceByFilename.set(image.filename, image.url);
+        uploadedCount += 1;
       } catch {
-        // Individual image upload failures are non-fatal; the property push succeeded.
       }
     }
+
+    if (uploadedCount === 0) return;
+
+    try {
+      await this.syncIntegrationPropertyImages({
+        userIntegrationId,
+        canonicalPropertyId: userProperty.canonical_property_id,
+        estateWebPropertyId: propertyId,
+        sourceByFilename,
+        sourceImageUrls: images.map((image) => image.url),
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Failed to persist IntegrationProperty images for user_property=${userProperty.id}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  async syncIntegrationPropertyImages(params: {
+    userIntegrationId: string;
+    canonicalPropertyId: string;
+    estateWebPropertyId: number | string;
+    sourceByFilename?: Map<string, string>;
+    sourceImageUrls?: string[];
+  }): Promise<EstateWebPropertyImage[]> {
+    const integration = await this.prisma.userIntegration.findUnique({
+      where: { id: params.userIntegrationId },
+      select: {
+        user_id: true,
+        user_integration_settings_id: true,
+      },
+    });
+    if (!integration) {
+      throw new EstateWebException(
+        'EstateWeb integration connection not found',
+        NotificationType.ESTATEWEB_INTEGRATION_NOT_FOUND,
+        HttpStatus.NOT_FOUND,
+        { userIntegrationId: params.userIntegrationId },
+      );
+    }
+
+    const existing = await this.prisma.integrationProperty.findUnique({
+      where: {
+        user_id_user_integration_settings_id_property_id: {
+          user_id: integration.user_id,
+          user_integration_settings_id:
+            integration.user_integration_settings_id,
+          property_id: params.canonicalPropertyId,
+        },
+      },
+      select: { images: true },
+    });
+
+    const remote = await this.estateWebPropertyService.getProperty(
+      params.userIntegrationId,
+      params.estateWebPropertyId,
+    );
+    const images = this.normalizeEstateWebImages(
+      remote.images,
+      remote.agent_id,
+      {
+        sourceByFilename: params.sourceByFilename,
+        sourceImageUrls: params.sourceImageUrls,
+        existingImages: existing?.images,
+      },
+    );
+
+    await this.prisma.integrationProperty.upsert({
+      where: {
+        user_id_user_integration_settings_id_property_id: {
+          user_id: integration.user_id,
+          user_integration_settings_id:
+            integration.user_integration_settings_id,
+          property_id: params.canonicalPropertyId,
+        },
+      },
+      create: {
+        user_id: integration.user_id,
+        user_integration_settings_id: integration.user_integration_settings_id,
+        property_id: params.canonicalPropertyId,
+        images: images as unknown as Prisma.InputJsonValue,
+      },
+      update: {
+        images: images as unknown as Prisma.InputJsonValue,
+      },
+    });
+
+    return images;
+  }
+
+  async syncOrRepairIntegrationPropertyImages(params: {
+    userIntegrationId: string;
+    canonicalPropertyId: string;
+    estateWebPropertyId: number | string;
+    sourceImages?: unknown;
+  }): Promise<EstateWebPropertyImage[]> {
+    const sourceImageUrls = this.parseSourceImageUrls(params.sourceImages);
+    return this.syncIntegrationPropertyImages({
+      userIntegrationId: params.userIntegrationId,
+      canonicalPropertyId: params.canonicalPropertyId,
+      estateWebPropertyId: params.estateWebPropertyId,
+      sourceImageUrls,
+    });
+  }
+
+  private normalizeEstateWebImages(
+    images: EstateWebPropertyImage[] | undefined,
+    agentId?: number | null,
+    options?: {
+      sourceByFilename?: Map<string, string>;
+      sourceImageUrls?: string[];
+      existingImages?: unknown;
+    },
+  ): EstateWebPropertyImage[] {
+    if (!Array.isArray(images)) return [];
+
+    const existingSourceById = this.buildExistingSourceImageById(
+      options?.existingImages,
+    );
+    const seen = new Set<string>();
+    const normalized: EstateWebPropertyImage[] = [];
+    let sourceIndex = 0;
+
+    for (const image of images) {
+      if (
+        image == null ||
+        typeof image.id !== 'number' ||
+        typeof image.path !== 'string' ||
+        typeof image.filename !== 'string'
+      ) {
+        continue;
+      }
+
+      const url = buildEstateWebImageUrl({
+        path: image.path,
+        filename: image.filename,
+        agentId,
+      });
+      if (seen.has(url)) continue;
+      seen.add(url);
+
+      const sourceFromFilename = options?.sourceByFilename?.get(image.filename);
+      const sourceFromIndex = options?.sourceImageUrls?.[sourceIndex];
+      const sourceFromExisting = existingSourceById.get(image.id);
+      const source_image =
+        sourceFromFilename ||
+        sourceFromIndex ||
+        sourceFromExisting ||
+        (typeof image.source_image === 'string' && image.source_image.length > 0
+          ? image.source_image
+          : undefined);
+
+      normalized.push({
+        id: image.id,
+        path: image.path,
+        filename: image.filename,
+        show_on_site: Boolean(image.show_on_site),
+        show_on_groups: Boolean(image.show_on_groups),
+        show_on_foreign_agents: Boolean(image.show_on_foreign_agents),
+        url,
+        ...(source_image ? { source_image } : {}),
+      });
+      sourceIndex += 1;
+    }
+
+    return normalized;
+  }
+
+  private buildExistingSourceImageById(
+    imagesJson: unknown,
+  ): Map<number, string> {
+    const map = new Map<number, string>();
+    if (!Array.isArray(imagesJson)) return map;
+
+    for (const item of imagesJson) {
+      if (
+        item == null ||
+        typeof item !== 'object' ||
+        typeof (item as { id?: unknown }).id !== 'number' ||
+        typeof (item as { source_image?: unknown }).source_image !== 'string'
+      ) {
+        continue;
+      }
+      const sourceImage = (item as { source_image: string }).source_image;
+      if (sourceImage.length === 0) continue;
+      map.set((item as { id: number }).id, sourceImage);
+    }
+
+    return map;
+  }
+
+  private parseSourceImageUrls(imagesJson: unknown): string[] {
+    if (!Array.isArray(imagesJson)) return [];
+    return imagesJson.filter(
+      (item): item is string => typeof item === 'string' && item.length > 0,
+    );
   }
 
   private parseImages(imagesJson: unknown, propertyId: number): ImageEntry[] {
@@ -353,20 +557,16 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     index: number,
   ): string {
     let ext = '.jpg';
-    let base = `image-${index + 1}`;
     try {
       const name = new URL(url).pathname.split('/').pop() ?? '';
-      const match = name.match(/^(.+?)(\.[a-zA-Z0-9]+)?$/);
+      const match = name.match(/(\.[a-zA-Z0-9]+)$/);
       if (match?.[1]) {
-        base = match[1].replace(/[^a-zA-Z0-9_-]/g, '_');
-      }
-      if (match?.[2]) {
-        ext = match[2].toLowerCase();
+        ext = match[1].toLowerCase();
       }
     } catch {
-      // keep defaults
     }
-    return `${propertyId}-${index + 1}-${base}${ext}`;
+    const stamp = `${Date.now()}${String(index).padStart(3, '0')}${Math.floor(Math.random() * 900 + 100)}`;
+    return `${propertyId}-${stamp}${ext}`;
   }
 
   private async downloadImage(url: string): Promise<Buffer | null> {

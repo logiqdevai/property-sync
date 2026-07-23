@@ -175,6 +175,19 @@ export class AdminUserPropertiesController {
     return this.userPropertiesService.adminFindOne(id);
   }
 
+  @Post(':id/migrate-integration-images')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Fetch EstateWeb CRM images and upsert IntegrationProperty.images',
+  })
+  @ApiResponse({ status: 200, type: UserPropertyEntity })
+  @ApiResponse({ status: 400, description: 'Cannot migrate images' })
+  @ApiResponse({ status: 404, description: 'User property not found' })
+  migrateIntegrationImages(@Param('id') id: string) {
+    return this.userPropertiesService.adminMigrateIntegrationImages(id);
+  }
+
   @Delete(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete a user property' })

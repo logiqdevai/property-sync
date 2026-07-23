@@ -1,0 +1,2 @@
+-- RenameIndex
+ALTER INDEX "integration_properties_user_id_user_integration_settings_id_pro" RENAME TO "integration_properties_user_id_user_integration_settings_id_key";

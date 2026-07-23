@@ -15,6 +15,8 @@ import {
   getUserProperty,
   pushUserPropertiesToCrm,
   pushUserPropertyToCrm,
+  migrateAdminUserPropertyIntegrationImages,
+  migrateUserPropertyIntegrationImages,
   splitAdminUserProperties,
   splitUserProperties,
   truncateAdminUserPropertyDescriptions,
@@ -119,6 +121,64 @@ export const usePushUserPropertyToCrm = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not push to CRM",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useMigrateUserPropertyIntegrationImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => migrateUserPropertyIntegrationImages(id),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["userProperties", "detail", data.id], data);
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      const count = data.integration_property?.images?.length ?? 0;
+      toast({
+        title: "CRM images migrated",
+        description:
+          count > 0
+            ? `Stored ${count} ${count === 1 ? "image" : "images"} from EstateWeb.`
+            : "IntegrationProperty updated (no images returned).",
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not migrate CRM images",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useMigrateAdminUserPropertyIntegrationImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => migrateAdminUserPropertyIntegrationImages(id),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["adminUserProperties", "detail", data.id], data);
+      queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
+      const count = data.integration_property?.images?.length ?? 0;
+      toast({
+        title: "CRM images migrated",
+        description:
+          count > 0
+            ? `Stored ${count} ${count === 1 ? "image" : "images"} from EstateWeb.`
+            : "IntegrationProperty updated (no images returned).",
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not migrate CRM images",
         description: error.message,
         variant: "error",
       });

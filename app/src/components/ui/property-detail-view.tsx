@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Button, Chip } from "@heroui/react";
 import {
@@ -32,6 +32,8 @@ import type {
   PropertyStatus,
   PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
+import type { IntegrationProperty } from "@/features/integration-property/interfaces/integration-property.interfaces";
+import { resolvePropertyDisplayImages } from "@/features/integration-property/utils/resolve-property-display-images";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { formatDateTime } from "@/lib/date";
 import { formatPrice } from "@/lib/price";
@@ -61,6 +63,7 @@ export interface PropertyDetailViewData extends Partial<PropertyCmsFields> {
   renovation_year?: number | null;
   features: string[] | null;
   images: string[] | null;
+  integration_property?: IntegrationProperty | null;
   duplicate_group_id?: string | null;
   source_links?: PropertySourceLink[];
   history: PropertyHistoryEntry[];
@@ -119,7 +122,48 @@ function SpecItem({
   );
 }
 
-function PropertyImagesGrid({ images, title }: { images: string[]; title: string }) {
+function PropertyPhoto({
+  src,
+  fallbackSrc,
+  alt,
+  className,
+}: {
+  src: string;
+  fallbackSrc?: string | null;
+  alt: string;
+  className?: string;
+}) {
+  const [currentSrc, setCurrentSrc] = useState(src);
+
+  useEffect(() => {
+    setCurrentSrc(src);
+  }, [src]);
+
+  return (
+    <img
+      src={currentSrc}
+      alt={alt}
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      className={className}
+      onError={() => {
+        if (fallbackSrc && currentSrc !== fallbackSrc) {
+          setCurrentSrc(fallbackSrc);
+        }
+      }}
+    />
+  );
+}
+
+function PropertyImagesGrid({
+  images,
+  fallbackImages,
+  title,
+}: {
+  images: string[];
+  fallbackImages: string[];
+  title: string;
+}) {
   const [expanded, setExpanded] = useState(false);
   const canExpand = images.length > 2;
 
@@ -135,16 +179,16 @@ function PropertyImagesGrid({ images, title }: { images: string[]; title: string
       >
         {images.map((src, index) => (
           <a
-            key={src}
+            key={`${src}-${index}`}
             href={src}
             target="_blank"
             rel="noreferrer"
             className="block aspect-square overflow-hidden rounded-lg border border-border"
           >
-            <img
+            <PropertyPhoto
               src={src}
+              fallbackSrc={fallbackImages[index] ?? fallbackImages[0] ?? null}
               alt={`${title} photo ${index + 1}`}
-              loading="lazy"
               className="size-full object-cover"
             />
           </a>
@@ -192,7 +236,15 @@ export function PropertyDetailView({
   const cmsFieldEntries = (property.cms_fields ?? []) as CmsPropertyFieldEntry[];
   const cmsMetadataLines = formatCmsMetadata(property.cms_metadata ?? null);
   const location = formatLocation(property);
-  const heroImage = property.images?.[0] ?? null;
+  const displayImages = resolvePropertyDisplayImages({
+    integrationProperty: property.integration_property,
+    fallbackImages: property.images,
+  });
+  const fallbackImages = (property.images ?? []).filter(
+    (url): url is string => typeof url === "string" && url.length > 0,
+  );
+  const heroImage = displayImages[0] ?? null;
+  const heroFallback = fallbackImages[0] ?? null;
   const primaryLink =
     sourceLinks.find((link) => link.is_primary_source) ?? sourceLinks[0] ?? null;
   const hasPrice = property.price != null && property.price !== "";
@@ -248,17 +300,6 @@ export function PropertyDetailView({
         </Link>
         <div className="flex items-center gap-2 flex-wrap">
           {details ? headerExtra : null}
-          {crmPropertyAppUrl ? (
-            <a
-              href={crmPropertyAppUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm text-accent hover:underline"
-            >
-              Open in CRM
-              <ExternalLink className="size-3.5" />
-            </a>
-          ) : null}
           {headerActions}
         </div>
       </div>
@@ -276,8 +317,9 @@ export function PropertyDetailView({
                   rel="noreferrer"
                   className="absolute inset-0 block"
                 >
-                  <img
+                  <PropertyPhoto
                     src={heroImage}
+                    fallbackSrc={heroFallback}
                     alt={property.title}
                     className="size-full object-cover"
                   />
@@ -287,9 +329,9 @@ export function PropertyDetailView({
                   <Building2 className="size-10 opacity-40" />
                 </div>
               )}
-              {property.images && property.images.length > 1 && (
+              {displayImages.length > 1 && (
                 <span className="absolute bottom-3 left-3 rounded-md bg-background/80 px-2 py-1 text-xs font-medium text-foreground backdrop-blur-sm">
-                  {property.images.length} photos
+                  {displayImages.length} photos
                 </span>
               )}
             </div>
@@ -499,10 +541,14 @@ export function PropertyDetailView({
 
       <section className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
         <h2 className="text-sm font-semibold text-foreground">Images</h2>
-        {!property.images || property.images.length === 0 ? (
+        {!displayImages.length ? (
           <p className="text-sm text-muted">No images yet.</p>
         ) : (
-          <PropertyImagesGrid images={property.images} title={property.title} />
+          <PropertyImagesGrid
+            images={displayImages}
+            fallbackImages={fallbackImages}
+            title={property.title}
+          />
         )}
       </section>
 

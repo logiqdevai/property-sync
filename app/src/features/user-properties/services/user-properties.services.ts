@@ -116,6 +116,36 @@ export const pushUserPropertyToCrm = async (id: string): Promise<UserProperty> =
   }
 };
 
+export const migrateUserPropertyIntegrationImages = async (
+  id: string,
+): Promise<UserPropertyDetail> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.migrateIntegrationImages(id),
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to migrate CRM images.",
+    );
+  }
+};
+
+export const migrateAdminUserPropertyIntegrationImages = async (
+  id: string,
+): Promise<UserPropertyDetail> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.migrateIntegrationImages(id),
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to migrate CRM images.",
+    );
+  }
+};
+
 export const pushUserPropertiesToCrm = async (
   payload: PushUserPropertiesToCrmPayload,
 ): Promise<UserProperty | PushUserPropertiesToCrmResult> => {

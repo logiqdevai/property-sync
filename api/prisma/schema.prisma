@@ -274,6 +274,7 @@ model User {
   saved_properties          UserProperty[]
   user_integrations         UserIntegration[]
   user_integration_settings UserIntegrationSettings[]
+  integration_properties    IntegrationProperty[]
 
   @@index([email])
   @@index([phone])
@@ -310,9 +311,10 @@ model UserIntegrationSettings {
   created_at            DateTime @default(now())
   updated_at            DateTime @updatedAt
 
-  user               User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  integration_target IntegrationTarget @relation(fields: [integration_target_id], references: [id], onDelete: Cascade)
-  accounts           UserIntegration[]
+  user                   User                  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  integration_target     IntegrationTarget     @relation(fields: [integration_target_id], references: [id], onDelete: Cascade)
+  accounts               UserIntegration[]
+  integration_properties IntegrationProperty[]
 
   @@unique([user_id, integration_target_id])
   @@map("user_integration_settings")
@@ -844,9 +846,10 @@ model Property {
   created_at            DateTime       @default(now())
   updated_at            DateTime       @updatedAt
 
-  source_links         PropertySourceLink[]
-  user_property_copies UserProperty[]
-  history              PropertyHistory[] // spec section 14
+  source_links           PropertySourceLink[]
+  user_property_copies   UserProperty[]
+  history                PropertyHistory[] // spec section 14
+  integration_properties IntegrationProperty[]
 
   @@index([listing_type])
   @@index([property_type])
@@ -858,6 +861,26 @@ model Property {
   @@index([property_id])
   @@index([internal_id])
   @@map("properties")
+}
+
+model IntegrationProperty {
+  id                           String   @id @default(uuid())
+  user_id                      String
+  user_integration_settings_id String
+  property_id                  String
+  images                       Json?
+  created_at                   DateTime @default(now())
+  updated_at                   DateTime @updatedAt
+
+  user                       User                     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_integration_settings  UserIntegrationSettings  @relation(fields: [user_integration_settings_id], references: [id], onDelete: Cascade)
+  property                   Property                 @relation(fields: [property_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, user_integration_settings_id, property_id])
+  @@index([user_id])
+  @@index([property_id])
+  @@index([user_integration_settings_id])
+  @@map("integration_properties")
 }
 
 /// Mapping layer between normalized Property and the raw SourceProperty rows it was built from.

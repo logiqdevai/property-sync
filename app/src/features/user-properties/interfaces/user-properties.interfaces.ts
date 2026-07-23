@@ -5,6 +5,7 @@ import type {
   PropertyStatus,
   PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
+import type { IntegrationProperty } from "@/features/integration-property/interfaces/integration-property.interfaces";
 
 import type { PropertyCmsFields } from "@/features/properties/interfaces/cms-property.interface";
 
@@ -53,6 +54,7 @@ export interface UserProperty extends PropertyCmsFields {
 export interface UserPropertyDetail extends UserProperty {
   source_links: PropertySourceLink[];
   history: PropertyHistoryEntry[];
+  integration_property?: IntegrationProperty | null;
 }
 
 export interface UpdateUserPropertyPayload {

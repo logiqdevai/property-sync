@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Scissors, Upload, X } from "lucide-react";
+import { Pencil, Scissors, Upload, X, ExternalLink, Images } from "lucide-react";
 import { Button, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
@@ -11,6 +11,9 @@ import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { PropertyDetailView } from "@/components/ui/property-detail-view";
+import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
+import { RoleTypes } from "@/features/user/interfaces/user.interface";
+import { useAuthStore } from "@/stores/auth";
 import {
   useEstateWebEnergyClassCatalog,
   useEstateWebFloorCatalog,
@@ -20,6 +23,7 @@ import {
   useEstateWebRoadTypeCatalog,
 } from "@/features/estateweb/hooks/use-estateweb";
 import {
+  useMigrateUserPropertyIntegrationImages,
   usePushUserPropertyToCrm,
   useTruncateUserPropertyDescriptions,
   useUpdateUserProperty,
@@ -97,9 +101,11 @@ export default function DashboardPropertyDetailPage() {
   const listingTypePicker = useOverlayState();
   const propertyTypePicker = useOverlayState();
   const featuresPicker = useOverlayState();
+  const role = useAuthStore((state) => state.role);
   const { data: property, isPending } = useUserProperty(id);
   const updateProperty = useUpdateUserProperty();
   const pushToCrm = usePushUserPropertyToCrm();
+  const migrateImages = useMigrateUserPropertyIntegrationImages();
   const truncateDescriptions = useTruncateUserPropertyDescriptions();
   const { data: locationCatalog = [] } = useEstateWebLocationCatalog(isEditing);
   const { data: floorCatalog = [], isPending: floorCatalogPending } =
@@ -225,6 +231,12 @@ export default function DashboardPropertyDetailPage() {
   const headerActions = useMemo<TableRowAction[]>(() => {
     if (!property) return [];
 
+    const isAdmin =
+      role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN;
+    const crmUrl = property.integration_property_id
+      ? getCrmPropertyAppUrl(property.integration_property_id)
+      : null;
+
     return [
       {
         id: "push-to-crm",
@@ -233,6 +245,27 @@ export default function DashboardPropertyDetailPage() {
         icon: Upload,
         isDisabled: isEditing || pushToCrm.isPending,
       },
+      ...(crmUrl
+        ? [
+            {
+              id: "open-in-crm",
+              label: "Open in CRM",
+              variant: "default" as const,
+              icon: ExternalLink,
+            },
+          ]
+        : []),
+      ...(isAdmin && property.integration_property_id
+        ? [
+            {
+              id: "migrate-crm-images",
+              label: "Migrate CRM images",
+              variant: "default" as const,
+              icon: Images,
+              isDisabled: isEditing || migrateImages.isPending,
+            },
+          ]
+        : []),
       {
         id: "truncate",
         label: "Truncate text",
@@ -253,7 +286,7 @@ export default function DashboardPropertyDetailPage() {
             icon: Pencil,
           },
     ];
-  }, [isEditing, property, pushToCrm.isPending]);
+  }, [isEditing, migrateImages.isPending, property, pushToCrm.isPending, role]);
 
   if (isPending || !property) {
     return <DetailSkeleton />;
@@ -286,6 +319,19 @@ export default function DashboardPropertyDetailPage() {
   const handleHeaderAction = (actionId: string) => {
     if (actionId === "push-to-crm") {
       pushToCrm.mutate(property.id);
+      return;
+    }
+    if (actionId === "open-in-crm") {
+      const crmUrl = property.integration_property_id
+        ? getCrmPropertyAppUrl(property.integration_property_id)
+        : null;
+      if (crmUrl) {
+        window.open(crmUrl, "_blank", "noopener,noreferrer");
+      }
+      return;
+    }
+    if (actionId === "migrate-crm-images") {
+      migrateImages.mutate(property.id);
       return;
     }
     if (actionId === "truncate") {
@@ -330,7 +376,7 @@ export default function DashboardPropertyDetailPage() {
           <BulkActionsMenu
             actions={headerActions}
             onAction={handleHeaderAction}
-            isPending={pushToCrm.isPending}
+            isPending={pushToCrm.isPending || migrateImages.isPending}
           />
         }
         details={

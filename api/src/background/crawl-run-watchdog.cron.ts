@@ -11,11 +11,6 @@ import {
   NotificationType,
 } from 'generated/prisma';
 
-// CrawlProcessor's own timeout guard only fires inside a live worker process --
-// if the process crashes/restarts mid-job (see incident on crawl run 4f46611c),
-// the CrawlRun is left in RUNNING with nothing left alive to ever flip it. This
-// sweeps for exactly that using DB timestamps alone, independent of any in-process
-// timer, and routes through the same failure handling as a normal crawl failure.
 const STALE_GRACE_MS = 5 * 60_000;
 
 @Injectable()
@@ -33,14 +28,20 @@ export class CrawlRunWatchdogCron {
   async failStaleRunningRuns(): Promise<void> {
     const { crawl_job_timeout_ms } =
       await this.platformConfigService.getCrawlerConfig();
-    const staleBefore = new Date(
+    const activityStaleBefore = new Date(
       Date.now() - crawl_job_timeout_ms - STALE_GRACE_MS,
+    );
+    const absoluteStaleBefore = new Date(
+      Date.now() - 2 * crawl_job_timeout_ms - STALE_GRACE_MS,
     );
 
     const staleRuns = await this.prisma.crawlRun.findMany({
       where: {
         status: CrawlRunStatus.RUNNING,
-        started_at: { lt: staleBefore },
+        OR: [
+          { updated_at: { lt: activityStaleBefore } },
+          { started_at: { lt: absoluteStaleBefore } },
+        ],
       },
       include: { scraper: true },
     });

@@ -3,7 +3,10 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CRAWL_QUEUE, OPENAI_BATCH_QUEUE } from '@/core/queues/queues.constants';
-import { DEFAULT_CRAWL_WORKER_CONCURRENCY } from '@/integrations/crawler/constants/crawler.constants';
+import {
+  DEFAULT_CRAWL_WORKER_CONCURRENCY,
+  DETAIL_ENRICHMENT_SOFT_STOP_BUFFER_MS,
+} from '@/integrations/crawler/constants/crawler.constants';
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import { CrawlerService } from '@/integrations/crawler/services/crawler.service';
 import { DetailEnrichmentService } from '@/integrations/crawler/services/detail-enrichment.service';
@@ -179,6 +182,18 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
           crawlResult.items,
           config.detail_page,
           run.source_agency_id,
+          {
+            deadlineAt:
+              Date.now() +
+              crawl_job_timeout_ms -
+              DETAIL_ENRICHMENT_SOFT_STOP_BUFFER_MS,
+            onBatchComplete: async () => {
+              await this.prisma.crawlRun.update({
+                where: { id: crawlRunId },
+                data: { updated_at: new Date() },
+              });
+            },
+          },
         ),
         crawl_job_timeout_ms,
         `detail enrichment timed out after ${crawl_job_timeout_ms}ms`,
@@ -461,6 +476,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         return;
       }
 
+      let markedFailed = false;
       if (currentRun?.status === CrawlRunStatus.RUNNING) {
         await this.prisma.crawlRun.update({
           where: { id: crawlRunId },
@@ -471,6 +487,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
             error_message: message,
           },
         });
+        markedFailed = true;
 
         this.notificationsService.create({
           type: NotificationType.LARGE_CRAWL_FAILURE,
@@ -483,7 +500,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         });
       }
 
-      if (currentRun?.scraper) {
+      if (markedFailed && currentRun?.scraper) {
         await this.scraperFailureHandler.handle({
           scraper: currentRun.scraper,
           crawlRunId,

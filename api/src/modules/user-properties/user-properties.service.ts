@@ -5,6 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
+import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import { UserPropertyQueryType } from './dto/user-property-query.schema';
 import { AdminUserPropertyQueryType } from './dto/admin-user-property-query.schema';
@@ -51,6 +53,8 @@ export class UserPropertiesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
+    private readonly estateWebCmsSyncAdapter: EstateWebCmsSyncAdapter,
+    private readonly estateWebIntegrationResolver: EstateWebIntegrationResolverService,
   ) {}
 
   private async resolveFilterSourceAgencyId(
@@ -277,6 +281,11 @@ export class UserPropertiesService {
             history: {
               orderBy: { created_at: 'desc' },
             },
+            integration_properties: {
+              where: { user_id: userId },
+              orderBy: { updated_at: 'desc' },
+              take: 1,
+            },
           },
         },
       },
@@ -287,12 +296,26 @@ export class UserPropertiesService {
     }
 
     const { canonical_property, ...rest } = userProperty;
+    const integrationProperty =
+      canonical_property.integration_properties[0] ?? null;
 
     return serializePropertyForApi({
       ...rest,
       duplicate_group_id: canonical_property.duplicate_group_id,
       source_links: canonical_property.source_links,
       history: canonical_property.history,
+      integration_property: integrationProperty
+        ? {
+            id: integrationProperty.id,
+            user_id: integrationProperty.user_id,
+            user_integration_settings_id:
+              integrationProperty.user_integration_settings_id,
+            property_id: integrationProperty.property_id,
+            images: integrationProperty.images,
+            created_at: integrationProperty.created_at,
+            updated_at: integrationProperty.updated_at,
+          }
+        : null,
     });
   }
 
@@ -446,6 +469,105 @@ export class UserPropertiesService {
       }
 
       return result;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(message);
+    }
+  }
+
+  async migrateIntegrationImages(userId: string, id: string) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id, user_id: userId },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+        images: true,
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    await this.runMigrateIntegrationImages(userProperty);
+    return this.findOne(userId, id);
+  }
+
+  async adminMigrateIntegrationImages(id: string) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+        images: true,
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    await this.runMigrateIntegrationImages(userProperty);
+    return this.adminFindOne(id);
+  }
+
+  private async runMigrateIntegrationImages(userProperty: {
+    id: string;
+    user_id: string;
+    canonical_property_id: string;
+    integration_property_id: string | null;
+    images: unknown;
+  }) {
+    if (!userProperty.integration_property_id) {
+      throw new BadRequestException(
+        'Property is not linked to EstateWeb CMS',
+      );
+    }
+
+    const sourceAgencyId = await this.resolveSourceAgencyId(
+      userProperty.canonical_property_id,
+    );
+
+    let userIntegrationId: string;
+    try {
+      if (sourceAgencyId) {
+        try {
+          const resolved =
+            await this.estateWebIntegrationResolver.resolveForTrackedAgency(
+              userProperty.user_id,
+              sourceAgencyId,
+            );
+          userIntegrationId = resolved.userIntegrationId;
+        } catch {
+          const resolved =
+            await this.estateWebIntegrationResolver.resolveDefaultForUser(
+              userProperty.user_id,
+            );
+          userIntegrationId = resolved.userIntegrationId;
+        }
+      } else {
+        const resolved =
+          await this.estateWebIntegrationResolver.resolveDefaultForUser(
+            userProperty.user_id,
+          );
+        userIntegrationId = resolved.userIntegrationId;
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(message);
+    }
+
+    try {
+      await this.estateWebCmsSyncAdapter.syncOrRepairIntegrationPropertyImages({
+        userIntegrationId,
+        canonicalPropertyId: userProperty.canonical_property_id,
+        estateWebPropertyId: userProperty.integration_property_id,
+        sourceImages: userProperty.images,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(message);
@@ -1233,6 +1355,9 @@ export class UserPropertiesService {
             history: {
               orderBy: { created_at: 'desc' },
             },
+            integration_properties: {
+              orderBy: { updated_at: 'desc' },
+            },
           },
         },
       },
@@ -1243,6 +1368,10 @@ export class UserPropertiesService {
     }
 
     const { canonical_property, user, ...rest } = userProperty;
+    const integrationProperty =
+      canonical_property.integration_properties.find(
+        (row) => row.user_id === userProperty.user_id,
+      ) ?? null;
 
     return serializePropertyForApi({
       ...rest,
@@ -1250,6 +1379,18 @@ export class UserPropertiesService {
       duplicate_group_id: canonical_property.duplicate_group_id,
       source_links: canonical_property.source_links,
       history: canonical_property.history,
+      integration_property: integrationProperty
+        ? {
+            id: integrationProperty.id,
+            user_id: integrationProperty.user_id,
+            user_integration_settings_id:
+              integrationProperty.user_integration_settings_id,
+            property_id: integrationProperty.property_id,
+            images: integrationProperty.images,
+            created_at: integrationProperty.created_at,
+            updated_at: integrationProperty.updated_at,
+          }
+        : null,
     });
   }
 
