@@ -266,4 +266,17 @@ export class AdminEstateWebPropertiesController {
       file.mimetype,
     );
   }
+
+  @Delete('integrations/:userIntegrationId/images/:imageId')
+  @ApiOperation({ summary: 'Delete a property image from EstateWeb CRM' })
+  @ApiResponse({ status: 200, description: 'Deleted image id' })
+  deletePropertyImage(
+    @Param('userIntegrationId') userIntegrationId: string,
+    @Param('imageId') imageId: string,
+  ) {
+    return this.adminEstateWebPropertiesService.deletePropertyImage(
+      userIntegrationId,
+      imageId,
+    );
+  }
 }

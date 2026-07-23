@@ -351,6 +351,28 @@ export class EstateWebPropertyService {
     );
   }
 
+  deletePropertyImage(
+    userIntegrationId: string,
+    imageId: number | string,
+  ): Promise<number | string> {
+    return this.runValidatedOperation(
+      userIntegrationId,
+      'delete-property-image',
+      () => {
+        assertValidPropertyId(imageId);
+
+        return this.estateWebClientService.request<number | string>(
+          userIntegrationId,
+          {
+            method: 'DELETE',
+            path: this.estateWebConfig.getConfig().apiPaths.imageById(imageId),
+            operation: 'delete-property-image',
+          },
+        );
+      },
+    );
+  }
+
   getProperty(
     userIntegrationId: string,
     propertyId: number | string,

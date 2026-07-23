@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "name": "EstateWeb Property API",
-    "description": "Property create/update/image upload workflow for app.estateweb.gr",
+    "description": "Property create/update/image upload/delete workflow for app.estateweb.gr",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -232,6 +232,42 @@
           ]
         },
         "description": "Uploads a property image using multipart/form-data with `payload` (JSON text) and `image` (file). Do not set Content-Type manually."
+      }
+    },
+    {
+      "name": "Delete property image",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "{{acceptLanguage}}"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bearerToken}}"
+          },
+          {
+            "key": "Cookie",
+            "value": "estate_session={{estateSession}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/img/{{imageId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "img",
+            "{{imageId}}"
+          ]
+        },
+        "description": "Deletes a property image by id. Response body is the deleted image id (e.g. 1176597)."
       }
     }
   ]

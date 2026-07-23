@@ -211,6 +211,13 @@ export class AdminEstateWebPropertiesService {
     );
   }
 
+  deletePropertyImage(userIntegrationId: string, imageId: string) {
+    return this.estateWebPropertyService.deletePropertyImage(
+      userIntegrationId,
+      imageId,
+    );
+  }
+
   getInitFields() {
     return this.estateWebPropertyService.getInitFields();
   }

@@ -11624,6 +11624,106 @@
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           }
+        },
+        {
+          "id": "a8c4e1f2-9b3d-4e7a-8c1f-2d6e5b0a4f91",
+          "name": "Delete a property image from EstateWeb CRM",
+          "request": {
+            "name": "Delete a property image from EstateWeb CRM",
+            "description": {
+              "content": "Proxies DELETE /api/img/{imageId} to EstateWeb. Response body is the deleted image id.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "integrations",
+                ":userIntegrationId",
+                "images",
+                ":imageId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{userIntegrationId}}",
+                  "key": "userIntegrationId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{imageId}}",
+                  "key": "imageId",
+                  "description": "(Required) "
+                }
+              ],
+              "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/images/:imageId"
+            },
+            "method": "DELETE",
+            "header": []
+          },
+          "response": [
+            {
+              "id": "b7d5f2e3-0c4a-4f8b-9d2e-3e7f6c1b5a02",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "integrations",
+                    ":userIntegrationId",
+                    "images",
+                    ":imageId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{userIntegrationId}}",
+                      "key": "userIntegrationId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{imageId}}",
+                      "key": "imageId",
+                      "description": "(Required) "
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/images/:imageId"
+                },
+                "method": "DELETE",
+                "header": []
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "1176597",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
         }
       ],
       "event": []
