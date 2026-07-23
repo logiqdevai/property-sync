@@ -64,7 +64,7 @@ import { cn } from "@/lib/utils";
 
 const PROPERTY_PUSH_ACTION: TableRowAction = {
   id: "push-to-crm",
-  label: "Push to EstateWeb",
+  label: "Push to CRM",
   icon: Upload,
 };
 
@@ -177,7 +177,7 @@ export default function DashboardPropertiesListPage() {
     const actions: TableRowAction[] = [
       {
         id: "push-to-crm",
-        label: "Push to EstateWeb",
+        label: "Push to CRM",
         icon: Upload,
         isDisabled: selectedCount < 1 || pushSelectedToCrm.isPending,
       },

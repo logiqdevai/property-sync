@@ -244,7 +244,7 @@ export default function DashboardPropertyDetailPage() {
     return [
       {
         id: "push-to-crm",
-        label: property.integration_property_id ? "Update EstateWeb" : "Push to EstateWeb",
+        label: property.integration_property_id ? "Update CRM" : "Push to CRM",
         variant: "accent",
         icon: Upload,
         isDisabled: isEditing || pushToCrm.isPending,
