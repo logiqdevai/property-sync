@@ -140,18 +140,25 @@ function PropertyPhoto({
   }, [src]);
 
   return (
-    <img
-      src={currentSrc}
-      alt={alt}
-      loading="lazy"
-      referrerPolicy="no-referrer"
-      className={className}
-      onError={() => {
-        if (fallbackSrc && currentSrc !== fallbackSrc) {
-          setCurrentSrc(fallbackSrc);
-        }
-      }}
-    />
+    <a
+      href={currentSrc}
+      target="_blank"
+      rel="noreferrer"
+      className="block size-full"
+    >
+      <img
+        src={currentSrc}
+        alt={alt}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        className={className}
+        onError={() => {
+          if (fallbackSrc && currentSrc !== fallbackSrc) {
+            setCurrentSrc(fallbackSrc);
+          }
+        }}
+      />
+    </a>
   );
 }
 
@@ -178,12 +185,9 @@ function PropertyImagesGrid({
         )}
       >
         {images.map((src, index) => (
-          <a
+          <div
             key={`${src}-${index}`}
-            href={src}
-            target="_blank"
-            rel="noreferrer"
-            className="block aspect-square overflow-hidden rounded-lg border border-border"
+            className="aspect-square overflow-hidden rounded-lg border border-border"
           >
             <PropertyPhoto
               src={src}
@@ -191,7 +195,7 @@ function PropertyImagesGrid({
               alt={`${title} photo ${index + 1}`}
               className="size-full object-cover"
             />
-          </a>
+          </div>
         ))}
       </div>
       {canExpand ? (
@@ -311,19 +315,14 @@ export function PropertyDetailView({
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.2fr)] lg:min-h-[22rem]">
             <div className="relative min-h-56 bg-surface-secondary lg:min-h-full">
               {heroImage ? (
-                <a
-                  href={heroImage}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="absolute inset-0 block"
-                >
+                <div className="absolute inset-0">
                   <PropertyPhoto
                     src={heroImage}
                     fallbackSrc={heroFallback}
                     alt={property.title}
                     className="size-full object-cover"
                   />
-                </a>
+                </div>
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-muted">
                   <Building2 className="size-10 opacity-40" />

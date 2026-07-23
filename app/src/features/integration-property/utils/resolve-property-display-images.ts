@@ -3,40 +3,13 @@ import type {
   IntegrationPropertyImage,
 } from "../interfaces/integration-property.interfaces";
 
-const ESTATEWEB_IMAGE_SERVER = "https://images.estateweb.gr/";
-
-function buildEstateWebImageUrl(image: IntegrationPropertyImage): string | null {
-  if (typeof image.url === "string" && image.url.length > 0) {
-    return image.url;
-  }
-  if (typeof image.path !== "string" || typeof image.filename !== "string") {
-    return null;
-  }
-
-  const filename = image.filename.replace(/^\/+/, "");
-  const rawPath = image.path.replace(/^\/+/, "").replace(/\/+$/, "");
-
-  if (rawPath.includes("/")) {
-    if (rawPath.endsWith(filename)) {
-      return `${ESTATEWEB_IMAGE_SERVER}${rawPath}`;
-    }
-    return `${ESTATEWEB_IMAGE_SERVER}${rawPath}/${filename}`;
-  }
-
-  if (!rawPath) {
-    return `${ESTATEWEB_IMAGE_SERVER}${filename}`;
-  }
-
-  return `${ESTATEWEB_IMAGE_SERVER}${rawPath}/${filename}`;
-}
-
 function resolveIntegrationImageDisplayUrl(
   image: IntegrationPropertyImage,
 ): string | null {
   if (typeof image.source_image === "string" && image.source_image.length > 0) {
     return image.source_image;
   }
-  return buildEstateWebImageUrl(image);
+  return null;
 }
 
 export function getIntegrationPropertyImageUrls(
