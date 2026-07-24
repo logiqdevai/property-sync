@@ -23,7 +23,6 @@ const CMS_RELEVANT_HISTORY_EVENTS: PropertyHistoryEventType[] = [
 ];
 
 export interface EstateWebPropertyCatalog {
-  defaultUserIntegrationId: string;
   byCode: Map<string, EstateWebPropertyListItem>;
   pushSiteIds: Set<number>;
 }
@@ -31,7 +30,6 @@ export interface EstateWebPropertyCatalog {
 export interface ReconcileCreateOutcome {
   matched: boolean;
   integrationPropertyId?: string;
-  defaultUserIntegrationId?: string;
   shouldUpdate: boolean;
 }
 
@@ -59,7 +57,6 @@ export class EstateWebPropertyReconciliationService {
       ]);
 
       return {
-        defaultUserIntegrationId: userIntegrationId,
         byCode: this.buildCodeIndex(response.list),
         pushSiteIds: new Set(
           pushSites
@@ -97,7 +94,6 @@ export class EstateWebPropertyReconciliationService {
     return {
       matched: true,
       integrationPropertyId,
-      defaultUserIntegrationId: catalog.defaultUserIntegrationId,
       shouldUpdate,
     };
   }
@@ -215,7 +211,7 @@ export class EstateWebPropertyReconciliationService {
     return (listing.sites ?? []).some(
       (site) =>
         pushSiteIds.has(Number(site.agent_site_id)) &&
-        site.selected === true,
+        Boolean(site.selected),
     );
   }
 

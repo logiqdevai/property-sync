@@ -328,8 +328,6 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
 
           if (reconciled.matched && reconciled.integrationPropertyId) {
             const integrationPropertyId = reconciled.integrationPropertyId;
-            const pushIntegrationId =
-              reconciled.defaultUserIntegrationId ?? userIntegrationId;
 
             await this.stampIntegrationPropertyId(
               operation.user_property_id,
@@ -340,7 +338,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
 
             if (reconciled.shouldUpdate) {
               await adapter.pushUpdate(
-                pushIntegrationId,
+                userIntegrationId,
                 integrationPropertyId,
                 userProperty,
               );

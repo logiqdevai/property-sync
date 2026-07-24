@@ -1000,33 +1000,26 @@ export class UserPropertiesService {
       userProperty.canonical_property_id,
     );
 
+    if (!sourceAgencyId) {
+      throw new BadRequestException(
+        'Property has no source agency; cannot resolve linked EstateWeb CMS',
+      );
+    }
+
     let userIntegrationId: string;
     try {
-      if (sourceAgencyId) {
-        try {
-          const resolved =
-            await this.estateWebIntegrationResolver.resolveForTrackedAgency(
-              userProperty.user_id,
-              sourceAgencyId,
-            );
-          userIntegrationId = resolved.userIntegrationId;
-        } catch {
-          const resolved =
-            await this.estateWebIntegrationResolver.resolveDefaultForUser(
-              userProperty.user_id,
-            );
-          userIntegrationId = resolved.userIntegrationId;
-        }
-      } else {
-        const resolved =
-          await this.estateWebIntegrationResolver.resolveDefaultForUser(
-            userProperty.user_id,
-          );
-        userIntegrationId = resolved.userIntegrationId;
-      }
+      const resolved =
+        await this.estateWebIntegrationResolver.resolveForTrackedAgency(
+          userProperty.user_id,
+          sourceAgencyId,
+        );
+      userIntegrationId = resolved.userIntegrationId;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(message);
+      throw new BadRequestException(
+        message ||
+          'No EstateWeb CMS linked to this tracked agency. Connect and link an integration first.',
+      );
     }
 
     const integration = await this.prisma.userIntegration.findUnique({
@@ -1064,38 +1057,8 @@ export class UserPropertiesService {
       );
     }
 
-    const sourceAgencyId = await this.resolveSourceAgencyId(
-      userProperty.canonical_property_id,
-    );
-
-    let userIntegrationId: string;
-    try {
-      if (sourceAgencyId) {
-        try {
-          const resolved =
-            await this.estateWebIntegrationResolver.resolveForTrackedAgency(
-              userProperty.user_id,
-              sourceAgencyId,
-            );
-          userIntegrationId = resolved.userIntegrationId;
-        } catch {
-          const resolved =
-            await this.estateWebIntegrationResolver.resolveDefaultForUser(
-              userProperty.user_id,
-            );
-          userIntegrationId = resolved.userIntegrationId;
-        }
-      } else {
-        const resolved =
-          await this.estateWebIntegrationResolver.resolveDefaultForUser(
-            userProperty.user_id,
-          );
-        userIntegrationId = resolved.userIntegrationId;
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(message);
-    }
+    const { userIntegrationId } =
+      await this.resolveCmsIntegrationForProperty(userProperty);
 
     try {
       if (mode === MigrateIntegrationImagesMode.REMAP_SOURCES) {
