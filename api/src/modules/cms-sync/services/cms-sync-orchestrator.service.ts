@@ -6,6 +6,7 @@ import { CMS_SYNC_QUEUE } from '@/core/queues/queues.constants';
 import { CrawlRunsService } from '@/modules/crawl-runs/crawl-runs.service';
 import { CmsSyncRunsService } from '@/modules/cms-sync-runs/cms-sync-runs.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
+import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
 import {
   AffectedUserProperty,
   CmsSyncBatch,
@@ -47,6 +48,7 @@ export class CmsSyncOrchestratorService {
     private readonly cmsSyncRunsService: CmsSyncRunsService,
     private readonly crawlRunsService: CrawlRunsService,
     private readonly estateWebResolver: EstateWebIntegrationResolverService,
+    private readonly estateWebPropertyService: EstateWebPropertyService,
     @InjectQueue(CMS_SYNC_QUEUE)
     private readonly cmsSyncQueue: Queue<CmsSyncJobData>,
   ) {}
@@ -375,6 +377,7 @@ export class CmsSyncOrchestratorService {
       {
         tracker: TrackerGroup['tracker'] & {
           integration_link: {
+            user_integration_id: string;
             user_integration: {
               is_active: boolean;
               integration_target: {
@@ -404,17 +407,6 @@ export class CmsSyncOrchestratorService {
       const operation: CmsSyncOperationType = userProperty.integration_property_id
         ? 'UPDATE'
         : 'CREATE';
-
-      if (
-        operation === 'CREATE' &&
-        userProperty.status === PropertyStatus.REMOVED
-      ) {
-        failed.push({
-          user_property_id: userProperty.id,
-          error: 'Cannot push a removed property that is not in the CMS',
-        });
-        continue;
-      }
 
       let entry = byTracker.get(sourceAgencyId);
       if (!entry) {
@@ -463,9 +455,44 @@ export class CmsSyncOrchestratorService {
         byTracker.set(sourceAgencyId, entry);
       }
 
+      let resolvedOperation = operation;
+      const link = entry.tracker.integration_link;
+      if (
+        resolvedOperation === 'UPDATE' &&
+        userProperty.integration_property_id &&
+        link
+      ) {
+        const belongsToLinkedAccount =
+          await this.listingBelongsToLinkedIntegration(
+            link.user_integration_id,
+            userProperty.integration_property_id,
+            userProperty.internal_id,
+          );
+
+        if (!belongsToLinkedAccount) {
+          await this.prisma.userProperty.update({
+            where: { id: userProperty.id },
+            data: { integration_property_id: null },
+          });
+          userProperty.integration_property_id = null;
+          resolvedOperation = 'CREATE';
+        }
+      }
+
+      if (
+        resolvedOperation === 'CREATE' &&
+        userProperty.status === PropertyStatus.REMOVED
+      ) {
+        failed.push({
+          user_property_id: userProperty.id,
+          error: 'Cannot push a removed property that is not in the CMS',
+        });
+        continue;
+      }
+
       entry.affected.push({
         user_property_id: userProperty.id,
-        change_type: operation,
+        change_type: resolvedOperation,
         user_property: userProperty,
       });
     }
@@ -541,7 +568,9 @@ export class CmsSyncOrchestratorService {
           },
           affected: entry.affected,
         },
-        { includeUpdatesRegardlessOfAuto: true },
+        {
+          includeUpdatesRegardlessOfAuto: true,
+        },
       );
 
       if (!enqueued) {
@@ -605,12 +634,19 @@ export class CmsSyncOrchestratorService {
       this.isChangeTypeEnabled(a.change_type, tracker, options),
     );
 
-    if (filtered.length === 0) return false;
+    if (filtered.length === 0) {
+      this.logger.log(
+        `Crawl ${crawlRunId}: tracker ${tracker.id} has no CMS operations`,
+      );
+      return false;
+    }
 
     const integration = await this.resolveLinkedIntegration(tracker.id);
-    if (!integration) return false;
+    if (!integration) {
+      return false;
+    }
 
-    const batch = await this.batchService.buildBatch({
+    const builtBatch = await this.batchService.buildBatch({
       crawl_run_id: crawlRunId,
       user_integration_id: integration.userIntegrationId,
       user_tracked_agency_id: tracker.id,
@@ -620,11 +656,9 @@ export class CmsSyncOrchestratorService {
       max_properties: tracker.max_properties,
       affected: filtered,
     });
+    const batch: CmsSyncBatch = builtBatch;
 
     if (batch.operations.length === 0) {
-      this.logger.log(
-        `Crawl ${crawlRunId}: tracker ${tracker.id} has no CMS operations`,
-      );
       return false;
     }
 
@@ -688,9 +722,30 @@ export class CmsSyncOrchestratorService {
     }
   }
 
+  private async listingBelongsToLinkedIntegration(
+    userIntegrationId: string,
+    integrationPropertyId: string,
+    internalId: string | null,
+  ): Promise<boolean> {
+    try {
+      const listing = await this.estateWebPropertyService.getProperty(
+        userIntegrationId,
+        integrationPropertyId,
+      );
+      if (!internalId?.trim()) {
+        return true;
+      }
+      const listingCode = listing.code?.trim().toLowerCase() ?? '';
+      return listingCode === internalId.trim().toLowerCase();
+    } catch {
+      return false;
+    }
+  }
+
   private serializeBatchPayload(batch: CmsSyncBatch): Record<string, unknown> {
     return {
       user_tracked_agency_id: batch.user_tracked_agency_id,
+      user_integration_id: batch.user_integration_id,
       source_agency_id: batch.source_agency_id,
       concurrent_insertions: batch.concurrent_insertions,
       insertion_interval_minutes: batch.insertion_interval_minutes,

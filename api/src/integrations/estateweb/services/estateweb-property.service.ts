@@ -196,6 +196,13 @@ export class EstateWebPropertyService {
         userId,
       );
 
+    return this.listAllPropertiesForIntegration(userIntegrationId, query);
+  }
+
+  async listAllPropertiesForIntegration(
+    userIntegrationId: string,
+    query: EstateWebPropertyListQuery = {},
+  ): Promise<EstateWebPropertyListResponse> {
     const list: EstateWebPropertyListItem[] = [];
     let page = 1;
     let total = 0;

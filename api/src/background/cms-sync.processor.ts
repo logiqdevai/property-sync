@@ -26,11 +26,14 @@ import {
   EstateWebPropertyCatalog,
   EstateWebPropertyReconciliationService,
 } from '@/integrations/estateweb/services/estateweb-property-reconciliation.service';
+import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
+import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
 
 const CMS_SYNC_WORKER_CONCURRENCY = 1;
 
 interface StoredPayload {
   user_tracked_agency_id: string;
+  user_integration_id?: string;
   source_agency_id: string;
   concurrent_insertions: number;
   insertion_interval_minutes: number;
@@ -55,6 +58,8 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     private readonly crawlRunsService: CrawlRunsService,
     private readonly notificationsService: NotificationsService,
     private readonly estateWebPropertyReconciliationService: EstateWebPropertyReconciliationService,
+    private readonly estateWebIntegrationResolver: EstateWebIntegrationResolverService,
+    private readonly estateWebPropertyService: EstateWebPropertyService,
   ) {
     super();
   }
@@ -82,7 +87,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
   }
 
   private async processBatchJob(job: Job<CmsSyncJobData>): Promise<void> {
-    const { cms_sync_run_id, crawl_run_id, user_integration_id } = job.data;
+    const { cms_sync_run_id, crawl_run_id } = job.data;
 
     const syncRun = await this.cmsSyncRunsService.findOneById(cms_sync_run_id);
     const payload = (syncRun.payload ?? {}) as unknown as StoredPayload;
@@ -123,8 +128,14 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       return;
     }
 
+    const linkedIntegration =
+      await this.estateWebIntegrationResolver.resolveForUserTrackedAgencyId(
+        payload.user_tracked_agency_id,
+      );
+    const userIntegrationId = linkedIntegration.userIntegrationId;
+
     const adapter = this.adapterFactory.getAdapter(
-      syncRun.user_integration.integration_target.integration_type,
+      linkedIntegration.integrationType,
     );
 
     const userProperties = await this.loadUserProperties(
@@ -136,7 +147,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
 
     const result = await this.executeOperations(
       adapter,
-      user_integration_id,
+      userIntegrationId,
       operations,
       userProperties,
       tracker?.concurrent_insertions ?? 1,
@@ -249,7 +260,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     const sleepMs = insertionIntervalMinutes * 60 * 1000;
     const reconciliationCatalog = await this.loadReconciliationCatalog(
       operations,
-      userProperties,
+      userIntegrationId,
     );
 
     for (let i = 0; i < operations.length; i += concurrentInsertions) {
@@ -315,7 +326,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
               success: false,
               property_title: propertyTitle,
               error:
-                'EstateWeb default catalog unavailable; refusing CREATE to avoid duplicates. Ensure a default EstateWeb UserIntegration exists and can list all properties.',
+                'EstateWeb reconciliation catalog unavailable; refusing CREATE to avoid duplicates. Ensure the linked EstateWeb integration can list properties.',
             };
           }
 
@@ -395,6 +406,40 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
           if (!integrationId) {
             throw new Error('No integration property id for update');
           }
+
+          const belongsToLinkedAccount =
+            await this.listingBelongsToIntegration(
+              userIntegrationId,
+              integrationId,
+              userProperty.internal_id,
+            );
+
+          if (!belongsToLinkedAccount) {
+            await this.clearIntegrationPropertyId(operation.user_property_id);
+            userProperty.integration_property_id = null;
+
+            const createResult = await adapter.pushCreate(
+              userIntegrationId,
+              userProperty,
+            );
+            await this.stampIntegrationPropertyId(
+              operation.user_property_id,
+              operation.duplicate_group_id,
+              userProperty.user_id,
+              createResult.integration_property_id,
+            );
+            this.logger.log(
+              `CMS sync op success: property=${operation.user_property_id} operation=UPDATE->CREATE integration_property_id=${createResult.integration_property_id}`,
+            );
+            return {
+              user_property_id: operation.user_property_id,
+              operation: 'CREATE',
+              success: true,
+              property_title: propertyTitle,
+              integration_property_id: createResult.integration_property_id,
+            };
+          }
+
           await adapter.pushUpdate(
             userIntegrationId,
             integrationId,
@@ -518,6 +563,33 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     return String(error);
   }
 
+  private async listingBelongsToIntegration(
+    userIntegrationId: string,
+    integrationPropertyId: string,
+    internalId: string | null,
+  ): Promise<boolean> {
+    try {
+      const listing = await this.estateWebPropertyService.getProperty(
+        userIntegrationId,
+        integrationPropertyId,
+      );
+      if (!internalId?.trim()) {
+        return true;
+      }
+      const listingCode = listing.code?.trim().toLowerCase() ?? '';
+      return listingCode === internalId.trim().toLowerCase();
+    } catch {
+      return false;
+    }
+  }
+
+  private async clearIntegrationPropertyId(userPropertyId: string): Promise<void> {
+    await this.prisma.userProperty.update({
+      where: { id: userPropertyId },
+      data: { integration_property_id: null },
+    });
+  }
+
   private async stampIntegrationPropertyId(
     userPropertyId: string,
     _duplicateGroupId: string | null,
@@ -622,31 +694,16 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
 
   private async loadReconciliationCatalog(
     operations: CmsSyncBatchOperation[],
-    userProperties: Map<string, UserProperty>,
+    userIntegrationId: string,
   ): Promise<EstateWebPropertyCatalog | null> {
     const hasCreate = operations.some((op) => op.operation === 'CREATE');
     if (!hasCreate) {
       return null;
     }
 
-    const createUserIds = new Set<string>();
-    for (const operation of operations) {
-      if (operation.operation !== 'CREATE') continue;
-      const userProperty = userProperties.get(operation.user_property_id);
-      if (userProperty) {
-        createUserIds.add(userProperty.user_id);
-      }
-    }
-
-    if (createUserIds.size !== 1) {
-      this.logger.warn(
-        'Skipping EstateWeb reconciliation catalog load for mixed-user CMS batch',
-      );
-      return null;
-    }
-
-    const [userId] = createUserIds;
-    return this.estateWebPropertyReconciliationService.loadCatalog(userId);
+    return this.estateWebPropertyReconciliationService.loadCatalog(
+      userIntegrationId,
+    );
   }
 
   private async markJobActive(job: Job<CmsSyncJobData>): Promise<string> {

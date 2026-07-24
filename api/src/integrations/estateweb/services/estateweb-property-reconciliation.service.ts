@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
   PropertyHistoryEventType,
-  PropertyStatus,
   UserProperty,
 } from 'generated/prisma';
 import { EstateWebScope } from '../constants/estateweb-enums.constants';
@@ -43,14 +42,14 @@ export class EstateWebPropertyReconciliationService {
     private readonly estateWebIntegrationResolverService: EstateWebIntegrationResolverService,
   ) {}
 
-  async loadCatalog(userId: string): Promise<EstateWebPropertyCatalog | null> {
+  async loadCatalog(
+    userIntegrationId: string,
+  ): Promise<EstateWebPropertyCatalog | null> {
     try {
-      const { userIntegrationId } =
-        await this.estateWebIntegrationResolverService.resolveDefaultForUser(
-          userId,
-        );
       const [response, pushSites] = await Promise.all([
-        this.estateWebPropertyService.listAllProperties(userId),
+        this.estateWebPropertyService.listAllPropertiesForIntegration(
+          userIntegrationId,
+        ),
         this.estateWebIntegrationResolverService.resolvePushSites(
           userIntegrationId,
         ),
@@ -67,7 +66,7 @@ export class EstateWebPropertyReconciliationService {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(
-        `EstateWeb reconciliation catalog unavailable for user ${userId}: ${message}`,
+        `EstateWeb reconciliation catalog unavailable for integration ${userIntegrationId}: ${message}`,
       );
       return null;
     }
@@ -78,8 +77,27 @@ export class EstateWebPropertyReconciliationService {
     catalog: EstateWebPropertyCatalog,
     crawlRunId?: string,
   ): Promise<ReconcileCreateOutcome> {
-    const listing = this.findMatchingListing(userProperty, catalog.byCode);
+    const internalId = this.normalizeCode(userProperty.internal_id);
+    if (!internalId) {
+      return { matched: false, shouldUpdate: false };
+    }
+
+    const listing = catalog.byCode.get(internalId);
     if (!listing) {
+      return { matched: false, shouldUpdate: false };
+    }
+
+    if (this.isDefiniteCodeCollision(userProperty, listing)) {
+      this.logger.warn(
+        `Refusing EstateWeb reconciliation for user property ${userProperty.id}: internal_id "${internalId}" exists on listing ${listing.id} but identity fields conflict`,
+      );
+      return { matched: false, shouldUpdate: false };
+    }
+
+    if (!this.hasPositiveCorroboration(userProperty, listing)) {
+      this.logger.warn(
+        `Refusing EstateWeb reconciliation for user property ${userProperty.id}: internal_id "${internalId}" matches listing ${listing.id} but identity is not corroborated (code-only match)`,
+      );
       return { matched: false, shouldUpdate: false };
     }
 
@@ -98,17 +116,73 @@ export class EstateWebPropertyReconciliationService {
     };
   }
 
-  findMatchingListing(
+  private isDefiniteCodeCollision(
     userProperty: UserProperty,
-    byCode: Map<string, EstateWebPropertyListItem>,
-  ): EstateWebPropertyListItem | null {
-    for (const code of this.resolveUserPropertyCodes(userProperty)) {
-      const listing = byCode.get(code);
-      if (listing) {
-        return listing;
-      }
+    listing: EstateWebPropertyListItem,
+  ): boolean {
+    if (this.resolveScopeId(userProperty) !== Number(listing.scope_id)) {
+      return true;
     }
-    return null;
+
+    const userAddress = (userProperty.address ?? '').trim();
+    const listingAddress = (listing.address ?? '').trim();
+    if (
+      userAddress.length > 0 &&
+      listingAddress.length > 0 &&
+      !this.stringsEqual(userAddress, listingAddress)
+    ) {
+      return true;
+    }
+
+    if (
+      userProperty.price != null &&
+      listing.price != null &&
+      !this.pricesEqual(userProperty.price, listing.price)
+    ) {
+      return true;
+    }
+
+    if (
+      userProperty.square_meters != null &&
+      listing.sqm != null &&
+      !this.numbersEqual(userProperty.square_meters, listing.sqm)
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private hasPositiveCorroboration(
+    userProperty: UserProperty,
+    listing: EstateWebPropertyListItem,
+  ): boolean {
+    let corroborated = false;
+
+    const userAddress = (userProperty.address ?? '').trim();
+    const listingAddress = (listing.address ?? '').trim();
+    if (userAddress.length > 0 && listingAddress.length > 0) {
+      if (!this.stringsEqual(userAddress, listingAddress)) {
+        return false;
+      }
+      corroborated = true;
+    }
+
+    if (userProperty.price != null && listing.price != null) {
+      if (!this.pricesEqual(userProperty.price, listing.price)) {
+        return false;
+      }
+      corroborated = true;
+    }
+
+    if (userProperty.square_meters != null && listing.sqm != null) {
+      if (!this.numbersEqual(userProperty.square_meters, listing.sqm)) {
+        return false;
+      }
+      corroborated = true;
+    }
+
+    return corroborated;
   }
 
   private buildCodeIndex(
@@ -124,15 +198,6 @@ export class EstateWebPropertyReconciliationService {
     }
 
     return byCode;
-  }
-
-  private resolveUserPropertyCodes(userProperty: UserProperty): string[] {
-    const codes = new Set<string>();
-    const internalId = this.normalizeCode(userProperty.internal_id);
-    const propertyId = this.normalizeCode(userProperty.property_id);
-    if (internalId) codes.add(internalId);
-    if (propertyId) codes.add(propertyId);
-    return [...codes];
   }
 
   private normalizeCode(value: string | null | undefined): string | null {
@@ -151,10 +216,6 @@ export class EstateWebPropertyReconciliationService {
       return true;
     }
 
-    if (this.differsFromListing(userProperty, listing, pushSiteIds)) {
-      return true;
-    }
-
     if (!crawlRunId) {
       return false;
     }
@@ -169,50 +230,6 @@ export class EstateWebPropertyReconciliationService {
     });
 
     return Boolean(crawlHistory);
-  }
-
-  private differsFromListing(
-    userProperty: UserProperty,
-    listing: EstateWebPropertyListItem,
-    pushSiteIds: Set<number>,
-  ): boolean {
-    if (!this.pricesEqual(userProperty.price, listing.price)) {
-      return true;
-    }
-
-    if (
-      !this.stringsEqual(userProperty.address ?? '', listing.address ?? '')
-    ) {
-      return true;
-    }
-
-    if (!this.numbersEqual(userProperty.square_meters, listing.sqm)) {
-      return true;
-    }
-
-    if (this.resolveScopeId(userProperty) !== Number(listing.scope_id)) {
-      return true;
-    }
-
-    if (
-      userProperty.status === PropertyStatus.REMOVED &&
-      this.hasSelectedPushSite(listing, pushSiteIds)
-    ) {
-      return true;
-    }
-
-    return false;
-  }
-
-  private hasSelectedPushSite(
-    listing: EstateWebPropertyListItem,
-    pushSiteIds: Set<number>,
-  ): boolean {
-    return (listing.sites ?? []).some(
-      (site) =>
-        pushSiteIds.has(Number(site.agent_site_id)) &&
-        Boolean(site.selected),
-    );
   }
 
   private resolveScopeId(userProperty: UserProperty): EstateWebScope {
