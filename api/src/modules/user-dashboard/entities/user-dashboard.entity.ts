@@ -12,6 +12,12 @@ export class UserDashboardStats {
   properties_added_this_week: number;
 
   @ApiProperty()
+  properties_updated_this_week: number;
+
+  @ApiProperty()
+  properties_removed_this_week: number;
+
+  @ApiProperty()
   tracked_agencies: number;
 }
 
@@ -21,6 +27,9 @@ export class UserDashboardActivityItem {
 
   @ApiProperty()
   property_id: string;
+
+  @ApiProperty({ nullable: true })
+  user_property_id: string | null;
 
   @ApiProperty()
   property_title: string;
@@ -41,10 +50,21 @@ export class UserDashboardActivityItem {
   created_at: Date;
 }
 
+export class UserDashboardListings {
+  @ApiProperty({ type: [UserDashboardActivityItem] })
+  added: UserDashboardActivityItem[];
+
+  @ApiProperty({ type: [UserDashboardActivityItem] })
+  updated: UserDashboardActivityItem[];
+
+  @ApiProperty({ type: [UserDashboardActivityItem] })
+  removed: UserDashboardActivityItem[];
+}
+
 export class UserDashboardResponse {
   @ApiProperty({ type: UserDashboardStats })
   stats: UserDashboardStats;
 
-  @ApiProperty({ type: [UserDashboardActivityItem] })
-  activity: UserDashboardActivityItem[];
+  @ApiProperty({ type: UserDashboardListings })
+  listings: UserDashboardListings;
 }

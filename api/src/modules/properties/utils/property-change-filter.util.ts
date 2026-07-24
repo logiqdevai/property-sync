@@ -8,7 +8,7 @@ export const PropertyChangeFilters = {
 export type PropertyChangeFilter =
   (typeof PropertyChangeFilters)[keyof typeof PropertyChangeFilters];
 
-const UPDATE_EVENT_TYPES: PropertyHistoryEventType[] = [
+export const UPDATE_EVENT_TYPES: PropertyHistoryEventType[] = [
   PropertyHistoryEventType.UPDATED,
   PropertyHistoryEventType.PRICE_CHANGED,
   PropertyHistoryEventType.IMAGE_ADDED,
