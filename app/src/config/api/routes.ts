@@ -118,8 +118,10 @@ export const ApiRoutes = {
                 `/admin/user-properties/${id}/delete-integration-images`,
             createIntegrationImages: (id: string) =>
                 `/admin/user-properties/${id}/create-integration-images`,
-            updateIntegrationImages: (id: string) =>
-                `/admin/user-properties/${id}/update-integration-images`,
+        updateIntegrationImages: (id: string) =>
+            `/admin/user-properties/${id}/update-integration-images`,
+        removeWatermarkImages: (id: string) =>
+            `/admin/user-properties/${id}/remove-watermark-images`,
             bulkDelete: "/admin/user-properties/bulk-delete",
             truncateDescriptions: "/admin/user-properties/truncate-descriptions",
             dedupeGroups: "/admin/user-properties/dedupe-groups",
@@ -192,6 +194,8 @@ export const ApiRoutes = {
             `/properties/${id}/create-integration-images`,
         updateIntegrationImages: (id: string) =>
             `/properties/${id}/update-integration-images`,
+        removeWatermarkImages: (id: string) =>
+            `/properties/${id}/remove-watermark-images`,
         bulkPushToCrm: "/properties/push-to-cms",
         bulkDelete: "/properties/bulk-delete",
         dedupeGroups: "/properties/dedupe-groups",

@@ -23,6 +23,8 @@ import {
   createUserPropertyIntegrationImages,
   updateAdminUserPropertyIntegrationImages,
   updateUserPropertyIntegrationImages,
+  removeAdminUserPropertyWatermarkImages,
+  removeUserPropertyWatermarkImages,
   splitAdminUserProperties,
   splitUserProperties,
   truncateAdminUserPropertyDescriptions,
@@ -39,6 +41,7 @@ import type {
   SplitUserPropertiesPayload,
   TruncateUserPropertyDescriptionsPayload,
   UpdateIntegrationImagesPayload,
+  RemoveWatermarkImagesPayload,
   UpdateUserPropertyPayload,
   UserPropertyCountQuery,
   UserPropertyListQuery,
@@ -334,6 +337,56 @@ export const useUpdateUserPropertyIntegrationImages = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not update CMS image options",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useRemoveUserPropertyWatermarkImages = () => {
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...payload
+    }: { id: string } & RemoveWatermarkImagesPayload) =>
+      removeUserPropertyWatermarkImages(id, payload),
+    onSuccess: (data) => {
+      toast({
+        title: "Watermark removal started",
+        description: data.message,
+        duration: 4000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not start watermark removal",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useRemoveAdminUserPropertyWatermarkImages = () => {
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...payload
+    }: { id: string } & RemoveWatermarkImagesPayload) =>
+      removeAdminUserPropertyWatermarkImages(id, payload),
+    onSuccess: (data) => {
+      toast({
+        title: "Watermark removal started",
+        description: data.message,
+        duration: 4000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not start watermark removal",
         description: error.message,
         variant: "error",
       });

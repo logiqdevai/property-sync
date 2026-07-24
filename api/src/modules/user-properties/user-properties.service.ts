@@ -4,7 +4,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { WATERMARK_REMOVAL_QUEUE } from '@/core/queues/queues.constants';
+import { DewatermarkOrchestratorService } from '@/integrations/dewatermark/services/dewatermark-orchestrator.service';
+import { EstateWebPropertyImage } from '@/integrations/estateweb/interfaces/estateweb-property.interface';
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { CmsSyncAdapterFactory } from '@/modules/cms-sync/services/cms-sync-adapter.factory';
@@ -14,6 +19,7 @@ import { AdminUserPropertyQueryType } from './dto/admin-user-property-query.sche
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import {
   IntegrationType,
+  JobStatus,
   Prisma,
   Property,
   PropertyStatus,
@@ -35,6 +41,9 @@ import {
   applyTextTruncatePieces,
   normalizeTextTruncatePieces,
 } from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
+import { RemoveWatermarkImagesDto } from './dto/remove-watermark-images.dto';
+import { WatermarkRemovalJobData } from './interfaces/watermark-removal-job.interface';
+import { WatermarkRemovalService } from './services/watermark-removal.service';
 
 export type PropertySyncChangeType = 'created' | 'updated' | 'removed';
 
@@ -58,6 +67,10 @@ export class UserPropertiesService {
     private readonly cmsSyncAdapterFactory: CmsSyncAdapterFactory,
     private readonly estateWebCmsSyncAdapter: EstateWebCmsSyncAdapter,
     private readonly estateWebIntegrationResolver: EstateWebIntegrationResolverService,
+    private readonly dewatermarkOrchestrator: DewatermarkOrchestratorService,
+    private readonly watermarkRemovalService: WatermarkRemovalService,
+    @InjectQueue(WATERMARK_REMOVAL_QUEUE)
+    private readonly watermarkRemovalQueue: Queue<WatermarkRemovalJobData>,
   ) {}
 
   private async resolveFilterSourceAgencyId(
@@ -656,6 +669,166 @@ export class UserPropertiesService {
 
     await this.runUpdateIntegrationImages(userProperty, imageIds, options);
     return this.adminFindOne(id);
+  }
+
+  async enqueueRemoveWatermarkImages(
+    userId: string,
+    id: string,
+    dto: RemoveWatermarkImagesDto,
+  ) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id, user_id: userId },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+        integration_properties: {
+          orderBy: { updated_at: 'desc' },
+          take: 1,
+          select: { images: true },
+        },
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    return this.runEnqueueRemoveWatermarkImages(userProperty, dto);
+  }
+
+  async adminEnqueueRemoveWatermarkImages(
+    id: string,
+    dto: RemoveWatermarkImagesDto,
+  ) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+        integration_properties: {
+          orderBy: { updated_at: 'desc' },
+          take: 1,
+          select: { images: true },
+        },
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    return this.runEnqueueRemoveWatermarkImages(userProperty, dto);
+  }
+
+  private async runEnqueueRemoveWatermarkImages(
+    userProperty: {
+      id: string;
+      user_id: string;
+      canonical_property_id: string;
+      integration_property_id: string | null;
+      integration_properties: { images: unknown }[];
+    },
+    dto: RemoveWatermarkImagesDto,
+  ) {
+    if (!userProperty.integration_property_id) {
+      throw new BadRequestException('Property is not linked to a CMS');
+    }
+
+    const { userIntegrationId, integrationType } =
+      await this.resolveCmsIntegrationForProperty(userProperty);
+
+    if (integrationType !== IntegrationType.ESTATEWEB) {
+      throw new BadRequestException(
+        'Watermark removal is only supported for EstateWeb',
+      );
+    }
+
+    const dewatermarkIntegration =
+      await this.dewatermarkOrchestrator.findActiveForUser(userProperty.user_id);
+    if (!dewatermarkIntegration) {
+      throw new BadRequestException(
+        'No active Dewatermark integration configured for this user',
+      );
+    }
+
+    const parsedImageIds = this.parseWatermarkImageIds(dto.image_ids);
+    const integrationImages = this.watermarkRemovalService.parseIntegrationImages(
+      userProperty.integration_properties[0]?.images,
+    );
+    this.assertWatermarkImageSelection(parsedImageIds, integrationImages);
+
+    const jobData: WatermarkRemovalJobData = {
+      job_log_id: '',
+      user_id: userProperty.user_id,
+      user_property_id: userProperty.id,
+      user_integration_id: userIntegrationId,
+      crm_property_id: userProperty.integration_property_id,
+      image_ids: parsedImageIds.map(String),
+      replace_crm_images: dto.replace_crm_images,
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: WATERMARK_REMOVAL_QUEUE,
+        job_name: 'remove-watermark',
+        status: JobStatus.WAITING,
+        payload: jobData as object,
+      },
+    });
+
+    jobData.job_log_id = jobLog.id;
+
+    await this.prisma.jobLog.update({
+      where: { id: jobLog.id },
+      data: { payload: jobData as object },
+    });
+
+    await this.watermarkRemovalQueue.add('remove-watermark', jobData);
+
+    return {
+      job_log_id: jobLog.id,
+      message:
+        'Watermark removal has started and is being processed in the background.',
+    };
+  }
+
+  private parseWatermarkImageIds(imageIds: string[]): number[] {
+    const uniqueIds = [
+      ...new Set(
+        imageIds
+          .map((id) => Number(id.trim()))
+          .filter((id) => Number.isInteger(id) && id > 0),
+      ),
+    ];
+
+    if (uniqueIds.length === 0) {
+      throw new BadRequestException('No valid image ids provided');
+    }
+
+    return uniqueIds;
+  }
+
+  private assertWatermarkImageSelection(
+    imageIds: number[],
+    integrationImages: EstateWebPropertyImage[],
+  ): void {
+    for (const imageId of imageIds) {
+      const image = integrationImages.find((item) => item.id === imageId);
+      if (!image) {
+        throw new BadRequestException(
+          `Image ${imageId} was not found on this property`,
+        );
+      }
+      if (!image.source_image) {
+        throw new BadRequestException(
+          `Image ${imageId} does not have a source image to process`,
+        );
+      }
+    }
   }
 
   private async runCreateIntegrationImages(

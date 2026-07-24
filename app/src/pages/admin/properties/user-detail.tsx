@@ -16,6 +16,7 @@ import {
   useCreateAdminUserPropertyIntegrationImages,
   useUpdateAdminUserPropertyIntegrationImages,
   useMigrateAdminUserPropertyIntegrationImages,
+  useRemoveAdminUserPropertyWatermarkImages,
 } from "@/features/user-properties/hooks/use-user-properties";
 
 export default function UserPropertyDetailPage() {
@@ -28,6 +29,7 @@ export default function UserPropertyDetailPage() {
   const deleteIntegrationImages = useDeleteAdminUserPropertyIntegrationImages();
   const createIntegrationImages = useCreateAdminUserPropertyIntegrationImages();
   const updateIntegrationImages = useUpdateAdminUserPropertyIntegrationImages();
+  const removeWatermarkImages = useRemoveAdminUserPropertyWatermarkImages();
 
   const headerActions = useMemo<TableRowAction[]>(() => {
     if (!property) return [];
@@ -127,6 +129,15 @@ export default function UserPropertyDetailPage() {
         });
       }}
       isCreatingIntegrationImages={createIntegrationImages.isPending}
+      canRemoveWatermark={Boolean(property.integration_property_id)}
+      onRemoveWatermark={async (imageIds, replaceCrmImages) => {
+        await removeWatermarkImages.mutateAsync({
+          id: property.id,
+          image_ids: imageIds.map(String),
+          replace_crm_images: replaceCrmImages,
+        });
+      }}
+      isRemovingWatermark={removeWatermarkImages.isPending}
       headerActions={
         <div className="flex items-center gap-2 flex-wrap">
           {property.user ? (
@@ -145,7 +156,8 @@ export default function UserPropertyDetailPage() {
               deleteUserProperty.isPending ||
               deleteIntegrationImages.isPending ||
               createIntegrationImages.isPending ||
-              updateIntegrationImages.isPending
+              updateIntegrationImages.isPending ||
+              removeWatermarkImages.isPending
             }
           />
         </div>

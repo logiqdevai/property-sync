@@ -20,6 +20,8 @@ import type {
   TruncateUserPropertyDescriptionsPayload,
   TruncateUserPropertyDescriptionsResult,
   UpdateIntegrationImagesPayload,
+  RemoveWatermarkImagesPayload,
+  RemoveWatermarkImagesResponse,
 } from "../interfaces/user-properties.interfaces";
 
 export const getUserProperties = async (
@@ -245,6 +247,40 @@ export const updateAdminUserPropertyIntegrationImages = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to update CMS image options.",
+    );
+  }
+};
+
+export const removeUserPropertyWatermarkImages = async (
+  id: string,
+  payload: RemoveWatermarkImagesPayload,
+): Promise<RemoveWatermarkImagesResponse> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.removeWatermarkImages(id),
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to start watermark removal.",
+    );
+  }
+};
+
+export const removeAdminUserPropertyWatermarkImages = async (
+  id: string,
+  payload: RemoveWatermarkImagesPayload,
+): Promise<RemoveWatermarkImagesResponse> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.removeWatermarkImages(id),
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to start watermark removal.",
     );
   }
 };

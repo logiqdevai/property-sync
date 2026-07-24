@@ -1,15 +1,32 @@
 import { Module } from '@nestjs/common';
+import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '@/core/databases/prisma/prisma.module';
+import { WATERMARK_REMOVAL_QUEUE } from '@/core/queues/queues.constants';
+import { DewatermarkModule } from '@/integrations/dewatermark/dewatermark.module';
 import { EstateWebModule } from '@/integrations/estateweb/estateweb.module';
+import { GcsIntegrationModule } from '@/integrations/storage/gcs/gcs.module';
 import { CmsSyncModule } from '@/modules/cms-sync/cms-sync.module';
+import { WatermarkRemovalProcessor } from '@/background/watermark-removal.processor';
 import { UserPropertiesController } from './user-properties.controller';
 import { AdminUserPropertiesController } from './admin-user-properties.controller';
 import { UserPropertiesService } from './user-properties.service';
+import { WatermarkRemovalService } from './services/watermark-removal.service';
 
 @Module({
-  imports: [PrismaModule, CmsSyncModule, EstateWebModule],
+  imports: [
+    PrismaModule,
+    CmsSyncModule,
+    EstateWebModule,
+    DewatermarkModule,
+    GcsIntegrationModule,
+    BullModule.registerQueue({ name: WATERMARK_REMOVAL_QUEUE }),
+  ],
   controllers: [UserPropertiesController, AdminUserPropertiesController],
-  providers: [UserPropertiesService],
+  providers: [
+    UserPropertiesService,
+    WatermarkRemovalService,
+    WatermarkRemovalProcessor,
+  ],
   exports: [UserPropertiesService],
 })
 export class UserPropertiesModule {}

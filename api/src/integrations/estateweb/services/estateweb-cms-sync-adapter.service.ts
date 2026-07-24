@@ -281,6 +281,66 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     });
   }
 
+  async replaceImageAfterWatermark(params: {
+    userIntegrationId: string;
+    userPropertyId: string;
+    crmPropertyId: number | string;
+    oldImageId: number;
+    processedBuffer: Buffer;
+    gcsUrl: string;
+    oldImage: EstateWebPropertyImage;
+    zindex: number;
+    deleteOldImage?: boolean;
+  }): Promise<void> {
+    const propertyId = Number(params.crmPropertyId);
+    const filename = this.buildUniqueImageFilename(
+      params.gcsUrl,
+      propertyId,
+      params.zindex,
+    );
+    const payload: EstateWebUploadImagePayload = {
+      filename,
+      show_on_site: params.oldImage.show_on_site ? 1 : 0,
+      show_on_groups: params.oldImage.show_on_groups ? 1 : 0,
+      show_on_foreign_agents: params.oldImage.show_on_foreign_agents ? 1 : 0,
+      zindex: params.zindex,
+    };
+
+    await this.estateWebPropertyService.uploadPropertyImage(
+      params.userIntegrationId,
+      propertyId,
+      params.processedBuffer,
+      payload,
+      'image/jpeg',
+    );
+
+    const sourceByFilename = new Map<string, string>([
+      [filename, params.gcsUrl],
+    ]);
+
+    await this.syncIntegrationPropertyImages({
+      userIntegrationId: params.userIntegrationId,
+      userPropertyId: params.userPropertyId,
+      estateWebPropertyId: params.crmPropertyId,
+      sourceByFilename,
+    });
+
+    if (!params.deleteOldImage) {
+      return;
+    }
+
+    await this.estateWebPropertyService.deletePropertyImage(
+      params.userIntegrationId,
+      params.oldImageId,
+    );
+
+    await this.syncIntegrationPropertyImages({
+      userIntegrationId: params.userIntegrationId,
+      userPropertyId: params.userPropertyId,
+      estateWebPropertyId: params.crmPropertyId,
+    });
+  }
+
   private buildPayload(
     pushSites: EstateWebPushSiteSetting[],
     adLanguages: EstateWebLanguageId[],

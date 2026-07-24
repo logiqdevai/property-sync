@@ -27,6 +27,7 @@ import {
   useDeleteUserPropertyIntegrationImages,
   useCreateUserPropertyIntegrationImages,
   useUpdateUserPropertyIntegrationImages,
+  useRemoveUserPropertyWatermarkImages,
   usePushUserPropertyToCrm,
   useTruncateUserPropertyDescriptions,
   useUpdateUserProperty,
@@ -112,6 +113,7 @@ export default function DashboardPropertyDetailPage() {
   const deleteIntegrationImages = useDeleteUserPropertyIntegrationImages();
   const createIntegrationImages = useCreateUserPropertyIntegrationImages();
   const updateIntegrationImages = useUpdateUserPropertyIntegrationImages();
+  const removeWatermarkImages = useRemoveUserPropertyWatermarkImages();
   const truncateDescriptions = useTruncateUserPropertyDescriptions();
   const { data: locationCatalog = [] } = useEstateWebLocationCatalog(isEditing);
   const { data: floorCatalog = [], isPending: floorCatalogPending } =
@@ -406,6 +408,15 @@ export default function DashboardPropertyDetailPage() {
           });
         }}
         isCreatingIntegrationImages={createIntegrationImages.isPending}
+        canRemoveWatermark={Boolean(property.integration_property_id)}
+        onRemoveWatermark={async (imageIds, replaceCrmImages) => {
+          await removeWatermarkImages.mutateAsync({
+            id: property.id,
+            image_ids: imageIds.map(String),
+            replace_crm_images: replaceCrmImages,
+          });
+        }}
+        isRemovingWatermark={removeWatermarkImages.isPending}
         headerActions={
           <BulkActionsMenu
             actions={headerActions}
@@ -415,7 +426,8 @@ export default function DashboardPropertyDetailPage() {
               migrateImages.isPending ||
               deleteIntegrationImages.isPending ||
               createIntegrationImages.isPending ||
-              updateIntegrationImages.isPending
+              updateIntegrationImages.isPending ||
+              removeWatermarkImages.isPending
             }
           />
         }

@@ -4,3 +4,4 @@ export const CRAWL_QUEUE = 'crawl';
 export const AI_BATCH_COMPLETE_QUEUE = 'ai-batch-complete';
 export const OPENAI_BATCH_QUEUE = 'openai-batch';
 export const CMS_SYNC_QUEUE = 'cms-sync';
+export const WATERMARK_REMOVAL_QUEUE = 'watermark-removal';

@@ -197,3 +197,13 @@ export interface UpdateIntegrationImagesPayload {
   show_on_groups: boolean;
   show_on_foreign_agents: boolean;
 }
+
+export interface RemoveWatermarkImagesPayload {
+  image_ids: string[];
+  replace_crm_images: boolean;
+}
+
+export interface RemoveWatermarkImagesResponse {
+  job_log_id: string;
+  message: string;
+}

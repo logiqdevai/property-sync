@@ -34,6 +34,8 @@ import { DeleteUserPropertiesDto } from './dto/delete-user-properties.dto';
 import { DeleteIntegrationImagesDto } from './dto/delete-integration-images.dto';
 import { CreateIntegrationImagesDto } from './dto/create-integration-images.dto';
 import { UpdateIntegrationImagesDto } from './dto/update-integration-images.dto';
+import { RemoveWatermarkImagesDto } from './dto/remove-watermark-images.dto';
+import { RemoveWatermarkImagesResponseEntity } from './entities/remove-watermark-images-response.entity';
 import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
 import { UserPropertyEntity } from './entities/user-property.entity';
 
@@ -249,6 +251,25 @@ export class AdminUserPropertiesController {
         show_on_groups: dto.show_on_groups,
         show_on_foreign_agents: dto.show_on_foreign_agents,
       },
+    );
+  }
+
+  @Post(':id/remove-watermark-images')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Enqueue background watermark removal for selected EstateWeb CRM images',
+  })
+  @ApiResponse({ status: 200, type: RemoveWatermarkImagesResponseEntity })
+  @ApiResponse({ status: 400, description: 'Cannot enqueue watermark removal' })
+  @ApiResponse({ status: 404, description: 'User property not found' })
+  removeWatermarkImages(
+    @Param('id') id: string,
+    @Body() dto: RemoveWatermarkImagesDto,
+  ) {
+    return this.userPropertiesService.adminEnqueueRemoveWatermarkImages(
+      id,
+      dto,
     );
   }
 

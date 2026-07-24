@@ -12,6 +12,7 @@ import {
   MapPin,
   Maximize2,
   Ruler,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
@@ -25,6 +26,7 @@ import {
   EstateWebImageOptionsModal,
   type EstateWebImageOptions,
 } from "@/components/ui/estateweb-image-options-modal";
+import { RemoveWatermarkModal } from "@/components/ui/remove-watermark-modal";
 import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
 import {
   formatPropertyHistoryLabel,
@@ -182,12 +184,15 @@ function PropertyImagesGrid({
   selectable = false,
   canCreateFromPropertyImages = false,
   canUpdateEstateWebImageOptions = false,
+  canRemoveWatermark = false,
   onDeleteSelected,
   onCreateSelected,
   onUpdateEstateWebImageOptions,
+  onRemoveWatermark,
   isDeletePending = false,
   isCreatePending = false,
   isUpdateEstateWebImageOptionsPending = false,
+  isRemoveWatermarkPending = false,
 }: {
   images: PropertyDisplayImage[];
   fallbackImages: string[];
@@ -195,15 +200,21 @@ function PropertyImagesGrid({
   selectable?: boolean;
   canCreateFromPropertyImages?: boolean;
   canUpdateEstateWebImageOptions?: boolean;
+  canRemoveWatermark?: boolean;
   onDeleteSelected?: (imageIds: number[]) => Promise<void> | void;
   onCreateSelected?: (imageIndexes: number[]) => Promise<void> | void;
   onUpdateEstateWebImageOptions?: (
     imageIds: number[],
     options: EstateWebImageOptions,
   ) => Promise<void> | void;
+  onRemoveWatermark?: (
+    imageIds: number[],
+    replaceCrmImages: boolean,
+  ) => Promise<void> | void;
   isDeletePending?: boolean;
   isCreatePending?: boolean;
   isUpdateEstateWebImageOptionsPending?: boolean;
+  isRemoveWatermarkPending?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(
@@ -212,18 +223,21 @@ function PropertyImagesGrid({
   const deleteConfirm = useOverlayState();
   const createConfirm = useOverlayState();
   const estateWebOptionsModal = useOverlayState();
+  const removeWatermarkModal = useOverlayState();
   const canExpand = images.length > 2;
   const isPending =
     isDeletePending ||
     isCreatePending ||
-    isUpdateEstateWebImageOptionsPending;
+    isUpdateEstateWebImageOptionsPending ||
+    isRemoveWatermarkPending;
   const canSelect =
     selectable &&
     images.length > 0 &&
     (Boolean(onDeleteSelected) ||
       (canCreateFromPropertyImages && Boolean(onCreateSelected)) ||
       (canUpdateEstateWebImageOptions &&
-        Boolean(onUpdateEstateWebImageOptions)));
+        Boolean(onUpdateEstateWebImageOptions)) ||
+      (canRemoveWatermark && Boolean(onRemoveWatermark)));
   const allSelected =
     canSelect &&
     images.length > 0 &&
@@ -295,6 +309,17 @@ function PropertyImagesGrid({
           },
         ]
       : []),
+    ...(canRemoveWatermark && onRemoveWatermark
+      ? [
+          {
+            id: "remove-watermark",
+            label: `Remove watermark${selectedCrmIds.length > 0 ? ` (${selectedCrmIds.length})` : ""}`,
+            variant: "accent" as const,
+            icon: Sparkles,
+            isDisabled: isPending || selectedCrmIds.length === 0,
+          },
+        ]
+      : []),
     ...(onDeleteSelected
       ? [
           {
@@ -328,6 +353,12 @@ function PropertyImagesGrid({
     setSelectedIndexes(new Set());
   };
 
+  const handleRemoveWatermarkConfirm = async (replaceCrmImages: boolean) => {
+    if (!onRemoveWatermark || selectedCrmIds.length === 0) return;
+    await onRemoveWatermark(selectedCrmIds, replaceCrmImages);
+    setSelectedIndexes(new Set());
+  };
+
   return (
     <div className="@container flex flex-col gap-3">
       {canSelect ? (
@@ -349,6 +380,8 @@ function PropertyImagesGrid({
                 if (actionId === "create-from-property") createConfirm.open();
                 if (actionId === "estateweb-options")
                   estateWebOptionsModal.open();
+                if (actionId === "remove-watermark")
+                  removeWatermarkModal.open();
               }}
               isPending={isPending}
               label="Actions"
@@ -466,6 +499,14 @@ function PropertyImagesGrid({
           isPending={isUpdateEstateWebImageOptionsPending}
         />
       ) : null}
+      {canRemoveWatermark && onRemoveWatermark ? (
+        <RemoveWatermarkModal
+          state={removeWatermarkModal}
+          selectedCount={selectedCrmIds.length}
+          onConfirm={handleRemoveWatermarkConfirm}
+          isPending={isRemoveWatermarkPending}
+        />
+      ) : null}
     </div>
   );
 }
@@ -491,8 +532,14 @@ interface PropertyDetailViewProps {
   isDeletingIntegrationImages?: boolean;
   isCreatingIntegrationImages?: boolean;
   isUpdatingEstateWebImageOptions?: boolean;
+  isRemovingWatermark?: boolean;
   canCreateIntegrationImages?: boolean;
   canUpdateEstateWebImageOptions?: boolean;
+  canRemoveWatermark?: boolean;
+  onRemoveWatermark?: (
+    imageIds: number[],
+    replaceCrmImages: boolean,
+  ) => Promise<void> | void;
 }
 
 export function PropertyDetailView({
@@ -513,6 +560,9 @@ export function PropertyDetailView({
   isUpdatingEstateWebImageOptions = false,
   canCreateIntegrationImages = false,
   canUpdateEstateWebImageOptions = false,
+  canRemoveWatermark = false,
+  onRemoveWatermark,
+  isRemovingWatermark = false,
 }: PropertyDetailViewProps) {
   const sourceLinks = property.source_links ?? [];
   const cmsFieldEntries = (property.cms_fields ?? []) as CmsPropertyFieldEntry[];
@@ -532,6 +582,9 @@ export function PropertyDetailView({
       displayImages.some((image) => image.crmImageId != null)) ||
     (canUpdateEstateWebImageOptions &&
       Boolean(onUpdateEstateWebImageOptions) &&
+      displayImages.some((image) => image.crmImageId != null)) ||
+    (canRemoveWatermark &&
+      Boolean(onRemoveWatermark) &&
       displayImages.some((image) => image.crmImageId != null)) ||
     (canCreateIntegrationImages &&
       Boolean(onCreateIntegrationImages) &&
@@ -845,14 +898,19 @@ export function PropertyDetailView({
               canUpdateEstateWebImageOptions &&
               Boolean(onUpdateEstateWebImageOptions)
             }
+            canRemoveWatermark={
+              canRemoveWatermark && Boolean(onRemoveWatermark)
+            }
             onDeleteSelected={onDeleteIntegrationImages}
             onCreateSelected={onCreateIntegrationImages}
             onUpdateEstateWebImageOptions={onUpdateEstateWebImageOptions}
+            onRemoveWatermark={onRemoveWatermark}
             isDeletePending={isDeletingIntegrationImages}
             isCreatePending={isCreatingIntegrationImages}
             isUpdateEstateWebImageOptionsPending={
               isUpdatingEstateWebImageOptions
             }
+            isRemoveWatermarkPending={isRemovingWatermark}
           />
         )}
       </section>
