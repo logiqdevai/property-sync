@@ -2,12 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { PropertyHistoryEventType, PropertyStatus } from 'generated/prisma';
 import { UPDATE_EVENT_TYPES } from '@/modules/properties/utils/property-change-filter.util';
-import {
-  UserDashboardActivityItem,
-  UserDashboardResponse,
-} from './entities/user-dashboard.entity';
+import { UserDashboardResponse } from './entities/user-dashboard.entity';
 
-const RECENT_LISTINGS_LIMIT = 5;
+const RECENT_ACTIVITY_LIMIT = 10;
 
 @Injectable()
 export class UserDashboardService {
@@ -35,14 +32,11 @@ export class UserDashboardService {
       }),
       this.prisma.userProperty.findMany({
         where: { user_id: userId },
-        select: { id: true, canonical_property_id: true },
+        select: { canonical_property_id: true },
       }),
     ]);
 
     const propertyIds = trackedProperties.map((p) => p.canonical_property_id);
-    const userPropertyByCanonicalId = new Map(
-      trackedProperties.map((p) => [p.canonical_property_id, p.id]),
-    );
 
     if (propertyIds.length === 0) {
       return {
@@ -54,7 +48,7 @@ export class UserDashboardService {
           properties_removed_this_week: 0,
           tracked_agencies: trackedAgencies,
         },
-        listings: { added: [], updated: [], removed: [] },
+        activity: [],
       };
     }
 
@@ -63,74 +57,33 @@ export class UserDashboardService {
       created_at: { gte: sevenDaysAgo },
     };
 
-    const [
-      propertiesUpdatedThisWeek,
-      propertiesRemovedThisWeek,
-      recentAdded,
-      recentUpdated,
-      recentRemoved,
-    ] = await Promise.all([
-      this.prisma.propertyHistory
-        .groupBy({
-          by: ['property_id'],
-          where: {
-            ...historyBase,
-            event_type: { in: UPDATE_EVENT_TYPES },
-          },
-        })
-        .then((rows) => rows.length),
-      this.prisma.propertyHistory
-        .groupBy({
-          by: ['property_id'],
-          where: {
-            ...historyBase,
-            event_type: PropertyHistoryEventType.REMOVED,
-          },
-        })
-        .then((rows) => rows.length),
-      this.prisma.propertyHistory.findMany({
-        where: {
-          property_id: { in: propertyIds },
-          event_type: PropertyHistoryEventType.CREATED,
-        },
-        orderBy: { created_at: 'desc' },
-        take: RECENT_LISTINGS_LIMIT,
-        include: { property: { select: { title: true } } },
-      }),
-      this.prisma.propertyHistory.findMany({
-        where: {
-          property_id: { in: propertyIds },
-          event_type: { in: UPDATE_EVENT_TYPES },
-        },
-        orderBy: { created_at: 'desc' },
-        take: RECENT_LISTINGS_LIMIT,
-        include: { property: { select: { title: true } } },
-      }),
-      this.prisma.propertyHistory.findMany({
-        where: {
-          property_id: { in: propertyIds },
-          event_type: PropertyHistoryEventType.REMOVED,
-        },
-        orderBy: { created_at: 'desc' },
-        take: RECENT_LISTINGS_LIMIT,
-        include: { property: { select: { title: true } } },
-      }),
-    ]);
-
-    const mapEntry = (
-      entry: (typeof recentAdded)[number],
-    ): UserDashboardActivityItem => ({
-      id: entry.id,
-      property_id: entry.property_id,
-      user_property_id:
-        userPropertyByCanonicalId.get(entry.property_id) ?? null,
-      property_title: entry.property.title,
-      event_type: entry.event_type,
-      field: entry.field,
-      old_value: entry.old_value,
-      new_value: entry.new_value,
-      created_at: entry.created_at,
-    });
+    const [propertiesUpdatedThisWeek, propertiesRemovedThisWeek, recentHistory] =
+      await Promise.all([
+        this.prisma.propertyHistory
+          .groupBy({
+            by: ['property_id'],
+            where: {
+              ...historyBase,
+              event_type: { in: UPDATE_EVENT_TYPES },
+            },
+          })
+          .then((rows) => rows.length),
+        this.prisma.propertyHistory
+          .groupBy({
+            by: ['property_id'],
+            where: {
+              ...historyBase,
+              event_type: PropertyHistoryEventType.REMOVED,
+            },
+          })
+          .then((rows) => rows.length),
+        this.prisma.propertyHistory.findMany({
+          where: { property_id: { in: propertyIds } },
+          orderBy: { created_at: 'desc' },
+          take: RECENT_ACTIVITY_LIMIT,
+          include: { property: { select: { title: true } } },
+        }),
+      ]);
 
     return {
       stats: {
@@ -141,11 +94,16 @@ export class UserDashboardService {
         properties_removed_this_week: propertiesRemovedThisWeek,
         tracked_agencies: trackedAgencies,
       },
-      listings: {
-        added: recentAdded.map(mapEntry),
-        updated: recentUpdated.map(mapEntry),
-        removed: recentRemoved.map(mapEntry),
-      },
+      activity: recentHistory.map((entry) => ({
+        id: entry.id,
+        property_id: entry.property_id,
+        property_title: entry.property.title,
+        event_type: entry.event_type,
+        field: entry.field,
+        old_value: entry.old_value,
+        new_value: entry.new_value,
+        created_at: entry.created_at,
+      })),
     };
   }
 }

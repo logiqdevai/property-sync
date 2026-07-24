@@ -28,9 +28,6 @@ export class UserDashboardActivityItem {
   @ApiProperty()
   property_id: string;
 
-  @ApiProperty({ nullable: true })
-  user_property_id: string | null;
-
   @ApiProperty()
   property_title: string;
 
@@ -50,21 +47,10 @@ export class UserDashboardActivityItem {
   created_at: Date;
 }
 
-export class UserDashboardListings {
-  @ApiProperty({ type: [UserDashboardActivityItem] })
-  added: UserDashboardActivityItem[];
-
-  @ApiProperty({ type: [UserDashboardActivityItem] })
-  updated: UserDashboardActivityItem[];
-
-  @ApiProperty({ type: [UserDashboardActivityItem] })
-  removed: UserDashboardActivityItem[];
-}
-
 export class UserDashboardResponse {
   @ApiProperty({ type: UserDashboardStats })
   stats: UserDashboardStats;
 
-  @ApiProperty({ type: UserDashboardListings })
-  listings: UserDashboardListings;
+  @ApiProperty({ type: [UserDashboardActivityItem] })
+  activity: UserDashboardActivityItem[];
 }

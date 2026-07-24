@@ -12,7 +12,6 @@ export interface UserDashboardStats {
 export interface UserDashboardActivityItem {
   id: string;
   property_id: string;
-  user_property_id: string | null;
   property_title: string;
   event_type: PropertyHistoryEventType;
   field: string | null;
@@ -21,13 +20,7 @@ export interface UserDashboardActivityItem {
   created_at: string;
 }
 
-export interface UserDashboardListings {
-  added: UserDashboardActivityItem[];
-  updated: UserDashboardActivityItem[];
-  removed: UserDashboardActivityItem[];
-}
-
 export interface UserDashboardResponse {
   stats: UserDashboardStats;
-  listings: UserDashboardListings;
+  activity: UserDashboardActivityItem[];
 }
