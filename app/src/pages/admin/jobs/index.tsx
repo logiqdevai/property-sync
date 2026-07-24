@@ -15,6 +15,7 @@ import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { TableRowActionsMenu, type TableRowAction } from "@/components/ui/table-row-actions-menu";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { DatePickerField } from "@/components/ui/date-picker-field";
 import { JobStatusChip } from "./components/job-status-chip";
 import { useDeleteJob, useDeleteJobs, useJobs, useRetryJob } from "@/features/jobs/hooks/use-jobs";
 import {
@@ -26,6 +27,14 @@ import { JobStatusFilterOptions } from "@/config/constants/dropdowns/jobs/job-st
 import { JobQueueFilterOptions } from "@/config/constants/dropdowns/jobs/job-queue-filter.options";
 import { formatDateTime } from "@/lib/date";
 import { formatDuration } from "@/lib/duration";
+
+function toStartOfDayIso(date: string) {
+  return new Date(`${date}T00:00:00.000Z`).toISOString();
+}
+
+function toEndOfDayIso(date: string) {
+  return new Date(`${date}T23:59:59.999Z`).toISOString();
+}
 
 function getJobActions(job: { id: string; status: JobStatus }): TableRowAction[] {
   const actions: TableRowAction[] = [{ id: "details", label: "Details", icon: Eye }];
@@ -50,6 +59,8 @@ export default function JobsListPage() {
 
   const [status, setStatus] = useState<JobStatus | "all">("all");
   const [queueName, setQueueName] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deleteJobId, setDeleteJobId] = useState<string | null>(null);
@@ -60,8 +71,10 @@ export default function JobsListPage() {
       limit: 20,
       ...(status !== "all" && { status }),
       ...(queueName !== "all" && { queue_name: queueName }),
+      ...(dateFrom && { date_from: toStartOfDayIso(dateFrom) }),
+      ...(dateTo && { date_to: toEndOfDayIso(dateTo) }),
     }),
-    [page, status, queueName],
+    [page, status, queueName, dateFrom, dateTo],
   );
 
   const { data, isPending } = useJobs(query);
@@ -181,6 +194,23 @@ export default function JobsListPage() {
             </ListBox>
           </Select.Popover>
         </Select>
+
+        <DatePickerField
+          aria-label="From date"
+          value={dateFrom}
+          onChange={(next) => {
+            setPage(1);
+            setDateFrom(next);
+          }}
+        />
+        <DatePickerField
+          aria-label="To date"
+          value={dateTo}
+          onChange={(next) => {
+            setPage(1);
+            setDateTo(next);
+          }}
+        />
       </div>
 
       {isPending ? (

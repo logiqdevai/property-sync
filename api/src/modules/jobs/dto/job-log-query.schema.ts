@@ -12,6 +12,16 @@ export const JobLogQuerySchema = z.object({
     .transform((v) => (v ? Math.min(parseInt(v, 10), 100) : 20)),
   status: z.nativeEnum(JobStatus).optional(),
   queue_name: z.string().optional(),
+  date_from: z
+    .string()
+    .datetime()
+    .optional()
+    .transform((v) => (v ? new Date(v) : undefined)),
+  date_to: z
+    .string()
+    .datetime()
+    .optional()
+    .transform((v) => (v ? new Date(v) : undefined)),
 });
 
 export type JobLogQueryType = z.infer<typeof JobLogQuerySchema>;

@@ -35,6 +35,8 @@ export interface JobLogListQuery {
   limit?: number;
   status?: JobStatus;
   queue_name?: string;
+  date_from?: string;
+  date_to?: string;
 }
 
 export interface PaginationMeta {

@@ -31,6 +31,14 @@ export class JobsService {
     const where: Prisma.JobLogWhereInput = {
       ...(query.status && { status: query.status }),
       ...(query.queue_name && { queue_name: query.queue_name }),
+      ...(query.date_from || query.date_to
+        ? {
+            created_at: {
+              ...(query.date_from && { gte: query.date_from }),
+              ...(query.date_to && { lte: query.date_to }),
+            },
+          }
+        : {}),
     };
 
     const [items, total] = await Promise.all([

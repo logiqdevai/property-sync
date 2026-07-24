@@ -40,6 +40,8 @@ export class JobsController {
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'status', required: false, enum: JobStatus })
   @ApiQuery({ name: 'queue_name', required: false, type: String })
+  @ApiQuery({ name: 'date_from', required: false, type: String })
+  @ApiQuery({ name: 'date_to', required: false, type: String })
   findAll(
     @Query(new ZodValidationPipe(JobLogQuerySchema)) query: JobLogQueryType,
   ) {
