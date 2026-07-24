@@ -41,6 +41,7 @@ import type {
   SplitUserPropertiesPayload,
   TruncateUserPropertyDescriptionsPayload,
   UpdateIntegrationImagesPayload,
+  MigrateIntegrationImagesPayload,
   RemoveWatermarkImagesPayload,
   UpdateUserPropertyPayload,
   UserPropertyCountQuery,
@@ -142,7 +143,11 @@ export const useMigrateUserPropertyIntegrationImages = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => migrateUserPropertyIntegrationImages(id),
+    mutationFn: ({
+      id,
+      mode,
+    }: { id: string } & MigrateIntegrationImagesPayload) =>
+      migrateUserPropertyIntegrationImages(id, { mode }),
     onSuccess: (data) => {
       queryClient.setQueryData(["userProperties", "detail", data.id], data);
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
@@ -171,7 +176,11 @@ export const useMigrateAdminUserPropertyIntegrationImages = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => migrateAdminUserPropertyIntegrationImages(id),
+    mutationFn: ({
+      id,
+      mode,
+    }: { id: string } & MigrateIntegrationImagesPayload) =>
+      migrateAdminUserPropertyIntegrationImages(id, { mode }),
     onSuccess: (data) => {
       queryClient.setQueryData(["adminUserProperties", "detail", data.id], data);
       queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });

@@ -20,6 +20,7 @@ import type {
   TruncateUserPropertyDescriptionsPayload,
   TruncateUserPropertyDescriptionsResult,
   UpdateIntegrationImagesPayload,
+  MigrateIntegrationImagesPayload,
   RemoveWatermarkImagesPayload,
   RemoveWatermarkImagesResponse,
 } from "../interfaces/user-properties.interfaces";
@@ -121,10 +122,12 @@ export const pushUserPropertyToCrm = async (id: string): Promise<UserProperty> =
 
 export const migrateUserPropertyIntegrationImages = async (
   id: string,
+  payload: MigrateIntegrationImagesPayload,
 ): Promise<UserPropertyDetail> => {
   try {
     const response = await axiosInstance.post(
       ApiRoutes.userProperties.migrateIntegrationImages(id),
+      payload,
     );
     return response.data;
   } catch (error: any) {
@@ -136,10 +139,12 @@ export const migrateUserPropertyIntegrationImages = async (
 
 export const migrateAdminUserPropertyIntegrationImages = async (
   id: string,
+  payload: MigrateIntegrationImagesPayload,
 ): Promise<UserPropertyDetail> => {
   try {
     const response = await axiosInstance.post(
       ApiRoutes.admin.userProperties.migrateIntegrationImages(id),
+      payload,
     );
     return response.data;
   } catch (error: any) {

@@ -203,6 +203,12 @@ export interface RemoveWatermarkImagesPayload {
   replace_crm_images: boolean;
 }
 
+export type MigrateIntegrationImagesMode = "remap_sources" | "from_crm";
+
+export interface MigrateIntegrationImagesPayload {
+  mode: MigrateIntegrationImagesMode;
+}
+
 export interface RemoveWatermarkImagesResponse {
   job_log_id: string;
   message: string;

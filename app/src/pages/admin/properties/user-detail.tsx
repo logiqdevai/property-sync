@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Chip, useOverlayState } from "@heroui/react";
-import { ExternalLink, Images, Trash2 } from "lucide-react";
+import { ExternalLink, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
@@ -49,17 +49,6 @@ export default function UserPropertyDetailPage() {
             },
           ]
         : []),
-      ...(property.integration_property_id
-        ? [
-            {
-              id: "migrate-crm-images",
-              label: "Migrate CRM images",
-              variant: "default" as const,
-              icon: Images,
-              isDisabled: migrateImages.isPending,
-            },
-          ]
-        : []),
       {
         id: "delete",
         label: "Delete",
@@ -68,7 +57,7 @@ export default function UserPropertyDetailPage() {
         isDisabled: deleteUserProperty.isPending,
       },
     ];
-  }, [deleteUserProperty.isPending, migrateImages.isPending, property]);
+  }, [deleteUserProperty.isPending, property]);
 
   if (isPending || !property) {
     return <DetailSkeleton />;
@@ -87,10 +76,6 @@ export default function UserPropertyDetailPage() {
       if (crmUrl) {
         window.open(crmUrl, "_blank", "noopener,noreferrer");
       }
-      return;
-    }
-    if (actionId === "migrate-crm-images") {
-      migrateImages.mutate(property.id);
       return;
     }
     if (actionId === "delete") {
@@ -138,6 +123,11 @@ export default function UserPropertyDetailPage() {
         });
       }}
       isRemovingWatermark={removeWatermarkImages.isPending}
+      canMigrateIntegrationImages={Boolean(property.integration_property_id)}
+      onMigrateIntegrationImages={async (mode) => {
+        await migrateImages.mutateAsync({ id: property.id, mode });
+      }}
+      isMigratingIntegrationImages={migrateImages.isPending}
       headerActions={
         <div className="flex items-center gap-2 flex-wrap">
           {property.user ? (

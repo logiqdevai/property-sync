@@ -36,6 +36,7 @@ import {
   UserPropertyQueryType,
 } from './dto/user-property-query.schema';
 import { UserPropertyEntity } from './entities/user-property.entity';
+import { MigrateIntegrationImagesDto } from './dto/migrate-integration-images.dto';
 
 @ApiTags('User Properties')
 @ApiBearerAuth()
@@ -260,8 +261,13 @@ export class UserPropertiesController {
   migrateIntegrationImages(
     @CurrentUser('id') userId: string,
     @Param('id') id: string,
+    @Body() dto: MigrateIntegrationImagesDto,
   ) {
-    return this.userPropertiesService.migrateIntegrationImages(userId, id);
+    return this.userPropertiesService.migrateIntegrationImages(
+      userId,
+      id,
+      dto.mode,
+    );
   }
 
   @Post(':id/delete-integration-images')

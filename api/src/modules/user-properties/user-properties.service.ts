@@ -42,6 +42,7 @@ import {
   normalizeTextTruncatePieces,
 } from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
 import { RemoveWatermarkImagesDto } from './dto/remove-watermark-images.dto';
+import { MigrateIntegrationImagesMode } from './dto/migrate-integration-images.dto';
 import { WatermarkRemovalJobData } from './interfaces/watermark-removal-job.interface';
 import { WatermarkRemovalService } from './services/watermark-removal.service';
 
@@ -490,7 +491,11 @@ export class UserPropertiesService {
     }
   }
 
-  async migrateIntegrationImages(userId: string, id: string) {
+  async migrateIntegrationImages(
+    userId: string,
+    id: string,
+    mode: MigrateIntegrationImagesMode,
+  ) {
     const userProperty = await this.prisma.userProperty.findFirst({
       where: { id, user_id: userId },
       select: {
@@ -506,11 +511,14 @@ export class UserPropertiesService {
       throw new NotFoundException('Property not found');
     }
 
-    await this.runMigrateIntegrationImages(userProperty);
+    await this.runMigrateIntegrationImages(userProperty, mode);
     return this.findOne(userId, id);
   }
 
-  async adminMigrateIntegrationImages(id: string) {
+  async adminMigrateIntegrationImages(
+    id: string,
+    mode: MigrateIntegrationImagesMode,
+  ) {
     const userProperty = await this.prisma.userProperty.findFirst({
       where: { id },
       select: {
@@ -526,7 +534,7 @@ export class UserPropertiesService {
       throw new NotFoundException('Property not found');
     }
 
-    await this.runMigrateIntegrationImages(userProperty);
+    await this.runMigrateIntegrationImages(userProperty, mode);
     return this.adminFindOne(id);
   }
 
@@ -1040,13 +1048,16 @@ export class UserPropertiesService {
     };
   }
 
-  private async runMigrateIntegrationImages(userProperty: {
-    id: string;
-    user_id: string;
-    canonical_property_id: string;
-    integration_property_id: string | null;
-    images: unknown;
-  }) {
+  private async runMigrateIntegrationImages(
+    userProperty: {
+      id: string;
+      user_id: string;
+      canonical_property_id: string;
+      integration_property_id: string | null;
+      images: unknown;
+    },
+    mode: MigrateIntegrationImagesMode,
+  ) {
     if (!userProperty.integration_property_id) {
       throw new BadRequestException(
         'Property is not linked to EstateWeb CMS',
@@ -1087,11 +1098,23 @@ export class UserPropertiesService {
     }
 
     try {
-      await this.estateWebCmsSyncAdapter.syncOrRepairIntegrationPropertyImages({
+      if (mode === MigrateIntegrationImagesMode.REMAP_SOURCES) {
+        await this.estateWebCmsSyncAdapter.syncOrRepairIntegrationPropertyImages(
+          {
+            userIntegrationId,
+            userPropertyId: userProperty.id,
+            estateWebPropertyId: userProperty.integration_property_id,
+            sourceImages: userProperty.images,
+          },
+        );
+        return;
+      }
+
+      await this.estateWebCmsSyncAdapter.syncIntegrationPropertyImages({
         userIntegrationId,
         userPropertyId: userProperty.id,
         estateWebPropertyId: userProperty.integration_property_id,
-        sourceImages: userProperty.images,
+        preserveExistingSourceImages: false,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

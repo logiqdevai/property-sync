@@ -565,6 +565,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     estateWebPropertyId: number | string;
     sourceByFilename?: Map<string, string>;
     sourceImageUrls?: string[];
+    preserveExistingSourceImages?: boolean;
   }): Promise<EstateWebPropertyImage[]> {
     const integration = await this.prisma.userIntegration.findUnique({
       where: { id: params.userIntegrationId },
@@ -598,13 +599,19 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       params.userIntegrationId,
       params.estateWebPropertyId,
     );
+    const preserveExistingSourceImages =
+      params.preserveExistingSourceImages !== false;
     const images = this.normalizeEstateWebImages(
       remote.images,
       remote.agent_id,
       {
         sourceByFilename: params.sourceByFilename,
-        sourceImageUrls: params.sourceImageUrls,
-        existingImages: existing?.images,
+        sourceImageUrls: preserveExistingSourceImages
+          ? params.sourceImageUrls
+          : undefined,
+        existingImages: preserveExistingSourceImages
+          ? existing?.images
+          : undefined,
       },
     );
 

@@ -27,7 +27,9 @@ import {
   type EstateWebImageOptions,
 } from "@/components/ui/estateweb-image-options-modal";
 import { RemoveWatermarkModal } from "@/components/ui/remove-watermark-modal";
+import { MigrateIntegrationImagesModal } from "@/components/ui/migrate-integration-images-modal";
 import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
+import type { MigrateIntegrationImagesMode } from "@/features/user-properties/interfaces/user-properties.interfaces";
 import {
   formatPropertyHistoryLabel,
   formatPropertyHistoryValue,
@@ -185,14 +187,17 @@ function PropertyImagesGrid({
   canCreateFromPropertyImages = false,
   canUpdateEstateWebImageOptions = false,
   canRemoveWatermark = false,
+  canMigrateIntegrationImages = false,
   onDeleteSelected,
   onCreateSelected,
   onUpdateEstateWebImageOptions,
   onRemoveWatermark,
+  onMigrateIntegrationImages,
   isDeletePending = false,
   isCreatePending = false,
   isUpdateEstateWebImageOptionsPending = false,
   isRemoveWatermarkPending = false,
+  isMigrateIntegrationImagesPending = false,
 }: {
   images: PropertyDisplayImage[];
   fallbackImages: string[];
@@ -201,6 +206,7 @@ function PropertyImagesGrid({
   canCreateFromPropertyImages?: boolean;
   canUpdateEstateWebImageOptions?: boolean;
   canRemoveWatermark?: boolean;
+  canMigrateIntegrationImages?: boolean;
   onDeleteSelected?: (imageIds: number[]) => Promise<void> | void;
   onCreateSelected?: (imageIndexes: number[]) => Promise<void> | void;
   onUpdateEstateWebImageOptions?: (
@@ -211,10 +217,14 @@ function PropertyImagesGrid({
     imageIds: number[],
     replaceCrmImages: boolean,
   ) => Promise<void> | void;
+  onMigrateIntegrationImages?: (
+    mode: MigrateIntegrationImagesMode,
+  ) => Promise<void> | void;
   isDeletePending?: boolean;
   isCreatePending?: boolean;
   isUpdateEstateWebImageOptionsPending?: boolean;
   isRemoveWatermarkPending?: boolean;
+  isMigrateIntegrationImagesPending?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(
@@ -224,12 +234,14 @@ function PropertyImagesGrid({
   const createConfirm = useOverlayState();
   const estateWebOptionsModal = useOverlayState();
   const removeWatermarkModal = useOverlayState();
+  const migrateIntegrationImagesModal = useOverlayState();
   const canExpand = images.length > 2;
   const isPending =
     isDeletePending ||
     isCreatePending ||
     isUpdateEstateWebImageOptionsPending ||
-    isRemoveWatermarkPending;
+    isRemoveWatermarkPending ||
+    isMigrateIntegrationImagesPending;
   const canSelect =
     selectable &&
     images.length > 0 &&
@@ -238,6 +250,9 @@ function PropertyImagesGrid({
       (canUpdateEstateWebImageOptions &&
         Boolean(onUpdateEstateWebImageOptions)) ||
       (canRemoveWatermark && Boolean(onRemoveWatermark)));
+  const canMigrate =
+    canMigrateIntegrationImages && Boolean(onMigrateIntegrationImages);
+  const showToolbar = canSelect || canMigrate;
   const allSelected =
     canSelect &&
     images.length > 0 &&
@@ -287,6 +302,17 @@ function PropertyImagesGrid({
   };
 
   const bulkActions: TableRowAction[] = [
+    ...(canMigrate
+      ? [
+          {
+            id: "migrate-crm-images",
+            label: "Migrate CRM images",
+            variant: "accent" as const,
+            icon: Images,
+            isDisabled: isPending,
+          },
+        ]
+      : []),
     ...(canUpdateEstateWebImageOptions && onUpdateEstateWebImageOptions
       ? [
           {
@@ -333,6 +359,9 @@ function PropertyImagesGrid({
       : []),
   ];
 
+  const showActionsMenu =
+    bulkActions.length > 0 && (canMigrate || selectedCount > 0);
+
   const handleDeleteConfirm = async () => {
     if (!onDeleteSelected || selectedCrmIds.length === 0) return;
     await onDeleteSelected(selectedCrmIds);
@@ -359,23 +388,32 @@ function PropertyImagesGrid({
     setSelectedIndexes(new Set());
   };
 
+  const handleMigrateConfirm = async (mode: MigrateIntegrationImagesMode) => {
+    if (!onMigrateIntegrationImages) return;
+    await onMigrateIntegrationImages(mode);
+  };
+
   return (
     <div className="@container flex flex-col gap-3">
-      {canSelect ? (
+      {showToolbar ? (
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            isDisabled={isPending || images.length === 0}
-            onPress={allSelected ? deselectAll : selectAll}
-          >
-            {allSelected ? "Deselect all" : "Select all"}
-          </Button>
-          {selectedCount > 0 && bulkActions.length > 0 ? (
+          {canSelect ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              isDisabled={isPending || images.length === 0}
+              onPress={allSelected ? deselectAll : selectAll}
+            >
+              {allSelected ? "Deselect all" : "Select all"}
+            </Button>
+          ) : null}
+          {showActionsMenu ? (
             <BulkActionsMenu
               actions={bulkActions}
               onAction={(actionId) => {
+                if (actionId === "migrate-crm-images")
+                  migrateIntegrationImagesModal.open();
                 if (actionId === "delete") deleteConfirm.open();
                 if (actionId === "create-from-property") createConfirm.open();
                 if (actionId === "estateweb-options")
@@ -507,6 +545,13 @@ function PropertyImagesGrid({
           isPending={isRemoveWatermarkPending}
         />
       ) : null}
+      {canMigrate ? (
+        <MigrateIntegrationImagesModal
+          state={migrateIntegrationImagesModal}
+          onConfirm={handleMigrateConfirm}
+          isPending={isMigrateIntegrationImagesPending}
+        />
+      ) : null}
     </div>
   );
 }
@@ -536,10 +581,15 @@ interface PropertyDetailViewProps {
   canCreateIntegrationImages?: boolean;
   canUpdateEstateWebImageOptions?: boolean;
   canRemoveWatermark?: boolean;
+  canMigrateIntegrationImages?: boolean;
   onRemoveWatermark?: (
     imageIds: number[],
     replaceCrmImages: boolean,
   ) => Promise<void> | void;
+  onMigrateIntegrationImages?: (
+    mode: MigrateIntegrationImagesMode,
+  ) => Promise<void> | void;
+  isMigratingIntegrationImages?: boolean;
 }
 
 export function PropertyDetailView({
@@ -561,8 +611,11 @@ export function PropertyDetailView({
   canCreateIntegrationImages = false,
   canUpdateEstateWebImageOptions = false,
   canRemoveWatermark = false,
+  canMigrateIntegrationImages = false,
   onRemoveWatermark,
+  onMigrateIntegrationImages,
   isRemovingWatermark = false,
+  isMigratingIntegrationImages = false,
 }: PropertyDetailViewProps) {
   const sourceLinks = property.source_links ?? [];
   const cmsFieldEntries = (property.cms_fields ?? []) as CmsPropertyFieldEntry[];
@@ -586,6 +639,9 @@ export function PropertyDetailView({
     (canRemoveWatermark &&
       Boolean(onRemoveWatermark) &&
       displayImages.some((image) => image.crmImageId != null)) ||
+    (canMigrateIntegrationImages &&
+      Boolean(onMigrateIntegrationImages) &&
+      Boolean(property.integration_property_id)) ||
     (canCreateIntegrationImages &&
       Boolean(onCreateIntegrationImages) &&
       Boolean(property.integration_property_id) &&
@@ -882,7 +938,21 @@ export function PropertyDetailView({
       <section className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
         <h2 className="text-sm font-semibold text-foreground">Images</h2>
         {!displayImages.length ? (
-          <p className="text-sm text-muted">No images yet.</p>
+          canMigrateIntegrationImages && onMigrateIntegrationImages ? (
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-muted">No images yet.</p>
+              <PropertyImagesGrid
+                images={[]}
+                fallbackImages={fallbackImages}
+                title={property.title}
+                canMigrateIntegrationImages
+                onMigrateIntegrationImages={onMigrateIntegrationImages}
+                isMigrateIntegrationImagesPending={isMigratingIntegrationImages}
+              />
+            </div>
+          ) : (
+            <p className="text-sm text-muted">No images yet.</p>
+          )
         ) : (
           <PropertyImagesGrid
             images={displayImages}
@@ -901,16 +971,22 @@ export function PropertyDetailView({
             canRemoveWatermark={
               canRemoveWatermark && Boolean(onRemoveWatermark)
             }
+            canMigrateIntegrationImages={
+              canMigrateIntegrationImages &&
+              Boolean(onMigrateIntegrationImages)
+            }
             onDeleteSelected={onDeleteIntegrationImages}
             onCreateSelected={onCreateIntegrationImages}
             onUpdateEstateWebImageOptions={onUpdateEstateWebImageOptions}
             onRemoveWatermark={onRemoveWatermark}
+            onMigrateIntegrationImages={onMigrateIntegrationImages}
             isDeletePending={isDeletingIntegrationImages}
             isCreatePending={isCreatingIntegrationImages}
             isUpdateEstateWebImageOptionsPending={
               isUpdatingEstateWebImageOptions
             }
             isRemoveWatermarkPending={isRemovingWatermark}
+            isMigrateIntegrationImagesPending={isMigratingIntegrationImages}
           />
         )}
       </section>

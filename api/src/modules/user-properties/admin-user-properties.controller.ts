@@ -37,6 +37,7 @@ import { UpdateIntegrationImagesDto } from './dto/update-integration-images.dto'
 import { RemoveWatermarkImagesDto } from './dto/remove-watermark-images.dto';
 import { RemoveWatermarkImagesResponseEntity } from './entities/remove-watermark-images-response.entity';
 import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
+import { MigrateIntegrationImagesDto } from './dto/migrate-integration-images.dto';
 import { UserPropertyEntity } from './entities/user-property.entity';
 
 @ApiTags('Admin User Properties')
@@ -189,8 +190,14 @@ export class AdminUserPropertiesController {
   @ApiResponse({ status: 200, type: UserPropertyEntity })
   @ApiResponse({ status: 400, description: 'Cannot migrate images' })
   @ApiResponse({ status: 404, description: 'User property not found' })
-  migrateIntegrationImages(@Param('id') id: string) {
-    return this.userPropertiesService.adminMigrateIntegrationImages(id);
+  migrateIntegrationImages(
+    @Param('id') id: string,
+    @Body() dto: MigrateIntegrationImagesDto,
+  ) {
+    return this.userPropertiesService.adminMigrateIntegrationImages(
+      id,
+      dto.mode,
+    );
   }
 
   @Post(':id/delete-integration-images')

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Scissors, Upload, X, ExternalLink, Images } from "lucide-react";
+import { Pencil, Scissors, Upload, X, ExternalLink } from "lucide-react";
 import { Button, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
@@ -239,8 +239,6 @@ export default function DashboardPropertyDetailPage() {
   const headerActions = useMemo<TableRowAction[]>(() => {
     if (!property) return [];
 
-    const isAdmin =
-      role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN;
     const crmUrl = property.integration_property_id
       ? getCrmPropertyAppUrl(property.integration_property_id)
       : null;
@@ -260,17 +258,6 @@ export default function DashboardPropertyDetailPage() {
               label: "Open in CRM",
               variant: "default" as const,
               icon: ExternalLink,
-            },
-          ]
-        : []),
-      ...(isAdmin && property.integration_property_id
-        ? [
-            {
-              id: "migrate-crm-images",
-              label: "Migrate CRM images",
-              variant: "default" as const,
-              icon: Images,
-              isDisabled: isEditing || migrateImages.isPending,
             },
           ]
         : []),
@@ -294,7 +281,7 @@ export default function DashboardPropertyDetailPage() {
             icon: Pencil,
           },
     ];
-  }, [isEditing, migrateImages.isPending, property, pushToCrm.isPending, role]);
+  }, [isEditing, property, pushToCrm.isPending]);
 
   if (isPending || !property) {
     return <DetailSkeleton />;
@@ -336,10 +323,6 @@ export default function DashboardPropertyDetailPage() {
       if (crmUrl) {
         window.open(crmUrl, "_blank", "noopener,noreferrer");
       }
-      return;
-    }
-    if (actionId === "migrate-crm-images") {
-      migrateImages.mutate(property.id);
       return;
     }
     if (actionId === "truncate") {
@@ -417,6 +400,14 @@ export default function DashboardPropertyDetailPage() {
           });
         }}
         isRemovingWatermark={removeWatermarkImages.isPending}
+        canMigrateIntegrationImages={
+          (role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN) &&
+          Boolean(property.integration_property_id)
+        }
+        onMigrateIntegrationImages={async (mode) => {
+          await migrateImages.mutateAsync({ id: property.id, mode });
+        }}
+        isMigratingIntegrationImages={migrateImages.isPending}
         headerActions={
           <BulkActionsMenu
             actions={headerActions}
