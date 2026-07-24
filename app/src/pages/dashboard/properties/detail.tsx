@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Scissors, Upload, X, ExternalLink } from "lucide-react";
+import { Pencil, Scissors, Unlink, Upload, X, ExternalLink } from "lucide-react";
 import { Button, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { PropertyDetailView } from "@/components/ui/property-detail-view";
 import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
@@ -98,6 +99,7 @@ export default function DashboardPropertyDetailPage() {
   const { id = "" } = useParams();
   const [isEditing, setIsEditing] = useState(false);
   const truncateConfirm = useOverlayState();
+  const unlinkConfirm = useOverlayState();
   const locationPicker = useOverlayState();
   const floorPicker = useOverlayState();
   const energyClassPicker = useOverlayState();
@@ -236,6 +238,8 @@ export default function DashboardPropertyDetailPage() {
     });
   }, [property, reset]);
 
+  const isAdmin = role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN;
+
   const headerActions = useMemo<TableRowAction[]>(() => {
     if (!property) return [];
 
@@ -261,6 +265,17 @@ export default function DashboardPropertyDetailPage() {
             },
           ]
         : []),
+      ...(isAdmin && property.integration_property_id
+        ? [
+            {
+              id: "unlink-from-crm",
+              label: "Unlink from CRM",
+              variant: "danger" as const,
+              icon: Unlink,
+              isDisabled: isEditing || updateProperty.isPending,
+            },
+          ]
+        : []),
       {
         id: "truncate",
         label: "Truncate text",
@@ -281,7 +296,7 @@ export default function DashboardPropertyDetailPage() {
             icon: Pencil,
           },
     ];
-  }, [isEditing, property, pushToCrm.isPending]);
+  }, [isAdmin, isEditing, property, pushToCrm.isPending, updateProperty.isPending]);
 
   if (isPending || !property) {
     return <DetailSkeleton />;
@@ -311,6 +326,13 @@ export default function DashboardPropertyDetailPage() {
     });
   };
 
+  const handleUnlinkFromCrm = async () => {
+    await updateProperty.mutateAsync({
+      id: property.id,
+      payload: { integration_property_id: null },
+    });
+  };
+
   const handleHeaderAction = (actionId: string) => {
     if (actionId === "push-to-crm") {
       pushToCrm.mutate(property.id);
@@ -323,6 +345,10 @@ export default function DashboardPropertyDetailPage() {
       if (crmUrl) {
         window.open(crmUrl, "_blank", "noopener,noreferrer");
       }
+      return;
+    }
+    if (actionId === "unlink-from-crm") {
+      unlinkConfirm.open();
       return;
     }
     if (actionId === "truncate") {
@@ -743,6 +769,14 @@ export default function DashboardPropertyDetailPage() {
               propertyCount={1}
               onConfirm={handleTruncate}
               isPending={truncateDescriptions.isPending}
+            />
+            <ConfirmationDialog
+              state={unlinkConfirm}
+              title="Unlink from CRM?"
+              description="This clears the CRM property ID. The listing stays in your CRM; it just stops being linked here."
+              confirmLabel="Unlink"
+              onConfirm={handleUnlinkFromCrm}
+              isPending={updateProperty.isPending}
             />
             <EstateWebLocationPickerModal
               state={locationPicker}
