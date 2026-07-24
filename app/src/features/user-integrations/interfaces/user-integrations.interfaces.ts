@@ -44,6 +44,7 @@ export interface MaskedUserIntegrationConnection {
   has_config: boolean;
   is_active: boolean;
   is_default: boolean;
+  available_credit?: number | null;
   created_at: string;
   updated_at: string;
   integration_target: {

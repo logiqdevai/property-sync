@@ -118,8 +118,7 @@ export class DewatermarkIntegrationResolverService {
     return {
       ok: true,
       userIntegrationId: integration.userIntegrationId,
-      baseUrl:
-        integration.baseUrl ?? this.dewatermarkConfig.getBaseUrl(),
+      baseUrl: integration.baseUrl ?? this.dewatermarkConfig.getBaseUrl(),
       hasApiKey: Boolean(integration.apiKey),
     };
   }

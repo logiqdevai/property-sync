@@ -2,11 +2,13 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { AuthRole, IntegrationType, Prisma } from 'generated/prisma';
+import { AuthRole, AuthType, IntegrationType, Prisma } from 'generated/prisma';
 import { AiDefaults } from '@/integrations/ai/utils/ai.config';
+import { DewatermarkOrchestratorService } from '@/integrations/dewatermark/services/dewatermark-orchestrator.service';
 import {
   applyCredentialFields,
   validateCredentialsForAuthType,
@@ -33,7 +35,12 @@ function isAdminRole(role: AuthRole): boolean {
 
 @Injectable()
 export class UserIntegrationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(UserIntegrationsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly dewatermarkOrchestrator: DewatermarkOrchestratorService,
+  ) {}
 
   async resolveActiveApiKey(
     userId: string,
@@ -137,11 +144,13 @@ export class UserIntegrationsService {
       },
     });
 
-    return connections.map((connection) => ({
-      ...maskUserIntegration(connection),
-      integration_target: connection.integration_target,
-      settings: connection.settings,
-    }));
+    return Promise.all(
+      connections.map((connection) =>
+        this.toConnectionResponse(connection, {
+          includeSettings: true,
+        }),
+      ),
+    );
   }
 
   async getSettings(userId: string, targetId: string) {
@@ -308,10 +317,7 @@ export class UserIntegrationsService {
       },
     });
 
-    return {
-      ...maskUserIntegration(connection),
-      integration_target: connection.integration_target,
-    };
+    return this.toConnectionResponse(connection);
   }
 
   async updateConnection(
@@ -365,10 +371,7 @@ export class UserIntegrationsService {
       },
     });
 
-    return {
-      ...maskUserIntegration(updated),
-      integration_target: updated.integration_target,
-    };
+    return this.toConnectionResponse(updated);
   }
 
   async updateConnectionStatus(
@@ -414,10 +417,7 @@ export class UserIntegrationsService {
       },
     });
 
-    return {
-      ...maskUserIntegration(updated),
-      integration_target: updated.integration_target,
-    };
+    return this.toConnectionResponse(updated);
   }
 
   async updateConnectionDefault(
@@ -465,10 +465,7 @@ export class UserIntegrationsService {
         },
       });
 
-      return {
-        ...maskUserIntegration(updated),
-        integration_target: updated.integration_target,
-      };
+      return this.toConnectionResponse(updated);
     }
 
     const updated = await this.prisma.$transaction(async (tx) => {
@@ -500,10 +497,7 @@ export class UserIntegrationsService {
       });
     });
 
-    return {
-      ...maskUserIntegration(updated),
-      integration_target: updated.integration_target,
-    };
+    return this.toConnectionResponse(updated);
   }
 
   async deleteConnection(
@@ -558,5 +552,58 @@ export class UserIntegrationsService {
     }
 
     return connection;
+  }
+
+  private async toConnectionResponse(
+    connection: {
+      id: string;
+      user_id: string;
+      api_key_secret: string | null;
+      integration_target: {
+        id: string;
+        integration_type: IntegrationType;
+        auth_type: AuthType;
+        base_url: string | null;
+        allow_multiple: boolean;
+        is_visible: boolean;
+        is_enabled: boolean;
+      };
+      settings?: unknown;
+      [key: string]: unknown;
+    },
+    options?: { includeSettings?: boolean },
+  ) {
+    const masked = {
+      ...maskUserIntegration(connection as never),
+      integration_target: connection.integration_target,
+      ...(options?.includeSettings
+        ? { settings: connection.settings }
+        : {}),
+      available_credit: null as number | null,
+    };
+
+    if (
+      connection.integration_target.integration_type !==
+        IntegrationType.DEWATERMARK ||
+      !connection.api_key_secret
+    ) {
+      return masked;
+    }
+
+    try {
+      const credit = await this.dewatermarkOrchestrator.getCreditInfo(
+        connection.id,
+        connection.user_id,
+      );
+      masked.available_credit = credit.available_credit;
+    } catch (error) {
+      this.logger.warn(
+        `Failed to fetch Dewatermark credit for connection ${connection.id}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      masked.available_credit = null;
+    }
+
+    return masked;
   }
 }

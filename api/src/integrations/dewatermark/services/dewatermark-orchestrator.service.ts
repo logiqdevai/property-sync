@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { DewatermarkAuthContext } from '../interfaces/dewatermark-auth.interface';
+import { DewatermarkCreditInfo } from '../interfaces/dewatermark-credit.interface';
 import {
   DewatermarkEraseWatermarkParams,
   DewatermarkEraseWatermarkProParams,
   DewatermarkEraseWatermarkResult,
 } from '../interfaces/dewatermark-image.interface';
 import { ResolvedDewatermarkIntegration } from '../interfaces/dewatermark-integration.interface';
+import { DewatermarkCreditService } from './dewatermark-credit.service';
 import { DewatermarkImageService } from './dewatermark-image.service';
 import { DewatermarkIntegrationResolverService } from './dewatermark-integration-resolver.service';
 
@@ -13,6 +15,7 @@ import { DewatermarkIntegrationResolverService } from './dewatermark-integration
 export class DewatermarkOrchestratorService {
   constructor(
     private readonly resolver: DewatermarkIntegrationResolverService,
+    private readonly creditService: DewatermarkCreditService,
     private readonly imageService: DewatermarkImageService,
   ) {}
 
@@ -35,6 +38,19 @@ export class DewatermarkOrchestratorService {
 
   testConnection(userIntegrationId: string, userId?: string) {
     return this.resolver.testConnection(userIntegrationId, userId);
+  }
+
+  async getCreditInfoForUser(userId: string): Promise<DewatermarkCreditInfo> {
+    const auth = await this.authForUser(userId);
+    return this.creditService.getCreditInfo(auth);
+  }
+
+  async getCreditInfo(
+    userIntegrationId: string,
+    userId?: string,
+  ): Promise<DewatermarkCreditInfo> {
+    const auth = await this.authForIntegration(userIntegrationId, userId);
+    return this.creditService.getCreditInfo(auth);
   }
 
   async eraseWatermarkForUser(

@@ -117,6 +117,13 @@ export class UserIntegrationConnectionEntity {
   @ApiProperty()
   is_default: boolean;
 
+  @ApiProperty({
+    nullable: true,
+    description:
+      'Dewatermark available credit balance. Only set for Dewatermark connections.',
+  })
+  available_credit: number | null;
+
   @ApiProperty()
   created_at: Date;
 

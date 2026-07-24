@@ -41,6 +41,13 @@ export function IntegrationConnectionItem({
     </Switch>
   );
 
+  const showTokenBadge =
+    target.integration_type === IntegrationTypes.DEWATERMARK &&
+    typeof connection.available_credit === "number";
+  const tokenCount = connection.available_credit ?? 0;
+  const tokenChipColor =
+    tokenCount <= 0 ? "danger" : tokenCount < 50 ? "warning" : "success";
+
   return (
     <div className="flex flex-col gap-2 rounded-lg bg-surface-secondary p-3">
       <CredentialStatusIndicators
@@ -51,11 +58,20 @@ export function IntegrationConnectionItem({
         email={connection.email}
         username={connection.username}
       />
-      {target.allow_multiple && connection.is_default ? (
-        <Chip size="sm" variant="soft" color="accent">
-          <Chip.Label>Default</Chip.Label>
-        </Chip>
-      ) : null}
+      {(showTokenBadge || (target.allow_multiple && connection.is_default)) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {showTokenBadge ? (
+            <Chip size="sm" variant="soft" color={tokenChipColor}>
+              <Chip.Label>{tokenCount.toLocaleString()} tokens</Chip.Label>
+            </Chip>
+          ) : null}
+          {target.allow_multiple && connection.is_default ? (
+            <Chip size="sm" variant="soft" color="accent">
+              <Chip.Label>Default</Chip.Label>
+            </Chip>
+          ) : null}
+        </div>
+      )}
       <div className="flex items-center justify-between gap-2">
         {target.integration_type === IntegrationTypes.ESTATEWEB ? (
           <RoleGate roles={[RoleTypes.ADMIN]}>{activeSwitch}</RoleGate>
