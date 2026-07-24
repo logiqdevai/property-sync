@@ -29,7 +29,7 @@ export class UpdateTrackerAdminSettingsDto {
     nullable: true,
     minimum: 1,
     description:
-      'Max listings to insert into the linked CRM. Null clears the cap (unlimited).',
+      'Max listings to insert into the linked CMS. Null clears the cap (unlimited).',
     example: 100,
   })
   @IsOptional()

@@ -411,7 +411,7 @@ export class CmsSyncOrchestratorService {
       ) {
         failed.push({
           user_property_id: userProperty.id,
-          error: 'Cannot push a removed property that is not in the CRM',
+          error: 'Cannot push a removed property that is not in the CMS',
         });
         continue;
       }
@@ -480,7 +480,7 @@ export class CmsSyncOrchestratorService {
           failed.push({
             user_property_id: item.user_property_id,
             error:
-              'No EstateWeb CRM linked to this tracked agency. Connect and link an integration first.',
+              'No EstateWeb CMS linked to this tracked agency. Connect and link an integration first.',
           });
         }
         continue;
@@ -512,7 +512,7 @@ export class CmsSyncOrchestratorService {
         for (const item of entry.affected) {
           failed.push({
             user_property_id: item.user_property_id,
-            error: 'Only EstateWeb CRM push is supported',
+            error: 'Only EstateWeb CMS push is supported',
           });
         }
         continue;
@@ -550,7 +550,7 @@ export class CmsSyncOrchestratorService {
             user_property_id: item.user_property_id,
             error:
               item.change_type === 'CREATE'
-                ? 'Property was not pushed. Max CRM property limit may be reached.'
+                ? 'Property was not pushed. Max CMS property limit may be reached.'
                 : 'Property was not pushed. The sync batch produced no operations.',
           });
         }

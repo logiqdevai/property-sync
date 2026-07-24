@@ -173,7 +173,7 @@ export class AdminEstateWebPropertiesController {
   }
 
   @Get('integrations/:userIntegrationId/properties')
-  @ApiOperation({ summary: 'List properties from EstateWeb CRM' })
+  @ApiOperation({ summary: 'List properties from EstateWeb CMS' })
   listProperties(
     @Param('userIntegrationId') userIntegrationId: string,
     @Query(new ZodValidationPipe(AdminEstateWebPropertyListQuerySchema))
@@ -186,7 +186,7 @@ export class AdminEstateWebPropertiesController {
   }
 
   @Get('integrations/:userIntegrationId/properties/:propertyId')
-  @ApiOperation({ summary: 'Get a property from EstateWeb CRM' })
+  @ApiOperation({ summary: 'Get a property from EstateWeb CMS' })
   getProperty(
     @Param('userIntegrationId') userIntegrationId: string,
     @Param('propertyId') propertyId: string,
@@ -198,7 +198,7 @@ export class AdminEstateWebPropertiesController {
   }
 
   @Post('integrations/:userIntegrationId/properties')
-  @ApiOperation({ summary: 'Create a property in EstateWeb CRM' })
+  @ApiOperation({ summary: 'Create a property in EstateWeb CMS' })
   createProperty(
     @Param('userIntegrationId') userIntegrationId: string,
     @Body() payload: EstateWebCreatePropertyPayload,
@@ -210,7 +210,7 @@ export class AdminEstateWebPropertiesController {
   }
 
   @Patch('integrations/:userIntegrationId/properties/:propertyId')
-  @ApiOperation({ summary: 'Update a property in EstateWeb CRM' })
+  @ApiOperation({ summary: 'Update a property in EstateWeb CMS' })
   updateProperty(
     @Param('userIntegrationId') userIntegrationId: string,
     @Param('propertyId') propertyId: string,
@@ -224,7 +224,7 @@ export class AdminEstateWebPropertiesController {
   }
 
   @Post('integrations/:userIntegrationId/properties/:propertyId/images')
-  @ApiOperation({ summary: 'Upload a property image to EstateWeb CRM' })
+  @ApiOperation({ summary: 'Upload a property image to EstateWeb CMS' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -268,7 +268,7 @@ export class AdminEstateWebPropertiesController {
   }
 
   @Delete('integrations/:userIntegrationId/images/:imageId')
-  @ApiOperation({ summary: 'Delete a property image from EstateWeb CRM' })
+  @ApiOperation({ summary: 'Delete a property image from EstateWeb CMS' })
   @ApiResponse({ status: 200, description: 'Deleted image id' })
   deletePropertyImage(
     @Param('userIntegrationId') userIntegrationId: string,

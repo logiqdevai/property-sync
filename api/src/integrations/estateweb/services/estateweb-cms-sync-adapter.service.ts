@@ -156,7 +156,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     ];
     if (uniqueIds.length === 0) {
       throw new EstateWebException(
-        'No valid CRM image ids provided',
+        'No valid CMS image ids provided',
         NotificationType.ESTATEWEB_VALIDATION_FAILED,
         HttpStatus.BAD_REQUEST,
       );
@@ -186,7 +186,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     ];
     if (uniqueIds.length === 0) {
       throw new EstateWebException(
-        'No valid CRM image ids provided',
+        'No valid CMS image ids provided',
         NotificationType.ESTATEWEB_VALIDATION_FAILED,
         HttpStatus.BAD_REQUEST,
       );
@@ -259,14 +259,14 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         uploadedCount += 1;
       } catch (error) {
         this.logger.warn(
-          `Failed to upload source image for CRM property=${params.crmPropertyId}: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to upload source image for CMS property=${params.crmPropertyId}: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
     }
 
     if (uploadedCount === 0) {
       throw new EstateWebException(
-        'Failed to upload any source images to CRM',
+        'Failed to upload any source images to CMS',
         NotificationType.ESTATEWEB_EMPTY_IMAGE,
         HttpStatus.BAD_REQUEST,
       );

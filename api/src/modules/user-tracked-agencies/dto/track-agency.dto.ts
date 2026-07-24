@@ -31,7 +31,7 @@ export class TrackAgencyDto {
     required: false,
     default: true,
     description:
-      'When true, listing updates are pushed to the CRM automatically. When false, push from the Properties page.',
+      'When true, listing updates are pushed to the CMS automatically. When false, push from the Properties page.',
   })
   @IsOptional()
   @IsBoolean()
@@ -64,7 +64,7 @@ export class TrackAgencyDto {
     nullable: true,
     minimum: 1,
     description:
-      'Max listings to insert into the linked CRM. Null clears the cap (unlimited).',
+      'Max listings to insert into the linked CMS. Null clears the cap (unlimited).',
     example: 100,
   })
   @IsOptional()

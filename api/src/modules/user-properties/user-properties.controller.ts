@@ -189,13 +189,13 @@ export class UserPropertiesController {
     );
   }
 
-  @Post('push-to-crm')
+  @Post('push-to-cms')
   @ApiOperation({
     summary:
-      'Push one or more properties to the linked EstateWeb CRM (create or update)',
+      'Push one or more properties to the linked EstateWeb CMS (create or update)',
   })
-  @ApiResponse({ status: 200, description: 'CRM push queued' })
-  @ApiResponse({ status: 400, description: 'Cannot push to CRM' })
+  @ApiResponse({ status: 200, description: 'CMS push queued' })
+  @ApiResponse({ status: 400, description: 'Cannot push to CMS' })
   @ApiResponse({ status: 404, description: 'Saved property not found' })
   pushToCrmMany(
     @CurrentUser('id') userId: string,
@@ -232,13 +232,13 @@ export class UserPropertiesController {
     return this.userPropertiesService.resync(userId, id);
   }
 
-  @Post(':id/push-to-crm')
+  @Post(':id/push-to-cms')
   @ApiOperation({
     summary:
-      'Push this property to the linked EstateWeb CRM (create or update)',
+      'Push this property to the linked EstateWeb CMS (create or update)',
   })
   @ApiResponse({ status: 200, type: UserPropertyEntity })
-  @ApiResponse({ status: 400, description: 'Cannot push to CRM' })
+  @ApiResponse({ status: 400, description: 'Cannot push to CMS' })
   @ApiResponse({ status: 404, description: 'Saved property not found' })
   pushToCrm(@CurrentUser('id') userId: string, @Param('id') id: string) {
     return this.userPropertiesService.pushToCrm(userId, id);
@@ -249,7 +249,7 @@ export class UserPropertiesController {
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary:
-      'Fetch EstateWeb CRM images and upsert IntegrationProperty.images (admin only)',
+      'Fetch EstateWeb CMS images and upsert IntegrationProperty.images (admin only)',
   })
   @ApiResponse({ status: 200, type: UserPropertyEntity })
   @ApiResponse({ status: 400, description: 'Cannot migrate images' })
@@ -264,7 +264,7 @@ export class UserPropertiesController {
 
   @Post(':id/delete-integration-images')
   @ApiOperation({
-    summary: 'Delete selected CRM images via the linked integration adapter',
+    summary: 'Delete selected CMS images via the linked integration adapter',
   })
   @ApiResponse({ status: 200, type: UserPropertyEntity })
   @ApiResponse({ status: 400, description: 'Cannot delete images' })
@@ -286,7 +286,7 @@ export class UserPropertiesController {
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary:
-      'Upload selected Property.images into CRM via the linked integration adapter (admin only)',
+      'Upload selected Property.images into CMS via the linked integration adapter (admin only)',
   })
   @ApiResponse({ status: 200, type: UserPropertyEntity })
   @ApiResponse({ status: 400, description: 'Cannot create images' })
@@ -307,7 +307,7 @@ export class UserPropertiesController {
   @Post(':id/update-integration-images')
   @ApiOperation({
     summary:
-      'Update EstateWeb visibility options for selected CRM images via the linked integration adapter',
+      'Update EstateWeb visibility options for selected CMS images via the linked integration adapter',
   })
   @ApiResponse({ status: 200, type: UserPropertyEntity })
   @ApiResponse({ status: 400, description: 'Cannot update images' })

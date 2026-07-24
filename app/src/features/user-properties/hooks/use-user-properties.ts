@@ -120,14 +120,14 @@ export const usePushUserPropertyToCrm = () => {
       queryClient.invalidateQueries({ queryKey: ["cmsSyncRuns"] });
       toast({
         title: "EstateWeb sync queued",
-        description: "Property will be pushed to your linked EstateWeb CRM shortly.",
+        description: "Property will be pushed to your linked EstateWeb CMS shortly.",
         duration: 2500,
         variant: "success",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Could not push to CRM",
+        title: "Could not push to CMS",
         description: error.message,
         variant: "error",
       });
@@ -145,7 +145,7 @@ export const useMigrateUserPropertyIntegrationImages = () => {
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
       const count = data.integration_property?.images?.length ?? 0;
       toast({
-        title: "CRM images migrated",
+        title: "CMS images migrated",
         description:
           count > 0
             ? `Stored ${count} ${count === 1 ? "image" : "images"} from EstateWeb.`
@@ -156,7 +156,7 @@ export const useMigrateUserPropertyIntegrationImages = () => {
     },
     onError: (error: Error) => {
       toast({
-        title: "Could not migrate CRM images",
+        title: "Could not migrate CMS images",
         description: error.message,
         variant: "error",
       });
@@ -174,7 +174,7 @@ export const useMigrateAdminUserPropertyIntegrationImages = () => {
       queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
       const count = data.integration_property?.images?.length ?? 0;
       toast({
-        title: "CRM images migrated",
+        title: "CMS images migrated",
         description:
           count > 0
             ? `Stored ${count} ${count === 1 ? "image" : "images"} from EstateWeb.`
@@ -185,7 +185,7 @@ export const useMigrateAdminUserPropertyIntegrationImages = () => {
     },
     onError: (error: Error) => {
       toast({
-        title: "Could not migrate CRM images",
+        title: "Could not migrate CMS images",
         description: error.message,
         variant: "error",
       });
@@ -204,15 +204,15 @@ export const useDeleteUserPropertyIntegrationImages = () => {
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
       const count = variables.imageIds.length;
       toast({
-        title: "CRM images deleted",
-        description: `Removed ${count} ${count === 1 ? "image" : "images"} from CRM.`,
+        title: "CMS images deleted",
+        description: `Removed ${count} ${count === 1 ? "image" : "images"} from CMS.`,
         duration: 2500,
         variant: "success",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Could not delete CRM images",
+        title: "Could not delete CMS images",
         description: error.message,
         variant: "error",
       });
@@ -231,15 +231,15 @@ export const useDeleteAdminUserPropertyIntegrationImages = () => {
       queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
       const count = variables.imageIds.length;
       toast({
-        title: "CRM images deleted",
-        description: `Removed ${count} ${count === 1 ? "image" : "images"} from CRM.`,
+        title: "CMS images deleted",
+        description: `Removed ${count} ${count === 1 ? "image" : "images"} from CMS.`,
         duration: 2500,
         variant: "success",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Could not delete CRM images",
+        title: "Could not delete CMS images",
         description: error.message,
         variant: "error",
       });
@@ -263,7 +263,7 @@ export const useCreateUserPropertyIntegrationImages = () => {
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
       const count = variables.imageIndexes.length;
       toast({
-        title: "Photos uploaded to CRM",
+        title: "Photos uploaded to CMS",
         description: `Uploaded ${count} ${count === 1 ? "photo" : "photos"}.`,
         duration: 2500,
         variant: "success",
@@ -295,7 +295,7 @@ export const useCreateAdminUserPropertyIntegrationImages = () => {
       queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
       const count = variables.imageIndexes.length;
       toast({
-        title: "Photos uploaded to CRM",
+        title: "Photos uploaded to CMS",
         description: `Uploaded ${count} ${count === 1 ? "photo" : "photos"}.`,
         duration: 2500,
         variant: "success",
@@ -325,7 +325,7 @@ export const useUpdateUserPropertyIntegrationImages = () => {
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
       const count = variables.image_ids.length;
       toast({
-        title: "CRM image options updated",
+        title: "CMS image options updated",
         description: `Updated ${count} ${count === 1 ? "image" : "images"}.`,
         duration: 2500,
         variant: "success",
@@ -333,7 +333,7 @@ export const useUpdateUserPropertyIntegrationImages = () => {
     },
     onError: (error: Error) => {
       toast({
-        title: "Could not update CRM image options",
+        title: "Could not update CMS image options",
         description: error.message,
         variant: "error",
       });
@@ -355,7 +355,7 @@ export const useUpdateAdminUserPropertyIntegrationImages = () => {
       queryClient.invalidateQueries({ queryKey: ["adminUserProperties"] });
       const count = variables.image_ids.length;
       toast({
-        title: "CRM image options updated",
+        title: "CMS image options updated",
         description: `Updated ${count} ${count === 1 ? "image" : "images"}.`,
         duration: 2500,
         variant: "success",
@@ -363,7 +363,7 @@ export const useUpdateAdminUserPropertyIntegrationImages = () => {
     },
     onError: (error: Error) => {
       toast({
-        title: "Could not update CRM image options",
+        title: "Could not update CMS image options",
         description: error.message,
         variant: "error",
       });
@@ -397,14 +397,14 @@ export const usePushUserPropertiesToCrm = () => {
 
       toast({
         title: "EstateWeb sync queued",
-        description: "Property will be pushed to your linked EstateWeb CRM shortly.",
+        description: "Property will be pushed to your linked EstateWeb CMS shortly.",
         duration: 2500,
         variant: "success",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Could not push to CRM",
+        title: "Could not push to CMS",
         description: error.message,
         variant: "error",
       });

@@ -668,7 +668,7 @@ export class UserPropertiesService {
     imageIndexes: number[],
   ) {
     if (!userProperty.integration_property_id) {
-      throw new BadRequestException('Property is not linked to a CRM');
+      throw new BadRequestException('Property is not linked to a CMS');
     }
 
     const propertyImages = Array.isArray(userProperty.images)
@@ -725,7 +725,7 @@ export class UserPropertiesService {
     imageIds: number[],
   ) {
     if (!userProperty.integration_property_id) {
-      throw new BadRequestException('Property is not linked to a CRM');
+      throw new BadRequestException('Property is not linked to a CMS');
     }
 
     const uniqueIds = [
@@ -769,7 +769,7 @@ export class UserPropertiesService {
     },
   ) {
     if (!userProperty.integration_property_id) {
-      throw new BadRequestException('Property is not linked to a CRM');
+      throw new BadRequestException('Property is not linked to a CMS');
     }
 
     const uniqueIds = [
@@ -857,7 +857,7 @@ export class UserPropertiesService {
     });
 
     if (!integration) {
-      throw new BadRequestException('CRM integration connection not found');
+      throw new BadRequestException('CMS integration connection not found');
     }
 
     return {

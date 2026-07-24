@@ -183,7 +183,7 @@ export const ApiRoutes = {
         count: "/properties/count",
         detail: (id: string) => `/properties/${id}`,
         resync: (id: string) => `/properties/${id}/resync`,
-        pushToCrm: (id: string) => `/properties/${id}/push-to-crm`,
+        pushToCrm: (id: string) => `/properties/${id}/push-to-cms`,
         migrateIntegrationImages: (id: string) =>
             `/properties/${id}/migrate-integration-images`,
         deleteIntegrationImages: (id: string) =>
@@ -192,7 +192,7 @@ export const ApiRoutes = {
             `/properties/${id}/create-integration-images`,
         updateIntegrationImages: (id: string) =>
             `/properties/${id}/update-integration-images`,
-        bulkPushToCrm: "/properties/push-to-crm",
+        bulkPushToCrm: "/properties/push-to-cms",
         bulkDelete: "/properties/bulk-delete",
         dedupeGroups: "/properties/dedupe-groups",
         bulkSplit: "/properties/bulk-split",

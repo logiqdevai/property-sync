@@ -113,7 +113,7 @@ export const pushUserPropertyToCrm = async (id: string): Promise<UserProperty> =
     const response = await axiosInstance.post(ApiRoutes.userProperties.pushToCrm(id));
     return response.data;
   } catch (error: any) {
-    throw new Error(error?.response?.data?.message || "Failed to push property to CRM.");
+    throw new Error(error?.response?.data?.message || "Failed to push property to CMS.");
   }
 };
 
@@ -127,7 +127,7 @@ export const migrateUserPropertyIntegrationImages = async (
     return response.data;
   } catch (error: any) {
     throw new Error(
-      error?.response?.data?.message || "Failed to migrate CRM images.",
+      error?.response?.data?.message || "Failed to migrate CMS images.",
     );
   }
 };
@@ -142,7 +142,7 @@ export const migrateAdminUserPropertyIntegrationImages = async (
     return response.data;
   } catch (error: any) {
     throw new Error(
-      error?.response?.data?.message || "Failed to migrate CRM images.",
+      error?.response?.data?.message || "Failed to migrate CMS images.",
     );
   }
 };
@@ -159,7 +159,7 @@ export const deleteUserPropertyIntegrationImages = async (
     return response.data;
   } catch (error: any) {
     throw new Error(
-      error?.response?.data?.message || "Failed to delete CRM images.",
+      error?.response?.data?.message || "Failed to delete CMS images.",
     );
   }
 };
@@ -176,7 +176,7 @@ export const deleteAdminUserPropertyIntegrationImages = async (
     return response.data;
   } catch (error: any) {
     throw new Error(
-      error?.response?.data?.message || "Failed to delete CRM images.",
+      error?.response?.data?.message || "Failed to delete CMS images.",
     );
   }
 };
@@ -193,7 +193,7 @@ export const createUserPropertyIntegrationImages = async (
     return response.data;
   } catch (error: any) {
     throw new Error(
-      error?.response?.data?.message || "Failed to create CRM images.",
+      error?.response?.data?.message || "Failed to create CMS images.",
     );
   }
 };
@@ -210,7 +210,7 @@ export const createAdminUserPropertyIntegrationImages = async (
     return response.data;
   } catch (error: any) {
     throw new Error(
-      error?.response?.data?.message || "Failed to create CRM images.",
+      error?.response?.data?.message || "Failed to create CMS images.",
     );
   }
 };
@@ -227,7 +227,7 @@ export const updateUserPropertyIntegrationImages = async (
     return response.data;
   } catch (error: any) {
     throw new Error(
-      error?.response?.data?.message || "Failed to update CRM image options.",
+      error?.response?.data?.message || "Failed to update CMS image options.",
     );
   }
 };
@@ -244,7 +244,7 @@ export const updateAdminUserPropertyIntegrationImages = async (
     return response.data;
   } catch (error: any) {
     throw new Error(
-      error?.response?.data?.message || "Failed to update CRM image options.",
+      error?.response?.data?.message || "Failed to update CMS image options.",
     );
   }
 };
@@ -259,7 +259,7 @@ export const pushUserPropertiesToCrm = async (
     );
     return response.data;
   } catch (error: any) {
-    throw new Error(error?.response?.data?.message || "Failed to push properties to CRM.");
+    throw new Error(error?.response?.data?.message || "Failed to push properties to CMS.");
   }
 };
 
