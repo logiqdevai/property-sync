@@ -611,6 +611,9 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         result.created++;
         break;
       case 'UPDATE':
+        if (opResult.skipped_push) {
+          break;
+        }
         result.updated++;
         break;
       case 'REMOVE':

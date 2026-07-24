@@ -17,6 +17,7 @@ import {
   Prisma,
   Property,
   PropertyStatus,
+  UserProperty,
 } from 'generated/prisma';
 import {
   listingTypeFromEstateWebScopeId,
@@ -1433,6 +1434,10 @@ export class UserPropertiesService {
         continue;
       }
 
+      if (!this.hasUserPropertyFieldChanges(existing, canonicalFields)) {
+        continue;
+      }
+
       await this.prisma.userProperty.update({
         where: { id: existing.id },
         data: canonicalFields,
@@ -1445,6 +1450,68 @@ export class UserPropertiesService {
     }
 
     return results;
+  }
+
+  private hasUserPropertyFieldChanges(
+    existing: UserProperty,
+    next: ReturnType<UserPropertiesService['mapFromCanonical']>,
+  ): boolean {
+    const keys = [
+      'property_id',
+      'internal_id',
+      'title',
+      'description',
+      'listing_type',
+      'property_type',
+      'status',
+      'price',
+      'city',
+      'latitude',
+      'longitude',
+      'square_meters',
+      'bedrooms',
+      'bathrooms',
+      'floor',
+      'construction_year',
+      'renovation_year',
+      'estateweb_type_id',
+      'estateweb_location_id',
+      'cms_fields',
+      'cms_metadata',
+      'distance_airport',
+      'distance_port',
+      'distance_beach',
+      'price_start',
+      'price_web',
+      'features',
+      'images',
+      'normalized_data',
+      'duplicate_group_id',
+    ] as const;
+
+    for (const key of keys) {
+      if (
+        this.normalizeComparableValue(existing[key]) !==
+        this.normalizeComparableValue(next[key])
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private normalizeComparableValue(value: unknown): string {
+    if (value === null || value === undefined) {
+      return '';
+    }
+    if (value instanceof Prisma.Decimal) {
+      return value.toString();
+    }
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+    return String(value);
   }
 
   private async loadEstateWebSettingsByUserIds(

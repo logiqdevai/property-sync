@@ -41,6 +41,7 @@ import {
   matchExistingDuplicateGroup,
   matchNormalizedRowsToIds,
 } from '../utils/property-normalization.utils';
+import { PropertySyncChangeType } from '@/modules/cms-sync/interfaces/cms-sync-batch.interface';
 import {
   IntegrationType,
   NotificationSeverity,
@@ -71,6 +72,14 @@ type SourcePropertyRow = {
 type CmsSyncCallback = (
   affected: SyncForPropertyResult[],
 ) => Promise<void> | void;
+
+type PendingCmsSyncAffected = SyncForPropertyResult[];
+
+const CMS_SYNC_CHANGE_PRIORITY: Record<PropertySyncChangeType, number> = {
+  removed: 3,
+  created: 2,
+  updated: 1,
+};
 
 @Injectable()
 export class PropertyNormalizationService {
@@ -159,31 +168,28 @@ export class PropertyNormalizationService {
     });
 
     if (sourceProperties.length === 0) {
-      const removalStats = await this.detectRemovalsAndReappearances(
-        crawlRunId,
-        crawlRun.source_agency_id,
-        crawlRun.started_at,
-        crawlRun.user_tracked_agency_id ?? undefined,
-      );
-      await this.persistRemovalStats({
+      await this.finalizeCrawlNormalizationSync({
         crawlRunId,
         sourceAgencyId: crawlRun.source_agency_id,
+        crawlStartedAt: crawlRun.started_at,
+        userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
         scraperId: crawlRun.scraper_id ?? undefined,
-        ...removalStats,
+        affected: [],
+        onSync,
       });
       return;
     }
 
-    // Listings whose scraped content hasn't changed since they were last normalized
-    // don't need another AI call — reuse the Property fields already on record.
     const { reused, toNormalize, reusedRowsBySourceId } =
       await this.splitUnchangedSourceProperties(sourceProperties);
+
+    const pendingAffected: SyncForPropertyResult[] = [];
 
     if (reused.length > 0) {
       this.logger.log(
         `Crawl run ${crawlRunId}: skipping AI normalization for ${reused.length} unchanged listing(s)`,
       );
-      await this.applyNormalizedResults({
+      const reusedAffected = await this.applyNormalizedResults({
         crawlRunId,
         sourceAgencyId: crawlRun.source_agency_id,
         crawlStartedAt: crawlRun.started_at,
@@ -192,11 +198,20 @@ export class PropertyNormalizationService {
         model,
         provider: aiProvider,
         userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
-        onSync,
       });
+      pendingAffected.push(...reusedAffected);
     }
 
     if (toNormalize.length === 0) {
+      await this.finalizeCrawlNormalizationSync({
+        crawlRunId,
+        sourceAgencyId: crawlRun.source_agency_id,
+        crawlStartedAt: crawlRun.started_at,
+        userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
+        scraperId: crawlRun.scraper_id ?? undefined,
+        affected: pendingAffected,
+        onSync,
+      });
       return;
     }
 
@@ -225,6 +240,9 @@ export class PropertyNormalizationService {
         userIntegrationId: resolvedKey.userIntegrationId,
         model,
       });
+      if (pendingAffected.length > 0) {
+        await this.persistPendingCmsSyncAffected(crawlRunId, pendingAffected);
+      }
       return;
     }
 
@@ -235,7 +253,7 @@ export class PropertyNormalizationService {
       resolvedKey.apiKey,
     );
 
-    await this.applyNormalizedResults({
+    const normalizedAffected = await this.applyNormalizedResults({
       crawlRunId,
       sourceAgencyId: crawlRun.source_agency_id,
       crawlStartedAt: crawlRun.started_at,
@@ -246,6 +264,15 @@ export class PropertyNormalizationService {
       anthropicUsage: syncResult.anthropicUsage,
       openAiUsage: syncResult.openAiUsage,
       userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
+    });
+
+    await this.finalizeCrawlNormalizationSync({
+      crawlRunId,
+      sourceAgencyId: crawlRun.source_agency_id,
+      crawlStartedAt: crawlRun.started_at,
+      userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
+      scraperId: crawlRun.scraper_id ?? undefined,
+      affected: [...pendingAffected, ...normalizedAffected],
       onSync,
     });
   }
@@ -303,8 +330,7 @@ export class PropertyNormalizationService {
     anthropicUsage?: NormalizationUsage;
     openAiUsage?: { inputTokens: number; outputTokens: number };
     userTrackedAgencyId?: string;
-    onSync?: CmsSyncCallback;
-  }): Promise<void> {
+  }): Promise<SyncForPropertyResult[]> {
     let createdCount = 0;
     const affected: SyncForPropertyResult[] = [];
     const batchProperties: Array<{
@@ -467,28 +493,6 @@ export class PropertyNormalizationService {
       });
     }
 
-    const removalStats = await this.detectRemovalsAndReappearances(
-      params.crawlRunId,
-      params.sourceAgencyId,
-      params.crawlStartedAt,
-      params.userTrackedAgencyId,
-    );
-
-    affected.push(...removalStats.affected);
-
-    await this.persistRemovalStats({
-      crawlRunId: params.crawlRunId,
-      sourceAgencyId: params.sourceAgencyId,
-      scraperId:
-        (
-          await this.prisma.crawlRun.findUnique({
-            where: { id: params.crawlRunId },
-            select: { scraper_id: true },
-          })
-        )?.scraper_id ?? undefined,
-      ...removalStats,
-    });
-
     await this.persistAiCosts({
       crawlRunId: params.crawlRunId,
       model: params.model,
@@ -497,10 +501,6 @@ export class PropertyNormalizationService {
       anthropicUsage: params.anthropicUsage,
       openAiUsage: params.openAiUsage,
     });
-
-    if (params.onSync && affected.length > 0) {
-      await params.onSync(affected);
-    }
 
     const crawlRun = await this.prisma.crawlRun.findUnique({
       where: { id: params.crawlRunId },
@@ -520,6 +520,8 @@ export class PropertyNormalizationService {
         String(metadata.ai_batch_id),
       );
     }
+
+    return affected;
   }
 
   async completeBatchNormalization(
@@ -611,7 +613,7 @@ export class PropertyNormalizationService {
     const model =
       (metadata.ai_model as string) ?? crawlRun.ai_model ?? AiDefaults.model;
 
-    await this.applyNormalizedResults({
+    const batchAffected = await this.applyNormalizedResults({
       crawlRunId,
       sourceAgencyId: crawlRun.source_agency_id,
       crawlStartedAt: crawlRun.started_at,
@@ -621,8 +623,21 @@ export class PropertyNormalizationService {
       provider: IntegrationType.OPENAI,
       openAiUsage: { inputTokens, outputTokens },
       userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
+    });
+
+    const pendingAffected = this.loadPendingCmsSyncAffected(metadata);
+
+    await this.finalizeCrawlNormalizationSync({
+      crawlRunId,
+      sourceAgencyId: crawlRun.source_agency_id,
+      crawlStartedAt: crawlRun.started_at,
+      userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
+      scraperId: crawlRun.scraper_id ?? undefined,
+      affected: [...pendingAffected, ...batchAffected],
       onSync,
     });
+
+    await this.clearPendingCmsSyncAffected(crawlRunId);
   }
 
   async markBatchFailed(
@@ -652,6 +667,120 @@ export class PropertyNormalizationService {
         errorMessage,
       );
     }
+  }
+
+  private async finalizeCrawlNormalizationSync(params: {
+    crawlRunId: string;
+    sourceAgencyId: string;
+    crawlStartedAt: Date;
+    userTrackedAgencyId?: string;
+    scraperId?: string;
+    affected: SyncForPropertyResult[];
+    onSync?: CmsSyncCallback;
+  }): Promise<void> {
+    const removalStats = await this.detectRemovalsAndReappearances(
+      params.crawlRunId,
+      params.sourceAgencyId,
+      params.crawlStartedAt,
+      params.userTrackedAgencyId,
+    );
+
+    await this.persistRemovalStats({
+      crawlRunId: params.crawlRunId,
+      sourceAgencyId: params.sourceAgencyId,
+      scraperId: params.scraperId,
+      ...removalStats,
+    });
+
+    const allAffected = this.dedupeAffected([
+      ...params.affected,
+      ...removalStats.affected,
+    ]);
+
+    if (allAffected.length === 0) {
+      return;
+    }
+
+    if (!params.onSync) {
+      return;
+    }
+
+    await params.onSync(allAffected);
+  }
+
+  private dedupeAffected(
+    affected: SyncForPropertyResult[],
+  ): SyncForPropertyResult[] {
+    const byUserPropertyId = new Map<string, SyncForPropertyResult>();
+
+    for (const item of affected) {
+      const existing = byUserPropertyId.get(item.user_property_id);
+      if (
+        !existing ||
+        CMS_SYNC_CHANGE_PRIORITY[item.change_type] >
+          CMS_SYNC_CHANGE_PRIORITY[existing.change_type]
+      ) {
+        byUserPropertyId.set(item.user_property_id, item);
+      }
+    }
+
+    return [...byUserPropertyId.values()];
+  }
+
+  private loadPendingCmsSyncAffected(
+    metadata: Record<string, unknown>,
+  ): PendingCmsSyncAffected {
+    const raw = metadata.pending_cms_sync_affected;
+    if (!Array.isArray(raw)) {
+      return [];
+    }
+
+    return raw.filter(
+      (item): item is SyncForPropertyResult =>
+        typeof item === 'object' &&
+        item !== null &&
+        typeof (item as SyncForPropertyResult).user_property_id === 'string' &&
+        typeof (item as SyncForPropertyResult).change_type === 'string' &&
+        typeof (item as SyncForPropertyResult).user_tracked_agency_id ===
+          'string',
+    );
+  }
+
+  private async persistPendingCmsSyncAffected(
+    crawlRunId: string,
+    affected: PendingCmsSyncAffected,
+  ): Promise<void> {
+    const crawlRun = await this.prisma.crawlRun.findUnique({
+      where: { id: crawlRunId },
+      select: { metadata: true },
+    });
+    const metadata = (crawlRun?.metadata ?? {}) as Record<string, unknown>;
+
+    await this.prisma.crawlRun.update({
+      where: { id: crawlRunId },
+      data: {
+        metadata: {
+          ...metadata,
+          pending_cms_sync_affected: affected,
+        } as unknown as Prisma.InputJsonValue,
+      },
+    });
+  }
+
+  private async clearPendingCmsSyncAffected(crawlRunId: string): Promise<void> {
+    const crawlRun = await this.prisma.crawlRun.findUnique({
+      where: { id: crawlRunId },
+      select: { metadata: true },
+    });
+    const metadata = {
+      ...((crawlRun?.metadata ?? {}) as Record<string, unknown>),
+    };
+    delete metadata.pending_cms_sync_affected;
+
+    await this.prisma.crawlRun.update({
+      where: { id: crawlRunId },
+      data: { metadata: metadata as unknown as Prisma.InputJsonValue },
+    });
   }
 
   private async resolveDefaultTrackerForAgency(sourceAgencyId: string) {
