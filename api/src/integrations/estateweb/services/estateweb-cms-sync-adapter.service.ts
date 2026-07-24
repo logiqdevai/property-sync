@@ -124,16 +124,12 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   ): Promise<void> {
     this.assertRequiredFields(userProperty);
 
-    const [pushSites, adLanguages] = await Promise.all([
-      this.estateWebIntegrationResolverService.resolvePushSites(
+    const adLanguages =
+      await this.estateWebIntegrationResolverService.resolveAdLanguages(
         userIntegrationId,
-      ),
-      this.estateWebIntegrationResolverService.resolveAdLanguages(
-        userIntegrationId,
-      ),
-    ]);
+      );
     const payload = this.buildPayload(
-      pushSites.map((site) => ({ ...site, selected: false })),
+      [],
       adLanguages,
       userProperty,
       Number(integrationPropertyId),
@@ -393,14 +389,16 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         userProperty?.cms_fields,
         userProperty?.estateweb_type_id,
       ),
-      sites: pushSites.map((site) => ({
-        selected: site.selected,
-        name: site.name,
-        agent_site_id: site.agent_site_id,
-        show_on_slider: site.show_on_slider,
-        show_on_first_page: site.show_on_first_page,
-        show_on_relative_pages: site.show_on_relative_pages,
-      })),
+      sites: pushSites
+        .filter((site) => site.selected)
+        .map((site) => ({
+          selected: true,
+          name: site.name,
+          agent_site_id: site.agent_site_id,
+          show_on_slider: site.show_on_slider,
+          show_on_first_page: site.show_on_first_page,
+          show_on_relative_pages: site.show_on_relative_pages,
+        })),
       gateways: [],
       ads: this.buildAds(title, description, adLanguages),
       foreign_agents: [],
