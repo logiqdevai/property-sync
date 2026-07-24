@@ -211,12 +211,16 @@ export default function AdminSyncRunDetailPage() {
         </div>
         <div className="flex flex-col gap-1">
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Crawl run</span>
-          <button
-            className="text-sm text-accent hover:underline text-left font-mono"
-            onClick={() => navigate(Routes.admin.crawlRuns.detail(run.crawl_run_id))}
-          >
-            {run.crawl_run_id}
-          </button>
+          {run.crawl_run_id ? (
+            <button
+              className="text-sm text-accent hover:underline text-left font-mono"
+              onClick={() => navigate(Routes.admin.crawlRuns.detail(run.crawl_run_id!))}
+            >
+              {run.crawl_run_id}
+            </button>
+          ) : (
+            <span className="text-sm text-foreground">— (backfill/manual push)</span>
+          )}
         </div>
         <div className="flex flex-col gap-1">
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Attempt</span>

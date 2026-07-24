@@ -3,7 +3,6 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CMS_SYNC_QUEUE } from '@/core/queues/queues.constants';
-import { CrawlRunsService } from '@/modules/crawl-runs/crawl-runs.service';
 import { CmsSyncRunsService } from '@/modules/cms-sync-runs/cms-sync-runs.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
@@ -46,7 +45,6 @@ export class CmsSyncOrchestratorService {
     private readonly prisma: PrismaService,
     private readonly batchService: CmsSyncBatchService,
     private readonly cmsSyncRunsService: CmsSyncRunsService,
-    private readonly crawlRunsService: CrawlRunsService,
     private readonly estateWebResolver: EstateWebIntegrationResolverService,
     private readonly estateWebPropertyService: EstateWebPropertyService,
     @InjectQueue(CMS_SYNC_QUEUE)
@@ -145,11 +143,6 @@ export class CmsSyncOrchestratorService {
       user_property: up,
     }));
 
-    const crawlRun = await this.crawlRunsService.createBackfillRun(
-      tracker.source_agency_id,
-      tracker.id,
-    );
-
     const trackerGroup: TrackerGroup = {
       tracker: {
         id: tracker.id,
@@ -166,10 +159,10 @@ export class CmsSyncOrchestratorService {
       affected,
     };
 
-    await this.processTrackerBatch(crawlRun.id, trackerGroup);
+    await this.processTrackerBatch(null, trackerGroup);
 
     this.logger.log(
-      `Backfill ${userTrackedAgencyId}: enqueued CMS sync for ${affected.length} property(s) via crawl run ${crawlRun.id}`,
+      `Backfill ${userTrackedAgencyId}: enqueued CMS sync for ${affected.length} property(s)`,
     );
   }
 
@@ -545,13 +538,8 @@ export class CmsSyncOrchestratorService {
         continue;
       }
 
-      const crawlRun = await this.crawlRunsService.createBackfillRun(
-        entry.tracker.source_agency_id,
-        entry.tracker.id,
-      );
-
       const enqueued = await this.processTrackerBatch(
-        crawlRun.id,
+        null,
         {
           tracker: {
             id: entry.tracker.id,
@@ -607,11 +595,12 @@ export class CmsSyncOrchestratorService {
   }
 
   private async processTrackerBatch(
-    crawlRunId: string,
+    crawlRunId: string | null,
     trackerGroup: TrackerGroup,
     options?: ProcessTrackerBatchOptions,
   ): Promise<boolean> {
     const tracker = trackerGroup.tracker;
+    const logLabel = crawlRunId ? `Crawl ${crawlRunId}` : `Tracker ${tracker.id} (no crawl)`;
 
     const heldBackUpdates = trackerGroup.affected.filter(
       (a) =>
@@ -635,9 +624,7 @@ export class CmsSyncOrchestratorService {
     );
 
     if (filtered.length === 0) {
-      this.logger.log(
-        `Crawl ${crawlRunId}: tracker ${tracker.id} has no CMS operations`,
-      );
+      this.logger.log(`${logLabel}: tracker ${tracker.id} has no CMS operations`);
       return false;
     }
 
@@ -677,7 +664,7 @@ export class CmsSyncOrchestratorService {
     });
 
     this.logger.log(
-      `Crawl ${crawlRunId}: enqueued CMS sync run ${cmsSyncRun.id} for tracker ${tracker.id} with ${batch.operations.length} operation(s)`,
+      `${logLabel}: enqueued CMS sync run ${cmsSyncRun.id} for tracker ${tracker.id} with ${batch.operations.length} operation(s)`,
     );
 
     return true;

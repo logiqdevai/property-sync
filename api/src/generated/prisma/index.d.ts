@@ -25639,7 +25639,7 @@ export namespace Prisma {
 
   export type CmsSyncRunGroupByOutputType = {
     id: string
-    crawl_run_id: string
+    crawl_run_id: string | null
     user_integration_id: string
     status: $Enums.CmsSyncStatus
     attempt: number
@@ -25694,7 +25694,7 @@ export namespace Prisma {
     finished_at?: boolean
     created_at?: boolean
     updated_at?: boolean
-    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
+    crawl_run?: boolean | CmsSyncRun$crawl_runArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["cmsSyncRun"]>
 
@@ -25716,7 +25716,7 @@ export namespace Prisma {
     finished_at?: boolean
     created_at?: boolean
     updated_at?: boolean
-    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
+    crawl_run?: boolean | CmsSyncRun$crawl_runArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["cmsSyncRun"]>
 
@@ -25738,7 +25738,7 @@ export namespace Prisma {
     finished_at?: boolean
     created_at?: boolean
     updated_at?: boolean
-    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
+    crawl_run?: boolean | CmsSyncRun$crawl_runArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["cmsSyncRun"]>
 
@@ -25764,27 +25764,27 @@ export namespace Prisma {
 
   export type CmsSyncRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawl_run_id" | "user_integration_id" | "status" | "attempt" | "max_attempts" | "total_created" | "total_updated" | "total_removed" | "total_failed" | "payload" | "response" | "error_message" | "started_at" | "finished_at" | "created_at" | "updated_at", ExtArgs["result"]["cmsSyncRun"]>
   export type CmsSyncRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
+    crawl_run?: boolean | CmsSyncRun$crawl_runArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
   }
   export type CmsSyncRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
+    crawl_run?: boolean | CmsSyncRun$crawl_runArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
   }
   export type CmsSyncRunIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    crawl_run?: boolean | CrawlRunDefaultArgs<ExtArgs>
+    crawl_run?: boolean | CmsSyncRun$crawl_runArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
   }
 
   export type $CmsSyncRunPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "CmsSyncRun"
     objects: {
-      crawl_run: Prisma.$CrawlRunPayload<ExtArgs>
+      crawl_run: Prisma.$CrawlRunPayload<ExtArgs> | null
       user_integration: Prisma.$UserIntegrationPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      crawl_run_id: string
+      crawl_run_id: string | null
       user_integration_id: string
       status: $Enums.CmsSyncStatus
       attempt: number
@@ -26194,7 +26194,7 @@ export namespace Prisma {
    */
   export interface Prisma__CmsSyncRunClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    crawl_run<T extends CrawlRunDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRunDefaultArgs<ExtArgs>>): Prisma__CrawlRunClient<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    crawl_run<T extends CmsSyncRun$crawl_runArgs<ExtArgs> = {}>(args?: Subset<T, CmsSyncRun$crawl_runArgs<ExtArgs>>): Prisma__CrawlRunClient<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     user_integration<T extends UserIntegrationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserIntegrationDefaultArgs<ExtArgs>>): Prisma__UserIntegrationClient<$Result.GetResult<Prisma.$UserIntegrationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -26635,6 +26635,25 @@ export namespace Prisma {
      * Limit how many CmsSyncRuns to delete.
      */
     limit?: number
+  }
+
+  /**
+   * CmsSyncRun.crawl_run
+   */
+  export type CmsSyncRun$crawl_runArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CrawlRun
+     */
+    select?: CrawlRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CrawlRun
+     */
+    omit?: CrawlRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CrawlRunInclude<ExtArgs> | null
+    where?: CrawlRunWhereInput
   }
 
   /**
@@ -39704,7 +39723,7 @@ export namespace Prisma {
     OR?: CmsSyncRunWhereInput[]
     NOT?: CmsSyncRunWhereInput | CmsSyncRunWhereInput[]
     id?: StringFilter<"CmsSyncRun"> | string
-    crawl_run_id?: StringFilter<"CmsSyncRun"> | string
+    crawl_run_id?: StringNullableFilter<"CmsSyncRun"> | string | null
     user_integration_id?: StringFilter<"CmsSyncRun"> | string
     status?: EnumCmsSyncStatusFilter<"CmsSyncRun"> | $Enums.CmsSyncStatus
     attempt?: IntFilter<"CmsSyncRun"> | number
@@ -39720,13 +39739,13 @@ export namespace Prisma {
     finished_at?: DateTimeNullableFilter<"CmsSyncRun"> | Date | string | null
     created_at?: DateTimeFilter<"CmsSyncRun"> | Date | string
     updated_at?: DateTimeFilter<"CmsSyncRun"> | Date | string
-    crawl_run?: XOR<CrawlRunScalarRelationFilter, CrawlRunWhereInput>
+    crawl_run?: XOR<CrawlRunNullableScalarRelationFilter, CrawlRunWhereInput> | null
     user_integration?: XOR<UserIntegrationScalarRelationFilter, UserIntegrationWhereInput>
   }
 
   export type CmsSyncRunOrderByWithRelationInput = {
     id?: SortOrder
-    crawl_run_id?: SortOrder
+    crawl_run_id?: SortOrderInput | SortOrder
     user_integration_id?: SortOrder
     status?: SortOrder
     attempt?: SortOrder
@@ -39752,7 +39771,7 @@ export namespace Prisma {
     AND?: CmsSyncRunWhereInput | CmsSyncRunWhereInput[]
     OR?: CmsSyncRunWhereInput[]
     NOT?: CmsSyncRunWhereInput | CmsSyncRunWhereInput[]
-    crawl_run_id?: StringFilter<"CmsSyncRun"> | string
+    crawl_run_id?: StringNullableFilter<"CmsSyncRun"> | string | null
     user_integration_id?: StringFilter<"CmsSyncRun"> | string
     status?: EnumCmsSyncStatusFilter<"CmsSyncRun"> | $Enums.CmsSyncStatus
     attempt?: IntFilter<"CmsSyncRun"> | number
@@ -39768,13 +39787,13 @@ export namespace Prisma {
     finished_at?: DateTimeNullableFilter<"CmsSyncRun"> | Date | string | null
     created_at?: DateTimeFilter<"CmsSyncRun"> | Date | string
     updated_at?: DateTimeFilter<"CmsSyncRun"> | Date | string
-    crawl_run?: XOR<CrawlRunScalarRelationFilter, CrawlRunWhereInput>
+    crawl_run?: XOR<CrawlRunNullableScalarRelationFilter, CrawlRunWhereInput> | null
     user_integration?: XOR<UserIntegrationScalarRelationFilter, UserIntegrationWhereInput>
   }, "id" | "crawl_run_id_user_integration_id">
 
   export type CmsSyncRunOrderByWithAggregationInput = {
     id?: SortOrder
-    crawl_run_id?: SortOrder
+    crawl_run_id?: SortOrderInput | SortOrder
     user_integration_id?: SortOrder
     status?: SortOrder
     attempt?: SortOrder
@@ -39802,7 +39821,7 @@ export namespace Prisma {
     OR?: CmsSyncRunScalarWhereWithAggregatesInput[]
     NOT?: CmsSyncRunScalarWhereWithAggregatesInput | CmsSyncRunScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"CmsSyncRun"> | string
-    crawl_run_id?: StringWithAggregatesFilter<"CmsSyncRun"> | string
+    crawl_run_id?: StringNullableWithAggregatesFilter<"CmsSyncRun"> | string | null
     user_integration_id?: StringWithAggregatesFilter<"CmsSyncRun"> | string
     status?: EnumCmsSyncStatusWithAggregatesFilter<"CmsSyncRun"> | $Enums.CmsSyncStatus
     attempt?: IntWithAggregatesFilter<"CmsSyncRun"> | number
@@ -42789,13 +42808,13 @@ export namespace Prisma {
     finished_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
-    crawl_run: CrawlRunCreateNestedOneWithoutCms_sync_runsInput
+    crawl_run?: CrawlRunCreateNestedOneWithoutCms_sync_runsInput
     user_integration: UserIntegrationCreateNestedOneWithoutSync_runsInput
   }
 
   export type CmsSyncRunUncheckedCreateInput = {
     id?: string
-    crawl_run_id: string
+    crawl_run_id?: string | null
     user_integration_id: string
     status?: $Enums.CmsSyncStatus
     attempt?: number
@@ -42829,13 +42848,13 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    crawl_run?: CrawlRunUpdateOneRequiredWithoutCms_sync_runsNestedInput
+    crawl_run?: CrawlRunUpdateOneWithoutCms_sync_runsNestedInput
     user_integration?: UserIntegrationUpdateOneRequiredWithoutSync_runsNestedInput
   }
 
   export type CmsSyncRunUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    crawl_run_id?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     user_integration_id?: StringFieldUpdateOperationsInput | string
     status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
     attempt?: IntFieldUpdateOperationsInput | number
@@ -42855,7 +42874,7 @@ export namespace Prisma {
 
   export type CmsSyncRunCreateManyInput = {
     id?: string
-    crawl_run_id: string
+    crawl_run_id?: string | null
     user_integration_id: string
     status?: $Enums.CmsSyncStatus
     attempt?: number
@@ -42893,7 +42912,7 @@ export namespace Prisma {
 
   export type CmsSyncRunUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    crawl_run_id?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     user_integration_id?: StringFieldUpdateOperationsInput | string
     status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
     attempt?: IntFieldUpdateOperationsInput | number
@@ -48739,10 +48758,12 @@ export namespace Prisma {
     set?: $Enums.CmsSyncStatus
   }
 
-  export type CrawlRunUpdateOneRequiredWithoutCms_sync_runsNestedInput = {
+  export type CrawlRunUpdateOneWithoutCms_sync_runsNestedInput = {
     create?: XOR<CrawlRunCreateWithoutCms_sync_runsInput, CrawlRunUncheckedCreateWithoutCms_sync_runsInput>
     connectOrCreate?: CrawlRunCreateOrConnectWithoutCms_sync_runsInput
     upsert?: CrawlRunUpsertWithoutCms_sync_runsInput
+    disconnect?: CrawlRunWhereInput | boolean
+    delete?: CrawlRunWhereInput | boolean
     connect?: CrawlRunWhereUniqueInput
     update?: XOR<XOR<CrawlRunUpdateToOneWithWhereWithoutCms_sync_runsInput, CrawlRunUpdateWithoutCms_sync_runsInput>, CrawlRunUncheckedUpdateWithoutCms_sync_runsInput>
   }
@@ -50676,12 +50697,12 @@ export namespace Prisma {
     finished_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
-    crawl_run: CrawlRunCreateNestedOneWithoutCms_sync_runsInput
+    crawl_run?: CrawlRunCreateNestedOneWithoutCms_sync_runsInput
   }
 
   export type CmsSyncRunUncheckedCreateWithoutUser_integrationInput = {
     id?: string
-    crawl_run_id: string
+    crawl_run_id?: string | null
     status?: $Enums.CmsSyncStatus
     attempt?: number
     max_attempts?: number | null
@@ -50837,7 +50858,7 @@ export namespace Prisma {
     OR?: CmsSyncRunScalarWhereInput[]
     NOT?: CmsSyncRunScalarWhereInput | CmsSyncRunScalarWhereInput[]
     id?: StringFilter<"CmsSyncRun"> | string
-    crawl_run_id?: StringFilter<"CmsSyncRun"> | string
+    crawl_run_id?: StringNullableFilter<"CmsSyncRun"> | string | null
     user_integration_id?: StringFilter<"CmsSyncRun"> | string
     status?: EnumCmsSyncStatusFilter<"CmsSyncRun"> | $Enums.CmsSyncStatus
     attempt?: IntFilter<"CmsSyncRun"> | number
@@ -58108,7 +58129,7 @@ export namespace Prisma {
 
   export type CmsSyncRunCreateManyUser_integrationInput = {
     id?: string
-    crawl_run_id: string
+    crawl_run_id?: string | null
     status?: $Enums.CmsSyncStatus
     attempt?: number
     max_attempts?: number | null
@@ -58141,12 +58162,12 @@ export namespace Prisma {
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    crawl_run?: CrawlRunUpdateOneRequiredWithoutCms_sync_runsNestedInput
+    crawl_run?: CrawlRunUpdateOneWithoutCms_sync_runsNestedInput
   }
 
   export type CmsSyncRunUncheckedUpdateWithoutUser_integrationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    crawl_run_id?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
     attempt?: IntFieldUpdateOperationsInput | number
     max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58165,7 +58186,7 @@ export namespace Prisma {
 
   export type CmsSyncRunUncheckedUpdateManyWithoutUser_integrationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    crawl_run_id?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumCmsSyncStatusFieldUpdateOperationsInput | $Enums.CmsSyncStatus
     attempt?: IntFieldUpdateOperationsInput | number
     max_attempts?: NullableIntFieldUpdateOperationsInput | number | null

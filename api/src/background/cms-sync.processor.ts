@@ -116,7 +116,9 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         },
         status: CmsSyncStatus.SUCCESS,
       });
-      await this.crawlRunsService.recalculateCmsSyncTotals(crawl_run_id);
+      if (crawl_run_id) {
+        await this.crawlRunsService.recalculateCmsSyncTotals(crawl_run_id);
+      }
       this.notifySyncCompleted({
         cmsSyncRunId: cms_sync_run_id,
         crawlRunId: crawl_run_id,
@@ -186,7 +188,9 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       error_message: mergedResult.failed > 0 ? failureSummary : null,
     });
 
-    await this.crawlRunsService.recalculateCmsSyncTotals(crawl_run_id);
+    if (crawl_run_id) {
+      await this.crawlRunsService.recalculateCmsSyncTotals(crawl_run_id);
+    }
 
     if (mergedResult.failed > 0) {
       if (attempt >= (syncRun.max_attempts ?? 3)) {
@@ -220,7 +224,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
 
   private notifySyncCompleted(params: {
     cmsSyncRunId: string;
-    crawlRunId: string;
+    crawlRunId: string | null;
     sourceAgencyId?: string;
     created: number;
     updated: number;
@@ -245,7 +249,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     userProperties: Map<string, UserProperty>,
     concurrentInsertions: number,
     insertionIntervalMinutes: number,
-    crawlRunId: string,
+    crawlRunId: string | null,
   ): Promise<CmsSyncBatchResult> {
     const result: CmsSyncBatchResult = {
       created: 0,
@@ -297,7 +301,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     operation: CmsSyncBatchOperation,
     userProperties: Map<string, UserProperty>,
     reconciliationCatalog: EstateWebPropertyCatalog | null,
-    crawlRunId: string,
+    crawlRunId: string | null,
   ): Promise<CmsSyncOperationResult> {
     const userProperty = userProperties.get(operation.user_property_id);
     if (!userProperty) {

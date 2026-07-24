@@ -38,7 +38,7 @@ export interface CmsSyncRunResponse {
 
 export interface CmsSyncRun {
   id: string;
-  crawl_run_id: string;
+  crawl_run_id: string | null;
   user_integration_id: string;
   status: CmsSyncStatus;
   attempt: number;

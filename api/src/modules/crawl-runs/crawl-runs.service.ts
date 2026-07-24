@@ -53,24 +53,6 @@ export class CrawlRunsService {
     return run;
   }
 
-  async createBackfillRun(sourceAgencyId: string, userTrackedAgencyId: string) {
-    const now = new Date();
-    return this.prisma.crawlRun.create({
-      data: {
-        source_agency_id: sourceAgencyId,
-        scraper_id: null,
-        user_tracked_agency_id: userTrackedAgencyId,
-        status: CrawlRunStatus.SUCCESS,
-        started_at: now,
-        finished_at: now,
-        duration_ms: 0,
-        total_found: 0,
-        total_new_listings: 0,
-        total_refreshed_listings: 0,
-      },
-    });
-  }
-
   async findAll(
     query: CrawlRunQueryType,
   ): Promise<PaginatedResult<any> & { total_cost: string | null }> {

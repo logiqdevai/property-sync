@@ -19,5 +19,5 @@ export interface CreateNotificationInput {
   message: string;
   source_agency_id?: string;
   scraper_id?: string;
-  crawl_run_id?: string;
+  crawl_run_id?: string | null;
 }

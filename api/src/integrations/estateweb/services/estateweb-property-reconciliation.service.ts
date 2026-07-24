@@ -75,7 +75,7 @@ export class EstateWebPropertyReconciliationService {
   async reconcileCreate(
     userProperty: UserProperty,
     catalog: EstateWebPropertyCatalog,
-    crawlRunId?: string,
+    crawlRunId?: string | null,
   ): Promise<ReconcileCreateOutcome> {
     const internalId = this.normalizeCode(userProperty.internal_id);
     if (!internalId) {
@@ -210,7 +210,7 @@ export class EstateWebPropertyReconciliationService {
     userProperty: UserProperty,
     listing: EstateWebPropertyListItem,
     pushSiteIds: Set<number>,
-    crawlRunId?: string,
+    crawlRunId?: string | null,
   ): Promise<boolean> {
     if (userProperty.pending_crm_update) {
       return true;

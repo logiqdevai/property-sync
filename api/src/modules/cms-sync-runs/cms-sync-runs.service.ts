@@ -274,7 +274,7 @@ export class CmsSyncRunsService {
   private async enqueueCmsSyncJob(run: {
     id: string;
     user_integration_id: string;
-    crawl_run_id: string;
+    crawl_run_id: string | null;
     payload: Prisma.JsonValue | null;
   }) {
     const payload =
@@ -294,11 +294,34 @@ export class CmsSyncRunsService {
   }
 
   async createBatch(params: {
-    crawlRunId: string;
+    crawlRunId: string | null;
     userIntegrationId: string;
     maxAttempts: number;
     payload: Record<string, unknown>;
   }) {
+    // Not tied to a crawl (backfill/manual push) -- there's nothing to dedupe against, so
+    // just create a fresh row rather than upserting on the (crawl_run_id, user_integration_id)
+    // unique, which only meaningfully dedupes when crawl_run_id is a real crawl.
+    if (!params.crawlRunId) {
+      return this.prisma.cmsSyncRun.create({
+        data: {
+          crawl_run_id: null,
+          user_integration_id: params.userIntegrationId,
+          status: CmsSyncStatus.PENDING,
+          attempt: 0,
+          max_attempts: params.maxAttempts,
+          total_created: 0,
+          total_updated: 0,
+          total_removed: 0,
+          total_failed: 0,
+          payload: params.payload as Prisma.InputJsonValue,
+          response: null,
+          error_message: null,
+          started_at: new Date(),
+        },
+      });
+    }
+
     return this.prisma.cmsSyncRun.upsert({
       where: {
         crawl_run_id_user_integration_id: {
@@ -430,7 +453,7 @@ export class CmsSyncRunsService {
 
   private async attachOperationHistory<
     T extends {
-      crawl_run_id: string;
+      crawl_run_id: string | null;
       response: Prisma.JsonValue | null;
     },
   >(run: T): Promise<T> {
@@ -446,7 +469,9 @@ export class CmsSyncRunsService {
       ? response.operation_results
       : null;
 
-    if (!response || !operationResults || operationResults.length === 0) {
+    const crawlRunId = run.crawl_run_id;
+    // No crawl to attach property history against (backfill/manual push).
+    if (!crawlRunId || !response || !operationResults || operationResults.length === 0) {
       return run;
     }
 
@@ -479,7 +504,7 @@ export class CmsSyncRunsService {
         ? []
         : await this.prisma.propertyHistory.findMany({
             where: {
-              crawl_run_id: run.crawl_run_id,
+              crawl_run_id: crawlRunId,
               property_id: { in: canonicalIds },
             },
             orderBy: { created_at: 'desc' },

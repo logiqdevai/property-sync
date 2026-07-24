@@ -726,15 +726,17 @@ model Notification {
   @@map("notifications")
 }
 
-// New: spec section 15 -- one batch push of a CrawlRun's affected properties to a single
+// New: spec section 15 -- one batch push of affected properties to a single
 // UserIntegration (e.g. one EstateWeb account). NOT one row per property: total_created/
-// total_updated/total_removed/total_failed hold the outcome breakdown for the whole batch,
-// and CrawlRun.total_* is the sum of these across every user_integration for that run
-// (see CrawlRunsService.recalculateCmsSyncTotals). Retries update this same row in place
-// (attempt/status/error_message/response) rather than creating a new row per attempt.
+// total_updated/total_removed/total_failed hold the outcome breakdown for the whole batch.
+// crawl_run_id is set only when the batch was triggered by an actual scrape (CrawlRun.total_*
+// is then the sum of these across every user_integration for that run, see
+// CrawlRunsService.recalculateCmsSyncTotals); it is null for backfill/manual pushes that
+// aren't tied to a crawl. Retries update this same row in place (attempt/status/error_message/
+// response) rather than creating a new row per attempt.
 model CmsSyncRun {
   id                  String        @id @default(uuid())
-  crawl_run_id        String
+  crawl_run_id        String?
   user_integration_id String
   status              CmsSyncStatus @default(PENDING)
   attempt             Int           @default(0)
@@ -751,7 +753,7 @@ model CmsSyncRun {
   created_at          DateTime      @default(now())
   updated_at          DateTime      @updatedAt
 
-  crawl_run        CrawlRun        @relation(fields: [crawl_run_id], references: [id], onDelete: Cascade)
+  crawl_run        CrawlRun?       @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)
   user_integration UserIntegration @relation(fields: [user_integration_id], references: [id], onDelete: Cascade)
 
   @@unique([crawl_run_id, user_integration_id])

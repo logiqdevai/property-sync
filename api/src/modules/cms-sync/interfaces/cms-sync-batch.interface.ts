@@ -35,7 +35,7 @@ export interface CmsSyncBatchOperation {
 }
 
 export interface CmsSyncBatch {
-  crawl_run_id: string;
+  crawl_run_id: string | null;
   user_integration_id: string;
   user_tracked_agency_id: string;
   source_agency_id: string;
