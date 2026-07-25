@@ -45,6 +45,7 @@ import { MigrateIntegrationImagesMode } from './dto/migrate-integration-images.d
 import { EstateWebIntegrationPropertyImage } from './interfaces/integration-property-image.interface';
 import { WatermarkRemovalJobData } from './interfaces/watermark-removal-job.interface';
 import { WatermarkRemovalService } from './services/watermark-removal.service';
+import { resolveIntegrationImageProcessUrl } from './utils/integration-property-images.util';
 
 export type PropertySyncChangeType = 'created' | 'updated' | 'removed';
 
@@ -832,9 +833,9 @@ export class UserPropertiesService {
           `Image ${imageId} was not found on this property`,
         );
       }
-      if (!image.source_image) {
+      if (!resolveIntegrationImageProcessUrl(image)) {
         throw new BadRequestException(
-          `Image ${imageId} does not have a source image to process`,
+          `Image ${imageId} does not have a source image or url to process`,
         );
       }
     }

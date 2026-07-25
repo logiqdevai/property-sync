@@ -15,6 +15,7 @@ import { WatermarkRemovalJobData } from '../interfaces/watermark-removal-job.int
 import {
   parseIntegrationPropertyImages,
   patchIntegrationPropertyImageSource,
+  resolveIntegrationImageProcessUrl,
 } from '../utils/integration-property-images.util';
 
 @Injectable()
@@ -163,10 +164,13 @@ export class WatermarkRemovalService {
     );
     const numericId = Number(imageId);
     const image = images.find((item) => item.id === numericId);
+    const processUrl = image
+      ? resolveIntegrationImageProcessUrl(image)
+      : undefined;
 
-    if (!image?.source_image) {
+    if (!image || !processUrl) {
       throw new BadRequestException(
-        'Image not found or missing source_image',
+        'Image not found or missing source_image/url',
       );
     }
 
@@ -179,6 +183,7 @@ export class WatermarkRemovalService {
       integrationType,
       imageId: numericId,
       image,
+      processUrl,
       replaceCrmImages: data.replace_crm_images,
       images,
     });
@@ -193,10 +198,11 @@ export class WatermarkRemovalService {
     integrationType: IntegrationType;
     imageId: number;
     image: EstateWebIntegrationPropertyImage;
+    processUrl: string;
     replaceCrmImages: boolean;
     images: EstateWebIntegrationPropertyImage[];
   }): Promise<void> {
-    const sourceBuffer = await this.downloadImage(params.image.source_image!);
+    const sourceBuffer = await this.downloadImage(params.processUrl);
     if (!sourceBuffer?.length) {
       throw new BadRequestException('Failed to download source image');
     }

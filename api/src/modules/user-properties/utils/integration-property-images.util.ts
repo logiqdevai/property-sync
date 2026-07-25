@@ -2,6 +2,7 @@ import { IntegrationType } from 'generated/prisma';
 import {
   EstateWebIntegrationPropertyImage,
   IntegrationPropertyImage,
+  IntegrationPropertyImageBase,
 } from '../interfaces/integration-property-image.interface';
 
 function parseEstateWebImages(
@@ -50,6 +51,21 @@ export function parseIntegrationPropertyImages(
     default:
       return [];
   }
+}
+
+export function resolveIntegrationImageProcessUrl(
+  image: Pick<IntegrationPropertyImageBase, 'source_image' | 'url'>,
+): string | undefined {
+  if (
+    typeof image.source_image === 'string' &&
+    image.source_image.length > 0
+  ) {
+    return image.source_image;
+  }
+  if (typeof image.url === 'string' && image.url.length > 0) {
+    return image.url;
+  }
+  return undefined;
 }
 
 export function patchIntegrationPropertyImageSource(

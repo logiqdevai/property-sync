@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { Table, useOverlayState } from "@heroui/react";
+import { Accordion, Table, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -286,199 +286,279 @@ export default function CrawlRunDetailPage() {
         </div>
       )}
 
-      {batchChunks && (
-        <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-3">
-          <p className="text-sm font-medium text-foreground">AI batch chunks</p>
-          <div className="grid gap-3 sm:grid-cols-3 text-sm">
-            <div>
-              <span className="text-muted">Batch ID</span>
-              <p className="text-foreground font-mono text-xs">{aiBatchId ?? "—"}</p>
-            </div>
-            <div>
-              <span className="text-muted">Status</span>
-              <p className="text-foreground">{aiBatchStatus ?? "—"}</p>
-            </div>
-            <div>
-              <span className="text-muted">Chunks / listings</span>
-              <p className="text-foreground">
-                {batchChunks.length} / {batchChunks.reduce((sum, chunk) => sum + chunk.length, 0)}
-              </p>
-            </div>
-          </div>
-          <pre className="rounded-lg border border-border bg-background p-3 text-xs overflow-auto max-h-96">
-            {batchChunks
-              .map((ids, index) => `chunk-${index} (${ids.length}): ${ids.join(", ")}`)
-              .join("\n")}
-          </pre>
+      {batchChunks ? (
+        <div className="rounded-xl border border-border bg-surface px-6">
+          <Accordion defaultExpandedKeys={[]} hideSeparator>
+            <Accordion.Item id="ai-batch-chunks">
+              <Accordion.Heading>
+                <Accordion.Trigger className="text-sm font-medium text-foreground">
+                  AI batch chunks ({batchChunks.length})
+                  <Accordion.Indicator />
+                </Accordion.Trigger>
+              </Accordion.Heading>
+              <Accordion.Panel>
+                <Accordion.Body>
+                  <div className="flex flex-col gap-3 pb-4">
+                    <div className="grid gap-3 sm:grid-cols-3 text-sm">
+                      <div>
+                        <span className="text-muted">Batch ID</span>
+                        <p className="text-foreground font-mono text-xs">{aiBatchId ?? "—"}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted">Status</span>
+                        <p className="text-foreground">{aiBatchStatus ?? "—"}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted">Chunks / listings</span>
+                        <p className="text-foreground">
+                          {batchChunks.length} /{" "}
+                          {batchChunks.reduce((sum, chunk) => sum + chunk.length, 0)}
+                        </p>
+                      </div>
+                    </div>
+                    <pre className="rounded-lg border border-border bg-background p-3 text-xs overflow-auto max-h-96">
+                      {batchChunks
+                        .map((ids, index) => `chunk-${index} (${ids.length}): ${ids.join(", ")}`)
+                        .join("\n")}
+                    </pre>
+                  </div>
+                </Accordion.Body>
+              </Accordion.Panel>
+            </Accordion.Item>
+          </Accordion>
         </div>
-      )}
+      ) : null}
 
       {userProperties.length > 0 ? (
-        <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-3">
-          <p className="text-sm font-medium text-foreground">User properties</p>
-          <div className="rounded-xl border border-border overflow-hidden">
-            <Table>
-              <Table.ScrollContainer>
-                <Table.Content aria-label="User properties">
-                  <Table.Header>
-                    <Table.Column isRowHeader>Property</Table.Column>
-                    <Table.Column>User</Table.Column>
-                    <Table.Column>Operation</Table.Column>
-                    <Table.Column>History</Table.Column>
-                  </Table.Header>
-                  <Table.Body>
-                    {userProperties.map((row) => (
-                      <Table.Row key={row.key} id={row.key}>
-                        <Table.Cell>
-                          <button
-                            className="text-sm text-accent hover:underline text-left"
-                            onClick={() =>
-                              navigate(Routes.admin.properties.userDetail(row.user_property_id))
-                            }
-                          >
-                            {row.property_title}
-                          </button>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <span className="text-sm text-foreground">{row.user_email ?? "—"}</span>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <span className="font-mono text-sm text-foreground">
-                            {getCmsSyncOperationLabel(row.operation, {
-                              skipped_push: row.skipped_push,
-                            })}
-                          </span>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <PropertyHistorySummary history={row.history} />
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table.Content>
-              </Table.ScrollContainer>
-            </Table>
-          </div>
+        <div className="rounded-xl border border-border bg-surface px-6">
+          <Accordion defaultExpandedKeys={[]} hideSeparator>
+            <Accordion.Item id="user-properties">
+              <Accordion.Heading>
+                <Accordion.Trigger className="text-sm font-medium text-foreground">
+                  User properties ({userProperties.length})
+                  <Accordion.Indicator />
+                </Accordion.Trigger>
+              </Accordion.Heading>
+              <Accordion.Panel>
+                <Accordion.Body>
+                  <div className="rounded-xl border border-border overflow-hidden mb-4">
+                    <Table>
+                      <Table.ScrollContainer>
+                        <Table.Content aria-label="User properties">
+                          <Table.Header>
+                            <Table.Column isRowHeader>Property</Table.Column>
+                            <Table.Column>User</Table.Column>
+                            <Table.Column>Operation</Table.Column>
+                            <Table.Column>History</Table.Column>
+                          </Table.Header>
+                          <Table.Body>
+                            {userProperties.map((row) => (
+                              <Table.Row key={row.key} id={row.key}>
+                                <Table.Cell>
+                                  <button
+                                    className="text-sm text-accent hover:underline text-left"
+                                    onClick={() =>
+                                      navigate(
+                                        Routes.admin.properties.userDetail(row.user_property_id),
+                                      )
+                                    }
+                                  >
+                                    {row.property_title}
+                                  </button>
+                                </Table.Cell>
+                                <Table.Cell>
+                                  <span className="text-sm text-foreground">
+                                    {row.user_email ?? "—"}
+                                  </span>
+                                </Table.Cell>
+                                <Table.Cell>
+                                  <span className="font-mono text-sm text-foreground">
+                                    {getCmsSyncOperationLabel(row.operation, {
+                                      skipped_push: row.skipped_push,
+                                    })}
+                                  </span>
+                                </Table.Cell>
+                                <Table.Cell>
+                                  <PropertyHistorySummary history={row.history} />
+                                </Table.Cell>
+                              </Table.Row>
+                            ))}
+                          </Table.Body>
+                        </Table.Content>
+                      </Table.ScrollContainer>
+                    </Table>
+                  </div>
+                </Accordion.Body>
+              </Accordion.Panel>
+            </Accordion.Item>
+          </Accordion>
         </div>
       ) : null}
 
       {propertyHistory.length > 0 ? (
-        <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-3">
-          <p className="text-sm font-medium text-foreground">Property history</p>
-          <div className="rounded-xl border border-border overflow-hidden">
-            <Table>
-              <Table.ScrollContainer>
-                <Table.Content aria-label="Property history">
-                  <Table.Header>
-                    <Table.Column isRowHeader>Property</Table.Column>
-                    <Table.Column>Change</Table.Column>
-                    <Table.Column>When</Table.Column>
-                  </Table.Header>
-                  <Table.Body>
-                    {propertyHistory.map((entry) => (
-                      <Table.Row key={entry.id} id={entry.id}>
-                        <Table.Cell>
-                          <button
-                            className="text-sm text-accent hover:underline text-left"
-                            onClick={() =>
-                              navigate(Routes.admin.properties.detail(entry.property_id))
-                            }
-                          >
-                            {entry.property?.title ?? entry.property_id}
-                          </button>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-sm text-foreground">
-                              {formatPropertyHistoryLabel(entry)}
-                            </span>
-                            {entry.field ? (
-                              <span className="text-xs text-muted break-words">
-                                {entry.field}: {formatPropertyHistoryValue(entry.old_value)} →{" "}
-                                {formatPropertyHistoryValue(entry.new_value)}
-                              </span>
-                            ) : entry.old_value != null || entry.new_value != null ? (
-                              <span className="text-xs text-muted break-words">
-                                {formatPropertyHistoryValue(entry.old_value)} →{" "}
-                                {formatPropertyHistoryValue(entry.new_value)}
-                              </span>
-                            ) : null}
-                          </div>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <span className="text-xs text-muted whitespace-nowrap">
-                            {formatDateTime(entry.created_at)}
-                          </span>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table.Content>
-              </Table.ScrollContainer>
-            </Table>
-          </div>
+        <div className="rounded-xl border border-border bg-surface px-6">
+          <Accordion defaultExpandedKeys={[]} hideSeparator>
+            <Accordion.Item id="property-history">
+              <Accordion.Heading>
+                <Accordion.Trigger className="text-sm font-medium text-foreground">
+                  Property history ({propertyHistory.length})
+                  <Accordion.Indicator />
+                </Accordion.Trigger>
+              </Accordion.Heading>
+              <Accordion.Panel>
+                <Accordion.Body>
+                  <div className="rounded-xl border border-border overflow-hidden mb-4">
+                    <Table>
+                      <Table.ScrollContainer>
+                        <Table.Content aria-label="Property history">
+                          <Table.Header>
+                            <Table.Column isRowHeader>Property</Table.Column>
+                            <Table.Column>Change</Table.Column>
+                            <Table.Column>When</Table.Column>
+                          </Table.Header>
+                          <Table.Body>
+                            {propertyHistory.map((entry) => (
+                              <Table.Row key={entry.id} id={entry.id}>
+                                <Table.Cell>
+                                  <button
+                                    className="text-sm text-accent hover:underline text-left"
+                                    onClick={() =>
+                                      navigate(Routes.admin.properties.detail(entry.property_id))
+                                    }
+                                  >
+                                    {entry.property?.title ?? entry.property_id}
+                                  </button>
+                                </Table.Cell>
+                                <Table.Cell>
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className="text-sm text-foreground">
+                                      {formatPropertyHistoryLabel(entry)}
+                                    </span>
+                                    {entry.field ? (
+                                      <span className="text-xs text-muted break-words">
+                                        {entry.field}: {formatPropertyHistoryValue(entry.old_value)}{" "}
+                                        → {formatPropertyHistoryValue(entry.new_value)}
+                                      </span>
+                                    ) : entry.old_value != null || entry.new_value != null ? (
+                                      <span className="text-xs text-muted break-words">
+                                        {formatPropertyHistoryValue(entry.old_value)} →{" "}
+                                        {formatPropertyHistoryValue(entry.new_value)}
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </Table.Cell>
+                                <Table.Cell>
+                                  <span className="text-xs text-muted whitespace-nowrap">
+                                    {formatDateTime(entry.created_at)}
+                                  </span>
+                                </Table.Cell>
+                              </Table.Row>
+                            ))}
+                          </Table.Body>
+                        </Table.Content>
+                      </Table.ScrollContainer>
+                    </Table>
+                  </div>
+                </Accordion.Body>
+              </Accordion.Panel>
+            </Accordion.Item>
+          </Accordion>
         </div>
       ) : null}
 
-      <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-foreground">Execution traces</p>
-          {run.diagnostics_package && (
-            <button
-              className="text-sm text-accent hover:underline"
-              onClick={() => navigate(Routes.admin.diagnostics.detail(run.diagnostics_package!.id))}
-            >
-              View diagnostics
-            </button>
-          )}
-        </div>
-        {traces.length === 0 ? (
-          <p className="text-sm text-muted">No execution traces recorded.</p>
-        ) : (
-          traces.map((trace) => (
-            <div key={trace.id} className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-sm">
-                <span className={trace.success ? "text-success" : "text-danger"}>
-                  {trace.success ? "Success" : "Failed"}
-                </span>
-                <span className="text-muted">{formatDateTime(trace.created_at)}</span>
-                {trace.error_summary && (
-                  <span className="text-danger text-xs">{trace.error_summary}</span>
-                )}
-              </div>
-              <pre className="rounded-lg border border-border bg-background p-3 text-xs overflow-auto max-h-96">
-                {JSON.stringify(trace.steps, null, 2)}
-              </pre>
-            </div>
-          ))
-        )}
+      <div className="rounded-xl border border-border bg-surface px-6">
+        <Accordion defaultExpandedKeys={[]} hideSeparator>
+          <Accordion.Item id="execution-traces">
+            <Accordion.Heading>
+              <Accordion.Trigger className="text-sm font-medium text-foreground">
+                Execution traces ({traces.length})
+                <Accordion.Indicator />
+              </Accordion.Trigger>
+            </Accordion.Heading>
+            <Accordion.Panel>
+              <Accordion.Body>
+                <div className="flex flex-col gap-4 pb-4">
+                  {run.diagnostics_package ? (
+                    <button
+                      className="text-sm text-accent hover:underline self-start"
+                      onClick={() =>
+                        navigate(Routes.admin.diagnostics.detail(run.diagnostics_package!.id))
+                      }
+                    >
+                      View diagnostics
+                    </button>
+                  ) : null}
+                  {traces.length === 0 ? (
+                    <p className="text-sm text-muted">No execution traces recorded.</p>
+                  ) : (
+                    traces.map((trace) => (
+                      <div key={trace.id} className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className={trace.success ? "text-success" : "text-danger"}>
+                            {trace.success ? "Success" : "Failed"}
+                          </span>
+                          <span className="text-muted">{formatDateTime(trace.created_at)}</span>
+                          {trace.error_summary ? (
+                            <span className="text-danger text-xs">{trace.error_summary}</span>
+                          ) : null}
+                        </div>
+                        <pre className="rounded-lg border border-border bg-background p-3 text-xs overflow-auto max-h-96">
+                          {JSON.stringify(trace.steps, null, 2)}
+                        </pre>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </Accordion.Body>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
       </div>
 
-      <div className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-3">
-        <p className="text-sm font-medium text-foreground">Linked jobs</p>
-        {jobLogs.length === 0 ? (
-          <p className="text-sm text-muted">No linked job logs.</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {jobLogs.map((job) => (
-              <button
-                key={job.id}
-                onClick={() => navigate(Routes.admin.jobs.detail(job.id))}
-                className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-left hover:border-accent/50 transition-colors"
-              >
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm text-foreground">{job.job_name ?? job.queue_name}</span>
-                  <span className="text-xs text-muted">
-                    attempt {job.attempt}
-                    {job.max_attempts !== null ? ` / ${job.max_attempts}` : ""}
-                    {job.duration_ms !== null ? ` · ${formatDuration(job.duration_ms)}` : ""}
-                  </span>
+      <div className="rounded-xl border border-border bg-surface px-6">
+        <Accordion defaultExpandedKeys={[]} hideSeparator>
+          <Accordion.Item id="linked-jobs">
+            <Accordion.Heading>
+              <Accordion.Trigger className="text-sm font-medium text-foreground">
+                Linked jobs ({jobLogs.length})
+                <Accordion.Indicator />
+              </Accordion.Trigger>
+            </Accordion.Heading>
+            <Accordion.Panel>
+              <Accordion.Body>
+                <div className="pb-4">
+                  {jobLogs.length === 0 ? (
+                    <p className="text-sm text-muted">No linked job logs.</p>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      {jobLogs.map((job) => (
+                        <button
+                          key={job.id}
+                          onClick={() => navigate(Routes.admin.jobs.detail(job.id))}
+                          className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-left hover:border-accent/50 transition-colors"
+                        >
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-sm text-foreground">
+                              {job.job_name ?? job.queue_name}
+                            </span>
+                            <span className="text-xs text-muted">
+                              attempt {job.attempt}
+                              {job.max_attempts !== null ? ` / ${job.max_attempts}` : ""}
+                              {job.duration_ms !== null
+                                ? ` · ${formatDuration(job.duration_ms)}`
+                                : ""}
+                            </span>
+                          </div>
+                          <JobStatusChip status={job.status as JobStatus} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <JobStatusChip status={job.status as JobStatus} />
-              </button>
-            ))}
-          </div>
-        )}
+              </Accordion.Body>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
       </div>
 
       <ConfirmationDialog
