@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Page } from 'playwright';
+import { Locator, Page } from 'playwright';
 import { DiagnosticsCaptureService } from '@/integrations/diagnostics/services/diagnostics-capture.service';
 import { DiagnosticsRunContext } from '@/integrations/diagnostics/interfaces/diagnostics.interfaces';
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
@@ -108,51 +108,73 @@ export class CrawlerService {
           break;
         }
 
-        const cards = await page.locator(config.listing_selector).all();
-        log('cards_found', { count: cards.length, page: pageNum });
+        const cardCount = await page.locator(config.listing_selector).count();
+        log('cards_found', { count: cardCount, page: pageNum });
 
-        if (cards.length === 0 && pageNum === 0) {
+        if (cardCount === 0 && pageNum === 0) {
           zeroListingsPage0 = true;
           errorSummary = `Zero listings found on page 0 with selector "${config.listing_selector}"`;
           break;
         }
 
-        for (let i = 0; i < cards.length; i++) {
-          const raw: Record<string, unknown> = {};
-          for (const [fieldName, fieldDef] of Object.entries(
-            config.fields ?? {},
-          )) {
-            raw[fieldName] = await this.fieldExtractionService.extractField(
-              cards[i],
-              fieldDef,
-            );
+        for (let i = 0; i < cardCount; i++) {
+          const liveCount = await page
+            .locator(config.listing_selector)
+            .count()
+            .catch(() => 0);
+          if (i >= liveCount) {
+            log('card_dom_changed', {
+              index: i,
+              expected: cardCount,
+              actual: liveCount,
+            });
+            break;
           }
 
-          raw._all_images = await cards[i].evaluate((el) => {
-            const imgs: string[] = [];
-            el.querySelectorAll('[style]').forEach((node) => {
-              const match = (node.getAttribute('style') || '').match(
-                /background-image:\s*url\(['"]?(.*?)['"]?\)/,
+          const card = page.locator(config.listing_selector).nth(i);
+          try {
+            const raw: Record<string, unknown> = {};
+            for (const [fieldName, fieldDef] of Object.entries(
+              config.fields ?? {},
+            )) {
+              raw[fieldName] = await this.fieldExtractionService.extractField(
+                card,
+                fieldDef,
               );
-              if (match?.[1]) imgs.push(match[1]);
-            });
-            el.querySelectorAll('img').forEach((node) => {
-              if (node.src) imgs.push(node.src);
-            });
-            return [...new Set(imgs)];
-          });
-
-          let sourceUrl =
-            (raw.url as string | null) ?? (raw.href as string | null) ?? null;
-          if (sourceUrl && !sourceUrl.startsWith('http')) {
-            try {
-              sourceUrl = new URL(sourceUrl, currentUrl).href;
-            } catch {
-              /* keep as-is */
             }
+
+            raw._all_images = await card
+              .evaluate((el) => {
+                const imgs: string[] = [];
+                el.querySelectorAll('[style]').forEach((node) => {
+                  const match = (node.getAttribute('style') || '').match(
+                    /background-image:\s*url\(['"]?(.*?)['"]?\)/,
+                  );
+                  if (match?.[1]) imgs.push(match[1]);
+                });
+                el.querySelectorAll('img').forEach((node) => {
+                  if (node.src) imgs.push(node.src);
+                });
+                return [...new Set(imgs)];
+              })
+              .catch(() => []);
+
+            let sourceUrl =
+              (raw.url as string | null) ?? (raw.href as string | null) ?? null;
+            if (sourceUrl && !sourceUrl.startsWith('http')) {
+              try {
+                sourceUrl = new URL(sourceUrl, currentUrl).href;
+              } catch {
+                /* keep as-is */
+              }
+            }
+            if (!sourceUrl) sourceUrl = currentUrl;
+            items.push({ source_url: sourceUrl, raw });
+          } catch (cardErr) {
+            const message =
+              cardErr instanceof Error ? cardErr.message : String(cardErr);
+            log('card_extract_failed', { index: i, message });
           }
-          if (!sourceUrl) sourceUrl = currentUrl;
-          items.push({ source_url: sourceUrl, raw });
         }
 
         const pagination = config.pagination;
@@ -170,6 +192,7 @@ export class CrawlerService {
           pageNum,
           log,
           crawlerConfig,
+          config.listing_selector,
         );
         if (!advanced) break;
         pageNum++;
@@ -180,7 +203,6 @@ export class CrawlerService {
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       errorSummary = message;
-      networkError = true;
       log('error', { message });
     }
 
@@ -200,6 +222,7 @@ export class CrawlerService {
     pageNum: number,
     log: (msg: string, data?: Record<string, unknown>) => void,
     crawlerConfig: ResolvedCrawlerConfig,
+    listingSelector?: string,
   ): Promise<boolean> {
     if (
       pagination.type === 'next_button' ||
@@ -223,13 +246,17 @@ export class CrawlerService {
           log('pagination_end', { reason: 'next_selector_not_clickable' });
           return false;
         }
-        await nextControl.click({ timeout: 8000 });
-        await page
-          .waitForLoadState('domcontentloaded', {
-            timeout: crawlerConfig.page_timeout_ms,
-          })
-          .catch(() => undefined);
-        await page.waitForTimeout(2000);
+
+        const navigated = await this.clickNextAndWaitForChange(
+          page,
+          nextControl,
+          listingSelector,
+          crawlerConfig,
+        );
+        if (!navigated) {
+          log('pagination_end', { reason: 'url_unchanged_after_next' });
+          return false;
+        }
         log('clicked_next', { url: page.url() });
         return true;
       }
@@ -261,13 +288,16 @@ export class CrawlerService {
         return false;
       }
 
-      await nextPageLink.click({ timeout: 8000 });
-      await page
-        .waitForLoadState('domcontentloaded', {
-          timeout: crawlerConfig.page_timeout_ms,
-        })
-        .catch(() => undefined);
-      await page.waitForTimeout(2000);
+      const navigated = await this.clickNextAndWaitForChange(
+        page,
+        nextPageLink,
+        listingSelector,
+        crawlerConfig,
+      );
+      if (!navigated) {
+        log('pagination_end', { reason: 'url_unchanged_after_page_click' });
+        return false;
+      }
       log('clicked_page', { page: nextPageNum, url: page.url() });
       return true;
     }
@@ -317,5 +347,117 @@ export class CrawlerService {
     }
 
     return false;
+  }
+
+  private async clickNextAndWaitForChange(
+    page: Page,
+    nextControl: Locator,
+    listingSelector: string | undefined,
+    crawlerConfig: ResolvedCrawlerConfig,
+  ): Promise<boolean> {
+    const urlBefore = page.url();
+    const fingerprintBefore = listingSelector
+      ? await this.listingFingerprint(page, listingSelector)
+      : null;
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (attempt > 0) {
+        const stillThere = await nextControl.count().catch(() => 0);
+        if (!stillThere) return false;
+        const visible = await nextControl.isVisible().catch(() => false);
+        const disabled = await nextControl.isDisabled().catch(() => false);
+        if (!visible || disabled) return false;
+      }
+
+      await nextControl.click({ timeout: 8000 });
+      await page
+        .waitForLoadState('domcontentloaded', {
+          timeout: crawlerConfig.page_timeout_ms,
+        })
+        .catch(() => undefined);
+
+      const urlChanged = await page
+        .waitForFunction((prev) => window.location.href !== prev, urlBefore, {
+          timeout: crawlerConfig.selector_timeout_ms,
+        })
+        .then(() => true)
+        .catch(() => false);
+
+      const fingerprintChanged =
+        fingerprintBefore && listingSelector
+          ? await this.waitForListingFingerprintChange(
+              page,
+              listingSelector,
+              fingerprintBefore,
+              crawlerConfig.selector_timeout_ms,
+            )
+          : false;
+
+      if (!urlChanged && !fingerprintChanged) {
+        await page.waitForTimeout(crawlerConfig.scroll_pause_ms);
+        continue;
+      }
+
+      if (urlChanged && fingerprintBefore && listingSelector && !fingerprintChanged) {
+        await this.waitForListingFingerprintChange(
+          page,
+          listingSelector,
+          fingerprintBefore,
+          crawlerConfig.selector_timeout_ms,
+        );
+      }
+
+      if (listingSelector) {
+        await page
+          .waitForSelector(listingSelector, {
+            timeout: crawlerConfig.selector_timeout_ms,
+          })
+          .catch(() => undefined);
+      }
+      await page.waitForTimeout(1000);
+      return true;
+    }
+
+    return page.url() !== urlBefore;
+  }
+
+  private async waitForListingFingerprintChange(
+    page: Page,
+    listingSelector: string,
+    prev: { href: string; count: number },
+    timeout: number,
+  ): Promise<boolean> {
+    return page
+      .waitForFunction(
+        ({ selector, previous }) => {
+          const card = document.querySelector(selector);
+          if (!card) return false;
+          const href =
+            card.querySelector('a')?.getAttribute('href') ??
+            card.textContent?.trim() ??
+            '';
+          const count = document.querySelectorAll(selector).length;
+          return href !== previous.href || count !== previous.count;
+        },
+        { selector: listingSelector, previous: prev },
+        { timeout },
+      )
+      .then(() => true)
+      .catch(() => false);
+  }
+
+  private async listingFingerprint(
+    page: Page,
+    listingSelector: string,
+  ): Promise<{ href: string; count: number }> {
+    return page.evaluate((selector) => {
+      const cards = document.querySelectorAll(selector);
+      const first = cards[0];
+      const href =
+        first?.querySelector('a')?.getAttribute('href') ??
+        first?.textContent?.trim() ??
+        '';
+      return { href, count: cards.length };
+    }, listingSelector);
   }
 }

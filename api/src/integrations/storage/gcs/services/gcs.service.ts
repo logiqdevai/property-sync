@@ -10,6 +10,7 @@ import {
   DownloadImageRequest,
   DownloadImageResponse,
 } from '../interfaces/gcs.interfaces';
+import { withGcsRetry } from '../utils/gcs-retry.util';
 
 @Injectable()
 export class GcsService {
@@ -21,7 +22,15 @@ export class GcsService {
     request: UploadImageRequest,
   ): Promise<UploadImageResponse> {
     try {
-      return await this.gcsAdapter.uploadImage(request);
+      return await withGcsRetry(() => this.gcsAdapter.uploadImage(request), {
+        onRetry: (error, attempt) => {
+          this.logger.warn(
+            `GCS upload retry ${attempt} for ${request.filename}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        },
+      });
     } catch (error) {
       this.logger.error('Upload image error:', error);
       throw new Error(`Failed to upload image: ${error.message}`);
@@ -32,7 +41,15 @@ export class GcsService {
     request: DeleteImageRequest,
   ): Promise<DeleteImageResponse> {
     try {
-      return await this.gcsAdapter.deleteImage(request);
+      return await withGcsRetry(() => this.gcsAdapter.deleteImage(request), {
+        onRetry: (error, attempt) => {
+          this.logger.warn(
+            `GCS delete retry ${attempt} for ${request.filename}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        },
+      });
     } catch (error) {
       this.logger.error('Delete image error:', error);
       throw new Error(`Failed to delete image: ${error.message}`);
@@ -41,7 +58,18 @@ export class GcsService {
 
   public async deleteImageByPath(path: string): Promise<void> {
     try {
-      await this.gcsAdapter.deleteImage({ filename: path });
+      await withGcsRetry(
+        () => this.gcsAdapter.deleteImage({ filename: path }),
+        {
+          onRetry: (error, attempt) => {
+            this.logger.warn(
+              `GCS delete retry ${attempt} for path ${path}: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            );
+          },
+        },
+      );
     } catch (error) {
       this.logger.error(`Delete image error for path ${path}:`, error);
       throw new Error(`Failed to delete image: ${error.message}`);
@@ -52,7 +80,15 @@ export class GcsService {
     request?: ListImagesRequest,
   ): Promise<ListImagesResponse> {
     try {
-      return await this.gcsAdapter.listImages(request);
+      return await withGcsRetry(() => this.gcsAdapter.listImages(request), {
+        onRetry: (error, attempt) => {
+          this.logger.warn(
+            `GCS list retry ${attempt}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        },
+      });
     } catch (error) {
       this.logger.error('List images error:', error);
       throw new Error(`Failed to list images: ${error.message}`);
@@ -65,10 +101,18 @@ export class GcsService {
     expiresInMinutes: number = 60,
   ): Promise<string> {
     try {
-      return await this.gcsAdapter.getSignedUrl(
-        filename,
-        folder,
-        expiresInMinutes,
+      return await withGcsRetry(
+        () =>
+          this.gcsAdapter.getSignedUrl(filename, folder, expiresInMinutes),
+        {
+          onRetry: (error, attempt) => {
+            this.logger.warn(
+              `GCS signed URL retry ${attempt} for ${filename}: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            );
+          },
+        },
       );
     } catch (error) {
       this.logger.error('Get signed URL error:', error);
@@ -81,9 +125,18 @@ export class GcsService {
     expiresInMinutes: number = 60,
   ): Promise<string> {
     try {
-      return await this.gcsAdapter.getSignedUrlForPath(
-        fullPath,
-        expiresInMinutes,
+      return await withGcsRetry(
+        () =>
+          this.gcsAdapter.getSignedUrlForPath(fullPath, expiresInMinutes),
+        {
+          onRetry: (error, attempt) => {
+            this.logger.warn(
+              `GCS signed URL retry ${attempt} for ${fullPath}: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            );
+          },
+        },
       );
     } catch (error) {
       this.logger.error('Get signed URL error:', error);
@@ -152,7 +205,15 @@ export class GcsService {
     request: DownloadImageRequest,
   ): Promise<DownloadImageResponse> {
     try {
-      return await this.gcsAdapter.downloadImage(request);
+      return await withGcsRetry(() => this.gcsAdapter.downloadImage(request), {
+        onRetry: (error, attempt) => {
+          this.logger.warn(
+            `GCS download retry ${attempt} for ${request.filename}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        },
+      });
     } catch (error) {
       this.logger.error('Download image error:', error);
       throw new Error(`Failed to download image: ${error.message}`);
