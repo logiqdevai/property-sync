@@ -18914,6 +18914,7 @@ export namespace Prisma {
     total_created: number | null
     total_updated: number | null
     total_removed: number | null
+    total_linked: number | null
     total_failed: number | null
     ai_input_tokens: number | null
     ai_output_tokens: number | null
@@ -18931,6 +18932,7 @@ export namespace Prisma {
     total_created: number | null
     total_updated: number | null
     total_removed: number | null
+    total_linked: number | null
     total_failed: number | null
     ai_input_tokens: number | null
     ai_output_tokens: number | null
@@ -18955,6 +18957,7 @@ export namespace Prisma {
     total_created: number | null
     total_updated: number | null
     total_removed: number | null
+    total_linked: number | null
     total_failed: number | null
     error_message: string | null
     ai_model: string | null
@@ -18983,6 +18986,7 @@ export namespace Prisma {
     total_created: number | null
     total_updated: number | null
     total_removed: number | null
+    total_linked: number | null
     total_failed: number | null
     error_message: string | null
     ai_model: string | null
@@ -19011,6 +19015,7 @@ export namespace Prisma {
     total_created: number
     total_updated: number
     total_removed: number
+    total_linked: number
     total_failed: number
     error_message: number
     metadata: number
@@ -19035,6 +19040,7 @@ export namespace Prisma {
     total_created?: true
     total_updated?: true
     total_removed?: true
+    total_linked?: true
     total_failed?: true
     ai_input_tokens?: true
     ai_output_tokens?: true
@@ -19052,6 +19058,7 @@ export namespace Prisma {
     total_created?: true
     total_updated?: true
     total_removed?: true
+    total_linked?: true
     total_failed?: true
     ai_input_tokens?: true
     ai_output_tokens?: true
@@ -19076,6 +19083,7 @@ export namespace Prisma {
     total_created?: true
     total_updated?: true
     total_removed?: true
+    total_linked?: true
     total_failed?: true
     error_message?: true
     ai_model?: true
@@ -19104,6 +19112,7 @@ export namespace Prisma {
     total_created?: true
     total_updated?: true
     total_removed?: true
+    total_linked?: true
     total_failed?: true
     error_message?: true
     ai_model?: true
@@ -19132,6 +19141,7 @@ export namespace Prisma {
     total_created?: true
     total_updated?: true
     total_removed?: true
+    total_linked?: true
     total_failed?: true
     error_message?: true
     metadata?: true
@@ -19248,6 +19258,7 @@ export namespace Prisma {
     total_created: number
     total_updated: number
     total_removed: number
+    total_linked: number
     total_failed: number
     error_message: string | null
     metadata: JsonValue | null
@@ -19296,6 +19307,7 @@ export namespace Prisma {
     total_created?: boolean
     total_updated?: boolean
     total_removed?: boolean
+    total_linked?: boolean
     total_failed?: boolean
     error_message?: boolean
     metadata?: boolean
@@ -19335,6 +19347,7 @@ export namespace Prisma {
     total_created?: boolean
     total_updated?: boolean
     total_removed?: boolean
+    total_linked?: boolean
     total_failed?: boolean
     error_message?: boolean
     metadata?: boolean
@@ -19367,6 +19380,7 @@ export namespace Prisma {
     total_created?: boolean
     total_updated?: boolean
     total_removed?: boolean
+    total_linked?: boolean
     total_failed?: boolean
     error_message?: boolean
     metadata?: boolean
@@ -19399,6 +19413,7 @@ export namespace Prisma {
     total_created?: boolean
     total_updated?: boolean
     total_removed?: boolean
+    total_linked?: boolean
     total_failed?: boolean
     error_message?: boolean
     metadata?: boolean
@@ -19413,7 +19428,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type CrawlRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "scraper_id" | "user_tracked_agency_id" | "status" | "started_at" | "finished_at" | "duration_ms" | "total_found" | "total_new_listings" | "total_refreshed_listings" | "total_created" | "total_updated" | "total_removed" | "total_failed" | "error_message" | "metadata" | "ai_model" | "ai_input_tokens" | "ai_output_tokens" | "ai_input_cost" | "ai_output_cost" | "ai_total_cost" | "ai_average_cost_per_property" | "created_at" | "updated_at", ExtArgs["result"]["crawlRun"]>
+  export type CrawlRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "scraper_id" | "user_tracked_agency_id" | "status" | "started_at" | "finished_at" | "duration_ms" | "total_found" | "total_new_listings" | "total_refreshed_listings" | "total_created" | "total_updated" | "total_removed" | "total_linked" | "total_failed" | "error_message" | "metadata" | "ai_model" | "ai_input_tokens" | "ai_output_tokens" | "ai_input_cost" | "ai_output_cost" | "ai_total_cost" | "ai_average_cost_per_property" | "created_at" | "updated_at", ExtArgs["result"]["crawlRun"]>
   export type CrawlRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     user_tracked_agency?: boolean | CrawlRun$user_tracked_agencyArgs<ExtArgs>
@@ -19465,6 +19480,7 @@ export namespace Prisma {
       total_created: number
       total_updated: number
       total_removed: number
+      total_linked: number
       total_failed: number
       error_message: string | null
       metadata: Prisma.JsonValue | null
@@ -19923,6 +19939,7 @@ export namespace Prisma {
     readonly total_created: FieldRef<"CrawlRun", 'Int'>
     readonly total_updated: FieldRef<"CrawlRun", 'Int'>
     readonly total_removed: FieldRef<"CrawlRun", 'Int'>
+    readonly total_linked: FieldRef<"CrawlRun", 'Int'>
     readonly total_failed: FieldRef<"CrawlRun", 'Int'>
     readonly error_message: FieldRef<"CrawlRun", 'String'>
     readonly metadata: FieldRef<"CrawlRun", 'Json'>
@@ -25406,6 +25423,7 @@ export namespace Prisma {
     total_created: number | null
     total_updated: number | null
     total_removed: number | null
+    total_linked: number | null
     total_failed: number | null
   }
 
@@ -25415,6 +25433,7 @@ export namespace Prisma {
     total_created: number | null
     total_updated: number | null
     total_removed: number | null
+    total_linked: number | null
     total_failed: number | null
   }
 
@@ -25428,6 +25447,7 @@ export namespace Prisma {
     total_created: number | null
     total_updated: number | null
     total_removed: number | null
+    total_linked: number | null
     total_failed: number | null
     error_message: string | null
     started_at: Date | null
@@ -25446,6 +25466,7 @@ export namespace Prisma {
     total_created: number | null
     total_updated: number | null
     total_removed: number | null
+    total_linked: number | null
     total_failed: number | null
     error_message: string | null
     started_at: Date | null
@@ -25464,6 +25485,7 @@ export namespace Prisma {
     total_created: number
     total_updated: number
     total_removed: number
+    total_linked: number
     total_failed: number
     payload: number
     response: number
@@ -25482,6 +25504,7 @@ export namespace Prisma {
     total_created?: true
     total_updated?: true
     total_removed?: true
+    total_linked?: true
     total_failed?: true
   }
 
@@ -25491,6 +25514,7 @@ export namespace Prisma {
     total_created?: true
     total_updated?: true
     total_removed?: true
+    total_linked?: true
     total_failed?: true
   }
 
@@ -25504,6 +25528,7 @@ export namespace Prisma {
     total_created?: true
     total_updated?: true
     total_removed?: true
+    total_linked?: true
     total_failed?: true
     error_message?: true
     started_at?: true
@@ -25522,6 +25547,7 @@ export namespace Prisma {
     total_created?: true
     total_updated?: true
     total_removed?: true
+    total_linked?: true
     total_failed?: true
     error_message?: true
     started_at?: true
@@ -25540,6 +25566,7 @@ export namespace Prisma {
     total_created?: true
     total_updated?: true
     total_removed?: true
+    total_linked?: true
     total_failed?: true
     payload?: true
     response?: true
@@ -25647,6 +25674,7 @@ export namespace Prisma {
     total_created: number
     total_updated: number
     total_removed: number
+    total_linked: number
     total_failed: number
     payload: JsonValue | null
     response: JsonValue | null
@@ -25686,6 +25714,7 @@ export namespace Prisma {
     total_created?: boolean
     total_updated?: boolean
     total_removed?: boolean
+    total_linked?: boolean
     total_failed?: boolean
     payload?: boolean
     response?: boolean
@@ -25708,6 +25737,7 @@ export namespace Prisma {
     total_created?: boolean
     total_updated?: boolean
     total_removed?: boolean
+    total_linked?: boolean
     total_failed?: boolean
     payload?: boolean
     response?: boolean
@@ -25730,6 +25760,7 @@ export namespace Prisma {
     total_created?: boolean
     total_updated?: boolean
     total_removed?: boolean
+    total_linked?: boolean
     total_failed?: boolean
     payload?: boolean
     response?: boolean
@@ -25752,6 +25783,7 @@ export namespace Prisma {
     total_created?: boolean
     total_updated?: boolean
     total_removed?: boolean
+    total_linked?: boolean
     total_failed?: boolean
     payload?: boolean
     response?: boolean
@@ -25762,7 +25794,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type CmsSyncRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawl_run_id" | "user_integration_id" | "status" | "attempt" | "max_attempts" | "total_created" | "total_updated" | "total_removed" | "total_failed" | "payload" | "response" | "error_message" | "started_at" | "finished_at" | "created_at" | "updated_at", ExtArgs["result"]["cmsSyncRun"]>
+  export type CmsSyncRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawl_run_id" | "user_integration_id" | "status" | "attempt" | "max_attempts" | "total_created" | "total_updated" | "total_removed" | "total_linked" | "total_failed" | "payload" | "response" | "error_message" | "started_at" | "finished_at" | "created_at" | "updated_at", ExtArgs["result"]["cmsSyncRun"]>
   export type CmsSyncRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     crawl_run?: boolean | CmsSyncRun$crawl_runArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
@@ -25792,6 +25824,7 @@ export namespace Prisma {
       total_created: number
       total_updated: number
       total_removed: number
+      total_linked: number
       total_failed: number
       payload: Prisma.JsonValue | null
       response: Prisma.JsonValue | null
@@ -26234,6 +26267,7 @@ export namespace Prisma {
     readonly total_created: FieldRef<"CmsSyncRun", 'Int'>
     readonly total_updated: FieldRef<"CmsSyncRun", 'Int'>
     readonly total_removed: FieldRef<"CmsSyncRun", 'Int'>
+    readonly total_linked: FieldRef<"CmsSyncRun", 'Int'>
     readonly total_failed: FieldRef<"CmsSyncRun", 'Int'>
     readonly payload: FieldRef<"CmsSyncRun", 'Json'>
     readonly response: FieldRef<"CmsSyncRun", 'Json'>
@@ -37261,6 +37295,7 @@ export namespace Prisma {
     total_created: 'total_created',
     total_updated: 'total_updated',
     total_removed: 'total_removed',
+    total_linked: 'total_linked',
     total_failed: 'total_failed',
     error_message: 'error_message',
     metadata: 'metadata',
@@ -37362,6 +37397,7 @@ export namespace Prisma {
     total_created: 'total_created',
     total_updated: 'total_updated',
     total_removed: 'total_removed',
+    total_linked: 'total_linked',
     total_failed: 'total_failed',
     payload: 'payload',
     response: 'response',
@@ -39162,6 +39198,7 @@ export namespace Prisma {
     total_created?: IntFilter<"CrawlRun"> | number
     total_updated?: IntFilter<"CrawlRun"> | number
     total_removed?: IntFilter<"CrawlRun"> | number
+    total_linked?: IntFilter<"CrawlRun"> | number
     total_failed?: IntFilter<"CrawlRun"> | number
     error_message?: StringNullableFilter<"CrawlRun"> | string | null
     metadata?: JsonNullableFilter<"CrawlRun">
@@ -39200,6 +39237,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
     error_message?: SortOrderInput | SortOrder
     metadata?: SortOrderInput | SortOrder
@@ -39241,6 +39279,7 @@ export namespace Prisma {
     total_created?: IntFilter<"CrawlRun"> | number
     total_updated?: IntFilter<"CrawlRun"> | number
     total_removed?: IntFilter<"CrawlRun"> | number
+    total_linked?: IntFilter<"CrawlRun"> | number
     total_failed?: IntFilter<"CrawlRun"> | number
     error_message?: StringNullableFilter<"CrawlRun"> | string | null
     metadata?: JsonNullableFilter<"CrawlRun">
@@ -39279,6 +39318,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
     error_message?: SortOrderInput | SortOrder
     metadata?: SortOrderInput | SortOrder
@@ -39316,6 +39356,7 @@ export namespace Prisma {
     total_created?: IntWithAggregatesFilter<"CrawlRun"> | number
     total_updated?: IntWithAggregatesFilter<"CrawlRun"> | number
     total_removed?: IntWithAggregatesFilter<"CrawlRun"> | number
+    total_linked?: IntWithAggregatesFilter<"CrawlRun"> | number
     total_failed?: IntWithAggregatesFilter<"CrawlRun"> | number
     error_message?: StringNullableWithAggregatesFilter<"CrawlRun"> | string | null
     metadata?: JsonNullableWithAggregatesFilter<"CrawlRun">
@@ -39731,6 +39772,7 @@ export namespace Prisma {
     total_created?: IntFilter<"CmsSyncRun"> | number
     total_updated?: IntFilter<"CmsSyncRun"> | number
     total_removed?: IntFilter<"CmsSyncRun"> | number
+    total_linked?: IntFilter<"CmsSyncRun"> | number
     total_failed?: IntFilter<"CmsSyncRun"> | number
     payload?: JsonNullableFilter<"CmsSyncRun">
     response?: JsonNullableFilter<"CmsSyncRun">
@@ -39753,6 +39795,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
     payload?: SortOrderInput | SortOrder
     response?: SortOrderInput | SortOrder
@@ -39779,6 +39822,7 @@ export namespace Prisma {
     total_created?: IntFilter<"CmsSyncRun"> | number
     total_updated?: IntFilter<"CmsSyncRun"> | number
     total_removed?: IntFilter<"CmsSyncRun"> | number
+    total_linked?: IntFilter<"CmsSyncRun"> | number
     total_failed?: IntFilter<"CmsSyncRun"> | number
     payload?: JsonNullableFilter<"CmsSyncRun">
     response?: JsonNullableFilter<"CmsSyncRun">
@@ -39801,6 +39845,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
     payload?: SortOrderInput | SortOrder
     response?: SortOrderInput | SortOrder
@@ -39829,6 +39874,7 @@ export namespace Prisma {
     total_created?: IntWithAggregatesFilter<"CmsSyncRun"> | number
     total_updated?: IntWithAggregatesFilter<"CmsSyncRun"> | number
     total_removed?: IntWithAggregatesFilter<"CmsSyncRun"> | number
+    total_linked?: IntWithAggregatesFilter<"CmsSyncRun"> | number
     total_failed?: IntWithAggregatesFilter<"CmsSyncRun"> | number
     payload?: JsonNullableWithAggregatesFilter<"CmsSyncRun">
     response?: JsonNullableWithAggregatesFilter<"CmsSyncRun">
@@ -42149,6 +42195,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -42187,6 +42234,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -42219,6 +42267,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -42257,6 +42306,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -42292,6 +42342,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -42318,6 +42369,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -42347,6 +42399,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -42800,6 +42853,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -42822,6 +42876,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -42840,6 +42895,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -42862,6 +42918,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -42882,6 +42939,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -42900,6 +42958,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -42920,6 +42979,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -45505,6 +45565,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
     error_message?: SortOrder
     metadata?: SortOrder
@@ -45527,6 +45588,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
     ai_input_tokens?: SortOrder
     ai_output_tokens?: SortOrder
@@ -45551,6 +45613,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
     error_message?: SortOrder
     ai_model?: SortOrder
@@ -45579,6 +45642,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
     error_message?: SortOrder
     ai_model?: SortOrder
@@ -45600,6 +45664,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
     ai_input_tokens?: SortOrder
     ai_output_tokens?: SortOrder
@@ -45948,6 +46013,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
     payload?: SortOrder
     response?: SortOrder
@@ -45964,6 +46030,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
   }
 
@@ -45977,6 +46044,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
     error_message?: SortOrder
     started_at?: SortOrder
@@ -45995,6 +46063,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
     error_message?: SortOrder
     started_at?: SortOrder
@@ -46009,6 +46078,7 @@ export namespace Prisma {
     total_created?: SortOrder
     total_updated?: SortOrder
     total_removed?: SortOrder
+    total_linked?: SortOrder
     total_failed?: SortOrder
   }
 
@@ -50689,6 +50759,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -50709,6 +50780,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -50866,6 +50938,7 @@ export namespace Prisma {
     total_created?: IntFilter<"CmsSyncRun"> | number
     total_updated?: IntFilter<"CmsSyncRun"> | number
     total_removed?: IntFilter<"CmsSyncRun"> | number
+    total_linked?: IntFilter<"CmsSyncRun"> | number
     total_failed?: IntFilter<"CmsSyncRun"> | number
     payload?: JsonNullableFilter<"CmsSyncRun">
     response?: JsonNullableFilter<"CmsSyncRun">
@@ -51176,6 +51249,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -51212,6 +51286,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -51463,6 +51538,7 @@ export namespace Prisma {
     total_created?: IntFilter<"CrawlRun"> | number
     total_updated?: IntFilter<"CrawlRun"> | number
     total_removed?: IntFilter<"CrawlRun"> | number
+    total_linked?: IntFilter<"CrawlRun"> | number
     total_failed?: IntFilter<"CrawlRun"> | number
     error_message?: StringNullableFilter<"CrawlRun"> | string | null
     metadata?: JsonNullableFilter<"CrawlRun">
@@ -51650,6 +51726,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -51686,6 +51763,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -52152,6 +52230,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -52188,6 +52267,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -53600,6 +53680,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -53637,6 +53718,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -53745,6 +53827,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -53782,6 +53865,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -54147,6 +54231,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -54167,6 +54252,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -54536,6 +54622,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -54573,6 +54660,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -54703,6 +54791,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -54740,6 +54829,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -54953,6 +55043,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -54990,6 +55081,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -55037,6 +55129,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -55074,6 +55167,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -55211,6 +55305,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -55248,6 +55343,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -55413,6 +55509,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -55450,6 +55547,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -55481,6 +55579,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -55518,6 +55617,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -55606,6 +55706,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -55643,6 +55744,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -56516,6 +56618,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -56553,6 +56656,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -56701,6 +56805,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -56738,6 +56843,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -58136,6 +58242,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -58154,6 +58261,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -58174,6 +58282,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -58193,6 +58302,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -58271,6 +58381,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -58514,6 +58625,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -58550,6 +58662,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -58584,6 +58697,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -58725,6 +58839,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -58751,6 +58866,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -58787,6 +58903,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -58821,6 +58938,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -58849,6 +58967,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -58941,6 +59060,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -58977,6 +59097,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -59011,6 +59132,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
@@ -59335,6 +59457,7 @@ export namespace Prisma {
     total_created?: number
     total_updated?: number
     total_removed?: number
+    total_linked?: number
     total_failed?: number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -59506,6 +59629,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -59526,6 +59650,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue
@@ -59545,6 +59670,7 @@ export namespace Prisma {
     total_created?: IntFieldUpdateOperationsInput | number
     total_updated?: IntFieldUpdateOperationsInput | number
     total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
     total_failed?: IntFieldUpdateOperationsInput | number
     payload?: NullableJsonNullValueInput | InputJsonValue
     response?: NullableJsonNullValueInput | InputJsonValue

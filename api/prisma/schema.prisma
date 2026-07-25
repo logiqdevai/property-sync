@@ -587,12 +587,13 @@ model CrawlRun {
   total_found                  Int            @default(0) // all items seen in this scrape (dedup'd within the run)
   total_new_listings           Int            @default(0) // of total_found, how many were brand-new SourceProperty rows
   total_refreshed_listings     Int            @default(0) // of total_found, how many were already-known SourceProperty rows re-seen
-  // total_created/updated/removed/failed below are rolled up from cms_sync_runs (sum across
+  // total_created/updated/removed/linked/failed below are rolled up from cms_sync_runs (sum across
   // every user's CmsSyncRun for this run) -- NOT the raw scrape diff above. Stays 0 until the
   // EstateWeb sync writes results. See CrawlRunsService.recalculateCmsSyncTotals.
   total_created                Int            @default(0)
   total_updated                Int            @default(0)
   total_removed                Int            @default(0)
+  total_linked                 Int            @default(0)
   total_failed                 Int            @default(0)
   error_message                String?
   metadata                     Json?
@@ -728,7 +729,8 @@ model Notification {
 
 // New: spec section 15 -- one batch push of affected properties to a single
 // UserIntegration (e.g. one EstateWeb account). NOT one row per property: total_created/
-// total_updated/total_removed/total_failed hold the outcome breakdown for the whole batch.
+// total_updated/total_removed/total_linked/total_failed hold the outcome breakdown for the whole batch.
+// total_linked = reconciled to an existing CMS listing without a push (skipped_push).
 // crawl_run_id is set only when the batch was triggered by an actual scrape (CrawlRun.total_*
 // is then the sum of these across every user_integration for that run, see
 // CrawlRunsService.recalculateCmsSyncTotals); it is null for backfill/manual pushes that
@@ -744,6 +746,7 @@ model CmsSyncRun {
   total_created       Int           @default(0)
   total_updated       Int           @default(0)
   total_removed       Int           @default(0)
+  total_linked        Int           @default(0)
   total_failed        Int           @default(0)
   payload             Json?
   response            Json?

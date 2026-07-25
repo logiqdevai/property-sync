@@ -29,6 +29,12 @@ export class CmsSyncRun {
   @ApiProperty()
   total_removed: number;
 
+  @ApiProperty({
+    description:
+      'Properties linked to an existing CMS listing without a push',
+  })
+  total_linked: number;
+
   @ApiProperty()
   total_failed: number;
 

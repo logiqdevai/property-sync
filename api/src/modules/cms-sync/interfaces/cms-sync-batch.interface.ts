@@ -49,6 +49,7 @@ export interface CmsSyncBatchResult {
   created: number;
   updated: number;
   removed: number;
+  linked: number;
   failed: number;
   failed_property_ids: string[];
   skipped_duplicate_property_ids: string[];

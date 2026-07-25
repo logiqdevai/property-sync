@@ -46,6 +46,7 @@ export interface CmsSyncRun {
   total_created: number;
   total_updated: number;
   total_removed: number;
+  total_linked: number;
   total_failed: number;
   payload: Record<string, unknown> | null;
   response: CmsSyncRunResponse | null;

@@ -275,7 +275,7 @@ export default function AdminSyncRunsListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={canDelete ? 13 : 11} />
+        <TableSkeleton rows={8} columns={canDelete ? 14 : 12} />
       ) : runs.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No sync runs found.
@@ -308,6 +308,7 @@ export default function AdminSyncRunsListPage() {
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Created</Table.Column>
                   <Table.Column>Updated</Table.Column>
+                  <Table.Column>Linked</Table.Column>
                   <Table.Column>Removed</Table.Column>
                   <Table.Column>Failed</Table.Column>
                   <Table.Column>Attempt</Table.Column>
@@ -362,6 +363,9 @@ export default function AdminSyncRunsListPage() {
                       </Table.Cell>
                       <Table.Cell>
                         <span className="font-mono text-sm text-foreground">{run.total_updated}</span>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span className="font-mono text-sm text-foreground">{run.total_linked}</span>
                       </Table.Cell>
                       <Table.Cell>
                         <span className="font-mono text-sm text-foreground">{run.total_removed}</span>

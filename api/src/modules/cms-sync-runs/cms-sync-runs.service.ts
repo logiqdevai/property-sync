@@ -258,6 +258,7 @@ export class CmsSyncRunsService {
         total_created: 0,
         total_updated: 0,
         total_removed: 0,
+        total_linked: 0,
         total_failed: 0,
         response: null,
         error_message: null,
@@ -313,6 +314,7 @@ export class CmsSyncRunsService {
           total_created: 0,
           total_updated: 0,
           total_removed: 0,
+          total_linked: 0,
           total_failed: 0,
           payload: params.payload as Prisma.InputJsonValue,
           response: null,
@@ -338,6 +340,7 @@ export class CmsSyncRunsService {
         total_created: 0,
         total_updated: 0,
         total_removed: 0,
+        total_linked: 0,
         total_failed: 0,
         payload: params.payload as Prisma.InputJsonValue,
         response: null,
@@ -351,6 +354,7 @@ export class CmsSyncRunsService {
         total_created: 0,
         total_updated: 0,
         total_removed: 0,
+        total_linked: 0,
         total_failed: 0,
         payload: params.payload as Prisma.InputJsonValue,
         response: null,
@@ -379,6 +383,7 @@ export class CmsSyncRunsService {
       total_created: number;
       total_updated: number;
       total_removed: number;
+      total_linked: number;
       total_failed: number;
       response: Record<string, unknown>;
       status: CmsSyncStatus;
@@ -391,6 +396,7 @@ export class CmsSyncRunsService {
         total_created: result.total_created,
         total_updated: result.total_updated,
         total_removed: result.total_removed,
+        total_linked: result.total_linked,
         total_failed: result.total_failed,
         response: result.response as Prisma.InputJsonValue,
         status: result.status,

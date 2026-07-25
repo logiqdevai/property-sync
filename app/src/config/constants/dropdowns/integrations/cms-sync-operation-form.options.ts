@@ -14,7 +14,9 @@ export const CmsSyncOperationFormOptions: {
 
 export function getCmsSyncOperationLabel(
   operation: CmsSyncOperationType | string,
+  options?: { skipped_push?: boolean },
 ): string {
+  if (options?.skipped_push) return "Linked";
   return (
     CmsSyncOperationFormOptions.find((option) => option.id === operation)
       ?.label ?? operation

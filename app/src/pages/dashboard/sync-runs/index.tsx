@@ -138,7 +138,7 @@ export default function DashboardSyncRunsPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={9} />
+        <TableSkeleton rows={8} columns={10} />
       ) : runs.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No sync runs found.
@@ -154,6 +154,7 @@ export default function DashboardSyncRunsPage() {
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Created</Table.Column>
                   <Table.Column>Updated</Table.Column>
+                  <Table.Column>Linked</Table.Column>
                   <Table.Column>Removed</Table.Column>
                   <Table.Column>Failed</Table.Column>
                   <Table.Column>Duration</Table.Column>
@@ -186,6 +187,9 @@ export default function DashboardSyncRunsPage() {
                       </Table.Cell>
                       <Table.Cell>
                         <span className="font-mono text-sm text-foreground">{run.total_updated}</span>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span className="font-mono text-sm text-foreground">{run.total_linked}</span>
                       </Table.Cell>
                       <Table.Cell>
                         <span className="font-mono text-sm text-foreground">{run.total_removed}</span>

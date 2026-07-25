@@ -109,6 +109,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         total_created: syncRun.total_created,
         total_updated: syncRun.total_updated,
         total_removed: syncRun.total_removed,
+        total_linked: syncRun.total_linked,
         total_failed: 0,
         response: {
           ...previousResponse,
@@ -126,6 +127,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         created: syncRun.total_created,
         updated: syncRun.total_updated,
         removed: syncRun.total_removed,
+        linked: syncRun.total_linked,
       });
       return;
     }
@@ -177,6 +179,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       total_created: mergedResult.created,
       total_updated: mergedResult.updated,
       total_removed: mergedResult.removed,
+      total_linked: mergedResult.linked,
       total_failed: mergedResult.failed,
       response: {
         failed_property_ids: mergedResult.failed_property_ids,
@@ -219,6 +222,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       created: mergedResult.created,
       updated: mergedResult.updated,
       removed: mergedResult.removed,
+      linked: mergedResult.linked,
     });
   }
 
@@ -229,14 +233,22 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     created: number;
     updated: number;
     removed: number;
+    linked: number;
   }): void {
-    const { cmsSyncRunId, crawlRunId, sourceAgencyId, created, updated, removed } =
-      params;
+    const {
+      cmsSyncRunId,
+      crawlRunId,
+      sourceAgencyId,
+      created,
+      updated,
+      removed,
+      linked,
+    } = params;
     this.notificationsService.create({
       type: NotificationType.CMS_SYNC_SUCCESS,
       severity: NotificationSeverity.INFO,
       title: 'CMS sync completed',
-      message: `CmsSyncRun ${cmsSyncRunId} completed. Created ${created}, updated ${updated}, removed ${removed}.`,
+      message: `CmsSyncRun ${cmsSyncRunId} completed. Created ${created}, updated ${updated}, linked ${linked}, removed ${removed}.`,
       crawl_run_id: crawlRunId,
       source_agency_id: sourceAgencyId,
     });
@@ -255,6 +267,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       created: 0,
       updated: 0,
       removed: 0,
+      linked: 0,
       failed: 0,
       failed_property_ids: [],
       skipped_duplicate_property_ids: [],
@@ -637,12 +650,16 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
 
     const successCounts = previousResults.reduce(
       (acc, op) => {
+        if (op.skipped_push) {
+          acc.linked++;
+          return acc;
+        }
         if (op.operation === 'CREATE') acc.created++;
         if (op.operation === 'UPDATE') acc.updated++;
         if (op.operation === 'REMOVE') acc.removed++;
         return acc;
       },
-      { created: 0, updated: 0, removed: 0 },
+      { created: 0, updated: 0, removed: 0, linked: 0 },
     );
 
     const failedIds = currentResult.responses
@@ -658,6 +675,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       created: successCounts.created + currentResult.created,
       updated: successCounts.updated + currentResult.updated,
       removed: successCounts.removed + currentResult.removed,
+      linked: successCounts.linked + currentResult.linked,
       failed: failedIds.length,
       failed_property_ids: failedIds,
       skipped_duplicate_property_ids: [...skippedIds],
@@ -677,17 +695,16 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       return;
     }
 
+    if (opResult.skipped_push) {
+      result.linked++;
+      return;
+    }
+
     switch (opResult.operation) {
       case 'CREATE':
-        if (opResult.skipped_push) {
-          break;
-        }
         result.created++;
         break;
       case 'UPDATE':
-        if (opResult.skipped_push) {
-          break;
-        }
         result.updated++;
         break;
       case 'REMOVE':

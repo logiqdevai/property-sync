@@ -48,6 +48,7 @@ function getCrawlUserProperties(run: CrawlRunDetail) {
     user_property_id: string;
     property_title: string;
     operation: string;
+    skipped_push?: boolean;
     user_email: string | null;
     history?: PropertyHistoryEntry[];
   }> = [];
@@ -62,6 +63,7 @@ function getCrawlUserProperties(run: CrawlRunDetail) {
         user_property_id: result.user_property_id,
         property_title: result.property_title?.trim() || result.user_property_id,
         operation: result.operation,
+        skipped_push: result.skipped_push,
         user_email: syncRun.user_integration?.user?.email ?? null,
         history: result.history,
       });
@@ -173,7 +175,7 @@ export default function CrawlRunDetailPage() {
 
       <div className="flex flex-col gap-3">
         <span className="text-xs font-medium uppercase tracking-wide text-muted">CRM sync (all users)</span>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
             <span className="text-xs font-medium uppercase tracking-wide text-muted">Created</span>
             <span className="font-mono text-2xl font-bold text-success">{run.total_created}</span>
@@ -181,6 +183,10 @@ export default function CrawlRunDetailPage() {
           <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
             <span className="text-xs font-medium uppercase tracking-wide text-muted">Updated</span>
             <span className="font-mono text-2xl font-bold text-foreground">{run.total_updated}</span>
+          </div>
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Linked</span>
+            <span className="font-mono text-2xl font-bold text-foreground">{run.total_linked}</span>
           </div>
           <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
             <span className="text-xs font-medium uppercase tracking-wide text-muted">Removed</span>
@@ -338,7 +344,9 @@ export default function CrawlRunDetailPage() {
                         </Table.Cell>
                         <Table.Cell>
                           <span className="font-mono text-sm text-foreground">
-                            {getCmsSyncOperationLabel(row.operation)}
+                            {getCmsSyncOperationLabel(row.operation, {
+                              skipped_push: row.skipped_push,
+                            })}
                           </span>
                         </Table.Cell>
                         <Table.Cell>

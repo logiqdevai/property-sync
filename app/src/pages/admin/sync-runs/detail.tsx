@@ -12,10 +12,12 @@ import {
 import {
   CmsSyncStatuses,
   type CmsSyncOperationResult,
-  type CmsSyncRunResponse,
   type CmsSyncStatus,
 } from "@/features/cms-sync-runs/interfaces/cms-sync-runs.interfaces";
-import { getFailedCmsSyncOperations } from "@/features/cms-sync-runs/utils/parse-cms-sync-failures";
+import {
+  getFailedCmsSyncOperations,
+  getSyncedCmsSyncOperations,
+} from "@/features/cms-sync-runs/utils/parse-cms-sync-failures";
 import { getCmsSyncOperationLabel } from "@/config/constants/dropdowns/integrations/cms-sync-operation-form.options";
 import { PropertyHistorySummary } from "@/components/ui/property-history-summary";
 import { CmsSyncStatusChip } from "./components/cms-sync-status-chip";
@@ -40,16 +42,6 @@ function connectionLabel(connection?: {
 }) {
   if (!connection) return "—";
   return connection.email || connection.username || "—";
-}
-
-function getSyncedProperties(
-  response: CmsSyncRunResponse | null | undefined,
-): CmsSyncOperationResult[] {
-  if (!response?.operation_results || !Array.isArray(response.operation_results)) {
-    return [];
-  }
-
-  return response.operation_results.filter((op) => op && op.success !== false);
 }
 
 function propertyLabel(result: CmsSyncOperationResult) {
@@ -81,7 +73,7 @@ export default function AdminSyncRunDetailPage() {
   const userId = run.user_integration?.user_id ?? run.user_integration?.user?.id;
   const integrationTargetId = run.user_integration?.integration_target?.id;
   const failures = getFailedCmsSyncOperations(run.response);
-  const syncedProperties = getSyncedProperties(run.response);
+  const syncedProperties = getSyncedCmsSyncOperations(run.response);
 
   return (
     <div className="flex flex-col gap-6">
@@ -124,7 +116,7 @@ export default function AdminSyncRunDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Created</span>
           <span className="font-mono text-2xl font-bold text-success">{run.total_created}</span>
@@ -132,6 +124,10 @@ export default function AdminSyncRunDetailPage() {
         <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Updated</span>
           <span className="font-mono text-2xl font-bold text-foreground">{run.total_updated}</span>
+        </div>
+        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Linked</span>
+          <span className="font-mono text-2xl font-bold text-foreground">{run.total_linked}</span>
         </div>
         <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Removed</span>
@@ -304,7 +300,9 @@ export default function AdminSyncRunDetailPage() {
                         </Table.Cell>
                         <Table.Cell>
                           <span className="font-mono text-sm text-foreground">
-                            {getCmsSyncOperationLabel(result.operation)}
+                            {getCmsSyncOperationLabel(result.operation, {
+                              skipped_push: result.skipped_push,
+                            })}
                           </span>
                         </Table.Cell>
                         <Table.Cell>

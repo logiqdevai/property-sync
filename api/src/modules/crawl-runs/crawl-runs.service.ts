@@ -172,6 +172,7 @@ export class CrawlRunsService {
             total_created: true,
             total_updated: true,
             total_removed: true,
+            total_linked: true,
             total_failed: true,
             response: true,
             user_integration: {
@@ -434,7 +435,7 @@ export class CrawlRunsService {
   }
 
   // Call after writing/updating a CmsSyncRun tied to this crawl (i.e. from the
-  // EstateWeb sync service) so CrawlRun.total_created/updated/removed/failed stay
+  // EstateWeb sync service) so CrawlRun.total_created/updated/removed/linked/failed stay
   // in sync with the sum of every user's CMS push outcome for this run.
   async recalculateCmsSyncTotals(crawlRunId: string): Promise<void> {
     const aggregate = await this.prisma.cmsSyncRun.aggregate({
@@ -443,6 +444,7 @@ export class CrawlRunsService {
         total_created: true,
         total_updated: true,
         total_removed: true,
+        total_linked: true,
         total_failed: true,
       },
     });
@@ -453,6 +455,7 @@ export class CrawlRunsService {
         total_created: aggregate._sum.total_created ?? 0,
         total_updated: aggregate._sum.total_updated ?? 0,
         total_removed: aggregate._sum.total_removed ?? 0,
+        total_linked: aggregate._sum.total_linked ?? 0,
         total_failed: aggregate._sum.total_failed ?? 0,
       },
     });

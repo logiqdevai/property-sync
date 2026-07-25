@@ -7,9 +7,11 @@ import { useUserCmsSyncRun } from "@/features/cms-sync-runs/hooks/use-cms-sync-r
 import {
   CmsSyncStatuses,
   type CmsSyncOperationResult,
-  type CmsSyncRunResponse,
 } from "@/features/cms-sync-runs/interfaces/cms-sync-runs.interfaces";
-import { getFailedCmsSyncOperations } from "@/features/cms-sync-runs/utils/parse-cms-sync-failures";
+import {
+  getFailedCmsSyncOperations,
+  getSyncedCmsSyncOperations,
+} from "@/features/cms-sync-runs/utils/parse-cms-sync-failures";
 import { getCmsSyncOperationLabel } from "@/config/constants/dropdowns/integrations/cms-sync-operation-form.options";
 import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integrations/integration-type-form.options";
 import { PropertyHistorySummary } from "@/components/ui/property-history-summary";
@@ -23,16 +25,6 @@ function connectionLabel(connection?: {
 }) {
   if (!connection) return "—";
   return connection.email || connection.username || "—";
-}
-
-function getSyncedProperties(
-  response: CmsSyncRunResponse | null | undefined,
-): CmsSyncOperationResult[] {
-  if (!response?.operation_results || !Array.isArray(response.operation_results)) {
-    return [];
-  }
-
-  return response.operation_results.filter((op) => op && op.success !== false);
 }
 
 function propertyLabel(result: CmsSyncOperationResult) {
@@ -56,7 +48,7 @@ export default function DashboardSyncRunDetailPage() {
   const integrationType = run.user_integration?.integration_target.integration_type
     ? getIntegrationTypeLabel(run.user_integration.integration_target.integration_type)
     : "—";
-  const syncedProperties = getSyncedProperties(run.response);
+  const syncedProperties = getSyncedCmsSyncOperations(run.response);
   const failures = getFailedCmsSyncOperations(run.response);
 
   return (
@@ -76,7 +68,7 @@ export default function DashboardSyncRunDetailPage() {
         {isActive ? <Loader2 className="h-4 w-4 animate-spin text-muted" /> : null}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Created</span>
           <span className="font-mono text-2xl font-bold text-success">{run.total_created}</span>
@@ -84,6 +76,10 @@ export default function DashboardSyncRunDetailPage() {
         <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Updated</span>
           <span className="font-mono text-2xl font-bold text-foreground">{run.total_updated}</span>
+        </div>
+        <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Linked</span>
+          <span className="font-mono text-2xl font-bold text-foreground">{run.total_linked}</span>
         </div>
         <div className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Removed</span>
@@ -175,7 +171,9 @@ export default function DashboardSyncRunDetailPage() {
                         </Table.Cell>
                         <Table.Cell>
                           <span className="text-sm text-foreground">
-                            {getCmsSyncOperationLabel(result.operation)}
+                            {getCmsSyncOperationLabel(result.operation, {
+                              skipped_push: result.skipped_push,
+                            })}
                           </span>
                         </Table.Cell>
                         <Table.Cell>

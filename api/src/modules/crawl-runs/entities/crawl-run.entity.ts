@@ -60,6 +60,12 @@ export class CrawlRun {
 
   @ApiProperty({
     description:
+      'Sum of cms_sync_runs.total_linked across every user for this run',
+  })
+  total_linked: number;
+
+  @ApiProperty({
+    description:
       'Sum of cms_sync_runs.total_failed across every user for this run',
   })
   total_failed: number;

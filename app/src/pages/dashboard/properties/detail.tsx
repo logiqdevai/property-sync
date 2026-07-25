@@ -407,7 +407,9 @@ export default function DashboardPropertyDetailPage() {
           });
         }}
         isUpdatingEstateWebImageOptions={updateIntegrationImages.isPending}
-        canCreateIntegrationImages
+        canCreateIntegrationImages={
+          role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN
+        }
         onCreateIntegrationImages={async (imageIndexes) => {
           await createIntegrationImages.mutateAsync({
             id: property.id,
@@ -424,7 +426,10 @@ export default function DashboardPropertyDetailPage() {
           });
         }}
         isRemovingWatermark={removeWatermarkImages.isPending}
-        canMigrateIntegrationImages={Boolean(property.integration_property_id)}
+        canMigrateIntegrationImages={
+          (role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN) &&
+          Boolean(property.integration_property_id)
+        }
         onMigrateIntegrationImages={async (mode) => {
           await migrateImages.mutateAsync({ id: property.id, mode });
         }}

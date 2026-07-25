@@ -12,3 +12,13 @@ export function getFailedCmsSyncOperations(
 
   return response.operation_results.filter((op) => op && op.success === false);
 }
+
+export function getSyncedCmsSyncOperations(
+  response: CmsSyncRunResponse | null | undefined,
+): CmsSyncOperationResult[] {
+  if (!response?.operation_results || !Array.isArray(response.operation_results)) {
+    return [];
+  }
+
+  return response.operation_results.filter((op) => op && op.success !== false);
+}

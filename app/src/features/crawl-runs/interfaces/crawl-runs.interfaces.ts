@@ -50,6 +50,7 @@ export interface CrawlRun {
   total_created: number;
   total_updated: number;
   total_removed: number;
+  total_linked: number;
   total_failed: number;
   error_message: string | null;
   metadata: Record<string, unknown> | null;
@@ -95,6 +96,7 @@ export interface CrawlRunCmsSyncRunSummary {
   total_created: number;
   total_updated: number;
   total_removed: number;
+  total_linked: number;
   total_failed: number;
   response: {
     failed_property_ids?: string[];
@@ -105,6 +107,7 @@ export interface CrawlRunCmsSyncRunSummary {
       success: boolean;
       property_title?: string | null;
       error?: string;
+      skipped_push?: boolean;
       history?: PropertyHistoryEntry[];
     }>;
   } | null;
