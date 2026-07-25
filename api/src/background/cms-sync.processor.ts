@@ -157,6 +157,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       tracker?.concurrent_insertions ?? 1,
       tracker?.insertion_interval_minutes ?? 5,
       crawl_run_id,
+      tracker?.remove_watermark ?? false,
     );
 
     const mergedResult = this.mergeWithPreviousResult(previousResponse, result);
@@ -262,6 +263,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     concurrentInsertions: number,
     insertionIntervalMinutes: number,
     crawlRunId: string | null,
+    removeWatermark: boolean,
   ): Promise<CmsSyncBatchResult> {
     const result: CmsSyncBatchResult = {
       created: 0,
@@ -292,6 +294,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             userProperties,
             reconciliationCatalog,
             crawlRunId,
+            removeWatermark,
           ),
         ),
       );
@@ -315,6 +318,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     userProperties: Map<string, UserProperty>,
     reconciliationCatalog: EstateWebPropertyCatalog | null,
     crawlRunId: string | null,
+    removeWatermark: boolean,
   ): Promise<CmsSyncOperationResult> {
     const userProperty = userProperties.get(operation.user_property_id);
     if (!userProperty) {
@@ -332,6 +336,8 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     this.logger.log(
       `CMS sync op start: property=${operation.user_property_id} operation=${operation.operation} integration=${userIntegrationId} type_id=${userProperty.estateweb_type_id ?? 'null'} location_id=${userProperty.estateweb_location_id ?? 'null'}`,
     );
+
+    const pushOptions = { removeWatermark };
 
     try {
       switch (operation.operation) {
@@ -369,6 +375,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
                 userIntegrationId,
                 integrationPropertyId,
                 userProperty,
+                pushOptions,
               );
               this.logger.log(
                 `CMS sync op success: property=${operation.user_property_id} operation=CREATE reconciled=UPDATE integration_property_id=${integrationPropertyId}`,
@@ -400,6 +407,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
           const createResult = await adapter.pushCreate(
             userIntegrationId,
             userProperty,
+            pushOptions,
           );
           await this.stampIntegrationPropertyId(
             operation.user_property_id,
@@ -438,6 +446,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             const createResult = await adapter.pushCreate(
               userIntegrationId,
               userProperty,
+              pushOptions,
             );
             await this.stampIntegrationPropertyId(
               operation.user_property_id,
@@ -461,6 +470,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             userIntegrationId,
             integrationId,
             userProperty,
+            pushOptions,
           );
           await this.stampIntegrationPropertyId(
             operation.user_property_id,

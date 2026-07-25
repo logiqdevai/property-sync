@@ -6,6 +6,7 @@ import {
   CmsSyncAdapter,
   CmsSyncCreateImagesParams,
   CmsSyncDeleteImagesParams,
+  CmsSyncPushOptions,
   CmsSyncUpdateImagesParams,
 } from '@/modules/cms-sync/interfaces/cms-sync-adapter.interface';
 import { CmsPropertyFieldEntry } from '@/modules/properties/interfaces/cms-property.interface';
@@ -28,6 +29,7 @@ import { resolveEstateWebLocationId } from '../utils/estateweb-location-lookup.u
 import { resolveEstateWebScopeId } from '../utils/estateweb-catalog.util';
 import { getEstateWebInitFieldsForType } from '../utils/estateweb-init-lookup.util';
 import { buildEstateWebImageUrl } from '../utils/estateweb-image-url.util';
+import { resolveEstateWebPushSitesForTracker } from '../utils/estateweb-integration-settings.util';
 import { EstateWebException } from '../exceptions/estateweb.exception';
 import { EstateWebIntegrationResolverService } from './estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from './estateweb-property.service';
@@ -63,13 +65,12 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   async pushCreate(
     userIntegrationId: string,
     userProperty: UserProperty,
+    options?: CmsSyncPushOptions,
   ): Promise<CmsPushCreateResult> {
     this.assertRequiredFields(userProperty);
 
     const [pushSites, adLanguages] = await Promise.all([
-      this.estateWebIntegrationResolverService.resolvePushSites(
-        userIntegrationId,
-      ),
+      this.resolvePushSitesForSync(userIntegrationId, options?.removeWatermark),
       this.estateWebIntegrationResolverService.resolveAdLanguages(
         userIntegrationId,
       ),
@@ -93,13 +94,12 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     userIntegrationId: string,
     integrationPropertyId: string,
     userProperty: UserProperty,
+    options?: CmsSyncPushOptions,
   ): Promise<void> {
     this.assertRequiredFields(userProperty);
 
     const [pushSites, adLanguages] = await Promise.all([
-      this.estateWebIntegrationResolverService.resolvePushSites(
-        userIntegrationId,
-      ),
+      this.resolvePushSitesForSync(userIntegrationId, options?.removeWatermark),
       this.estateWebIntegrationResolverService.resolveAdLanguages(
         userIntegrationId,
       ),
@@ -121,6 +121,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     userIntegrationId: string,
     integrationPropertyId: string,
     userProperty: UserProperty,
+    _options?: CmsSyncPushOptions,
   ): Promise<void> {
     this.assertRequiredFields(userProperty);
 
@@ -335,6 +336,27 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       userPropertyId: params.userPropertyId,
       estateWebPropertyId: params.crmPropertyId,
     });
+  }
+
+  private async resolvePushSitesForSync(
+    userIntegrationId: string,
+    removeWatermark?: boolean,
+  ): Promise<EstateWebPushSiteSetting[]> {
+    if (removeWatermark === undefined) {
+      return this.estateWebIntegrationResolverService.resolvePushSites(
+        userIntegrationId,
+      );
+    }
+
+    const integration = await this.prisma.userIntegration.findUnique({
+      where: { id: userIntegrationId },
+      include: { settings: true },
+    });
+
+    return resolveEstateWebPushSitesForTracker(
+      integration?.settings?.settings,
+      removeWatermark,
+    );
   }
 
   private buildPayload(

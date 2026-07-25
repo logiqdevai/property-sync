@@ -24,7 +24,7 @@ import {
   Switch,
   useOverlayState,
 } from "@heroui/react";
-import { BellOff, ExternalLink, Search } from "lucide-react";
+import { BellOff, ExternalLink, Info, Search } from "lucide-react";
 
 function AgencyCard({
   agency,
@@ -176,51 +176,39 @@ function AgencyCard({
             </Switch>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex min-w-0 flex-col gap-0.5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <div className="flex items-center gap-1.5">
                 <span className="text-sm text-foreground">Remove watermark</span>
-                <span className="text-xs text-muted">
-                  Strip watermarks from listing images before syncing to your CRM.
+                <span className="group relative inline-flex shrink-0">
+                  <button
+                    type="button"
+                    className="rounded-full text-muted outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-focus"
+                    aria-label="About remove watermark"
+                  >
+                    <Info className="size-3.5" aria-hidden />
+                  </button>
+                  <span
+                    role="tooltip"
+                    className="pointer-events-none absolute left-1/2 top-full z-20 mt-1.5 w-64 -translate-x-1/2 rounded-lg border border-border bg-background px-3 py-2 text-left text-xs text-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+                  >
+                    When off, listings sync to EstateWeb using your default sites with all sites
+                    selected. When on, sync uses your configured EstateWeb default sites as saved
+                    in integration settings.
+                  </span>
                 </span>
               </div>
-              <Switch
-                isSelected={prefs.remove_watermark ?? false}
-                isDisabled={isControlsDisabled}
-                onChange={(isSelected) => savePrefs({ remove_watermark: isSelected })}
-                aria-label="Remove watermark"
-              >
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
-              </Switch>
             </div>
-            {prefs.remove_watermark ? (
-              <label className="flex flex-col gap-1 text-sm pl-0">
-                <span className="text-foreground">Images to process</span>
-                <span className="text-xs text-muted">
-                  How many images per listing get watermark removal.
-                </span>
-                <input
-                  type="number"
-                  min={1}
-                  className="rounded-lg border border-border bg-background px-3 py-2"
-                  defaultValue={prefs.watermark_image_count ?? 10}
-                  disabled={isControlsDisabled}
-                  key={`${agency.id}-watermark-count-${prefs.watermark_image_count ?? 10}`}
-                  onBlur={(e) => {
-                    const value = Number.parseInt(e.target.value, 10);
-                    if (
-                      Number.isFinite(value) &&
-                      value >= 1 &&
-                      value !== (prefs.watermark_image_count ?? 10)
-                    ) {
-                      savePrefs({ watermark_image_count: value });
-                    }
-                  }}
-                />
-              </label>
-            ) : null}
+            <Switch
+              isSelected={prefs.remove_watermark ?? false}
+              isDisabled={isControlsDisabled}
+              onChange={(isSelected) => savePrefs({ remove_watermark: isSelected })}
+              aria-label="Remove watermark"
+            >
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch>
           </div>
 
           {AppConfig.tracked_agency_admin_options_visible ? (

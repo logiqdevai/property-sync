@@ -48,6 +48,17 @@ export function resolveEstateWebSelectedPushSites(
   return resolveEstateWebPushSites(settings).filter((site) => site.selected);
 }
 
+export function resolveEstateWebPushSitesForTracker(
+  settings: Prisma.JsonValue | null | undefined,
+  removeWatermark: boolean,
+): EstateWebPushSiteSetting[] {
+  const sites = resolveEstateWebPushSites(settings);
+  if (removeWatermark) {
+    return sites;
+  }
+  return sites.map((site) => ({ ...site, selected: true }));
+}
+
 export function resolveEstateWebAdLanguages(
   settings: Prisma.JsonValue | null | undefined,
 ): EstateWebLanguageId[] {
