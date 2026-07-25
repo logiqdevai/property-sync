@@ -248,15 +248,12 @@ export class UserPropertiesController {
   }
 
   @Post(':id/migrate-integration-images')
-  @UseGuards(JwtGuard, RolesGuard)
-  @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary:
-      'Fetch EstateWeb CMS images and upsert IntegrationProperty.images (admin only)',
+      'Fetch EstateWeb CMS images and upsert IntegrationProperty.images',
   })
   @ApiResponse({ status: 200, type: UserPropertyEntity })
   @ApiResponse({ status: 400, description: 'Cannot migrate images' })
-  @ApiResponse({ status: 403, description: 'Admin only' })
   @ApiResponse({ status: 404, description: 'Saved property not found' })
   migrateIntegrationImages(
     @CurrentUser('id') userId: string,
@@ -290,15 +287,12 @@ export class UserPropertiesController {
   }
 
   @Post(':id/create-integration-images')
-  @UseGuards(JwtGuard, RolesGuard)
-  @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary:
-      'Upload selected Property.images into CMS via the linked integration adapter (admin only)',
+      'Upload selected Property.images into CMS via the linked integration adapter',
   })
   @ApiResponse({ status: 200, type: UserPropertyEntity })
   @ApiResponse({ status: 400, description: 'Cannot create images' })
-  @ApiResponse({ status: 403, description: 'Admin only' })
   @ApiResponse({ status: 404, description: 'Saved property not found' })
   createIntegrationImages(
     @CurrentUser('id') userId: string,
