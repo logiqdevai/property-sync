@@ -9,7 +9,6 @@ import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { WATERMARK_REMOVAL_QUEUE } from '@/core/queues/queues.constants';
 import { DewatermarkOrchestratorService } from '@/integrations/dewatermark/services/dewatermark-orchestrator.service';
-import { EstateWebPropertyImage } from '@/integrations/estateweb/interfaces/estateweb-property.interface';
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { CmsSyncAdapterFactory } from '@/modules/cms-sync/services/cms-sync-adapter.factory';
@@ -43,6 +42,7 @@ import {
 } from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
 import { RemoveWatermarkImagesDto } from './dto/remove-watermark-images.dto';
 import { MigrateIntegrationImagesMode } from './dto/migrate-integration-images.dto';
+import { EstateWebIntegrationPropertyImage } from './interfaces/integration-property-image.interface';
 import { WatermarkRemovalJobData } from './interfaces/watermark-removal-job.interface';
 import { WatermarkRemovalService } from './services/watermark-removal.service';
 
@@ -766,6 +766,7 @@ export class UserPropertiesService {
     const parsedImageIds = this.parseWatermarkImageIds(dto.image_ids);
     const integrationImages = this.watermarkRemovalService.parseIntegrationImages(
       userProperty.integration_properties[0]?.images,
+      integrationType,
     );
     this.assertWatermarkImageSelection(parsedImageIds, integrationImages);
 
@@ -822,7 +823,7 @@ export class UserPropertiesService {
 
   private assertWatermarkImageSelection(
     imageIds: number[],
-    integrationImages: EstateWebPropertyImage[],
+    integrationImages: EstateWebIntegrationPropertyImage[],
   ): void {
     for (const imageId of imageIds) {
       const image = integrationImages.find((item) => item.id === imageId);
@@ -1551,6 +1552,12 @@ export class UserPropertiesService {
             ...canonicalFields,
           },
         });
+        await this.watermarkRemovalService.applyTrackerWatermarkPipeline({
+          userPropertyId: created.id,
+          userId: tracker.user_id,
+          removeWatermark: tracker.remove_watermark,
+          watermarkImageCount: tracker.watermark_image_count,
+        });
         results.push({
           user_property_id: created.id,
           change_type: 'created',
@@ -1585,6 +1592,12 @@ export class UserPropertiesService {
             ...canonicalFields,
           },
         });
+        await this.watermarkRemovalService.applyTrackerWatermarkPipeline({
+          userPropertyId: created.id,
+          userId: tracker.user_id,
+          removeWatermark: tracker.remove_watermark,
+          watermarkImageCount: tracker.watermark_image_count,
+        });
         results.push({
           user_property_id: created.id,
           change_type: 'created',
@@ -1597,10 +1610,24 @@ export class UserPropertiesService {
         continue;
       }
 
+      const imagesChanged =
+        this.normalizeComparableValue(existing.images) !==
+        this.normalizeComparableValue(canonicalFields.images);
+
       await this.prisma.userProperty.update({
         where: { id: existing.id },
         data: canonicalFields,
       });
+
+      if (imagesChanged) {
+        await this.watermarkRemovalService.applyTrackerWatermarkPipeline({
+          userPropertyId: existing.id,
+          userId: tracker.user_id,
+          removeWatermark: tracker.remove_watermark,
+          watermarkImageCount: tracker.watermark_image_count,
+        });
+      }
+
       results.push({
         user_property_id: existing.id,
         change_type: 'updated',
