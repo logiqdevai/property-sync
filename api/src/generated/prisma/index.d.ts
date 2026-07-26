@@ -11597,14 +11597,25 @@ export namespace Prisma {
 
   export type AggregateUserTrackedAgencyIntegrationLink = {
     _count: UserTrackedAgencyIntegrationLinkCountAggregateOutputType | null
+    _avg: UserTrackedAgencyIntegrationLinkAvgAggregateOutputType | null
+    _sum: UserTrackedAgencyIntegrationLinkSumAggregateOutputType | null
     _min: UserTrackedAgencyIntegrationLinkMinAggregateOutputType | null
     _max: UserTrackedAgencyIntegrationLinkMaxAggregateOutputType | null
+  }
+
+  export type UserTrackedAgencyIntegrationLinkAvgAggregateOutputType = {
+    integration_client_id: number | null
+  }
+
+  export type UserTrackedAgencyIntegrationLinkSumAggregateOutputType = {
+    integration_client_id: number | null
   }
 
   export type UserTrackedAgencyIntegrationLinkMinAggregateOutputType = {
     id: string | null
     user_tracked_agency_id: string | null
     user_integration_id: string | null
+    integration_client_id: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -11613,6 +11624,7 @@ export namespace Prisma {
     id: string | null
     user_tracked_agency_id: string | null
     user_integration_id: string | null
+    integration_client_id: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -11621,16 +11633,26 @@ export namespace Prisma {
     id: number
     user_tracked_agency_id: number
     user_integration_id: number
+    integration_client_id: number
     created_at: number
     updated_at: number
     _all: number
   }
 
 
+  export type UserTrackedAgencyIntegrationLinkAvgAggregateInputType = {
+    integration_client_id?: true
+  }
+
+  export type UserTrackedAgencyIntegrationLinkSumAggregateInputType = {
+    integration_client_id?: true
+  }
+
   export type UserTrackedAgencyIntegrationLinkMinAggregateInputType = {
     id?: true
     user_tracked_agency_id?: true
     user_integration_id?: true
+    integration_client_id?: true
     created_at?: true
     updated_at?: true
   }
@@ -11639,6 +11661,7 @@ export namespace Prisma {
     id?: true
     user_tracked_agency_id?: true
     user_integration_id?: true
+    integration_client_id?: true
     created_at?: true
     updated_at?: true
   }
@@ -11647,6 +11670,7 @@ export namespace Prisma {
     id?: true
     user_tracked_agency_id?: true
     user_integration_id?: true
+    integration_client_id?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -11690,6 +11714,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: UserTrackedAgencyIntegrationLinkAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserTrackedAgencyIntegrationLinkSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: UserTrackedAgencyIntegrationLinkMinAggregateInputType
@@ -11720,6 +11756,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UserTrackedAgencyIntegrationLinkCountAggregateInputType | true
+    _avg?: UserTrackedAgencyIntegrationLinkAvgAggregateInputType
+    _sum?: UserTrackedAgencyIntegrationLinkSumAggregateInputType
     _min?: UserTrackedAgencyIntegrationLinkMinAggregateInputType
     _max?: UserTrackedAgencyIntegrationLinkMaxAggregateInputType
   }
@@ -11728,9 +11766,12 @@ export namespace Prisma {
     id: string
     user_tracked_agency_id: string
     user_integration_id: string
+    integration_client_id: number | null
     created_at: Date
     updated_at: Date
     _count: UserTrackedAgencyIntegrationLinkCountAggregateOutputType | null
+    _avg: UserTrackedAgencyIntegrationLinkAvgAggregateOutputType | null
+    _sum: UserTrackedAgencyIntegrationLinkSumAggregateOutputType | null
     _min: UserTrackedAgencyIntegrationLinkMinAggregateOutputType | null
     _max: UserTrackedAgencyIntegrationLinkMaxAggregateOutputType | null
   }
@@ -11753,6 +11794,7 @@ export namespace Prisma {
     id?: boolean
     user_tracked_agency_id?: boolean
     user_integration_id?: boolean
+    integration_client_id?: boolean
     created_at?: boolean
     updated_at?: boolean
     user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
@@ -11763,6 +11805,7 @@ export namespace Prisma {
     id?: boolean
     user_tracked_agency_id?: boolean
     user_integration_id?: boolean
+    integration_client_id?: boolean
     created_at?: boolean
     updated_at?: boolean
     user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
@@ -11773,6 +11816,7 @@ export namespace Prisma {
     id?: boolean
     user_tracked_agency_id?: boolean
     user_integration_id?: boolean
+    integration_client_id?: boolean
     created_at?: boolean
     updated_at?: boolean
     user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
@@ -11783,11 +11827,12 @@ export namespace Prisma {
     id?: boolean
     user_tracked_agency_id?: boolean
     user_integration_id?: boolean
+    integration_client_id?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type UserTrackedAgencyIntegrationLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_tracked_agency_id" | "user_integration_id" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgencyIntegrationLink"]>
+  export type UserTrackedAgencyIntegrationLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_tracked_agency_id" | "user_integration_id" | "integration_client_id" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgencyIntegrationLink"]>
   export type UserTrackedAgencyIntegrationLinkInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
     user_integration?: boolean | UserIntegrationDefaultArgs<ExtArgs>
@@ -11811,6 +11856,7 @@ export namespace Prisma {
       id: string
       user_tracked_agency_id: string
       user_integration_id: string
+      integration_client_id: number | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["userTrackedAgencyIntegrationLink"]>
@@ -12241,6 +12287,7 @@ export namespace Prisma {
     readonly id: FieldRef<"UserTrackedAgencyIntegrationLink", 'String'>
     readonly user_tracked_agency_id: FieldRef<"UserTrackedAgencyIntegrationLink", 'String'>
     readonly user_integration_id: FieldRef<"UserTrackedAgencyIntegrationLink", 'String'>
+    readonly integration_client_id: FieldRef<"UserTrackedAgencyIntegrationLink", 'Int'>
     readonly created_at: FieldRef<"UserTrackedAgencyIntegrationLink", 'DateTime'>
     readonly updated_at: FieldRef<"UserTrackedAgencyIntegrationLink", 'DateTime'>
   }
@@ -37187,6 +37234,7 @@ export namespace Prisma {
     id: 'id',
     user_tracked_agency_id: 'user_tracked_agency_id',
     user_integration_id: 'user_integration_id',
+    integration_client_id: 'integration_client_id',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -38645,6 +38693,7 @@ export namespace Prisma {
     id?: StringFilter<"UserTrackedAgencyIntegrationLink"> | string
     user_tracked_agency_id?: StringFilter<"UserTrackedAgencyIntegrationLink"> | string
     user_integration_id?: StringFilter<"UserTrackedAgencyIntegrationLink"> | string
+    integration_client_id?: IntNullableFilter<"UserTrackedAgencyIntegrationLink"> | number | null
     created_at?: DateTimeFilter<"UserTrackedAgencyIntegrationLink"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgencyIntegrationLink"> | Date | string
     user_tracked_agency?: XOR<UserTrackedAgencyScalarRelationFilter, UserTrackedAgencyWhereInput>
@@ -38655,6 +38704,7 @@ export namespace Prisma {
     id?: SortOrder
     user_tracked_agency_id?: SortOrder
     user_integration_id?: SortOrder
+    integration_client_id?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     user_tracked_agency?: UserTrackedAgencyOrderByWithRelationInput
@@ -38668,6 +38718,7 @@ export namespace Prisma {
     AND?: UserTrackedAgencyIntegrationLinkWhereInput | UserTrackedAgencyIntegrationLinkWhereInput[]
     OR?: UserTrackedAgencyIntegrationLinkWhereInput[]
     NOT?: UserTrackedAgencyIntegrationLinkWhereInput | UserTrackedAgencyIntegrationLinkWhereInput[]
+    integration_client_id?: IntNullableFilter<"UserTrackedAgencyIntegrationLink"> | number | null
     created_at?: DateTimeFilter<"UserTrackedAgencyIntegrationLink"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgencyIntegrationLink"> | Date | string
     user_tracked_agency?: XOR<UserTrackedAgencyScalarRelationFilter, UserTrackedAgencyWhereInput>
@@ -38678,11 +38729,14 @@ export namespace Prisma {
     id?: SortOrder
     user_tracked_agency_id?: SortOrder
     user_integration_id?: SortOrder
+    integration_client_id?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: UserTrackedAgencyIntegrationLinkCountOrderByAggregateInput
+    _avg?: UserTrackedAgencyIntegrationLinkAvgOrderByAggregateInput
     _max?: UserTrackedAgencyIntegrationLinkMaxOrderByAggregateInput
     _min?: UserTrackedAgencyIntegrationLinkMinOrderByAggregateInput
+    _sum?: UserTrackedAgencyIntegrationLinkSumOrderByAggregateInput
   }
 
   export type UserTrackedAgencyIntegrationLinkScalarWhereWithAggregatesInput = {
@@ -38692,6 +38746,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"UserTrackedAgencyIntegrationLink"> | string
     user_tracked_agency_id?: StringWithAggregatesFilter<"UserTrackedAgencyIntegrationLink"> | string
     user_integration_id?: StringWithAggregatesFilter<"UserTrackedAgencyIntegrationLink"> | string
+    integration_client_id?: IntNullableWithAggregatesFilter<"UserTrackedAgencyIntegrationLink"> | number | null
     created_at?: DateTimeWithAggregatesFilter<"UserTrackedAgencyIntegrationLink"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserTrackedAgencyIntegrationLink"> | Date | string
   }
@@ -41609,6 +41664,7 @@ export namespace Prisma {
 
   export type UserTrackedAgencyIntegrationLinkCreateInput = {
     id?: string
+    integration_client_id?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     user_tracked_agency: UserTrackedAgencyCreateNestedOneWithoutIntegration_linkInput
@@ -41619,12 +41675,14 @@ export namespace Prisma {
     id?: string
     user_tracked_agency_id: string
     user_integration_id: string
+    integration_client_id?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
 
   export type UserTrackedAgencyIntegrationLinkUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    integration_client_id?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_tracked_agency?: UserTrackedAgencyUpdateOneRequiredWithoutIntegration_linkNestedInput
@@ -41635,6 +41693,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     user_tracked_agency_id?: StringFieldUpdateOperationsInput | string
     user_integration_id?: StringFieldUpdateOperationsInput | string
+    integration_client_id?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41643,12 +41702,14 @@ export namespace Prisma {
     id?: string
     user_tracked_agency_id: string
     user_integration_id: string
+    integration_client_id?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
 
   export type UserTrackedAgencyIntegrationLinkUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    integration_client_id?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41657,6 +41718,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     user_tracked_agency_id?: StringFieldUpdateOperationsInput | string
     user_integration_id?: StringFieldUpdateOperationsInput | string
+    integration_client_id?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -44973,14 +45035,20 @@ export namespace Prisma {
     id?: SortOrder
     user_tracked_agency_id?: SortOrder
     user_integration_id?: SortOrder
+    integration_client_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+  }
+
+  export type UserTrackedAgencyIntegrationLinkAvgOrderByAggregateInput = {
+    integration_client_id?: SortOrder
   }
 
   export type UserTrackedAgencyIntegrationLinkMaxOrderByAggregateInput = {
     id?: SortOrder
     user_tracked_agency_id?: SortOrder
     user_integration_id?: SortOrder
+    integration_client_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -44989,8 +45057,13 @@ export namespace Prisma {
     id?: SortOrder
     user_tracked_agency_id?: SortOrder
     user_integration_id?: SortOrder
+    integration_client_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+  }
+
+  export type UserTrackedAgencyIntegrationLinkSumOrderByAggregateInput = {
+    integration_client_id?: SortOrder
   }
 
   export type EnumScraperStatusFilter<$PrismaModel = never> = {
@@ -50803,6 +50876,7 @@ export namespace Prisma {
 
   export type UserTrackedAgencyIntegrationLinkCreateWithoutUser_integrationInput = {
     id?: string
+    integration_client_id?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     user_tracked_agency: UserTrackedAgencyCreateNestedOneWithoutIntegration_linkInput
@@ -50811,6 +50885,7 @@ export namespace Prisma {
   export type UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_integrationInput = {
     id?: string
     user_tracked_agency_id: string
+    integration_client_id?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -50962,6 +51037,7 @@ export namespace Prisma {
 
   export type UserTrackedAgencyIntegrationLinkUpdateWithoutUser_integrationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    integration_client_id?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_tracked_agency?: UserTrackedAgencyUpdateOneRequiredWithoutIntegration_linkNestedInput
@@ -50970,6 +51046,7 @@ export namespace Prisma {
   export type UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_integrationInput = {
     id?: StringFieldUpdateOperationsInput | string
     user_tracked_agency_id?: StringFieldUpdateOperationsInput | string
+    integration_client_id?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -51796,6 +51873,7 @@ export namespace Prisma {
 
   export type UserTrackedAgencyIntegrationLinkCreateWithoutUser_tracked_agencyInput = {
     id?: string
+    integration_client_id?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     user_integration: UserIntegrationCreateNestedOneWithoutTracked_agency_linkInput
@@ -51804,6 +51882,7 @@ export namespace Prisma {
   export type UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_tracked_agencyInput = {
     id?: string
     user_integration_id: string
+    integration_client_id?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -51938,6 +52017,7 @@ export namespace Prisma {
 
   export type UserTrackedAgencyIntegrationLinkUpdateWithoutUser_tracked_agencyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    integration_client_id?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_integration?: UserIntegrationUpdateOneRequiredWithoutTracked_agency_linkNestedInput
@@ -51946,6 +52026,7 @@ export namespace Prisma {
   export type UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_tracked_agencyInput = {
     id?: StringFieldUpdateOperationsInput | string
     user_integration_id?: StringFieldUpdateOperationsInput | string
+    integration_client_id?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }

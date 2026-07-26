@@ -6,6 +6,7 @@ export interface TrackingPrefs {
   use_ai_batching: boolean;
   enabled: boolean;
   user_integration_id?: string | null;
+  integration_client_id?: number | null;
   concurrent_insertions?: number;
   insertion_interval_minutes?: number;
   max_properties?: number | null;
@@ -83,6 +84,7 @@ export interface TrackedAgencyIntegrationLink {
   id: string;
   user_tracked_agency_id: string;
   user_integration_id: string;
+  integration_client_id: number | null;
   created_at: string;
   updated_at: string;
   user_integration?: {
@@ -100,4 +102,5 @@ export interface TrackedAgencyIntegrationLink {
 
 export interface LinkIntegrationPayload {
   user_integration_id: string;
+  integration_client_id?: number | null;
 }

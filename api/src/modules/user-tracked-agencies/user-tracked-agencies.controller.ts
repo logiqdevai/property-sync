@@ -124,6 +124,7 @@ export class UserTrackedAgenciesController {
       userId,
       agencyId,
       dto.user_integration_id,
+      dto.integration_client_id,
     );
   }
 

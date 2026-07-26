@@ -53,6 +53,7 @@ export class UserTrackedAgenciesService {
             select: {
               id: true,
               user_integration_id: true,
+              integration_client_id: true,
               created_at: true,
             },
           },
@@ -81,6 +82,8 @@ export class UserTrackedAgenciesService {
                 enabled: tracker.enabled,
                 user_integration_id:
                   tracker.integration_link?.user_integration_id ?? null,
+                integration_client_id:
+                  tracker.integration_link?.integration_client_id ?? null,
                 concurrent_insertions: tracker.concurrent_insertions,
                 insertion_interval_minutes: tracker.insertion_interval_minutes,
                 max_properties: tracker.max_properties,
@@ -233,6 +236,7 @@ export class UserTrackedAgenciesService {
     userId: string,
     agencyId: string,
     userIntegrationId: string,
+    integrationClientId?: number | null,
   ) {
     const tracker = await this.requireOwnedTracker(userId, agencyId);
     const integration = await this.requireOwnedLinkableIntegration(
@@ -268,13 +272,23 @@ export class UserTrackedAgenciesService {
     }
 
     if (existingTrackerLink) {
-      return existingTrackerLink;
+      if (integrationClientId === undefined) {
+        return existingTrackerLink;
+      }
+
+      return this.prisma.userTrackedAgencyIntegrationLink.update({
+        where: { id: existingTrackerLink.id },
+        data: { integration_client_id: integrationClientId },
+      });
     }
 
     const link = await this.prisma.userTrackedAgencyIntegrationLink.create({
       data: {
         user_tracked_agency_id: tracker.id,
         user_integration_id: integration.id,
+        ...(integrationClientId !== undefined && {
+          integration_client_id: integrationClientId,
+        }),
       },
     });
 

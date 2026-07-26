@@ -210,6 +210,7 @@ exports.Prisma.UserTrackedAgencyIntegrationLinkScalarFieldEnum = {
   id: 'id',
   user_tracked_agency_id: 'user_tracked_agency_id',
   user_integration_id: 'user_integration_id',
+  integration_client_id: 'integration_client_id',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };

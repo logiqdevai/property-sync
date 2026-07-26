@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsInt, IsOptional, IsUUID, Min } from 'class-validator';
 
 export class LinkIntegrationDto {
   @ApiProperty({
@@ -7,4 +7,13 @@ export class LinkIntegrationDto {
   })
   @IsUUID()
   user_integration_id: string;
+
+  @ApiPropertyOptional({
+    description: 'CRM client/contact id for this agency on the linked integration',
+    nullable: true,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  integration_client_id?: number | null;
 }

@@ -417,6 +417,7 @@ model UserTrackedAgencyIntegrationLink {
   id                     String   @id @default(uuid())
   user_tracked_agency_id String   @unique
   user_integration_id    String   @unique
+  integration_client_id  Int?
   created_at             DateTime @default(now())
   updated_at             DateTime @updatedAt
 
