@@ -17,7 +17,15 @@ import {
 } from '../interfaces/cms-property.interface';
 import { sanitizeRawDescription } from '../constants/normalization-prompt';
 import { mergeCmsFieldsFromNormalizedRow } from './property-cms-field-mapper.util';
+import { getEstateWebInitPropertyType } from '@/integrations/estateweb/utils/estateweb-init-lookup.util';
 import { resolveEstateWebLocationId } from '@/integrations/estateweb/utils/estateweb-location-lookup.util';
+
+function sanitizeEstateWebTypeId(typeId: number | null | undefined): number | null {
+  if (typeId == null || !Number.isFinite(typeId)) return null;
+  const type = getEstateWebInitPropertyType(typeId);
+  if (!type || type.children.length > 0) return null;
+  return typeId;
+}
 
 export interface NormalizedAiRow {
   index?: number;
@@ -428,7 +436,7 @@ export function buildPropertyRecord(
       (rawData
         ? readRawString(rawData, ['distance_beach', '_distance_beach'])
         : null),
-    estateweb_type_id: n.estateweb_type_id ?? null,
+    estateweb_type_id: sanitizeEstateWebTypeId(n.estateweb_type_id),
     estateweb_location_id: estatewebLocationId,
     cms_fields:
       mergedCmsFields.length > 0
