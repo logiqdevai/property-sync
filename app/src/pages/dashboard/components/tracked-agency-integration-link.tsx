@@ -89,7 +89,7 @@ export function TrackedAgencyIntegrationLink({
           before linking it here.
         </p>
       ) : linkedConnection ? (
-        <div className="flex flex-col gap-3 rounded-lg bg-surface-secondary p-3">
+        <div className="flex min-w-0 flex-col gap-3 rounded-lg bg-surface-secondary p-3">
           <CredentialStatusIndicators
             hasApiKey={linkedConnection.has_api_key_secret}
             hasPassword={linkedConnection.has_password}
@@ -97,8 +97,8 @@ export function TrackedAgencyIntegrationLink({
             email={linkedConnection.email}
             username={linkedConnection.username}
           />
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-sm text-foreground">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="min-w-0 break-words text-sm text-foreground">
               Linked to {getIntegrationConnectionLabel(linkedConnection)}
             </p>
             <ActionButtonWithPending
@@ -106,18 +106,19 @@ export function TrackedAgencyIntegrationLink({
               variant="danger"
               onPress={unlinkConfirm.open}
               isDisabled={disabled || isPending}
+              className="shrink-0 self-start sm:self-auto"
             >
               Unlink
             </ActionButtonWithPending>
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex min-w-0 flex-col gap-3">
           <Select
             selectedKey={selectedConnectionId ?? undefined}
             isDisabled={disabled || isPending}
             onSelectionChange={(key) => setSelectedConnectionId(String(key))}
-            className="w-full"
+            className="w-full min-w-0"
           >
             <Label>Connection</Label>
             <Select.Trigger>
@@ -135,7 +136,7 @@ export function TrackedAgencyIntegrationLink({
             </Select.Popover>
           </Select>
 
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <Link
               to={Routes.dashboard.integrations}
               className="text-xs text-accent hover:underline"
@@ -147,6 +148,7 @@ export function TrackedAgencyIntegrationLink({
               onPress={handleLink}
               isDisabled={disabled || isPending || !selectedConnectionId}
               isPending={linkIntegration.isPending}
+              className="shrink-0 self-start sm:self-auto"
             >
               Link integration
             </ActionButtonWithPending>

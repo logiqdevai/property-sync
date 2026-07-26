@@ -123,7 +123,7 @@ export function CredentialStatusIndicators({
   username?: string | null;
 }) {
   return (
-    <div className="flex flex-wrap gap-2 text-xs text-muted">
+    <div className="flex flex-wrap gap-2 text-xs text-muted break-all">
       {email && <span>Email: {email}</span>}
       {username && <span>Username: {username}</span>}
       {hasApiKey && <span className="text-success">API key set</span>}

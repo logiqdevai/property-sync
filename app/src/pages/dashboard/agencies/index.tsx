@@ -58,12 +58,14 @@ function AgencyCard({
   };
 
   return (
-    <article className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-3">
+    <article className="flex min-w-0 flex-col gap-4 overflow-hidden rounded-xl border border-border bg-surface p-4 sm:p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
-          <h2 className="text-lg font-semibold text-foreground truncate">{agency.name}</h2>
-          <div className="flex items-center gap-1.5 min-w-0">
-            <p className="text-sm text-muted truncate">
+          <h2 className="text-base font-semibold text-foreground break-words sm:truncate sm:text-lg">
+            {agency.name}
+          </h2>
+          <div className="flex min-w-0 items-center gap-1.5">
+            <p className="min-w-0 truncate text-sm text-muted">
               {[agency.city, agency.country].filter(Boolean).join(", ") || agency.base_url}
             </p>
             <a
@@ -81,6 +83,7 @@ function AgencyCard({
           isSelected={agency.is_tracked}
           isDisabled={isControlsDisabled}
           onChange={handleTrackToggle}
+          className="shrink-0 self-start"
         >
           <Switch.Control>
             <Switch.Thumb />
@@ -108,8 +111,8 @@ function AgencyCard({
 
       {agency.is_tracked && prefs ? (
         <div className="flex flex-col gap-3 border-t border-border pt-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-col gap-0.5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span className="text-sm text-foreground">New listings</span>
               <span className="text-xs text-muted">Properties newly published by this agency.</span>
             </div>
@@ -118,14 +121,15 @@ function AgencyCard({
               isDisabled={isControlsDisabled}
               onChange={(isSelected) => savePrefs({ track_new_listings: isSelected })}
               aria-label="New listings"
+              className="shrink-0"
             >
               <Switch.Control>
                 <Switch.Thumb />
               </Switch.Control>
             </Switch>
           </div>
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-col gap-0.5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span className="text-sm text-foreground">Updated listings</span>
               <span className="text-xs text-muted">Changes to price, status, or listing details.</span>
             </div>
@@ -134,14 +138,15 @@ function AgencyCard({
               isDisabled={isControlsDisabled}
               onChange={(isSelected) => savePrefs({ track_updated_listings: isSelected })}
               aria-label="Updated listings"
+              className="shrink-0"
             >
               <Switch.Control>
                 <Switch.Thumb />
               </Switch.Control>
             </Switch>
           </div>
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-col gap-0.5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span className="text-sm text-foreground">Removed listings</span>
               <span className="text-xs text-muted">Listings taken off the market or no longer available.</span>
             </div>
@@ -150,6 +155,7 @@ function AgencyCard({
               isDisabled={isControlsDisabled}
               onChange={(isSelected) => savePrefs({ track_removed_listings: isSelected })}
               aria-label="Removed listings"
+              className="shrink-0"
             >
               <Switch.Control>
                 <Switch.Thumb />
@@ -157,8 +163,8 @@ function AgencyCard({
             </Switch>
           </div>
 
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-col gap-0.5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span className="text-sm text-foreground">Auto-update CRM</span>
               <span className="text-xs text-muted">
                 Push listing changes to your CRM automatically. When off, update from the Properties page.
@@ -169,6 +175,7 @@ function AgencyCard({
               isDisabled={isControlsDisabled}
               onChange={(isSelected) => savePrefs({ auto_update_to_crm: isSelected })}
               aria-label="Auto-update CRM"
+              className="shrink-0"
             >
               <Switch.Control>
                 <Switch.Thumb />
@@ -176,8 +183,8 @@ function AgencyCard({
             </Switch>
           </div>
 
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-col gap-0.5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <div className="flex items-center gap-1.5">
                 <span className="text-sm text-foreground">Remove watermark</span>
                 <span className="group relative inline-flex shrink-0">
@@ -190,7 +197,7 @@ function AgencyCard({
                   </button>
                   <span
                     role="tooltip"
-                    className="pointer-events-none absolute left-1/2 top-full z-20 mt-1.5 w-64 -translate-x-1/2 rounded-lg border border-border bg-background px-3 py-2 text-left text-xs text-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+                    className="pointer-events-none absolute right-0 top-full z-20 mt-1.5 w-[min(16rem,calc(100vw-3rem))] rounded-lg border border-border bg-background px-3 py-2 text-left text-xs text-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 sm:left-1/2 sm:right-auto sm:-translate-x-1/2"
                   >
                     When off, listings sync to EstateWeb using your default sites with all sites
                     selected. When on, sync uses your configured EstateWeb default sites as saved
@@ -204,6 +211,7 @@ function AgencyCard({
               isDisabled={isControlsDisabled}
               onChange={(isSelected) => savePrefs({ remove_watermark: isSelected })}
               aria-label="Remove watermark"
+              className="shrink-0"
             >
               <Switch.Control>
                 <Switch.Thumb />
@@ -311,7 +319,7 @@ export default function DashboardAgenciesPage() {
           No agencies found.
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {agencies.map((agency) => (
             <AgencyCard
               key={agency.id}
@@ -326,7 +334,7 @@ export default function DashboardAgenciesPage() {
       )}
 
       {pagination && pagination.total_pages > 1 && (
-        <Pagination>
+        <Pagination className="min-w-0 overflow-x-auto">
           <Pagination.Content>
             <Pagination.Item>
               <Pagination.Previous
