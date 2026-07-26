@@ -19,6 +19,8 @@ interface DetailEnrichmentResult {
   detail_specs: Record<string, string>;
   detail_features: string[];
   external_id: string | null;
+  latitude: number | null;
+  longitude: number | null;
   raw_html_path: string | null;
   error?: string;
 }
@@ -91,6 +93,11 @@ export class DetailEnrichmentService {
         if (detail.external_id) {
           item.raw._external_id = detail.external_id;
         }
+        if (detail.latitude != null && detail.longitude != null) {
+          item.raw.latitude = detail.latitude;
+          item.raw.longitude = detail.longitude;
+          item.raw._lat_lng = `${detail.latitude},${detail.longitude}`;
+        }
         if (detail.raw_html_path) {
           item.raw._raw_html_path = detail.raw_html_path;
         }
@@ -118,6 +125,8 @@ export class DetailEnrichmentService {
       detail_specs: {},
       detail_features: [],
       external_id: null,
+      latitude: null,
+      longitude: null,
       raw_html_path: null,
     };
 
@@ -282,12 +291,73 @@ export class DetailEnrichmentService {
           });
         }
 
+        let latitude: number | null = null;
+        let longitude: number | null = null;
+        const parseCoord = (value: string): number | null => {
+          const n = parseFloat(value);
+          return Number.isFinite(n) ? n : null;
+        };
+        const isValidCoords = (lat: number, lng: number): boolean =>
+          Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+
+        for (const script of Array.from(document.querySelectorAll('script'))) {
+          const text = script.textContent || '';
+          if (!text) continue;
+
+          const latMatch = text.match(
+            /\b(?:var|let|const)\s+lat(?:itude)?\s*=\s*(-?\d+(?:\.\d+)?)/i,
+          );
+          const lngMatch =
+            text.match(
+              /\b(?:var|let|const)\s+long(?:itude)?\s*=\s*(-?\d+(?:\.\d+)?)/i,
+            ) ||
+            text.match(/\b(?:var|let|const)\s+lng\s*=\s*(-?\d+(?:\.\d+)?)/i);
+
+          if (latMatch && lngMatch) {
+            const lat = parseCoord(latMatch[1]);
+            const lng = parseCoord(lngMatch[1]);
+            if (lat != null && lng != null && isValidCoords(lat, lng)) {
+              latitude = lat;
+              longitude = lng;
+              break;
+            }
+          }
+
+          const setViewMatch = text.match(
+            /\.setView\(\s*\[\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\]/,
+          );
+          if (setViewMatch) {
+            const lat = parseCoord(setViewMatch[1]);
+            const lng = parseCoord(setViewMatch[2]);
+            if (lat != null && lng != null && isValidCoords(lat, lng)) {
+              latitude = lat;
+              longitude = lng;
+              break;
+            }
+          }
+
+          const latLngMatch = text.match(
+            /(?:LatLng|latLng)\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)/,
+          );
+          if (latLngMatch) {
+            const lat = parseCoord(latLngMatch[1]);
+            const lng = parseCoord(latLngMatch[2]);
+            if (lat != null && lng != null && isValidCoords(lat, lng)) {
+              latitude = lat;
+              longitude = lng;
+              break;
+            }
+          }
+        }
+
         return {
           images: [...new Set(images)],
           raw_detail_text: descText,
           detail_specs: detailSpecs,
           detail_features: [...featureSet],
           external_id: externalId,
+          latitude,
+          longitude,
         };
       }, detailConfig ?? null);
 

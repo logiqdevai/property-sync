@@ -395,8 +395,8 @@ export function buildPropertyRecord(
         ? readRawString(rawData, ['postal_code', 'zip', '_postal_code'])
         : null),
     country: 'GR',
-    latitude: toDecimal(n.latitude ?? latLng.latitude),
-    longitude: toDecimal(n.longitude ?? latLng.longitude),
+    latitude: toDecimal(latLng.latitude ?? n.latitude),
+    longitude: toDecimal(latLng.longitude ?? n.longitude),
     square_meters: toDecimal(n.square_meters),
     bedrooms: n.bedrooms ?? null,
     bathrooms: n.bathrooms ?? null,

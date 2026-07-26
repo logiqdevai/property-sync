@@ -83,7 +83,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       options?.propertyNote,
     );
     this.logger.log(
-      `EstateWeb CREATE payload: type_id=${payload.type_id} location_id=${payload.location_id} scope_id=${payload.scope_id} fields=${payload.fields?.length ?? 0} price=${payload.price ?? 'null'} sites=${payload.sites.map((s) => `${s.agent_site_id}:${s.selected ? 1 : 0}`).join(',')} langs=${adLanguages.join(',')}`,
+      `EstateWeb CREATE payload: type_id=${payload.type_id} location_id=${payload.location_id} scope_id=${payload.scope_id} fields=${payload.fields?.length ?? 0} price=${payload.price ?? 'null'} lat_lng=${payload.lat_lng || 'none'} sites=${payload.sites.map((s) => `${s.agent_site_id}:${s.selected ? 1 : 0}`).join(',')} langs=${adLanguages.join(',')}`,
     );
 
     const result = await this.estateWebPropertyService.createProperty(
@@ -382,6 +382,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       : price;
     const title = userProperty?.title ?? '';
     const description = userProperty?.description ?? '';
+    const latLng = this.buildLatLng(userProperty);
 
     return {
       id: integrationPropertyId ?? 0,
@@ -410,8 +411,8 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       is_exclusive_order: 0,
       video_url: userProperty?.video_url ?? '',
       show_video_on_site: 0,
-      lat_lng: this.buildLatLng(userProperty),
-      show_map_on_site: 0,
+      lat_lng: latLng,
+      show_map_on_site: latLng ? 1 : 0,
       metadata: this.buildMetadata(userProperty),
       client_contacted_at: '',
       expires_at: '',
@@ -498,8 +499,32 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   }
 
   private buildLatLng(userProperty?: UserProperty): string {
-    if (!userProperty?.latitude || !userProperty?.longitude) return '';
-    return `${userProperty.latitude},${userProperty.longitude}`;
+    const latitude = this.toCoordinate(userProperty?.latitude);
+    const longitude = this.toCoordinate(userProperty?.longitude);
+    if (latitude == null || longitude == null) return '';
+    if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return '';
+    return `${latitude},${longitude}`;
+  }
+
+  private toCoordinate(value: unknown): number | null {
+    if (value == null) return null;
+    if (typeof value === 'number') {
+      return Number.isFinite(value) ? value : null;
+    }
+    if (typeof value === 'string') {
+      const parsed = parseFloat(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    if (
+      typeof value === 'object' &&
+      'toNumber' in value &&
+      typeof (value as { toNumber: unknown }).toNumber === 'function'
+    ) {
+      const parsed = (value as { toNumber: () => number }).toNumber();
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    const parsed = parseFloat(String(value));
+    return Number.isFinite(parsed) ? parsed : null;
   }
 
   private buildFields(
