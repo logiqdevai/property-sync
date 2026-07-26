@@ -21,8 +21,8 @@ export default function DashboardNavbar({ onMenuClick }: DashboardNavbarProps) {
   return (
     <header
       className={cn(
-        'mx-3 mt-3 rounded-xl shrink-0',
-        'h-12 flex items-center justify-between px-3',
+        'mt-3 rounded-xl shrink-0',
+        'h-12 flex items-center justify-between gap-2 px-2 sm:px-3',
         'bg-surface border border-border',
       )}
       style={{
@@ -33,18 +33,20 @@ export default function DashboardNavbar({ onMenuClick }: DashboardNavbarProps) {
         `,
       }}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 items-center gap-2">
         <button
           onClick={onMenuClick}
-          className="lg:hidden p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors duration-200"
+          className="lg:hidden p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors duration-200 shrink-0"
           aria-label="Open menu"
         >
           <Menu className="h-4 w-4" />
         </button>
-        <span className="font-semibold text-foreground text-sm tracking-tight">{currentTitle}</span>
+        <span className="font-semibold text-foreground text-sm tracking-tight truncate">
+          {currentTitle}
+        </span>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1">
         <button
           onClick={toggleTheme}
           aria-label="Toggle theme"
@@ -52,7 +54,7 @@ export default function DashboardNavbar({ onMenuClick }: DashboardNavbarProps) {
         >
           {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </button>
-        <UserMenuPopover collapsed={false} placement="bottom" />
+        <UserMenuPopover collapsed placement="bottom" />
       </div>
     </header>
   );

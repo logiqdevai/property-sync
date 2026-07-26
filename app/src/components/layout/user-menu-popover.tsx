@@ -49,7 +49,7 @@ export default function UserMenuPopover({ collapsed = false, placement = 'top' }
 
   return (
     <Popover>
-      <Popover.Trigger className={cn('group w-full rounded-xl transition-all duration-150 cursor-pointer outline-none', 'hover:bg-surface-secondary', collapsed ? 'flex justify-center p-1.5' : 'flex items-center gap-2 px-1 py-1.5')}>
+      <Popover.Trigger className={cn('group rounded-xl transition-all duration-150 cursor-pointer outline-none', 'hover:bg-surface-secondary', collapsed ? 'flex justify-center p-1.5' : 'flex w-full items-center gap-2 px-1 py-1.5')}>
         {collapsed ? (
           <Avatar />
         ) : (

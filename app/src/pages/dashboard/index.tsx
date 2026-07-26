@@ -1,7 +1,7 @@
 import { useAuthStore } from "@/stores/auth";
 import { useUserDashboard } from "@/features/user-dashboard/hooks/use-user-dashboard";
-import { formatPropertyHistoryLabel } from "@/features/properties/utils/format-property-history";
 import { formatDateTime } from "@/lib/date";
+import { ActivityChangeLabel } from "./components/activity-change-label";
 
 export default function DashboardHome() {
   const { full_name, email } = useAuthStore();
@@ -26,12 +26,12 @@ export default function DashboardHome() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 min-w-0">
       <div
-        className="rounded-xl border border-border bg-surface p-6"
+        className="rounded-xl border border-border bg-surface p-4 sm:p-6"
         style={{ boxShadow: "var(--shadow-1)" }}
       >
-        <p className="text-2xl font-semibold tracking-tight text-foreground">
+        <p className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground break-words">
           Welcome back, {displayName}
         </p>
         <p className="mt-1 text-sm text-muted">
@@ -39,18 +39,18 @@ export default function DashboardHome() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-5"
+            className="flex min-w-0 flex-col gap-2 rounded-xl border border-border bg-surface p-3 sm:p-5"
             style={{ boxShadow: "var(--shadow-1)" }}
           >
-            <p className="text-xs font-medium uppercase tracking-wide text-muted">
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-muted leading-snug">
               {stat.label}
             </p>
             <p
-              className="font-mono text-3xl font-bold"
+              className="font-mono text-2xl sm:text-3xl font-bold tabular-nums"
               style={{ color: stat.accent ? "var(--tertiary)" : "var(--foreground)" }}
             >
               {isPending || stat.value == null ? "—" : stat.value}
@@ -60,7 +60,7 @@ export default function DashboardHome() {
       </div>
 
       <div
-        className="rounded-xl border border-border bg-surface p-6"
+        className="rounded-xl border border-border bg-surface p-4 sm:p-6 min-w-0"
         style={{ boxShadow: "var(--shadow-1)" }}
       >
         <p className="mb-4 text-sm font-medium text-foreground">Recent Activity</p>
@@ -77,13 +77,15 @@ export default function DashboardHome() {
             {dashboard.activity.map((entry) => (
               <li
                 key={entry.id}
-                className="flex items-start justify-between gap-3 text-sm border border-border rounded-lg p-3"
+                className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 text-sm border border-border rounded-lg p-3 min-w-0"
               >
-                <div className="flex flex-col gap-1">
-                  <span className="font-medium text-foreground">{entry.property_title}</span>
-                  <span className="text-muted">{formatPropertyHistoryLabel(entry)}</span>
+                <div className="flex min-w-0 flex-col gap-1">
+                  <span className="font-medium text-foreground break-words">
+                    {entry.property_title}
+                  </span>
+                  <ActivityChangeLabel entry={entry} />
                 </div>
-                <span className="text-xs text-muted whitespace-nowrap">
+                <span className="text-xs text-muted whitespace-nowrap shrink-0">
                   {formatDateTime(entry.created_at)}
                 </span>
               </li>

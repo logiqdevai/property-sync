@@ -14,9 +14,9 @@ export default function DashboardLayout() {
     <div className="flex h-full min-h-0 overflow-hidden bg-background">
       <Sidebar />
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden mr-3">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden mx-3 lg:mr-3 lg:ml-0">
         <DashboardNavbar onMenuClick={drawerState.open} />
-        <main className="min-h-0 flex-1 overflow-y-auto p-6">
+        <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
           <Outlet />
         </main>
       </div>
@@ -27,9 +27,9 @@ export default function DashboardLayout() {
           className="backdrop-blur-sm"
           style={{ background: 'color-mix(in oklch, black 30%, transparent)' }}
         />
-        <Drawer.Content placement="left">
+        <Drawer.Content placement="left" className="max-w-[min(100vw,280px)]">
           <Drawer.Dialog
-            className="bg-surface"
+            className="bg-surface w-full max-w-[280px]"
             style={{
               boxShadow: `
                 0 0 0 1px color-mix(in oklch, var(--accent) 8%, transparent),
