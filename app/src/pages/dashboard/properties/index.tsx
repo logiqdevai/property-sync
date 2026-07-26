@@ -12,7 +12,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Layers, Scissors, Trash2, Ungroup, Upload } from "lucide-react";
+import { Layers, ListFilter, Scissors, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
@@ -61,6 +61,7 @@ import { toEndOfDayIso, toStartOfDayIso } from "@/lib/date";
 import { getDuplicateGroupRowClasses } from "@/lib/duplicate-group-color.utils";
 import { getDuplicateGroupDedupePlan } from "@/lib/duplicate-group-dedupe.utils";
 import { cn } from "@/lib/utils";
+import { PropertyListCard } from "./components/property-list-card";
 
 const PROPERTY_PUSH_ACTION: TableRowAction = {
   id: "push-to-crm",
@@ -95,6 +96,7 @@ export default function DashboardPropertiesListPage() {
   const [dateTo, setDateTo] = useState("");
   const [limit, setLimit] = useState(20);
   const [page, setPage] = useState(1);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deletePropertyId, setDeletePropertyId] = useState<string | null>(null);
 
@@ -229,6 +231,53 @@ export default function DashboardPropertiesListPage() {
 
   const clearSelection = () => setSelectedKeys(new Set());
 
+  const activeFilterCount = [
+    status !== "all",
+    change !== "all",
+    trackedAgencyId !== "all",
+    duplicateGroup !== "all",
+    pushedToCrm !== "all",
+    pendingCrmUpdate !== "all",
+    Boolean(dateFrom),
+    Boolean(dateTo),
+  ].filter(Boolean).length;
+
+  const clearFilters = () => {
+    setPage(1);
+    setStatus("all");
+    setChange("all");
+    setTrackedAgencyId("all");
+    setDuplicateGroup("all");
+    setPushedToCrm("all");
+    setPendingCrmUpdate("all");
+    setDateFrom("");
+    setDateTo("");
+  };
+
+  const allPageSelected =
+    properties.length > 0 && properties.every((property) => selectedIds.has(property.id));
+  const somePageSelected =
+    properties.some((property) => selectedIds.has(property.id)) && !allPageSelected;
+
+  const togglePropertySelection = (propertyId: string, selected: boolean) => {
+    setSelectedKeys((prev) => {
+      const next = new Set(
+        prev === "all" ? properties.map((property) => property.id) : [...prev].map(String),
+      );
+      if (selected) next.add(propertyId);
+      else next.delete(propertyId);
+      return next;
+    });
+  };
+
+  const toggleSelectAllOnPage = (selected: boolean) => {
+    if (selected) {
+      setSelectedKeys(new Set(properties.map((property) => property.id)));
+      return;
+    }
+    clearSelection();
+  };
+
   const handleBulkAction = (actionId: string) => {
     if (actionId === "push-to-crm") {
       void handleBulkPushToCrm();
@@ -307,9 +356,9 @@ export default function DashboardPropertiesListPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
+    <div className="flex min-w-0 flex-col gap-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="min-w-0">
           <p className="text-2xl font-semibold tracking-tight text-foreground">My Properties</p>
           <p className="text-sm text-muted">
             Your tracked listings
@@ -328,350 +377,447 @@ export default function DashboardPropertiesListPage() {
         />
       </div>
 
-      <div className="flex items-center gap-3 flex-wrap">
-        <Input
-          placeholder="Search property id, internal id, CRM id, title, or city…"
-          value={search}
-          onChange={(e) => {
-            setPage(1);
-            setSearch(e.target.value);
-          }}
-          className="w-80"
-        />
-        <Select
-          aria-label="Filter by status"
-          selectedKey={status}
-          onSelectionChange={(key) => {
-            setPage(1);
-            setStatus(key as PropertyStatus | "all");
-          }}
-          className="w-44"
-        >
-          <Select.Trigger>
-            <Select.Value />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              {PropertyStatusFilterOptions.map((option) => (
-                <ListBox.Item key={option.id} id={option.id}>
-                  {option.label}
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
-        <Select
-          aria-label="Filter by change"
-          selectedKey={change}
-          onSelectionChange={(key) => {
-            setPage(1);
-            setChange(key as PropertyChangeFilter | "all");
-          }}
-          className="w-44"
-        >
-          <Select.Trigger>
-            <Select.Value />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              {PropertyChangeFilterOptions.map((option) => (
-                <ListBox.Item key={option.id} id={option.id}>
-                  {option.label}
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
-        <Select
-          aria-label="Filter by tracked agency"
-          selectedKey={trackedAgencyId}
-          onSelectionChange={(key) => {
-            setPage(1);
-            setTrackedAgencyId(key as string | "all");
-          }}
-          className="w-56"
-        >
-          <Select.Trigger>
-            <Select.Value />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              <ListBox.Item key="all" id="all">
-                All tracked agencies
-              </ListBox.Item>
-              {trackedAgencies.map((agency) => (
-                <ListBox.Item
-                  key={agency.user_tracked_agency_id!}
-                  id={agency.user_tracked_agency_id!}
-                >
-                  {getTrackableAgencyLabel(agency)}
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
-        <Select
-          aria-label="Filter by duplicate group"
-          selectedKey={duplicateGroup}
-          onSelectionChange={(key) => {
-            setPage(1);
-            setDuplicateGroup(key as "all" | "true" | "false");
-          }}
-          className="w-44"
-        >
-          <Select.Trigger>
-            <Select.Value />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              {PropertyDuplicateGroupFilterOptions.map((option) => (
-                <ListBox.Item key={option.id} id={option.id}>
-                  {option.label}
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
-        <Select
-          aria-label="Filter by CRM push"
-          selectedKey={pushedToCrm}
-          onSelectionChange={(key) => {
-            setPage(1);
-            setPushedToCrm(key as "all" | "true" | "false");
-          }}
-          className="w-44"
-        >
-          <Select.Trigger>
-            <Select.Value />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              {PropertyCrmPushFilterOptions.map((option) => (
-                <ListBox.Item key={option.id} id={option.id}>
-                  {option.label}
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
-        <Select
-          aria-label="Filter by pending CRM update"
-          selectedKey={pendingCrmUpdate}
-          onSelectionChange={(key) => {
-            setPage(1);
-            setPendingCrmUpdate(key as "all" | "true" | "false");
-          }}
-          className="w-48"
-        >
-          <Select.Trigger>
-            <Select.Value />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              {PropertyPendingCrmUpdateFilterOptions.map((option) => (
-                <ListBox.Item key={option.id} id={option.id}>
-                  {option.label}
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
-        <DatePickerField
-          aria-label="From date"
-          value={dateFrom}
-          onChange={(next) => {
-            setPage(1);
-            setDateFrom(next);
-          }}
-        />
-        <DatePickerField
-          aria-label="To date"
-          value={dateTo}
-          onChange={(next) => {
-            setPage(1);
-            setDateTo(next);
-          }}
-        />
-        <Select
-          aria-label="Rows per page"
-          selectedKey={
-            TablePageSizeOptions.find((option) => option.value === limit)?.id ??
-            String(limit)
-          }
-          onSelectionChange={(key) => {
-            setPage(1);
-            const option = TablePageSizeOptions.find(
-              (item) => item.id === String(key),
-            );
-            setLimit(option?.value ?? 20);
-          }}
-          className="w-44"
-        >
-          <Select.Trigger>
-            <Select.Value />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              {TablePageSizeOptions.map((option) => (
-                <ListBox.Item key={option.id} id={option.id}>
-                  {option.label}
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
+      <div className="flex min-w-0 flex-col gap-3">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
+          <Input
+            placeholder="Search property id, internal id, CRM id, title, or city…"
+            value={search}
+            onChange={(e) => {
+              setPage(1);
+              setSearch(e.target.value);
+            }}
+            className="w-full min-w-0 sm:flex-1 sm:max-w-md"
+          />
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              variant={filtersOpen || activeFilterCount > 0 ? "secondary" : "ghost"}
+              onPress={() => setFiltersOpen((open) => !open)}
+              aria-expanded={filtersOpen}
+              aria-controls="properties-filters"
+            >
+              <ListFilter className="size-4" />
+              Filters
+              {activeFilterCount > 0 ? (
+                <Chip size="sm" variant="soft" color="accent">
+                  {activeFilterCount}
+                </Chip>
+              ) : null}
+            </Button>
+            {activeFilterCount > 0 ? (
+              <Button variant="ghost" size="sm" onPress={clearFilters}>
+                <X className="size-4" />
+                Clear
+              </Button>
+            ) : null}
+          </div>
+        </div>
+
+        {filtersOpen ? (
+          <div
+            id="properties-filters"
+            className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-surface p-3 sm:flex-row sm:flex-wrap sm:items-center sm:p-4"
+          >
+            <Select
+              aria-label="Filter by status"
+              selectedKey={status}
+              onSelectionChange={(key) => {
+                setPage(1);
+                setStatus(key as PropertyStatus | "all");
+              }}
+              className="w-full sm:w-44"
+            >
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {PropertyStatusFilterOptions.map((option) => (
+                    <ListBox.Item key={option.id} id={option.id}>
+                      {option.label}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+            <Select
+              aria-label="Filter by change"
+              selectedKey={change}
+              onSelectionChange={(key) => {
+                setPage(1);
+                setChange(key as PropertyChangeFilter | "all");
+              }}
+              className="w-full sm:w-44"
+            >
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {PropertyChangeFilterOptions.map((option) => (
+                    <ListBox.Item key={option.id} id={option.id}>
+                      {option.label}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+            <Select
+              aria-label="Filter by tracked agency"
+              selectedKey={trackedAgencyId}
+              onSelectionChange={(key) => {
+                setPage(1);
+                setTrackedAgencyId(key as string | "all");
+              }}
+              className="w-full sm:w-56"
+            >
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  <ListBox.Item key="all" id="all">
+                    All tracked agencies
+                  </ListBox.Item>
+                  {trackedAgencies.map((agency) => (
+                    <ListBox.Item
+                      key={agency.user_tracked_agency_id!}
+                      id={agency.user_tracked_agency_id!}
+                    >
+                      {getTrackableAgencyLabel(agency)}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+            <Select
+              aria-label="Filter by duplicate group"
+              selectedKey={duplicateGroup}
+              onSelectionChange={(key) => {
+                setPage(1);
+                setDuplicateGroup(key as "all" | "true" | "false");
+              }}
+              className="w-full sm:w-44"
+            >
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {PropertyDuplicateGroupFilterOptions.map((option) => (
+                    <ListBox.Item key={option.id} id={option.id}>
+                      {option.label}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+            <Select
+              aria-label="Filter by CRM push"
+              selectedKey={pushedToCrm}
+              onSelectionChange={(key) => {
+                setPage(1);
+                setPushedToCrm(key as "all" | "true" | "false");
+              }}
+              className="w-full sm:w-44"
+            >
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {PropertyCrmPushFilterOptions.map((option) => (
+                    <ListBox.Item key={option.id} id={option.id}>
+                      {option.label}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+            <Select
+              aria-label="Filter by pending CRM update"
+              selectedKey={pendingCrmUpdate}
+              onSelectionChange={(key) => {
+                setPage(1);
+                setPendingCrmUpdate(key as "all" | "true" | "false");
+              }}
+              className="w-full sm:w-48"
+            >
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {PropertyPendingCrmUpdateFilterOptions.map((option) => (
+                    <ListBox.Item key={option.id} id={option.id}>
+                      {option.label}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+            <DatePickerField
+              aria-label="From date"
+              value={dateFrom}
+              onChange={(next) => {
+                setPage(1);
+                setDateFrom(next);
+              }}
+              className="w-full sm:w-52"
+            />
+            <DatePickerField
+              aria-label="To date"
+              value={dateTo}
+              onChange={(next) => {
+                setPage(1);
+                setDateTo(next);
+              }}
+              className="w-full sm:w-52"
+            />
+            <Select
+              aria-label="Rows per page"
+              selectedKey={
+                TablePageSizeOptions.find((option) => option.value === limit)?.id ??
+                String(limit)
+              }
+              onSelectionChange={(key) => {
+                setPage(1);
+                const option = TablePageSizeOptions.find(
+                  (item) => item.id === String(key),
+                );
+                setLimit(option?.value ?? 20);
+              }}
+              className="w-full sm:w-44"
+            >
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {TablePageSizeOptions.map((option) => (
+                    <ListBox.Item key={option.id} id={option.id}>
+                      {option.label}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+          </div>
+        ) : null}
       </div>
 
       {isPending ? (
         <TableSkeleton rows={8} columns={6} />
       ) : properties.length === 0 ? (
-        <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
+        <div className="rounded-xl border border-border bg-surface p-6 text-center text-sm text-muted sm:p-10">
           No properties yet. Track an agency to start receiving listings.
         </div>
       ) : (
-        <div className="rounded-xl border border-border bg-surface overflow-hidden">
-          <Table>
-            <Table.ScrollContainer>
-              <Table.Content
-                aria-label="My properties"
-                selectionMode="multiple"
-                selectedKeys={selectedKeys}
-                onSelectionChange={setSelectedKeys}
+        <>
+          <div className="flex min-w-0 flex-col gap-3 md:hidden">
+            <div className="flex items-center gap-2 px-1">
+              <Checkbox
+                aria-label="Select all properties on this page"
+                isSelected={allPageSelected}
+                isIndeterminate={somePageSelected}
+                onChange={toggleSelectAllOnPage}
               >
-                <Table.Header>
-                  <Table.Column className="pr-0">
-                    <Checkbox aria-label="Select all properties on this page" slot="selection">
-                      <Checkbox.Content>
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
-                      </Checkbox.Content>
-                    </Checkbox>
-                  </Table.Column>
-                  <Table.Column isRowHeader>Title</Table.Column>
-                  <Table.Column isRowHeader>City</Table.Column>
-                  <Table.Column isRowHeader>Price</Table.Column>
-                  <Table.Column isRowHeader>Status</Table.Column>
-                  <Table.Column isRowHeader>CRM</Table.Column>
-                  <Table.Column isRowHeader>Integration ID</Table.Column>
-                  <Table.Column isRowHeader>Actions</Table.Column>
-                </Table.Header>
-                <Table.Body>
-                  {properties.map((property) => {
-                    const isRemoved = property.status === PropertyStatuses.REMOVED;
-                    const groupCellClass = cn(
-                      property.duplicate_group_id
-                        ? getDuplicateGroupRowClasses(property.duplicate_group_id)
-                        : undefined,
-                      isRemoved && "opacity-60",
-                    );
-                    const rowActions: TableRowAction[] = [
-                      {
-                        ...PROPERTY_PUSH_ACTION,
-                        isDisabled:
-                          pushToCrm.isPending && pushToCrm.variables === property.id,
-                      },
-                      ...(canDelete ? [PROPERTY_DELETE_ACTION] : []),
-                    ];
+                <Checkbox.Content>
+                  <Checkbox.Control>
+                    <Checkbox.Indicator />
+                  </Checkbox.Control>
+                </Checkbox.Content>
+              </Checkbox>
+              <span className="text-sm text-muted">Select all on page</span>
+            </div>
+            {properties.map((property) => {
+              const rowActions: TableRowAction[] = [
+                {
+                  ...PROPERTY_PUSH_ACTION,
+                  isDisabled:
+                    pushToCrm.isPending && pushToCrm.variables === property.id,
+                },
+                ...(canDelete ? [PROPERTY_DELETE_ACTION] : []),
+              ];
 
-                    return (
-                    <Table.Row
-                      key={property.id}
-                      id={property.id}
-                    >
-                      <Table.Cell className={cn("pr-0", groupCellClass)}>
-                        <Checkbox
-                          aria-label={`Select ${property.title}`}
-                          slot="selection"
-                          variant="secondary"
-                        >
-                          <Checkbox.Content>
-                            <Checkbox.Control>
-                              <Checkbox.Indicator />
-                            </Checkbox.Control>
-                          </Checkbox.Content>
-                        </Checkbox>
-                      </Table.Cell>
-                      <Table.Cell className={groupCellClass}>
-                        <Link
-                          to={Routes.dashboard.properties.detail(property.id)}
-                          className={cn(
-                            "font-medium text-foreground hover:text-accent transition-colors",
-                            isRemoved && "line-through",
-                          )}
-                        >
-                          {property.title}
-                        </Link>
-                      </Table.Cell>
-                      <Table.Cell className={groupCellClass}>{property.city ?? "—"}</Table.Cell>
-                      <Table.Cell className={groupCellClass}>
-                        {formatPrice(property.price, property.currency)}
-                      </Table.Cell>
-                      <Table.Cell className={groupCellClass}>
-                        <PropertyStatusChip status={property.status} />
-                      </Table.Cell>
-                      <Table.Cell className={groupCellClass}>
-                        {property.pending_crm_update ? (
-                          <div className="flex items-center gap-2">
-                            <Chip size="sm" variant="soft" color="warning">
-                              Pending
+              return (
+                <PropertyListCard
+                  key={property.id}
+                  id={property.id}
+                  title={property.title}
+                  city={property.city}
+                  price={property.price}
+                  currency={property.currency}
+                  status={property.status}
+                  pendingCrmUpdate={property.pending_crm_update}
+                  integrationPropertyId={property.integration_property_id}
+                  duplicateGroupId={property.duplicate_group_id}
+                  isSelected={selectedIds.has(property.id)}
+                  onSelectionChange={(selected) =>
+                    togglePropertySelection(property.id, selected)
+                  }
+                  rowActions={rowActions}
+                  onAction={(actionId) => {
+                    if (actionId === "push-to-crm") {
+                      pushToCrm.mutate(property.id);
+                      return;
+                    }
+                    if (actionId !== "delete") return;
+                    setDeletePropertyId(property.id);
+                    deleteConfirm.open();
+                  }}
+                  isPushPending={
+                    pushToCrm.isPending && pushToCrm.variables === property.id
+                  }
+                  onPushToCrm={() => pushToCrm.mutate(property.id)}
+                />
+              );
+            })}
+          </div>
+
+          <div className="hidden min-w-0 overflow-hidden rounded-xl border border-border bg-surface md:block">
+            <Table>
+              <Table.ScrollContainer>
+                <Table.Content
+                  aria-label="My properties"
+                  selectionMode="multiple"
+                  selectedKeys={selectedKeys}
+                  onSelectionChange={setSelectedKeys}
+                >
+                  <Table.Header>
+                    <Table.Column className="pr-0">
+                      <Checkbox aria-label="Select all properties on this page" slot="selection">
+                        <Checkbox.Content>
+                          <Checkbox.Control>
+                            <Checkbox.Indicator />
+                          </Checkbox.Control>
+                        </Checkbox.Content>
+                      </Checkbox>
+                    </Table.Column>
+                    <Table.Column isRowHeader>Title</Table.Column>
+                    <Table.Column isRowHeader>City</Table.Column>
+                    <Table.Column isRowHeader>Price</Table.Column>
+                    <Table.Column isRowHeader>Status</Table.Column>
+                    <Table.Column isRowHeader>CRM</Table.Column>
+                    <Table.Column isRowHeader>Integration ID</Table.Column>
+                    <Table.Column isRowHeader>Actions</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    {properties.map((property) => {
+                      const isRemoved = property.status === PropertyStatuses.REMOVED;
+                      const groupCellClass = cn(
+                        property.duplicate_group_id
+                          ? getDuplicateGroupRowClasses(property.duplicate_group_id)
+                          : undefined,
+                        isRemoved && "opacity-60",
+                      );
+                      const rowActions: TableRowAction[] = [
+                        {
+                          ...PROPERTY_PUSH_ACTION,
+                          isDisabled:
+                            pushToCrm.isPending && pushToCrm.variables === property.id,
+                        },
+                        ...(canDelete ? [PROPERTY_DELETE_ACTION] : []),
+                      ];
+
+                      return (
+                      <Table.Row
+                        key={property.id}
+                        id={property.id}
+                      >
+                        <Table.Cell className={cn("pr-0", groupCellClass)}>
+                          <Checkbox
+                            aria-label={`Select ${property.title}`}
+                            slot="selection"
+                            variant="secondary"
+                          >
+                            <Checkbox.Content>
+                              <Checkbox.Control>
+                                <Checkbox.Indicator />
+                              </Checkbox.Control>
+                            </Checkbox.Content>
+                          </Checkbox>
+                        </Table.Cell>
+                        <Table.Cell className={groupCellClass}>
+                          <Link
+                            to={Routes.dashboard.properties.detail(property.id)}
+                            className={cn(
+                              "font-medium text-foreground hover:text-accent transition-colors",
+                              isRemoved && "line-through",
+                            )}
+                          >
+                            {property.title}
+                          </Link>
+                        </Table.Cell>
+                        <Table.Cell className={groupCellClass}>{property.city ?? "—"}</Table.Cell>
+                        <Table.Cell className={groupCellClass}>
+                          {formatPrice(property.price, property.currency)}
+                        </Table.Cell>
+                        <Table.Cell className={groupCellClass}>
+                          <PropertyStatusChip status={property.status} />
+                        </Table.Cell>
+                        <Table.Cell className={groupCellClass}>
+                          {property.pending_crm_update ? (
+                            <div className="flex items-center gap-2">
+                              <Chip size="sm" variant="soft" color="warning">
+                                Pending
+                              </Chip>
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                isPending={
+                                  pushToCrm.isPending && pushToCrm.variables === property.id
+                                }
+                                onPress={() => pushToCrm.mutate(property.id)}
+                              >
+                                Update CRM
+                              </Button>
+                            </div>
+                          ) : property.integration_property_id ? (
+                            <Chip size="sm" variant="soft" color="success">
+                              Synced
                             </Chip>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              isPending={
-                                pushToCrm.isPending && pushToCrm.variables === property.id
+                          ) : (
+                            "—"
+                          )}
+                        </Table.Cell>
+                        <Table.Cell className={groupCellClass}>
+                          {property.integration_property_id ?? "—"}
+                        </Table.Cell>
+                        <Table.Cell className={groupCellClass}>
+                          <TableRowActionsMenu
+                            actions={rowActions}
+                            onAction={(actionId) => {
+                              if (actionId === "push-to-crm") {
+                                pushToCrm.mutate(property.id);
+                                return;
                               }
-                              onPress={() => pushToCrm.mutate(property.id)}
-                            >
-                              Update CRM
-                            </Button>
-                          </div>
-                        ) : property.integration_property_id ? (
-                          <Chip size="sm" variant="soft" color="success">
-                            Synced
-                          </Chip>
-                        ) : (
-                          "—"
-                        )}
-                      </Table.Cell>
-                      <Table.Cell className={groupCellClass}>
-                        {property.integration_property_id ?? "—"}
-                      </Table.Cell>
-                      <Table.Cell className={groupCellClass}>
-                        <TableRowActionsMenu
-                          actions={rowActions}
-                          onAction={(actionId) => {
-                            if (actionId === "push-to-crm") {
-                              pushToCrm.mutate(property.id);
-                              return;
-                            }
-                            if (actionId !== "delete") return;
-                            setDeletePropertyId(property.id);
-                            deleteConfirm.open();
-                          }}
-                          ariaLabel={`Actions for ${property.title}`}
-                        />
-                      </Table.Cell>
-                    </Table.Row>
-                    );
-                  })}
-                </Table.Body>
-              </Table.Content>
-            </Table.ScrollContainer>
-          </Table>
-        </div>
+                              if (actionId !== "delete") return;
+                              setDeletePropertyId(property.id);
+                              deleteConfirm.open();
+                            }}
+                            ariaLabel={`Actions for ${property.title}`}
+                          />
+                        </Table.Cell>
+                      </Table.Row>
+                      );
+                    })}
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
+            </Table>
+          </div>
+        </>
       )}
 
       {pagination && pagination.total_pages > 1 && (
-        <Pagination>
+        <Pagination className="min-w-0 overflow-x-auto">
           <Pagination.Content>
             <Pagination.Item>
               <Pagination.Previous
