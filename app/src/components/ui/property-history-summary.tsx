@@ -1,7 +1,4 @@
-import {
-  formatPropertyHistoryLabel,
-  formatPropertyHistoryValue,
-} from "@/features/properties/utils/format-property-history";
+import { PropertyHistoryChangeLabel } from "@/components/ui/property-history-change-label";
 import type { PropertyHistoryEntry } from "@/features/properties/interfaces/properties.interfaces";
 
 export function PropertyHistorySummary({
@@ -16,19 +13,11 @@ export function PropertyHistorySummary({
   return (
     <ul className="flex flex-col gap-2">
       {history.map((entry) => (
-        <li key={entry.id} className="flex flex-col gap-0.5 text-sm">
-          <span className="text-foreground">{formatPropertyHistoryLabel(entry)}</span>
-          {entry.field ? (
-            <span className="text-xs text-muted break-words">
-              {entry.field}: {formatPropertyHistoryValue(entry.old_value)} →{" "}
-              {formatPropertyHistoryValue(entry.new_value)}
-            </span>
-          ) : entry.old_value != null || entry.new_value != null ? (
-            <span className="text-xs text-muted break-words">
-              {formatPropertyHistoryValue(entry.old_value)} →{" "}
-              {formatPropertyHistoryValue(entry.new_value)}
-            </span>
-          ) : null}
+        <li key={entry.id} className="min-w-0 text-sm">
+          <PropertyHistoryChangeLabel
+            entry={entry}
+            className="text-foreground"
+          />
         </li>
       ))}
     </ul>

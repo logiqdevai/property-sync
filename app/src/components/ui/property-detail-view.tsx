@@ -30,10 +30,6 @@ import { RemoveWatermarkModal } from "@/components/ui/remove-watermark-modal";
 import { MigrateIntegrationImagesModal } from "@/components/ui/migrate-integration-images-modal";
 import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
 import type { MigrateIntegrationImagesMode } from "@/features/user-properties/interfaces/user-properties.interfaces";
-import {
-  formatPropertyHistoryLabel,
-  formatPropertyHistoryValue,
-} from "@/features/properties/utils/format-property-history";
 import type {
   CmsPropertyFieldEntry,
   CmsPropertyMetadata,
@@ -51,6 +47,7 @@ import {
   resolvePropertyDisplayImages,
   type PropertyDisplayImage,
 } from "@/features/integration-property/utils/resolve-property-display-images";
+import { PropertyHistoryChangeLabel } from "@/components/ui/property-history-change-label";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { formatDateTime } from "@/lib/date";
 import { formatPrice } from "@/lib/price";
@@ -106,11 +103,11 @@ function formatLocation(property: PropertyDetailViewData): string | null {
 
 function MetaItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-0.5 min-w-0">
+    <div className="flex min-w-0 flex-col gap-0.5">
       <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
         {label}
       </span>
-      <span className="font-mono text-sm text-foreground truncate">{value}</span>
+      <span className="break-all font-mono text-sm text-foreground">{value}</span>
     </div>
   );
 }
@@ -125,15 +122,17 @@ function SpecItem({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg bg-surface-secondary/60 px-3 py-2.5">
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-tertiary-bg text-tertiary">
+    <div className="flex min-w-0 items-center gap-2 rounded-lg bg-surface-secondary/60 px-2.5 py-2 sm:gap-3 sm:px-3 sm:py-2.5">
+      <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-tertiary-bg text-tertiary sm:size-8">
         <Icon className="size-3.5" />
       </div>
       <div className="flex min-w-0 flex-col gap-0.5">
         <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
           {label}
         </span>
-        <span className="text-sm font-medium text-foreground tabular-nums">{value}</span>
+        <span className="truncate text-sm font-medium text-foreground tabular-nums">
+          {value}
+        </span>
       </div>
     </div>
   );
@@ -464,7 +463,7 @@ function PropertyImagesGrid({
                     "absolute left-2 top-2 z-10 transition-opacity",
                     isSelected || selectedCount > 0
                       ? "opacity-100"
-                      : "opacity-0 group-hover:opacity-100 focus-within:opacity-100",
+                      : "opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-within:opacity-100",
                   )}
                   onClick={(event) => {
                     event.preventDefault();
@@ -691,15 +690,15 @@ export function PropertyDetailView({
   }[];
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+    <div className="flex min-w-0 flex-col gap-6 sm:gap-8">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <Link
           to={backHref}
           className="text-sm text-muted hover:text-foreground transition-colors"
         >
           {backLabel}
         </Link>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           {details ? headerExtra : null}
           {headerActions}
         </div>
@@ -708,9 +707,9 @@ export function PropertyDetailView({
       {banner}
 
       {details ?? (
-        <section className="overflow-hidden rounded-xl border border-border bg-surface">
+        <section className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface">
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.2fr)] lg:min-h-[22rem]">
-            <div className="relative min-h-56 bg-surface-secondary lg:min-h-full">
+            <div className="relative aspect-[4/3] min-h-48 bg-surface-secondary sm:min-h-56 lg:aspect-auto lg:min-h-full">
               {heroImage ? (
                 <div className="absolute inset-0">
                   <PropertyPhoto
@@ -732,8 +731,8 @@ export function PropertyDetailView({
               )}
             </div>
 
-            <div className="flex flex-col gap-5 p-5 sm:p-6">
-              <div className="flex flex-col gap-3">
+            <div className="flex min-w-0 flex-col gap-4 p-4 sm:gap-5 sm:p-6">
+              <div className="flex min-w-0 flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <PropertyStatusChip status={property.status} />
                   <Chip size="sm" variant="soft">
@@ -758,8 +757,8 @@ export function PropertyDetailView({
                   {headerExtra}
                 </div>
 
-                <div className="flex items-start gap-2">
-                  <h1 className="text-2xl font-semibold tracking-tight text-foreground text-balance">
+                <div className="flex min-w-0 items-start gap-2">
+                  <h1 className="min-w-0 text-xl font-semibold tracking-tight text-foreground text-balance break-words sm:text-2xl">
                     {property.title}
                   </h1>
                   {primaryLink && (
@@ -775,16 +774,16 @@ export function PropertyDetailView({
                   )}
                 </div>
 
-                <p className="text-3xl font-semibold tracking-tight text-tertiary tabular-nums">
+                <p className="text-2xl font-semibold tracking-tight text-tertiary tabular-nums break-words sm:text-3xl">
                   {hasPrice
                     ? formatPrice(property.price, property.currency)
                     : "Price not set"}
                 </p>
 
                 {location && (
-                  <p className="flex items-start gap-2 text-sm text-muted">
+                  <p className="flex min-w-0 items-start gap-2 text-sm text-muted">
                     <MapPin className="mt-0.5 size-4 shrink-0 text-tertiary" />
-                    <span>{location}</span>
+                    <span className="min-w-0 break-words">{location}</span>
                   </p>
                 )}
               </div>
@@ -814,9 +813,9 @@ export function PropertyDetailView({
                       href={crmPropertyAppUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 font-mono text-sm text-accent hover:underline truncate"
+                      className="inline-flex min-w-0 items-center gap-1.5 font-mono text-sm text-accent hover:underline"
                     >
-                      <span className="truncate">{property.integration_property_id}</span>
+                      <span className="min-w-0 truncate">{property.integration_property_id}</span>
                       <ExternalLink className="size-3.5 shrink-0" />
                     </a>
                   ) : (
@@ -851,11 +850,11 @@ export function PropertyDetailView({
           </div>
 
           {property.description && (
-            <div className="border-t border-border px-5 py-5 sm:px-6">
+            <div className="border-t border-border px-4 py-4 sm:px-6 sm:py-5">
               <h2 className="mb-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
                 Description
               </h2>
-              <p className="max-w-3xl text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
+              <p className="max-w-3xl text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">
                 {property.description}
               </p>
             </div>
@@ -863,28 +862,28 @@ export function PropertyDetailView({
         </section>
       )}
 
-      <section className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-3">
+      <section className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:p-5">
         <h2 className="text-sm font-semibold text-foreground">CMS & location</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-          <p>
+        <div className="grid min-w-0 grid-cols-1 gap-3 text-sm md:grid-cols-2">
+          <p className="min-w-0 break-words">
             <span className="text-muted">Property type:</span>{" "}
             {property.estateweb_type_name ?? "—"}
           </p>
-          <p>
+          <p className="min-w-0 break-words">
             <span className="text-muted">Energy class:</span>{" "}
             {property.estateweb_energy_class_name ?? "—"}
           </p>
-          <p>
+          <p className="min-w-0 break-words">
             <span className="text-muted">Road:</span>{" "}
             {property.estateweb_road_type_name ?? "—"}
           </p>
           {property.estateweb_location_name && (
-            <p>
+            <p className="min-w-0 break-words">
               <span className="text-muted">EstateWeb location:</span>{" "}
               {property.estateweb_location_name}
             </p>
           )}
-          <p>
+          <p className="min-w-0 break-words">
             <span className="text-muted">Video URL:</span>{" "}
             {property.video_url ? (
               <a
@@ -899,18 +898,18 @@ export function PropertyDetailView({
               "—"
             )}
           </p>
-          <p>
+          <p className="min-w-0 break-words">
             <span className="text-muted">Airport distance:</span> {property.distance_airport ?? "—"}
           </p>
-          <p>
+          <p className="min-w-0 break-words">
             <span className="text-muted">Port distance:</span> {property.distance_port ?? "—"}
           </p>
-          <p>
+          <p className="min-w-0 break-words">
             <span className="text-muted">Beach distance:</span> {property.distance_beach ?? "—"}
           </p>
         </div>
         {cmsFieldEntries.length > 0 && (
-          <div className="flex flex-col gap-2">
+          <div className="flex min-w-0 flex-col gap-2">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">CMS fields</h3>
             <div className="flex flex-wrap gap-2">
               {cmsFieldEntries.map((field) => (
@@ -924,18 +923,20 @@ export function PropertyDetailView({
           </div>
         )}
         {cmsMetadataLines.length > 0 && (
-          <div className="flex flex-col gap-2">
+          <div className="flex min-w-0 flex-col gap-2">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">CMS metadata</h3>
-            <ul className="text-sm text-muted flex flex-col gap-1">
+            <ul className="flex flex-col gap-1 text-sm text-muted">
               {cmsMetadataLines.map((line) => (
-                <li key={line}>{line}</li>
+                <li key={line} className="break-words">
+                  {line}
+                </li>
               ))}
             </ul>
           </div>
         )}
       </section>
 
-      <section className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
+      <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
         <h2 className="text-sm font-semibold text-foreground">Images</h2>
         {!displayImages.length ? (
           canMigrateIntegrationImages && onMigrateIntegrationImages ? (
@@ -991,7 +992,7 @@ export function PropertyDetailView({
         )}
       </section>
 
-      <section className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
+      <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
         <h2 className="text-sm font-semibold text-foreground">Features</h2>
         {!property.features || property.features.length === 0 ? (
           <p className="text-sm text-muted">No features listed.</p>
@@ -1006,43 +1007,31 @@ export function PropertyDetailView({
         )}
       </section>
 
-      <section className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4">
+      <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
         <h2 className="text-sm font-semibold text-foreground">History</h2>
         {property.history.length === 0 ? (
           <p className="text-sm text-muted">No history yet.</p>
         ) : (
-          <ul className="flex flex-col gap-3">
-            {property.history.map((entry) =>
-              showFieldDiff ? (
-                <li
-                  key={entry.id}
-                  className="flex items-start justify-between gap-3 text-sm border border-border rounded-lg p-3"
-                >
-                  <div className="flex flex-col gap-1">
-                    <span className="font-medium text-foreground">
-                      {formatPropertyHistoryLabel(entry)}
-                    </span>
-                    {entry.field && (
-                      <span className="text-xs text-muted">
-                        {entry.field}: {formatPropertyHistoryValue(entry.old_value)} →{" "}
-                        {formatPropertyHistoryValue(entry.new_value)}
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-xs text-muted whitespace-nowrap">
-                    {formatDateTime(entry.created_at)}
-                  </span>
-                </li>
-              ) : (
-                <li
-                  key={entry.id}
-                  className="flex items-start justify-between gap-4 text-sm border-l-2 border-accent/30 pl-4 py-1"
-                >
-                  <span className="text-foreground">{formatPropertyHistoryLabel(entry)}</span>
-                  <span className="text-muted shrink-0">{formatDateTime(entry.created_at)}</span>
-                </li>
-              ),
-            )}
+          <ul className="flex min-w-0 flex-col gap-3">
+            {property.history.map((entry) => (
+              <li
+                key={entry.id}
+                className={cn(
+                  "flex min-w-0 flex-col gap-2 text-sm sm:flex-row sm:items-start sm:justify-between sm:gap-3",
+                  showFieldDiff
+                    ? "rounded-lg border border-border p-3"
+                    : "border-l-2 border-accent/30 py-1 pl-4",
+                )}
+              >
+                <PropertyHistoryChangeLabel
+                  entry={entry}
+                  className="min-w-0 font-medium text-foreground"
+                />
+                <span className="shrink-0 text-xs text-muted sm:whitespace-nowrap">
+                  {formatDateTime(entry.created_at)}
+                </span>
+              </li>
+            ))}
           </ul>
         )}
       </section>

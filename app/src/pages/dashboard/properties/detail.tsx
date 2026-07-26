@@ -44,7 +44,7 @@ import { EstateWebLocationPickerModal } from "./components/estateweb-location-pi
 import { EstateWebPropertyTypePickerModal } from "./components/estateweb-property-type-picker-modal";
 
 const fieldClassName =
-  "rounded-lg border border-border bg-background px-3 py-2 placeholder:text-muted";
+  "w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2 placeholder:text-muted";
 
 function resolveScopeIdFromListingType(listingType: string): number | null {
   if (listingType === "RENT" || listingType === "SHORT_TERM_RENT") return 2;
@@ -365,9 +365,9 @@ export default function DashboardPropertyDetailPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-w-0 flex-col gap-4">
       {property.pending_crm_update ? (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-warning/40 bg-warning/5 px-4 py-3">
+        <div className="flex flex-col gap-3 rounded-xl border border-warning/40 bg-warning/5 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">CRM update pending</p>
             <p className="text-xs text-muted">
@@ -376,6 +376,7 @@ export default function DashboardPropertyDetailPage() {
           </div>
           <ActionButtonWithPending
             variant="primary"
+            className="w-full shrink-0 sm:w-auto"
             isPending={pushToCrm.isPending}
             onPress={() => pushToCrm.mutate(property.id)}
           >
@@ -452,10 +453,10 @@ export default function DashboardPropertyDetailPage() {
           isEditing ? (
             <form
               onSubmit={onSubmit}
-              className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-4"
+              className="flex min-w-0 flex-col gap-4 overflow-hidden rounded-xl border border-border bg-surface p-4 sm:p-5"
             >
               <h2 className="text-sm font-semibold text-foreground">Edit your copy</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-w-0">
+              <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
                 <label className="flex flex-col gap-1 text-sm md:col-span-2">
                   <span className="text-muted">Title</span>
                   <input
@@ -691,7 +692,7 @@ export default function DashboardPropertyDetailPage() {
               </div>
 
               <h3 className="text-sm font-semibold text-foreground pt-2">CMS & integration</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-w-0">
+              <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
                 <label className="flex flex-col gap-1 text-sm md:col-span-2">
                   <span className="text-muted">CMS property ID</span>
                   <input
@@ -750,9 +751,10 @@ export default function DashboardPropertyDetailPage() {
                   />
                 </label>
               </div>
-              <div className="flex justify-end">
+              <div className="flex justify-stretch sm:justify-end">
                 <ActionButtonWithPending
                   type="submit"
+                  className="w-full sm:w-auto"
                   isDisabled={!isDirty}
                   isPending={updateProperty.isPending}
                 >
