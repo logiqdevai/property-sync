@@ -293,60 +293,85 @@ export class DetailEnrichmentService {
 
         let latitude: number | null = null;
         let longitude: number | null = null;
+        const MAX_SCRIPT_CHARS = 50_000;
         const parseCoord = (value: string): number | null => {
           const n = parseFloat(value);
           return Number.isFinite(n) ? n : null;
         };
         const isValidCoords = (lat: number, lng: number): boolean =>
           Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+        const roundCoord = (n: number): number => Math.round(n * 1e7) / 1e7;
+        const acceptCoords = (lat: number | null, lng: number | null) => {
+          if (lat == null || lng == null || !isValidCoords(lat, lng)) {
+            return false;
+          }
+          latitude = roundCoord(lat);
+          longitude = roundCoord(lng);
+          return true;
+        };
 
         for (const script of Array.from(document.querySelectorAll('script'))) {
+          if ((script as HTMLScriptElement).src) continue;
           const text = script.textContent || '';
-          if (!text) continue;
+          if (!text || text.length > MAX_SCRIPT_CHARS) continue;
+          if (!/lat|long|lng|setView|LatLng/i.test(text)) continue;
+
+          const realStatusLat = text.match(
+            /\bvar\s+lat\s*=\s*(-?\d+(?:\.\d+)?)/i,
+          );
+          const realStatusLng = text.match(
+            /\bvar\s+long\s*=\s*(-?\d+(?:\.\d+)?)/i,
+          );
+          if (
+            acceptCoords(
+              realStatusLat ? parseCoord(realStatusLat[1]) : null,
+              realStatusLng ? parseCoord(realStatusLng[1]) : null,
+            )
+          ) {
+            break;
+          }
 
           const latMatch = text.match(
-            /\b(?:var|let|const)\s+lat(?:itude)?\s*=\s*(-?\d+(?:\.\d+)?)/i,
+            /\b(?:let|const)\s+lat(?:itude)?\s*=\s*(-?\d+(?:\.\d+)?)/i,
           );
           const lngMatch =
             text.match(
-              /\b(?:var|let|const)\s+long(?:itude)?\s*=\s*(-?\d+(?:\.\d+)?)/i,
+              /\b(?:let|const)\s+long(?:itude)?\s*=\s*(-?\d+(?:\.\d+)?)/i,
             ) ||
             text.match(/\b(?:var|let|const)\s+lng\s*=\s*(-?\d+(?:\.\d+)?)/i);
-
-          if (latMatch && lngMatch) {
-            const lat = parseCoord(latMatch[1]);
-            const lng = parseCoord(lngMatch[1]);
-            if (lat != null && lng != null && isValidCoords(lat, lng)) {
-              latitude = lat;
-              longitude = lng;
-              break;
-            }
+          if (
+            acceptCoords(
+              latMatch ? parseCoord(latMatch[1]) : null,
+              lngMatch ? parseCoord(lngMatch[1]) : null,
+            )
+          ) {
+            break;
           }
 
           const setViewMatch = text.match(
             /\.setView\(\s*\[\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\]/,
           );
-          if (setViewMatch) {
-            const lat = parseCoord(setViewMatch[1]);
-            const lng = parseCoord(setViewMatch[2]);
-            if (lat != null && lng != null && isValidCoords(lat, lng)) {
-              latitude = lat;
-              longitude = lng;
-              break;
-            }
+          if (
+            setViewMatch &&
+            acceptCoords(
+              parseCoord(setViewMatch[1]),
+              parseCoord(setViewMatch[2]),
+            )
+          ) {
+            break;
           }
 
           const latLngMatch = text.match(
             /(?:LatLng|latLng)\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)/,
           );
-          if (latLngMatch) {
-            const lat = parseCoord(latLngMatch[1]);
-            const lng = parseCoord(latLngMatch[2]);
-            if (lat != null && lng != null && isValidCoords(lat, lng)) {
-              latitude = lat;
-              longitude = lng;
-              break;
-            }
+          if (
+            latLngMatch &&
+            acceptCoords(
+              parseCoord(latLngMatch[1]),
+              parseCoord(latLngMatch[2]),
+            )
+          ) {
+            break;
           }
         }
 

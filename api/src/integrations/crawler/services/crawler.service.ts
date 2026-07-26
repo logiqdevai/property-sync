@@ -14,6 +14,10 @@ import { crawlTimestamp } from '../utils/crawler.utils';
 import { CrawlerDebugService } from './crawler-debug.service';
 import { FieldExtractionService } from './field-extraction.service';
 
+export interface CrawlRunOptions {
+  onPageComplete?: () => void | Promise<void>;
+}
+
 @Injectable()
 export class CrawlerService {
   private readonly logger = new Logger(CrawlerService.name);
@@ -28,15 +32,17 @@ export class CrawlerService {
   async runCrawl(
     config: ScraperConfig,
     diagnosticsCtx: DiagnosticsRunContext,
+    options?: CrawlRunOptions,
   ): Promise<CrawlResult> {
     return this.diagnosticsCaptureService.run(diagnosticsCtx, (page) =>
-      this.scrapeListingPages(page, config),
+      this.scrapeListingPages(page, config, options),
     );
   }
 
   private async scrapeListingPages(
     page: Page,
     config: ScraperConfig,
+    options?: CrawlRunOptions,
   ): Promise<CrawlResult> {
     const crawlerConfig = await this.platformConfigService.getCrawlerConfig();
     const steps: CrawlStep[] = [];
@@ -175,6 +181,10 @@ export class CrawlerService {
               cardErr instanceof Error ? cardErr.message : String(cardErr);
             log('card_extract_failed', { index: i, message });
           }
+        }
+
+        if (options?.onPageComplete) {
+          await options.onPageComplete();
         }
 
         const pagination = config.pagination;

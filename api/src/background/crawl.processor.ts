@@ -172,8 +172,17 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         workerId: job.id ? String(job.id) : undefined,
       };
 
+      const heartbeat = async () => {
+        await this.prisma.crawlRun.update({
+          where: { id: crawlRunId },
+          data: { updated_at: new Date() },
+        });
+      };
+
       const crawlResult = await this.withTimeout(
-        this.crawlerService.runCrawl(config, diagnosticsCtx),
+        this.crawlerService.runCrawl(config, diagnosticsCtx, {
+          onPageComplete: heartbeat,
+        }),
         crawl_job_timeout_ms,
         `crawl timed out after ${crawl_job_timeout_ms}ms`,
       );
@@ -187,12 +196,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
               Date.now() +
               crawl_job_timeout_ms -
               DETAIL_ENRICHMENT_SOFT_STOP_BUFFER_MS,
-            onBatchComplete: async () => {
-              await this.prisma.crawlRun.update({
-                where: { id: crawlRunId },
-                data: { updated_at: new Date() },
-              });
-            },
+            onBatchComplete: heartbeat,
           },
         ),
         crawl_job_timeout_ms,

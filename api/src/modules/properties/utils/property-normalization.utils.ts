@@ -230,6 +230,13 @@ function toDecimal(value: number | null | undefined): Prisma.Decimal | null {
   return value != null ? new Prisma.Decimal(value) : null;
 }
 
+function toCoordinateDecimal(
+  value: number | null | undefined,
+): Prisma.Decimal | null {
+  if (value == null || !Number.isFinite(value)) return null;
+  return new Prisma.Decimal(Math.round(value * 1e7) / 1e7);
+}
+
 function sanitizeCmsMetadata(
   metadata: CmsPropertyMetadata | null | undefined,
 ): Prisma.InputJsonValue | null {
@@ -395,8 +402,8 @@ export function buildPropertyRecord(
         ? readRawString(rawData, ['postal_code', 'zip', '_postal_code'])
         : null),
     country: 'GR',
-    latitude: toDecimal(latLng.latitude ?? n.latitude),
-    longitude: toDecimal(latLng.longitude ?? n.longitude),
+    latitude: toCoordinateDecimal(latLng.latitude ?? n.latitude),
+    longitude: toCoordinateDecimal(latLng.longitude ?? n.longitude),
     square_meters: toDecimal(n.square_meters),
     bedrooms: n.bedrooms ?? null,
     bathrooms: n.bathrooms ?? null,
