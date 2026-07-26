@@ -291,14 +291,21 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     crmPropertyId: number | string;
     oldImageId: number;
     processedBuffer: Buffer;
-    gcsUrl: string;
+    gcsUrl?: string;
     oldImage: EstateWebPropertyImage;
     zindex: number;
     deleteOldImage?: boolean;
+    stepLogs?: Array<{
+      step: string;
+      status: 'started' | 'ok' | 'failed' | 'skipped';
+      duration_ms?: number;
+      detail?: string;
+      error?: string;
+    }>;
   }): Promise<void> {
     const propertyId = Number(params.crmPropertyId);
     const filename = this.buildUniqueImageFilename(
-      params.gcsUrl,
+      params.gcsUrl || 'processed.jpg',
       propertyId,
       params.zindex,
     );
@@ -310,39 +317,108 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       zindex: params.zindex,
     };
 
-    await this.estateWebPropertyService.uploadPropertyImage(
-      params.userIntegrationId,
-      propertyId,
-      params.processedBuffer,
-      payload,
-      'image/jpeg',
+    const pushStep = (
+      step: string,
+      status: 'started' | 'ok' | 'failed' | 'skipped',
+      detail?: string,
+      error?: string,
+      duration_ms?: number,
+    ) => {
+      const existing = params.stepLogs?.find(
+        (item) => item.step === step && item.status === 'started',
+      );
+      if (existing && status !== 'started') {
+        existing.status = status;
+        existing.detail = detail ?? existing.detail;
+        existing.error = error;
+        existing.duration_ms = duration_ms;
+      } else {
+        params.stepLogs?.push({ step, status, detail, error, duration_ms });
+      }
+      const line = `[watermark-replace] ${step} ${status}${detail ? ` ${detail}` : ''}${error ? ` error=${error}` : ''}`;
+      if (status === 'failed') {
+        this.logger.error(line);
+      } else {
+        this.logger.log(line);
+      }
+    };
+
+    const run = async <T>(
+      step: string,
+      fn: () => Promise<T>,
+      detail?: string,
+    ): Promise<T> => {
+      const started = Date.now();
+      pushStep(step, 'started', detail);
+      try {
+        const result = await fn();
+        pushStep(step, 'ok', detail, undefined, Date.now() - started);
+        return result;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        pushStep(step, 'failed', detail, message, Date.now() - started);
+        throw error;
+      }
+    };
+
+    await run(
+      'estateweb_upload_image',
+      () =>
+        this.estateWebPropertyService.uploadPropertyImage(
+          params.userIntegrationId,
+          propertyId,
+          params.processedBuffer,
+          payload,
+          'image/jpeg',
+        ),
+      `property_id=${propertyId} filename=${filename} bytes=${params.processedBuffer.length} zindex=${params.zindex}`,
     );
 
-    const sourceByFilename = new Map<string, string>([
-      [filename, params.gcsUrl],
-    ]);
+    const sourceByFilename = params.gcsUrl
+      ? new Map<string, string>([[filename, params.gcsUrl]])
+      : undefined;
 
-    await this.syncIntegrationPropertyImages({
-      userIntegrationId: params.userIntegrationId,
-      userPropertyId: params.userPropertyId,
-      estateWebPropertyId: params.crmPropertyId,
-      sourceByFilename,
-    });
+    await run(
+      'estateweb_sync_after_upload',
+      () =>
+        this.syncIntegrationPropertyImages({
+          userIntegrationId: params.userIntegrationId,
+          userPropertyId: params.userPropertyId,
+          estateWebPropertyId: params.crmPropertyId,
+          sourceByFilename,
+        }),
+      `user_property_id=${params.userPropertyId} has_source_map=${Boolean(sourceByFilename)}`,
+    );
 
     if (!params.deleteOldImage) {
+      pushStep(
+        'estateweb_delete_old_image',
+        'skipped',
+        `old_image_id=${params.oldImageId}`,
+      );
       return;
     }
 
-    await this.estateWebPropertyService.deletePropertyImage(
-      params.userIntegrationId,
-      params.oldImageId,
+    await run(
+      'estateweb_delete_old_image',
+      () =>
+        this.estateWebPropertyService.deletePropertyImage(
+          params.userIntegrationId,
+          params.oldImageId,
+        ),
+      `old_image_id=${params.oldImageId}`,
     );
 
-    await this.syncIntegrationPropertyImages({
-      userIntegrationId: params.userIntegrationId,
-      userPropertyId: params.userPropertyId,
-      estateWebPropertyId: params.crmPropertyId,
-    });
+    await run(
+      'estateweb_sync_after_delete',
+      () =>
+        this.syncIntegrationPropertyImages({
+          userIntegrationId: params.userIntegrationId,
+          userPropertyId: params.userPropertyId,
+          estateWebPropertyId: params.crmPropertyId,
+        }),
+      `user_property_id=${params.userPropertyId}`,
+    );
   }
 
   private async resolvePushSitesForSync(

@@ -6,7 +6,7 @@ import {
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { CRAWL_QUEUE, GENERATION_QUEUE } from '@/core/queues/queues.constants';
+import { CRAWL_QUEUE, GENERATION_QUEUE, WATERMARK_REMOVAL_QUEUE } from '@/core/queues/queues.constants';
 import { JobStatus, Prisma } from 'generated/prisma';
 import { JobLogQueryType } from './dto/job-log-query.schema';
 import { PaginatedResult } from './interfaces/job-log.interface';
@@ -25,6 +25,8 @@ export class JobsService {
     @InjectQueue(GENERATION_QUEUE)
     private readonly generationQueue: Queue,
     @InjectQueue(CRAWL_QUEUE) private readonly crawlQueue: Queue,
+    @InjectQueue(WATERMARK_REMOVAL_QUEUE)
+    private readonly watermarkRemovalQueue: Queue,
   ) {}
 
   async findAll(query: JobLogQueryType): Promise<PaginatedResult<any>> {
@@ -108,7 +110,17 @@ export class JobsService {
         ? { ...payload, jobLogId: jobLog.id }
         : payload;
 
-    await queue.add(jobLog.job_name ?? 'retry', enrichedPayload);
+    const jobOptions =
+      jobLog.queue_name === WATERMARK_REMOVAL_QUEUE
+        ? {
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          }
+        : undefined;
+
+    await queue.add(jobLog.job_name ?? 'retry', enrichedPayload, jobOptions);
 
     return this.findOne(id);
   }
@@ -193,6 +205,9 @@ export class JobsService {
     }
     if (queueName === CRAWL_QUEUE) {
       return this.crawlQueue;
+    }
+    if (queueName === WATERMARK_REMOVAL_QUEUE) {
+      return this.watermarkRemovalQueue;
     }
     throw new BadRequestException(`Unsupported queue: ${queueName}`);
   }

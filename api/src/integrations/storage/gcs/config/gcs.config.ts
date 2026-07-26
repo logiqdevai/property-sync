@@ -1,7 +1,19 @@
+import * as http from 'http';
+import * as https from 'https';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Storage } from '@google-cloud/storage';
+import { JWTInput } from 'google-auth-library';
 import { GcsConfig as GcsConfigInterface } from '../interfaces/gcs.interfaces';
+
+const httpAgentNoKeepAlive = new http.Agent({ keepAlive: false });
+const httpsAgentNoKeepAlive = new https.Agent({ keepAlive: false });
+
+function noKeepAliveAgent(parsedURL: URL): http.Agent | https.Agent {
+  return parsedURL.protocol === 'http:'
+    ? httpAgentNoKeepAlive
+    : httpsAgentNoKeepAlive;
+}
 
 @Injectable()
 export class GcsConfig {
@@ -16,29 +28,37 @@ export class GcsConfig {
   private parseCredentials(
     credentialsJsonBase64?: string,
     credentialsJson?: string,
-  ): object | undefined {
+  ): JWTInput | undefined {
+    let parsed: JWTInput | undefined;
+
     if (credentialsJsonBase64) {
       const decoded = Buffer.from(credentialsJsonBase64, 'base64').toString(
         'utf-8',
       );
-      return JSON.parse(decoded);
+      parsed = JSON.parse(decoded) as JWTInput;
+    } else if (credentialsJson) {
+      parsed = JSON.parse(credentialsJson) as JWTInput;
     }
 
-    if (credentialsJson) {
-      return JSON.parse(credentialsJson);
+    if (!parsed) {
+      return undefined;
     }
 
-    return undefined;
+    if (typeof parsed.private_key === 'string') {
+      parsed.private_key = parsed.private_key.replace(/\\n/g, '\n');
+    }
+
+    return parsed;
   }
 
   private initGcs() {
     try {
-      const projectId = this.configService.get('GCS_PROJECT_ID');
-      const bucketName = this.configService.get('GCS_BUCKET_NAME');
-      const credentialsJsonBase64 = this.configService.get(
+      const projectId = this.configService.get<string>('GCS_PROJECT_ID');
+      const bucketName = this.configService.get<string>('GCS_BUCKET_NAME');
+      const credentialsJsonBase64 = this.configService.get<string>(
         'GCS_CREDENTIALS_JSON_BASE64',
       );
-      const credentialsJson = this.configService.get('GCS_CREDENTIALS');
+      const credentialsJson = this.configService.get<string>('GCS_CREDENTIALS');
 
       if (!projectId || !bucketName) {
         this.logger.error('GCS_PROJECT_ID and GCS_BUCKET_NAME are required');
@@ -56,16 +76,18 @@ export class GcsConfig {
         credentials,
       };
 
-      const storageOptions: { projectId: string; credentials?: object } = {
-        projectId: this.config.project_id,
-      };
-
-      if (this.config.credentials) {
-        storageOptions.credentials = this.config.credentials;
-      }
-
-      this.storageClient = new Storage(storageOptions);
-      this.logger.debug('Google Cloud Storage initialized');
+      this.storageClient = new Storage({
+        projectId,
+        credentials,
+        clientOptions: {
+          transporterOptions: {
+            agent: noKeepAliveAgent,
+          },
+        },
+      });
+      this.logger.log(
+        `Google Cloud Storage initialized (project=${projectId}, bucket=${bucketName}, has_credentials=${Boolean(credentials)})`,
+      );
     } catch (error) {
       this.logger.error('Error initializing Google Cloud Storage', error);
     }

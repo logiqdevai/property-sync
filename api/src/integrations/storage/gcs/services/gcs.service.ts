@@ -23,17 +23,23 @@ export class GcsService {
   ): Promise<UploadImageResponse> {
     try {
       return await withGcsRetry(() => this.gcsAdapter.uploadImage(request), {
+        attempts: 5,
+        baseDelayMs: 1000,
         onRetry: (error, attempt) => {
           this.logger.warn(
-            `GCS upload retry ${attempt} for ${request.filename}: ${
+            `GCS upload retry ${attempt}/5 for ${request.filename}: ${
               error instanceof Error ? error.message : String(error)
             }`,
           );
         },
       });
     } catch (error) {
-      this.logger.error('Upload image error:', error);
-      throw new Error(`Failed to upload image: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Upload image error for ${request.filename}: ${message}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new Error(`Failed to upload image: ${message}`);
     }
   }
 

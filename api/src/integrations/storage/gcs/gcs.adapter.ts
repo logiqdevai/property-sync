@@ -31,50 +31,35 @@ export class GcsAdapter {
 
       const folder = request.folder || this.folder;
       const filename = `${folder}/${Date.now()}-${request.filename}`;
-
       const file = bucket.file(filename);
 
-      const stream = file.createWriteStream({
+      await file.save(request.file, {
+        contentType: request.contentType,
+        resumable: false,
+        validation: 'crc32c',
         metadata: {
           contentType: request.contentType,
         },
-        // public: request.public || false,
       });
 
-      return new Promise((resolve, reject) => {
-        stream.on('error', (error) => {
-          this.logger.error('Upload error:', error);
-          reject(error);
-        });
+      const [metadata] = await file.getMetadata();
+      const url = `https://storage.googleapis.com/${bucketName}/${filename}`;
 
-        stream.on('finish', async () => {
-          try {
-            // if (request.public) {
-            //     await file.makePublic();
-            // }
-
-            const [metadata] = await file.getMetadata();
-            const url = `https://storage.googleapis.com/${bucketName}/${filename}`;
-
-            resolve({
-              url,
-              filename,
-              size: parseInt(String(metadata.size)),
-              contentType: metadata.contentType,
-              bucket: bucketName,
-              path: filename,
-            });
-          } catch (error) {
-            this.logger.error('Error getting metadata:', error);
-            reject(error);
-          }
-        });
-
-        stream.end(request.file);
-      });
+      return {
+        url,
+        filename,
+        size: parseInt(String(metadata.size)),
+        contentType: metadata.contentType,
+        bucket: bucketName,
+        path: filename,
+      };
     } catch (error) {
       this.logger.error('Upload error:', error);
-      throw new Error(`Failed to upload image: ${error.message}`);
+      throw new Error(
+        `Failed to upload image: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
   }
 

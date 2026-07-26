@@ -797,7 +797,12 @@ export class UserPropertiesService {
       data: { payload: jobData as object },
     });
 
-    await this.watermarkRemovalQueue.add('remove-watermark', jobData);
+    await this.watermarkRemovalQueue.add('remove-watermark', jobData, {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 5000 },
+      removeOnComplete: 100,
+      removeOnFail: 200,
+    });
 
     return {
       job_log_id: jobLog.id,

@@ -10,10 +10,25 @@ export interface WatermarkRemovalJobData {
 
 export type WatermarkRemovalImageStatus = 'completed' | 'failed';
 
+export type WatermarkRemovalStepStatus =
+  | 'started'
+  | 'ok'
+  | 'failed'
+  | 'skipped';
+
+export interface WatermarkRemovalStepLog {
+  step: string;
+  status: WatermarkRemovalStepStatus;
+  duration_ms?: number;
+  detail?: string;
+  error?: string;
+}
+
 export interface WatermarkRemovalImageResult {
   image_id: string;
   status: WatermarkRemovalImageStatus;
   error?: string;
+  steps?: WatermarkRemovalStepLog[];
 }
 
 export interface WatermarkRemovalJobResult {
@@ -21,4 +36,5 @@ export interface WatermarkRemovalJobResult {
   completed: number;
   failed: number;
   items: WatermarkRemovalImageResult[];
+  logs?: string[];
 }

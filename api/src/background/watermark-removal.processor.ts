@@ -8,6 +8,7 @@ import { WatermarkRemovalService } from '@/modules/user-properties/services/wate
 import {
   WatermarkRemovalJobData,
   WatermarkRemovalJobResult,
+  WatermarkRemovalStepLog,
 } from '@/modules/user-properties/interfaces/watermark-removal-job.interface';
 
 @Processor(WATERMARK_REMOVAL_QUEUE)
@@ -30,26 +31,59 @@ export class WatermarkRemovalProcessor extends WorkerHost {
       completed: 0,
       failed: 0,
       items: [],
+      logs: [
+        `start job_log_id=${job.data.job_log_id} bull_job_id=${job.id} attempt=${job.attemptsMade + 1}/${job.opts.attempts ?? 1} images=${job.data.image_ids.join(',')} replace_crm_images=${job.data.replace_crm_images} crm_property_id=${job.data.crm_property_id}`,
+      ],
     };
+
+    this.logger.log(progress.logs[0]);
+    await this.updateJobProgress(job.data.job_log_id, progress);
 
     try {
       for (const imageId of job.data.image_ids) {
+        const steps: WatermarkRemovalStepLog[] = [];
+        const imageStarted = Date.now();
+        progress.logs?.push(`image=${imageId} begin`);
+        this.logger.log(
+          `[job=${job.data.job_log_id}] image=${imageId} begin`,
+        );
+
         try {
           await this.watermarkRemovalService.processSingleImage(
             job.data,
             imageId,
+            steps,
           );
           progress.completed += 1;
-          progress.items.push({ image_id: imageId, status: 'completed' });
+          progress.items.push({
+            image_id: imageId,
+            status: 'completed',
+            steps,
+          });
+          progress.logs?.push(
+            `image=${imageId} completed ${Date.now() - imageStarted}ms`,
+          );
+          this.logger.log(
+            `[job=${job.data.job_log_id}] image=${imageId} completed ${Date.now() - imageStarted}ms`,
+          );
         } catch (error) {
           const message =
             error instanceof Error ? error.message : String(error);
+          const stack = error instanceof Error ? error.stack : undefined;
           progress.failed += 1;
           progress.items.push({
             image_id: imageId,
             status: 'failed',
             error: message,
+            steps,
           });
+          progress.logs?.push(
+            `image=${imageId} failed ${Date.now() - imageStarted}ms: ${message}`,
+          );
+          this.logger.error(
+            `[job=${job.data.job_log_id}] image=${imageId} failed ${Date.now() - imageStarted}ms: ${message}`,
+            stack,
+          );
         }
 
         await this.updateJobProgress(job.data.job_log_id, progress);
@@ -61,11 +95,15 @@ export class WatermarkRemovalProcessor extends WorkerHost {
         );
       }
 
+      progress.logs?.push('job completed');
       await this.markJobCompleted(job.data.job_log_id, startedAt, progress);
+      this.logger.log(`[job=${job.data.job_log_id}] completed`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      progress.logs?.push(`job failed: ${message}`);
       this.logger.error(
         `Watermark removal job ${job.data.job_log_id} failed: ${message}`,
+        error instanceof Error ? error.stack : undefined,
       );
       await this.markJobFailed(
         job.data.job_log_id,
