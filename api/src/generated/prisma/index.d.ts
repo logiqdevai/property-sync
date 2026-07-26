@@ -10288,14 +10288,14 @@ export namespace Prisma {
 
   export type UserTrackedAgencyAvgAggregateOutputType = {
     concurrent_insertions: number | null
-    insertion_interval_minutes: number | null
+    insertion_interval_seconds: number | null
     max_properties: number | null
     watermark_image_count: number | null
   }
 
   export type UserTrackedAgencySumAggregateOutputType = {
     concurrent_insertions: number | null
-    insertion_interval_minutes: number | null
+    insertion_interval_seconds: number | null
     max_properties: number | null
     watermark_image_count: number | null
   }
@@ -10306,7 +10306,7 @@ export namespace Prisma {
     source_agency_id: string | null
     enabled: boolean | null
     concurrent_insertions: number | null
-    insertion_interval_minutes: number | null
+    insertion_interval_seconds: number | null
     max_properties: number | null
     track_new_listings: boolean | null
     track_removed_listings: boolean | null
@@ -10325,7 +10325,7 @@ export namespace Prisma {
     source_agency_id: string | null
     enabled: boolean | null
     concurrent_insertions: number | null
-    insertion_interval_minutes: number | null
+    insertion_interval_seconds: number | null
     max_properties: number | null
     track_new_listings: boolean | null
     track_removed_listings: boolean | null
@@ -10344,7 +10344,7 @@ export namespace Prisma {
     source_agency_id: number
     enabled: number
     concurrent_insertions: number
-    insertion_interval_minutes: number
+    insertion_interval_seconds: number
     max_properties: number
     text_truncate_pieces: number
     track_new_listings: number
@@ -10362,14 +10362,14 @@ export namespace Prisma {
 
   export type UserTrackedAgencyAvgAggregateInputType = {
     concurrent_insertions?: true
-    insertion_interval_minutes?: true
+    insertion_interval_seconds?: true
     max_properties?: true
     watermark_image_count?: true
   }
 
   export type UserTrackedAgencySumAggregateInputType = {
     concurrent_insertions?: true
-    insertion_interval_minutes?: true
+    insertion_interval_seconds?: true
     max_properties?: true
     watermark_image_count?: true
   }
@@ -10380,7 +10380,7 @@ export namespace Prisma {
     source_agency_id?: true
     enabled?: true
     concurrent_insertions?: true
-    insertion_interval_minutes?: true
+    insertion_interval_seconds?: true
     max_properties?: true
     track_new_listings?: true
     track_removed_listings?: true
@@ -10399,7 +10399,7 @@ export namespace Prisma {
     source_agency_id?: true
     enabled?: true
     concurrent_insertions?: true
-    insertion_interval_minutes?: true
+    insertion_interval_seconds?: true
     max_properties?: true
     track_new_listings?: true
     track_removed_listings?: true
@@ -10418,7 +10418,7 @@ export namespace Prisma {
     source_agency_id?: true
     enabled?: true
     concurrent_insertions?: true
-    insertion_interval_minutes?: true
+    insertion_interval_seconds?: true
     max_properties?: true
     text_truncate_pieces?: true
     track_new_listings?: true
@@ -10525,7 +10525,7 @@ export namespace Prisma {
     source_agency_id: string
     enabled: boolean
     concurrent_insertions: number
-    insertion_interval_minutes: number
+    insertion_interval_seconds: number
     max_properties: number | null
     text_truncate_pieces: string[]
     track_new_listings: boolean
@@ -10564,7 +10564,7 @@ export namespace Prisma {
     source_agency_id?: boolean
     enabled?: boolean
     concurrent_insertions?: boolean
-    insertion_interval_minutes?: boolean
+    insertion_interval_seconds?: boolean
     max_properties?: boolean
     text_truncate_pieces?: boolean
     track_new_listings?: boolean
@@ -10589,7 +10589,7 @@ export namespace Prisma {
     source_agency_id?: boolean
     enabled?: boolean
     concurrent_insertions?: boolean
-    insertion_interval_minutes?: boolean
+    insertion_interval_seconds?: boolean
     max_properties?: boolean
     text_truncate_pieces?: boolean
     track_new_listings?: boolean
@@ -10611,7 +10611,7 @@ export namespace Prisma {
     source_agency_id?: boolean
     enabled?: boolean
     concurrent_insertions?: boolean
-    insertion_interval_minutes?: boolean
+    insertion_interval_seconds?: boolean
     max_properties?: boolean
     text_truncate_pieces?: boolean
     track_new_listings?: boolean
@@ -10633,7 +10633,7 @@ export namespace Prisma {
     source_agency_id?: boolean
     enabled?: boolean
     concurrent_insertions?: boolean
-    insertion_interval_minutes?: boolean
+    insertion_interval_seconds?: boolean
     max_properties?: boolean
     text_truncate_pieces?: boolean
     track_new_listings?: boolean
@@ -10647,7 +10647,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "concurrent_insertions" | "insertion_interval_minutes" | "max_properties" | "text_truncate_pieces" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "auto_update_to_crm" | "use_ai_batching" | "remove_watermark" | "watermark_image_count" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
+  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "concurrent_insertions" | "insertion_interval_seconds" | "max_properties" | "text_truncate_pieces" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "auto_update_to_crm" | "use_ai_batching" | "remove_watermark" | "watermark_image_count" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
   export type UserTrackedAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
@@ -10678,7 +10678,7 @@ export namespace Prisma {
       source_agency_id: string
       enabled: boolean
       concurrent_insertions: number
-      insertion_interval_minutes: number
+      insertion_interval_seconds: number
       max_properties: number | null
       text_truncate_pieces: string[]
       track_new_listings: boolean
@@ -11122,7 +11122,7 @@ export namespace Prisma {
     readonly source_agency_id: FieldRef<"UserTrackedAgency", 'String'>
     readonly enabled: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly concurrent_insertions: FieldRef<"UserTrackedAgency", 'Int'>
-    readonly insertion_interval_minutes: FieldRef<"UserTrackedAgency", 'Int'>
+    readonly insertion_interval_seconds: FieldRef<"UserTrackedAgency", 'Int'>
     readonly max_properties: FieldRef<"UserTrackedAgency", 'Int'>
     readonly text_truncate_pieces: FieldRef<"UserTrackedAgency", 'String[]'>
     readonly track_new_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
@@ -37213,7 +37213,7 @@ export namespace Prisma {
     source_agency_id: 'source_agency_id',
     enabled: 'enabled',
     concurrent_insertions: 'concurrent_insertions',
-    insertion_interval_minutes: 'insertion_interval_minutes',
+    insertion_interval_seconds: 'insertion_interval_seconds',
     max_properties: 'max_properties',
     text_truncate_pieces: 'text_truncate_pieces',
     track_new_listings: 'track_new_listings',
@@ -38568,7 +38568,7 @@ export namespace Prisma {
     source_agency_id?: StringFilter<"UserTrackedAgency"> | string
     enabled?: BoolFilter<"UserTrackedAgency"> | boolean
     concurrent_insertions?: IntFilter<"UserTrackedAgency"> | number
-    insertion_interval_minutes?: IntFilter<"UserTrackedAgency"> | number
+    insertion_interval_seconds?: IntFilter<"UserTrackedAgency"> | number
     max_properties?: IntNullableFilter<"UserTrackedAgency"> | number | null
     text_truncate_pieces?: StringNullableListFilter<"UserTrackedAgency">
     track_new_listings?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -38592,7 +38592,7 @@ export namespace Prisma {
     source_agency_id?: SortOrder
     enabled?: SortOrder
     concurrent_insertions?: SortOrder
-    insertion_interval_minutes?: SortOrder
+    insertion_interval_seconds?: SortOrder
     max_properties?: SortOrderInput | SortOrder
     text_truncate_pieces?: SortOrder
     track_new_listings?: SortOrder
@@ -38620,7 +38620,7 @@ export namespace Prisma {
     source_agency_id?: StringFilter<"UserTrackedAgency"> | string
     enabled?: BoolFilter<"UserTrackedAgency"> | boolean
     concurrent_insertions?: IntFilter<"UserTrackedAgency"> | number
-    insertion_interval_minutes?: IntFilter<"UserTrackedAgency"> | number
+    insertion_interval_seconds?: IntFilter<"UserTrackedAgency"> | number
     max_properties?: IntNullableFilter<"UserTrackedAgency"> | number | null
     text_truncate_pieces?: StringNullableListFilter<"UserTrackedAgency">
     track_new_listings?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -38644,7 +38644,7 @@ export namespace Prisma {
     source_agency_id?: SortOrder
     enabled?: SortOrder
     concurrent_insertions?: SortOrder
-    insertion_interval_minutes?: SortOrder
+    insertion_interval_seconds?: SortOrder
     max_properties?: SortOrderInput | SortOrder
     text_truncate_pieces?: SortOrder
     track_new_listings?: SortOrder
@@ -38672,7 +38672,7 @@ export namespace Prisma {
     source_agency_id?: StringWithAggregatesFilter<"UserTrackedAgency"> | string
     enabled?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     concurrent_insertions?: IntWithAggregatesFilter<"UserTrackedAgency"> | number
-    insertion_interval_minutes?: IntWithAggregatesFilter<"UserTrackedAgency"> | number
+    insertion_interval_seconds?: IntWithAggregatesFilter<"UserTrackedAgency"> | number
     max_properties?: IntNullableWithAggregatesFilter<"UserTrackedAgency"> | number | null
     text_truncate_pieces?: StringNullableListFilter<"UserTrackedAgency">
     track_new_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
@@ -41520,7 +41520,7 @@ export namespace Prisma {
     id?: string
     enabled?: boolean
     concurrent_insertions?: number
-    insertion_interval_minutes?: number
+    insertion_interval_seconds?: number
     max_properties?: number | null
     text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
     track_new_listings?: boolean
@@ -41544,7 +41544,7 @@ export namespace Prisma {
     source_agency_id: string
     enabled?: boolean
     concurrent_insertions?: number
-    insertion_interval_minutes?: number
+    insertion_interval_seconds?: number
     max_properties?: number | null
     text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
     track_new_listings?: boolean
@@ -41564,7 +41564,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -41588,7 +41588,7 @@ export namespace Prisma {
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -41610,7 +41610,7 @@ export namespace Prisma {
     source_agency_id: string
     enabled?: boolean
     concurrent_insertions?: number
-    insertion_interval_minutes?: number
+    insertion_interval_seconds?: number
     max_properties?: number | null
     text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
     track_new_listings?: boolean
@@ -41628,7 +41628,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -41648,7 +41648,7 @@ export namespace Prisma {
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -44923,7 +44923,7 @@ export namespace Prisma {
     source_agency_id?: SortOrder
     enabled?: SortOrder
     concurrent_insertions?: SortOrder
-    insertion_interval_minutes?: SortOrder
+    insertion_interval_seconds?: SortOrder
     max_properties?: SortOrder
     text_truncate_pieces?: SortOrder
     track_new_listings?: SortOrder
@@ -44939,7 +44939,7 @@ export namespace Prisma {
 
   export type UserTrackedAgencyAvgOrderByAggregateInput = {
     concurrent_insertions?: SortOrder
-    insertion_interval_minutes?: SortOrder
+    insertion_interval_seconds?: SortOrder
     max_properties?: SortOrder
     watermark_image_count?: SortOrder
   }
@@ -44950,7 +44950,7 @@ export namespace Prisma {
     source_agency_id?: SortOrder
     enabled?: SortOrder
     concurrent_insertions?: SortOrder
-    insertion_interval_minutes?: SortOrder
+    insertion_interval_seconds?: SortOrder
     max_properties?: SortOrder
     track_new_listings?: SortOrder
     track_removed_listings?: SortOrder
@@ -44969,7 +44969,7 @@ export namespace Prisma {
     source_agency_id?: SortOrder
     enabled?: SortOrder
     concurrent_insertions?: SortOrder
-    insertion_interval_minutes?: SortOrder
+    insertion_interval_seconds?: SortOrder
     max_properties?: SortOrder
     track_new_listings?: SortOrder
     track_removed_listings?: SortOrder
@@ -44984,7 +44984,7 @@ export namespace Prisma {
 
   export type UserTrackedAgencySumOrderByAggregateInput = {
     concurrent_insertions?: SortOrder
-    insertion_interval_minutes?: SortOrder
+    insertion_interval_seconds?: SortOrder
     max_properties?: SortOrder
     watermark_image_count?: SortOrder
   }
@@ -50010,7 +50010,7 @@ export namespace Prisma {
     id?: string
     enabled?: boolean
     concurrent_insertions?: number
-    insertion_interval_minutes?: number
+    insertion_interval_seconds?: number
     max_properties?: number | null
     text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
     track_new_listings?: boolean
@@ -50032,7 +50032,7 @@ export namespace Prisma {
     source_agency_id: string
     enabled?: boolean
     concurrent_insertions?: number
-    insertion_interval_minutes?: number
+    insertion_interval_seconds?: number
     max_properties?: number | null
     text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
     track_new_listings?: boolean
@@ -50295,7 +50295,7 @@ export namespace Prisma {
     source_agency_id?: StringFilter<"UserTrackedAgency"> | string
     enabled?: BoolFilter<"UserTrackedAgency"> | boolean
     concurrent_insertions?: IntFilter<"UserTrackedAgency"> | number
-    insertion_interval_minutes?: IntFilter<"UserTrackedAgency"> | number
+    insertion_interval_seconds?: IntFilter<"UserTrackedAgency"> | number
     max_properties?: IntNullableFilter<"UserTrackedAgency"> | number | null
     text_truncate_pieces?: StringNullableListFilter<"UserTrackedAgency">
     track_new_listings?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -51222,7 +51222,7 @@ export namespace Prisma {
     id?: string
     enabled?: boolean
     concurrent_insertions?: number
-    insertion_interval_minutes?: number
+    insertion_interval_seconds?: number
     max_properties?: number | null
     text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
     track_new_listings?: boolean
@@ -51244,7 +51244,7 @@ export namespace Prisma {
     user_id: string
     enabled?: boolean
     concurrent_insertions?: number
-    insertion_interval_minutes?: number
+    insertion_interval_seconds?: number
     max_properties?: number | null
     text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
     track_new_listings?: boolean
@@ -52035,7 +52035,7 @@ export namespace Prisma {
     id?: string
     enabled?: boolean
     concurrent_insertions?: number
-    insertion_interval_minutes?: number
+    insertion_interval_seconds?: number
     max_properties?: number | null
     text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
     track_new_listings?: boolean
@@ -52058,7 +52058,7 @@ export namespace Prisma {
     source_agency_id: string
     enabled?: boolean
     concurrent_insertions?: number
-    insertion_interval_minutes?: number
+    insertion_interval_seconds?: number
     max_properties?: number | null
     text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
     track_new_listings?: boolean
@@ -52134,7 +52134,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -52157,7 +52157,7 @@ export namespace Prisma {
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -54021,7 +54021,7 @@ export namespace Prisma {
     id?: string
     enabled?: boolean
     concurrent_insertions?: number
-    insertion_interval_minutes?: number
+    insertion_interval_seconds?: number
     max_properties?: number | null
     text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
     track_new_listings?: boolean
@@ -54044,7 +54044,7 @@ export namespace Prisma {
     source_agency_id: string
     enabled?: boolean
     concurrent_insertions?: number
-    insertion_interval_minutes?: number
+    insertion_interval_seconds?: number
     max_properties?: number | null
     text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
     track_new_listings?: boolean
@@ -54426,7 +54426,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -54449,7 +54449,7 @@ export namespace Prisma {
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -57697,7 +57697,7 @@ export namespace Prisma {
     source_agency_id: string
     enabled?: boolean
     concurrent_insertions?: number
-    insertion_interval_minutes?: number
+    insertion_interval_seconds?: number
     max_properties?: number | null
     text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
     track_new_listings?: boolean
@@ -57796,7 +57796,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -57818,7 +57818,7 @@ export namespace Prisma {
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -57839,7 +57839,7 @@ export namespace Prisma {
     source_agency_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -58418,7 +58418,7 @@ export namespace Prisma {
     user_id: string
     enabled?: boolean
     concurrent_insertions?: number
-    insertion_interval_minutes?: number
+    insertion_interval_seconds?: number
     max_properties?: number | null
     text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
     track_new_listings?: boolean
@@ -58587,7 +58587,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -58609,7 +58609,7 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean
@@ -58630,7 +58630,7 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
     concurrent_insertions?: IntFieldUpdateOperationsInput | number
-    insertion_interval_minutes?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
     max_properties?: NullableIntFieldUpdateOperationsInput | number | null
     text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
     track_new_listings?: BoolFieldUpdateOperationsInput | boolean

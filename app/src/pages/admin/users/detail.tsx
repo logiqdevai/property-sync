@@ -151,7 +151,7 @@ export default function AdminUserDetailPage() {
                     {showAdminTrackerSettings && (
                       <>
                         <Table.Column>Concurrent insertions</Table.Column>
-                        <Table.Column>Insertion interval (min)</Table.Column>
+                        <Table.Column>Insertion interval (sec)</Table.Column>
                       </>
                     )}
                   </Table.Header>
@@ -178,7 +178,7 @@ export default function AdminUserDetailPage() {
                         {showAdminTrackerSettings && (
                           <>
                             <Table.Cell>{tracking.concurrent_insertions}</Table.Cell>
-                            <Table.Cell>{tracking.insertion_interval_minutes}</Table.Cell>
+                            <Table.Cell>{tracking.insertion_interval_seconds}</Table.Cell>
                           </>
                         )}
                       </Table.Row>

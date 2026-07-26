@@ -85,7 +85,7 @@ export class UserTrackedAgenciesService {
                 integration_client_id:
                   tracker.integration_link?.integration_client_id ?? null,
                 concurrent_insertions: tracker.concurrent_insertions,
-                insertion_interval_minutes: tracker.insertion_interval_minutes,
+                insertion_interval_seconds: tracker.insertion_interval_seconds,
                 max_properties: tracker.max_properties,
                 text_truncate_pieces: tracker.text_truncate_pieces,
                 remove_watermark: tracker.remove_watermark,
@@ -191,8 +191,8 @@ export class UserTrackedAgenciesService {
         ...(dto.concurrent_insertions !== undefined && {
           concurrent_insertions: dto.concurrent_insertions,
         }),
-        ...(dto.insertion_interval_minutes !== undefined && {
-          insertion_interval_minutes: dto.insertion_interval_minutes,
+        ...(dto.insertion_interval_seconds !== undefined && {
+          insertion_interval_seconds: dto.insertion_interval_seconds,
         }),
         ...(dto.max_properties !== undefined && {
           max_properties: dto.max_properties,

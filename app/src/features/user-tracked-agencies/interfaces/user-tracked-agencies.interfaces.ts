@@ -8,7 +8,7 @@ export interface TrackingPrefs {
   user_integration_id?: string | null;
   integration_client_id?: number | null;
   concurrent_insertions?: number;
-  insertion_interval_minutes?: number;
+  insertion_interval_seconds?: number;
   max_properties?: number | null;
   text_truncate_pieces?: string[];
   remove_watermark: boolean;
@@ -37,7 +37,7 @@ export interface TrackAgencyPayload {
   use_ai_batching?: boolean;
   enabled?: boolean;
   concurrent_insertions?: number;
-  insertion_interval_minutes?: number;
+  insertion_interval_seconds?: number;
   max_properties?: number | null;
   text_truncate_pieces?: string[];
   remove_watermark?: boolean;
@@ -68,7 +68,7 @@ export interface UserTrackedAgency {
   source_agency_id: string;
   enabled: boolean;
   concurrent_insertions: number;
-  insertion_interval_minutes: number;
+  insertion_interval_seconds: number;
   max_properties: number | null;
   text_truncate_pieces: string[];
   track_new_listings: boolean;

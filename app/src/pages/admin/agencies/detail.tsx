@@ -208,7 +208,7 @@ export default function AgencyDetailPage() {
                       values={{
                         use_ai_batching: tracker.use_ai_batching,
                         concurrent_insertions: tracker.concurrent_insertions,
-                        insertion_interval_minutes: tracker.insertion_interval_minutes,
+                        insertion_interval_seconds: tracker.insertion_interval_seconds,
                         max_properties: tracker.max_properties ?? null,
                         text_truncate_pieces: tracker.text_truncate_pieces ?? [],
                       }}

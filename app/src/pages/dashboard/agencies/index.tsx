@@ -225,7 +225,7 @@ function AgencyCard({
               values={{
                 use_ai_batching: prefs.use_ai_batching,
                 concurrent_insertions: prefs.concurrent_insertions ?? 1,
-                insertion_interval_minutes: prefs.insertion_interval_minutes ?? 5,
+                insertion_interval_seconds: prefs.insertion_interval_seconds ?? 300,
                 max_properties: prefs.max_properties ?? null,
                 text_truncate_pieces: prefs.text_truncate_pieces ?? [],
               }}
@@ -240,7 +240,7 @@ function AgencyCard({
                 values={{
                   use_ai_batching: prefs.use_ai_batching,
                   concurrent_insertions: prefs.concurrent_insertions ?? 1,
-                  insertion_interval_minutes: prefs.insertion_interval_minutes ?? 5,
+                  insertion_interval_seconds: prefs.insertion_interval_seconds ?? 300,
                   max_properties: prefs.max_properties ?? null,
                   text_truncate_pieces: prefs.text_truncate_pieces ?? [],
                 }}

@@ -14,7 +14,7 @@ export interface TrackerBatchInput {
   user_tracked_agency_id: string;
   source_agency_id: string;
   concurrent_insertions: number;
-  insertion_interval_minutes: number;
+  insertion_interval_seconds: number;
   max_properties: number | null;
   affected: AffectedUserProperty[];
 }
@@ -56,7 +56,7 @@ export class CmsSyncBatchService {
       user_tracked_agency_id: input.user_tracked_agency_id,
       source_agency_id: input.source_agency_id,
       concurrent_insertions: input.concurrent_insertions,
-      insertion_interval_minutes: input.insertion_interval_minutes,
+      insertion_interval_seconds: input.insertion_interval_seconds,
       operations: cappedOperations,
       user_property_ids: input.affected.map((a) => a.user_property_id),
     };

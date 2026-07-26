@@ -40,7 +40,7 @@ export interface CmsSyncBatch {
   user_tracked_agency_id: string;
   source_agency_id: string;
   concurrent_insertions: number;
-  insertion_interval_minutes: number;
+  insertion_interval_seconds: number;
   operations: CmsSyncBatchOperation[];
   user_property_ids: string[];
 }

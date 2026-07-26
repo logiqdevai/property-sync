@@ -62,7 +62,7 @@ Sync runs only when **both** `UserIntegration.is_active` and parent `Integration
 
 ## 2.3 UserTrackedAgency [DONE]
 
-Which `SourceAgency` a user tracks. Crawl scheduling lives on `SourceAgency.crawl_interval`, not here (see below). This model holds **CMS outbound sync throttling** (`concurrent_insertions`, `insertion_interval_minutes`) for the linked integration (e.g. EstateWeb).
+Which `SourceAgency` a user tracks. Crawl scheduling lives on `SourceAgency.crawl_interval`, not here (see below). This model holds **CMS outbound sync throttling** (`concurrent_insertions`, `insertion_interval_seconds`) for the linked integration (e.g. EstateWeb).
 
 These two fields do **not** control Playwright crawl concurrency — that is governed separately by `CRAWL_WORKER_CONCURRENCY` on the crawl BullMQ worker.
 
@@ -71,12 +71,12 @@ These two fields do **not** control Playwright crawl concurrency — that is gov
 | `user_id`, `source_agency_id` | Ownership + tracked agency |
 | `enabled` | User-level tracker on/off |
 | `concurrent_insertions` | Within one tracker's `CmsSyncRun` batch for a crawl, how many property pushes (CREATE/UPDATE/REMOVE combined) the orchestrator runs **concurrently** at a time (default `1`) |
-| `insertion_interval_minutes` | Minimum delay **between successive chunks** of `concurrent_insertions` property pushes inside that same batch (default `5`). Throttles a large batch (hundreds of changed properties) so the CMS is not flooded in one burst |
+| `insertion_interval_seconds` | Minimum delay **between successive chunks** of `concurrent_insertions` property pushes inside that same batch (default `300`). Throttles a large batch (hundreds of changed properties) so the CMS is not flooded in one burst |
 | `track_new_listings`, `track_updated_listings`, `track_removed_listings` | Which change types are included in the tracker's sync batch at all 
 
 `UserTrackedAgency` has no scheduling field — `SourceAgency.crawl_interval` is the sole scheduling authority (one crawl per agency, shared across every tracker; see `PROJECT-SPECIFICATIONS.MD` §8).
 
-`concurrent_insertions` and `insertion_interval_minutes` are **intra-batch** controls, not inter-job rate limits: there is exactly one `CmsSyncRun` per `(crawl_run, user_integration)` (see 2.5), so there's nothing to rate-limit *across* jobs — these two fields instead govern how the orchestrator paces the individual property push calls *inside* that one job. The orchestrator resolves the destination account via `UserTrackedAgencyIntegrationLink` → `UserIntegration` (e.g. one EstateWeb email/password login), then applies these limits while processing the batch for that tracker.
+`concurrent_insertions` and `insertion_interval_seconds` are **intra-batch** controls, not inter-job rate limits: there is exactly one `CmsSyncRun` per `(crawl_run, user_integration)` (see 2.5), so there's nothing to rate-limit *across* jobs — these two fields instead govern how the orchestrator paces the individual property push calls *inside* that one job. The orchestrator resolves the destination account via `UserTrackedAgencyIntegrationLink` → `UserIntegration` (e.g. one EstateWeb email/password login), then applies these limits while processing the batch for that tracker.
 
 ## 2.4 UserTrackedAgencyIntegrationLink (new) [DONE]
 
@@ -172,7 +172,7 @@ A `CmsSyncService` (or equivalent feature module) responsible for:
 - Calling adapter create / update / remove / upload-image methods
 - Writing and updating `CmsSyncRun` rows
 - Enqueueing retries on failure (BullMQ job via `JobLog`)
-- Respecting `UserTrackedAgency.concurrent_insertions` and `insertion_interval_minutes` when draining the queue
+- Respecting `UserTrackedAgency.concurrent_insertions` and `insertion_interval_seconds` when draining the queue
 
 ## 3.3 Injection [PENDING]
 
@@ -263,7 +263,7 @@ For each UserTrackedAgency that has a UserTrackedAgencyIntegrationLink
 pointing at an active UserIntegration + active IntegrationTarget:
   create/update ONE CmsSyncRun row for (this crawl_run, that user_integration)
   push the batch's creates/updates/removes, chunked by concurrent_insertions
-  with insertion_interval_minutes between chunks
+  with insertion_interval_seconds between chunks
   accumulate total_created/total_updated/total_removed/total_failed on that row
 ↓
 CrawlRunsService.recalculateCmsSyncTotals(crawl_run_id) — rolls the batch(es) up onto CrawlRun
@@ -346,7 +346,7 @@ When a user completes an EstateWeb `UserIntegration` connect flow **and links it
 1. Create or update `UserIntegration` with `is_active: true` and valid `email` + `password`
 2. Create/update `UserTrackedAgencyIntegrationLink`
 3. Optionally call `EstateWebIntegrationResolverService.testConnection()` to force a login and persist a working session before the first sync runs
-4. **Enqueue initial backfill** — one `CmsSyncRun` batch (not tied to any `CrawlRun` in this case — see note below) containing a `CREATE` push per existing `UserProperty` for that tracked agency (respecting `is_modified` policy: optionally skip or push user-edited copies based on product decision; chunk by `concurrent_insertions` / `insertion_interval_minutes` when pushing). Backfill MUST apply the same §4.5 duplicate-group collapse as crawl-driven sync — one CREATE per `duplicate_group_id`, shared `integration_property_id` stamped on all group members
+4. **Enqueue initial backfill** — one `CmsSyncRun` batch (not tied to any `CrawlRun` in this case — see note below) containing a `CREATE` push per existing `UserProperty` for that tracked agency (respecting `is_modified` policy: optionally skip or push user-edited copies based on product decision; chunk by `concurrent_insertions` / `insertion_interval_seconds` when pushing). Backfill MUST apply the same §4.5 duplicate-group collapse as crawl-driven sync — one CREATE per `duplicate_group_id`, shared `integration_property_id` stamped on all group members
 
 Note: `CmsSyncRun.crawl_run_id` is required for crawl-driven batches (4.1). A backfill batch has no crawl to attach to — either relax the FK to nullable specifically for this case, or synthesize a no-op `CrawlRun` for the backfill so the constraint holds and `recalculateCmsSyncTotals` still works uniformly (product/implementation decision).
 
@@ -493,9 +493,9 @@ Sync execution runs outside the HTTP request path:
 **Per-tracker CMS throttling** — now an **intra-job** concern rather than inter-job rate limiting, since there is only one job per tracker per crawl. The worker MUST honour the two fields on `UserTrackedAgency` while processing that one batch:
 
 - `concurrent_insertions` — how many of the batch's property pushes (CREATE, UPDATE, REMOVE combined) the worker runs concurrently at a time. Typical value `1` avoids racing the same EstateWeb account with parallel writes.
-- `insertion_interval_minutes` — minimum delay between successive chunks of `concurrent_insertions` pushes within the batch. Prevents flooding EstateWeb (or another CMS adapter) when a crawl produced hundreds of changed `UserProperty` rows for one tracker.
+- `insertion_interval_seconds` — minimum delay between successive chunks of `concurrent_insertions` pushes within the batch. Prevents flooding EstateWeb (or another CMS adapter) when a crawl produced hundreds of changed `UserProperty` rows for one tracker.
 
-Implement as a simple chunked loop inside the batch job (push `concurrent_insertions` properties, await all, sleep `insertion_interval_minutes`, repeat) — no BullMQ job-group/rate-limit machinery needed for this, since it's pacing work within a single job rather than across jobs.
+Implement as a simple chunked loop inside the batch job (push `concurrent_insertions` properties, await all, sleep `insertion_interval_seconds`, repeat) — no BullMQ job-group/rate-limit machinery needed for this, since it's pacing work within a single job rather than across jobs.
 
 **Per-integration concurrency** — separately, cap how many *different trackers'* batch jobs for the same `UserIntegration` run at once (should typically be 1, since one `UserIntegration` maps to at most one `UserTrackedAgencyIntegrationLink` — see 2.4) to avoid CMS-side rate limits (EstateWeb returns `429` → `ESTATEWEB_RATE_LIMITED`).
 
@@ -534,7 +534,7 @@ Log events specific to this phase:
 - Webhook callbacks from CMS on publish confirmation
 - Two-way sync (CMS edits pulled back — out of initial sync scope)
 - Per-field mapping UI instead of raw `config` JSON
-- Sync timing as a per-tracker override — e.g. delaying a whole batch to run overnight instead of immediately after its crawl, independent of `insertion_interval_minutes` (which paces *within* a batch, not *when* the batch runs)
+- Sync timing as a per-tracker override — e.g. delaying a whole batch to run overnight instead of immediately after its crawl, independent of `insertion_interval_seconds` (which paces *within* a batch, not *when* the batch runs)
 - Rate-limit-aware adaptive concurrency per CMS provider (auto-tune `concurrent_insertions` on repeated `429`s)
 - Multi-target link table (`UserTrackedAgencyIntegrationLink` becomes many-to-many) if a single tracker ever needs to push to multiple CMS accounts
 
@@ -556,7 +556,7 @@ When this specification is fully implemented:
 
 - See sync status (pending, failed, last success) for each connected integration on `/integrations`
 - Hold multiple `UserIntegration` rows per CMS type (multiple EstateWeb accounts) and link each `UserTrackedAgency` to the correct one
-- Tune per-agency throttling via `concurrent_insertions` and `insertion_interval_minutes`
+- Tune per-agency throttling via `concurrent_insertions` and `insertion_interval_seconds`
 - Browse per-connection sync history
 - Trigger backfill automatically on connect/link
 - Rely on crawl-driven automatic push for new, updated, and removed listings
@@ -567,7 +567,7 @@ When this specification is fully implemented:
 - Failed syncs are retried up to `max_attempts` and never silently dropped — partial batch failures are tracked via `total_failed` and the failed-property list in `response`, so a retry re-pushes only what's left
 - Sync only runs for active `UserIntegration` + active parent `IntegrationTarget`
 - Sync target for each `UserTrackedAgency` is resolved deterministically via `UserTrackedAgencyIntegrationLink` (with optional `is_default` fallback)
-- Per-tracker throttling (`concurrent_insertions`, `insertion_interval_minutes`) paces property pushes **within** each tracker's batch
+- Per-tracker throttling (`concurrent_insertions`, `insertion_interval_seconds`) paces property pushes **within** each tracker's batch
 - **Duplicate groups never produce two CMS creates for the same listing** — orchestrator collapses by `UserProperty.duplicate_group_id` (§4.5), stamps a shared `integration_property_id` on all group members, and skips non-representative pushes without counting them as failures
 - Each participating `IntegrationType` is isolated in its own `integrations/<type>/` module with no scraping or normalization logic — the EstateWeb module is the reference implementation
 

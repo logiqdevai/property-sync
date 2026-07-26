@@ -38,7 +38,7 @@ interface StoredPayload {
   user_integration_id?: string;
   source_agency_id: string;
   concurrent_insertions: number;
-  insertion_interval_minutes: number;
+  insertion_interval_seconds: number;
   user_property_ids: string[];
   operations: CmsSyncBatchOperation[];
 }
@@ -164,7 +164,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       operations,
       userProperties,
       tracker?.concurrent_insertions ?? 1,
-      tracker?.insertion_interval_minutes ?? 5,
+      tracker?.insertion_interval_seconds ?? 300,
       crawl_run_id,
       tracker?.remove_watermark ?? false,
       propertyNote,
@@ -271,7 +271,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     operations: CmsSyncBatchOperation[],
     userProperties: Map<string, UserProperty>,
     concurrentInsertions: number,
-    insertionIntervalMinutes: number,
+    insertionIntervalSeconds: number,
     crawlRunId: string | null,
     removeWatermark: boolean,
     propertyNote?: string,
@@ -287,7 +287,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       responses: [],
     };
 
-    const sleepMs = insertionIntervalMinutes * 60 * 1000;
+    const sleepMs = insertionIntervalSeconds * 1000;
     const reconciliationCatalog = await this.loadReconciliationCatalog(
       operations,
       userIntegrationId,

@@ -52,7 +52,7 @@ export interface AdminUserTrackedAgency {
   source_agency_id: string;
   enabled: boolean;
   concurrent_insertions: number;
-  insertion_interval_minutes: number;
+  insertion_interval_seconds: number;
   text_truncate_pieces: string[];
   track_new_listings: boolean;
   track_removed_listings: boolean;

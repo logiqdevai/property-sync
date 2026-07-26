@@ -6,7 +6,7 @@ import type { TrackAgencyPayload } from "@/features/user-tracked-agencies/interf
 export interface TrackerAdminOptionsValues {
   use_ai_batching: boolean;
   concurrent_insertions: number;
-  insertion_interval_minutes: number;
+  insertion_interval_seconds: number;
   max_properties: number | null;
   text_truncate_pieces: string[];
 }
@@ -44,7 +44,7 @@ export function TrackerAdminOptionsPanel({
           <Accordion.Body>
             <div
               className="flex flex-col gap-3 pt-1"
-              key={`${accordionId}-${values.concurrent_insertions}-${values.insertion_interval_minutes}-${values.max_properties ?? "unlimited"}-${pieces.join("\0")}`}
+              key={`${accordionId}-${values.concurrent_insertions}-${values.insertion_interval_seconds}-${values.max_properties ?? "unlimited"}-${pieces.join("\0")}`}
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 flex-col gap-0.5">
@@ -119,21 +119,21 @@ export function TrackerAdminOptionsPanel({
               </label>
 
               <label className="flex flex-col gap-1 text-sm">
-                <span className="text-muted">Insertion interval (minutes)</span>
+                <span className="text-muted">Insertion interval (seconds)</span>
                 <input
                   type="number"
-                  min={1}
+                  min={0}
                   className="rounded-lg border border-border bg-background px-3 py-2"
-                  defaultValue={values.insertion_interval_minutes ?? 5}
+                  defaultValue={values.insertion_interval_seconds ?? 300}
                   disabled={disabled}
                   onBlur={(e) => {
                     const value = Number.parseInt(e.target.value, 10);
                     if (
                       Number.isFinite(value) &&
-                      value >= 1 &&
-                      value !== values.insertion_interval_minutes
+                      value >= 0 &&
+                      value !== values.insertion_interval_seconds
                     ) {
-                      onAdminSettingsChange({ insertion_interval_minutes: value });
+                      onAdminSettingsChange({ insertion_interval_seconds: value });
                     }
                   }}
                 />

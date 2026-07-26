@@ -162,8 +162,8 @@ export class AgenciesService {
         ...(dto.concurrent_insertions !== undefined && {
           concurrent_insertions: dto.concurrent_insertions,
         }),
-        ...(dto.insertion_interval_minutes !== undefined && {
-          insertion_interval_minutes: dto.insertion_interval_minutes,
+        ...(dto.insertion_interval_seconds !== undefined && {
+          insertion_interval_seconds: dto.insertion_interval_seconds,
         }),
         ...(dto.max_properties !== undefined && {
           max_properties: dto.max_properties,

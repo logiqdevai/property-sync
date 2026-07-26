@@ -31,7 +31,7 @@ interface TrackerGroup {
     track_removed_listings: boolean;
     auto_update_to_crm: boolean;
     concurrent_insertions: number;
-    insertion_interval_minutes: number;
+    insertion_interval_seconds: number;
     max_properties: number | null;
   };
   affected: AffectedUserProperty[];
@@ -153,7 +153,7 @@ export class CmsSyncOrchestratorService {
         track_removed_listings: tracker.track_removed_listings,
         auto_update_to_crm: tracker.auto_update_to_crm,
         concurrent_insertions: tracker.concurrent_insertions,
-        insertion_interval_minutes: tracker.insertion_interval_minutes,
+        insertion_interval_seconds: tracker.insertion_interval_seconds,
         max_properties: tracker.max_properties,
       },
       affected,
@@ -315,7 +315,7 @@ export class CmsSyncOrchestratorService {
           track_removed_listings: tracker.track_removed_listings,
           auto_update_to_crm: tracker.auto_update_to_crm,
           concurrent_insertions: tracker.concurrent_insertions,
-          insertion_interval_minutes: tracker.insertion_interval_minutes,
+          insertion_interval_seconds: tracker.insertion_interval_seconds,
           max_properties: tracker.max_properties,
         },
         affected: [],
@@ -439,7 +439,7 @@ export class CmsSyncOrchestratorService {
             track_removed_listings: tracker.track_removed_listings,
             auto_update_to_crm: tracker.auto_update_to_crm,
             concurrent_insertions: tracker.concurrent_insertions,
-            insertion_interval_minutes: tracker.insertion_interval_minutes,
+            insertion_interval_seconds: tracker.insertion_interval_seconds,
             max_properties: tracker.max_properties,
             integration_link: tracker.integration_link,
           },
@@ -550,8 +550,8 @@ export class CmsSyncOrchestratorService {
             track_removed_listings: entry.tracker.track_removed_listings,
             auto_update_to_crm: entry.tracker.auto_update_to_crm,
             concurrent_insertions: entry.tracker.concurrent_insertions,
-            insertion_interval_minutes:
-              entry.tracker.insertion_interval_minutes,
+            insertion_interval_seconds:
+              entry.tracker.insertion_interval_seconds,
             max_properties: entry.tracker.max_properties,
           },
           affected: entry.affected,
@@ -639,7 +639,7 @@ export class CmsSyncOrchestratorService {
       user_tracked_agency_id: tracker.id,
       source_agency_id: tracker.source_agency_id,
       concurrent_insertions: tracker.concurrent_insertions,
-      insertion_interval_minutes: tracker.insertion_interval_minutes,
+      insertion_interval_seconds: tracker.insertion_interval_seconds,
       max_properties: tracker.max_properties,
       affected: filtered,
     });
@@ -735,7 +735,7 @@ export class CmsSyncOrchestratorService {
       user_integration_id: batch.user_integration_id,
       source_agency_id: batch.source_agency_id,
       concurrent_insertions: batch.concurrent_insertions,
-      insertion_interval_minutes: batch.insertion_interval_minutes,
+      insertion_interval_seconds: batch.insertion_interval_seconds,
       user_property_ids: batch.user_property_ids,
       operations: batch.operations.map((op) => ({
         user_property_id: op.user_property_id,

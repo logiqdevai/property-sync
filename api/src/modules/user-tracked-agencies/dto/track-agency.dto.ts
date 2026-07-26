@@ -53,11 +53,11 @@ export class TrackAgencyDto {
   @Min(1)
   concurrent_insertions?: number;
 
-  @ApiProperty({ required: false, minimum: 1, example: 5 })
+  @ApiProperty({ required: false, minimum: 0, example: 300 })
   @IsOptional()
   @IsInt()
-  @Min(1)
-  insertion_interval_minutes?: number;
+  @Min(0)
+  insertion_interval_seconds?: number;
 
   @ApiProperty({
     required: false,
