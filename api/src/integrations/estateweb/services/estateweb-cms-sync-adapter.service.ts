@@ -75,7 +75,13 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         userIntegrationId,
       ),
     ]);
-    const payload = this.buildPayload(pushSites, adLanguages, userProperty);
+    const payload = this.buildPayload(
+      pushSites,
+      adLanguages,
+      userProperty,
+      undefined,
+      options?.propertyNote,
+    );
     this.logger.log(
       `EstateWeb CREATE payload: type_id=${payload.type_id} location_id=${payload.location_id} scope_id=${payload.scope_id} fields=${payload.fields?.length ?? 0} price=${payload.price ?? 'null'} sites=${payload.sites.map((s) => `${s.agent_site_id}:${s.selected ? 1 : 0}`).join(',')} langs=${adLanguages.join(',')}`,
     );
@@ -109,6 +115,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       adLanguages,
       userProperty,
       Number(integrationPropertyId),
+      options?.propertyNote,
     ) as EstateWebUpdatePropertyPayload;
     await this.estateWebPropertyService.updateProperty(
       userIntegrationId,
@@ -364,6 +371,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     adLanguages: EstateWebLanguageId[],
     userProperty?: UserProperty,
     integrationPropertyId?: number,
+    propertyNote?: string,
   ): EstateWebPropertyPayload {
     const price = userProperty?.price ? Number(userProperty.price) : 0;
     const priceStart = userProperty?.price_start
@@ -427,7 +435,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       history: [],
       notes: [],
       price_negotiable: 0,
-      note: '',
+      note: propertyNote?.trim() ?? '',
     };
   }
 

@@ -30,6 +30,7 @@ export interface CmsSyncUpdateImagesParams {
 
 export interface CmsSyncPushOptions {
   removeWatermark?: boolean;
+  propertyNote?: string;
 }
 
 export interface CmsSyncAdapter {

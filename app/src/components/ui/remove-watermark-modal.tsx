@@ -18,11 +18,11 @@ export const RemoveWatermarkModal: FC<RemoveWatermarkModalProps> = ({
   onConfirm,
   isPending = false,
 }) => {
-  const [replaceCrmImages, setReplaceCrmImages] = useState(false);
+  const [replaceCrmImages, setReplaceCrmImages] = useState(true);
 
   useEffect(() => {
     if (!state.isOpen) return;
-    setReplaceCrmImages(false);
+    setReplaceCrmImages(true);
   }, [state.isOpen]);
 
   const handleConfirm = async () => {

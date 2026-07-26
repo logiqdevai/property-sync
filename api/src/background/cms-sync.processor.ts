@@ -28,6 +28,8 @@ import {
 } from '@/integrations/estateweb/services/estateweb-property-reconciliation.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
+import { EstateWebClientsService } from '@/integrations/estateweb/services/estateweb-clients.service';
+import { CmsSyncPushOptions } from '@/modules/cms-sync/interfaces/cms-sync-adapter.interface';
 
 const CMS_SYNC_WORKER_CONCURRENCY = 1;
 
@@ -60,6 +62,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     private readonly estateWebPropertyReconciliationService: EstateWebPropertyReconciliationService,
     private readonly estateWebIntegrationResolver: EstateWebIntegrationResolverService,
     private readonly estateWebPropertyService: EstateWebPropertyService,
+    private readonly estateWebClientsService: EstateWebClientsService,
   ) {
     super();
   }
@@ -147,7 +150,13 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     );
     const tracker = await this.prisma.userTrackedAgency.findUnique({
       where: { id: payload.user_tracked_agency_id },
+      include: { integration_link: true },
     });
+
+    const propertyNote = await this.resolveIntegrationClientPropertyNote(
+      tracker?.user_id,
+      tracker?.integration_link?.integration_client_id,
+    );
 
     const result = await this.executeOperations(
       adapter,
@@ -158,6 +167,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       tracker?.insertion_interval_minutes ?? 5,
       crawl_run_id,
       tracker?.remove_watermark ?? false,
+      propertyNote,
     );
 
     const mergedResult = this.mergeWithPreviousResult(previousResponse, result);
@@ -264,6 +274,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     insertionIntervalMinutes: number,
     crawlRunId: string | null,
     removeWatermark: boolean,
+    propertyNote?: string,
   ): Promise<CmsSyncBatchResult> {
     const result: CmsSyncBatchResult = {
       created: 0,
@@ -295,6 +306,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             reconciliationCatalog,
             crawlRunId,
             removeWatermark,
+            propertyNote,
           ),
         ),
       );
@@ -319,6 +331,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     reconciliationCatalog: EstateWebPropertyCatalog | null,
     crawlRunId: string | null,
     removeWatermark: boolean,
+    propertyNote?: string,
   ): Promise<CmsSyncOperationResult> {
     const userProperty = userProperties.get(operation.user_property_id);
     if (!userProperty) {
@@ -337,7 +350,10 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       `CMS sync op start: property=${operation.user_property_id} operation=${operation.operation} integration=${userIntegrationId} type_id=${userProperty.estateweb_type_id ?? 'null'} location_id=${userProperty.estateweb_location_id ?? 'null'}`,
     );
 
-    const pushOptions = { removeWatermark };
+    const pushOptions: CmsSyncPushOptions = {
+      removeWatermark,
+      ...(propertyNote ? { propertyNote } : {}),
+    };
 
     try {
       switch (operation.operation) {
@@ -720,6 +736,30 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       case 'REMOVE':
         result.removed++;
         break;
+    }
+  }
+
+  private async resolveIntegrationClientPropertyNote(
+    userId: string | undefined,
+    integrationClientId: number | null | undefined,
+  ): Promise<string | undefined> {
+    if (!userId || !integrationClientId) {
+      return undefined;
+    }
+
+    try {
+      const client = await this.estateWebClientsService.getClientForUser(
+        userId,
+        integrationClientId,
+      );
+      const lastName = client.last_name?.trim();
+      return lastName || undefined;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `Failed to fetch CRM client last name for user=${userId} client=${integrationClientId}: ${message}`,
+      );
+      return undefined;
     }
   }
 
