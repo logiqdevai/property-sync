@@ -109,8 +109,26 @@ export function extractSourcePropertyIds(
   sourceUrl: string,
   raw: Record<string, unknown>,
 ): { property_id: string; internal_id: string | null } {
-  const segments = sourceUrl.split('/').filter(Boolean);
-  const property_id = segments[segments.length - 1] ?? 'unknown';
+  const segments = sourceUrl.split('/').filter(Boolean).map((segment) => {
+    try {
+      return decodeURIComponent(segment);
+    } catch {
+      return segment;
+    }
+  });
+  const last = segments[segments.length - 1] ?? 'unknown';
+  const prev = segments[segments.length - 2];
+  let property_id = last;
+  if (prev && /^\d+$/.test(prev) && !/^\d+$/.test(last)) {
+    property_id = prev;
+  } else if (!/^\d+$/.test(last)) {
+    for (let i = segments.length - 1; i >= 0; i--) {
+      if (/^\d+$/.test(segments[i])) {
+        property_id = segments[i];
+        break;
+      }
+    }
+  }
   const internal_id =
     readRawString(raw, [
       '_internal_id',

@@ -392,7 +392,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       client_id: 0,
       coop_id: 0,
       to_client_id: 0,
-      code: userProperty?.internal_id ?? userProperty?.property_id ?? '',
+      code: this.resolveEstateWebCode(userProperty),
       address: '',
       zip: userProperty?.postal_code ?? '',
       price_start: priceStart,
@@ -477,6 +477,21 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         ? fromProperty.rental_history
         : [],
     });
+  }
+
+  private resolveEstateWebCode(userProperty?: UserProperty): string {
+    const candidates = [
+      userProperty?.internal_id,
+      userProperty?.property_id,
+    ];
+    for (const candidate of candidates) {
+      if (!candidate) continue;
+      const trimmed = String(candidate).trim();
+      if (/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(trimmed)) {
+        return trimmed;
+      }
+    }
+    return '';
   }
 
   private resolveLocationId(userProperty?: UserProperty): number | null {
