@@ -197,6 +197,18 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Get('integrations/:userIntegrationId/clients/:clientId')
+  @ApiOperation({ summary: 'Get a client from EstateWeb CRM' })
+  getClient(
+    @Param('userIntegrationId') userIntegrationId: string,
+    @Param('clientId') clientId: string,
+  ) {
+    return this.adminEstateWebPropertiesService.getClient(
+      userIntegrationId,
+      clientId,
+    );
+  }
+
   @Post('integrations/:userIntegrationId/properties')
   @ApiOperation({ summary: 'Create a property in EstateWeb CMS' })
   createProperty(

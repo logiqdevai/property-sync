@@ -10,6 +10,7 @@ import {
 } from '@/integrations/estateweb/interfaces/estateweb-property.interface';
 import { EstateWebSession } from '@/integrations/estateweb/interfaces/estateweb-session.interface';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
+import { EstateWebClientsService } from '@/integrations/estateweb/services/estateweb-clients.service';
 import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
 import { EstateWebSessionService } from '@/integrations/estateweb/services/estateweb-session.service';
 import {
@@ -25,6 +26,7 @@ export class AdminEstateWebPropertiesService {
     private readonly prisma: PrismaService,
     private readonly estateWebConfig: EstateWebConfig,
     private readonly estateWebPropertyService: EstateWebPropertyService,
+    private readonly estateWebClientsService: EstateWebClientsService,
     private readonly estateWebSessionService: EstateWebSessionService,
     private readonly estateWebIntegrationResolverService: EstateWebIntegrationResolverService,
   ) {}
@@ -170,6 +172,13 @@ export class AdminEstateWebPropertiesService {
     return this.estateWebPropertyService.getProperty(
       userIntegrationId,
       propertyId,
+    );
+  }
+
+  getClient(userIntegrationId: string, clientId: string) {
+    return this.estateWebClientsService.getClient(
+      userIntegrationId,
+      clientId,
     );
   }
 

@@ -4,6 +4,7 @@ import { NotificationsModule } from '@/modules/notifications/notifications.modul
 import { EstateWebConfig } from './config/estateweb.config';
 import { EstateWebAuthService } from './services/estateweb-auth.service';
 import { EstateWebClientService } from './services/estateweb-client.service';
+import { EstateWebClientsService } from './services/estateweb-clients.service';
 import { EstateWebCmsSyncAdapter } from './services/estateweb-cms-sync-adapter.service';
 import { EstateWebIntegrationResolverService } from './services/estateweb-integration-resolver.service';
 import { EstateWebNotificationService } from './services/estateweb-notification.service';
@@ -19,6 +20,7 @@ import { EstateWebSessionService } from './services/estateweb-session.service';
     EstateWebAuthService,
     EstateWebSessionService,
     EstateWebClientService,
+    EstateWebClientsService,
     EstateWebPropertyService,
     EstateWebPropertyReconciliationService,
     EstateWebIntegrationResolverService,
@@ -30,6 +32,7 @@ import { EstateWebSessionService } from './services/estateweb-session.service';
     EstateWebAuthService,
     EstateWebSessionService,
     EstateWebClientService,
+    EstateWebClientsService,
     EstateWebPropertyService,
     EstateWebPropertyReconciliationService,
     EstateWebIntegrationResolverService,

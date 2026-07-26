@@ -6,6 +6,8 @@ export interface EstateWebApiPaths {
   propertyById: (propertyId: number | string) => string;
   propertyImage: (propertyId: number | string) => string;
   imageById: (imageId: number | string) => string;
+  clients: string;
+  clientById: (clientId: number | string) => string;
 }
 
 export interface EstateWebConfigOptions {
