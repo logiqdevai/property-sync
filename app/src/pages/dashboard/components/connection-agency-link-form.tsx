@@ -17,6 +17,18 @@ type ConnectionAgencyLinkFormProps = {
   onLinked?: () => void;
 };
 
+function parseClientId(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (trimmed === "") {
+    return null;
+  }
+  const value = Number.parseInt(trimmed, 10);
+  if (!Number.isFinite(value) || value < 1) {
+    return null;
+  }
+  return value;
+}
+
 export function ConnectionAgencyLinkForm({
   connectionId,
   disabled = false,
@@ -26,6 +38,7 @@ export function ConnectionAgencyLinkForm({
   const { data, isPending: agenciesPending } = useTrackableAgencies({ page: 1, limit: 100 });
   const linkIntegration = useLinkIntegration();
   const [selectedAgencyId, setSelectedAgencyId] = useState<string | null>(null);
+  const [clientIdInput, setClientIdInput] = useState("");
 
   const linkableAgencies = useMemo(
     () =>
@@ -53,10 +66,14 @@ export function ConnectionAgencyLinkForm({
     linkIntegration.mutate(
       {
         agencyId: selectedAgencyId,
-        payload: { user_integration_id: connectionId },
+        payload: {
+          user_integration_id: connectionId,
+          integration_client_id: parseClientId(clientIdInput),
+        },
       },
       {
         onSuccess: () => {
+          setClientIdInput("");
           onLinked?.();
         },
       },
@@ -100,6 +117,22 @@ export function ConnectionAgencyLinkForm({
               </ListBox>
             </Select.Popover>
           </Select>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-muted">CRM client ID</span>
+            <span className="text-xs text-muted">
+              Optional. EstateWeb contact id used for property notes (last name).
+            </span>
+            <input
+              type="number"
+              min={1}
+              className="rounded-lg border border-border bg-background px-3 py-2"
+              value={clientIdInput}
+              disabled={disabled || isPending}
+              placeholder="e.g. 45831"
+              onChange={(e) => setClientIdInput(e.target.value)}
+            />
+          </label>
 
           <div className="flex items-center justify-between gap-2">
             <Link

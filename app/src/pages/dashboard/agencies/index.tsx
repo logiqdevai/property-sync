@@ -254,6 +254,7 @@ function AgencyCard({
           <TrackedAgencyIntegrationLink
             agencyId={agency.id}
             linkedIntegrationId={prefs.user_integration_id}
+            linkedClientId={prefs.integration_client_id}
             disabled={isControlsDisabled}
           />
         </div>

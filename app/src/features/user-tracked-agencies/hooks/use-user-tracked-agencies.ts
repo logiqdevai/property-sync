@@ -115,7 +115,11 @@ export const useLinkIntegration = () => {
       queryClient.invalidateQueries({
         queryKey: ["integrationLink", variables.agencyId],
       });
-      toast({ title: "Integration linked", duration: 2000, variant: "success" });
+      toast({
+        title: "Integration link saved",
+        duration: 2000,
+        variant: "success",
+      });
     },
     onError: (error: Error) => {
       toast({

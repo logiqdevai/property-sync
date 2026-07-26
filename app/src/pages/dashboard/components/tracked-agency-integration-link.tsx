@@ -18,15 +18,29 @@ import { IntegrationTypes } from "@/features/integration-targets/interfaces/inte
 import { Routes } from "@/routes/routes";
 import { CmsIntegrationDescription } from "./cms-integration-description";
 
+function parseClientId(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (trimmed === "") {
+    return null;
+  }
+  const value = Number.parseInt(trimmed, 10);
+  if (!Number.isFinite(value) || value < 1) {
+    return null;
+  }
+  return value;
+}
+
 type TrackedAgencyIntegrationLinkProps = {
   agencyId: string;
   linkedIntegrationId: string | null | undefined;
+  linkedClientId?: number | null;
   disabled?: boolean;
 };
 
 export function TrackedAgencyIntegrationLink({
   agencyId,
   linkedIntegrationId,
+  linkedClientId = null,
   disabled = false,
 }: TrackedAgencyIntegrationLinkProps) {
   const unlinkConfirm = useOverlayState();
@@ -48,16 +62,29 @@ export function TrackedAgencyIntegrationLink({
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(
     linkedIntegrationId ?? null,
   );
+  const [clientIdInput, setClientIdInput] = useState(
+    linkedClientId != null ? String(linkedClientId) : "",
+  );
 
   useEffect(() => {
     setSelectedConnectionId(linkedIntegrationId ?? null);
   }, [linkedIntegrationId]);
+
+  useEffect(() => {
+    setClientIdInput(linkedClientId != null ? String(linkedClientId) : "");
+  }, [linkedClientId]);
 
   const isPending = connectionsPending || linkIntegration.isPending || unlinkIntegration.isPending;
   const connectionOptions = linkableConnections.map((connection) => ({
     id: connection.id,
     label: getIntegrationConnectionLabel(connection),
   }));
+
+  const parsedClientId = parseClientId(clientIdInput);
+  const clientIdInputValid =
+    clientIdInput.trim() === "" || parsedClientId !== null;
+  const clientIdDirty =
+    clientIdInputValid && parsedClientId !== (linkedClientId ?? null);
 
   const handleLink = () => {
     if (!selectedConnectionId || selectedConnectionId === linkedIntegrationId) {
@@ -66,13 +93,48 @@ export function TrackedAgencyIntegrationLink({
 
     linkIntegration.mutate({
       agencyId,
-      payload: { user_integration_id: selectedConnectionId },
+      payload: {
+        user_integration_id: selectedConnectionId,
+        integration_client_id: parsedClientId,
+      },
+    });
+  };
+
+  const handleSaveClientId = () => {
+    if (!linkedIntegrationId || !clientIdDirty) {
+      return;
+    }
+
+    linkIntegration.mutate({
+      agencyId,
+      payload: {
+        user_integration_id: linkedIntegrationId,
+        integration_client_id: parsedClientId,
+      },
     });
   };
 
   const handleUnlink = async () => {
     await unlinkIntegration.mutateAsync(agencyId);
   };
+
+  const clientIdField = (
+    <label className="flex flex-col gap-1 text-sm">
+      <span className="text-muted">CRM client ID</span>
+      <span className="text-xs text-muted">
+        Optional. EstateWeb contact id used for property notes (last name).
+      </span>
+      <input
+        type="number"
+        min={1}
+        className="rounded-lg border border-border bg-background px-3 py-2"
+        value={clientIdInput}
+        disabled={disabled || isPending}
+        placeholder="e.g. 45831"
+        onChange={(e) => setClientIdInput(e.target.value)}
+      />
+    </label>
+  );
 
   return (
     <div className="flex flex-col gap-3 border-t border-border pt-4">
@@ -97,10 +159,20 @@ export function TrackedAgencyIntegrationLink({
             email={linkedConnection.email}
             username={linkedConnection.username}
           />
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="min-w-0 break-words text-sm text-foreground">
-              Linked to {getIntegrationConnectionLabel(linkedConnection)}
-            </p>
+          <p className="min-w-0 break-words text-sm text-foreground">
+            Linked to {getIntegrationConnectionLabel(linkedConnection)}
+          </p>
+          {clientIdField}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+            <ActionButtonWithPending
+              size="sm"
+              onPress={handleSaveClientId}
+              isDisabled={disabled || isPending || !clientIdDirty}
+              isPending={linkIntegration.isPending}
+              className="shrink-0 self-start sm:self-auto"
+            >
+              Save client ID
+            </ActionButtonWithPending>
             <ActionButtonWithPending
               size="sm"
               variant="danger"
@@ -135,6 +207,8 @@ export function TrackedAgencyIntegrationLink({
               </ListBox>
             </Select.Popover>
           </Select>
+
+          {clientIdField}
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <Link
