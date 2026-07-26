@@ -26,39 +26,40 @@ export default function DashboardLayout() {
           isDismissable
           className="backdrop-blur-sm"
           style={{ background: 'color-mix(in oklch, black 30%, transparent)' }}
-        />
-        <Drawer.Content placement="left" className="max-w-[min(100vw,280px)]">
-          <Drawer.Dialog
-            className="bg-surface w-full max-w-[280px]"
-            style={{
-              boxShadow: `
-                0 0 0 1px color-mix(in oklch, var(--accent) 8%, transparent),
-                4px 0 32px -4px color-mix(in oklch, black 20%, transparent)
-              `,
-            }}
-          >
-            <Drawer.Header className="border-b border-border h-[54px] px-3 shrink-0 flex items-center gap-2">
-              <NavLink
-                to="/"
-                onClick={drawerState.close}
-                className="flex items-center gap-2.5 flex-1 min-w-0 rounded-xl px-2 py-1.5 hover:bg-surface-secondary transition-colors duration-200"
-              >
-                <AppLogo className="h-7 w-7" />
-                <span className="text-[13px] font-semibold text-foreground truncate tracking-tight">
-                  {environments.APP_NAME}
-                </span>
-              </NavLink>
-              <Drawer.CloseTrigger className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors shrink-0" />
-            </Drawer.Header>
+        >
+          <Drawer.Content placement="left" className="max-w-[min(100vw,280px)]">
+            <Drawer.Dialog
+              className="bg-surface w-full max-w-[280px]"
+              style={{
+                boxShadow: `
+                  0 0 0 1px color-mix(in oklch, var(--accent) 8%, transparent),
+                  4px 0 32px -4px color-mix(in oklch, black 20%, transparent)
+                `,
+              }}
+            >
+              <Drawer.Header className="border-b border-border h-[54px] px-3 shrink-0 flex items-center gap-2">
+                <NavLink
+                  to="/"
+                  onClick={drawerState.close}
+                  className="flex items-center gap-2.5 flex-1 min-w-0 rounded-xl px-2 py-1.5 hover:bg-surface-secondary transition-colors duration-200"
+                >
+                  <AppLogo className="h-7 w-7" />
+                  <span className="text-[13px] font-semibold text-foreground truncate tracking-tight">
+                    {environments.APP_NAME}
+                  </span>
+                </NavLink>
+                <Drawer.CloseTrigger className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors shrink-0" />
+              </Drawer.Header>
 
-            <Drawer.Body className="px-2 pt-2.5 pb-2 flex flex-col gap-0">
-              <SidebarContent collapsed={false} onNavigate={drawerState.close} />
-              <div className="mt-4 pt-2 border-t border-border">
-                <UserMenuPopover collapsed={false} placement="top" />
-              </div>
-            </Drawer.Body>
-          </Drawer.Dialog>
-        </Drawer.Content>
+              <Drawer.Body className="px-2 pt-2.5 pb-2 flex flex-col gap-0">
+                <SidebarContent collapsed={false} onNavigate={drawerState.close} />
+                <div className="mt-4 pt-2 border-t border-border">
+                  <UserMenuPopover collapsed={false} placement="top" />
+                </div>
+              </Drawer.Body>
+            </Drawer.Dialog>
+          </Drawer.Content>
+        </Drawer.Backdrop>
       </Drawer>
     </div>
   );

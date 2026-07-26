@@ -20,11 +20,19 @@ function AccountSkeleton() {
   );
 }
 
+const ACCOUNT_TABS = {
+  profile: "profile",
+  password: "password",
+} as const;
+
+type AccountTab = (typeof ACCOUNT_TABS)[keyof typeof ACCOUNT_TABS];
+
 export default function AccountPage() {
   const { data: user, isPending } = useCurrentUser();
   const updateProfile = useUpdateCurrentUser();
   const changePassword = useChangeCurrentUserPassword();
   const [passwordFormKey, setPasswordFormKey] = useState(0);
+  const [selectedTab, setSelectedTab] = useState<AccountTab>(ACCOUNT_TABS.profile);
 
   if (isPending || !user) {
     return <AccountSkeleton />;
@@ -37,21 +45,26 @@ export default function AccountPage() {
         <p className="text-sm text-muted mt-1">View your profile and manage your password.</p>
       </div>
 
-      <Tabs className="w-full" variant="secondary" defaultSelectedKey="profile">
-        <Tabs.ListContainer>
+      <Tabs
+        className="relative w-full"
+        variant="secondary"
+        selectedKey={selectedTab}
+        onSelectionChange={(key) => setSelectedTab(String(key) as AccountTab)}
+      >
+        <Tabs.ListContainer className="relative z-10">
           <Tabs.List aria-label="Account settings">
-            <Tabs.Tab id="profile">
+            <Tabs.Tab id={ACCOUNT_TABS.profile}>
               Profile
               <Tabs.Indicator />
             </Tabs.Tab>
-            <Tabs.Tab id="password">
+            <Tabs.Tab id={ACCOUNT_TABS.password}>
               Password
               <Tabs.Indicator />
             </Tabs.Tab>
           </Tabs.List>
         </Tabs.ListContainer>
 
-        <Tabs.Panel id="profile" className="pt-6">
+        <Tabs.Panel id={ACCOUNT_TABS.profile} className="pt-6 data-[exiting]:pointer-events-none">
           <section className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-6">
             <div>
               <h2 className="text-lg font-semibold text-foreground">Profile</h2>
@@ -76,7 +89,7 @@ export default function AccountPage() {
           </section>
         </Tabs.Panel>
 
-        <Tabs.Panel id="password" className="pt-6">
+        <Tabs.Panel id={ACCOUNT_TABS.password} className="pt-6 data-[exiting]:pointer-events-none">
           <section className="rounded-xl border border-border bg-surface p-6 flex flex-col gap-6">
             <div>
               <h2 className="text-lg font-semibold text-foreground">Password</h2>
