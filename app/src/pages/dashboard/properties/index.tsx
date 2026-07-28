@@ -12,7 +12,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Globe, Layers, ListFilter, Scissors, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { Globe, Layers, ListFilter, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
@@ -25,6 +25,7 @@ import {
   type TableRowAction,
 } from "@/components/ui/table-row-actions-menu";
 import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-modal";
+import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
 import {
   PropertyStatuses,
   type PropertyStatus,
@@ -44,6 +45,7 @@ import {
   useDedupeUserPropertyGroups,
   usePushUserPropertiesToCrm,
   usePushUserPropertyToCrm,
+  useRemoveUserPropertiesWatermarkImages,
   useSplitUserProperties,
   useTruncateUserPropertyDescriptions,
   useUserProperties,
@@ -76,6 +78,12 @@ const PROPERTY_MANAGE_SITES_ACTION: TableRowAction = {
   icon: Globe,
 };
 
+const PROPERTY_REMOVE_WATERMARK_ACTION: TableRowAction = {
+  id: "remove-watermarks",
+  label: "Remove watermarks",
+  icon: Sparkles,
+};
+
 const PROPERTY_DELETE_ACTION: TableRowAction = {
   id: "delete",
   label: "Delete",
@@ -90,7 +98,11 @@ export default function DashboardPropertiesListPage() {
   const truncateConfirm = useOverlayState();
   const splitConfirm = useOverlayState();
   const manageSitesModal = useOverlayState();
+  const removeWatermarkModal = useOverlayState();
   const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
+  const [removeWatermarkPropertyIds, setRemoveWatermarkPropertyIds] = useState<
+    string[]
+  >([]);
   const role = useAuthStore((state) => state.role);
   const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
 
@@ -159,6 +171,7 @@ export default function DashboardPropertiesListPage() {
   const truncateDescriptions = useTruncateUserPropertyDescriptions();
   const pushToCrm = usePushUserPropertyToCrm();
   const pushSelectedToCrm = usePushUserPropertiesToCrm();
+  const removeWatermarks = useRemoveUserPropertiesWatermarkImages();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
@@ -189,6 +202,11 @@ export default function DashboardPropertiesListPage() {
     manageSitesModal.open();
   };
 
+  const openRemoveWatermarks = (ids: string[]) => {
+    setRemoveWatermarkPropertyIds(ids);
+    removeWatermarkModal.open();
+  };
+
   const bulkActions = useMemo<TableRowAction[]>(() => {
     const actions: TableRowAction[] = [
       {
@@ -202,6 +220,12 @@ export default function DashboardPropertiesListPage() {
         label: "Manage EstateWeb Sites",
         icon: Globe,
         isDisabled: selectedCount < 1,
+      },
+      {
+        id: "remove-watermarks",
+        label: "Remove watermarks",
+        icon: Sparkles,
+        isDisabled: selectedCount < 1 || removeWatermarks.isPending,
       },
       {
         id: "truncate",
@@ -245,6 +269,7 @@ export default function DashboardPropertiesListPage() {
     dedupeDeleteCount,
     duplicateGroup,
     pushSelectedToCrm.isPending,
+    removeWatermarks.isPending,
     selectedCount,
     selectedGroupedCount,
   ]);
@@ -305,6 +330,10 @@ export default function DashboardPropertiesListPage() {
     }
     if (actionId === "manage-estateweb-sites") {
       openManageSites(Array.from(selectedIds));
+      return;
+    }
+    if (actionId === "remove-watermarks") {
+      openRemoveWatermarks(Array.from(selectedIds));
       return;
     }
     if (actionId === "truncate") {
@@ -671,6 +700,12 @@ export default function DashboardPropertiesListPage() {
                   ...PROPERTY_MANAGE_SITES_ACTION,
                   isDisabled: !property.integration_property_id,
                 },
+                {
+                  ...PROPERTY_REMOVE_WATERMARK_ACTION,
+                  isDisabled:
+                    !property.integration_property_id ||
+                    removeWatermarks.isPending,
+                },
                 ...(canDelete ? [PROPERTY_DELETE_ACTION] : []),
               ];
 
@@ -698,6 +733,10 @@ export default function DashboardPropertiesListPage() {
                     }
                     if (actionId === "manage-estateweb-sites") {
                       openManageSites([property.id]);
+                      return;
+                    }
+                    if (actionId === "remove-watermarks") {
+                      openRemoveWatermarks([property.id]);
                       return;
                     }
                     if (actionId !== "delete") return;
@@ -758,6 +797,12 @@ export default function DashboardPropertiesListPage() {
                         {
                           ...PROPERTY_MANAGE_SITES_ACTION,
                           isDisabled: !property.integration_property_id,
+                        },
+                        {
+                          ...PROPERTY_REMOVE_WATERMARK_ACTION,
+                          isDisabled:
+                            !property.integration_property_id ||
+                            removeWatermarks.isPending,
                         },
                         ...(canDelete ? [PROPERTY_DELETE_ACTION] : []),
                       ];
@@ -836,6 +881,10 @@ export default function DashboardPropertiesListPage() {
                               }
                               if (actionId === "manage-estateweb-sites") {
                                 openManageSites([property.id]);
+                                return;
+                              }
+                              if (actionId === "remove-watermarks") {
+                                openRemoveWatermarks([property.id]);
                                 return;
                               }
                               if (actionId !== "delete") return;
@@ -930,6 +979,18 @@ export default function DashboardPropertiesListPage() {
       <ManageEstateWebSitesModal
         state={manageSitesModal}
         propertyIds={manageSitesPropertyIds}
+      />
+      <RemoveWatermarkByCountModal
+        state={removeWatermarkModal}
+        propertyCount={removeWatermarkPropertyIds.length}
+        onConfirm={async ({ imageCount, replaceCrmImages }) => {
+          await removeWatermarks.mutateAsync({
+            ids: removeWatermarkPropertyIds,
+            image_count: imageCount,
+            replace_crm_images: replaceCrmImages,
+          });
+        }}
+        isPending={removeWatermarks.isPending}
       />
     </div>
   );

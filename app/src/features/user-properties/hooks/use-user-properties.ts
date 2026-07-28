@@ -25,6 +25,7 @@ import {
   updateUserPropertyIntegrationImages,
   removeAdminUserPropertyWatermarkImages,
   removeUserPropertyWatermarkImages,
+  removeUserPropertiesWatermarkImages,
   splitAdminUserProperties,
   splitUserProperties,
   truncateAdminUserPropertyDescriptions,
@@ -46,6 +47,8 @@ import type {
   UpdateIntegrationImagesPayload,
   MigrateIntegrationImagesPayload,
   RemoveWatermarkImagesPayload,
+  BulkRemoveWatermarkImagesPayload,
+  BulkRemoveWatermarkImagesResponse,
   UpdateUserPropertyPayload,
   UserPropertyCountQuery,
   UserPropertyListQuery,
@@ -369,6 +372,33 @@ export const useRemoveUserPropertyWatermarkImages = () => {
         description: data.message,
         duration: 4000,
         variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not start watermark removal",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useRemoveUserPropertiesWatermarkImages = () => {
+  return useMutation({
+    mutationFn: (payload: BulkRemoveWatermarkImagesPayload) =>
+      removeUserPropertiesWatermarkImages(payload),
+    onSuccess: (data) => {
+      const bulk = data as BulkRemoveWatermarkImagesResponse;
+      const failedCount = Array.isArray(bulk.failed) ? bulk.failed.length : 0;
+      toast({
+        title: "Watermark removal started",
+        description:
+          failedCount > 0
+            ? `${data.message} ${failedCount} failed.`
+            : data.message,
+        duration: 4000,
+        variant: failedCount > 0 ? "warning" : "success",
       });
     },
     onError: (error: Error) => {

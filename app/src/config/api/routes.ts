@@ -196,6 +196,7 @@ export const ApiRoutes = {
             `/properties/${id}/update-integration-images`,
         removeWatermarkImages: (id: string) =>
             `/properties/${id}/remove-watermark-images`,
+        bulkRemoveWatermarkImages: "/properties/remove-watermark-images",
         bulkPushToCrm: "/properties/push-to-cms",
         bulkDelete: "/properties/bulk-delete",
         dedupeGroups: "/properties/dedupe-groups",

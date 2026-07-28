@@ -25,6 +25,8 @@ import type {
   MigrateIntegrationImagesPayload,
   RemoveWatermarkImagesPayload,
   RemoveWatermarkImagesResponse,
+  BulkRemoveWatermarkImagesPayload,
+  BulkRemoveWatermarkImagesResponse,
 } from "../interfaces/user-properties.interfaces";
 
 export const getUserProperties = async (
@@ -265,6 +267,22 @@ export const removeUserPropertyWatermarkImages = async (
   try {
     const response = await axiosInstance.post(
       ApiRoutes.userProperties.removeWatermarkImages(id),
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to start watermark removal.",
+    );
+  }
+};
+
+export const removeUserPropertiesWatermarkImages = async (
+  payload: BulkRemoveWatermarkImagesPayload,
+): Promise<RemoveWatermarkImagesResponse | BulkRemoveWatermarkImagesResponse> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.bulkRemoveWatermarkImages,
       payload,
     );
     return response.data;

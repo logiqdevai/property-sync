@@ -28,8 +28,12 @@ import { DeleteUserPropertiesDto } from './dto/delete-user-properties.dto';
 import { DeleteIntegrationImagesDto } from './dto/delete-integration-images.dto';
 import { CreateIntegrationImagesDto } from './dto/create-integration-images.dto';
 import { UpdateIntegrationImagesDto } from './dto/update-integration-images.dto';
-import { RemoveWatermarkImagesDto } from './dto/remove-watermark-images.dto';
+import {
+  BulkRemoveWatermarkImagesDto,
+  RemoveWatermarkImagesDto,
+} from './dto/remove-watermark-images.dto';
 import { RemoveWatermarkImagesResponseEntity } from './entities/remove-watermark-images-response.entity';
+import { BulkRemoveWatermarkImagesResponseEntity } from './entities/bulk-remove-watermark-images-response.entity';
 import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
 import { UpdateEstateWebSitesDto } from './dto/update-estateweb-sites.dto';
 import {
@@ -224,6 +228,28 @@ export class UserPropertiesController {
       userId,
       dto.ids,
       dto.sites,
+    );
+  }
+
+  @Post('remove-watermark-images')
+  @ApiOperation({
+    summary:
+      'Enqueue watermark removal for the first N CRM images on one or more properties',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Watermark removal jobs enqueued',
+    type: BulkRemoveWatermarkImagesResponseEntity,
+  })
+  @ApiResponse({ status: 400, description: 'Cannot enqueue watermark removal' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  removeWatermarkImagesBulk(
+    @CurrentUser('id') userId: string,
+    @Body() dto: BulkRemoveWatermarkImagesDto,
+  ) {
+    return this.userPropertiesService.enqueueRemoveWatermarkImagesBulk(
+      userId,
+      dto,
     );
   }
 

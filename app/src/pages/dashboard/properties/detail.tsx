@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Scissors, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
+import { Pencil, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
 import { Button, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
@@ -29,6 +29,7 @@ import {
   useCreateUserPropertyIntegrationImages,
   useUpdateUserPropertyIntegrationImages,
   useRemoveUserPropertyWatermarkImages,
+  useRemoveUserPropertiesWatermarkImages,
   usePushUserPropertyToCrm,
   useTruncateUserPropertyDescriptions,
   useUpdateUserProperty,
@@ -43,6 +44,7 @@ import { EstateWebFlatPickerModal } from "./components/estateweb-flat-picker-mod
 import { EstateWebLocationPickerModal } from "./components/estateweb-location-picker-modal";
 import { EstateWebPropertyTypePickerModal } from "./components/estateweb-property-type-picker-modal";
 import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-modal";
+import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
 
 const fieldClassName =
   "w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2 placeholder:text-muted";
@@ -102,6 +104,7 @@ export default function DashboardPropertyDetailPage() {
   const truncateConfirm = useOverlayState();
   const unlinkConfirm = useOverlayState();
   const manageSitesModal = useOverlayState();
+  const removeWatermarkModal = useOverlayState();
   const locationPicker = useOverlayState();
   const floorPicker = useOverlayState();
   const energyClassPicker = useOverlayState();
@@ -118,6 +121,7 @@ export default function DashboardPropertyDetailPage() {
   const createIntegrationImages = useCreateUserPropertyIntegrationImages();
   const updateIntegrationImages = useUpdateUserPropertyIntegrationImages();
   const removeWatermarkImages = useRemoveUserPropertyWatermarkImages();
+  const removeWatermarksByCount = useRemoveUserPropertiesWatermarkImages();
   const truncateDescriptions = useTruncateUserPropertyDescriptions();
   const { data: locationCatalog = [] } = useEstateWebLocationCatalog(isEditing);
   const { data: floorCatalog = [], isPending: floorCatalogPending } =
@@ -264,6 +268,16 @@ export default function DashboardPropertyDetailPage() {
         icon: Globe,
         isDisabled: isEditing || !property.integration_property_id,
       },
+      {
+        id: "remove-watermarks",
+        label: "Remove watermarks",
+        variant: "default" as const,
+        icon: Sparkles,
+        isDisabled:
+          isEditing ||
+          !property.integration_property_id ||
+          removeWatermarksByCount.isPending,
+      },
       ...(crmUrl
         ? [
             {
@@ -305,7 +319,14 @@ export default function DashboardPropertyDetailPage() {
             icon: Pencil,
           },
     ];
-  }, [isAdmin, isEditing, property, pushToCrm.isPending, updateProperty.isPending]);
+  }, [
+    isAdmin,
+    isEditing,
+    property,
+    pushToCrm.isPending,
+    removeWatermarksByCount.isPending,
+    updateProperty.isPending,
+  ]);
 
   if (isPending || !property) {
     return <DetailSkeleton />;
@@ -349,6 +370,10 @@ export default function DashboardPropertyDetailPage() {
     }
     if (actionId === "manage-estateweb-sites") {
       manageSitesModal.open();
+      return;
+    }
+    if (actionId === "remove-watermarks") {
+      removeWatermarkModal.open();
       return;
     }
     if (actionId === "open-in-crm") {
@@ -458,7 +483,8 @@ export default function DashboardPropertyDetailPage() {
               deleteIntegrationImages.isPending ||
               createIntegrationImages.isPending ||
               updateIntegrationImages.isPending ||
-              removeWatermarkImages.isPending
+              removeWatermarkImages.isPending ||
+              removeWatermarksByCount.isPending
             }
           />
         }
@@ -788,6 +814,18 @@ export default function DashboardPropertyDetailPage() {
             <ManageEstateWebSitesModal
               state={manageSitesModal}
               propertyIds={[property.id]}
+            />
+            <RemoveWatermarkByCountModal
+              state={removeWatermarkModal}
+              propertyCount={1}
+              onConfirm={async ({ imageCount, replaceCrmImages }) => {
+                await removeWatermarksByCount.mutateAsync({
+                  ids: [property.id],
+                  image_count: imageCount,
+                  replace_crm_images: replaceCrmImages,
+                });
+              }}
+              isPending={removeWatermarksByCount.isPending}
             />
             <ConfirmationDialog
               state={unlinkConfirm}

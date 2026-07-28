@@ -40,7 +40,10 @@ import {
   applyTextTruncatePieces,
   normalizeTextTruncatePieces,
 } from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
-import { RemoveWatermarkImagesDto } from './dto/remove-watermark-images.dto';
+import {
+  BulkRemoveWatermarkImagesDto,
+  RemoveWatermarkImagesDto,
+} from './dto/remove-watermark-images.dto';
 import { MigrateIntegrationImagesMode } from './dto/migrate-integration-images.dto';
 import { EstateWebIntegrationPropertyImage } from './interfaces/integration-property-image.interface';
 import { WatermarkRemovalJobData } from './interfaces/watermark-removal-job.interface';
@@ -780,34 +783,77 @@ export class UserPropertiesService {
     id: string,
     dto: RemoveWatermarkImagesDto,
   ) {
-    const userProperty = await this.prisma.userProperty.findFirst({
-      where: { id, user_id: userId },
-      select: {
-        id: true,
-        user_id: true,
-        canonical_property_id: true,
-        integration_property_id: true,
-        integration_properties: {
-          orderBy: { updated_at: 'desc' },
-          take: 1,
-          select: { images: true },
-        },
-      },
-    });
+    const userProperty = await this.findUserPropertyForWatermarkEnqueue(
+      id,
+      userId,
+    );
+    return this.runEnqueueRemoveWatermarkImages(userProperty, dto);
+  }
 
-    if (!userProperty) {
-      throw new NotFoundException('Property not found');
+  async enqueueRemoveWatermarkImagesBulk(
+    userId: string,
+    dto: BulkRemoveWatermarkImagesDto,
+  ) {
+    const idList = [...new Set(dto.ids)];
+    if (idList.length === 0) {
+      throw new BadRequestException('No properties selected');
     }
 
-    return this.runEnqueueRemoveWatermarkImages(userProperty, dto);
+    const jobLogIds: string[] = [];
+    const failed: Array<{ user_property_id: string; error: string }> = [];
+
+    for (const id of idList) {
+      try {
+        const result = await this.enqueueRemoveWatermarkImages(userId, id, {
+          image_count: dto.image_count,
+          replace_crm_images: dto.replace_crm_images,
+        });
+        jobLogIds.push(result.job_log_id);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        failed.push({ user_property_id: id, error: message });
+      }
+    }
+
+    if (jobLogIds.length === 0) {
+      const firstError = failed[0]?.error ?? 'No watermark jobs could be started';
+      throw new BadRequestException(
+        failed.length === 1
+          ? firstError
+          : `None of the ${idList.length} properties could start watermark removal. ${firstError}`,
+      );
+    }
+
+    if (idList.length === 1 && jobLogIds.length === 1) {
+      return {
+        job_log_id: jobLogIds[0],
+        message:
+          'Watermark removal has started and is being processed in the background.',
+      };
+    }
+
+    return {
+      job_log_ids: jobLogIds,
+      enqueued: jobLogIds.length,
+      failed,
+      message: `Watermark removal started for ${jobLogIds.length} of ${idList.length} properties.`,
+    };
   }
 
   async adminEnqueueRemoveWatermarkImages(
     id: string,
     dto: RemoveWatermarkImagesDto,
   ) {
+    const userProperty = await this.findUserPropertyForWatermarkEnqueue(id);
+    return this.runEnqueueRemoveWatermarkImages(userProperty, dto);
+  }
+
+  private async findUserPropertyForWatermarkEnqueue(
+    id: string,
+    userId?: string,
+  ) {
     const userProperty = await this.prisma.userProperty.findFirst({
-      where: { id },
+      where: userId ? { id, user_id: userId } : { id },
       select: {
         id: true,
         user_id: true,
@@ -825,7 +871,7 @@ export class UserPropertiesService {
       throw new NotFoundException('Property not found');
     }
 
-    return this.runEnqueueRemoveWatermarkImages(userProperty, dto);
+    return userProperty;
   }
 
   private async runEnqueueRemoveWatermarkImages(
@@ -859,11 +905,11 @@ export class UserPropertiesService {
       );
     }
 
-    const parsedImageIds = this.parseWatermarkImageIds(dto.image_ids);
     const integrationImages = this.watermarkRemovalService.parseIntegrationImages(
       userProperty.integration_properties[0]?.images,
       integrationType,
     );
+    const parsedImageIds = this.resolveWatermarkImageIds(dto, integrationImages);
     this.assertWatermarkImageSelection(parsedImageIds, integrationImages);
 
     const jobData: WatermarkRemovalJobData = {
@@ -904,6 +950,47 @@ export class UserPropertiesService {
       message:
         'Watermark removal has started and is being processed in the background.',
     };
+  }
+
+  private resolveWatermarkImageIds(
+    dto: RemoveWatermarkImagesDto,
+    integrationImages: EstateWebIntegrationPropertyImage[],
+  ): number[] {
+    if (dto.image_count != null) {
+      return this.resolveWatermarkImageIdsFromCount(
+        dto.image_count,
+        integrationImages,
+      );
+    }
+
+    if (!dto.image_ids || dto.image_ids.length === 0) {
+      throw new BadRequestException('Provide image_ids or image_count');
+    }
+
+    return this.parseWatermarkImageIds(dto.image_ids);
+  }
+
+  private resolveWatermarkImageIdsFromCount(
+    imageCount: number,
+    integrationImages: EstateWebIntegrationPropertyImage[],
+  ): number[] {
+    const limit = Math.max(0, Math.floor(imageCount));
+    if (limit === 0) {
+      throw new BadRequestException('image_count must be at least 1');
+    }
+
+    const selected = integrationImages
+      .slice(0, limit)
+      .filter((image) => Boolean(resolveIntegrationImageProcessUrl(image)))
+      .map((image) => image.id);
+
+    if (selected.length === 0) {
+      throw new BadRequestException(
+        'No processable images found in the selected range',
+      );
+    }
+
+    return selected;
   }
 
   private parseWatermarkImageIds(imageIds: string[]): number[] {

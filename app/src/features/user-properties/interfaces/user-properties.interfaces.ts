@@ -216,7 +216,14 @@ export interface UpdateIntegrationImagesPayload {
 }
 
 export interface RemoveWatermarkImagesPayload {
-  image_ids: string[];
+  image_ids?: string[];
+  image_count?: number;
+  replace_crm_images: boolean;
+}
+
+export interface BulkRemoveWatermarkImagesPayload {
+  ids: string[];
+  image_count: number;
   replace_crm_images: boolean;
 }
 
@@ -228,5 +235,12 @@ export interface MigrateIntegrationImagesPayload {
 
 export interface RemoveWatermarkImagesResponse {
   job_log_id: string;
+  message: string;
+}
+
+export interface BulkRemoveWatermarkImagesResponse {
+  job_log_ids: string[];
+  enqueued: number;
+  failed: Array<{ user_property_id: string; error: string }>;
   message: string;
 }
