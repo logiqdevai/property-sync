@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, OnModuleInit } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
@@ -11,8 +11,15 @@ import {
   WatermarkRemovalStepLog,
 } from '@/modules/user-properties/interfaces/watermark-removal-job.interface';
 
-@Processor(WATERMARK_REMOVAL_QUEUE)
-export class WatermarkRemovalProcessor extends WorkerHost {
+const WATERMARK_REMOVAL_WORKER_CONCURRENCY = 5;
+
+@Processor(WATERMARK_REMOVAL_QUEUE, {
+  concurrency: WATERMARK_REMOVAL_WORKER_CONCURRENCY,
+})
+export class WatermarkRemovalProcessor
+  extends WorkerHost
+  implements OnModuleInit
+{
   private readonly logger = new Logger(WatermarkRemovalProcessor.name);
 
   constructor(
@@ -20,6 +27,10 @@ export class WatermarkRemovalProcessor extends WorkerHost {
     private readonly watermarkRemovalService: WatermarkRemovalService,
   ) {
     super();
+  }
+
+  async onModuleInit(): Promise<void> {
+    this.worker.concurrency = WATERMARK_REMOVAL_WORKER_CONCURRENCY;
   }
 
   async process(job: Job<WatermarkRemovalJobData>): Promise<void> {
