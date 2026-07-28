@@ -1,0 +1,3 @@
+export const GOOGLE_TRANSLATE_MAX_TEXTS_PER_REQUEST = 128;
+
+export const GOOGLE_TRANSLATE_DEFAULT_FORMAT = 'text' as const;

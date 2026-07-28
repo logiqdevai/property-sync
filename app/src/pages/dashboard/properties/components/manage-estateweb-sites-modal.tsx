@@ -4,22 +4,72 @@ import { ActionButtonWithPending } from "@/components/ui/action-button-with-pend
 import { EstateWebPushSitesList } from "@/components/ui/estateweb-push-sites-list";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import type { EstateWebPushSiteSetting } from "@/features/estateweb/interfaces/estateweb-integration-settings.interfaces";
+import type { IntegrationPropertySite } from "@/features/integration-property/interfaces/integration-property.interfaces";
 import {
   useAvailableIntegrationTargets,
   useUserIntegrationSettings,
 } from "@/features/user-integrations/hooks/use-user-integrations";
-import { useUpdateUserPropertyEstateWebSites } from "@/features/user-properties/hooks/use-user-properties";
+import {
+  useUpdateUserPropertyEstateWebSites,
+  useUserProperty,
+} from "@/features/user-properties/hooks/use-user-properties";
 
 export type ManageEstateWebSitesModalState = ReturnType<typeof useOverlayState>;
 
 type ManageEstateWebSitesModalProps = {
   state: ManageEstateWebSitesModalState;
   propertyIds: string[];
+  storedSites?: IntegrationPropertySite[] | null;
 };
+
+function mergeStoredSitesOntoDefaults(
+  defaults: EstateWebPushSiteSetting[],
+  stored: IntegrationPropertySite[] | null | undefined,
+): EstateWebPushSiteSetting[] {
+  if (!stored) {
+    return defaults.map((site) => ({ ...site }));
+  }
+
+  const storedById = new Map(
+    stored.map((site) => [site.agent_site_id, site] as const),
+  );
+
+  const merged = defaults.map((site) => {
+    const match = storedById.get(site.agent_site_id);
+    if (!match) {
+      return { ...site, selected: false };
+    }
+    return {
+      ...site,
+      selected: match.selected !== false,
+      name: match.name || site.name,
+      show_on_slider: match.show_on_slider,
+      show_on_first_page: match.show_on_first_page,
+      show_on_relative_pages: match.show_on_relative_pages,
+    };
+  });
+
+  for (const site of stored) {
+    if (merged.some((row) => row.agent_site_id === site.agent_site_id)) {
+      continue;
+    }
+    merged.push({
+      selected: site.selected !== false,
+      name: site.name,
+      agent_site_id: site.agent_site_id,
+      show_on_slider: site.show_on_slider,
+      show_on_first_page: site.show_on_first_page,
+      show_on_relative_pages: site.show_on_relative_pages,
+    });
+  }
+
+  return merged;
+}
 
 export const ManageEstateWebSitesModal: FC<ManageEstateWebSitesModalProps> = ({
   state,
   propertyIds,
+  storedSites: storedSitesProp,
 }) => {
   const { data: targets = [], isPending: targetsPending } =
     useAvailableIntegrationTargets();
@@ -30,6 +80,21 @@ export const ManageEstateWebSitesModal: FC<ManageEstateWebSitesModalProps> = ({
   const { data: settings, isPending: settingsPending } =
     useUserIntegrationSettings(settingsTargetId);
   const updateSites = useUpdateUserPropertyEstateWebSites();
+
+  const singlePropertyId =
+    state.isOpen && propertyIds.length === 1 ? propertyIds[0] : "";
+  const shouldFetchProperty =
+    Boolean(singlePropertyId) && storedSitesProp === undefined;
+  const { data: propertyDetail, isPending: propertyPending } = useUserProperty(
+    shouldFetchProperty ? singlePropertyId : "",
+  );
+
+  const storedSites =
+    storedSitesProp !== undefined
+      ? storedSitesProp
+      : propertyIds.length === 1
+        ? (propertyDetail?.integration_property?.sites ?? null)
+        : null;
 
   const [sites, setSites] = useState<EstateWebPushSiteSetting[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -42,16 +107,38 @@ export const ManageEstateWebSitesModal: FC<ManageEstateWebSitesModalProps> = ({
 
     if (hydrated) return;
     if (!settingsTargetId || settingsPending || settings === undefined) return;
+    if (shouldFetchProperty && propertyPending) return;
+
+    const defaults = (settings.settings?.estateweb_default_sites ?? []).map(
+      (site) => ({ ...site }),
+    );
 
     setSites(
-      (settings.settings?.estateweb_default_sites ?? []).map((site) => ({
-        ...site,
-      })),
+      propertyIds.length === 1
+        ? mergeStoredSitesOntoDefaults(defaults, storedSites)
+        : defaults,
     );
     setHydrated(true);
-  }, [state.isOpen, settings, settingsPending, settingsTargetId, hydrated]);
+  }, [
+    state.isOpen,
+    settings,
+    settingsPending,
+    settingsTargetId,
+    hydrated,
+    propertyIds.length,
+    shouldFetchProperty,
+    propertyPending,
+    storedSites,
+  ]);
 
-  const isLoading = state.isOpen && !hydrated && (targetsPending || settingsPending || !settingsTargetId || settings === undefined);
+  const isLoading =
+    state.isOpen &&
+    !hydrated &&
+    (targetsPending ||
+      settingsPending ||
+      !settingsTargetId ||
+      settings === undefined ||
+      (shouldFetchProperty && propertyPending));
 
   const handleConfirm = () => {
     if (propertyIds.length === 0) return;

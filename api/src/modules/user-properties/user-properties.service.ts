@@ -332,6 +332,7 @@ export class UserPropertiesService {
               integrationProperty.user_integration_settings_id,
             user_property_id: integrationProperty.user_property_id,
             images: integrationProperty.images,
+            sites: integrationProperty.sites,
             created_at: integrationProperty.created_at,
             updated_at: integrationProperty.updated_at,
           }
@@ -2254,6 +2255,7 @@ export class UserPropertiesService {
               integrationProperty.user_integration_settings_id,
             user_property_id: integrationProperty.user_property_id,
             images: integrationProperty.images,
+            sites: integrationProperty.sites,
             created_at: integrationProperty.created_at,
             updated_at: integrationProperty.updated_at,
           }

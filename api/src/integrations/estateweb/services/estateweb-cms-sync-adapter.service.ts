@@ -16,6 +16,7 @@ import {
   EstateWebPropertyFieldValue,
   EstateWebPropertyImage,
   EstateWebPropertyPayload,
+  EstateWebPropertySite,
   EstateWebUpdatePropertyPayload,
   EstateWebUploadImagePayload,
 } from '../interfaces/estateweb-property.interface';
@@ -78,6 +79,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     const [pushSites, adLanguages] = await Promise.all([
       this.resolvePushSitesForSync(
         userIntegrationId,
+        userProperty.id,
         options?.watermarkManualSelection,
         options?.sitesOverride,
       ),
@@ -103,6 +105,12 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       payload,
     );
 
+    await this.persistIntegrationPropertySites({
+      userIntegrationId,
+      userPropertyId: userProperty.id,
+      sites: payload.sites,
+    });
+
     await this.uploadImages(userIntegrationId, result.id, userProperty);
 
     return { integration_property_id: String(result.id) };
@@ -119,6 +127,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     const [pushSites, adLanguages] = await Promise.all([
       this.resolvePushSitesForSync(
         userIntegrationId,
+        userProperty.id,
         options?.watermarkManualSelection,
         options?.sitesOverride,
       ),
@@ -140,6 +149,12 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       integrationPropertyId,
       payload,
     );
+
+    await this.persistIntegrationPropertySites({
+      userIntegrationId,
+      userPropertyId: userProperty.id,
+      sites: payload.sites,
+    });
   }
 
   async pushRemove(
@@ -166,6 +181,12 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       integrationPropertyId,
       payload,
     );
+
+    await this.persistIntegrationPropertySites({
+      userIntegrationId,
+      userPropertyId: userProperty.id,
+      sites: [],
+    });
   }
 
   async deleteImages(params: CmsSyncDeleteImagesParams): Promise<void> {
@@ -441,6 +462,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
   private async resolvePushSitesForSync(
     userIntegrationId: string,
+    userPropertyId: string,
     watermarkManualSelection?: boolean,
     sitesOverride?: CmsSyncPushOptions['sitesOverride'],
   ): Promise<EstateWebPushSiteSetting[]> {
@@ -453,6 +475,14 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         show_on_first_page: site.show_on_first_page,
         show_on_relative_pages: site.show_on_relative_pages,
       }));
+    }
+
+    const storedSites = await this.loadStoredIntegrationPropertySites(
+      userIntegrationId,
+      userPropertyId,
+    );
+    if (storedSites !== null) {
+      return storedSites;
     }
 
     if (watermarkManualSelection === undefined) {
@@ -470,6 +500,118 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       integration?.settings?.settings,
       watermarkManualSelection,
     );
+  }
+
+  private parseStoredSites(value: unknown): EstateWebPushSiteSetting[] | null {
+    if (value === null || value === undefined) {
+      return null;
+    }
+    if (!Array.isArray(value)) {
+      return null;
+    }
+
+    const sites: EstateWebPushSiteSetting[] = [];
+    for (const item of value) {
+      if (!item || typeof item !== 'object') continue;
+      const site = item as Partial<EstateWebPushSiteSetting>;
+      const agentSiteId = Number(site.agent_site_id);
+      if (!Number.isFinite(agentSiteId)) continue;
+      sites.push({
+        selected: site.selected !== false,
+        name: typeof site.name === 'string' ? site.name : '',
+        agent_site_id: agentSiteId,
+        show_on_slider: site.show_on_slider === 1 ? 1 : 0,
+        show_on_first_page: site.show_on_first_page === 1 ? 1 : 0,
+        show_on_relative_pages: site.show_on_relative_pages === 1 ? 1 : 0,
+      });
+    }
+    return sites;
+  }
+
+  private async loadStoredIntegrationPropertySites(
+    userIntegrationId: string,
+    userPropertyId: string,
+  ): Promise<EstateWebPushSiteSetting[] | null> {
+    const integration = await this.prisma.userIntegration.findUnique({
+      where: { id: userIntegrationId },
+      select: {
+        user_id: true,
+        user_integration_settings_id: true,
+      },
+    });
+    if (!integration) {
+      return null;
+    }
+
+    const row = await this.prisma.integrationProperty.findUnique({
+      where: {
+        user_id_user_integration_settings_id_user_property_id: {
+          user_id: integration.user_id,
+          user_integration_settings_id:
+            integration.user_integration_settings_id,
+          user_property_id: userPropertyId,
+        },
+      },
+      select: { sites: true },
+    });
+
+    return this.parseStoredSites(row?.sites);
+  }
+
+  private async persistIntegrationPropertySites(params: {
+    userIntegrationId: string;
+    userPropertyId: string;
+    sites: EstateWebPropertySite[];
+  }): Promise<void> {
+    const integration = await this.prisma.userIntegration.findUnique({
+      where: { id: params.userIntegrationId },
+      select: {
+        user_id: true,
+        user_integration_settings_id: true,
+      },
+    });
+    if (!integration) {
+      this.logger.warn(
+        `Skip persisting IntegrationProperty sites: integration not found (${params.userIntegrationId})`,
+      );
+      return;
+    }
+
+    const sites: EstateWebPushSiteSetting[] = params.sites.map((site) => ({
+      selected: true,
+      name: site.name ?? '',
+      agent_site_id: Number(site.agent_site_id),
+      show_on_slider: site.show_on_slider ? 1 : 0,
+      show_on_first_page: site.show_on_first_page ? 1 : 0,
+      show_on_relative_pages: site.show_on_relative_pages ? 1 : 0,
+    }));
+
+    try {
+      await this.prisma.integrationProperty.upsert({
+        where: {
+          user_id_user_integration_settings_id_user_property_id: {
+            user_id: integration.user_id,
+            user_integration_settings_id:
+              integration.user_integration_settings_id,
+            user_property_id: params.userPropertyId,
+          },
+        },
+        create: {
+          user_id: integration.user_id,
+          user_integration_settings_id:
+            integration.user_integration_settings_id,
+          user_property_id: params.userPropertyId,
+          sites: sites as unknown as Prisma.InputJsonValue,
+        },
+        update: {
+          sites: sites as unknown as Prisma.InputJsonValue,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Failed to persist IntegrationProperty sites for user_property=${params.userPropertyId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 
   private async applySalesPriceStartIfNeeded(

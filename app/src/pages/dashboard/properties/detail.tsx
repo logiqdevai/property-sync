@@ -837,6 +837,7 @@ export default function DashboardPropertyDetailPage() {
             <ManageEstateWebSitesModal
               state={manageSitesModal}
               propertyIds={[property.id]}
+              storedSites={property.integration_property?.sites ?? null}
             />
             <ConfirmationDialog
               state={updateSalesPricesConfirm}

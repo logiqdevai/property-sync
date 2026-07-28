@@ -33710,6 +33710,7 @@ export namespace Prisma {
     user_integration_settings_id: number
     user_property_id: number
     images: number
+    sites: number
     created_at: number
     updated_at: number
     _all: number
@@ -33740,6 +33741,7 @@ export namespace Prisma {
     user_integration_settings_id?: true
     user_property_id?: true
     images?: true
+    sites?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -33823,6 +33825,7 @@ export namespace Prisma {
     user_integration_settings_id: string
     user_property_id: string
     images: JsonValue | null
+    sites: JsonValue | null
     created_at: Date
     updated_at: Date
     _count: IntegrationPropertyCountAggregateOutputType | null
@@ -33850,6 +33853,7 @@ export namespace Prisma {
     user_integration_settings_id?: boolean
     user_property_id?: boolean
     images?: boolean
+    sites?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -33863,6 +33867,7 @@ export namespace Prisma {
     user_integration_settings_id?: boolean
     user_property_id?: boolean
     images?: boolean
+    sites?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -33876,6 +33881,7 @@ export namespace Prisma {
     user_integration_settings_id?: boolean
     user_property_id?: boolean
     images?: boolean
+    sites?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -33889,11 +33895,12 @@ export namespace Prisma {
     user_integration_settings_id?: boolean
     user_property_id?: boolean
     images?: boolean
+    sites?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type IntegrationPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "user_integration_settings_id" | "user_property_id" | "images" | "created_at" | "updated_at", ExtArgs["result"]["integrationProperty"]>
+  export type IntegrationPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "user_integration_settings_id" | "user_property_id" | "images" | "sites" | "created_at" | "updated_at", ExtArgs["result"]["integrationProperty"]>
   export type IntegrationPropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
@@ -33923,6 +33930,7 @@ export namespace Prisma {
       user_integration_settings_id: string
       user_property_id: string
       images: Prisma.JsonValue | null
+      sites: Prisma.JsonValue | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["integrationProperty"]>
@@ -34356,6 +34364,7 @@ export namespace Prisma {
     readonly user_integration_settings_id: FieldRef<"IntegrationProperty", 'String'>
     readonly user_property_id: FieldRef<"IntegrationProperty", 'String'>
     readonly images: FieldRef<"IntegrationProperty", 'Json'>
+    readonly sites: FieldRef<"IntegrationProperty", 'Json'>
     readonly created_at: FieldRef<"IntegrationProperty", 'DateTime'>
     readonly updated_at: FieldRef<"IntegrationProperty", 'DateTime'>
   }
@@ -37634,6 +37643,7 @@ export namespace Prisma {
     user_integration_settings_id: 'user_integration_settings_id',
     user_property_id: 'user_property_id',
     images: 'images',
+    sites: 'sites',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -40773,6 +40783,7 @@ export namespace Prisma {
     user_integration_settings_id?: StringFilter<"IntegrationProperty"> | string
     user_property_id?: StringFilter<"IntegrationProperty"> | string
     images?: JsonNullableFilter<"IntegrationProperty">
+    sites?: JsonNullableFilter<"IntegrationProperty">
     created_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -40786,6 +40797,7 @@ export namespace Prisma {
     user_integration_settings_id?: SortOrder
     user_property_id?: SortOrder
     images?: SortOrderInput | SortOrder
+    sites?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -40803,6 +40815,7 @@ export namespace Prisma {
     user_integration_settings_id?: StringFilter<"IntegrationProperty"> | string
     user_property_id?: StringFilter<"IntegrationProperty"> | string
     images?: JsonNullableFilter<"IntegrationProperty">
+    sites?: JsonNullableFilter<"IntegrationProperty">
     created_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -40816,6 +40829,7 @@ export namespace Prisma {
     user_integration_settings_id?: SortOrder
     user_property_id?: SortOrder
     images?: SortOrderInput | SortOrder
+    sites?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: IntegrationPropertyCountOrderByAggregateInput
@@ -40832,6 +40846,7 @@ export namespace Prisma {
     user_integration_settings_id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
     user_property_id?: StringWithAggregatesFilter<"IntegrationProperty"> | string
     images?: JsonNullableWithAggregatesFilter<"IntegrationProperty">
+    sites?: JsonNullableWithAggregatesFilter<"IntegrationProperty">
     created_at?: DateTimeWithAggregatesFilter<"IntegrationProperty"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"IntegrationProperty"> | Date | string
   }
@@ -44074,6 +44089,7 @@ export namespace Prisma {
   export type IntegrationPropertyCreateInput = {
     id?: string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutIntegration_propertiesInput
@@ -44087,6 +44103,7 @@ export namespace Prisma {
     user_integration_settings_id: string
     user_property_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -44094,6 +44111,7 @@ export namespace Prisma {
   export type IntegrationPropertyUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutIntegration_propertiesNestedInput
@@ -44107,6 +44125,7 @@ export namespace Prisma {
     user_integration_settings_id?: StringFieldUpdateOperationsInput | string
     user_property_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -44117,6 +44136,7 @@ export namespace Prisma {
     user_integration_settings_id: string
     user_property_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -44124,6 +44144,7 @@ export namespace Prisma {
   export type IntegrationPropertyUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -44134,6 +44155,7 @@ export namespace Prisma {
     user_integration_settings_id?: StringFieldUpdateOperationsInput | string
     user_property_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46780,6 +46802,7 @@ export namespace Prisma {
     user_integration_settings_id?: SortOrder
     user_property_id?: SortOrder
     images?: SortOrder
+    sites?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -50276,6 +50299,7 @@ export namespace Prisma {
   export type IntegrationPropertyCreateWithoutUserInput = {
     id?: string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
     user_integration_settings: UserIntegrationSettingsCreateNestedOneWithoutIntegration_propertiesInput
@@ -50287,6 +50311,7 @@ export namespace Prisma {
     user_integration_settings_id: string
     user_property_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -50498,6 +50523,7 @@ export namespace Prisma {
     user_integration_settings_id?: StringFilter<"IntegrationProperty"> | string
     user_property_id?: StringFilter<"IntegrationProperty"> | string
     images?: JsonNullableFilter<"IntegrationProperty">
+    sites?: JsonNullableFilter<"IntegrationProperty">
     created_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
   }
@@ -50723,6 +50749,7 @@ export namespace Prisma {
   export type IntegrationPropertyCreateWithoutUser_integration_settingsInput = {
     id?: string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutIntegration_propertiesInput
@@ -50734,6 +50761,7 @@ export namespace Prisma {
     user_id: string
     user_property_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -57117,6 +57145,7 @@ export namespace Prisma {
   export type IntegrationPropertyCreateWithoutUser_propertyInput = {
     id?: string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutIntegration_propertiesInput
@@ -57128,6 +57157,7 @@ export namespace Prisma {
     user_id: string
     user_integration_settings_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -57831,6 +57861,7 @@ export namespace Prisma {
     user_integration_settings_id: string
     user_property_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -58128,6 +58159,7 @@ export namespace Prisma {
   export type IntegrationPropertyUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_integration_settings?: UserIntegrationSettingsUpdateOneRequiredWithoutIntegration_propertiesNestedInput
@@ -58139,6 +58171,7 @@ export namespace Prisma {
     user_integration_settings_id?: StringFieldUpdateOperationsInput | string
     user_property_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58148,6 +58181,7 @@ export namespace Prisma {
     user_integration_settings_id?: StringFieldUpdateOperationsInput | string
     user_property_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58277,6 +58311,7 @@ export namespace Prisma {
     user_id: string
     user_property_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -58336,6 +58371,7 @@ export namespace Prisma {
   export type IntegrationPropertyUpdateWithoutUser_integration_settingsInput = {
     id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutIntegration_propertiesNestedInput
@@ -58347,6 +58383,7 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     user_property_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58356,6 +58393,7 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     user_property_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -60167,6 +60205,7 @@ export namespace Prisma {
     user_id: string
     user_integration_settings_id: string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -60174,6 +60213,7 @@ export namespace Prisma {
   export type IntegrationPropertyUpdateWithoutUser_propertyInput = {
     id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutIntegration_propertiesNestedInput
@@ -60185,6 +60225,7 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     user_integration_settings_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -60194,6 +60235,7 @@ export namespace Prisma {
     user_id?: StringFieldUpdateOperationsInput | string
     user_integration_settings_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
+    sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
