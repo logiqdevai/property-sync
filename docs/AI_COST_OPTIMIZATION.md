@@ -2,6 +2,8 @@
 
 Based on `crawl/index.js`, `crawl/normalize.js`, `crawl/config.js`, and a real sample run in `output/crawl/cost.json`.
 
+> **Scope note:** everything below this line covers the standalone `scripts/scraper-generator` tool only (Claude Haiku, `normalize.js`). See [Main API cost analysis](#main-api-cost-analysis) at the bottom for the actual production pipeline in `api/` (OpenAI gpt-4o-mini, `property-normalization.service.ts`), which is a separate codebase with its own prompt, model, and — as of 2026-07-28 — a real batch-discount cost calculation already wired in.
+
 ## Where the money goes today
 
 Sample run (27 properties, batches of 10 via `NORMALIZATION_BATCH_SIZE`):
@@ -85,3 +87,51 @@ Batch API + output trim + caching, **plus** incremental normalization so only ne
 Once normalization is incremental, cost stops scaling with scrape frequency — it's governed by how much the underlying listings actually change per month, not how many times you check. The current linear-with-frequency cost is an artifact of re-normalizing unchanged listings, not a real constraint. That means you could scrape 2×/day (fresher data, better duplicate/removal detection) for almost the same AI cost as scraping every 3 days today.
 
 **Next step:** measure the real churn rate by diffing `content_hash` across two real consecutive `source_properties.json` runs, then recompute the frequency table with the actual percentage instead of the 5%/day assumption.
+
+---
+
+## Main API cost analysis
+
+Covers the production pipeline in `api/`, not the standalone script above. Two features measured, both using the real `o200k_base` tokenizer against the actual prompts in the codebase.
+
+### Property normalization (`property-normalization.service.ts`)
+
+Prompt reconstructed from `api/src/modules/properties/constants/normalization-prompt.ts` (`NORMALIZATION_STATIC_INSTRUCTIONS` + `buildNormalizationDynamicPrompt`), measured with a realistic property (title/price/location/description/specs/features) sent in a chunk of 10 — matching `NORMALIZATION_BATCH_SIZE = 10`, used by both the OpenAI and Anthropic normalization paths.
+
+| | tokens |
+|---|---|
+| Static system prompt (schema + EstateWeb type catalog + rules) — sent once per 10-property chunk | 2,123 |
+| Dynamic input per property (raw_title, raw_description ≤2000 chars, specs, features) | ~616 |
+| **Total input per property** (system prompt amortized over the chunk) | **~828** |
+| **Output per property** (normalized JSON row) | **~276** |
+
+Cost per property / per 100 properties:
+
+| Model | Sync (1 property) | Batch -50% (1 property) | Sync (100 properties) | Batch -50% (100 properties) |
+|---|---|---|---|---|
+| **gpt-4o-mini** (default, `AiDefaults.model`) | $0.00029 | $0.00015 | **$0.029** | **$0.015** |
+| gpt-4o (full) | $0.0048 | $0.0024 | **$0.48** | **$0.24** |
+
+Notes:
+- The static system prompt (~2,123 tokens: full schema + EstateWeb leaf-type catalog) dominates input cost at the current chunk size of 10 — a larger `NORMALIZATION_BATCH_SIZE` would amortize it further, same lever as "Prompt caching" / "raise batch size" above, just for a different prompt.
+- Unlike the standalone script, the OpenAI Batch API discount here is **real and already applied**: `calculateAiCost()` (`api/src/integrations/ai/utils/ai-cost.ts`) takes an `isBatch` flag and multiplies rates by `BATCH_DISCOUNT_MULTIPLIER = 0.5` (`ai-pricing.ts`), set to `true` when `completeBatchNormalization` (the OpenAI Batch API completion path, gated by `UserTrackedAgency.use_ai_batching`) persists costs. Sync normalization passes no flag, so it's priced at full rate.
+- The Anthropic path is a real second implementation (chunked synchronous calls, not the Anthropic Message Batches API) with its own pricing table (`ANTHROPIC_MODEL_PRICING` in `normalization.constants.ts`, $1/$5 per million) and **already uses prompt caching** (`cache_control: ephemeral` on the static instructions in `anthropic-normalization.service.ts`) — first chunk of a crawl pays a 1.25x cache-write surcharge on the ~2,123-token static block, every subsequent chunk pays only 0.1x cache-read. For large crawls this caching effect matters far more than a flat batch discount would, since it collapses the repeated system-prompt cost by 90% after the first call.
+
+### Title-variant generation (4 Greek + 2 English, example feature)
+
+Not an implemented feature — a cost estimate for generating rewritten title variants (SEO / duplicate-content avoidance), using a real sample title: *"Πωλείται σε Μετασεισμική οικοδομή (1992) Διαμέρισμα 80τ.μ. Ανακαινισμένο πλήρως..."* (168 chars).
+
+| | tokens |
+|---|---|
+| Raw Greek title alone | 112 |
+| Full request (system instructions + title) — input | ~210 |
+| 4 Greek variants + 2 English variants, JSON — output | ~400 |
+
+Greek is token-heavy: ~1.5 chars/token vs. ~4 chars/token for English — expect Greek-heavy prompts to run 2-3x the token cost of an English-equivalent request.
+
+| Model | Sync (1 title) | Batch -50% (1 title) | Sync (100 titles) | Batch -50% (100 titles) |
+|---|---|---|---|---|
+| **gpt-4o-mini** | $0.00027 | $0.00014 | **$0.027** | **$0.014** |
+| gpt-4o (full) | $0.0045 | $0.0023 | **$0.45** | **$0.23** |
+
+At gpt-4o-mini, negligible at scale (10k titles ≈ $2.70 sync / $1.40 batched). gpt-4o (full) is ~17x pricier — only worth it if mini-generated Greek copy reads noticeably worse.
