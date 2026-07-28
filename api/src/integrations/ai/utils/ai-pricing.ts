@@ -1,5 +1,9 @@
 import { AiProviders, AiModels } from '../interfaces/ai.interface';
 
+// OpenAI (and Anthropic) Batch APIs price completed batch requests at half
+// the synchronous rate in exchange for async (up to 24h) turnaround.
+export const BATCH_DISCOUNT_MULTIPLIER = 0.5;
+
 export const AiPricing = {
   [AiProviders.openai]: {
     [AiModels.openai.gpt4o]: { input: 0.0000025, output: 0.00001 },

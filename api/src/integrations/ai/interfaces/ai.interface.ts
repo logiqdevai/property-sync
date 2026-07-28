@@ -40,6 +40,8 @@ export interface AICost {
   model?: AiModel;
   inputTokens: number;
   outputTokens: number;
+  /** True when these tokens were billed via a provider's discounted Batch API. */
+  isBatch?: boolean;
 }
 
 export interface AICostResponse {
@@ -51,6 +53,7 @@ export interface AICostResponse {
   inputCost: number;
   outputCost: number;
   totalCost: number;
+  isBatch?: boolean;
 }
 
 export const AiProviders = {

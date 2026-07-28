@@ -1,4 +1,4 @@
-import { AiPricing } from './ai-pricing';
+import { AiPricing, BATCH_DISCOUNT_MULTIPLIER } from './ai-pricing';
 import {
   AICost,
   AICostResponse,
@@ -7,7 +7,7 @@ import {
 } from '../interfaces/ai.interface';
 
 export function calculateAiCost(cost: AICost): AICostResponse {
-  const { provider, model, inputTokens, outputTokens } = cost;
+  const { provider, model, inputTokens, outputTokens, isBatch } = cost;
 
   const providerPricing = AiPricing[provider ?? AiProviders.openai];
 
@@ -21,8 +21,9 @@ export function calculateAiCost(cost: AICost): AICostResponse {
     throw new Error(`Unknown model: ${model} for provider: ${provider}`);
   }
 
-  const inputRate = modelPricing.input;
-  const outputRate = modelPricing.output;
+  const discount = isBatch ? BATCH_DISCOUNT_MULTIPLIER : 1;
+  const inputRate = modelPricing.input * discount;
+  const outputRate = modelPricing.output * discount;
 
   const inputCost = (inputTokens ?? 0) * inputRate;
   const outputCost = (outputTokens ?? 0) * outputRate;
@@ -36,6 +37,7 @@ export function calculateAiCost(cost: AICost): AICostResponse {
     inputCost,
     outputCost,
     totalCost: inputCost + outputCost,
+    isBatch,
   };
 }
 

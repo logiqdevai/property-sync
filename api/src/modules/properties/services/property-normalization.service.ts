@@ -330,6 +330,7 @@ export class PropertyNormalizationService {
     anthropicUsage?: NormalizationUsage;
     openAiUsage?: { inputTokens: number; outputTokens: number };
     userTrackedAgencyId?: string;
+    isBatch?: boolean;
   }): Promise<SyncForPropertyResult[]> {
     let createdCount = 0;
     const affected: SyncForPropertyResult[] = [];
@@ -500,6 +501,7 @@ export class PropertyNormalizationService {
       createdCount,
       anthropicUsage: params.anthropicUsage,
       openAiUsage: params.openAiUsage,
+      isBatch: params.isBatch,
     });
 
     const crawlRun = await this.prisma.crawlRun.findUnique({
@@ -623,6 +625,7 @@ export class PropertyNormalizationService {
       provider: IntegrationType.OPENAI,
       openAiUsage: { inputTokens, outputTokens },
       userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
+      isBatch: true,
     });
 
     const pendingAffected = this.loadPendingCmsSyncAffected(metadata);
@@ -1039,6 +1042,7 @@ export class PropertyNormalizationService {
     createdCount: number;
     anthropicUsage?: NormalizationUsage;
     openAiUsage?: { inputTokens: number; outputTokens: number };
+    isBatch?: boolean;
   }): Promise<void> {
     if (
       params.provider === IntegrationType.ANTHROPIC &&
@@ -1072,6 +1076,7 @@ export class PropertyNormalizationService {
         model: params.model,
         inputTokens: params.openAiUsage.inputTokens,
         outputTokens: params.openAiUsage.outputTokens,
+        isBatch: params.isBatch,
       });
 
       await this.prisma.crawlRun.update({
