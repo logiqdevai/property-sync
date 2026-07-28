@@ -30,6 +30,7 @@ import {
   truncateAdminUserPropertyDescriptions,
   truncateUserPropertyDescriptions,
   updateUserProperty,
+  updateUserPropertyEstateWebSites,
 } from "../services/user-properties.services";
 import type {
   AdminUserPropertyCountQuery,
@@ -38,6 +39,8 @@ import type {
   DedupeUserPropertiesPayload,
   PushUserPropertiesToCrmPayload,
   PushUserPropertiesToCrmResult,
+  UpdateEstateWebSitesPayload,
+  UpdateEstateWebSitesResult,
   SplitUserPropertiesPayload,
   TruncateUserPropertyDescriptionsPayload,
   UpdateIntegrationImagesPayload,
@@ -467,6 +470,46 @@ export const usePushUserPropertiesToCrm = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not push to CMS",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useUpdateUserPropertyEstateWebSites = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: UpdateEstateWebSitesPayload) =>
+      updateUserPropertyEstateWebSites(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+
+      if ("updated" in result) {
+        const bulk = result as UpdateEstateWebSitesResult;
+        toast({
+          title: "EstateWeb sites updated",
+          description:
+            bulk.failed.length > 0
+              ? `Updated ${bulk.updated}. ${bulk.failed.length} failed.`
+              : `Updated sites for ${bulk.updated} ${bulk.updated === 1 ? "property" : "properties"}.`,
+          duration: 2500,
+          variant: bulk.failed.length > 0 ? "warning" : "success",
+        });
+        return;
+      }
+
+      toast({
+        title: "EstateWeb sites updated",
+        description: "Publish sites updated in EstateWeb CRM.",
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not update EstateWeb sites",
         description: error.message,
         variant: "error",
       });

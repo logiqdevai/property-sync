@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Scissors, Unlink, Upload, X, ExternalLink } from "lucide-react";
+import { Pencil, Scissors, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
 import { Button, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
@@ -42,6 +42,7 @@ import { EstateWebFeaturesPickerModal } from "./components/estateweb-features-pi
 import { EstateWebFlatPickerModal } from "./components/estateweb-flat-picker-modal";
 import { EstateWebLocationPickerModal } from "./components/estateweb-location-picker-modal";
 import { EstateWebPropertyTypePickerModal } from "./components/estateweb-property-type-picker-modal";
+import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-modal";
 
 const fieldClassName =
   "w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2 placeholder:text-muted";
@@ -100,6 +101,7 @@ export default function DashboardPropertyDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const truncateConfirm = useOverlayState();
   const unlinkConfirm = useOverlayState();
+  const manageSitesModal = useOverlayState();
   const locationPicker = useOverlayState();
   const floorPicker = useOverlayState();
   const energyClassPicker = useOverlayState();
@@ -255,6 +257,13 @@ export default function DashboardPropertyDetailPage() {
         icon: Upload,
         isDisabled: isEditing || pushToCrm.isPending,
       },
+      {
+        id: "manage-estateweb-sites",
+        label: "Manage EstateWeb Sites",
+        variant: "default" as const,
+        icon: Globe,
+        isDisabled: isEditing || !property.integration_property_id,
+      },
       ...(crmUrl
         ? [
             {
@@ -336,6 +345,10 @@ export default function DashboardPropertyDetailPage() {
   const handleHeaderAction = (actionId: string) => {
     if (actionId === "push-to-crm") {
       pushToCrm.mutate(property.id);
+      return;
+    }
+    if (actionId === "manage-estateweb-sites") {
+      manageSitesModal.open();
       return;
     }
     if (actionId === "open-in-crm") {
@@ -771,6 +784,10 @@ export default function DashboardPropertyDetailPage() {
               propertyCount={1}
               onConfirm={handleTruncate}
               isPending={truncateDescriptions.isPending}
+            />
+            <ManageEstateWebSitesModal
+              state={manageSitesModal}
+              propertyIds={[property.id]}
             />
             <ConfirmationDialog
               state={unlinkConfirm}

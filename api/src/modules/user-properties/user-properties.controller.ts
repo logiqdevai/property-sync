@@ -31,6 +31,7 @@ import { UpdateIntegrationImagesDto } from './dto/update-integration-images.dto'
 import { RemoveWatermarkImagesDto } from './dto/remove-watermark-images.dto';
 import { RemoveWatermarkImagesResponseEntity } from './entities/remove-watermark-images-response.entity';
 import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
+import { UpdateEstateWebSitesDto } from './dto/update-estateweb-sites.dto';
 import {
   UserPropertyQuerySchema,
   UserPropertyQueryType,
@@ -205,6 +206,25 @@ export class UserPropertiesController {
     @Body() dto: DeleteUserPropertiesDto,
   ) {
     return this.userPropertiesService.pushToCrm(userId, dto.ids);
+  }
+
+  @Post('update-estateweb-sites')
+  @ApiOperation({
+    summary:
+      'Update EstateWeb publish sites for one or more linked properties',
+  })
+  @ApiResponse({ status: 200, description: 'EstateWeb sites updated' })
+  @ApiResponse({ status: 400, description: 'Cannot update EstateWeb sites' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  updateEstateWebSites(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateEstateWebSitesDto,
+  ) {
+    return this.userPropertiesService.updateEstateWebSites(
+      userId,
+      dto.ids,
+      dto.sites,
+    );
   }
 
   @Get(':id')

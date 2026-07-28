@@ -12,7 +12,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Layers, ListFilter, Scissors, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { Globe, Layers, ListFilter, Scissors, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
@@ -24,6 +24,7 @@ import {
   TableRowActionsMenu,
   type TableRowAction,
 } from "@/components/ui/table-row-actions-menu";
+import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-modal";
 import {
   PropertyStatuses,
   type PropertyStatus,
@@ -69,6 +70,12 @@ const PROPERTY_PUSH_ACTION: TableRowAction = {
   icon: Upload,
 };
 
+const PROPERTY_MANAGE_SITES_ACTION: TableRowAction = {
+  id: "manage-estateweb-sites",
+  label: "Manage EstateWeb Sites",
+  icon: Globe,
+};
+
 const PROPERTY_DELETE_ACTION: TableRowAction = {
   id: "delete",
   label: "Delete",
@@ -82,6 +89,8 @@ export default function DashboardPropertiesListPage() {
   const dedupeConfirm = useOverlayState();
   const truncateConfirm = useOverlayState();
   const splitConfirm = useOverlayState();
+  const manageSitesModal = useOverlayState();
+  const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
   const role = useAuthStore((state) => state.role);
   const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
 
@@ -175,6 +184,11 @@ export default function DashboardPropertiesListPage() {
     (property) => selectedIds.has(property.id) && property.duplicate_group_id,
   ).length;
 
+  const openManageSites = (ids: string[]) => {
+    setManageSitesPropertyIds(ids);
+    manageSitesModal.open();
+  };
+
   const bulkActions = useMemo<TableRowAction[]>(() => {
     const actions: TableRowAction[] = [
       {
@@ -182,6 +196,12 @@ export default function DashboardPropertiesListPage() {
         label: "Push to CRM",
         icon: Upload,
         isDisabled: selectedCount < 1 || pushSelectedToCrm.isPending,
+      },
+      {
+        id: "manage-estateweb-sites",
+        label: "Manage EstateWeb Sites",
+        icon: Globe,
+        isDisabled: selectedCount < 1,
       },
       {
         id: "truncate",
@@ -281,6 +301,10 @@ export default function DashboardPropertiesListPage() {
   const handleBulkAction = (actionId: string) => {
     if (actionId === "push-to-crm") {
       void handleBulkPushToCrm();
+      return;
+    }
+    if (actionId === "manage-estateweb-sites") {
+      openManageSites(Array.from(selectedIds));
       return;
     }
     if (actionId === "truncate") {
@@ -643,6 +667,10 @@ export default function DashboardPropertiesListPage() {
                   isDisabled:
                     pushToCrm.isPending && pushToCrm.variables === property.id,
                 },
+                {
+                  ...PROPERTY_MANAGE_SITES_ACTION,
+                  isDisabled: !property.integration_property_id,
+                },
                 ...(canDelete ? [PROPERTY_DELETE_ACTION] : []),
               ];
 
@@ -666,6 +694,10 @@ export default function DashboardPropertiesListPage() {
                   onAction={(actionId) => {
                     if (actionId === "push-to-crm") {
                       pushToCrm.mutate(property.id);
+                      return;
+                    }
+                    if (actionId === "manage-estateweb-sites") {
+                      openManageSites([property.id]);
                       return;
                     }
                     if (actionId !== "delete") return;
@@ -722,6 +754,10 @@ export default function DashboardPropertiesListPage() {
                           ...PROPERTY_PUSH_ACTION,
                           isDisabled:
                             pushToCrm.isPending && pushToCrm.variables === property.id,
+                        },
+                        {
+                          ...PROPERTY_MANAGE_SITES_ACTION,
+                          isDisabled: !property.integration_property_id,
                         },
                         ...(canDelete ? [PROPERTY_DELETE_ACTION] : []),
                       ];
@@ -796,6 +832,10 @@ export default function DashboardPropertiesListPage() {
                             onAction={(actionId) => {
                               if (actionId === "push-to-crm") {
                                 pushToCrm.mutate(property.id);
+                                return;
+                              }
+                              if (actionId === "manage-estateweb-sites") {
+                                openManageSites([property.id]);
                                 return;
                               }
                               if (actionId !== "delete") return;
@@ -886,6 +926,10 @@ export default function DashboardPropertiesListPage() {
         propertyCount={selectedCount}
         onConfirm={handleTruncateDescriptions}
         isPending={truncateDescriptions.isPending}
+      />
+      <ManageEstateWebSitesModal
+        state={manageSitesModal}
+        propertyIds={manageSitesPropertyIds}
       />
     </div>
   );

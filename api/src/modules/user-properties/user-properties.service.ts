@@ -492,6 +492,101 @@ export class UserPropertiesService {
     }
   }
 
+  async updateEstateWebSites(
+    userId: string,
+    ids: string[],
+    sites: Array<{
+      selected: boolean;
+      name: string;
+      agent_site_id: number;
+      show_on_slider: 0 | 1;
+      show_on_first_page: 0 | 1;
+      show_on_relative_pages: 0 | 1;
+    }>,
+  ) {
+    const idList = [...new Set(ids)];
+    if (idList.length === 0) {
+      throw new BadRequestException('No properties selected');
+    }
+
+    const selectedSites = sites
+      .filter((site) => site.selected)
+      .map((site) => ({
+        selected: true as const,
+        name: site.name,
+        agent_site_id: site.agent_site_id,
+        show_on_slider: site.show_on_slider,
+        show_on_first_page: site.show_on_first_page,
+        show_on_relative_pages: site.show_on_relative_pages,
+      }));
+
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: idList }, user_id: userId },
+    });
+
+    if (properties.length === 0) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const byId = new Map(properties.map((property) => [property.id, property]));
+    const updated: string[] = [];
+    const failed: Array<{ user_property_id: string; error: string }> = [];
+
+    for (const id of idList) {
+      const property = byId.get(id);
+      if (!property) {
+        failed.push({ user_property_id: id, error: 'Property not found' });
+        continue;
+      }
+
+      if (!property.integration_property_id) {
+        failed.push({
+          user_property_id: id,
+          error: 'Property is not linked to EstateWeb CMS',
+        });
+        continue;
+      }
+
+      try {
+        const { userIntegrationId } =
+          await this.resolveCmsIntegrationForProperty(property);
+
+        await this.estateWebCmsSyncAdapter.pushUpdate(
+          userIntegrationId,
+          property.integration_property_id,
+          property,
+          { sitesOverride: selectedSites },
+        );
+        updated.push(id);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        failed.push({ user_property_id: id, error: message });
+      }
+    }
+
+    if (updated.length === 0) {
+      const firstError = failed[0]?.error ?? 'No properties could be updated';
+      throw new BadRequestException(
+        failed.length === 1
+          ? firstError
+          : `None of the ${idList.length} properties could be updated. ${firstError}`,
+      );
+    }
+
+    if (idList.length === 1 && updated.length === 1) {
+      return serializePropertyForApi(
+        await this.prisma.userProperty.findFirstOrThrow({
+          where: { id: idList[0], user_id: userId },
+        }),
+      );
+    }
+
+    return {
+      updated: updated.length,
+      failed,
+    };
+  }
+
   async migrateIntegrationImages(
     userId: string,
     id: string,

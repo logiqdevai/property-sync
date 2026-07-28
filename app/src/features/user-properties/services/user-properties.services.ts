@@ -9,6 +9,8 @@ import type {
   PushUserPropertiesToCrmResult,
   SplitUserPropertiesPayload,
   SplitUserPropertiesResult,
+  UpdateEstateWebSitesPayload,
+  UpdateEstateWebSitesResult,
   UpdateUserPropertyPayload,
   UserProperty,
   AdminUserPropertyCountQuery,
@@ -301,6 +303,22 @@ export const pushUserPropertiesToCrm = async (
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to push properties to CMS.");
+  }
+};
+
+export const updateUserPropertyEstateWebSites = async (
+  payload: UpdateEstateWebSitesPayload,
+): Promise<UserProperty | UpdateEstateWebSitesResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.updateEstateWebSites,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to update EstateWeb sites.",
+    );
   }
 };
 

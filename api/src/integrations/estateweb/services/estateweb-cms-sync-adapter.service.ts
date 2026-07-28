@@ -73,6 +73,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       this.resolvePushSitesForSync(
         userIntegrationId,
         options?.watermarkManualSelection,
+        options?.sitesOverride,
       ),
       this.estateWebIntegrationResolverService.resolveAdLanguages(
         userIntegrationId,
@@ -84,6 +85,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       userProperty,
       undefined,
       options?.propertyNote,
+      options?.sitesOverride !== undefined,
     );
     this.logger.log(
       `EstateWeb CREATE payload: type_id=${payload.type_id} location_id=${payload.location_id} scope_id=${payload.scope_id} fields=${payload.fields?.length ?? 0} price=${payload.price ?? 'null'} lat_lng=${payload.lat_lng || 'none'} sites=${payload.sites.map((s) => `${s.agent_site_id}:${s.selected ? 1 : 0}`).join(',')} langs=${adLanguages.join(',')}`,
@@ -111,6 +113,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       this.resolvePushSitesForSync(
         userIntegrationId,
         options?.watermarkManualSelection,
+        options?.sitesOverride,
       ),
       this.estateWebIntegrationResolverService.resolveAdLanguages(
         userIntegrationId,
@@ -122,6 +125,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       userProperty,
       Number(integrationPropertyId),
       options?.propertyNote,
+      options?.sitesOverride !== undefined,
     ) as EstateWebUpdatePropertyPayload;
     await this.estateWebPropertyService.updateProperty(
       userIntegrationId,
@@ -430,7 +434,19 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   private async resolvePushSitesForSync(
     userIntegrationId: string,
     watermarkManualSelection?: boolean,
+    sitesOverride?: CmsSyncPushOptions['sitesOverride'],
   ): Promise<EstateWebPushSiteSetting[]> {
+    if (sitesOverride !== undefined) {
+      return sitesOverride.map((site) => ({
+        selected: true,
+        name: site.name,
+        agent_site_id: site.agent_site_id,
+        show_on_slider: site.show_on_slider,
+        show_on_first_page: site.show_on_first_page,
+        show_on_relative_pages: site.show_on_relative_pages,
+      }));
+    }
+
     if (watermarkManualSelection === undefined) {
       return this.estateWebIntegrationResolverService.resolvePushSites(
         userIntegrationId,
@@ -454,6 +470,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     userProperty?: UserProperty,
     integrationPropertyId?: number,
     propertyNote?: string,
+    useSitesAsProvided = false,
   ): EstateWebPropertyPayload {
     const price = userProperty?.price ? Number(userProperty.price) : 0;
     const priceStart = userProperty?.price_start
@@ -502,16 +519,17 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         userProperty?.cms_fields,
         userProperty?.estateweb_type_id,
       ),
-      sites: pushSites
-        .filter((site) => site.selected)
-        .map((site) => ({
-          selected: true,
-          name: site.name,
-          agent_site_id: site.agent_site_id,
-          show_on_slider: site.show_on_slider,
-          show_on_first_page: site.show_on_first_page,
-          show_on_relative_pages: site.show_on_relative_pages,
-        })),
+      sites: (useSitesAsProvided
+        ? pushSites
+        : pushSites.filter((site) => site.selected)
+      ).map((site) => ({
+        selected: true,
+        name: site.name,
+        agent_site_id: site.agent_site_id,
+        show_on_slider: site.show_on_slider,
+        show_on_first_page: site.show_on_first_page,
+        show_on_relative_pages: site.show_on_relative_pages,
+      })),
       gateways: [],
       ads: this.buildAds(title, description, adLanguages),
       foreign_agents: [],

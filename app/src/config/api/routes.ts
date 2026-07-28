@@ -201,6 +201,7 @@ export const ApiRoutes = {
         dedupeGroups: "/properties/dedupe-groups",
         bulkSplit: "/properties/bulk-split",
         truncateDescriptions: "/properties/truncate-descriptions",
+        updateEstateWebSites: "/properties/update-estateweb-sites",
     },
     estateweb: {
         catalog: {
