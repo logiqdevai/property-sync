@@ -75,7 +75,7 @@ export function applyTextTruncatePieces(
 ): string | null {
   if (!text) return null;
 
-  let result = text;
+  let result = normalizeTruncateText(text);
   for (const piece of pieces ?? []) {
     if (typeof piece !== 'string' || !piece) continue;
     const { mode, value } = parsePiece(piece);
