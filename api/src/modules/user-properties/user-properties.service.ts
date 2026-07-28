@@ -1558,6 +1558,13 @@ export class UserPropertiesService {
             ...canonicalFields,
           },
         });
+        await this.watermarkRemovalService.applyTrackerWatermarkPipeline({
+          userPropertyId: created.id,
+          userId: tracker.user_id,
+          removeWatermark: tracker.remove_watermark,
+          watermarkManualSelection: tracker.watermark_manual_selection,
+          watermarkImageCount: tracker.watermark_image_count,
+        });
         results.push({
           user_property_id: created.id,
           change_type: 'created',
@@ -1592,6 +1599,13 @@ export class UserPropertiesService {
             ...canonicalFields,
           },
         });
+        await this.watermarkRemovalService.applyTrackerWatermarkPipeline({
+          userPropertyId: created.id,
+          userId: tracker.user_id,
+          removeWatermark: tracker.remove_watermark,
+          watermarkManualSelection: tracker.watermark_manual_selection,
+          watermarkImageCount: tracker.watermark_image_count,
+        });
         results.push({
           user_property_id: created.id,
           change_type: 'created',
@@ -1604,10 +1618,25 @@ export class UserPropertiesService {
         continue;
       }
 
+      const imagesChanged =
+        this.normalizeComparableValue(existing.images) !==
+        this.normalizeComparableValue(canonicalFields.images);
+
       await this.prisma.userProperty.update({
         where: { id: existing.id },
         data: canonicalFields,
       });
+
+      if (imagesChanged) {
+        await this.watermarkRemovalService.applyTrackerWatermarkPipeline({
+          userPropertyId: existing.id,
+          userId: tracker.user_id,
+          removeWatermark: tracker.remove_watermark,
+          watermarkManualSelection: tracker.watermark_manual_selection,
+          watermarkImageCount: tracker.watermark_image_count,
+        });
+      }
+
       results.push({
         user_property_id: existing.id,
         change_type: 'updated',

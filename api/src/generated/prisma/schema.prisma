@@ -399,6 +399,7 @@ model UserTrackedAgency {
   use_ai_batching            Boolean  @default(false)
   remove_watermark           Boolean  @default(false)
   watermark_image_count      Int      @default(10)
+  watermark_manual_selection Boolean  @default(false)
   created_at                 DateTime @default(now())
   updated_at                 DateTime @updatedAt
 

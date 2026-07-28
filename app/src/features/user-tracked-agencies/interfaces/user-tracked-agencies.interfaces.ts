@@ -13,6 +13,7 @@ export interface TrackingPrefs {
   text_truncate_pieces?: string[];
   remove_watermark: boolean;
   watermark_image_count: number;
+  watermark_manual_selection: boolean;
 }
 
 export interface TrackableAgency {
@@ -42,6 +43,7 @@ export interface TrackAgencyPayload {
   text_truncate_pieces?: string[];
   remove_watermark?: boolean;
   watermark_image_count?: number;
+  watermark_manual_selection?: boolean;
 }
 
 export interface AgencyListQuery {
@@ -78,6 +80,7 @@ export interface UserTrackedAgency {
   use_ai_batching: boolean;
   remove_watermark: boolean;
   watermark_image_count: number;
+  watermark_manual_selection: boolean;
 }
 
 export interface TrackedAgencyIntegrationLink {

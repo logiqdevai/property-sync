@@ -48,6 +48,99 @@ export class WatermarkRemovalService {
     private readonly estateWebCmsSyncAdapter: EstateWebCmsSyncAdapter,
   ) {}
 
+  async applyTrackerWatermarkPipeline(params: {
+    userPropertyId: string;
+    userId: string;
+    removeWatermark: boolean;
+    watermarkManualSelection: boolean;
+    watermarkImageCount: number;
+  }): Promise<void> {
+    if (!params.removeWatermark || params.watermarkManualSelection) return;
+
+    const userProperty = await this.prisma.userProperty.findUnique({
+      where: { id: params.userPropertyId },
+      select: { id: true, user_id: true, images: true },
+    });
+    if (!userProperty || userProperty.user_id !== params.userId) return;
+
+    const sourceUrls = this.parseSourceImageUrls(userProperty.images);
+    if (sourceUrls.length === 0) return;
+
+    const dewatermarkIntegration =
+      await this.dewatermarkOrchestrator.findActiveForUser(params.userId);
+    if (!dewatermarkIntegration) {
+      this.logger.warn(
+        `Skipping watermark pipeline for user_property=${params.userPropertyId}: no active Dewatermark integration`,
+      );
+      return;
+    }
+
+    const limit = Math.max(
+      0,
+      Math.min(params.watermarkImageCount, sourceUrls.length),
+    );
+    if (limit === 0) return;
+
+    const nextUrls = [...sourceUrls];
+    let changed = false;
+
+    for (let index = 0; index < limit; index++) {
+      const sourceUrl = nextUrls[index];
+      if (!sourceUrl || this.isPropertyImagesGcsUrl(sourceUrl)) continue;
+
+      try {
+        const sourceBuffer = await this.downloadImage(sourceUrl);
+        if (!sourceBuffer?.length) {
+          this.logger.warn(
+            `Watermark pipeline: failed download for user_property=${params.userPropertyId} index=${index}`,
+          );
+          continue;
+        }
+
+        const dewatermarkResult =
+          await this.dewatermarkOrchestrator.eraseWatermarkForUser(
+            params.userId,
+            { originalPreviewImage: sourceBuffer },
+          );
+
+        const processedBuffer = Buffer.from(
+          dewatermarkResult.imageBase64,
+          'base64',
+        );
+        if (!processedBuffer.length) {
+          this.logger.warn(
+            `Watermark pipeline: empty dewatermark result for user_property=${params.userPropertyId} index=${index}`,
+          );
+          continue;
+        }
+
+        const filename = `watermark-removed-${params.userPropertyId}-${index}-${Date.now()}.jpg`;
+        const gcsUpload = await this.gcsService.uploadImageFromBuffer(
+          processedBuffer,
+          filename,
+          'image/jpeg',
+          GcsFolders.propertyImages,
+        );
+
+        nextUrls[index] = gcsUpload.url;
+        changed = true;
+      } catch (error) {
+        this.logger.warn(
+          `Watermark pipeline failed for user_property=${params.userPropertyId} index=${index}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    if (!changed) return;
+
+    await this.prisma.userProperty.update({
+      where: { id: params.userPropertyId },
+      data: {
+        images: nextUrls as unknown as Prisma.InputJsonValue,
+      },
+    });
+  }
+
   async processSingleImage(
     data: WatermarkRemovalJobData,
     imageId: string,
@@ -320,6 +413,17 @@ export class WatermarkRemovalService {
       imagesJson,
       integrationType,
     ) as EstateWebIntegrationPropertyImage[];
+  }
+
+  private parseSourceImageUrls(imagesJson: unknown): string[] {
+    if (!Array.isArray(imagesJson)) return [];
+    return imagesJson.filter(
+      (item): item is string => typeof item === 'string' && item.length > 0,
+    );
+  }
+
+  private isPropertyImagesGcsUrl(url: string): boolean {
+    return url.includes(`/${GcsFolders.propertyImages}/`);
   }
 
   private async downloadImage(url: string): Promise<Buffer | null> {

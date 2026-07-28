@@ -397,10 +397,11 @@ model UserTrackedAgency {
   track_updated_listings     Boolean  @default(true)
   auto_update_to_crm         Boolean  @default(true) // when false, CRM updates are pushed manually from Properties
   use_ai_batching            Boolean  @default(false)
-  remove_watermark           Boolean  @default(false)
-  watermark_image_count      Int      @default(10)
-  created_at                 DateTime @default(now())
-  updated_at                 DateTime @updatedAt
+  remove_watermark             Boolean  @default(false)
+  watermark_image_count        Int      @default(10)
+  watermark_manual_selection   Boolean  @default(false)
+  created_at                   DateTime @default(now())
+  updated_at                   DateTime @updatedAt
 
   user             User                              @relation(fields: [user_id], references: [id], onDelete: Cascade)
   source_agency    SourceAgency                      @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)

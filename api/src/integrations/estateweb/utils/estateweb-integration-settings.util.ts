@@ -50,13 +50,12 @@ export function resolveEstateWebSelectedPushSites(
 
 export function resolveEstateWebPushSitesForTracker(
   settings: Prisma.JsonValue | null | undefined,
-  removeWatermark: boolean,
+  watermarkManualSelection: boolean,
 ): EstateWebPushSiteSetting[] {
-  const sites = resolveEstateWebPushSites(settings);
-  if (removeWatermark) {
-    return sites;
+  if (watermarkManualSelection) {
+    return [];
   }
-  return sites.map((site) => ({ ...site, selected: true }));
+  return resolveEstateWebPushSites(settings);
 }
 
 export function resolveEstateWebAdLanguages(

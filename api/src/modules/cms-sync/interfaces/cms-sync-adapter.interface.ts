@@ -29,7 +29,7 @@ export interface CmsSyncUpdateImagesParams {
 }
 
 export interface CmsSyncPushOptions {
-  removeWatermark?: boolean;
+  watermarkManualSelection?: boolean;
   propertyNote?: string;
 }
 

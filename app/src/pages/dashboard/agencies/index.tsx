@@ -199,9 +199,10 @@ function AgencyCard({
                     role="tooltip"
                     className="pointer-events-none absolute right-0 top-full z-20 mt-1.5 w-[min(16rem,calc(100vw-3rem))] rounded-lg border border-border bg-background px-3 py-2 text-left text-xs text-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 sm:left-1/2 sm:right-auto sm:-translate-x-1/2"
                   >
-                    When off, listings sync to EstateWeb using your default sites with all sites
-                    selected. When on, sync uses your configured EstateWeb default sites as saved
-                    in integration settings.
+                    When off, listings publish with your EstateWeb default sites and
+                    no watermark removal. When on, choose automatic removal for the
+                    first N images, or manual selection to create the listing without
+                    publishing to any site.
                   </span>
                 </span>
               </div>
@@ -209,7 +210,14 @@ function AgencyCard({
             <Switch
               isSelected={prefs.remove_watermark ?? false}
               isDisabled={isControlsDisabled}
-              onChange={(isSelected) => savePrefs({ remove_watermark: isSelected })}
+              onChange={(isSelected) =>
+                savePrefs({
+                  remove_watermark: isSelected,
+                  ...(isSelected
+                    ? {}
+                    : { watermark_manual_selection: false }),
+                })
+              }
               aria-label="Remove watermark"
               className="shrink-0"
             >
@@ -218,6 +226,59 @@ function AgencyCard({
               </Switch.Control>
             </Switch>
           </div>
+
+          {prefs.remove_watermark ? (
+            <>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="text-sm text-foreground">Manual selection</span>
+                  <span className="text-xs text-muted">
+                    Create the listing with no sites selected so you can handle images
+                    before publishing.
+                  </span>
+                </div>
+                <Switch
+                  isSelected={prefs.watermark_manual_selection ?? false}
+                  isDisabled={isControlsDisabled}
+                  onChange={(isSelected) =>
+                    savePrefs({ watermark_manual_selection: isSelected })
+                  }
+                  aria-label="Manual watermark selection"
+                  className="shrink-0"
+                >
+                  <Switch.Control>
+                    <Switch.Thumb />
+                  </Switch.Control>
+                </Switch>
+              </div>
+
+              {!(prefs.watermark_manual_selection ?? false) ? (
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-foreground">Images to dewatermark</span>
+                  <span className="text-xs text-muted">
+                    Remove watermarks from the first N images after crawl, then publish
+                    to your EstateWeb default sites.
+                  </span>
+                  <input
+                    type="number"
+                    min={1}
+                    className="rounded-lg border border-border bg-background px-3 py-2"
+                    defaultValue={prefs.watermark_image_count ?? 10}
+                    key={`watermark-count-${agency.id}-${prefs.watermark_image_count ?? 10}`}
+                    disabled={isControlsDisabled}
+                    onBlur={(e) => {
+                      const parsed = Number.parseInt(e.target.value, 10);
+                      const value =
+                        Number.isFinite(parsed) && parsed >= 1 ? parsed : 10;
+                      if (value !== (prefs.watermark_image_count ?? 10)) {
+                        savePrefs({ watermark_image_count: value });
+                      }
+                    }}
+                  />
+                </label>
+              ) : null}
+            </>
+          ) : null}
 
           {AppConfig.tracked_agency_admin_options_visible ? (
             <TrackerAdminOptionsPanel

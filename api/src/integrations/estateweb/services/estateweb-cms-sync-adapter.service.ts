@@ -70,7 +70,10 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     this.assertRequiredFields(userProperty);
 
     const [pushSites, adLanguages] = await Promise.all([
-      this.resolvePushSitesForSync(userIntegrationId, options?.removeWatermark),
+      this.resolvePushSitesForSync(
+        userIntegrationId,
+        options?.watermarkManualSelection,
+      ),
       this.estateWebIntegrationResolverService.resolveAdLanguages(
         userIntegrationId,
       ),
@@ -105,7 +108,10 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     this.assertRequiredFields(userProperty);
 
     const [pushSites, adLanguages] = await Promise.all([
-      this.resolvePushSitesForSync(userIntegrationId, options?.removeWatermark),
+      this.resolvePushSitesForSync(
+        userIntegrationId,
+        options?.watermarkManualSelection,
+      ),
       this.estateWebIntegrationResolverService.resolveAdLanguages(
         userIntegrationId,
       ),
@@ -423,9 +429,9 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
   private async resolvePushSitesForSync(
     userIntegrationId: string,
-    removeWatermark?: boolean,
+    watermarkManualSelection?: boolean,
   ): Promise<EstateWebPushSiteSetting[]> {
-    if (removeWatermark === undefined) {
+    if (watermarkManualSelection === undefined) {
       return this.estateWebIntegrationResolverService.resolvePushSites(
         userIntegrationId,
       );
@@ -438,7 +444,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
     return resolveEstateWebPushSitesForTracker(
       integration?.settings?.settings,
-      removeWatermark,
+      watermarkManualSelection,
     );
   }
 

@@ -166,7 +166,8 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       tracker?.concurrent_insertions ?? 1,
       tracker?.insertion_interval_seconds ?? 300,
       crawl_run_id,
-      tracker?.remove_watermark ?? false,
+      (tracker?.remove_watermark ?? false) &&
+        (tracker?.watermark_manual_selection ?? false),
       propertyNote,
     );
 
@@ -273,7 +274,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     concurrentInsertions: number,
     insertionIntervalSeconds: number,
     crawlRunId: string | null,
-    removeWatermark: boolean,
+    watermarkManualSelection: boolean,
     propertyNote?: string,
   ): Promise<CmsSyncBatchResult> {
     const result: CmsSyncBatchResult = {
@@ -305,7 +306,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             userProperties,
             reconciliationCatalog,
             crawlRunId,
-            removeWatermark,
+            watermarkManualSelection,
             propertyNote,
           ),
         ),
@@ -330,7 +331,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     userProperties: Map<string, UserProperty>,
     reconciliationCatalog: EstateWebPropertyCatalog | null,
     crawlRunId: string | null,
-    removeWatermark: boolean,
+    watermarkManualSelection: boolean,
     propertyNote?: string,
   ): Promise<CmsSyncOperationResult> {
     const userProperty = userProperties.get(operation.user_property_id);
@@ -351,7 +352,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     );
 
     const pushOptions: CmsSyncPushOptions = {
-      removeWatermark,
+      watermarkManualSelection,
       ...(propertyNote ? { propertyNote } : {}),
     };
 

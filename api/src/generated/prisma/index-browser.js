@@ -202,6 +202,7 @@ exports.Prisma.UserTrackedAgencyScalarFieldEnum = {
   use_ai_batching: 'use_ai_batching',
   remove_watermark: 'remove_watermark',
   watermark_image_count: 'watermark_image_count',
+  watermark_manual_selection: 'watermark_manual_selection',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };

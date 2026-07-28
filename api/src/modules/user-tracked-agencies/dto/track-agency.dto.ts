@@ -84,7 +84,7 @@ export class TrackAgencyDto {
   @ApiProperty({
     required: false,
     default: false,
-    description: 'When true, remove watermarks from listing images',
+    description: 'When true, enable watermark removal for listing images',
   })
   @IsOptional()
   @IsBoolean()
@@ -94,11 +94,22 @@ export class TrackAgencyDto {
     required: false,
     default: 10,
     minimum: 1,
-    description: 'How many images per listing to remove watermarks from',
+    description:
+      'How many leading images per listing to remove watermarks from (automatic mode)',
     example: 10,
   })
   @IsOptional()
   @IsInt()
   @Min(1)
   watermark_image_count?: number;
+
+  @ApiProperty({
+    required: false,
+    default: false,
+    description:
+      'When true with remove_watermark, skip automatic removal and publish with no sites so images can be handled manually',
+  })
+  @IsOptional()
+  @IsBoolean()
+  watermark_manual_selection?: boolean;
 }
