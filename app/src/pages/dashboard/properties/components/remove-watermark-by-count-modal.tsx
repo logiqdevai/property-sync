@@ -19,7 +19,7 @@ type RemoveWatermarkByCountModalProps = {
 export const RemoveWatermarkByCountModal: FC<RemoveWatermarkByCountModalProps> = ({
   state,
   propertyCount,
-  defaultImageCount = 10,
+  defaultImageCount = 1,
   onConfirm,
   isPending = false,
 }) => {

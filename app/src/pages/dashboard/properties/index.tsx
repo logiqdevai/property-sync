@@ -58,7 +58,6 @@ import type {
 } from "@/features/user-properties/interfaces/user-properties.interfaces";
 import { useTrackableAgencies } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
 import { getTrackableAgencyLabel } from "@/features/user-tracked-agencies/utils/integration-link.utils";
-import { RoleGate } from "@/components/providers/role-gate";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
 import { useAuthStore } from "@/stores/auth";
 import { formatPrice } from "@/lib/price";
@@ -129,7 +128,7 @@ export default function DashboardPropertiesListPage() {
   const [page, setPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
-  const [adminSelectCount, setAdminSelectCount] = useState(10);
+  const [selectCount, setSelectCount] = useState(10);
   const [deletePropertyId, setDeletePropertyId] = useState<string | null>(null);
 
   const query = useMemo<UserPropertyListQuery>(
@@ -354,7 +353,7 @@ export default function DashboardPropertiesListPage() {
 
   const applyFirstNSelection = (selected: boolean) => {
     const count = Math.min(
-      Math.max(1, adminSelectCount),
+      Math.max(1, selectCount),
       properties.length,
     );
     const firstIds = properties.slice(0, count).map((property) => property.id);
@@ -739,42 +738,40 @@ export default function DashboardPropertiesListPage() {
         </div>
       ) : (
         <>
-          <RoleGate roles={[RoleTypes.ADMIN]}>
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <span className="text-sm text-muted">First</span>
-              <Input
-                type="number"
-                min={1}
-                max={properties.length}
-                aria-label="Number of properties from start of page"
-                className="w-20"
-                value={String(adminSelectCount)}
-                onChange={(e) => {
-                  const parsed = Number.parseInt(e.target.value, 10);
-                  setAdminSelectCount(
-                    Number.isFinite(parsed) && parsed >= 1 ? parsed : 1,
-                  );
-                }}
-              />
-              <span className="text-sm text-muted">on page</span>
-              <Button
-                size="sm"
-                variant="secondary"
-                onPress={() => applyFirstNSelection(true)}
-                isDisabled={properties.length === 0}
-              >
-                Select
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onPress={() => applyFirstNSelection(false)}
-                isDisabled={properties.length === 0}
-              >
-                Deselect
-              </Button>
-            </div>
-          </RoleGate>
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <span className="text-sm text-muted">First</span>
+            <Input
+              type="number"
+              min={1}
+              max={properties.length}
+              aria-label="Number of properties from start of page"
+              className="w-20"
+              value={String(selectCount)}
+              onChange={(e) => {
+                const parsed = Number.parseInt(e.target.value, 10);
+                setSelectCount(
+                  Number.isFinite(parsed) && parsed >= 1 ? parsed : 1,
+                );
+              }}
+            />
+            <span className="text-sm text-muted">on page</span>
+            <Button
+              size="sm"
+              variant="secondary"
+              onPress={() => applyFirstNSelection(true)}
+              isDisabled={properties.length === 0}
+            >
+              Select
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onPress={() => applyFirstNSelection(false)}
+              isDisabled={properties.length === 0}
+            >
+              Deselect
+            </Button>
+          </div>
           <div className="flex min-w-0 flex-col gap-3 md:hidden">
             <div className="flex items-center gap-2 px-1">
               <Checkbox
