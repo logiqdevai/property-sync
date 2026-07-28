@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
+import { Pencil, Percent, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
 import { Button, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
@@ -33,6 +33,7 @@ import {
   usePushUserPropertyToCrm,
   useTruncateUserPropertyDescriptions,
   useUpdateUserProperty,
+  useUpdateUserPropertySalesPrices,
   useUserProperty,
 } from "@/features/user-properties/hooks/use-user-properties";
 import {
@@ -103,6 +104,7 @@ export default function DashboardPropertyDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const truncateConfirm = useOverlayState();
   const unlinkConfirm = useOverlayState();
+  const updateSalesPricesConfirm = useOverlayState();
   const manageSitesModal = useOverlayState();
   const removeWatermarkModal = useOverlayState();
   const locationPicker = useOverlayState();
@@ -116,6 +118,7 @@ export default function DashboardPropertyDetailPage() {
   const { data: property, isPending } = useUserProperty(id);
   const updateProperty = useUpdateUserProperty();
   const pushToCrm = usePushUserPropertyToCrm();
+  const updateSalesPrices = useUpdateUserPropertySalesPrices();
   const migrateImages = useMigrateUserPropertyIntegrationImages();
   const deleteIntegrationImages = useDeleteUserPropertyIntegrationImages();
   const createIntegrationImages = useCreateUserPropertyIntegrationImages();
@@ -269,6 +272,16 @@ export default function DashboardPropertyDetailPage() {
         isDisabled: isEditing || !property.integration_property_id,
       },
       {
+        id: "update-sales-prices",
+        label: "Update sales prices on CRM",
+        variant: "default" as const,
+        icon: Percent,
+        isDisabled:
+          isEditing ||
+          !property.integration_property_id ||
+          updateSalesPrices.isPending,
+      },
+      {
         id: "remove-watermarks",
         label: "Remove watermarks",
         variant: "default" as const,
@@ -326,6 +339,7 @@ export default function DashboardPropertyDetailPage() {
     pushToCrm.isPending,
     removeWatermarksByCount.isPending,
     updateProperty.isPending,
+    updateSalesPrices.isPending,
   ]);
 
   if (isPending || !property) {
@@ -363,6 +377,10 @@ export default function DashboardPropertyDetailPage() {
     });
   };
 
+  const handleUpdateSalesPrices = async () => {
+    await updateSalesPrices.mutateAsync({ ids: [property.id] });
+  };
+
   const handleHeaderAction = (actionId: string) => {
     if (actionId === "push-to-crm") {
       pushToCrm.mutate(property.id);
@@ -370,6 +388,10 @@ export default function DashboardPropertyDetailPage() {
     }
     if (actionId === "manage-estateweb-sites") {
       manageSitesModal.open();
+      return;
+    }
+    if (actionId === "update-sales-prices") {
+      updateSalesPricesConfirm.open();
       return;
     }
     if (actionId === "remove-watermarks") {
@@ -479,6 +501,7 @@ export default function DashboardPropertyDetailPage() {
             onAction={handleHeaderAction}
             isPending={
               pushToCrm.isPending ||
+              updateSalesPrices.isPending ||
               migrateImages.isPending ||
               deleteIntegrationImages.isPending ||
               createIntegrationImages.isPending ||
@@ -814,6 +837,14 @@ export default function DashboardPropertyDetailPage() {
             <ManageEstateWebSitesModal
               state={manageSitesModal}
               propertyIds={[property.id]}
+            />
+            <ConfirmationDialog
+              state={updateSalesPricesConfirm}
+              title="Update sales prices on CRM?"
+              description="Recalculates price_start from sales settings (when enabled and no source price_start) and pushes prices to EstateWeb CRM."
+              confirmLabel="Update prices"
+              onConfirm={handleUpdateSalesPrices}
+              isPending={updateSalesPrices.isPending}
             />
             <RemoveWatermarkByCountModal
               state={removeWatermarkModal}

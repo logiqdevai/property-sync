@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Accordion, Form, Switch } from "@heroui/react";
+import { Accordion, Form, Input, Label, Switch } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { EstateWebPushSitesList } from "@/components/ui/estateweb-push-sites-list";
 import {
@@ -11,11 +11,14 @@ import {
   EstateWebListingTypeFormOptions,
 } from "@/config/constants/dropdowns/properties/listing-type-form.options";
 import type {
-  EstateWebIntegrationSettings,
   EstateWebLanguageId,
   EstateWebPushSiteSetting,
 } from "@/features/estateweb/interfaces/estateweb-integration-settings.interfaces";
 import type { ListingType } from "@/features/properties/interfaces/properties.interfaces";
+import type {
+  SalesPricingSettings,
+  UserIntegrationSettingsData,
+} from "@/features/user-integrations/interfaces/user-integrations.interfaces";
 import {
   useUpdateUserIntegrationSettings,
   useUserIntegrationSettings,
@@ -28,6 +31,12 @@ const EMPTY_SITE: EstateWebPushSiteSetting = {
   show_on_slider: 0,
   show_on_first_page: 0,
   show_on_relative_pages: 0,
+};
+
+const DEFAULT_SALES: SalesPricingSettings = {
+  enable_sales: false,
+  sale_percentage_start: 0.05,
+  sale_percentage_end: 0.1,
 };
 
 const ALLOWED_LISTING_TYPE_IDS = new Set(
@@ -53,6 +62,7 @@ export function EstateWebPushSitesSettingsForm({
   const [listingTypes, setListingTypes] = useState<ListingType[]>(
     ESTATEWEB_DEFAULT_LISTING_TYPES,
   );
+  const [sales, setSales] = useState<SalesPricingSettings>(DEFAULT_SALES);
 
   useEffect(() => {
     setSites(settings?.settings?.estateweb_default_sites ?? []);
@@ -70,6 +80,22 @@ export function EstateWebPushSitesSettingsForm({
       filteredListingTypes.length > 0
         ? filteredListingTypes
         : ESTATEWEB_DEFAULT_LISTING_TYPES,
+    );
+    const storedSales = settings?.settings?.sales;
+    setSales(
+      storedSales
+        ? {
+            enable_sales: Boolean(storedSales.enable_sales),
+            sale_percentage_start:
+              typeof storedSales.sale_percentage_start === "number"
+                ? storedSales.sale_percentage_start
+                : DEFAULT_SALES.sale_percentage_start,
+            sale_percentage_end:
+              typeof storedSales.sale_percentage_end === "number"
+                ? storedSales.sale_percentage_end
+                : DEFAULT_SALES.sale_percentage_end,
+          }
+        : DEFAULT_SALES,
     );
   }, [settings]);
 
@@ -98,12 +124,29 @@ export function EstateWebPushSitesSettingsForm({
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
-    const payload: EstateWebIntegrationSettings = {
+    const start = Number(sales.sale_percentage_start);
+    const end = Number(sales.sale_percentage_end);
+    if (
+      !Number.isFinite(start) ||
+      !Number.isFinite(end) ||
+      start < 0 ||
+      end > 1 ||
+      start > end
+    ) {
+      return;
+    }
+
+    const payload: UserIntegrationSettingsData = {
       estateweb_default_sites: sites,
       estateweb_ad_languages:
         adLanguages.length > 0 ? adLanguages : ESTATEWEB_DEFAULT_AD_LANGUAGES,
       estateweb_listing_types:
         listingTypes.length > 0 ? listingTypes : ESTATEWEB_DEFAULT_LISTING_TYPES,
+      sales: {
+        enable_sales: sales.enable_sales,
+        sale_percentage_start: start,
+        sale_percentage_end: end,
+      },
     };
 
     updateSettings.mutate(
@@ -224,6 +267,91 @@ export function EstateWebPushSitesSettingsForm({
                 <ActionButtonWithPending type="button" variant="secondary" onPress={addSite}>
                   Add agency
                 </ActionButtonWithPending>
+              </div>
+            </Accordion.Body>
+          </Accordion.Panel>
+        </Accordion.Item>
+
+        <Accordion.Item id="sales-pricing">
+          <Accordion.Heading>
+            <Accordion.Trigger className="text-sm font-medium text-foreground">
+              Sales pricing
+              <Accordion.Indicator />
+            </Accordion.Trigger>
+          </Accordion.Heading>
+          <Accordion.Panel>
+            <Accordion.Body>
+              <div className="grid gap-4 pb-2">
+                <p className="text-sm text-muted">
+                  When enabled and a listing has no source price_start, each CMS sync sets
+                  price_start = price × (1 + random%) between the range below.
+                </p>
+                {settingsPending ? null : (
+                  <>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-sm text-foreground">Enable sales</span>
+                      <Switch
+                        isSelected={sales.enable_sales}
+                        onChange={(isSelected) =>
+                          setSales((current) => ({
+                            ...current,
+                            enable_sales: isSelected,
+                          }))
+                        }
+                        aria-label="Enable sales"
+                      >
+                        <Switch.Control>
+                          <Switch.Thumb />
+                        </Switch.Control>
+                      </Switch>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="flex flex-col gap-1">
+                        <Label htmlFor="sale-percentage-start">Sale % start</Label>
+                        <Input
+                          id="sale-percentage-start"
+                          type="number"
+                          min={0}
+                          max={1}
+                          step={0.01}
+                          value={String(sales.sale_percentage_start)}
+                          onChange={(event) =>
+                            setSales((current) => ({
+                              ...current,
+                              sale_percentage_start: Number(event.target.value),
+                            }))
+                          }
+                          placeholder="0.05"
+                          disabled={!sales.enable_sales || updateSettings.isPending}
+                          fullWidth
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <Label htmlFor="sale-percentage-end">Sale % end</Label>
+                        <Input
+                          id="sale-percentage-end"
+                          type="number"
+                          min={0}
+                          max={1}
+                          step={0.01}
+                          value={String(sales.sale_percentage_end)}
+                          onChange={(event) =>
+                            setSales((current) => ({
+                              ...current,
+                              sale_percentage_end: Number(event.target.value),
+                            }))
+                          }
+                          placeholder="0.1"
+                          disabled={!sales.enable_sales || updateSettings.isPending}
+                          fullWidth
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted">
+                      Fractions only (e.g. 0.05 = 5%, 0.1 = 10%). Start must be ≤ end.
+                    </p>
+                  </>
+                )}
               </div>
             </Accordion.Body>
           </Accordion.Panel>

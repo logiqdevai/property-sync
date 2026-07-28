@@ -203,6 +203,7 @@ export const ApiRoutes = {
         bulkSplit: "/properties/bulk-split",
         truncateDescriptions: "/properties/truncate-descriptions",
         updateEstateWebSites: "/properties/update-estateweb-sites",
+        updateSalesPrices: "/properties/update-sales-prices",
     },
     estateweb: {
         catalog: {

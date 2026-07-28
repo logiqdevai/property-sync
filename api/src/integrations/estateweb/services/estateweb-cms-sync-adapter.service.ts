@@ -30,6 +30,12 @@ import { resolveEstateWebScopeId } from '../utils/estateweb-catalog.util';
 import { getEstateWebInitFieldsForType } from '../utils/estateweb-init-lookup.util';
 import { buildEstateWebImageUrl } from '../utils/estateweb-image-url.util';
 import { resolveEstateWebPushSitesForTracker } from '../utils/estateweb-integration-settings.util';
+import {
+  computeSalePriceStart,
+  pickSalePercentage,
+  resolveSalesPricingSettings,
+  shouldApplySalesPriceStart,
+} from '@/modules/user-integrations/utils/sales-pricing.util';
 import { EstateWebException } from '../exceptions/estateweb.exception';
 import { EstateWebIntegrationResolverService } from './estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from './estateweb-property.service';
@@ -79,6 +85,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         userIntegrationId,
       ),
     ]);
+    await this.applySalesPriceStartIfNeeded(userIntegrationId, userProperty);
     const payload = this.buildPayload(
       pushSites,
       adLanguages,
@@ -119,6 +126,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         userIntegrationId,
       ),
     ]);
+    await this.applySalesPriceStartIfNeeded(userIntegrationId, userProperty);
     const payload = this.buildPayload(
       pushSites,
       adLanguages,
@@ -462,6 +470,47 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       integration?.settings?.settings,
       watermarkManualSelection,
     );
+  }
+
+  private async applySalesPriceStartIfNeeded(
+    userIntegrationId: string,
+    userProperty: UserProperty,
+  ): Promise<void> {
+    const [integration, canonical] = await Promise.all([
+      this.prisma.userIntegration.findUnique({
+        where: { id: userIntegrationId },
+        include: { settings: true },
+      }),
+      this.prisma.property.findUnique({
+        where: { id: userProperty.canonical_property_id },
+        select: { price_start: true },
+      }),
+    ]);
+
+    const sales = resolveSalesPricingSettings(integration?.settings?.settings);
+    if (
+      !shouldApplySalesPriceStart(
+        canonical?.price_start,
+        sales,
+        userProperty.price,
+      )
+    ) {
+      return;
+    }
+
+    const price = Number(userProperty.price);
+    const pct = pickSalePercentage(
+      sales.sale_percentage_start,
+      sales.sale_percentage_end,
+    );
+    const nextPriceStart = computeSalePriceStart(price, pct);
+
+    await this.prisma.userProperty.update({
+      where: { id: userProperty.id },
+      data: { price_start: nextPriceStart },
+    });
+
+    userProperty.price_start = new Prisma.Decimal(nextPriceStart);
   }
 
   private buildPayload(

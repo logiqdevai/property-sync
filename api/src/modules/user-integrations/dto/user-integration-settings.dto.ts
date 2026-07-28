@@ -18,6 +18,11 @@ export class UpdateUserIntegrationSettingsDto {
       ],
       estateweb_ad_languages: [1, 2],
       estateweb_listing_types: ['SALE', 'RENT'],
+      sales: {
+        enable_sales: false,
+        sale_percentage_start: 0.05,
+        sale_percentage_end: 0.1,
+      },
     },
   })
   @IsOptional()

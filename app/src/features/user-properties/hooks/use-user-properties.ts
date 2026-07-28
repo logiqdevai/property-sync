@@ -32,6 +32,7 @@ import {
   truncateUserPropertyDescriptions,
   updateUserProperty,
   updateUserPropertyEstateWebSites,
+  updateUserPropertySalesPrices,
 } from "../services/user-properties.services";
 import type {
   AdminUserPropertyCountQuery,
@@ -42,6 +43,8 @@ import type {
   PushUserPropertiesToCrmResult,
   UpdateEstateWebSitesPayload,
   UpdateEstateWebSitesResult,
+  UpdateSalesPricesPayload,
+  UpdateSalesPricesResult,
   SplitUserPropertiesPayload,
   TruncateUserPropertyDescriptionsPayload,
   UpdateIntegrationImagesPayload,
@@ -540,6 +543,46 @@ export const useUpdateUserPropertyEstateWebSites = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not update EstateWeb sites",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useUpdateUserPropertySalesPrices = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: UpdateSalesPricesPayload) =>
+      updateUserPropertySalesPrices(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+
+      if ("updated" in result) {
+        const bulk = result as UpdateSalesPricesResult;
+        toast({
+          title: "Sales prices updated",
+          description:
+            bulk.failed.length > 0
+              ? `Updated ${bulk.updated}. ${bulk.failed.length} failed.`
+              : `Updated prices for ${bulk.updated} ${bulk.updated === 1 ? "property" : "properties"} on CRM.`,
+          duration: 2500,
+          variant: bulk.failed.length > 0 ? "warning" : "success",
+        });
+        return;
+      }
+
+      toast({
+        title: "Sales prices updated",
+        description: "Prices recalculated and pushed to EstateWeb CRM.",
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not update sales prices",
         description: error.message,
         variant: "error",
       });

@@ -11,6 +11,8 @@ import type {
   SplitUserPropertiesResult,
   UpdateEstateWebSitesPayload,
   UpdateEstateWebSitesResult,
+  UpdateSalesPricesPayload,
+  UpdateSalesPricesResult,
   UpdateUserPropertyPayload,
   UserProperty,
   AdminUserPropertyCountQuery,
@@ -336,6 +338,22 @@ export const updateUserPropertyEstateWebSites = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to update EstateWeb sites.",
+    );
+  }
+};
+
+export const updateUserPropertySalesPrices = async (
+  payload: UpdateSalesPricesPayload,
+): Promise<UserProperty | UpdateSalesPricesResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.updateSalesPrices,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to update sales prices on CRM.",
     );
   }
 };

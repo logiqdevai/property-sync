@@ -24,6 +24,7 @@ import {
   UpdateUserIntegrationDto,
 } from './dto/user-integration.dto';
 import { UpdateUserIntegrationSettingsDto } from './dto/user-integration-settings.dto';
+import { sanitizeUserIntegrationSettingsForSave } from './utils/sales-pricing.util';
 import {
   ResolvedApiKey,
   ResolvedSourceAgencyApiKey,
@@ -184,6 +185,19 @@ export class UserIntegrationsService {
   ) {
     await this.ensureVisibleTarget(targetId);
 
+    let settings: Prisma.InputJsonValue | undefined;
+    try {
+      const sanitized = sanitizeUserIntegrationSettingsForSave(dto.settings);
+      settings =
+        sanitized === undefined
+          ? undefined
+          : (sanitized as Prisma.InputJsonValue);
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Invalid settings',
+      );
+    }
+
     return this.prisma.userIntegrationSettings.upsert({
       where: {
         user_id_integration_target_id: {
@@ -194,10 +208,10 @@ export class UserIntegrationsService {
       create: {
         user_id: userId,
         integration_target_id: targetId,
-        settings: (dto.settings ?? {}) as Prisma.InputJsonValue,
+        settings: (settings ?? {}) as Prisma.InputJsonValue,
       },
       update: {
-        settings: dto.settings as Prisma.InputJsonValue | undefined,
+        settings,
       },
     });
   }

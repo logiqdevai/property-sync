@@ -25,6 +25,7 @@ import {
 import { maskUserIntegration } from './utils/mask-credentials.util';
 import { ensureUserIntegrationSettings } from './utils/user-integration-settings.util';
 import { UpdateUserIntegrationSettingsDto } from './dto/user-integration-settings.dto';
+import { sanitizeUserIntegrationSettingsForSave } from '@/modules/user-integrations/utils/sales-pricing.util';
 
 @Injectable()
 export class IntegrationTargetsService {
@@ -289,6 +290,19 @@ export class IntegrationTargetsService {
   ) {
     await this.ensureTargetExists(targetId);
 
+    let settings: Prisma.InputJsonValue | undefined;
+    try {
+      const sanitized = sanitizeUserIntegrationSettingsForSave(dto.settings);
+      settings =
+        sanitized === undefined
+          ? undefined
+          : (sanitized as Prisma.InputJsonValue);
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Invalid settings',
+      );
+    }
+
     return this.prisma.userIntegrationSettings.upsert({
       where: {
         user_id_integration_target_id: {
@@ -299,10 +313,10 @@ export class IntegrationTargetsService {
       create: {
         user_id: userId,
         integration_target_id: targetId,
-        settings: (dto.settings ?? {}) as Prisma.InputJsonValue,
+        settings: (settings ?? {}) as Prisma.InputJsonValue,
       },
       update: {
-        settings: dto.settings as Prisma.InputJsonValue | undefined,
+        settings,
       },
     });
   }

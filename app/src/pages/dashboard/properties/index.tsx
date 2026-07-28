@@ -12,7 +12,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Globe, Layers, ListFilter, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { Globe, Layers, ListFilter, Percent, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
@@ -48,6 +48,7 @@ import {
   useRemoveUserPropertiesWatermarkImages,
   useSplitUserProperties,
   useTruncateUserPropertyDescriptions,
+  useUpdateUserPropertySalesPrices,
   useUserProperties,
   useUserPropertiesCount,
 } from "@/features/user-properties/hooks/use-user-properties";
@@ -78,6 +79,12 @@ const PROPERTY_MANAGE_SITES_ACTION: TableRowAction = {
   icon: Globe,
 };
 
+const PROPERTY_UPDATE_SALES_PRICES_ACTION: TableRowAction = {
+  id: "update-sales-prices",
+  label: "Update sales prices on CRM",
+  icon: Percent,
+};
+
 const PROPERTY_REMOVE_WATERMARK_ACTION: TableRowAction = {
   id: "remove-watermarks",
   label: "Remove watermarks",
@@ -99,10 +106,12 @@ export default function DashboardPropertiesListPage() {
   const splitConfirm = useOverlayState();
   const manageSitesModal = useOverlayState();
   const removeWatermarkModal = useOverlayState();
+  const updateSalesPricesConfirm = useOverlayState();
   const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
   const [removeWatermarkPropertyIds, setRemoveWatermarkPropertyIds] = useState<
     string[]
   >([]);
+  const [salesPricesPropertyIds, setSalesPricesPropertyIds] = useState<string[]>([]);
   const role = useAuthStore((state) => state.role);
   const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
 
@@ -172,6 +181,7 @@ export default function DashboardPropertiesListPage() {
   const pushToCrm = usePushUserPropertyToCrm();
   const pushSelectedToCrm = usePushUserPropertiesToCrm();
   const removeWatermarks = useRemoveUserPropertiesWatermarkImages();
+  const updateSalesPrices = useUpdateUserPropertySalesPrices();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
@@ -196,6 +206,10 @@ export default function DashboardPropertiesListPage() {
   const selectedGroupedCount = properties.filter(
     (property) => selectedIds.has(property.id) && property.duplicate_group_id,
   ).length;
+  const selectedLinkedCount = properties.filter(
+    (property) =>
+      selectedIds.has(property.id) && Boolean(property.integration_property_id),
+  ).length;
 
   const openManageSites = (ids: string[]) => {
     setManageSitesPropertyIds(ids);
@@ -205,6 +219,11 @@ export default function DashboardPropertiesListPage() {
   const openRemoveWatermarks = (ids: string[]) => {
     setRemoveWatermarkPropertyIds(ids);
     removeWatermarkModal.open();
+  };
+
+  const openUpdateSalesPrices = (ids: string[]) => {
+    setSalesPricesPropertyIds(ids);
+    updateSalesPricesConfirm.open();
   };
 
   const bulkActions = useMemo<TableRowAction[]>(() => {
@@ -219,13 +238,19 @@ export default function DashboardPropertiesListPage() {
         id: "manage-estateweb-sites",
         label: "Manage EstateWeb Sites",
         icon: Globe,
-        isDisabled: selectedCount < 1,
+        isDisabled: selectedLinkedCount < 1,
+      },
+      {
+        id: "update-sales-prices",
+        label: "Update sales prices on CRM",
+        icon: Percent,
+        isDisabled: selectedLinkedCount < 1 || updateSalesPrices.isPending,
       },
       {
         id: "remove-watermarks",
         label: "Remove watermarks",
         icon: Sparkles,
-        isDisabled: selectedCount < 1 || removeWatermarks.isPending,
+        isDisabled: selectedLinkedCount < 1 || removeWatermarks.isPending,
       },
       {
         id: "truncate",
@@ -272,6 +297,8 @@ export default function DashboardPropertiesListPage() {
     removeWatermarks.isPending,
     selectedCount,
     selectedGroupedCount,
+    selectedLinkedCount,
+    updateSalesPrices.isPending,
   ]);
 
   const clearSelection = () => setSelectedKeys(new Set());
@@ -330,6 +357,16 @@ export default function DashboardPropertiesListPage() {
     }
     if (actionId === "manage-estateweb-sites") {
       openManageSites(Array.from(selectedIds));
+      return;
+    }
+    if (actionId === "update-sales-prices") {
+      const linkedIds = properties
+        .filter(
+          (property) =>
+            selectedIds.has(property.id) && Boolean(property.integration_property_id),
+        )
+        .map((property) => property.id);
+      openUpdateSalesPrices(linkedIds);
       return;
     }
     if (actionId === "remove-watermarks") {
@@ -405,6 +442,13 @@ export default function DashboardPropertiesListPage() {
 
   const handleBulkPushToCrm = async () => {
     await pushSelectedToCrm.mutateAsync({ ids: Array.from(selectedIds) });
+    clearSelection();
+  };
+
+  const handleUpdateSalesPrices = async () => {
+    if (salesPricesPropertyIds.length === 0) return;
+    await updateSalesPrices.mutateAsync({ ids: salesPricesPropertyIds });
+    setSalesPricesPropertyIds([]);
     clearSelection();
   };
 
@@ -701,6 +745,12 @@ export default function DashboardPropertiesListPage() {
                   isDisabled: !property.integration_property_id,
                 },
                 {
+                  ...PROPERTY_UPDATE_SALES_PRICES_ACTION,
+                  isDisabled:
+                    !property.integration_property_id ||
+                    updateSalesPrices.isPending,
+                },
+                {
                   ...PROPERTY_REMOVE_WATERMARK_ACTION,
                   isDisabled:
                     !property.integration_property_id ||
@@ -733,6 +783,10 @@ export default function DashboardPropertiesListPage() {
                     }
                     if (actionId === "manage-estateweb-sites") {
                       openManageSites([property.id]);
+                      return;
+                    }
+                    if (actionId === "update-sales-prices") {
+                      openUpdateSalesPrices([property.id]);
                       return;
                     }
                     if (actionId === "remove-watermarks") {
@@ -797,6 +851,12 @@ export default function DashboardPropertiesListPage() {
                         {
                           ...PROPERTY_MANAGE_SITES_ACTION,
                           isDisabled: !property.integration_property_id,
+                        },
+                        {
+                          ...PROPERTY_UPDATE_SALES_PRICES_ACTION,
+                          isDisabled:
+                            !property.integration_property_id ||
+                            updateSalesPrices.isPending,
                         },
                         {
                           ...PROPERTY_REMOVE_WATERMARK_ACTION,
@@ -881,6 +941,10 @@ export default function DashboardPropertiesListPage() {
                               }
                               if (actionId === "manage-estateweb-sites") {
                                 openManageSites([property.id]);
+                                return;
+                              }
+                              if (actionId === "update-sales-prices") {
+                                openUpdateSalesPrices([property.id]);
                                 return;
                               }
                               if (actionId === "remove-watermarks") {
@@ -979,6 +1043,18 @@ export default function DashboardPropertiesListPage() {
       <ManageEstateWebSitesModal
         state={manageSitesModal}
         propertyIds={manageSitesPropertyIds}
+      />
+      <ConfirmationDialog
+        state={updateSalesPricesConfirm}
+        title="Update sales prices on CRM?"
+        description={
+          salesPricesPropertyIds.length === 1
+            ? "Recalculates price_start from sales settings (when enabled and no source price_start) and pushes prices to EstateWeb CRM."
+            : `Recalculates price_start from sales settings (when enabled and no source price_start) and pushes prices to EstateWeb CRM for ${salesPricesPropertyIds.length} properties.`
+        }
+        confirmLabel="Update prices"
+        onConfirm={handleUpdateSalesPrices}
+        isPending={updateSalesPrices.isPending}
       />
       <RemoveWatermarkByCountModal
         state={removeWatermarkModal}

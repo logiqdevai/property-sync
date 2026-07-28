@@ -45,6 +45,7 @@
     "@bull-board/express": "^6.16.2",
     "@elastic/elasticsearch": "^9.4.0",
     "@google-cloud/storage": "^7.18.0",
+    "@google-cloud/translate": "^9.4.2",
     "@nestjs/apollo": "^13.1.0",
     "@nestjs/axios": "^4.0.0",
     "@nestjs/bull": "^11.0.4",

@@ -32,7 +32,15 @@ export const AuthTypes = {
 
 export type AuthType = (typeof AuthTypes)[keyof typeof AuthTypes];
 
-export type UserIntegrationSettingsData = Partial<EstateWebIntegrationSettings>;
+export interface SalesPricingSettings {
+  enable_sales: boolean;
+  sale_percentage_start: number;
+  sale_percentage_end: number;
+}
+
+export type UserIntegrationSettingsData = Partial<EstateWebIntegrationSettings> & {
+  sales?: SalesPricingSettings;
+};
 
 export interface IntegrationTarget {
   id: string;

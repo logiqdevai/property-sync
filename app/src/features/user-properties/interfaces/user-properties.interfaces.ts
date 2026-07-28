@@ -180,6 +180,15 @@ export interface UpdateEstateWebSitesResult {
   failed: Array<{ user_property_id: string; error: string }>;
 }
 
+export interface UpdateSalesPricesPayload {
+  ids: string[];
+}
+
+export interface UpdateSalesPricesResult {
+  updated: number;
+  failed: Array<{ user_property_id: string; error: string }>;
+}
+
 export interface DedupeUserPropertiesPayload {
   ids: string[];
 }

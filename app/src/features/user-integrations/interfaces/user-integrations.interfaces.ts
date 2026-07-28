@@ -1,10 +1,16 @@
 import type {
   AuthType,
   IntegrationType,
+  SalesPricingSettings,
   UserIntegrationSettingsData,
 } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 
-export type { AuthType, IntegrationType, UserIntegrationSettingsData };
+export type {
+  AuthType,
+  IntegrationType,
+  SalesPricingSettings,
+  UserIntegrationSettingsData,
+};
 
 export interface AvailableIntegrationTarget {
   id: string;

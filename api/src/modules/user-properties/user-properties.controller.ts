@@ -231,6 +231,21 @@ export class UserPropertiesController {
     );
   }
 
+  @Post('update-sales-prices')
+  @ApiOperation({
+    summary:
+      'Recalculate sales price_start (when enabled) and push prices to EstateWeb CRM',
+  })
+  @ApiResponse({ status: 200, description: 'Sales prices updated on CRM' })
+  @ApiResponse({ status: 400, description: 'Cannot update sales prices' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  updateSalesPricesOnCrm(
+    @CurrentUser('id') userId: string,
+    @Body() dto: DeleteUserPropertiesDto,
+  ) {
+    return this.userPropertiesService.updateSalesPricesOnCrm(userId, dto.ids);
+  }
+
   @Post('remove-watermark-images')
   @ApiOperation({
     summary:
