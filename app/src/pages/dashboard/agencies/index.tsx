@@ -22,9 +22,17 @@ import {
   Input,
   Pagination,
   Switch,
+  Tabs,
   useOverlayState,
 } from "@heroui/react";
 import { BellOff, ExternalLink, Info, Search } from "lucide-react";
+
+const WatermarkModes = {
+  AUTOMATIC: "automatic",
+  MANUAL: "manual",
+} as const;
+
+type WatermarkMode = (typeof WatermarkModes)[keyof typeof WatermarkModes];
 
 function AgencyCard({
   agency,
@@ -228,56 +236,73 @@ function AgencyCard({
           </div>
 
           {prefs.remove_watermark ? (
-            <>
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="text-sm text-foreground">Manual selection</span>
-                  <span className="text-xs text-muted">
-                    Create the listing with no sites selected so you can handle images
-                    before publishing.
-                  </span>
-                </div>
-                <Switch
-                  isSelected={prefs.watermark_manual_selection ?? false}
-                  isDisabled={isControlsDisabled}
-                  onChange={(isSelected) =>
-                    savePrefs({ watermark_manual_selection: isSelected })
-                  }
-                  aria-label="Manual watermark selection"
-                  className="shrink-0"
-                >
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
-                </Switch>
-              </div>
+            <Tabs
+              className="w-full"
+              variant="secondary"
+              selectedKey={
+                prefs.watermark_manual_selection
+                  ? WatermarkModes.MANUAL
+                  : WatermarkModes.AUTOMATIC
+              }
+              onSelectionChange={(key) => {
+                const nextMode = key as WatermarkMode;
+                const nextManual = nextMode === WatermarkModes.MANUAL;
+                if (nextManual === (prefs.watermark_manual_selection ?? false)) {
+                  return;
+                }
+                savePrefs({ watermark_manual_selection: nextManual });
+              }}
+            >
+              <Tabs.ListContainer>
+                <Tabs.List aria-label="Watermark removal mode">
+                  <Tabs.Tab id={WatermarkModes.AUTOMATIC} isDisabled={isControlsDisabled}>
+                    Automatic
+                    <Tabs.Indicator />
+                  </Tabs.Tab>
+                  <Tabs.Tab id={WatermarkModes.MANUAL} isDisabled={isControlsDisabled}>
+                    Manual selection
+                    <Tabs.Indicator />
+                  </Tabs.Tab>
+                </Tabs.List>
+              </Tabs.ListContainer>
 
-              {!(prefs.watermark_manual_selection ?? false) ? (
-                <label className="flex flex-col gap-1 text-sm">
-                  <span className="text-foreground">Images to dewatermark</span>
-                  <span className="text-xs text-muted">
-                    Remove watermarks from the first N images after crawl, then publish
-                    to your EstateWeb default sites.
-                  </span>
-                  <input
-                    type="number"
-                    min={1}
-                    className="rounded-lg border border-border bg-background px-3 py-2"
-                    defaultValue={prefs.watermark_image_count ?? 10}
-                    key={`watermark-count-${agency.id}-${prefs.watermark_image_count ?? 10}`}
-                    disabled={isControlsDisabled}
-                    onBlur={(e) => {
-                      const parsed = Number.parseInt(e.target.value, 10);
-                      const value =
-                        Number.isFinite(parsed) && parsed >= 1 ? parsed : 10;
-                      if (value !== (prefs.watermark_image_count ?? 10)) {
-                        savePrefs({ watermark_image_count: value });
-                      }
-                    }}
-                  />
-                </label>
-              ) : null}
-            </>
+              <Tabs.Panel id={WatermarkModes.AUTOMATIC} className="pt-3">
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs text-muted">
+                    Remove watermarks from the first N images after crawl and
+                    normalization. Only cleaned versions upload to EstateWeb. Remaining
+                    images stay as-is. Listing publishes to your EstateWeb default sites.
+                  </p>
+                  <label className="flex flex-col gap-1 text-sm">
+                    <span className="text-foreground">Images to dewatermark</span>
+                    <input
+                      type="number"
+                      min={1}
+                      className="rounded-lg border border-border bg-background px-3 py-2"
+                      defaultValue={prefs.watermark_image_count ?? 10}
+                      key={`watermark-count-${agency.id}-${prefs.watermark_image_count ?? 10}`}
+                      disabled={isControlsDisabled}
+                      onBlur={(e) => {
+                        const parsed = Number.parseInt(e.target.value, 10);
+                        const value =
+                          Number.isFinite(parsed) && parsed >= 1 ? parsed : 10;
+                        if (value !== (prefs.watermark_image_count ?? 10)) {
+                          savePrefs({ watermark_image_count: value });
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              </Tabs.Panel>
+
+              <Tabs.Panel id={WatermarkModes.MANUAL} className="pt-3">
+                <p className="text-xs text-muted">
+                  No automatic watermark removal. Listing is created in EstateWeb CRM
+                  with no sites selected, so it is not published. Handle images
+                  manually, then publish when ready.
+                </p>
+              </Tabs.Panel>
+            </Tabs>
           ) : null}
 
           {AppConfig.tracked_agency_admin_options_visible ? (
