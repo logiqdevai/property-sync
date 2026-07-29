@@ -772,9 +772,6 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     userIntegrationId: string,
     forceContentProduction = false,
   ): Promise<EstateWebAdLanguageMaps> {
-    this.logger.log(
-      `[resolveContentAds] property=${userProperty.id} integration=${userIntegrationId} forceContentProduction=${forceContentProduction}`,
-    );
     if (forceContentProduction) {
       await this.contentProductionService.ensureReady(userProperty.id);
     }
@@ -785,9 +782,6 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     const maps = await this.contentResolutionService.resolveAdMaps(
       userProperty,
       fallback,
-    );
-    this.logger.log(
-      `[resolveContentAds] property=${userProperty.id} languages=${maps.languages.join(',')} titleSlots=${Object.entries(maps.titles).filter(([, v]) => Boolean(v?.trim())).map(([k]) => k).join(',')} descSlots=${Object.entries(maps.descriptions).filter(([, v]) => Boolean(v?.trim())).map(([k]) => k).join(',')}`,
     );
     return maps;
   }

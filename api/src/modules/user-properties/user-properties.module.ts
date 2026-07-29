@@ -3,6 +3,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import {
   CONTENT_PRODUCTION_QUEUE,
+  SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
 } from '@/core/queues/queues.constants';
 import { DewatermarkModule } from '@/integrations/dewatermark/dewatermark.module';
@@ -14,11 +15,13 @@ import { PlatformConfigModule } from '@/modules/platform-config/platform-config.
 import { CostLogsModule } from '@/modules/cost-logs/cost-logs.module';
 import { ContentProductionProcessor } from '@/background/content-production.processor';
 import { WatermarkRemovalProcessor } from '@/background/watermark-removal.processor';
+import { SalesPriceUpdateProcessor } from '@/background/sales-price-update.processor';
 import { UserPropertiesController } from './user-properties.controller';
 import { AdminUserPropertiesController } from './admin-user-properties.controller';
 import { UserPropertiesService } from './user-properties.service';
 import { ContentProductionJobService } from './services/content-production-job.service';
 import { WatermarkRemovalService } from './services/watermark-removal.service';
+import { SalesPriceUpdateJobService } from './services/sales-price-update-job.service';
 
 @Module({
   imports: [
@@ -33,6 +36,7 @@ import { WatermarkRemovalService } from './services/watermark-removal.service';
     BullModule.registerQueue(
       { name: WATERMARK_REMOVAL_QUEUE },
       { name: CONTENT_PRODUCTION_QUEUE },
+      { name: SALES_PRICE_UPDATE_QUEUE },
     ),
   ],
   controllers: [UserPropertiesController, AdminUserPropertiesController],
@@ -42,6 +46,8 @@ import { WatermarkRemovalService } from './services/watermark-removal.service';
     WatermarkRemovalProcessor,
     ContentProductionJobService,
     ContentProductionProcessor,
+    SalesPriceUpdateJobService,
+    SalesPriceUpdateProcessor,
   ],
   exports: [UserPropertiesService],
 })

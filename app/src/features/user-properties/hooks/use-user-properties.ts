@@ -45,7 +45,6 @@ import type {
   UpdateEstateWebSitesPayload,
   UpdateEstateWebSitesResult,
   UpdateSalesPricesPayload,
-  UpdateSalesPricesResult,
   SplitUserPropertiesPayload,
   TruncateUserPropertyDescriptionsPayload,
   UpdateIntegrationImagesPayload,
@@ -590,25 +589,14 @@ export const useUpdateUserPropertySalesPrices = () => {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
 
-      if ("updated" in result) {
-        const bulk = result as UpdateSalesPricesResult;
-        toast({
-          title: "Sales prices updated",
-          description:
-            bulk.failed.length > 0
-              ? `Updated ${bulk.updated}. ${bulk.failed.length} failed.`
-              : `Updated prices for ${bulk.updated} ${bulk.updated === 1 ? "property" : "properties"} on CRM.`,
-          duration: 2500,
-          variant: bulk.failed.length > 0 ? "warning" : "success",
-        });
-        return;
-      }
-
       toast({
-        title: "Sales prices updated",
-        description: "Prices recalculated and pushed to EstateWeb CRM.",
+        title: "Sales price update started",
+        description:
+          result.failed.length > 0
+            ? `Enqueued ${result.enqueued}. ${result.failed.length} could not be enqueued.`
+            : `Updating prices for ${result.enqueued} ${result.enqueued === 1 ? "property" : "properties"} on CRM in the background.`,
         duration: 2500,
-        variant: "success",
+        variant: result.failed.length > 0 ? "warning" : "success",
       });
     },
     onError: (error: Error) => {

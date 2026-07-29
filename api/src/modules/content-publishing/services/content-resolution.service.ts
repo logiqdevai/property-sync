@@ -78,10 +78,6 @@ export class ContentResolutionService {
     const context = await this.resolveContextForUserProperty(userProperty);
     const config = context?.config;
 
-    this.logger.log(
-      `[resolveAdMaps] property=${userProperty.id} tracker=${context?.trackerId ?? 'none'} configId=${config?.id ?? 'null'} enabled=${config?.is_enabled ?? false} outputs=${config?.outputs?.length ?? 0}`,
-    );
-
     if (!config || !config.is_enabled) {
       this.logger.warn(
         `[resolveAdMaps] property=${userProperty.id} using legacy broadcast (no enabled content publishing config)`,
@@ -94,10 +90,6 @@ export class ContentResolutionService {
     });
     const byKey = new Map(
       localized.map((row) => [`${row.content_type}:${row.language}`, row]),
-    );
-
-    this.logger.log(
-      `[resolveAdMaps] property=${userProperty.id} localizedRows=${localized.length} stale=${localized.filter((r) => r.is_stale).length}`,
     );
 
     const titles: Partial<Record<EstateWebLanguageId, string>> = {};
@@ -133,10 +125,6 @@ export class ContentResolutionService {
         original: userProperty.description ?? '',
         localized: descriptionLocalized,
       });
-
-      this.logger.log(
-        `[resolveAdMaps] property=${userProperty.id} slot=${output.language}->${estatewebId} titleStrategy=${output.title_strategy} descStrategy=${output.description_strategy} descContentLang=${descriptionLanguage} titleChars=${titles[estatewebId]?.length ?? 0} descChars=${descriptions[estatewebId]?.length ?? 0} titleFromLocalized=${Boolean(titleLocalized?.trim())} descFromLocalized=${Boolean(descriptionLocalized?.trim())}`,
-      );
     }
 
     return {

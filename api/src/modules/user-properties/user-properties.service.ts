@@ -10,6 +10,7 @@ import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
   CONTENT_PRODUCTION_QUEUE,
+  SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
 } from '@/core/queues/queues.constants';
 import { DewatermarkOrchestratorService } from '@/integrations/dewatermark/services/dewatermark-orchestrator.service';
@@ -56,6 +57,10 @@ import {
   ContentProductionJobResult,
 } from './interfaces/content-production-job.interface';
 import { WatermarkRemovalJobData } from './interfaces/watermark-removal-job.interface';
+import {
+  SalesPriceUpdateJobData,
+  SalesPriceUpdateJobResult,
+} from './interfaces/sales-price-update-job.interface';
 import { WatermarkRemovalService } from './services/watermark-removal.service';
 import { resolveIntegrationImageProcessUrl } from './utils/integration-property-images.util';
 
@@ -90,6 +95,8 @@ export class UserPropertiesService {
     private readonly watermarkRemovalQueue: Queue<WatermarkRemovalJobData>,
     @InjectQueue(CONTENT_PRODUCTION_QUEUE)
     private readonly contentProductionQueue: Queue<ContentProductionJobData>,
+    @InjectQueue(SALES_PRICE_UPDATE_QUEUE)
+    private readonly salesPriceUpdateQueue: Queue<SalesPriceUpdateJobData>,
   ) {}
 
   private async resolveFilterSourceAgencyId(
@@ -778,13 +785,14 @@ export class UserPropertiesService {
   }
 
   async updateSalesPricesOnCrm(userId: string, ids: string[]) {
-    const idList = [...new Set(ids)];
+    const idList = [...new Set(ids.filter(Boolean))];
     if (idList.length === 0) {
       throw new BadRequestException('No properties selected');
     }
 
     const properties = await this.prisma.userProperty.findMany({
       where: { id: { in: idList }, user_id: userId },
+      select: { id: true, integration_property_id: true },
     });
 
     if (properties.length === 0) {
@@ -792,7 +800,7 @@ export class UserPropertiesService {
     }
 
     const byId = new Map(properties.map((property) => [property.id, property]));
-    const updated: string[] = [];
+    const enqueueIds: string[] = [];
     const failed: Array<{ user_property_id: string; error: string }> = [];
 
     for (const id of idList) {
@@ -810,23 +818,10 @@ export class UserPropertiesService {
         continue;
       }
 
-      try {
-        const { userIntegrationId } =
-          await this.resolveCmsIntegrationForProperty(property);
-
-        await this.estateWebCmsSyncAdapter.pushUpdate(
-          userIntegrationId,
-          property.integration_property_id,
-          property,
-        );
-        updated.push(id);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        failed.push({ user_property_id: id, error: message });
-      }
+      enqueueIds.push(id);
     }
 
-    if (updated.length === 0) {
+    if (enqueueIds.length === 0) {
       const firstError = failed[0]?.error ?? 'No properties could be updated';
       throw new BadRequestException(
         failed.length === 1
@@ -835,17 +830,67 @@ export class UserPropertiesService {
       );
     }
 
-    if (idList.length === 1 && updated.length === 1) {
-      return serializePropertyForApi(
-        await this.prisma.userProperty.findFirstOrThrow({
-          where: { id: idList[0], user_id: userId },
-        }),
-      );
-    }
+    const initialResult: SalesPriceUpdateJobResult = {
+      total: enqueueIds.length,
+      processed: 0,
+      updated: 0,
+      failed: failed.length,
+      items: failed.map((row) => ({
+        user_property_id: row.user_property_id,
+        status: 'failed' as const,
+        error: row.error,
+      })),
+      logs: [`enqueued user=${userId} properties=${enqueueIds.length}`],
+    };
+
+    const payload = {
+      user_id: userId,
+      user_property_ids: enqueueIds,
+      total: enqueueIds.length,
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: SALES_PRICE_UPDATE_QUEUE,
+        job_name: 'update-sales-price',
+        status: JobStatus.WAITING,
+        payload: payload as object,
+        result: initialResult as object,
+      },
+    });
+
+    this.logger.log(
+      `[updateSalesPricesOnCrm] queued job_log=${jobLog.id} user=${userId} ids=${enqueueIds.length}`,
+    );
+
+    await this.salesPriceUpdateQueue.addBulk(
+      enqueueIds.map((userPropertyId) => {
+        const jobData: SalesPriceUpdateJobData = {
+          job_log_id: jobLog.id,
+          user_id: userId,
+          user_property_id: userPropertyId,
+          total: enqueueIds.length,
+        };
+        return {
+          name: 'update-sales-price',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${userPropertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
 
     return {
-      updated: updated.length,
+      job_log_id: jobLog.id,
+      enqueued: enqueueIds.length,
       failed,
+      message:
+        'Sales price update started in the background. Track progress in Job queue.',
     };
   }
 

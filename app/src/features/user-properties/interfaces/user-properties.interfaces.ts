@@ -200,8 +200,10 @@ export interface UpdateSalesPricesPayload {
 }
 
 export interface UpdateSalesPricesResult {
-  updated: number;
+  job_log_id: string;
+  enqueued: number;
   failed: Array<{ user_property_id: string; error: string }>;
+  message: string;
 }
 
 export interface DedupeUserPropertiesPayload {

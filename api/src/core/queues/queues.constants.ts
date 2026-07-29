@@ -6,3 +6,4 @@ export const OPENAI_BATCH_QUEUE = 'openai-batch';
 export const CMS_SYNC_QUEUE = 'cms-sync';
 export const WATERMARK_REMOVAL_QUEUE = 'watermark-removal';
 export const CONTENT_PRODUCTION_QUEUE = 'content-production';
+export const SALES_PRICE_UPDATE_QUEUE = 'sales-price-update';

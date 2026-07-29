@@ -10,6 +10,7 @@ import {
   CRAWL_QUEUE,
   GENERATION_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
+  SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
 } from '@/core/queues/queues.constants';
 import { JobStatus, Prisma } from 'generated/prisma';
@@ -34,6 +35,8 @@ export class JobsService {
     private readonly watermarkRemovalQueue: Queue,
     @InjectQueue(CONTENT_PRODUCTION_QUEUE)
     private readonly contentProductionQueue: Queue,
+    @InjectQueue(SALES_PRICE_UPDATE_QUEUE)
+    private readonly salesPriceUpdateQueue: Queue,
   ) {}
 
   async findAll(query: JobLogQueryType): Promise<PaginatedResult<any>> {
@@ -119,7 +122,8 @@ export class JobsService {
 
     const jobOptions =
       jobLog.queue_name === WATERMARK_REMOVAL_QUEUE ||
-      jobLog.queue_name === CONTENT_PRODUCTION_QUEUE
+      jobLog.queue_name === CONTENT_PRODUCTION_QUEUE ||
+      jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE
         ? {
             attempts: 3,
             backoff: { type: 'exponential' as const, delay: 5000 },
@@ -127,6 +131,38 @@ export class JobsService {
             removeOnFail: 200,
           }
         : undefined;
+
+    if (jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE) {
+      const payloadRecord = payload as {
+        user_id?: string;
+        user_property_ids?: string[];
+        total?: number;
+      };
+      const propertyIds = Array.isArray(payloadRecord.user_property_ids)
+        ? payloadRecord.user_property_ids
+        : [];
+      if (!payloadRecord.user_id || propertyIds.length === 0) {
+        throw new BadRequestException(
+          'Sales price update job payload is missing user or property ids',
+        );
+      }
+      await this.salesPriceUpdateQueue.addBulk(
+        propertyIds.map((userPropertyId) => ({
+          name: jobLog.job_name ?? 'update-sales-price',
+          data: {
+            job_log_id: jobLog.id,
+            user_id: payloadRecord.user_id,
+            user_property_id: userPropertyId,
+            total: payloadRecord.total ?? propertyIds.length,
+          },
+          opts: {
+            ...(jobOptions ?? {}),
+            jobId: `${jobLog.id}__${userPropertyId}`,
+          },
+        })),
+      );
+      return this.findOne(id);
+    }
 
     if (jobLog.queue_name === CONTENT_PRODUCTION_QUEUE) {
       const payloadRecord = payload as {
@@ -195,18 +231,23 @@ export class JobsService {
       } catch {}
     }
 
-    if (jobLog.queue_name === CONTENT_PRODUCTION_QUEUE) {
+    if (
+      jobLog.queue_name === CONTENT_PRODUCTION_QUEUE ||
+      jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE
+    ) {
       const payload = (jobLog.payload ?? {}) as {
         user_property_ids?: string[];
       };
       const propertyIds = Array.isArray(payload.user_property_ids)
         ? payload.user_property_ids
         : [];
+      const queue =
+        jobLog.queue_name === CONTENT_PRODUCTION_QUEUE
+          ? this.contentProductionQueue
+          : this.salesPriceUpdateQueue;
       for (const propertyId of propertyIds) {
         try {
-          await this.contentProductionQueue.remove(
-            `${jobLog.id}__${propertyId}`,
-          );
+          await queue.remove(`${jobLog.id}__${propertyId}`);
         } catch {}
       }
     }
@@ -277,6 +318,9 @@ export class JobsService {
     }
     if (queueName === CONTENT_PRODUCTION_QUEUE) {
       return this.contentProductionQueue;
+    }
+    if (queueName === SALES_PRICE_UPDATE_QUEUE) {
+      return this.salesPriceUpdateQueue;
     }
     throw new BadRequestException(`Unsupported queue: ${queueName}`);
   }

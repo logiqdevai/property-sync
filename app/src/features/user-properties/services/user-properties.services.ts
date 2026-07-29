@@ -346,7 +346,7 @@ export const updateUserPropertyEstateWebSites = async (
 
 export const updateUserPropertySalesPrices = async (
   payload: UpdateSalesPricesPayload,
-): Promise<UserProperty | UpdateSalesPricesResult> => {
+): Promise<UpdateSalesPricesResult> => {
   try {
     const response = await axiosInstance.post(
       ApiRoutes.userProperties.updateSalesPrices,
