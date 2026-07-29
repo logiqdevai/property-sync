@@ -31,6 +31,7 @@ export interface AiTitleFamily {
   model: string | null;
   use_batch: boolean | null;
   instructions: string | null;
+  writing_language: ContentLanguage | null;
   is_enabled: boolean;
   assigned_languages: ContentLanguage[];
 }
@@ -62,6 +63,7 @@ export interface UpsertAiTitleFamilyPayload {
   model?: string | null;
   use_batch?: boolean | null;
   instructions?: string | null;
+  writing_language?: ContentLanguage | null;
   is_enabled?: boolean;
 }
 

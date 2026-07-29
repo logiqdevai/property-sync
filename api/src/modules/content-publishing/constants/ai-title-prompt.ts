@@ -1,45 +1,85 @@
 import { ContentLanguage } from 'generated/prisma';
 
+export type AiTitlePropertyFacts = {
+  district?: string | null;
+  city?: string | null;
+  listing_type?: string | null;
+  square_meters?: string | number | null;
+  property_type?: string | null;
+};
+
+const LANGUAGE_LABEL: Record<ContentLanguage, string> = {
+  EL: 'Greek',
+  EN: 'English',
+  DE: 'German',
+  FR: 'French',
+  IT: 'Italian',
+  RU: 'Russian',
+};
+
 export const AI_TITLE_SYSTEM_PROMPT = `You are a real-estate marketing copywriter.
-You receive original property title/description and a list of EstateWeb slot codes.
-Return exactly one distinct marketing title per slot code.
-JSON keys are slot codes only (EL, EN, DE, FR, IT, RU) — they are NOT always the language you must write in.
-Write each title in the language required by Additional instructions (e.g. all Greek, or all English).
-When instructions say write in Greek, every title value must be Greek even if the key is DE/FR/RU.
-When instructions say write in English, every title value must be English even if the key is IT.
-Each title for a family must be meaningfully different from the others (paraphrase/angle), not copies.
-Rewrite and optimize for clarity and appeal while keeping facts (property type, place, size).
+You receive an original property listing, structured facts, a writing language, and a list of numbered slots.
+Return exactly one distinct marketing title per numbered slot.
+JSON keys are INTEGERS (1, 2, 3 ...). They are NOT language codes.
+Write EVERY title value in the WRITING LANGUAGE specified in the user message.
+Each title must be meaningfully different from the others (different angle / phrasing).
+Every title MUST include all provided facts that are not "(none)": district, city, listing_type, square_meters, property_type.
+Rewrite and optimize for clarity and appeal while keeping those facts accurate.
 Do not invent amenities, features, or claims not present in the source.
-Return ONLY valid JSON with this shape: {"titles":{"EL":"...","EN":"...",...}}
-Include exactly one string per requested slot code.`;
+Return ONLY valid JSON with this shape: {"titles":{"1":"...","2":"...",...}}`;
 
 export const AI_TITLE_MULTI_PROPERTY_SYSTEM_PROMPT = `You are a real-estate marketing copywriter.
-You receive multiple properties. For each property id, produce one marketing title per EstateWeb slot code.
-JSON outer keys are property ids. Inner keys are slot codes (EL, EN, DE, FR, IT, RU) — they are NOT always the language you must write in.
-Write each title in the language required by Additional instructions (e.g. all Greek, or all English).
-When instructions say write in Greek, every title value must be Greek even if the key is DE/FR/RU.
-When instructions say write in English, every title value must be English even if the key is IT.
-Titles for different slots on the same property must be meaningfully different (paraphrase/angle), not copies.
-Rewrite and optimize for clarity and appeal while keeping facts (property type, place, size).
+You receive multiple property listings and a writing language.
+For each property id, produce one distinct marketing title per numbered slot.
+JSON outer keys are property ids. Inner keys are INTEGERS (1, 2, 3 ...). They are NOT language codes.
+Write EVERY title value in the WRITING LANGUAGE specified in the user message.
+Titles for different slots on the same property must be meaningfully different (different angle / phrasing).
+Every title MUST include all provided facts that are not "(none)": district, city, listing_type, square_meters, property_type.
+Rewrite and optimize for clarity and appeal while keeping those facts accurate.
 Do not invent amenities, features, or claims not present in the source.
 Return ONLY valid JSON with this shape:
-{"properties":{"<propertyId>":{"EL":"...","DE":"..."},"<propertyId2>":{"EL":"...","DE":"..."}}}
-Include exactly one string per requested slot code for every property id provided.`;
+{"properties":{"<propertyId>":{"1":"...","2":"..."},"<propertyId2>":{"1":"...","2":"..."}}}`;
 
 export const AI_TITLE_MULTI_PROPERTY_CHUNK_SIZE = 10;
+
+function formatFactValue(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return '(none)';
+  const text = String(value).trim();
+  return text || '(none)';
+}
+
+export function formatAiTitlePropertyFacts(
+  facts: AiTitlePropertyFacts,
+): string[] {
+  return [
+    `district: ${formatFactValue(facts.district)}`,
+    `city: ${formatFactValue(facts.city)}`,
+    `listing_type: ${formatFactValue(facts.listing_type)}`,
+    `square_meters: ${formatFactValue(facts.square_meters)}`,
+    `property_type: ${formatFactValue(facts.property_type)}`,
+  ];
+}
 
 export function buildAiTitleUserPrompt(input: {
   sourceLanguage: ContentLanguage;
   targetLanguages: ContentLanguage[];
+  writingLanguage: ContentLanguage;
   title: string;
   description: string | null | undefined;
+  facts: AiTitlePropertyFacts;
   familyInstructions?: string | null;
 }): string {
+  const label = LANGUAGE_LABEL[input.writingLanguage];
+  const slots = input.targetLanguages.map((_, i) => String(i + 1));
   const lines = [
-    `Source language: ${input.sourceLanguage}`,
-    `EstateWeb slot codes: ${input.targetLanguages.join(', ')}`,
+    `WRITING LANGUAGE: ${input.writingLanguage} = ${label}`,
+    `Write ALL title values in ${label}. Do not use any other language.`,
+    `Slots: ${slots.join(', ')} (produce exactly ${slots.length} different ${label} titles)`,
+    `Source language of original listing: ${input.sourceLanguage}`,
     `Original title: ${input.title}`,
     `Original description: ${input.description?.trim() || '(none)'}`,
+    'Property facts (include all non-(none) values in every title):',
+    ...formatAiTitlePropertyFacts(input.facts).map((line) => `  ${line}`),
   ];
   if (input.familyInstructions?.trim()) {
     lines.push(`Additional instructions: ${input.familyInstructions.trim()}`);
@@ -50,16 +90,22 @@ export function buildAiTitleUserPrompt(input: {
 export function buildAiTitleMultiPropertyUserPrompt(input: {
   sourceLanguage: ContentLanguage;
   targetLanguages: ContentLanguage[];
+  writingLanguage: ContentLanguage;
   items: Array<{
     userPropertyId: string;
     title: string;
     description: string | null | undefined;
+    facts: AiTitlePropertyFacts;
   }>;
   familyInstructions?: string | null;
 }): string {
+  const label = LANGUAGE_LABEL[input.writingLanguage];
+  const slots = input.targetLanguages.map((_, i) => String(i + 1));
   const lines = [
-    `Source language: ${input.sourceLanguage}`,
-    `EstateWeb slot codes: ${input.targetLanguages.join(', ')}`,
+    `WRITING LANGUAGE: ${input.writingLanguage} = ${label}`,
+    `Write ALL title values in ${label}. Do not use any other language.`,
+    `Slots: ${slots.join(', ')} (produce exactly ${slots.length} different ${label} titles per property)`,
+    `Source language of original listings: ${input.sourceLanguage}`,
     `Property count: ${input.items.length}`,
     'Properties:',
   ];
@@ -69,6 +115,8 @@ export function buildAiTitleMultiPropertyUserPrompt(input: {
       `- id=${item.userPropertyId}`,
       `  title: ${item.title}`,
       `  description: ${item.description?.trim() || '(none)'}`,
+      `  facts:`,
+      ...formatAiTitlePropertyFacts(item.facts).map((line) => `    ${line}`),
     );
   }
 

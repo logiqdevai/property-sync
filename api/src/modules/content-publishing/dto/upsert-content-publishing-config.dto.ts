@@ -42,6 +42,15 @@ export class UpsertAiTitleFamilyDto {
   @IsString()
   instructions?: string | null;
 
+  @ApiPropertyOptional({
+    enum: ContentLanguage,
+    description:
+      'Language all titles in this family must be written in (e.g. EN for EN+IT EstateWeb slots, EL for EL/DE/FR/RU slots)',
+  })
+  @IsOptional()
+  @IsEnum(ContentLanguage)
+  writing_language?: ContentLanguage | null;
+
   @ApiPropertyOptional({ default: true })
   @IsOptional()
   @IsBoolean()

@@ -6,10 +6,15 @@ import {
   ContentType,
   DescriptionProductionStrategy,
   IntegrationType,
+  ListingType,
+  PropertyType,
   TitleProductionStrategy,
 } from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { ContentPublishingConfigWithRelations } from '../interfaces/content-publishing.interface';
+import {
+  AiTitlePropertyFacts,
+} from '../constants/ai-title-prompt';
 import { GoogleTranslationService } from './google-translation.service';
 import { AiTitleFamilyService } from './ai-title-family.service';
 import { AiTitleBatchService } from './ai-title-batch.service';
@@ -20,7 +25,22 @@ type PropertyContentRow = {
   title: string;
   description: string | null;
   canonical_property_id: string;
+  district: string | null;
+  city: string | null;
+  listing_type: ListingType;
+  square_meters: { toString(): string } | null;
+  property_type: PropertyType;
 };
+
+function toAiTitleFacts(property: PropertyContentRow): AiTitlePropertyFacts {
+  return {
+    district: property.district,
+    city: property.city,
+    listing_type: property.listing_type,
+    square_meters: property.square_meters?.toString() ?? null,
+    property_type: property.property_type,
+  };
+}
 
 export type ProducePropertyFailure = {
   user_property_id: string;
@@ -130,6 +150,11 @@ export class ContentProductionService {
         title: true,
         description: true,
         canonical_property_id: true,
+        district: true,
+        city: true,
+        listing_type: true,
+        square_meters: true,
+        property_type: true,
       },
     });
     this.logger.log(
@@ -302,7 +327,7 @@ export class ContentProductionService {
           .map((o) => o.language);
 
         this.logger.log(
-          `[produceForUserProperties] family="${family.name}" id=${family.id} model=${family.model ?? 'default'} use_batch=${family.use_batch} targetLanguages=[${targetLanguages.join(',')}]`,
+          `[produceForUserProperties] family="${family.name}" id=${family.id} model=${family.model ?? 'default'} use_batch=${family.use_batch} writingLanguage=${family.writing_language ?? group.contentLanguage} targetLanguages=[${targetLanguages.join(',')}]`,
         );
 
         if (!targetLanguages.length) {
@@ -311,6 +336,9 @@ export class ContentProductionService {
           );
           continue;
         }
+
+        const writingLanguage =
+          family.writing_language ?? group.contentLanguage;
 
         const needingWork: PropertyContentRow[] = [];
         for (const property of group.properties) {
@@ -364,6 +392,7 @@ export class ContentProductionService {
               instructions: family.instructions,
               model: family.model,
               sourceLanguage: group.contentLanguage,
+              writingLanguage,
               targetLanguages,
               apiKey,
               crawlRunId: options?.crawlRunId ?? null,
@@ -372,6 +401,7 @@ export class ContentProductionService {
                 userPropertyId: property.id,
                 title: property.title,
                 description: property.description,
+                facts: toAiTitleFacts(property),
               })),
             });
             for (const property of needingWork) {
@@ -388,11 +418,12 @@ export class ContentProductionService {
         try {
           const apiKey = await this.resolveOpenAiApiKey(group.userId);
           this.logger.log(
-            `[produceForUserProperties] sync AI generate start family="${family.name}" items=${needingWork.length} hasUserApiKey=${Boolean(apiKey)}`,
+            `[produceForUserProperties] sync AI generate start family="${family.name}" items=${needingWork.length} hasUserApiKey=${Boolean(apiKey)} writing=${writingLanguage}`,
           );
           const generated =
             await this.aiTitleFamilyService.generateTitlesForProperties({
               sourceLanguage: group.contentLanguage,
+              writingLanguage,
               targetLanguages,
               instructions: family.instructions,
               model: family.model,
@@ -401,6 +432,7 @@ export class ContentProductionService {
                 userPropertyId: property.id,
                 title: property.title,
                 description: property.description,
+                facts: toAiTitleFacts(property),
               })),
             });
 

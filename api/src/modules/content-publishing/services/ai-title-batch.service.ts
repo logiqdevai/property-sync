@@ -12,6 +12,7 @@ import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import { OPENAI_BATCH_QUEUE } from '@/core/queues/queues.constants';
 import {
   AI_TITLE_SYSTEM_PROMPT,
+  AiTitlePropertyFacts,
   buildAiTitleUserPrompt,
 } from '../constants/ai-title-prompt';
 import { AiTitleFamilyService } from './ai-title-family.service';
@@ -33,6 +34,7 @@ export class AiTitleBatchService {
     instructions?: string | null;
     model?: string | null;
     sourceLanguage: ContentLanguage;
+    writingLanguage: ContentLanguage;
     targetLanguages: ContentLanguage[];
     apiKey: string;
     crawlRunId?: string | null;
@@ -41,6 +43,7 @@ export class AiTitleBatchService {
       userPropertyId: string;
       title: string;
       description: string | null;
+      facts: AiTitlePropertyFacts;
     }>;
   }): Promise<string | null> {
     if (!params.items.length || !params.targetLanguages.length) return null;
@@ -51,8 +54,10 @@ export class AiTitleBatchService {
       const prompt = buildAiTitleUserPrompt({
         sourceLanguage: params.sourceLanguage,
         targetLanguages: params.targetLanguages,
+        writingLanguage: params.writingLanguage,
         title: item.title,
         description: item.description,
+        facts: item.facts,
         familyInstructions: params.instructions,
       });
       return JSON.stringify({
@@ -90,6 +95,7 @@ export class AiTitleBatchService {
         metadata: {
           target_languages: params.targetLanguages,
           source_language: params.sourceLanguage,
+          writing_language: params.writingLanguage,
           family_name: params.familyName,
           model,
           change_types_by_property_id: params.changeTypesByPropertyId ?? {},

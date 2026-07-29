@@ -1057,16 +1057,17 @@ model ContentOutput {
 }
 
 model AiTitleFamily {
-  id                 String   @id @default(uuid())
+  id                 String           @id @default(uuid())
   config_id          String
   name               String
   model              String?
   use_batch          Boolean?
   instructions       String?
+  writing_language   ContentLanguage?
   generation_options Json?
-  is_enabled         Boolean  @default(true)
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
+  is_enabled         Boolean          @default(true)
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
 
   config        ContentPublishingConfig @relation(fields: [config_id], references: [id], onDelete: Cascade)
   outputs       ContentOutput[]

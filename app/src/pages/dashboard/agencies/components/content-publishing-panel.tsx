@@ -46,6 +46,7 @@ interface DraftFamily {
   key: string;
   name: string;
   instructions: string;
+  writing_language: ContentLanguage;
   use_batch: boolean | null;
   is_enabled: boolean;
 }
@@ -61,11 +62,14 @@ interface DraftOutput {
 
 const nextFamilyKey = () => crypto.randomUUID();
 
-const emptyFamilies = (): DraftFamily[] => [
+const emptyFamilies = (
+  sourceLanguage: ContentLanguage = ContentLanguages.EL,
+): DraftFamily[] => [
   {
     key: nextFamilyKey(),
     name: "Primary markets",
     instructions: "",
+    writing_language: sourceLanguage,
     use_batch: null,
     is_enabled: true,
   },
@@ -85,7 +89,7 @@ const emptyOutputs = (
   }));
 
 const createDefaultDraft = (sourceLanguage: ContentLanguage) => {
-  const families = emptyFamilies();
+  const families = emptyFamilies(sourceLanguage);
   return {
     families,
     outputs: emptyOutputs(sourceLanguage, families[0].key),
@@ -138,10 +142,12 @@ export function ContentPublishingPanel({
           key: family.id,
           name: family.name,
           instructions: family.instructions ?? "",
+          writing_language:
+            family.writing_language ?? resolvedSource,
           use_batch: family.use_batch,
           is_enabled: family.is_enabled,
         }))
-      : emptyFamilies();
+      : emptyFamilies(resolvedSource);
     setFamilies(nextFamilies);
 
     const familyKeyByName = new Map(
@@ -203,6 +209,7 @@ export function ContentPublishingPanel({
       (family) => ({
         name: family.name.trim(),
         instructions: family.instructions.trim() || null,
+        writing_language: family.writing_language,
         use_batch: family.use_batch,
         is_enabled: family.is_enabled,
       }),
@@ -336,6 +343,7 @@ export function ContentPublishingPanel({
                                   key: nextFamilyKey(),
                                   name: `Family ${prev.length + 1}`,
                                   instructions: "",
+                                  writing_language: resolvedSource,
                                   use_batch: null,
                                   is_enabled: true,
                                 },
@@ -408,6 +416,42 @@ export function ContentPublishingPanel({
                                 Delete
                               </Button>
                             </div>
+                            <Select
+                              aria-label={`Family ${index + 1} writing language`}
+                              selectedKey={family.writing_language}
+                              onSelectionChange={(key) => {
+                                if (!key) return;
+                                setFamilies((prev) =>
+                                  prev.map((item) =>
+                                    item.key === family.key
+                                      ? {
+                                          ...item,
+                                          writing_language: String(
+                                            key,
+                                          ) as ContentLanguage,
+                                        }
+                                      : item,
+                                  ),
+                                );
+                              }}
+                            >
+                              <Label>Write titles in</Label>
+                              <Select.Trigger>
+                                <Select.Value />
+                              </Select.Trigger>
+                              <Select.Popover>
+                                <ListBox items={[...ContentLanguageFormOptions]}>
+                                  {(option) => (
+                                    <ListBox.Item
+                                      id={option.id}
+                                      textValue={option.label}
+                                    >
+                                      {option.label}
+                                    </ListBox.Item>
+                                  )}
+                                </ListBox>
+                              </Select.Popover>
+                            </Select>
                             <TextArea
                               id={`ai-family-instructions-${family.key}`}
                               aria-label={`Family ${index + 1} instructions`}

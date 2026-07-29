@@ -28,7 +28,11 @@ async function replaceConfig(
     ai_titles_enabled: boolean;
     use_ai_batch: boolean;
     notes?: string;
-    families: Array<{ name: string; instructions?: string | null }>;
+    families: Array<{
+      name: string;
+      instructions?: string | null;
+      writing_language?: ContentLanguage | null;
+    }>;
     outputs: Array<{
       language: ContentLanguage;
       title_strategy: TitleProductionStrategy;
@@ -86,6 +90,7 @@ async function replaceConfig(
           config_id: config.id,
           name: family.name,
           instructions: family.instructions ?? null,
+          writing_language: family.writing_language ?? null,
           is_enabled: true,
         },
       }),
@@ -205,10 +210,12 @@ async function main() {
         {
           name: GREEK_FAMILY,
           instructions: GREEK_FAMILY_INSTRUCTIONS,
+          writing_language: ContentLanguage.EL,
         },
         {
           name: ENGLISH_FAMILY,
           instructions: ENGLISH_FAMILY_INSTRUCTIONS,
+          writing_language: ContentLanguage.EN,
         },
       ],
       outputs: [
@@ -275,6 +282,7 @@ async function main() {
         ai_titles_enabled: t.content_publishing_config?.ai_titles_enabled,
         families: t.content_publishing_config?.ai_title_families.map((f) => ({
           name: f.name,
+          writing_language: f.writing_language,
           instructions: f.instructions,
         })),
         outputs: t.content_publishing_config?.outputs.map((o) => ({

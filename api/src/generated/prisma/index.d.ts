@@ -36746,6 +36746,7 @@ export namespace Prisma {
     model: string | null
     use_batch: boolean | null
     instructions: string | null
+    writing_language: $Enums.ContentLanguage | null
     is_enabled: boolean | null
     created_at: Date | null
     updated_at: Date | null
@@ -36758,6 +36759,7 @@ export namespace Prisma {
     model: string | null
     use_batch: boolean | null
     instructions: string | null
+    writing_language: $Enums.ContentLanguage | null
     is_enabled: boolean | null
     created_at: Date | null
     updated_at: Date | null
@@ -36770,6 +36772,7 @@ export namespace Prisma {
     model: number
     use_batch: number
     instructions: number
+    writing_language: number
     generation_options: number
     is_enabled: number
     created_at: number
@@ -36785,6 +36788,7 @@ export namespace Prisma {
     model?: true
     use_batch?: true
     instructions?: true
+    writing_language?: true
     is_enabled?: true
     created_at?: true
     updated_at?: true
@@ -36797,6 +36801,7 @@ export namespace Prisma {
     model?: true
     use_batch?: true
     instructions?: true
+    writing_language?: true
     is_enabled?: true
     created_at?: true
     updated_at?: true
@@ -36809,6 +36814,7 @@ export namespace Prisma {
     model?: true
     use_batch?: true
     instructions?: true
+    writing_language?: true
     generation_options?: true
     is_enabled?: true
     created_at?: true
@@ -36895,6 +36901,7 @@ export namespace Prisma {
     model: string | null
     use_batch: boolean | null
     instructions: string | null
+    writing_language: $Enums.ContentLanguage | null
     generation_options: JsonValue | null
     is_enabled: boolean
     created_at: Date
@@ -36925,6 +36932,7 @@ export namespace Prisma {
     model?: boolean
     use_batch?: boolean
     instructions?: boolean
+    writing_language?: boolean
     generation_options?: boolean
     is_enabled?: boolean
     created_at?: boolean
@@ -36942,6 +36950,7 @@ export namespace Prisma {
     model?: boolean
     use_batch?: boolean
     instructions?: boolean
+    writing_language?: boolean
     generation_options?: boolean
     is_enabled?: boolean
     created_at?: boolean
@@ -36956,6 +36965,7 @@ export namespace Prisma {
     model?: boolean
     use_batch?: boolean
     instructions?: boolean
+    writing_language?: boolean
     generation_options?: boolean
     is_enabled?: boolean
     created_at?: boolean
@@ -36970,13 +36980,14 @@ export namespace Prisma {
     model?: boolean
     use_batch?: boolean
     instructions?: boolean
+    writing_language?: boolean
     generation_options?: boolean
     is_enabled?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type AiTitleFamilyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "config_id" | "name" | "model" | "use_batch" | "instructions" | "generation_options" | "is_enabled" | "created_at" | "updated_at", ExtArgs["result"]["aiTitleFamily"]>
+  export type AiTitleFamilyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "config_id" | "name" | "model" | "use_batch" | "instructions" | "writing_language" | "generation_options" | "is_enabled" | "created_at" | "updated_at", ExtArgs["result"]["aiTitleFamily"]>
   export type AiTitleFamilyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
     outputs?: boolean | AiTitleFamily$outputsArgs<ExtArgs>
@@ -37004,6 +37015,7 @@ export namespace Prisma {
       model: string | null
       use_batch: boolean | null
       instructions: string | null
+      writing_language: $Enums.ContentLanguage | null
       generation_options: Prisma.JsonValue | null
       is_enabled: boolean
       created_at: Date
@@ -37440,6 +37452,7 @@ export namespace Prisma {
     readonly model: FieldRef<"AiTitleFamily", 'String'>
     readonly use_batch: FieldRef<"AiTitleFamily", 'Boolean'>
     readonly instructions: FieldRef<"AiTitleFamily", 'String'>
+    readonly writing_language: FieldRef<"AiTitleFamily", 'ContentLanguage'>
     readonly generation_options: FieldRef<"AiTitleFamily", 'Json'>
     readonly is_enabled: FieldRef<"AiTitleFamily", 'Boolean'>
     readonly created_at: FieldRef<"AiTitleFamily", 'DateTime'>
@@ -44228,6 +44241,7 @@ export namespace Prisma {
     model: 'model',
     use_batch: 'use_batch',
     instructions: 'instructions',
+    writing_language: 'writing_language',
     generation_options: 'generation_options',
     is_enabled: 'is_enabled',
     created_at: 'created_at',
@@ -47673,6 +47687,7 @@ export namespace Prisma {
     model?: StringNullableFilter<"AiTitleFamily"> | string | null
     use_batch?: BoolNullableFilter<"AiTitleFamily"> | boolean | null
     instructions?: StringNullableFilter<"AiTitleFamily"> | string | null
+    writing_language?: EnumContentLanguageNullableFilter<"AiTitleFamily"> | $Enums.ContentLanguage | null
     generation_options?: JsonNullableFilter<"AiTitleFamily">
     is_enabled?: BoolFilter<"AiTitleFamily"> | boolean
     created_at?: DateTimeFilter<"AiTitleFamily"> | Date | string
@@ -47689,6 +47704,7 @@ export namespace Prisma {
     model?: SortOrderInput | SortOrder
     use_batch?: SortOrderInput | SortOrder
     instructions?: SortOrderInput | SortOrder
+    writing_language?: SortOrderInput | SortOrder
     generation_options?: SortOrderInput | SortOrder
     is_enabled?: SortOrder
     created_at?: SortOrder
@@ -47709,6 +47725,7 @@ export namespace Prisma {
     model?: StringNullableFilter<"AiTitleFamily"> | string | null
     use_batch?: BoolNullableFilter<"AiTitleFamily"> | boolean | null
     instructions?: StringNullableFilter<"AiTitleFamily"> | string | null
+    writing_language?: EnumContentLanguageNullableFilter<"AiTitleFamily"> | $Enums.ContentLanguage | null
     generation_options?: JsonNullableFilter<"AiTitleFamily">
     is_enabled?: BoolFilter<"AiTitleFamily"> | boolean
     created_at?: DateTimeFilter<"AiTitleFamily"> | Date | string
@@ -47725,6 +47742,7 @@ export namespace Prisma {
     model?: SortOrderInput | SortOrder
     use_batch?: SortOrderInput | SortOrder
     instructions?: SortOrderInput | SortOrder
+    writing_language?: SortOrderInput | SortOrder
     generation_options?: SortOrderInput | SortOrder
     is_enabled?: SortOrder
     created_at?: SortOrder
@@ -47744,6 +47762,7 @@ export namespace Prisma {
     model?: StringNullableWithAggregatesFilter<"AiTitleFamily"> | string | null
     use_batch?: BoolNullableWithAggregatesFilter<"AiTitleFamily"> | boolean | null
     instructions?: StringNullableWithAggregatesFilter<"AiTitleFamily"> | string | null
+    writing_language?: EnumContentLanguageNullableWithAggregatesFilter<"AiTitleFamily"> | $Enums.ContentLanguage | null
     generation_options?: JsonNullableWithAggregatesFilter<"AiTitleFamily">
     is_enabled?: BoolWithAggregatesFilter<"AiTitleFamily"> | boolean
     created_at?: DateTimeWithAggregatesFilter<"AiTitleFamily"> | Date | string
@@ -51429,6 +51448,7 @@ export namespace Prisma {
     model?: string | null
     use_batch?: boolean | null
     instructions?: string | null
+    writing_language?: $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: boolean
     created_at?: Date | string
@@ -51445,6 +51465,7 @@ export namespace Prisma {
     model?: string | null
     use_batch?: boolean | null
     instructions?: string | null
+    writing_language?: $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: boolean
     created_at?: Date | string
@@ -51459,6 +51480,7 @@ export namespace Prisma {
     model?: NullableStringFieldUpdateOperationsInput | string | null
     use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
     instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    writing_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51475,6 +51497,7 @@ export namespace Prisma {
     model?: NullableStringFieldUpdateOperationsInput | string | null
     use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
     instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    writing_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51490,6 +51513,7 @@ export namespace Prisma {
     model?: string | null
     use_batch?: boolean | null
     instructions?: string | null
+    writing_language?: $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: boolean
     created_at?: Date | string
@@ -51502,6 +51526,7 @@ export namespace Prisma {
     model?: NullableStringFieldUpdateOperationsInput | string | null
     use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
     instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    writing_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51515,6 +51540,7 @@ export namespace Prisma {
     model?: NullableStringFieldUpdateOperationsInput | string | null
     use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
     instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    writing_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -54622,6 +54648,7 @@ export namespace Prisma {
     model?: SortOrder
     use_batch?: SortOrder
     instructions?: SortOrder
+    writing_language?: SortOrder
     generation_options?: SortOrder
     is_enabled?: SortOrder
     created_at?: SortOrder
@@ -54635,6 +54662,7 @@ export namespace Prisma {
     model?: SortOrder
     use_batch?: SortOrder
     instructions?: SortOrder
+    writing_language?: SortOrder
     is_enabled?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -54647,6 +54675,7 @@ export namespace Prisma {
     model?: SortOrder
     use_batch?: SortOrder
     instructions?: SortOrder
+    writing_language?: SortOrder
     is_enabled?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -66309,6 +66338,7 @@ export namespace Prisma {
     model?: string | null
     use_batch?: boolean | null
     instructions?: string | null
+    writing_language?: $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: boolean
     created_at?: Date | string
@@ -66323,6 +66353,7 @@ export namespace Prisma {
     model?: string | null
     use_batch?: boolean | null
     instructions?: string | null
+    writing_language?: $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: boolean
     created_at?: Date | string
@@ -66493,6 +66524,7 @@ export namespace Prisma {
     model?: StringNullableFilter<"AiTitleFamily"> | string | null
     use_batch?: BoolNullableFilter<"AiTitleFamily"> | boolean | null
     instructions?: StringNullableFilter<"AiTitleFamily"> | string | null
+    writing_language?: EnumContentLanguageNullableFilter<"AiTitleFamily"> | $Enums.ContentLanguage | null
     generation_options?: JsonNullableFilter<"AiTitleFamily">
     is_enabled?: BoolFilter<"AiTitleFamily"> | boolean
     created_at?: DateTimeFilter<"AiTitleFamily"> | Date | string
@@ -66552,6 +66584,7 @@ export namespace Prisma {
     model?: string | null
     use_batch?: boolean | null
     instructions?: string | null
+    writing_language?: $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: boolean
     created_at?: Date | string
@@ -66567,6 +66600,7 @@ export namespace Prisma {
     model?: string | null
     use_batch?: boolean | null
     instructions?: string | null
+    writing_language?: $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: boolean
     created_at?: Date | string
@@ -66633,6 +66667,7 @@ export namespace Prisma {
     model?: NullableStringFieldUpdateOperationsInput | string | null
     use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
     instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    writing_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66648,6 +66683,7 @@ export namespace Prisma {
     model?: NullableStringFieldUpdateOperationsInput | string | null
     use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
     instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    writing_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67078,6 +67114,7 @@ export namespace Prisma {
     model?: string | null
     use_batch?: boolean | null
     instructions?: string | null
+    writing_language?: $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: boolean
     created_at?: Date | string
@@ -67093,6 +67130,7 @@ export namespace Prisma {
     model?: string | null
     use_batch?: boolean | null
     instructions?: string | null
+    writing_language?: $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: boolean
     created_at?: Date | string
@@ -67236,6 +67274,7 @@ export namespace Prisma {
     model?: NullableStringFieldUpdateOperationsInput | string | null
     use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
     instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    writing_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -67251,6 +67290,7 @@ export namespace Prisma {
     model?: NullableStringFieldUpdateOperationsInput | string | null
     use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
     instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    writing_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70388,6 +70428,7 @@ export namespace Prisma {
     model?: string | null
     use_batch?: boolean | null
     instructions?: string | null
+    writing_language?: $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: boolean
     created_at?: Date | string
@@ -70447,6 +70488,7 @@ export namespace Prisma {
     model?: NullableStringFieldUpdateOperationsInput | string | null
     use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
     instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    writing_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70461,6 +70503,7 @@ export namespace Prisma {
     model?: NullableStringFieldUpdateOperationsInput | string | null
     use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
     instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    writing_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70475,6 +70518,7 @@ export namespace Prisma {
     model?: NullableStringFieldUpdateOperationsInput | string | null
     use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
     instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    writing_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     generation_options?: NullableJsonNullValueInput | InputJsonValue
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string

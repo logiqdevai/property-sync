@@ -24,6 +24,9 @@ export class AiTitleFamilyEntity {
   @ApiPropertyOptional({ nullable: true })
   instructions: string | null;
 
+  @ApiPropertyOptional({ enum: ContentLanguage, nullable: true })
+  writing_language: ContentLanguage | null;
+
   @ApiProperty()
   is_enabled: boolean;
 

@@ -571,6 +571,7 @@ exports.Prisma.AiTitleFamilyScalarFieldEnum = {
   model: 'model',
   use_batch: 'use_batch',
   instructions: 'instructions',
+  writing_language: 'writing_language',
   generation_options: 'generation_options',
   is_enabled: 'is_enabled',
   created_at: 'created_at',

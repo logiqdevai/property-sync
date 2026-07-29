@@ -6,6 +6,7 @@ import {
   AI_TITLE_MULTI_PROPERTY_CHUNK_SIZE,
   AI_TITLE_MULTI_PROPERTY_SYSTEM_PROMPT,
   AI_TITLE_SYSTEM_PROMPT,
+  AiTitlePropertyFacts,
   buildAiTitleMultiPropertyUserPrompt,
   buildAiTitleUserPrompt,
 } from '../constants/ai-title-prompt';
@@ -19,8 +20,10 @@ export class AiTitleFamilyService {
   async generateTitles(input: {
     sourceLanguage: ContentLanguage;
     targetLanguages: ContentLanguage[];
+    writingLanguage: ContentLanguage;
     title: string;
     description?: string | null;
+    facts: AiTitlePropertyFacts;
     instructions?: string | null;
     model?: string | null;
     apiKey?: string;
@@ -30,8 +33,10 @@ export class AiTitleFamilyService {
     const prompt = buildAiTitleUserPrompt({
       sourceLanguage: input.sourceLanguage,
       targetLanguages: input.targetLanguages,
+      writingLanguage: input.writingLanguage,
       title: input.title,
       description: input.description,
+      facts: input.facts,
       familyInstructions: input.instructions,
     });
 
@@ -51,10 +56,12 @@ export class AiTitleFamilyService {
   async generateTitlesForProperties(input: {
     sourceLanguage: ContentLanguage;
     targetLanguages: ContentLanguage[];
+    writingLanguage: ContentLanguage;
     items: Array<{
       userPropertyId: string;
       title: string;
       description: string | null;
+      facts: AiTitlePropertyFacts;
     }>;
     instructions?: string | null;
     model?: string | null;
@@ -76,13 +83,14 @@ export class AiTitleFamilyService {
       const prompt = buildAiTitleMultiPropertyUserPrompt({
         sourceLanguage: input.sourceLanguage,
         targetLanguages: input.targetLanguages,
+        writingLanguage: input.writingLanguage,
         items: chunk,
         familyInstructions: input.instructions,
       });
 
       const maxTokens = Math.min(8000, 400 + chunk.length * 350);
       this.logger.log(
-        `[generateTitlesForProperties] chunk=${i / chunkSize + 1} size=${chunk.length} langs=${input.targetLanguages.join(',')} maxTokens=${maxTokens} model=${input.model || AiDefaults.model} hasApiKey=${Boolean(input.apiKey)}`,
+        `[generateTitlesForProperties] chunk=${i / chunkSize + 1} size=${chunk.length} langs=${input.targetLanguages.join(',')} writing=${input.writingLanguage} maxTokens=${maxTokens} model=${input.model || AiDefaults.model} hasApiKey=${Boolean(input.apiKey)}`,
       );
       const result = await this.aiService.generateText({
         provider: 'openai',
@@ -185,8 +193,10 @@ export class AiTitleFamilyService {
     targetLanguages: ContentLanguage[],
   ): Partial<Record<ContentLanguage, string>> {
     const out: Partial<Record<ContentLanguage, string>> = {};
-    for (const lang of targetLanguages) {
-      const value = titles[lang];
+    for (let i = 0; i < targetLanguages.length; i++) {
+      const lang = targetLanguages[i];
+      const numericKey = String(i + 1);
+      const value = titles[numericKey] ?? titles[lang];
       if (typeof value === 'string' && value.trim()) {
         out[lang] = value.trim();
       }
