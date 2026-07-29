@@ -14,6 +14,17 @@ export const useJobs = (query: JobLogListQuery) => {
   return useQuery({
     queryKey: ["jobs", "list", query],
     queryFn: () => getJobs(query),
+    refetchInterval: (queryResult) => {
+      const rows = queryResult.state.data?.data ?? [];
+      const hasActive = rows.some(
+        (row) =>
+          row.status === "WAITING" ||
+          row.status === "ACTIVE" ||
+          row.status === "DELAYED" ||
+          row.status === "PAUSED",
+      );
+      return hasActive ? 2000 : false;
+    },
   });
 };
 

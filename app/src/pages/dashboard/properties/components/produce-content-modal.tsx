@@ -73,8 +73,8 @@ export const ProduceContentModal: FC<ProduceContentModalProps> = ({
             <Modal.Body className="flex flex-col gap-4">
               <p className="text-sm text-muted">
                 Run translations and/or AI titles for the selected
-                {propertyCount > 1 ? " properties" : " property"} using each
-                agency content publishing config.
+                {propertyCount > 1 ? " properties" : " property"} in the
+                background (up to 5 in parallel). Track progress in Job queue.
               </p>
               <label
                 className={cn(
@@ -210,8 +210,8 @@ export const ProduceContentModal: FC<ProduceContentModalProps> = ({
                     Push to EstateWeb CRM
                   </span>
                   <span className="text-xs text-muted">
-                    After production, enqueue CMS sync so language titles and
-                    descriptions update on EstateWeb.
+                    After production, push language titles and descriptions to
+                    EstateWeb (runs in the background job).
                   </span>
                 </span>
               </label>

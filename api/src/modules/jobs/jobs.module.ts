@@ -4,6 +4,7 @@ import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import {
   CRAWL_QUEUE,
   GENERATION_QUEUE,
+  CONTENT_PRODUCTION_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
 } from '@/core/queues/queues.constants';
 import { JobsController } from './jobs.controller';
@@ -16,6 +17,7 @@ import { JobsService } from './jobs.service';
       { name: GENERATION_QUEUE },
       { name: CRAWL_QUEUE },
       { name: WATERMARK_REMOVAL_QUEUE },
+      { name: CONTENT_PRODUCTION_QUEUE },
     ),
   ],
   controllers: [JobsController],

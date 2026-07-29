@@ -217,14 +217,14 @@ export class UserPropertiesController {
   }
 
   @Post('produce-content')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
     summary:
-      'Manually translate and/or generate AI titles for selected properties, then optionally push ads to EstateWeb CRM',
+      'Enqueue background translate and/or AI title generation for selected properties (5 parallel workers), optionally push ads to EstateWeb CRM',
   })
   @ApiResponse({
-    status: 200,
-    description: 'Content production completed or AI title batch submitted',
+    status: 202,
+    description: 'Content production job enqueued',
     type: ProduceUserPropertyContentResponseEntity,
   })
   @ApiResponse({ status: 400, description: 'Cannot produce content' })

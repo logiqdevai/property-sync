@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export class ProduceUserPropertyContentFailedItemEntity {
+export class ProduceUserPropertyContentSkippedItemEntity {
   @ApiProperty()
   user_property_id: string;
 
@@ -10,29 +10,14 @@ export class ProduceUserPropertyContentFailedItemEntity {
 
 export class ProduceUserPropertyContentResponseEntity {
   @ApiProperty()
-  ready_count: number;
+  job_log_id: string;
 
   @ApiProperty()
-  pending_batch_count: number;
-
-  @ApiProperty({ type: [String] })
-  ready_ids: string[];
-
-  @ApiProperty({ type: [String] })
-  pending_batch_ids: string[];
+  enqueued: number;
 
   @ApiProperty()
-  translations_written: number;
+  message: string;
 
-  @ApiProperty()
-  titles_written: number;
-
-  @ApiProperty({ description: 'Number of properties successfully pushed to CMS' })
-  cms_queued: number;
-
-  @ApiProperty({ type: [ProduceUserPropertyContentFailedItemEntity] })
-  failed: ProduceUserPropertyContentFailedItemEntity[];
-
-  @ApiProperty({ type: [ProduceUserPropertyContentFailedItemEntity] })
-  cms_failed: ProduceUserPropertyContentFailedItemEntity[];
+  @ApiPropertyOptional({ type: [ProduceUserPropertyContentSkippedItemEntity] })
+  skipped?: ProduceUserPropertyContentSkippedItemEntity[];
 }

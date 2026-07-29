@@ -8,7 +8,10 @@ import {
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { WATERMARK_REMOVAL_QUEUE } from '@/core/queues/queues.constants';
+import {
+  CONTENT_PRODUCTION_QUEUE,
+  WATERMARK_REMOVAL_QUEUE,
+} from '@/core/queues/queues.constants';
 import { DewatermarkOrchestratorService } from '@/integrations/dewatermark/services/dewatermark-orchestrator.service';
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
@@ -48,6 +51,10 @@ import {
 } from './dto/remove-watermark-images.dto';
 import { MigrateIntegrationImagesMode } from './dto/migrate-integration-images.dto';
 import { EstateWebIntegrationPropertyImage } from './interfaces/integration-property-image.interface';
+import {
+  ContentProductionJobData,
+  ContentProductionJobResult,
+} from './interfaces/content-production-job.interface';
 import { WatermarkRemovalJobData } from './interfaces/watermark-removal-job.interface';
 import { WatermarkRemovalService } from './services/watermark-removal.service';
 import { resolveIntegrationImageProcessUrl } from './utils/integration-property-images.util';
@@ -81,6 +88,8 @@ export class UserPropertiesService {
     private readonly contentProductionService: ContentProductionService,
     @InjectQueue(WATERMARK_REMOVAL_QUEUE)
     private readonly watermarkRemovalQueue: Queue<WatermarkRemovalJobData>,
+    @InjectQueue(CONTENT_PRODUCTION_QUEUE)
+    private readonly contentProductionQueue: Queue<ContentProductionJobData>,
   ) {}
 
   private async resolveFilterSourceAgencyId(
@@ -539,6 +548,9 @@ export class UserPropertiesService {
     const runTranslations = options.runTranslations ?? true;
     const runAiTitles = options.runAiTitles ?? true;
     const pushToCrm = options.pushToCrm ?? true;
+    const useAiBatch = options.useAiBatch ?? false;
+    const regenerate = options.regenerate ?? true;
+
     if (!runTranslations && !runAiTitles) {
       throw new BadRequestException(
         'Select at least translations or AI titles',
@@ -563,102 +575,85 @@ export class UserPropertiesService {
         error: 'Property not found',
       }));
 
-    const useAiBatch = options.useAiBatch ?? false;
+    const initialResult: ContentProductionJobResult = {
+      total: ownedIds.length,
+      processed: 0,
+      ready: 0,
+      pending_batch: 0,
+      failed: notOwnedFailed.length,
+      cms_pushed: 0,
+      cms_failed: 0,
+      translations_written: 0,
+      titles_written: 0,
+      items: notOwnedFailed.map((row) => ({
+        user_property_id: row.user_property_id,
+        status: 'failed' as const,
+        error: row.error,
+      })),
+      logs: [
+        `enqueued user=${userId} properties=${ownedIds.length} translations=${runTranslations} ai=${runAiTitles} batch=${useAiBatch} regenerate=${regenerate} pushToCrm=${pushToCrm}`,
+      ],
+    };
+
+    const payload = {
+      user_id: userId,
+      user_property_ids: ownedIds,
+      run_translations: runTranslations,
+      run_ai_titles: runAiTitles,
+      use_ai_batch: useAiBatch,
+      regenerate,
+      push_to_crm: pushToCrm,
+      total: ownedIds.length,
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: CONTENT_PRODUCTION_QUEUE,
+        job_name: 'produce-content',
+        status: JobStatus.WAITING,
+        payload: payload as object,
+        result: initialResult as object,
+      },
+    });
 
     this.logger.log(
-      `[produceContent] user=${userId} ids=${ownedIds.length} translations=${runTranslations} ai=${runAiTitles} batch=${useAiBatch} regenerate=${options.regenerate ?? true} pushToCrm=${pushToCrm}`,
+      `[produceContent] queued job_log=${jobLog.id} user=${userId} ids=${ownedIds.length} translations=${runTranslations} ai=${runAiTitles} batch=${useAiBatch} regenerate=${regenerate} pushToCrm=${pushToCrm}`,
     );
 
-    try {
-      const result =
-        await this.contentProductionService.produceForUserProperties(
-          ownedIds,
-          {
-            forceSyncAi: !useAiBatch,
-            forceBatchAi: useAiBatch,
-            runTranslations,
-            runAiTitles,
-            markStaleFirst: options.regenerate ?? true,
+    await this.contentProductionQueue.addBulk(
+      ownedIds.map((userPropertyId) => {
+        const jobData: ContentProductionJobData = {
+          job_log_id: jobLog.id,
+          user_id: userId,
+          user_property_id: userPropertyId,
+          run_translations: runTranslations,
+          run_ai_titles: runAiTitles,
+          use_ai_batch: useAiBatch,
+          regenerate,
+          push_to_crm: pushToCrm,
+          total: ownedIds.length,
+        };
+        return {
+          name: 'produce-content',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${userPropertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
           },
-        );
+        };
+      }),
+    );
 
-      const failed = [...notOwnedFailed, ...result.failed];
-      let cmsPushed = 0;
-      let cmsFailed: Array<{ user_property_id: string; error: string }> = [];
-
-      if (pushToCrm && result.readyIds.length) {
-        this.logger.log(
-          `[produceContent] pushing CRM sync inline for ready=${result.readyIds.length}`,
-        );
-
-        const readyProperties = await this.prisma.userProperty.findMany({
-          where: { id: { in: result.readyIds }, user_id: userId },
-        });
-        const byId = new Map(
-          readyProperties.map((property) => [property.id, property]),
-        );
-
-        for (const id of result.readyIds) {
-          const property = byId.get(id);
-          if (!property) {
-            cmsFailed.push({ user_property_id: id, error: 'Property not found after produce' });
-            continue;
-          }
-          if (!property.integration_property_id) {
-            cmsFailed.push({
-              user_property_id: id,
-              error: 'Property not yet linked to EstateWeb CMS (not pushed before); push manually first',
-            });
-            continue;
-          }
-          try {
-            const { userIntegrationId } =
-              await this.resolveCmsIntegrationForProperty(property);
-            this.logger.log(
-              `[produceContent] pushUpdate property=${id} integration=${userIntegrationId} integrationPropertyId=${property.integration_property_id}`,
-            );
-            await this.estateWebCmsSyncAdapter.pushUpdate(
-              userIntegrationId,
-              property.integration_property_id,
-              property,
-            );
-            cmsPushed++;
-            this.logger.log(
-              `[produceContent] pushUpdate success property=${id}`,
-            );
-          } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            this.logger.error(
-              `[produceContent] pushUpdate failed property=${id}: ${message}`,
-            );
-            cmsFailed.push({ user_property_id: id, error: message });
-          }
-        }
-
-        this.logger.log(
-          `[produceContent] CRM push done pushed=${cmsPushed} failed=${cmsFailed.length}`,
-        );
-      } else if (pushToCrm) {
-        this.logger.warn(
-          `[produceContent] push_to_crm requested but no ready properties to sync`,
-        );
-      }
-
-      return {
-        ready_count: result.readyIds.length,
-        pending_batch_count: result.pendingBatchIds.length,
-        ready_ids: result.readyIds,
-        pending_batch_ids: result.pendingBatchIds,
-        translations_written: result.translationsWritten,
-        titles_written: result.titlesWritten,
-        cms_queued: cmsPushed,
-        failed,
-        cms_failed: cmsFailed,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(message);
-    }
+    return {
+      job_log_id: jobLog.id,
+      enqueued: ownedIds.length,
+      message:
+        'Content production started in the background (up to 5 properties in parallel). Track progress in Job queue.',
+      skipped: notOwnedFailed,
+    };
   }
 
   async updateEstateWebSites(

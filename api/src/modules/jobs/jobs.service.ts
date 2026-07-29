@@ -6,7 +6,12 @@ import {
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { CRAWL_QUEUE, GENERATION_QUEUE, WATERMARK_REMOVAL_QUEUE } from '@/core/queues/queues.constants';
+import {
+  CRAWL_QUEUE,
+  GENERATION_QUEUE,
+  CONTENT_PRODUCTION_QUEUE,
+  WATERMARK_REMOVAL_QUEUE,
+} from '@/core/queues/queues.constants';
 import { JobStatus, Prisma } from 'generated/prisma';
 import { JobLogQueryType } from './dto/job-log-query.schema';
 import { PaginatedResult } from './interfaces/job-log.interface';
@@ -27,6 +32,8 @@ export class JobsService {
     @InjectQueue(CRAWL_QUEUE) private readonly crawlQueue: Queue,
     @InjectQueue(WATERMARK_REMOVAL_QUEUE)
     private readonly watermarkRemovalQueue: Queue,
+    @InjectQueue(CONTENT_PRODUCTION_QUEUE)
+    private readonly contentProductionQueue: Queue,
   ) {}
 
   async findAll(query: JobLogQueryType): Promise<PaginatedResult<any>> {
@@ -111,7 +118,8 @@ export class JobsService {
         : payload;
 
     const jobOptions =
-      jobLog.queue_name === WATERMARK_REMOVAL_QUEUE
+      jobLog.queue_name === WATERMARK_REMOVAL_QUEUE ||
+      jobLog.queue_name === CONTENT_PRODUCTION_QUEUE
         ? {
             attempts: 3,
             backoff: { type: 'exponential' as const, delay: 5000 },
@@ -119,6 +127,48 @@ export class JobsService {
             removeOnFail: 200,
           }
         : undefined;
+
+    if (jobLog.queue_name === CONTENT_PRODUCTION_QUEUE) {
+      const payloadRecord = payload as {
+        user_id?: string;
+        user_property_ids?: string[];
+        run_translations?: boolean;
+        run_ai_titles?: boolean;
+        use_ai_batch?: boolean;
+        regenerate?: boolean;
+        push_to_crm?: boolean;
+        total?: number;
+      };
+      const propertyIds = Array.isArray(payloadRecord.user_property_ids)
+        ? payloadRecord.user_property_ids
+        : [];
+      if (!payloadRecord.user_id || propertyIds.length === 0) {
+        throw new BadRequestException(
+          'Content production job payload is missing user or property ids',
+        );
+      }
+      await this.contentProductionQueue.addBulk(
+        propertyIds.map((userPropertyId) => ({
+          name: jobLog.job_name ?? 'produce-content',
+          data: {
+            job_log_id: jobLog.id,
+            user_id: payloadRecord.user_id,
+            user_property_id: userPropertyId,
+            run_translations: payloadRecord.run_translations ?? true,
+            run_ai_titles: payloadRecord.run_ai_titles ?? true,
+            use_ai_batch: payloadRecord.use_ai_batch ?? false,
+            regenerate: payloadRecord.regenerate ?? true,
+            push_to_crm: payloadRecord.push_to_crm ?? true,
+            total: payloadRecord.total ?? propertyIds.length,
+          },
+          opts: {
+            ...(jobOptions ?? {}),
+            jobId: `${jobLog.id}__${userPropertyId}`,
+          },
+        })),
+      );
+      return this.findOne(id);
+    }
 
     await queue.add(jobLog.job_name ?? 'retry', enrichedPayload, jobOptions);
 
@@ -143,6 +193,22 @@ export class JobsService {
         const queue = this.resolveQueue(jobLog.queue_name);
         await queue.remove(jobLog.job_id);
       } catch {}
+    }
+
+    if (jobLog.queue_name === CONTENT_PRODUCTION_QUEUE) {
+      const payload = (jobLog.payload ?? {}) as {
+        user_property_ids?: string[];
+      };
+      const propertyIds = Array.isArray(payload.user_property_ids)
+        ? payload.user_property_ids
+        : [];
+      for (const propertyId of propertyIds) {
+        try {
+          await this.contentProductionQueue.remove(
+            `${jobLog.id}__${propertyId}`,
+          );
+        } catch {}
+      }
     }
 
     const finishedAt = new Date();
@@ -208,6 +274,9 @@ export class JobsService {
     }
     if (queueName === WATERMARK_REMOVAL_QUEUE) {
       return this.watermarkRemovalQueue;
+    }
+    if (queueName === CONTENT_PRODUCTION_QUEUE) {
+      return this.contentProductionQueue;
     }
     throw new BadRequestException(`Unsupported queue: ${queueName}`);
   }

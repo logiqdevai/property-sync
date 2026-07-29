@@ -424,38 +424,20 @@ export const useProduceUserPropertyContent = () => {
       produceUserPropertyContent(payload),
     onSuccess: (data: ProduceUserPropertyContentResponse) => {
       void queryClient.invalidateQueries({ queryKey: ["userProperties"] });
-      const failedCount = data.failed?.length ?? 0;
-      const cmsFailedCount = data.cms_failed?.length ?? 0;
-      const parts = [
-        `${data.translations_written ?? 0} translations`,
-        `${data.titles_written ?? 0} AI titles`,
-        `${data.ready_count} ready`,
-        data.pending_batch_count > 0
-          ? `${data.pending_batch_count} in AI batch`
-          : null,
-        typeof data.cms_queued === "number"
-          ? `${data.cms_queued} CRM queued`
-          : null,
-        failedCount > 0 ? `${failedCount} failed` : null,
-        cmsFailedCount > 0 ? `${cmsFailedCount} CRM failed` : null,
-      ].filter(Boolean);
-      const firstError =
-        data.failed?.[0]?.error || data.cms_failed?.[0]?.error;
+      const skipped = data.skipped?.length ?? 0;
       toast({
-        title: "Content production finished",
-        description: firstError
-          ? `${parts.join(" · ")}. ${firstError}`
-          : parts.join(" · "),
-        duration: 7000,
-        variant:
-          failedCount > 0 || cmsFailedCount > 0 || data.pending_batch_count > 0
-            ? "warning"
-            : "success",
+        title: "Content production started",
+        description:
+          skipped > 0
+            ? `${data.message} ${skipped} skipped.`
+            : data.message,
+        duration: 6000,
+        variant: skipped > 0 ? "warning" : "success",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Could not produce content",
+        title: "Could not start content production",
         description: error.message,
         variant: "error",
       });

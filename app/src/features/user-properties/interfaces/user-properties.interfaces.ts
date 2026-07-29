@@ -264,13 +264,8 @@ export interface ProduceUserPropertyContentPayload {
 }
 
 export interface ProduceUserPropertyContentResponse {
-  ready_count: number;
-  pending_batch_count: number;
-  ready_ids: string[];
-  pending_batch_ids: string[];
-  translations_written: number;
-  titles_written: number;
-  cms_queued: number;
-  failed: Array<{ user_property_id: string; error: string }>;
-  cms_failed: Array<{ user_property_id: string; error: string }>;
+  job_log_id: string;
+  enqueued: number;
+  message: string;
+  skipped?: Array<{ user_property_id: string; error: string }>;
 }
