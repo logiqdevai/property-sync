@@ -843,8 +843,12 @@ export const useTruncateUserPropertyDescriptions = () => {
       queryClient.invalidateQueries({ queryKey: ["trackableAgencies"] });
       toast({
         title: "Text truncated",
-        description: `Updated ${result.updated} of ${result.total} ${result.total === 1 ? "property" : "properties"}.`,
-        duration: 2000,
+        description: `Updated ${result.updated} of ${result.total} ${result.total === 1 ? "property" : "properties"}.${
+          result.job_log_id
+            ? " Regenerating translations and pushing to EstateWeb in the background."
+            : ""
+        }`,
+        duration: 3000,
         variant: "success",
       });
     },

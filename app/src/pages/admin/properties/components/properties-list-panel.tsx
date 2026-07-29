@@ -245,15 +245,15 @@ export function PropertiesListPanel() {
   };
 
   const handleTruncateDescriptions = async ({
-    text,
+    texts,
     replacement,
   }: {
-    text: string;
+    texts: string[];
     replacement?: string;
   }) => {
     await truncateDescriptions.mutateAsync({
       property_ids: Array.from(selectedIds),
-      text,
+      texts,
       ...(replacement ? { replacement } : {}),
     });
     clearSelection();

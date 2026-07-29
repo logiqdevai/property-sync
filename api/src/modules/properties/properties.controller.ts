@@ -127,7 +127,7 @@ export class PropertiesController {
   truncateDescriptions(@Body() dto: TruncatePropertyDescriptionsDto) {
     return this.propertiesService.truncateDescriptions(
       dto.property_ids,
-      dto.text,
+      dto.texts,
       dto.replacement,
     );
   }

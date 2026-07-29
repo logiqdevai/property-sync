@@ -345,10 +345,10 @@ export class PropertiesService {
 
   async truncateDescriptions(
     propertyIds: string[],
-    text: string,
+    texts: string[],
     replacement?: string,
   ) {
-    const pieces = normalizeTextTruncatePieces([text]);
+    const pieces = normalizeTextTruncatePieces(texts);
     if (pieces.length === 0) {
       throw new BadRequestException('Truncate text is required');
     }

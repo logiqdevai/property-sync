@@ -69,6 +69,7 @@ export interface UserPropertyDetail extends UserProperty {
   history: PropertyHistoryEntry[];
   integration_property?: IntegrationProperty | null;
   localized_contents?: PropertyLocalizedContent[];
+  text_truncate_pieces?: string[];
 }
 
 export interface UpdateUserPropertyPayload {
@@ -222,13 +223,14 @@ export interface SplitUserPropertiesResult {
 
 export interface TruncateUserPropertyDescriptionsPayload {
   ids: string[];
-  text: string;
+  texts: string[];
   replacement?: string;
 }
 
 export interface TruncateUserPropertyDescriptionsResult {
   updated: number;
   total: number;
+  job_log_id?: string | null;
 }
 
 export interface UpdateIntegrationImagesPayload {

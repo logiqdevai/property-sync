@@ -210,6 +210,21 @@ export default function DashboardPropertiesListPage() {
   const trackedAgencies = (agenciesData?.data ?? []).filter(
     (agency) => agency.is_tracked && agency.user_tracked_agency_id,
   );
+  const storedTruncateRules = useMemo(() => {
+    const relevantAgencies =
+      trackedAgencyId !== "all"
+        ? trackedAgencies.filter(
+            (agency) => agency.user_tracked_agency_id === trackedAgencyId,
+          )
+        : trackedAgencies;
+    const rules = new Set<string>();
+    for (const agency of relevantAgencies) {
+      for (const rule of agency.tracking_prefs?.text_truncate_pieces ?? []) {
+        rules.add(rule);
+      }
+    }
+    return [...rules];
+  }, [trackedAgencies, trackedAgencyId]);
 
   const dedupePlan = useMemo(
     () => getDuplicateGroupDedupePlan(properties, selectedIds),
@@ -476,15 +491,15 @@ export default function DashboardPropertiesListPage() {
   };
 
   const handleTruncateDescriptions = async ({
-    text,
+    texts,
     replacement,
   }: {
-    text: string;
+    texts: string[];
     replacement?: string;
   }) => {
     await truncateDescriptions.mutateAsync({
       ids: Array.from(selectedIds),
-      text,
+      texts,
       ...(replacement ? { replacement } : {}),
     });
     clearSelection();
@@ -1139,6 +1154,7 @@ export default function DashboardPropertiesListPage() {
         propertyCount={selectedCount}
         onConfirm={handleTruncateDescriptions}
         isPending={truncateDescriptions.isPending}
+        storedRules={storedTruncateRules}
       />
       <ManageEstateWebSitesModal
         state={manageSitesModal}

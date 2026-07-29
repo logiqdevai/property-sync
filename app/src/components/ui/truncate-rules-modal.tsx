@@ -59,7 +59,7 @@ export function TruncateRulesModal({
                 </p>
 
                 {rules.length > 0 ? (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex max-h-64 flex-col gap-2 overflow-y-auto pr-1">
                     {rules.map((rule) => {
                       const { mode, value } = parseTruncatePiece(rule);
                       return (

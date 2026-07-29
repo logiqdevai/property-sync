@@ -28,15 +28,15 @@ export default function PropertyDetailPage() {
   };
 
   const handleTruncate = async ({
-    text,
+    texts,
     replacement,
   }: {
-    text: string;
+    texts: string[];
     replacement?: string;
   }) => {
     await truncateDescriptions.mutateAsync({
       property_ids: [property.id],
-      text,
+      texts,
       ...(replacement ? { replacement } : {}),
     });
   };

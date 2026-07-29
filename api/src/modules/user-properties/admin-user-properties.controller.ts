@@ -138,7 +138,7 @@ export class AdminUserPropertiesController {
   truncateDescriptions(@Body() dto: TruncateUserPropertyDescriptionsDto) {
     return this.userPropertiesService.adminTruncateDescriptions(
       dto.ids,
-      dto.text,
+      dto.texts,
       dto.replacement,
     );
   }

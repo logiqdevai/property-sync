@@ -316,6 +316,7 @@ export class UserPropertiesService {
                     raw_bathrooms: true,
                     last_seen_at: true,
                     status: true,
+                    source_agency_id: true,
                   },
                 },
               },
@@ -340,12 +341,28 @@ export class UserPropertiesService {
     } = userProperty;
     const integrationProperty = integration_properties[0] ?? null;
 
+    const sourceAgencyId =
+      canonical_property.source_links[0]?.source_property.source_agency_id ??
+      null;
+    const tracker = sourceAgencyId
+      ? await this.prisma.userTrackedAgency.findUnique({
+          where: {
+            user_id_source_agency_id: {
+              user_id: userId,
+              source_agency_id: sourceAgencyId,
+            },
+          },
+          select: { text_truncate_pieces: true },
+        })
+      : null;
+
     return serializePropertyForApi({
       ...rest,
       duplicate_group_id: canonical_property.duplicate_group_id,
       source_links: canonical_property.source_links,
       history: canonical_property.history,
       localized_contents,
+      text_truncate_pieces: tracker?.text_truncate_pieces ?? [],
       integration_property: integrationProperty
         ? {
             id: integrationProperty.id,
@@ -1616,10 +1633,10 @@ export class UserPropertiesService {
   async truncateDescriptions(
     userId: string,
     ids: string[],
-    text: string,
+    texts: string[],
     replacement?: string,
   ) {
-    const pieces = normalizeTextTruncatePieces([text]);
+    const pieces = normalizeTextTruncatePieces(texts);
     if (pieces.length === 0) {
       throw new BadRequestException('Truncate text is required');
     }
@@ -1747,18 +1764,111 @@ export class UserPropertiesService {
     );
 
     const changedIds = propertyUpdates.map((update) => update.id);
+    let jobLogId: string | null = null;
     if (changedIds.length > 0) {
-      setImmediate(async () => {
-        try {
-          await this.contentProductionService.produceForUserProperties(
-            changedIds,
-            { markStaleFirst: true, forceSyncAi: true },
-          );
-        } catch {}
+      const job = await this.enqueueContentProductionJobs(userId, changedIds, {
+        runTranslations: true,
+        runAiTitles: true,
+        useAiBatch: false,
+        regenerate: true,
+        pushToCrm: true,
       });
+      jobLogId = job.job_log_id;
     }
 
-    return { updated: propertyUpdates.length, total: uniqueIds.length };
+    return {
+      updated: propertyUpdates.length,
+      total: uniqueIds.length,
+      job_log_id: jobLogId,
+    };
+  }
+
+  private async enqueueContentProductionJobs(
+    userId: string,
+    userPropertyIds: string[],
+    options: {
+      runTranslations?: boolean;
+      runAiTitles?: boolean;
+      useAiBatch?: boolean;
+      regenerate?: boolean;
+      pushToCrm?: boolean;
+    } = {},
+  ): Promise<{ job_log_id: string; enqueued: number }> {
+    const runTranslations = options.runTranslations ?? true;
+    const runAiTitles = options.runAiTitles ?? true;
+    const useAiBatch = options.useAiBatch ?? false;
+    const regenerate = options.regenerate ?? true;
+    const pushToCrm = options.pushToCrm ?? true;
+
+    const payload = {
+      user_id: userId,
+      user_property_ids: userPropertyIds,
+      run_translations: runTranslations,
+      run_ai_titles: runAiTitles,
+      use_ai_batch: useAiBatch,
+      regenerate,
+      push_to_crm: pushToCrm,
+      total: userPropertyIds.length,
+    };
+
+    const initialResult: ContentProductionJobResult = {
+      total: userPropertyIds.length,
+      processed: 0,
+      ready: 0,
+      pending_batch: 0,
+      failed: 0,
+      cms_pushed: 0,
+      cms_failed: 0,
+      translations_written: 0,
+      titles_written: 0,
+      items: [],
+      logs: [
+        `enqueued user=${userId} properties=${userPropertyIds.length} translations=${runTranslations} ai=${runAiTitles} batch=${useAiBatch} regenerate=${regenerate} pushToCrm=${pushToCrm}`,
+      ],
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: CONTENT_PRODUCTION_QUEUE,
+        job_name: 'produce-content',
+        status: JobStatus.WAITING,
+        payload: payload as object,
+        result: initialResult as object,
+      },
+    });
+
+    this.logger.log(
+      `[enqueueContentProductionJobs] queued job_log=${jobLog.id} user=${userId} ids=${userPropertyIds.length} translations=${runTranslations} ai=${runAiTitles} batch=${useAiBatch} regenerate=${regenerate} pushToCrm=${pushToCrm}`,
+    );
+
+    await this.contentProductionQueue.addBulk(
+      userPropertyIds.map((userPropertyId) => {
+        const jobData: ContentProductionJobData = {
+          job_log_id: jobLog.id,
+          user_id: userId,
+          user_property_id: userPropertyId,
+          run_translations: runTranslations,
+          run_ai_titles: runAiTitles,
+          use_ai_batch: useAiBatch,
+          regenerate,
+          push_to_crm: pushToCrm,
+          total: userPropertyIds.length,
+        };
+        return {
+          name: 'produce-content',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${userPropertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
+
+    return { job_log_id: jobLog.id, enqueued: userPropertyIds.length };
   }
 
   async splitMany(userId: string, ids: string[]) {
@@ -2524,10 +2634,10 @@ export class UserPropertiesService {
 
   async adminTruncateDescriptions(
     ids: string[],
-    text: string,
+    texts: string[],
     replacement?: string,
   ) {
-    const pieces = normalizeTextTruncatePieces([text]);
+    const pieces = normalizeTextTruncatePieces(texts);
     if (pieces.length === 0) {
       throw new BadRequestException('Truncate text is required');
     }

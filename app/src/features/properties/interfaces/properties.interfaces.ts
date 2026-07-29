@@ -191,7 +191,7 @@ export interface SplitPropertiesResult {
 
 export interface TruncatePropertyDescriptionsPayload {
   property_ids: string[];
-  text: string;
+  texts: string[];
   replacement?: string;
 }
 

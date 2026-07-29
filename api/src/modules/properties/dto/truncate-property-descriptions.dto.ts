@@ -16,11 +16,16 @@ export class TruncatePropertyDescriptionsDto {
   property_ids: string[];
 
   @ApiProperty({
-    description: 'Exact text to find in each property title and description',
+    type: [String],
+    minItems: 1,
+    description:
+      'Exact texts (or encoded patterns) to find in each property title and description',
   })
-  @IsString()
-  @MinLength(1)
-  text: string;
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsString({ each: true })
+  @MinLength(1, { each: true })
+  texts: string[];
 
   @ApiPropertyOptional({
     description:

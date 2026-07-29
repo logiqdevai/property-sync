@@ -369,15 +369,15 @@ export default function DashboardPropertyDetailPage() {
   };
 
   const handleTruncate = async ({
-    text,
+    texts,
     replacement,
   }: {
-    text: string;
+    texts: string[];
     replacement?: string;
   }) => {
     await truncateDescriptions.mutateAsync({
       ids: [property.id],
-      text,
+      texts,
       ...(replacement ? { replacement } : {}),
     });
   };
@@ -850,6 +850,7 @@ export default function DashboardPropertyDetailPage() {
               propertyCount={1}
               onConfirm={handleTruncate}
               isPending={truncateDescriptions.isPending}
+              storedRules={property.text_truncate_pieces ?? []}
             />
             <ManageEstateWebSitesModal
               state={manageSitesModal}

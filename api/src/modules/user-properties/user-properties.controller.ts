@@ -196,7 +196,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.truncateDescriptions(
       userId,
       dto.ids,
-      dto.text,
+      dto.texts,
       dto.replacement,
     );
   }
