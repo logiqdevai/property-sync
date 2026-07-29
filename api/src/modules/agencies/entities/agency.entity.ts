@@ -16,6 +16,9 @@ export class Agency {
   @ApiProperty({ nullable: true, example: 'Athens' })
   city: string | null;
 
+  @ApiProperty({ example: 'EL', description: 'Authored content language' })
+  content_language: string;
+
   @ApiProperty()
   is_visible: boolean;
 

@@ -1,8 +1,10 @@
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, Label, Input, FieldError } from "@heroui/react";
+import { Form, Label, Input, FieldError, Select, ListBox } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { CrawlIntervalField } from "@/components/ui/crawl-interval-field";
+import { ContentLanguageFormOptions } from "@/config/constants/dropdowns/agencies/content-language-form.options";
+import { ContentLanguages } from "@/features/content-publishing/interfaces/content-publishing.interfaces";
 import {
   agencyFormSchema,
   DefaultAgencyCrawlInterval,
@@ -31,6 +33,8 @@ export function AgencyForm({ defaultValues, submitLabel, isPending, onSubmit, on
       country: defaultValues?.country ?? "",
       city: defaultValues?.city ?? "",
       notes: defaultValues?.notes ?? "",
+      content_language:
+        defaultValues?.content_language ?? ContentLanguages.EL,
       crawl_interval: defaultValues?.crawl_interval ?? DefaultAgencyCrawlInterval,
     },
   });
@@ -67,6 +71,36 @@ export function AgencyForm({ defaultValues, submitLabel, isPending, onSubmit, on
           {errors.city && <FieldError>{errors.city.message}</FieldError>}
         </div>
       </div>
+
+      <Controller
+        name="content_language"
+        control={control}
+        render={({ field }) => (
+          <Select
+            selectedKey={field.value}
+            onSelectionChange={(key) => {
+              if (key) field.onChange(String(key));
+            }}
+          >
+            <Label>Content language</Label>
+            <Select.Trigger>
+              <Select.Value />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox items={ContentLanguageFormOptions}>
+                {(option) => (
+                  <ListBox.Item id={option.id} textValue={option.label}>
+                    {option.label}
+                  </ListBox.Item>
+                )}
+              </ListBox>
+            </Select.Popover>
+          </Select>
+        )}
+      />
+      {errors.content_language && (
+        <FieldError>{errors.content_language.message}</FieldError>
+      )}
 
       <div className="flex flex-col gap-1">
         <Label htmlFor="agency-notes">Notes</Label>

@@ -1,12 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsEnum,
   IsOptional,
   IsString,
   IsUrl,
   Matches,
   MinLength,
 } from 'class-validator';
+import { ContentLanguage } from 'generated/prisma';
 
 export class CreateAgencyDto {
   @ApiProperty({
@@ -70,4 +72,14 @@ export class CreateAgencyDto {
   @IsOptional()
   @IsBoolean()
   is_enabled?: boolean;
+
+  @ApiProperty({
+    required: false,
+    enum: ContentLanguage,
+    default: ContentLanguage.EL,
+    description: 'Authored language of scraped titles/descriptions',
+  })
+  @IsOptional()
+  @IsEnum(ContentLanguage)
+  content_language?: ContentLanguage;
 }

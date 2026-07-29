@@ -6,6 +6,7 @@ import { DewatermarkModule } from '@/integrations/dewatermark/dewatermark.module
 import { EstateWebModule } from '@/integrations/estateweb/estateweb.module';
 import { GcsIntegrationModule } from '@/integrations/storage/gcs/gcs.module';
 import { CmsSyncModule } from '@/modules/cms-sync/cms-sync.module';
+import { ContentPublishingModule } from '@/modules/content-publishing/content-publishing.module';
 import { WatermarkRemovalProcessor } from '@/background/watermark-removal.processor';
 import { UserPropertiesController } from './user-properties.controller';
 import { AdminUserPropertiesController } from './admin-user-properties.controller';
@@ -16,6 +17,7 @@ import { WatermarkRemovalService } from './services/watermark-removal.service';
   imports: [
     PrismaModule,
     CmsSyncModule,
+    ContentPublishingModule,
     EstateWebModule,
     DewatermarkModule,
     GcsIntegrationModule,

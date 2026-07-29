@@ -16,6 +16,7 @@ import {
   useUpdateAgencyTracking,
 } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
 import { TrackedAgencyIntegrationLink } from "@/pages/dashboard/components/tracked-agency-integration-link";
+import { ContentPublishingPanel } from "./components/content-publishing-panel";
 import { useMemo, useState } from "react";
 import {
   EmptyState,
@@ -342,6 +343,11 @@ function AgencyCard({
             linkedIntegrationId={prefs.user_integration_id}
             linkedClientId={prefs.integration_client_id}
             disabled={isControlsDisabled}
+          />
+
+          <ContentPublishingPanel
+            agencyId={agency.id}
+            sourceLanguage={agency.content_language}
           />
         </div>
       ) : null}

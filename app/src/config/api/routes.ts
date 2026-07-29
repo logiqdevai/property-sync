@@ -173,6 +173,8 @@ export const ApiRoutes = {
         list: "/agencies",
         track: (agencyId: string) => `/agencies/${agencyId}/track`,
         integrationLink: (agencyId: string) => `/agencies/${agencyId}/track/integration`,
+        contentPublishing: (agencyId: string) =>
+            `/agencies/${agencyId}/track/content-publishing`,
     },
     cmsSyncRuns: {
         prefix: "/cms-sync-runs",

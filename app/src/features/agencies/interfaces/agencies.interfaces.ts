@@ -27,6 +27,7 @@ export interface SourceAgency {
   base_url: string;
   country: string | null;
   city: string | null;
+  content_language?: string | null;
   is_visible: boolean;
   is_enabled: boolean;
   crawl_interval: string;
@@ -53,6 +54,7 @@ export interface CreateAgencyPayload {
   crawl_interval?: string;
   is_visible?: boolean;
   is_enabled?: boolean;
+  content_language?: string;
 }
 
 export interface UpdateAgencyPayload extends Partial<CreateAgencyPayload> {}

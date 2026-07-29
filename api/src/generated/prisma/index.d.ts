@@ -159,6 +159,31 @@ export type PropertyHistory = $Result.DefaultSelection<Prisma.$PropertyHistoryPa
  */
 export type UserProperty = $Result.DefaultSelection<Prisma.$UserPropertyPayload>
 /**
+ * Model ContentPublishingConfig
+ * 
+ */
+export type ContentPublishingConfig = $Result.DefaultSelection<Prisma.$ContentPublishingConfigPayload>
+/**
+ * Model ContentOutput
+ * 
+ */
+export type ContentOutput = $Result.DefaultSelection<Prisma.$ContentOutputPayload>
+/**
+ * Model AiTitleFamily
+ * 
+ */
+export type AiTitleFamily = $Result.DefaultSelection<Prisma.$AiTitleFamilyPayload>
+/**
+ * Model PropertyLocalizedContent
+ * 
+ */
+export type PropertyLocalizedContent = $Result.DefaultSelection<Prisma.$PropertyLocalizedContentPayload>
+/**
+ * Model AiBatchRun
+ * 
+ */
+export type AiBatchRun = $Result.DefaultSelection<Prisma.$AiBatchRunPayload>
+/**
  * Model IntegrationProperty
  * 
  */
@@ -283,6 +308,61 @@ export const DiagnosticsArtifactKind: {
 };
 
 export type DiagnosticsArtifactKind = (typeof DiagnosticsArtifactKind)[keyof typeof DiagnosticsArtifactKind]
+
+
+export const ContentLanguage: {
+  EL: 'EL',
+  EN: 'EN',
+  DE: 'DE',
+  FR: 'FR',
+  IT: 'IT',
+  RU: 'RU'
+};
+
+export type ContentLanguage = (typeof ContentLanguage)[keyof typeof ContentLanguage]
+
+
+export const ContentType: {
+  TITLE: 'TITLE',
+  DESCRIPTION: 'DESCRIPTION'
+};
+
+export type ContentType = (typeof ContentType)[keyof typeof ContentType]
+
+
+export const TitleProductionStrategy: {
+  ORIGINAL: 'ORIGINAL',
+  TRANSLATE: 'TRANSLATE',
+  AI: 'AI'
+};
+
+export type TitleProductionStrategy = (typeof TitleProductionStrategy)[keyof typeof TitleProductionStrategy]
+
+
+export const DescriptionProductionStrategy: {
+  ORIGINAL: 'ORIGINAL',
+  TRANSLATE: 'TRANSLATE'
+};
+
+export type DescriptionProductionStrategy = (typeof DescriptionProductionStrategy)[keyof typeof DescriptionProductionStrategy]
+
+
+export const AiBatchRunKind: {
+  TITLE_FAMILY: 'TITLE_FAMILY'
+};
+
+export type AiBatchRunKind = (typeof AiBatchRunKind)[keyof typeof AiBatchRunKind]
+
+
+export const AiBatchRunStatus: {
+  SUBMITTED: 'SUBMITTED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+};
+
+export type AiBatchRunStatus = (typeof AiBatchRunStatus)[keyof typeof AiBatchRunStatus]
 
 
 export const GenerationRunStatus: {
@@ -517,6 +597,30 @@ export const DiagnosticsMode: typeof $Enums.DiagnosticsMode
 export type DiagnosticsArtifactKind = $Enums.DiagnosticsArtifactKind
 
 export const DiagnosticsArtifactKind: typeof $Enums.DiagnosticsArtifactKind
+
+export type ContentLanguage = $Enums.ContentLanguage
+
+export const ContentLanguage: typeof $Enums.ContentLanguage
+
+export type ContentType = $Enums.ContentType
+
+export const ContentType: typeof $Enums.ContentType
+
+export type TitleProductionStrategy = $Enums.TitleProductionStrategy
+
+export const TitleProductionStrategy: typeof $Enums.TitleProductionStrategy
+
+export type DescriptionProductionStrategy = $Enums.DescriptionProductionStrategy
+
+export const DescriptionProductionStrategy: typeof $Enums.DescriptionProductionStrategy
+
+export type AiBatchRunKind = $Enums.AiBatchRunKind
+
+export const AiBatchRunKind: typeof $Enums.AiBatchRunKind
+
+export type AiBatchRunStatus = $Enums.AiBatchRunStatus
+
+export const AiBatchRunStatus: typeof $Enums.AiBatchRunStatus
 
 export type GenerationRunStatus = $Enums.GenerationRunStatus
 
@@ -920,6 +1024,56 @@ export class PrismaClient<
     * ```
     */
   get userProperty(): Prisma.UserPropertyDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.contentPublishingConfig`: Exposes CRUD operations for the **ContentPublishingConfig** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ContentPublishingConfigs
+    * const contentPublishingConfigs = await prisma.contentPublishingConfig.findMany()
+    * ```
+    */
+  get contentPublishingConfig(): Prisma.ContentPublishingConfigDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.contentOutput`: Exposes CRUD operations for the **ContentOutput** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ContentOutputs
+    * const contentOutputs = await prisma.contentOutput.findMany()
+    * ```
+    */
+  get contentOutput(): Prisma.ContentOutputDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.aiTitleFamily`: Exposes CRUD operations for the **AiTitleFamily** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AiTitleFamilies
+    * const aiTitleFamilies = await prisma.aiTitleFamily.findMany()
+    * ```
+    */
+  get aiTitleFamily(): Prisma.AiTitleFamilyDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.propertyLocalizedContent`: Exposes CRUD operations for the **PropertyLocalizedContent** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PropertyLocalizedContents
+    * const propertyLocalizedContents = await prisma.propertyLocalizedContent.findMany()
+    * ```
+    */
+  get propertyLocalizedContent(): Prisma.PropertyLocalizedContentDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.aiBatchRun`: Exposes CRUD operations for the **AiBatchRun** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AiBatchRuns
+    * const aiBatchRuns = await prisma.aiBatchRun.findMany()
+    * ```
+    */
+  get aiBatchRun(): Prisma.AiBatchRunDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.integrationProperty`: Exposes CRUD operations for the **IntegrationProperty** model.
@@ -1407,6 +1561,11 @@ export namespace Prisma {
     PropertySourceLink: 'PropertySourceLink',
     PropertyHistory: 'PropertyHistory',
     UserProperty: 'UserProperty',
+    ContentPublishingConfig: 'ContentPublishingConfig',
+    ContentOutput: 'ContentOutput',
+    AiTitleFamily: 'AiTitleFamily',
+    PropertyLocalizedContent: 'PropertyLocalizedContent',
+    AiBatchRun: 'AiBatchRun',
     IntegrationProperty: 'IntegrationProperty',
     PlatformConfig: 'PlatformConfig',
     Document: 'Document'
@@ -1425,7 +1584,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "notification" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "integrationProperty" | "platformConfig" | "document"
+      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "notification" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "contentPublishingConfig" | "contentOutput" | "aiTitleFamily" | "propertyLocalizedContent" | "aiBatchRun" | "integrationProperty" | "platformConfig" | "document"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3131,6 +3290,376 @@ export namespace Prisma {
           }
         }
       }
+      ContentPublishingConfig: {
+        payload: Prisma.$ContentPublishingConfigPayload<ExtArgs>
+        fields: Prisma.ContentPublishingConfigFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ContentPublishingConfigFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentPublishingConfigPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ContentPublishingConfigFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentPublishingConfigPayload>
+          }
+          findFirst: {
+            args: Prisma.ContentPublishingConfigFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentPublishingConfigPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ContentPublishingConfigFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentPublishingConfigPayload>
+          }
+          findMany: {
+            args: Prisma.ContentPublishingConfigFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentPublishingConfigPayload>[]
+          }
+          create: {
+            args: Prisma.ContentPublishingConfigCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentPublishingConfigPayload>
+          }
+          createMany: {
+            args: Prisma.ContentPublishingConfigCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ContentPublishingConfigCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentPublishingConfigPayload>[]
+          }
+          delete: {
+            args: Prisma.ContentPublishingConfigDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentPublishingConfigPayload>
+          }
+          update: {
+            args: Prisma.ContentPublishingConfigUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentPublishingConfigPayload>
+          }
+          deleteMany: {
+            args: Prisma.ContentPublishingConfigDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ContentPublishingConfigUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ContentPublishingConfigUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentPublishingConfigPayload>[]
+          }
+          upsert: {
+            args: Prisma.ContentPublishingConfigUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentPublishingConfigPayload>
+          }
+          aggregate: {
+            args: Prisma.ContentPublishingConfigAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateContentPublishingConfig>
+          }
+          groupBy: {
+            args: Prisma.ContentPublishingConfigGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ContentPublishingConfigGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ContentPublishingConfigCountArgs<ExtArgs>
+            result: $Utils.Optional<ContentPublishingConfigCountAggregateOutputType> | number
+          }
+        }
+      }
+      ContentOutput: {
+        payload: Prisma.$ContentOutputPayload<ExtArgs>
+        fields: Prisma.ContentOutputFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ContentOutputFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentOutputPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ContentOutputFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentOutputPayload>
+          }
+          findFirst: {
+            args: Prisma.ContentOutputFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentOutputPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ContentOutputFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentOutputPayload>
+          }
+          findMany: {
+            args: Prisma.ContentOutputFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentOutputPayload>[]
+          }
+          create: {
+            args: Prisma.ContentOutputCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentOutputPayload>
+          }
+          createMany: {
+            args: Prisma.ContentOutputCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ContentOutputCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentOutputPayload>[]
+          }
+          delete: {
+            args: Prisma.ContentOutputDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentOutputPayload>
+          }
+          update: {
+            args: Prisma.ContentOutputUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentOutputPayload>
+          }
+          deleteMany: {
+            args: Prisma.ContentOutputDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ContentOutputUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ContentOutputUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentOutputPayload>[]
+          }
+          upsert: {
+            args: Prisma.ContentOutputUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ContentOutputPayload>
+          }
+          aggregate: {
+            args: Prisma.ContentOutputAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateContentOutput>
+          }
+          groupBy: {
+            args: Prisma.ContentOutputGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ContentOutputGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ContentOutputCountArgs<ExtArgs>
+            result: $Utils.Optional<ContentOutputCountAggregateOutputType> | number
+          }
+        }
+      }
+      AiTitleFamily: {
+        payload: Prisma.$AiTitleFamilyPayload<ExtArgs>
+        fields: Prisma.AiTitleFamilyFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AiTitleFamilyFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiTitleFamilyPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AiTitleFamilyFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiTitleFamilyPayload>
+          }
+          findFirst: {
+            args: Prisma.AiTitleFamilyFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiTitleFamilyPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AiTitleFamilyFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiTitleFamilyPayload>
+          }
+          findMany: {
+            args: Prisma.AiTitleFamilyFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiTitleFamilyPayload>[]
+          }
+          create: {
+            args: Prisma.AiTitleFamilyCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiTitleFamilyPayload>
+          }
+          createMany: {
+            args: Prisma.AiTitleFamilyCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AiTitleFamilyCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiTitleFamilyPayload>[]
+          }
+          delete: {
+            args: Prisma.AiTitleFamilyDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiTitleFamilyPayload>
+          }
+          update: {
+            args: Prisma.AiTitleFamilyUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiTitleFamilyPayload>
+          }
+          deleteMany: {
+            args: Prisma.AiTitleFamilyDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AiTitleFamilyUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AiTitleFamilyUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiTitleFamilyPayload>[]
+          }
+          upsert: {
+            args: Prisma.AiTitleFamilyUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiTitleFamilyPayload>
+          }
+          aggregate: {
+            args: Prisma.AiTitleFamilyAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAiTitleFamily>
+          }
+          groupBy: {
+            args: Prisma.AiTitleFamilyGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AiTitleFamilyGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AiTitleFamilyCountArgs<ExtArgs>
+            result: $Utils.Optional<AiTitleFamilyCountAggregateOutputType> | number
+          }
+        }
+      }
+      PropertyLocalizedContent: {
+        payload: Prisma.$PropertyLocalizedContentPayload<ExtArgs>
+        fields: Prisma.PropertyLocalizedContentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PropertyLocalizedContentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertyLocalizedContentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PropertyLocalizedContentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertyLocalizedContentPayload>
+          }
+          findFirst: {
+            args: Prisma.PropertyLocalizedContentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertyLocalizedContentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PropertyLocalizedContentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertyLocalizedContentPayload>
+          }
+          findMany: {
+            args: Prisma.PropertyLocalizedContentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertyLocalizedContentPayload>[]
+          }
+          create: {
+            args: Prisma.PropertyLocalizedContentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertyLocalizedContentPayload>
+          }
+          createMany: {
+            args: Prisma.PropertyLocalizedContentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PropertyLocalizedContentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertyLocalizedContentPayload>[]
+          }
+          delete: {
+            args: Prisma.PropertyLocalizedContentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertyLocalizedContentPayload>
+          }
+          update: {
+            args: Prisma.PropertyLocalizedContentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertyLocalizedContentPayload>
+          }
+          deleteMany: {
+            args: Prisma.PropertyLocalizedContentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PropertyLocalizedContentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PropertyLocalizedContentUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertyLocalizedContentPayload>[]
+          }
+          upsert: {
+            args: Prisma.PropertyLocalizedContentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PropertyLocalizedContentPayload>
+          }
+          aggregate: {
+            args: Prisma.PropertyLocalizedContentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePropertyLocalizedContent>
+          }
+          groupBy: {
+            args: Prisma.PropertyLocalizedContentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PropertyLocalizedContentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PropertyLocalizedContentCountArgs<ExtArgs>
+            result: $Utils.Optional<PropertyLocalizedContentCountAggregateOutputType> | number
+          }
+        }
+      }
+      AiBatchRun: {
+        payload: Prisma.$AiBatchRunPayload<ExtArgs>
+        fields: Prisma.AiBatchRunFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AiBatchRunFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiBatchRunPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AiBatchRunFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiBatchRunPayload>
+          }
+          findFirst: {
+            args: Prisma.AiBatchRunFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiBatchRunPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AiBatchRunFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiBatchRunPayload>
+          }
+          findMany: {
+            args: Prisma.AiBatchRunFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiBatchRunPayload>[]
+          }
+          create: {
+            args: Prisma.AiBatchRunCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiBatchRunPayload>
+          }
+          createMany: {
+            args: Prisma.AiBatchRunCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AiBatchRunCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiBatchRunPayload>[]
+          }
+          delete: {
+            args: Prisma.AiBatchRunDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiBatchRunPayload>
+          }
+          update: {
+            args: Prisma.AiBatchRunUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiBatchRunPayload>
+          }
+          deleteMany: {
+            args: Prisma.AiBatchRunDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AiBatchRunUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AiBatchRunUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiBatchRunPayload>[]
+          }
+          upsert: {
+            args: Prisma.AiBatchRunUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AiBatchRunPayload>
+          }
+          aggregate: {
+            args: Prisma.AiBatchRunAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAiBatchRun>
+          }
+          groupBy: {
+            args: Prisma.AiBatchRunGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AiBatchRunGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AiBatchRunCountArgs<ExtArgs>
+            result: $Utils.Optional<AiBatchRunCountAggregateOutputType> | number
+          }
+        }
+      }
       IntegrationProperty: {
         payload: Prisma.$IntegrationPropertyPayload<ExtArgs>
         fields: Prisma.IntegrationPropertyFieldRefs
@@ -3484,6 +4013,11 @@ export namespace Prisma {
     propertySourceLink?: PropertySourceLinkOmit
     propertyHistory?: PropertyHistoryOmit
     userProperty?: UserPropertyOmit
+    contentPublishingConfig?: ContentPublishingConfigOmit
+    contentOutput?: ContentOutputOmit
+    aiTitleFamily?: AiTitleFamilyOmit
+    propertyLocalizedContent?: PropertyLocalizedContentOmit
+    aiBatchRun?: AiBatchRunOmit
     integrationProperty?: IntegrationPropertyOmit
     platformConfig?: PlatformConfigOmit
     document?: DocumentOmit
@@ -4138,10 +4672,12 @@ export namespace Prisma {
 
   export type UserPropertyCountOutputType = {
     integration_properties: number
+    localized_contents: number
   }
 
   export type UserPropertyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     integration_properties?: boolean | UserPropertyCountOutputTypeCountIntegration_propertiesArgs
+    localized_contents?: boolean | UserPropertyCountOutputTypeCountLocalized_contentsArgs
   }
 
   // Custom InputTypes
@@ -4160,6 +4696,102 @@ export namespace Prisma {
    */
   export type UserPropertyCountOutputTypeCountIntegration_propertiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: IntegrationPropertyWhereInput
+  }
+
+  /**
+   * UserPropertyCountOutputType without action
+   */
+  export type UserPropertyCountOutputTypeCountLocalized_contentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PropertyLocalizedContentWhereInput
+  }
+
+
+  /**
+   * Count Type ContentPublishingConfigCountOutputType
+   */
+
+  export type ContentPublishingConfigCountOutputType = {
+    outputs: number
+    ai_title_families: number
+    ai_batch_runs: number
+  }
+
+  export type ContentPublishingConfigCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    outputs?: boolean | ContentPublishingConfigCountOutputTypeCountOutputsArgs
+    ai_title_families?: boolean | ContentPublishingConfigCountOutputTypeCountAi_title_familiesArgs
+    ai_batch_runs?: boolean | ContentPublishingConfigCountOutputTypeCountAi_batch_runsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ContentPublishingConfigCountOutputType without action
+   */
+  export type ContentPublishingConfigCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfigCountOutputType
+     */
+    select?: ContentPublishingConfigCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ContentPublishingConfigCountOutputType without action
+   */
+  export type ContentPublishingConfigCountOutputTypeCountOutputsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContentOutputWhereInput
+  }
+
+  /**
+   * ContentPublishingConfigCountOutputType without action
+   */
+  export type ContentPublishingConfigCountOutputTypeCountAi_title_familiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AiTitleFamilyWhereInput
+  }
+
+  /**
+   * ContentPublishingConfigCountOutputType without action
+   */
+  export type ContentPublishingConfigCountOutputTypeCountAi_batch_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AiBatchRunWhereInput
+  }
+
+
+  /**
+   * Count Type AiTitleFamilyCountOutputType
+   */
+
+  export type AiTitleFamilyCountOutputType = {
+    outputs: number
+    ai_batch_runs: number
+  }
+
+  export type AiTitleFamilyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    outputs?: boolean | AiTitleFamilyCountOutputTypeCountOutputsArgs
+    ai_batch_runs?: boolean | AiTitleFamilyCountOutputTypeCountAi_batch_runsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * AiTitleFamilyCountOutputType without action
+   */
+  export type AiTitleFamilyCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamilyCountOutputType
+     */
+    select?: AiTitleFamilyCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * AiTitleFamilyCountOutputType without action
+   */
+  export type AiTitleFamilyCountOutputTypeCountOutputsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContentOutputWhereInput
+  }
+
+  /**
+   * AiTitleFamilyCountOutputType without action
+   */
+  export type AiTitleFamilyCountOutputTypeCountAi_batch_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AiBatchRunWhereInput
   }
 
 
@@ -8954,6 +9586,7 @@ export namespace Prisma {
     base_url: string | null
     country: string | null
     city: string | null
+    content_language: $Enums.ContentLanguage | null
     is_visible: boolean | null
     is_enabled: boolean | null
     crawl_interval: string | null
@@ -8971,6 +9604,7 @@ export namespace Prisma {
     base_url: string | null
     country: string | null
     city: string | null
+    content_language: $Enums.ContentLanguage | null
     is_visible: boolean | null
     is_enabled: boolean | null
     crawl_interval: string | null
@@ -8988,6 +9622,7 @@ export namespace Prisma {
     base_url: number
     country: number
     city: number
+    content_language: number
     is_visible: number
     is_enabled: number
     crawl_interval: number
@@ -9008,6 +9643,7 @@ export namespace Prisma {
     base_url?: true
     country?: true
     city?: true
+    content_language?: true
     is_visible?: true
     is_enabled?: true
     crawl_interval?: true
@@ -9025,6 +9661,7 @@ export namespace Prisma {
     base_url?: true
     country?: true
     city?: true
+    content_language?: true
     is_visible?: true
     is_enabled?: true
     crawl_interval?: true
@@ -9042,6 +9679,7 @@ export namespace Prisma {
     base_url?: true
     country?: true
     city?: true
+    content_language?: true
     is_visible?: true
     is_enabled?: true
     crawl_interval?: true
@@ -9133,6 +9771,7 @@ export namespace Prisma {
     base_url: string
     country: string | null
     city: string | null
+    content_language: $Enums.ContentLanguage
     is_visible: boolean
     is_enabled: boolean
     crawl_interval: string
@@ -9168,6 +9807,7 @@ export namespace Prisma {
     base_url?: boolean
     country?: boolean
     city?: boolean
+    content_language?: boolean
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: boolean
@@ -9193,6 +9833,7 @@ export namespace Prisma {
     base_url?: boolean
     country?: boolean
     city?: boolean
+    content_language?: boolean
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: boolean
@@ -9211,6 +9852,7 @@ export namespace Prisma {
     base_url?: boolean
     country?: boolean
     city?: boolean
+    content_language?: boolean
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: boolean
@@ -9229,6 +9871,7 @@ export namespace Prisma {
     base_url?: boolean
     country?: boolean
     city?: boolean
+    content_language?: boolean
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: boolean
@@ -9241,7 +9884,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type SourceAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "base_url" | "country" | "city" | "is_visible" | "is_enabled" | "crawl_interval" | "notes" | "last_success_at" | "last_failure_at" | "last_error_message" | "metadata" | "created_at" | "updated_at", ExtArgs["result"]["sourceAgency"]>
+  export type SourceAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "base_url" | "country" | "city" | "content_language" | "is_visible" | "is_enabled" | "crawl_interval" | "notes" | "last_success_at" | "last_failure_at" | "last_error_message" | "metadata" | "created_at" | "updated_at", ExtArgs["result"]["sourceAgency"]>
   export type SourceAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     scrapers?: boolean | SourceAgency$scrapersArgs<ExtArgs>
     user_tracked_agencies?: boolean | SourceAgency$user_tracked_agenciesArgs<ExtArgs>
@@ -9270,6 +9913,7 @@ export namespace Prisma {
       base_url: string
       country: string | null
       city: string | null
+      content_language: $Enums.ContentLanguage
       is_visible: boolean
       is_enabled: boolean
       crawl_interval: string
@@ -9714,6 +10358,7 @@ export namespace Prisma {
     readonly base_url: FieldRef<"SourceAgency", 'String'>
     readonly country: FieldRef<"SourceAgency", 'String'>
     readonly city: FieldRef<"SourceAgency", 'String'>
+    readonly content_language: FieldRef<"SourceAgency", 'ContentLanguage'>
     readonly is_visible: FieldRef<"SourceAgency", 'Boolean'>
     readonly is_enabled: FieldRef<"SourceAgency", 'Boolean'>
     readonly crawl_interval: FieldRef<"SourceAgency", 'String'>
@@ -10588,6 +11233,7 @@ export namespace Prisma {
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     crawl_runs?: boolean | UserTrackedAgency$crawl_runsArgs<ExtArgs>
     integration_link?: boolean | UserTrackedAgency$integration_linkArgs<ExtArgs>
+    content_publishing_config?: boolean | UserTrackedAgency$content_publishing_configArgs<ExtArgs>
     _count?: boolean | UserTrackedAgencyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userTrackedAgency"]>
 
@@ -10664,6 +11310,7 @@ export namespace Prisma {
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     crawl_runs?: boolean | UserTrackedAgency$crawl_runsArgs<ExtArgs>
     integration_link?: boolean | UserTrackedAgency$integration_linkArgs<ExtArgs>
+    content_publishing_config?: boolean | UserTrackedAgency$content_publishing_configArgs<ExtArgs>
     _count?: boolean | UserTrackedAgencyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserTrackedAgencyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -10682,6 +11329,7 @@ export namespace Prisma {
       source_agency: Prisma.$SourceAgencyPayload<ExtArgs>
       crawl_runs: Prisma.$CrawlRunPayload<ExtArgs>[]
       integration_link: Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs> | null
+      content_publishing_config: Prisma.$ContentPublishingConfigPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -11100,6 +11748,7 @@ export namespace Prisma {
     source_agency<T extends SourceAgencyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgencyDefaultArgs<ExtArgs>>): Prisma__SourceAgencyClient<$Result.GetResult<Prisma.$SourceAgencyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     crawl_runs<T extends UserTrackedAgency$crawl_runsArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$crawl_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     integration_link<T extends UserTrackedAgency$integration_linkArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$integration_linkArgs<ExtArgs>>): Prisma__UserTrackedAgencyIntegrationLinkClient<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    content_publishing_config<T extends UserTrackedAgency$content_publishing_configArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$content_publishing_configArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11583,6 +12232,25 @@ export namespace Prisma {
      */
     include?: UserTrackedAgencyIntegrationLinkInclude<ExtArgs> | null
     where?: UserTrackedAgencyIntegrationLinkWhereInput
+  }
+
+  /**
+   * UserTrackedAgency.content_publishing_config
+   */
+  export type UserTrackedAgency$content_publishing_configArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigInclude<ExtArgs> | null
+    where?: ContentPublishingConfigWhereInput
   }
 
   /**
@@ -32542,6 +33210,7 @@ export namespace Prisma {
     user?: boolean | UserDefaultArgs<ExtArgs>
     canonical_property?: boolean | PropertyDefaultArgs<ExtArgs>
     integration_properties?: boolean | UserProperty$integration_propertiesArgs<ExtArgs>
+    localized_contents?: boolean | UserProperty$localized_contentsArgs<ExtArgs>
     _count?: boolean | UserPropertyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userProperty"]>
 
@@ -32701,6 +33370,7 @@ export namespace Prisma {
     user?: boolean | UserDefaultArgs<ExtArgs>
     canonical_property?: boolean | PropertyDefaultArgs<ExtArgs>
     integration_properties?: boolean | UserProperty$integration_propertiesArgs<ExtArgs>
+    localized_contents?: boolean | UserProperty$localized_contentsArgs<ExtArgs>
     _count?: boolean | UserPropertyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserPropertyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -32718,6 +33388,7 @@ export namespace Prisma {
       user: Prisma.$UserPayload<ExtArgs>
       canonical_property: Prisma.$PropertyPayload<ExtArgs>
       integration_properties: Prisma.$IntegrationPropertyPayload<ExtArgs>[]
+      localized_contents: Prisma.$PropertyLocalizedContentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -33163,6 +33834,7 @@ export namespace Prisma {
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     canonical_property<T extends PropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyDefaultArgs<ExtArgs>>): Prisma__PropertyClient<$Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     integration_properties<T extends UserProperty$integration_propertiesArgs<ExtArgs> = {}>(args?: Subset<T, UserProperty$integration_propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    localized_contents<T extends UserProperty$localized_contentsArgs<ExtArgs> = {}>(args?: Subset<T, UserProperty$localized_contentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -33658,6 +34330,30 @@ export namespace Prisma {
   }
 
   /**
+   * UserProperty.localized_contents
+   */
+  export type UserProperty$localized_contentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyLocalizedContent
+     */
+    select?: PropertyLocalizedContentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyLocalizedContent
+     */
+    omit?: PropertyLocalizedContentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyLocalizedContentInclude<ExtArgs> | null
+    where?: PropertyLocalizedContentWhereInput
+    orderBy?: PropertyLocalizedContentOrderByWithRelationInput | PropertyLocalizedContentOrderByWithRelationInput[]
+    cursor?: PropertyLocalizedContentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PropertyLocalizedContentScalarFieldEnum | PropertyLocalizedContentScalarFieldEnum[]
+  }
+
+  /**
    * UserProperty without action
    */
   export type UserPropertyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -33673,6 +34369,5774 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserPropertyInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ContentPublishingConfig
+   */
+
+  export type AggregateContentPublishingConfig = {
+    _count: ContentPublishingConfigCountAggregateOutputType | null
+    _min: ContentPublishingConfigMinAggregateOutputType | null
+    _max: ContentPublishingConfigMaxAggregateOutputType | null
+  }
+
+  export type ContentPublishingConfigMinAggregateOutputType = {
+    id: string | null
+    user_tracked_agency_id: string | null
+    ai_titles_enabled: boolean | null
+    use_ai_batch: boolean | null
+    is_enabled: boolean | null
+    notes: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type ContentPublishingConfigMaxAggregateOutputType = {
+    id: string | null
+    user_tracked_agency_id: string | null
+    ai_titles_enabled: boolean | null
+    use_ai_batch: boolean | null
+    is_enabled: boolean | null
+    notes: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type ContentPublishingConfigCountAggregateOutputType = {
+    id: number
+    user_tracked_agency_id: number
+    ai_titles_enabled: number
+    use_ai_batch: number
+    is_enabled: number
+    notes: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type ContentPublishingConfigMinAggregateInputType = {
+    id?: true
+    user_tracked_agency_id?: true
+    ai_titles_enabled?: true
+    use_ai_batch?: true
+    is_enabled?: true
+    notes?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type ContentPublishingConfigMaxAggregateInputType = {
+    id?: true
+    user_tracked_agency_id?: true
+    ai_titles_enabled?: true
+    use_ai_batch?: true
+    is_enabled?: true
+    notes?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type ContentPublishingConfigCountAggregateInputType = {
+    id?: true
+    user_tracked_agency_id?: true
+    ai_titles_enabled?: true
+    use_ai_batch?: true
+    is_enabled?: true
+    notes?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type ContentPublishingConfigAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContentPublishingConfig to aggregate.
+     */
+    where?: ContentPublishingConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentPublishingConfigs to fetch.
+     */
+    orderBy?: ContentPublishingConfigOrderByWithRelationInput | ContentPublishingConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ContentPublishingConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentPublishingConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentPublishingConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ContentPublishingConfigs
+    **/
+    _count?: true | ContentPublishingConfigCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ContentPublishingConfigMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ContentPublishingConfigMaxAggregateInputType
+  }
+
+  export type GetContentPublishingConfigAggregateType<T extends ContentPublishingConfigAggregateArgs> = {
+        [P in keyof T & keyof AggregateContentPublishingConfig]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateContentPublishingConfig[P]>
+      : GetScalarType<T[P], AggregateContentPublishingConfig[P]>
+  }
+
+
+
+
+  export type ContentPublishingConfigGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContentPublishingConfigWhereInput
+    orderBy?: ContentPublishingConfigOrderByWithAggregationInput | ContentPublishingConfigOrderByWithAggregationInput[]
+    by: ContentPublishingConfigScalarFieldEnum[] | ContentPublishingConfigScalarFieldEnum
+    having?: ContentPublishingConfigScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ContentPublishingConfigCountAggregateInputType | true
+    _min?: ContentPublishingConfigMinAggregateInputType
+    _max?: ContentPublishingConfigMaxAggregateInputType
+  }
+
+  export type ContentPublishingConfigGroupByOutputType = {
+    id: string
+    user_tracked_agency_id: string
+    ai_titles_enabled: boolean
+    use_ai_batch: boolean
+    is_enabled: boolean
+    notes: string | null
+    created_at: Date
+    updated_at: Date
+    _count: ContentPublishingConfigCountAggregateOutputType | null
+    _min: ContentPublishingConfigMinAggregateOutputType | null
+    _max: ContentPublishingConfigMaxAggregateOutputType | null
+  }
+
+  type GetContentPublishingConfigGroupByPayload<T extends ContentPublishingConfigGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ContentPublishingConfigGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ContentPublishingConfigGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ContentPublishingConfigGroupByOutputType[P]>
+            : GetScalarType<T[P], ContentPublishingConfigGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ContentPublishingConfigSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_tracked_agency_id?: boolean
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
+    outputs?: boolean | ContentPublishingConfig$outputsArgs<ExtArgs>
+    ai_title_families?: boolean | ContentPublishingConfig$ai_title_familiesArgs<ExtArgs>
+    ai_batch_runs?: boolean | ContentPublishingConfig$ai_batch_runsArgs<ExtArgs>
+    _count?: boolean | ContentPublishingConfigCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["contentPublishingConfig"]>
+
+  export type ContentPublishingConfigSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_tracked_agency_id?: boolean
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["contentPublishingConfig"]>
+
+  export type ContentPublishingConfigSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_tracked_agency_id?: boolean
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["contentPublishingConfig"]>
+
+  export type ContentPublishingConfigSelectScalar = {
+    id?: boolean
+    user_tracked_agency_id?: boolean
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type ContentPublishingConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_tracked_agency_id" | "ai_titles_enabled" | "use_ai_batch" | "is_enabled" | "notes" | "created_at" | "updated_at", ExtArgs["result"]["contentPublishingConfig"]>
+  export type ContentPublishingConfigInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
+    outputs?: boolean | ContentPublishingConfig$outputsArgs<ExtArgs>
+    ai_title_families?: boolean | ContentPublishingConfig$ai_title_familiesArgs<ExtArgs>
+    ai_batch_runs?: boolean | ContentPublishingConfig$ai_batch_runsArgs<ExtArgs>
+    _count?: boolean | ContentPublishingConfigCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type ContentPublishingConfigIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
+  }
+  export type ContentPublishingConfigIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user_tracked_agency?: boolean | UserTrackedAgencyDefaultArgs<ExtArgs>
+  }
+
+  export type $ContentPublishingConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ContentPublishingConfig"
+    objects: {
+      user_tracked_agency: Prisma.$UserTrackedAgencyPayload<ExtArgs>
+      outputs: Prisma.$ContentOutputPayload<ExtArgs>[]
+      ai_title_families: Prisma.$AiTitleFamilyPayload<ExtArgs>[]
+      ai_batch_runs: Prisma.$AiBatchRunPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      user_tracked_agency_id: string
+      ai_titles_enabled: boolean
+      use_ai_batch: boolean
+      is_enabled: boolean
+      notes: string | null
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["contentPublishingConfig"]>
+    composites: {}
+  }
+
+  type ContentPublishingConfigGetPayload<S extends boolean | null | undefined | ContentPublishingConfigDefaultArgs> = $Result.GetResult<Prisma.$ContentPublishingConfigPayload, S>
+
+  type ContentPublishingConfigCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ContentPublishingConfigFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ContentPublishingConfigCountAggregateInputType | true
+    }
+
+  export interface ContentPublishingConfigDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ContentPublishingConfig'], meta: { name: 'ContentPublishingConfig' } }
+    /**
+     * Find zero or one ContentPublishingConfig that matches the filter.
+     * @param {ContentPublishingConfigFindUniqueArgs} args - Arguments to find a ContentPublishingConfig
+     * @example
+     * // Get one ContentPublishingConfig
+     * const contentPublishingConfig = await prisma.contentPublishingConfig.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ContentPublishingConfigFindUniqueArgs>(args: SelectSubset<T, ContentPublishingConfigFindUniqueArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ContentPublishingConfig that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ContentPublishingConfigFindUniqueOrThrowArgs} args - Arguments to find a ContentPublishingConfig
+     * @example
+     * // Get one ContentPublishingConfig
+     * const contentPublishingConfig = await prisma.contentPublishingConfig.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ContentPublishingConfigFindUniqueOrThrowArgs>(args: SelectSubset<T, ContentPublishingConfigFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContentPublishingConfig that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentPublishingConfigFindFirstArgs} args - Arguments to find a ContentPublishingConfig
+     * @example
+     * // Get one ContentPublishingConfig
+     * const contentPublishingConfig = await prisma.contentPublishingConfig.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ContentPublishingConfigFindFirstArgs>(args?: SelectSubset<T, ContentPublishingConfigFindFirstArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContentPublishingConfig that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentPublishingConfigFindFirstOrThrowArgs} args - Arguments to find a ContentPublishingConfig
+     * @example
+     * // Get one ContentPublishingConfig
+     * const contentPublishingConfig = await prisma.contentPublishingConfig.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ContentPublishingConfigFindFirstOrThrowArgs>(args?: SelectSubset<T, ContentPublishingConfigFindFirstOrThrowArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContentPublishingConfigs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentPublishingConfigFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ContentPublishingConfigs
+     * const contentPublishingConfigs = await prisma.contentPublishingConfig.findMany()
+     * 
+     * // Get first 10 ContentPublishingConfigs
+     * const contentPublishingConfigs = await prisma.contentPublishingConfig.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const contentPublishingConfigWithIdOnly = await prisma.contentPublishingConfig.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ContentPublishingConfigFindManyArgs>(args?: SelectSubset<T, ContentPublishingConfigFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ContentPublishingConfig.
+     * @param {ContentPublishingConfigCreateArgs} args - Arguments to create a ContentPublishingConfig.
+     * @example
+     * // Create one ContentPublishingConfig
+     * const ContentPublishingConfig = await prisma.contentPublishingConfig.create({
+     *   data: {
+     *     // ... data to create a ContentPublishingConfig
+     *   }
+     * })
+     * 
+     */
+    create<T extends ContentPublishingConfigCreateArgs>(args: SelectSubset<T, ContentPublishingConfigCreateArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ContentPublishingConfigs.
+     * @param {ContentPublishingConfigCreateManyArgs} args - Arguments to create many ContentPublishingConfigs.
+     * @example
+     * // Create many ContentPublishingConfigs
+     * const contentPublishingConfig = await prisma.contentPublishingConfig.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ContentPublishingConfigCreateManyArgs>(args?: SelectSubset<T, ContentPublishingConfigCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ContentPublishingConfigs and returns the data saved in the database.
+     * @param {ContentPublishingConfigCreateManyAndReturnArgs} args - Arguments to create many ContentPublishingConfigs.
+     * @example
+     * // Create many ContentPublishingConfigs
+     * const contentPublishingConfig = await prisma.contentPublishingConfig.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ContentPublishingConfigs and only return the `id`
+     * const contentPublishingConfigWithIdOnly = await prisma.contentPublishingConfig.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ContentPublishingConfigCreateManyAndReturnArgs>(args?: SelectSubset<T, ContentPublishingConfigCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ContentPublishingConfig.
+     * @param {ContentPublishingConfigDeleteArgs} args - Arguments to delete one ContentPublishingConfig.
+     * @example
+     * // Delete one ContentPublishingConfig
+     * const ContentPublishingConfig = await prisma.contentPublishingConfig.delete({
+     *   where: {
+     *     // ... filter to delete one ContentPublishingConfig
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ContentPublishingConfigDeleteArgs>(args: SelectSubset<T, ContentPublishingConfigDeleteArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ContentPublishingConfig.
+     * @param {ContentPublishingConfigUpdateArgs} args - Arguments to update one ContentPublishingConfig.
+     * @example
+     * // Update one ContentPublishingConfig
+     * const contentPublishingConfig = await prisma.contentPublishingConfig.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ContentPublishingConfigUpdateArgs>(args: SelectSubset<T, ContentPublishingConfigUpdateArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ContentPublishingConfigs.
+     * @param {ContentPublishingConfigDeleteManyArgs} args - Arguments to filter ContentPublishingConfigs to delete.
+     * @example
+     * // Delete a few ContentPublishingConfigs
+     * const { count } = await prisma.contentPublishingConfig.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ContentPublishingConfigDeleteManyArgs>(args?: SelectSubset<T, ContentPublishingConfigDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ContentPublishingConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentPublishingConfigUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ContentPublishingConfigs
+     * const contentPublishingConfig = await prisma.contentPublishingConfig.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ContentPublishingConfigUpdateManyArgs>(args: SelectSubset<T, ContentPublishingConfigUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ContentPublishingConfigs and returns the data updated in the database.
+     * @param {ContentPublishingConfigUpdateManyAndReturnArgs} args - Arguments to update many ContentPublishingConfigs.
+     * @example
+     * // Update many ContentPublishingConfigs
+     * const contentPublishingConfig = await prisma.contentPublishingConfig.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ContentPublishingConfigs and only return the `id`
+     * const contentPublishingConfigWithIdOnly = await prisma.contentPublishingConfig.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ContentPublishingConfigUpdateManyAndReturnArgs>(args: SelectSubset<T, ContentPublishingConfigUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ContentPublishingConfig.
+     * @param {ContentPublishingConfigUpsertArgs} args - Arguments to update or create a ContentPublishingConfig.
+     * @example
+     * // Update or create a ContentPublishingConfig
+     * const contentPublishingConfig = await prisma.contentPublishingConfig.upsert({
+     *   create: {
+     *     // ... data to create a ContentPublishingConfig
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ContentPublishingConfig we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ContentPublishingConfigUpsertArgs>(args: SelectSubset<T, ContentPublishingConfigUpsertArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ContentPublishingConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentPublishingConfigCountArgs} args - Arguments to filter ContentPublishingConfigs to count.
+     * @example
+     * // Count the number of ContentPublishingConfigs
+     * const count = await prisma.contentPublishingConfig.count({
+     *   where: {
+     *     // ... the filter for the ContentPublishingConfigs we want to count
+     *   }
+     * })
+    **/
+    count<T extends ContentPublishingConfigCountArgs>(
+      args?: Subset<T, ContentPublishingConfigCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ContentPublishingConfigCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ContentPublishingConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentPublishingConfigAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ContentPublishingConfigAggregateArgs>(args: Subset<T, ContentPublishingConfigAggregateArgs>): Prisma.PrismaPromise<GetContentPublishingConfigAggregateType<T>>
+
+    /**
+     * Group by ContentPublishingConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentPublishingConfigGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ContentPublishingConfigGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ContentPublishingConfigGroupByArgs['orderBy'] }
+        : { orderBy?: ContentPublishingConfigGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ContentPublishingConfigGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetContentPublishingConfigGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ContentPublishingConfig model
+   */
+  readonly fields: ContentPublishingConfigFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ContentPublishingConfig.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ContentPublishingConfigClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user_tracked_agency<T extends UserTrackedAgencyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgencyDefaultArgs<ExtArgs>>): Prisma__UserTrackedAgencyClient<$Result.GetResult<Prisma.$UserTrackedAgencyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    outputs<T extends ContentPublishingConfig$outputsArgs<ExtArgs> = {}>(args?: Subset<T, ContentPublishingConfig$outputsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentOutputPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    ai_title_families<T extends ContentPublishingConfig$ai_title_familiesArgs<ExtArgs> = {}>(args?: Subset<T, ContentPublishingConfig$ai_title_familiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    ai_batch_runs<T extends ContentPublishingConfig$ai_batch_runsArgs<ExtArgs> = {}>(args?: Subset<T, ContentPublishingConfig$ai_batch_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ContentPublishingConfig model
+   */
+  interface ContentPublishingConfigFieldRefs {
+    readonly id: FieldRef<"ContentPublishingConfig", 'String'>
+    readonly user_tracked_agency_id: FieldRef<"ContentPublishingConfig", 'String'>
+    readonly ai_titles_enabled: FieldRef<"ContentPublishingConfig", 'Boolean'>
+    readonly use_ai_batch: FieldRef<"ContentPublishingConfig", 'Boolean'>
+    readonly is_enabled: FieldRef<"ContentPublishingConfig", 'Boolean'>
+    readonly notes: FieldRef<"ContentPublishingConfig", 'String'>
+    readonly created_at: FieldRef<"ContentPublishingConfig", 'DateTime'>
+    readonly updated_at: FieldRef<"ContentPublishingConfig", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ContentPublishingConfig findUnique
+   */
+  export type ContentPublishingConfigFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentPublishingConfig to fetch.
+     */
+    where: ContentPublishingConfigWhereUniqueInput
+  }
+
+  /**
+   * ContentPublishingConfig findUniqueOrThrow
+   */
+  export type ContentPublishingConfigFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentPublishingConfig to fetch.
+     */
+    where: ContentPublishingConfigWhereUniqueInput
+  }
+
+  /**
+   * ContentPublishingConfig findFirst
+   */
+  export type ContentPublishingConfigFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentPublishingConfig to fetch.
+     */
+    where?: ContentPublishingConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentPublishingConfigs to fetch.
+     */
+    orderBy?: ContentPublishingConfigOrderByWithRelationInput | ContentPublishingConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContentPublishingConfigs.
+     */
+    cursor?: ContentPublishingConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentPublishingConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentPublishingConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContentPublishingConfigs.
+     */
+    distinct?: ContentPublishingConfigScalarFieldEnum | ContentPublishingConfigScalarFieldEnum[]
+  }
+
+  /**
+   * ContentPublishingConfig findFirstOrThrow
+   */
+  export type ContentPublishingConfigFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentPublishingConfig to fetch.
+     */
+    where?: ContentPublishingConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentPublishingConfigs to fetch.
+     */
+    orderBy?: ContentPublishingConfigOrderByWithRelationInput | ContentPublishingConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContentPublishingConfigs.
+     */
+    cursor?: ContentPublishingConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentPublishingConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentPublishingConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContentPublishingConfigs.
+     */
+    distinct?: ContentPublishingConfigScalarFieldEnum | ContentPublishingConfigScalarFieldEnum[]
+  }
+
+  /**
+   * ContentPublishingConfig findMany
+   */
+  export type ContentPublishingConfigFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentPublishingConfigs to fetch.
+     */
+    where?: ContentPublishingConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentPublishingConfigs to fetch.
+     */
+    orderBy?: ContentPublishingConfigOrderByWithRelationInput | ContentPublishingConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ContentPublishingConfigs.
+     */
+    cursor?: ContentPublishingConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentPublishingConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentPublishingConfigs.
+     */
+    skip?: number
+    distinct?: ContentPublishingConfigScalarFieldEnum | ContentPublishingConfigScalarFieldEnum[]
+  }
+
+  /**
+   * ContentPublishingConfig create
+   */
+  export type ContentPublishingConfigCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ContentPublishingConfig.
+     */
+    data: XOR<ContentPublishingConfigCreateInput, ContentPublishingConfigUncheckedCreateInput>
+  }
+
+  /**
+   * ContentPublishingConfig createMany
+   */
+  export type ContentPublishingConfigCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ContentPublishingConfigs.
+     */
+    data: ContentPublishingConfigCreateManyInput | ContentPublishingConfigCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ContentPublishingConfig createManyAndReturn
+   */
+  export type ContentPublishingConfigCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * The data used to create many ContentPublishingConfigs.
+     */
+    data: ContentPublishingConfigCreateManyInput | ContentPublishingConfigCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ContentPublishingConfig update
+   */
+  export type ContentPublishingConfigUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ContentPublishingConfig.
+     */
+    data: XOR<ContentPublishingConfigUpdateInput, ContentPublishingConfigUncheckedUpdateInput>
+    /**
+     * Choose, which ContentPublishingConfig to update.
+     */
+    where: ContentPublishingConfigWhereUniqueInput
+  }
+
+  /**
+   * ContentPublishingConfig updateMany
+   */
+  export type ContentPublishingConfigUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ContentPublishingConfigs.
+     */
+    data: XOR<ContentPublishingConfigUpdateManyMutationInput, ContentPublishingConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which ContentPublishingConfigs to update
+     */
+    where?: ContentPublishingConfigWhereInput
+    /**
+     * Limit how many ContentPublishingConfigs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContentPublishingConfig updateManyAndReturn
+   */
+  export type ContentPublishingConfigUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * The data used to update ContentPublishingConfigs.
+     */
+    data: XOR<ContentPublishingConfigUpdateManyMutationInput, ContentPublishingConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which ContentPublishingConfigs to update
+     */
+    where?: ContentPublishingConfigWhereInput
+    /**
+     * Limit how many ContentPublishingConfigs to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ContentPublishingConfig upsert
+   */
+  export type ContentPublishingConfigUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ContentPublishingConfig to update in case it exists.
+     */
+    where: ContentPublishingConfigWhereUniqueInput
+    /**
+     * In case the ContentPublishingConfig found by the `where` argument doesn't exist, create a new ContentPublishingConfig with this data.
+     */
+    create: XOR<ContentPublishingConfigCreateInput, ContentPublishingConfigUncheckedCreateInput>
+    /**
+     * In case the ContentPublishingConfig was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ContentPublishingConfigUpdateInput, ContentPublishingConfigUncheckedUpdateInput>
+  }
+
+  /**
+   * ContentPublishingConfig delete
+   */
+  export type ContentPublishingConfigDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigInclude<ExtArgs> | null
+    /**
+     * Filter which ContentPublishingConfig to delete.
+     */
+    where: ContentPublishingConfigWhereUniqueInput
+  }
+
+  /**
+   * ContentPublishingConfig deleteMany
+   */
+  export type ContentPublishingConfigDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContentPublishingConfigs to delete
+     */
+    where?: ContentPublishingConfigWhereInput
+    /**
+     * Limit how many ContentPublishingConfigs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContentPublishingConfig.outputs
+   */
+  export type ContentPublishingConfig$outputsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputInclude<ExtArgs> | null
+    where?: ContentOutputWhereInput
+    orderBy?: ContentOutputOrderByWithRelationInput | ContentOutputOrderByWithRelationInput[]
+    cursor?: ContentOutputWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ContentOutputScalarFieldEnum | ContentOutputScalarFieldEnum[]
+  }
+
+  /**
+   * ContentPublishingConfig.ai_title_families
+   */
+  export type ContentPublishingConfig$ai_title_familiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyInclude<ExtArgs> | null
+    where?: AiTitleFamilyWhereInput
+    orderBy?: AiTitleFamilyOrderByWithRelationInput | AiTitleFamilyOrderByWithRelationInput[]
+    cursor?: AiTitleFamilyWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AiTitleFamilyScalarFieldEnum | AiTitleFamilyScalarFieldEnum[]
+  }
+
+  /**
+   * ContentPublishingConfig.ai_batch_runs
+   */
+  export type ContentPublishingConfig$ai_batch_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
+    where?: AiBatchRunWhereInput
+    orderBy?: AiBatchRunOrderByWithRelationInput | AiBatchRunOrderByWithRelationInput[]
+    cursor?: AiBatchRunWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AiBatchRunScalarFieldEnum | AiBatchRunScalarFieldEnum[]
+  }
+
+  /**
+   * ContentPublishingConfig without action
+   */
+  export type ContentPublishingConfigDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ContentOutput
+   */
+
+  export type AggregateContentOutput = {
+    _count: ContentOutputCountAggregateOutputType | null
+    _min: ContentOutputMinAggregateOutputType | null
+    _max: ContentOutputMaxAggregateOutputType | null
+  }
+
+  export type ContentOutputMinAggregateOutputType = {
+    id: string | null
+    config_id: string | null
+    language: $Enums.ContentLanguage | null
+    title_strategy: $Enums.TitleProductionStrategy | null
+    description_strategy: $Enums.DescriptionProductionStrategy | null
+    ai_title_family_id: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type ContentOutputMaxAggregateOutputType = {
+    id: string | null
+    config_id: string | null
+    language: $Enums.ContentLanguage | null
+    title_strategy: $Enums.TitleProductionStrategy | null
+    description_strategy: $Enums.DescriptionProductionStrategy | null
+    ai_title_family_id: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type ContentOutputCountAggregateOutputType = {
+    id: number
+    config_id: number
+    language: number
+    title_strategy: number
+    description_strategy: number
+    ai_title_family_id: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type ContentOutputMinAggregateInputType = {
+    id?: true
+    config_id?: true
+    language?: true
+    title_strategy?: true
+    description_strategy?: true
+    ai_title_family_id?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type ContentOutputMaxAggregateInputType = {
+    id?: true
+    config_id?: true
+    language?: true
+    title_strategy?: true
+    description_strategy?: true
+    ai_title_family_id?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type ContentOutputCountAggregateInputType = {
+    id?: true
+    config_id?: true
+    language?: true
+    title_strategy?: true
+    description_strategy?: true
+    ai_title_family_id?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type ContentOutputAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContentOutput to aggregate.
+     */
+    where?: ContentOutputWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentOutputs to fetch.
+     */
+    orderBy?: ContentOutputOrderByWithRelationInput | ContentOutputOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ContentOutputWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentOutputs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentOutputs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ContentOutputs
+    **/
+    _count?: true | ContentOutputCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ContentOutputMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ContentOutputMaxAggregateInputType
+  }
+
+  export type GetContentOutputAggregateType<T extends ContentOutputAggregateArgs> = {
+        [P in keyof T & keyof AggregateContentOutput]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateContentOutput[P]>
+      : GetScalarType<T[P], AggregateContentOutput[P]>
+  }
+
+
+
+
+  export type ContentOutputGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ContentOutputWhereInput
+    orderBy?: ContentOutputOrderByWithAggregationInput | ContentOutputOrderByWithAggregationInput[]
+    by: ContentOutputScalarFieldEnum[] | ContentOutputScalarFieldEnum
+    having?: ContentOutputScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ContentOutputCountAggregateInputType | true
+    _min?: ContentOutputMinAggregateInputType
+    _max?: ContentOutputMaxAggregateInputType
+  }
+
+  export type ContentOutputGroupByOutputType = {
+    id: string
+    config_id: string
+    language: $Enums.ContentLanguage
+    title_strategy: $Enums.TitleProductionStrategy
+    description_strategy: $Enums.DescriptionProductionStrategy
+    ai_title_family_id: string | null
+    created_at: Date
+    updated_at: Date
+    _count: ContentOutputCountAggregateOutputType | null
+    _min: ContentOutputMinAggregateOutputType | null
+    _max: ContentOutputMaxAggregateOutputType | null
+  }
+
+  type GetContentOutputGroupByPayload<T extends ContentOutputGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ContentOutputGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ContentOutputGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ContentOutputGroupByOutputType[P]>
+            : GetScalarType<T[P], ContentOutputGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ContentOutputSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    config_id?: boolean
+    language?: boolean
+    title_strategy?: boolean
+    description_strategy?: boolean
+    ai_title_family_id?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
+    ai_title_family?: boolean | ContentOutput$ai_title_familyArgs<ExtArgs>
+  }, ExtArgs["result"]["contentOutput"]>
+
+  export type ContentOutputSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    config_id?: boolean
+    language?: boolean
+    title_strategy?: boolean
+    description_strategy?: boolean
+    ai_title_family_id?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
+    ai_title_family?: boolean | ContentOutput$ai_title_familyArgs<ExtArgs>
+  }, ExtArgs["result"]["contentOutput"]>
+
+  export type ContentOutputSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    config_id?: boolean
+    language?: boolean
+    title_strategy?: boolean
+    description_strategy?: boolean
+    ai_title_family_id?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
+    ai_title_family?: boolean | ContentOutput$ai_title_familyArgs<ExtArgs>
+  }, ExtArgs["result"]["contentOutput"]>
+
+  export type ContentOutputSelectScalar = {
+    id?: boolean
+    config_id?: boolean
+    language?: boolean
+    title_strategy?: boolean
+    description_strategy?: boolean
+    ai_title_family_id?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type ContentOutputOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "config_id" | "language" | "title_strategy" | "description_strategy" | "ai_title_family_id" | "created_at" | "updated_at", ExtArgs["result"]["contentOutput"]>
+  export type ContentOutputInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
+    ai_title_family?: boolean | ContentOutput$ai_title_familyArgs<ExtArgs>
+  }
+  export type ContentOutputIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
+    ai_title_family?: boolean | ContentOutput$ai_title_familyArgs<ExtArgs>
+  }
+  export type ContentOutputIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
+    ai_title_family?: boolean | ContentOutput$ai_title_familyArgs<ExtArgs>
+  }
+
+  export type $ContentOutputPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ContentOutput"
+    objects: {
+      config: Prisma.$ContentPublishingConfigPayload<ExtArgs>
+      ai_title_family: Prisma.$AiTitleFamilyPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      config_id: string
+      language: $Enums.ContentLanguage
+      title_strategy: $Enums.TitleProductionStrategy
+      description_strategy: $Enums.DescriptionProductionStrategy
+      ai_title_family_id: string | null
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["contentOutput"]>
+    composites: {}
+  }
+
+  type ContentOutputGetPayload<S extends boolean | null | undefined | ContentOutputDefaultArgs> = $Result.GetResult<Prisma.$ContentOutputPayload, S>
+
+  type ContentOutputCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ContentOutputFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ContentOutputCountAggregateInputType | true
+    }
+
+  export interface ContentOutputDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ContentOutput'], meta: { name: 'ContentOutput' } }
+    /**
+     * Find zero or one ContentOutput that matches the filter.
+     * @param {ContentOutputFindUniqueArgs} args - Arguments to find a ContentOutput
+     * @example
+     * // Get one ContentOutput
+     * const contentOutput = await prisma.contentOutput.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ContentOutputFindUniqueArgs>(args: SelectSubset<T, ContentOutputFindUniqueArgs<ExtArgs>>): Prisma__ContentOutputClient<$Result.GetResult<Prisma.$ContentOutputPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ContentOutput that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ContentOutputFindUniqueOrThrowArgs} args - Arguments to find a ContentOutput
+     * @example
+     * // Get one ContentOutput
+     * const contentOutput = await prisma.contentOutput.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ContentOutputFindUniqueOrThrowArgs>(args: SelectSubset<T, ContentOutputFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ContentOutputClient<$Result.GetResult<Prisma.$ContentOutputPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContentOutput that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentOutputFindFirstArgs} args - Arguments to find a ContentOutput
+     * @example
+     * // Get one ContentOutput
+     * const contentOutput = await prisma.contentOutput.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ContentOutputFindFirstArgs>(args?: SelectSubset<T, ContentOutputFindFirstArgs<ExtArgs>>): Prisma__ContentOutputClient<$Result.GetResult<Prisma.$ContentOutputPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ContentOutput that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentOutputFindFirstOrThrowArgs} args - Arguments to find a ContentOutput
+     * @example
+     * // Get one ContentOutput
+     * const contentOutput = await prisma.contentOutput.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ContentOutputFindFirstOrThrowArgs>(args?: SelectSubset<T, ContentOutputFindFirstOrThrowArgs<ExtArgs>>): Prisma__ContentOutputClient<$Result.GetResult<Prisma.$ContentOutputPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ContentOutputs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentOutputFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ContentOutputs
+     * const contentOutputs = await prisma.contentOutput.findMany()
+     * 
+     * // Get first 10 ContentOutputs
+     * const contentOutputs = await prisma.contentOutput.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const contentOutputWithIdOnly = await prisma.contentOutput.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ContentOutputFindManyArgs>(args?: SelectSubset<T, ContentOutputFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentOutputPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ContentOutput.
+     * @param {ContentOutputCreateArgs} args - Arguments to create a ContentOutput.
+     * @example
+     * // Create one ContentOutput
+     * const ContentOutput = await prisma.contentOutput.create({
+     *   data: {
+     *     // ... data to create a ContentOutput
+     *   }
+     * })
+     * 
+     */
+    create<T extends ContentOutputCreateArgs>(args: SelectSubset<T, ContentOutputCreateArgs<ExtArgs>>): Prisma__ContentOutputClient<$Result.GetResult<Prisma.$ContentOutputPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ContentOutputs.
+     * @param {ContentOutputCreateManyArgs} args - Arguments to create many ContentOutputs.
+     * @example
+     * // Create many ContentOutputs
+     * const contentOutput = await prisma.contentOutput.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ContentOutputCreateManyArgs>(args?: SelectSubset<T, ContentOutputCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ContentOutputs and returns the data saved in the database.
+     * @param {ContentOutputCreateManyAndReturnArgs} args - Arguments to create many ContentOutputs.
+     * @example
+     * // Create many ContentOutputs
+     * const contentOutput = await prisma.contentOutput.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ContentOutputs and only return the `id`
+     * const contentOutputWithIdOnly = await prisma.contentOutput.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ContentOutputCreateManyAndReturnArgs>(args?: SelectSubset<T, ContentOutputCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentOutputPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ContentOutput.
+     * @param {ContentOutputDeleteArgs} args - Arguments to delete one ContentOutput.
+     * @example
+     * // Delete one ContentOutput
+     * const ContentOutput = await prisma.contentOutput.delete({
+     *   where: {
+     *     // ... filter to delete one ContentOutput
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ContentOutputDeleteArgs>(args: SelectSubset<T, ContentOutputDeleteArgs<ExtArgs>>): Prisma__ContentOutputClient<$Result.GetResult<Prisma.$ContentOutputPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ContentOutput.
+     * @param {ContentOutputUpdateArgs} args - Arguments to update one ContentOutput.
+     * @example
+     * // Update one ContentOutput
+     * const contentOutput = await prisma.contentOutput.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ContentOutputUpdateArgs>(args: SelectSubset<T, ContentOutputUpdateArgs<ExtArgs>>): Prisma__ContentOutputClient<$Result.GetResult<Prisma.$ContentOutputPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ContentOutputs.
+     * @param {ContentOutputDeleteManyArgs} args - Arguments to filter ContentOutputs to delete.
+     * @example
+     * // Delete a few ContentOutputs
+     * const { count } = await prisma.contentOutput.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ContentOutputDeleteManyArgs>(args?: SelectSubset<T, ContentOutputDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ContentOutputs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentOutputUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ContentOutputs
+     * const contentOutput = await prisma.contentOutput.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ContentOutputUpdateManyArgs>(args: SelectSubset<T, ContentOutputUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ContentOutputs and returns the data updated in the database.
+     * @param {ContentOutputUpdateManyAndReturnArgs} args - Arguments to update many ContentOutputs.
+     * @example
+     * // Update many ContentOutputs
+     * const contentOutput = await prisma.contentOutput.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ContentOutputs and only return the `id`
+     * const contentOutputWithIdOnly = await prisma.contentOutput.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ContentOutputUpdateManyAndReturnArgs>(args: SelectSubset<T, ContentOutputUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentOutputPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ContentOutput.
+     * @param {ContentOutputUpsertArgs} args - Arguments to update or create a ContentOutput.
+     * @example
+     * // Update or create a ContentOutput
+     * const contentOutput = await prisma.contentOutput.upsert({
+     *   create: {
+     *     // ... data to create a ContentOutput
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ContentOutput we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ContentOutputUpsertArgs>(args: SelectSubset<T, ContentOutputUpsertArgs<ExtArgs>>): Prisma__ContentOutputClient<$Result.GetResult<Prisma.$ContentOutputPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ContentOutputs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentOutputCountArgs} args - Arguments to filter ContentOutputs to count.
+     * @example
+     * // Count the number of ContentOutputs
+     * const count = await prisma.contentOutput.count({
+     *   where: {
+     *     // ... the filter for the ContentOutputs we want to count
+     *   }
+     * })
+    **/
+    count<T extends ContentOutputCountArgs>(
+      args?: Subset<T, ContentOutputCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ContentOutputCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ContentOutput.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentOutputAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ContentOutputAggregateArgs>(args: Subset<T, ContentOutputAggregateArgs>): Prisma.PrismaPromise<GetContentOutputAggregateType<T>>
+
+    /**
+     * Group by ContentOutput.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ContentOutputGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ContentOutputGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ContentOutputGroupByArgs['orderBy'] }
+        : { orderBy?: ContentOutputGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ContentOutputGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetContentOutputGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ContentOutput model
+   */
+  readonly fields: ContentOutputFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ContentOutput.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ContentOutputClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    config<T extends ContentPublishingConfigDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ContentPublishingConfigDefaultArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    ai_title_family<T extends ContentOutput$ai_title_familyArgs<ExtArgs> = {}>(args?: Subset<T, ContentOutput$ai_title_familyArgs<ExtArgs>>): Prisma__AiTitleFamilyClient<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ContentOutput model
+   */
+  interface ContentOutputFieldRefs {
+    readonly id: FieldRef<"ContentOutput", 'String'>
+    readonly config_id: FieldRef<"ContentOutput", 'String'>
+    readonly language: FieldRef<"ContentOutput", 'ContentLanguage'>
+    readonly title_strategy: FieldRef<"ContentOutput", 'TitleProductionStrategy'>
+    readonly description_strategy: FieldRef<"ContentOutput", 'DescriptionProductionStrategy'>
+    readonly ai_title_family_id: FieldRef<"ContentOutput", 'String'>
+    readonly created_at: FieldRef<"ContentOutput", 'DateTime'>
+    readonly updated_at: FieldRef<"ContentOutput", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ContentOutput findUnique
+   */
+  export type ContentOutputFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentOutput to fetch.
+     */
+    where: ContentOutputWhereUniqueInput
+  }
+
+  /**
+   * ContentOutput findUniqueOrThrow
+   */
+  export type ContentOutputFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentOutput to fetch.
+     */
+    where: ContentOutputWhereUniqueInput
+  }
+
+  /**
+   * ContentOutput findFirst
+   */
+  export type ContentOutputFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentOutput to fetch.
+     */
+    where?: ContentOutputWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentOutputs to fetch.
+     */
+    orderBy?: ContentOutputOrderByWithRelationInput | ContentOutputOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContentOutputs.
+     */
+    cursor?: ContentOutputWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentOutputs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentOutputs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContentOutputs.
+     */
+    distinct?: ContentOutputScalarFieldEnum | ContentOutputScalarFieldEnum[]
+  }
+
+  /**
+   * ContentOutput findFirstOrThrow
+   */
+  export type ContentOutputFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentOutput to fetch.
+     */
+    where?: ContentOutputWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentOutputs to fetch.
+     */
+    orderBy?: ContentOutputOrderByWithRelationInput | ContentOutputOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ContentOutputs.
+     */
+    cursor?: ContentOutputWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentOutputs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentOutputs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ContentOutputs.
+     */
+    distinct?: ContentOutputScalarFieldEnum | ContentOutputScalarFieldEnum[]
+  }
+
+  /**
+   * ContentOutput findMany
+   */
+  export type ContentOutputFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputInclude<ExtArgs> | null
+    /**
+     * Filter, which ContentOutputs to fetch.
+     */
+    where?: ContentOutputWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ContentOutputs to fetch.
+     */
+    orderBy?: ContentOutputOrderByWithRelationInput | ContentOutputOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ContentOutputs.
+     */
+    cursor?: ContentOutputWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ContentOutputs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ContentOutputs.
+     */
+    skip?: number
+    distinct?: ContentOutputScalarFieldEnum | ContentOutputScalarFieldEnum[]
+  }
+
+  /**
+   * ContentOutput create
+   */
+  export type ContentOutputCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ContentOutput.
+     */
+    data: XOR<ContentOutputCreateInput, ContentOutputUncheckedCreateInput>
+  }
+
+  /**
+   * ContentOutput createMany
+   */
+  export type ContentOutputCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ContentOutputs.
+     */
+    data: ContentOutputCreateManyInput | ContentOutputCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ContentOutput createManyAndReturn
+   */
+  export type ContentOutputCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * The data used to create many ContentOutputs.
+     */
+    data: ContentOutputCreateManyInput | ContentOutputCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ContentOutput update
+   */
+  export type ContentOutputUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ContentOutput.
+     */
+    data: XOR<ContentOutputUpdateInput, ContentOutputUncheckedUpdateInput>
+    /**
+     * Choose, which ContentOutput to update.
+     */
+    where: ContentOutputWhereUniqueInput
+  }
+
+  /**
+   * ContentOutput updateMany
+   */
+  export type ContentOutputUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ContentOutputs.
+     */
+    data: XOR<ContentOutputUpdateManyMutationInput, ContentOutputUncheckedUpdateManyInput>
+    /**
+     * Filter which ContentOutputs to update
+     */
+    where?: ContentOutputWhereInput
+    /**
+     * Limit how many ContentOutputs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContentOutput updateManyAndReturn
+   */
+  export type ContentOutputUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * The data used to update ContentOutputs.
+     */
+    data: XOR<ContentOutputUpdateManyMutationInput, ContentOutputUncheckedUpdateManyInput>
+    /**
+     * Filter which ContentOutputs to update
+     */
+    where?: ContentOutputWhereInput
+    /**
+     * Limit how many ContentOutputs to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ContentOutput upsert
+   */
+  export type ContentOutputUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ContentOutput to update in case it exists.
+     */
+    where: ContentOutputWhereUniqueInput
+    /**
+     * In case the ContentOutput found by the `where` argument doesn't exist, create a new ContentOutput with this data.
+     */
+    create: XOR<ContentOutputCreateInput, ContentOutputUncheckedCreateInput>
+    /**
+     * In case the ContentOutput was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ContentOutputUpdateInput, ContentOutputUncheckedUpdateInput>
+  }
+
+  /**
+   * ContentOutput delete
+   */
+  export type ContentOutputDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputInclude<ExtArgs> | null
+    /**
+     * Filter which ContentOutput to delete.
+     */
+    where: ContentOutputWhereUniqueInput
+  }
+
+  /**
+   * ContentOutput deleteMany
+   */
+  export type ContentOutputDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ContentOutputs to delete
+     */
+    where?: ContentOutputWhereInput
+    /**
+     * Limit how many ContentOutputs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ContentOutput.ai_title_family
+   */
+  export type ContentOutput$ai_title_familyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyInclude<ExtArgs> | null
+    where?: AiTitleFamilyWhereInput
+  }
+
+  /**
+   * ContentOutput without action
+   */
+  export type ContentOutputDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AiTitleFamily
+   */
+
+  export type AggregateAiTitleFamily = {
+    _count: AiTitleFamilyCountAggregateOutputType | null
+    _min: AiTitleFamilyMinAggregateOutputType | null
+    _max: AiTitleFamilyMaxAggregateOutputType | null
+  }
+
+  export type AiTitleFamilyMinAggregateOutputType = {
+    id: string | null
+    config_id: string | null
+    name: string | null
+    model: string | null
+    use_batch: boolean | null
+    instructions: string | null
+    is_enabled: boolean | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type AiTitleFamilyMaxAggregateOutputType = {
+    id: string | null
+    config_id: string | null
+    name: string | null
+    model: string | null
+    use_batch: boolean | null
+    instructions: string | null
+    is_enabled: boolean | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type AiTitleFamilyCountAggregateOutputType = {
+    id: number
+    config_id: number
+    name: number
+    model: number
+    use_batch: number
+    instructions: number
+    generation_options: number
+    is_enabled: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type AiTitleFamilyMinAggregateInputType = {
+    id?: true
+    config_id?: true
+    name?: true
+    model?: true
+    use_batch?: true
+    instructions?: true
+    is_enabled?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type AiTitleFamilyMaxAggregateInputType = {
+    id?: true
+    config_id?: true
+    name?: true
+    model?: true
+    use_batch?: true
+    instructions?: true
+    is_enabled?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type AiTitleFamilyCountAggregateInputType = {
+    id?: true
+    config_id?: true
+    name?: true
+    model?: true
+    use_batch?: true
+    instructions?: true
+    generation_options?: true
+    is_enabled?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type AiTitleFamilyAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AiTitleFamily to aggregate.
+     */
+    where?: AiTitleFamilyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AiTitleFamilies to fetch.
+     */
+    orderBy?: AiTitleFamilyOrderByWithRelationInput | AiTitleFamilyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AiTitleFamilyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AiTitleFamilies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AiTitleFamilies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AiTitleFamilies
+    **/
+    _count?: true | AiTitleFamilyCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AiTitleFamilyMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AiTitleFamilyMaxAggregateInputType
+  }
+
+  export type GetAiTitleFamilyAggregateType<T extends AiTitleFamilyAggregateArgs> = {
+        [P in keyof T & keyof AggregateAiTitleFamily]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAiTitleFamily[P]>
+      : GetScalarType<T[P], AggregateAiTitleFamily[P]>
+  }
+
+
+
+
+  export type AiTitleFamilyGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AiTitleFamilyWhereInput
+    orderBy?: AiTitleFamilyOrderByWithAggregationInput | AiTitleFamilyOrderByWithAggregationInput[]
+    by: AiTitleFamilyScalarFieldEnum[] | AiTitleFamilyScalarFieldEnum
+    having?: AiTitleFamilyScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AiTitleFamilyCountAggregateInputType | true
+    _min?: AiTitleFamilyMinAggregateInputType
+    _max?: AiTitleFamilyMaxAggregateInputType
+  }
+
+  export type AiTitleFamilyGroupByOutputType = {
+    id: string
+    config_id: string
+    name: string
+    model: string | null
+    use_batch: boolean | null
+    instructions: string | null
+    generation_options: JsonValue | null
+    is_enabled: boolean
+    created_at: Date
+    updated_at: Date
+    _count: AiTitleFamilyCountAggregateOutputType | null
+    _min: AiTitleFamilyMinAggregateOutputType | null
+    _max: AiTitleFamilyMaxAggregateOutputType | null
+  }
+
+  type GetAiTitleFamilyGroupByPayload<T extends AiTitleFamilyGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AiTitleFamilyGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AiTitleFamilyGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AiTitleFamilyGroupByOutputType[P]>
+            : GetScalarType<T[P], AiTitleFamilyGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AiTitleFamilySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    config_id?: boolean
+    name?: boolean
+    model?: boolean
+    use_batch?: boolean
+    instructions?: boolean
+    generation_options?: boolean
+    is_enabled?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
+    outputs?: boolean | AiTitleFamily$outputsArgs<ExtArgs>
+    ai_batch_runs?: boolean | AiTitleFamily$ai_batch_runsArgs<ExtArgs>
+    _count?: boolean | AiTitleFamilyCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["aiTitleFamily"]>
+
+  export type AiTitleFamilySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    config_id?: boolean
+    name?: boolean
+    model?: boolean
+    use_batch?: boolean
+    instructions?: boolean
+    generation_options?: boolean
+    is_enabled?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["aiTitleFamily"]>
+
+  export type AiTitleFamilySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    config_id?: boolean
+    name?: boolean
+    model?: boolean
+    use_batch?: boolean
+    instructions?: boolean
+    generation_options?: boolean
+    is_enabled?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["aiTitleFamily"]>
+
+  export type AiTitleFamilySelectScalar = {
+    id?: boolean
+    config_id?: boolean
+    name?: boolean
+    model?: boolean
+    use_batch?: boolean
+    instructions?: boolean
+    generation_options?: boolean
+    is_enabled?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type AiTitleFamilyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "config_id" | "name" | "model" | "use_batch" | "instructions" | "generation_options" | "is_enabled" | "created_at" | "updated_at", ExtArgs["result"]["aiTitleFamily"]>
+  export type AiTitleFamilyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
+    outputs?: boolean | AiTitleFamily$outputsArgs<ExtArgs>
+    ai_batch_runs?: boolean | AiTitleFamily$ai_batch_runsArgs<ExtArgs>
+    _count?: boolean | AiTitleFamilyCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type AiTitleFamilyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
+  }
+  export type AiTitleFamilyIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
+  }
+
+  export type $AiTitleFamilyPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AiTitleFamily"
+    objects: {
+      config: Prisma.$ContentPublishingConfigPayload<ExtArgs>
+      outputs: Prisma.$ContentOutputPayload<ExtArgs>[]
+      ai_batch_runs: Prisma.$AiBatchRunPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      config_id: string
+      name: string
+      model: string | null
+      use_batch: boolean | null
+      instructions: string | null
+      generation_options: Prisma.JsonValue | null
+      is_enabled: boolean
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["aiTitleFamily"]>
+    composites: {}
+  }
+
+  type AiTitleFamilyGetPayload<S extends boolean | null | undefined | AiTitleFamilyDefaultArgs> = $Result.GetResult<Prisma.$AiTitleFamilyPayload, S>
+
+  type AiTitleFamilyCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AiTitleFamilyFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AiTitleFamilyCountAggregateInputType | true
+    }
+
+  export interface AiTitleFamilyDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AiTitleFamily'], meta: { name: 'AiTitleFamily' } }
+    /**
+     * Find zero or one AiTitleFamily that matches the filter.
+     * @param {AiTitleFamilyFindUniqueArgs} args - Arguments to find a AiTitleFamily
+     * @example
+     * // Get one AiTitleFamily
+     * const aiTitleFamily = await prisma.aiTitleFamily.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AiTitleFamilyFindUniqueArgs>(args: SelectSubset<T, AiTitleFamilyFindUniqueArgs<ExtArgs>>): Prisma__AiTitleFamilyClient<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AiTitleFamily that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AiTitleFamilyFindUniqueOrThrowArgs} args - Arguments to find a AiTitleFamily
+     * @example
+     * // Get one AiTitleFamily
+     * const aiTitleFamily = await prisma.aiTitleFamily.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AiTitleFamilyFindUniqueOrThrowArgs>(args: SelectSubset<T, AiTitleFamilyFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AiTitleFamilyClient<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AiTitleFamily that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiTitleFamilyFindFirstArgs} args - Arguments to find a AiTitleFamily
+     * @example
+     * // Get one AiTitleFamily
+     * const aiTitleFamily = await prisma.aiTitleFamily.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AiTitleFamilyFindFirstArgs>(args?: SelectSubset<T, AiTitleFamilyFindFirstArgs<ExtArgs>>): Prisma__AiTitleFamilyClient<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AiTitleFamily that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiTitleFamilyFindFirstOrThrowArgs} args - Arguments to find a AiTitleFamily
+     * @example
+     * // Get one AiTitleFamily
+     * const aiTitleFamily = await prisma.aiTitleFamily.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AiTitleFamilyFindFirstOrThrowArgs>(args?: SelectSubset<T, AiTitleFamilyFindFirstOrThrowArgs<ExtArgs>>): Prisma__AiTitleFamilyClient<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AiTitleFamilies that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiTitleFamilyFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AiTitleFamilies
+     * const aiTitleFamilies = await prisma.aiTitleFamily.findMany()
+     * 
+     * // Get first 10 AiTitleFamilies
+     * const aiTitleFamilies = await prisma.aiTitleFamily.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const aiTitleFamilyWithIdOnly = await prisma.aiTitleFamily.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AiTitleFamilyFindManyArgs>(args?: SelectSubset<T, AiTitleFamilyFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AiTitleFamily.
+     * @param {AiTitleFamilyCreateArgs} args - Arguments to create a AiTitleFamily.
+     * @example
+     * // Create one AiTitleFamily
+     * const AiTitleFamily = await prisma.aiTitleFamily.create({
+     *   data: {
+     *     // ... data to create a AiTitleFamily
+     *   }
+     * })
+     * 
+     */
+    create<T extends AiTitleFamilyCreateArgs>(args: SelectSubset<T, AiTitleFamilyCreateArgs<ExtArgs>>): Prisma__AiTitleFamilyClient<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AiTitleFamilies.
+     * @param {AiTitleFamilyCreateManyArgs} args - Arguments to create many AiTitleFamilies.
+     * @example
+     * // Create many AiTitleFamilies
+     * const aiTitleFamily = await prisma.aiTitleFamily.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AiTitleFamilyCreateManyArgs>(args?: SelectSubset<T, AiTitleFamilyCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AiTitleFamilies and returns the data saved in the database.
+     * @param {AiTitleFamilyCreateManyAndReturnArgs} args - Arguments to create many AiTitleFamilies.
+     * @example
+     * // Create many AiTitleFamilies
+     * const aiTitleFamily = await prisma.aiTitleFamily.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AiTitleFamilies and only return the `id`
+     * const aiTitleFamilyWithIdOnly = await prisma.aiTitleFamily.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AiTitleFamilyCreateManyAndReturnArgs>(args?: SelectSubset<T, AiTitleFamilyCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AiTitleFamily.
+     * @param {AiTitleFamilyDeleteArgs} args - Arguments to delete one AiTitleFamily.
+     * @example
+     * // Delete one AiTitleFamily
+     * const AiTitleFamily = await prisma.aiTitleFamily.delete({
+     *   where: {
+     *     // ... filter to delete one AiTitleFamily
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AiTitleFamilyDeleteArgs>(args: SelectSubset<T, AiTitleFamilyDeleteArgs<ExtArgs>>): Prisma__AiTitleFamilyClient<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AiTitleFamily.
+     * @param {AiTitleFamilyUpdateArgs} args - Arguments to update one AiTitleFamily.
+     * @example
+     * // Update one AiTitleFamily
+     * const aiTitleFamily = await prisma.aiTitleFamily.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AiTitleFamilyUpdateArgs>(args: SelectSubset<T, AiTitleFamilyUpdateArgs<ExtArgs>>): Prisma__AiTitleFamilyClient<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AiTitleFamilies.
+     * @param {AiTitleFamilyDeleteManyArgs} args - Arguments to filter AiTitleFamilies to delete.
+     * @example
+     * // Delete a few AiTitleFamilies
+     * const { count } = await prisma.aiTitleFamily.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AiTitleFamilyDeleteManyArgs>(args?: SelectSubset<T, AiTitleFamilyDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AiTitleFamilies.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiTitleFamilyUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AiTitleFamilies
+     * const aiTitleFamily = await prisma.aiTitleFamily.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AiTitleFamilyUpdateManyArgs>(args: SelectSubset<T, AiTitleFamilyUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AiTitleFamilies and returns the data updated in the database.
+     * @param {AiTitleFamilyUpdateManyAndReturnArgs} args - Arguments to update many AiTitleFamilies.
+     * @example
+     * // Update many AiTitleFamilies
+     * const aiTitleFamily = await prisma.aiTitleFamily.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AiTitleFamilies and only return the `id`
+     * const aiTitleFamilyWithIdOnly = await prisma.aiTitleFamily.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AiTitleFamilyUpdateManyAndReturnArgs>(args: SelectSubset<T, AiTitleFamilyUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AiTitleFamily.
+     * @param {AiTitleFamilyUpsertArgs} args - Arguments to update or create a AiTitleFamily.
+     * @example
+     * // Update or create a AiTitleFamily
+     * const aiTitleFamily = await prisma.aiTitleFamily.upsert({
+     *   create: {
+     *     // ... data to create a AiTitleFamily
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AiTitleFamily we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AiTitleFamilyUpsertArgs>(args: SelectSubset<T, AiTitleFamilyUpsertArgs<ExtArgs>>): Prisma__AiTitleFamilyClient<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AiTitleFamilies.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiTitleFamilyCountArgs} args - Arguments to filter AiTitleFamilies to count.
+     * @example
+     * // Count the number of AiTitleFamilies
+     * const count = await prisma.aiTitleFamily.count({
+     *   where: {
+     *     // ... the filter for the AiTitleFamilies we want to count
+     *   }
+     * })
+    **/
+    count<T extends AiTitleFamilyCountArgs>(
+      args?: Subset<T, AiTitleFamilyCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AiTitleFamilyCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AiTitleFamily.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiTitleFamilyAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AiTitleFamilyAggregateArgs>(args: Subset<T, AiTitleFamilyAggregateArgs>): Prisma.PrismaPromise<GetAiTitleFamilyAggregateType<T>>
+
+    /**
+     * Group by AiTitleFamily.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiTitleFamilyGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AiTitleFamilyGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AiTitleFamilyGroupByArgs['orderBy'] }
+        : { orderBy?: AiTitleFamilyGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AiTitleFamilyGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAiTitleFamilyGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AiTitleFamily model
+   */
+  readonly fields: AiTitleFamilyFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AiTitleFamily.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AiTitleFamilyClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    config<T extends ContentPublishingConfigDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ContentPublishingConfigDefaultArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    outputs<T extends AiTitleFamily$outputsArgs<ExtArgs> = {}>(args?: Subset<T, AiTitleFamily$outputsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ContentOutputPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    ai_batch_runs<T extends AiTitleFamily$ai_batch_runsArgs<ExtArgs> = {}>(args?: Subset<T, AiTitleFamily$ai_batch_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AiTitleFamily model
+   */
+  interface AiTitleFamilyFieldRefs {
+    readonly id: FieldRef<"AiTitleFamily", 'String'>
+    readonly config_id: FieldRef<"AiTitleFamily", 'String'>
+    readonly name: FieldRef<"AiTitleFamily", 'String'>
+    readonly model: FieldRef<"AiTitleFamily", 'String'>
+    readonly use_batch: FieldRef<"AiTitleFamily", 'Boolean'>
+    readonly instructions: FieldRef<"AiTitleFamily", 'String'>
+    readonly generation_options: FieldRef<"AiTitleFamily", 'Json'>
+    readonly is_enabled: FieldRef<"AiTitleFamily", 'Boolean'>
+    readonly created_at: FieldRef<"AiTitleFamily", 'DateTime'>
+    readonly updated_at: FieldRef<"AiTitleFamily", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AiTitleFamily findUnique
+   */
+  export type AiTitleFamilyFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyInclude<ExtArgs> | null
+    /**
+     * Filter, which AiTitleFamily to fetch.
+     */
+    where: AiTitleFamilyWhereUniqueInput
+  }
+
+  /**
+   * AiTitleFamily findUniqueOrThrow
+   */
+  export type AiTitleFamilyFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyInclude<ExtArgs> | null
+    /**
+     * Filter, which AiTitleFamily to fetch.
+     */
+    where: AiTitleFamilyWhereUniqueInput
+  }
+
+  /**
+   * AiTitleFamily findFirst
+   */
+  export type AiTitleFamilyFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyInclude<ExtArgs> | null
+    /**
+     * Filter, which AiTitleFamily to fetch.
+     */
+    where?: AiTitleFamilyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AiTitleFamilies to fetch.
+     */
+    orderBy?: AiTitleFamilyOrderByWithRelationInput | AiTitleFamilyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AiTitleFamilies.
+     */
+    cursor?: AiTitleFamilyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AiTitleFamilies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AiTitleFamilies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AiTitleFamilies.
+     */
+    distinct?: AiTitleFamilyScalarFieldEnum | AiTitleFamilyScalarFieldEnum[]
+  }
+
+  /**
+   * AiTitleFamily findFirstOrThrow
+   */
+  export type AiTitleFamilyFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyInclude<ExtArgs> | null
+    /**
+     * Filter, which AiTitleFamily to fetch.
+     */
+    where?: AiTitleFamilyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AiTitleFamilies to fetch.
+     */
+    orderBy?: AiTitleFamilyOrderByWithRelationInput | AiTitleFamilyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AiTitleFamilies.
+     */
+    cursor?: AiTitleFamilyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AiTitleFamilies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AiTitleFamilies.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AiTitleFamilies.
+     */
+    distinct?: AiTitleFamilyScalarFieldEnum | AiTitleFamilyScalarFieldEnum[]
+  }
+
+  /**
+   * AiTitleFamily findMany
+   */
+  export type AiTitleFamilyFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyInclude<ExtArgs> | null
+    /**
+     * Filter, which AiTitleFamilies to fetch.
+     */
+    where?: AiTitleFamilyWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AiTitleFamilies to fetch.
+     */
+    orderBy?: AiTitleFamilyOrderByWithRelationInput | AiTitleFamilyOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AiTitleFamilies.
+     */
+    cursor?: AiTitleFamilyWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AiTitleFamilies from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AiTitleFamilies.
+     */
+    skip?: number
+    distinct?: AiTitleFamilyScalarFieldEnum | AiTitleFamilyScalarFieldEnum[]
+  }
+
+  /**
+   * AiTitleFamily create
+   */
+  export type AiTitleFamilyCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AiTitleFamily.
+     */
+    data: XOR<AiTitleFamilyCreateInput, AiTitleFamilyUncheckedCreateInput>
+  }
+
+  /**
+   * AiTitleFamily createMany
+   */
+  export type AiTitleFamilyCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AiTitleFamilies.
+     */
+    data: AiTitleFamilyCreateManyInput | AiTitleFamilyCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AiTitleFamily createManyAndReturn
+   */
+  export type AiTitleFamilyCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * The data used to create many AiTitleFamilies.
+     */
+    data: AiTitleFamilyCreateManyInput | AiTitleFamilyCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AiTitleFamily update
+   */
+  export type AiTitleFamilyUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AiTitleFamily.
+     */
+    data: XOR<AiTitleFamilyUpdateInput, AiTitleFamilyUncheckedUpdateInput>
+    /**
+     * Choose, which AiTitleFamily to update.
+     */
+    where: AiTitleFamilyWhereUniqueInput
+  }
+
+  /**
+   * AiTitleFamily updateMany
+   */
+  export type AiTitleFamilyUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AiTitleFamilies.
+     */
+    data: XOR<AiTitleFamilyUpdateManyMutationInput, AiTitleFamilyUncheckedUpdateManyInput>
+    /**
+     * Filter which AiTitleFamilies to update
+     */
+    where?: AiTitleFamilyWhereInput
+    /**
+     * Limit how many AiTitleFamilies to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AiTitleFamily updateManyAndReturn
+   */
+  export type AiTitleFamilyUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * The data used to update AiTitleFamilies.
+     */
+    data: XOR<AiTitleFamilyUpdateManyMutationInput, AiTitleFamilyUncheckedUpdateManyInput>
+    /**
+     * Filter which AiTitleFamilies to update
+     */
+    where?: AiTitleFamilyWhereInput
+    /**
+     * Limit how many AiTitleFamilies to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AiTitleFamily upsert
+   */
+  export type AiTitleFamilyUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AiTitleFamily to update in case it exists.
+     */
+    where: AiTitleFamilyWhereUniqueInput
+    /**
+     * In case the AiTitleFamily found by the `where` argument doesn't exist, create a new AiTitleFamily with this data.
+     */
+    create: XOR<AiTitleFamilyCreateInput, AiTitleFamilyUncheckedCreateInput>
+    /**
+     * In case the AiTitleFamily was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AiTitleFamilyUpdateInput, AiTitleFamilyUncheckedUpdateInput>
+  }
+
+  /**
+   * AiTitleFamily delete
+   */
+  export type AiTitleFamilyDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyInclude<ExtArgs> | null
+    /**
+     * Filter which AiTitleFamily to delete.
+     */
+    where: AiTitleFamilyWhereUniqueInput
+  }
+
+  /**
+   * AiTitleFamily deleteMany
+   */
+  export type AiTitleFamilyDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AiTitleFamilies to delete
+     */
+    where?: AiTitleFamilyWhereInput
+    /**
+     * Limit how many AiTitleFamilies to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AiTitleFamily.outputs
+   */
+  export type AiTitleFamily$outputsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentOutput
+     */
+    select?: ContentOutputSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentOutput
+     */
+    omit?: ContentOutputOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentOutputInclude<ExtArgs> | null
+    where?: ContentOutputWhereInput
+    orderBy?: ContentOutputOrderByWithRelationInput | ContentOutputOrderByWithRelationInput[]
+    cursor?: ContentOutputWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ContentOutputScalarFieldEnum | ContentOutputScalarFieldEnum[]
+  }
+
+  /**
+   * AiTitleFamily.ai_batch_runs
+   */
+  export type AiTitleFamily$ai_batch_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
+    where?: AiBatchRunWhereInput
+    orderBy?: AiBatchRunOrderByWithRelationInput | AiBatchRunOrderByWithRelationInput[]
+    cursor?: AiBatchRunWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AiBatchRunScalarFieldEnum | AiBatchRunScalarFieldEnum[]
+  }
+
+  /**
+   * AiTitleFamily without action
+   */
+  export type AiTitleFamilyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PropertyLocalizedContent
+   */
+
+  export type AggregatePropertyLocalizedContent = {
+    _count: PropertyLocalizedContentCountAggregateOutputType | null
+    _min: PropertyLocalizedContentMinAggregateOutputType | null
+    _max: PropertyLocalizedContentMaxAggregateOutputType | null
+  }
+
+  export type PropertyLocalizedContentMinAggregateOutputType = {
+    id: string | null
+    user_property_id: string | null
+    content_type: $Enums.ContentType | null
+    language: $Enums.ContentLanguage | null
+    production: string | null
+    text: string | null
+    is_stale: boolean | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type PropertyLocalizedContentMaxAggregateOutputType = {
+    id: string | null
+    user_property_id: string | null
+    content_type: $Enums.ContentType | null
+    language: $Enums.ContentLanguage | null
+    production: string | null
+    text: string | null
+    is_stale: boolean | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type PropertyLocalizedContentCountAggregateOutputType = {
+    id: number
+    user_property_id: number
+    content_type: number
+    language: number
+    production: number
+    text: number
+    is_stale: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type PropertyLocalizedContentMinAggregateInputType = {
+    id?: true
+    user_property_id?: true
+    content_type?: true
+    language?: true
+    production?: true
+    text?: true
+    is_stale?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type PropertyLocalizedContentMaxAggregateInputType = {
+    id?: true
+    user_property_id?: true
+    content_type?: true
+    language?: true
+    production?: true
+    text?: true
+    is_stale?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type PropertyLocalizedContentCountAggregateInputType = {
+    id?: true
+    user_property_id?: true
+    content_type?: true
+    language?: true
+    production?: true
+    text?: true
+    is_stale?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type PropertyLocalizedContentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PropertyLocalizedContent to aggregate.
+     */
+    where?: PropertyLocalizedContentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PropertyLocalizedContents to fetch.
+     */
+    orderBy?: PropertyLocalizedContentOrderByWithRelationInput | PropertyLocalizedContentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PropertyLocalizedContentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PropertyLocalizedContents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PropertyLocalizedContents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PropertyLocalizedContents
+    **/
+    _count?: true | PropertyLocalizedContentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PropertyLocalizedContentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PropertyLocalizedContentMaxAggregateInputType
+  }
+
+  export type GetPropertyLocalizedContentAggregateType<T extends PropertyLocalizedContentAggregateArgs> = {
+        [P in keyof T & keyof AggregatePropertyLocalizedContent]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePropertyLocalizedContent[P]>
+      : GetScalarType<T[P], AggregatePropertyLocalizedContent[P]>
+  }
+
+
+
+
+  export type PropertyLocalizedContentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PropertyLocalizedContentWhereInput
+    orderBy?: PropertyLocalizedContentOrderByWithAggregationInput | PropertyLocalizedContentOrderByWithAggregationInput[]
+    by: PropertyLocalizedContentScalarFieldEnum[] | PropertyLocalizedContentScalarFieldEnum
+    having?: PropertyLocalizedContentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PropertyLocalizedContentCountAggregateInputType | true
+    _min?: PropertyLocalizedContentMinAggregateInputType
+    _max?: PropertyLocalizedContentMaxAggregateInputType
+  }
+
+  export type PropertyLocalizedContentGroupByOutputType = {
+    id: string
+    user_property_id: string
+    content_type: $Enums.ContentType
+    language: $Enums.ContentLanguage
+    production: string
+    text: string
+    is_stale: boolean
+    created_at: Date
+    updated_at: Date
+    _count: PropertyLocalizedContentCountAggregateOutputType | null
+    _min: PropertyLocalizedContentMinAggregateOutputType | null
+    _max: PropertyLocalizedContentMaxAggregateOutputType | null
+  }
+
+  type GetPropertyLocalizedContentGroupByPayload<T extends PropertyLocalizedContentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PropertyLocalizedContentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PropertyLocalizedContentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PropertyLocalizedContentGroupByOutputType[P]>
+            : GetScalarType<T[P], PropertyLocalizedContentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PropertyLocalizedContentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_property_id?: boolean
+    content_type?: boolean
+    language?: boolean
+    production?: boolean
+    text?: boolean
+    is_stale?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["propertyLocalizedContent"]>
+
+  export type PropertyLocalizedContentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_property_id?: boolean
+    content_type?: boolean
+    language?: boolean
+    production?: boolean
+    text?: boolean
+    is_stale?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["propertyLocalizedContent"]>
+
+  export type PropertyLocalizedContentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_property_id?: boolean
+    content_type?: boolean
+    language?: boolean
+    production?: boolean
+    text?: boolean
+    is_stale?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["propertyLocalizedContent"]>
+
+  export type PropertyLocalizedContentSelectScalar = {
+    id?: boolean
+    user_property_id?: boolean
+    content_type?: boolean
+    language?: boolean
+    production?: boolean
+    text?: boolean
+    is_stale?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type PropertyLocalizedContentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_property_id" | "content_type" | "language" | "production" | "text" | "is_stale" | "created_at" | "updated_at", ExtArgs["result"]["propertyLocalizedContent"]>
+  export type PropertyLocalizedContentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
+  }
+  export type PropertyLocalizedContentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
+  }
+  export type PropertyLocalizedContentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user_property?: boolean | UserPropertyDefaultArgs<ExtArgs>
+  }
+
+  export type $PropertyLocalizedContentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PropertyLocalizedContent"
+    objects: {
+      user_property: Prisma.$UserPropertyPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      user_property_id: string
+      content_type: $Enums.ContentType
+      language: $Enums.ContentLanguage
+      production: string
+      text: string
+      is_stale: boolean
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["propertyLocalizedContent"]>
+    composites: {}
+  }
+
+  type PropertyLocalizedContentGetPayload<S extends boolean | null | undefined | PropertyLocalizedContentDefaultArgs> = $Result.GetResult<Prisma.$PropertyLocalizedContentPayload, S>
+
+  type PropertyLocalizedContentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PropertyLocalizedContentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PropertyLocalizedContentCountAggregateInputType | true
+    }
+
+  export interface PropertyLocalizedContentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PropertyLocalizedContent'], meta: { name: 'PropertyLocalizedContent' } }
+    /**
+     * Find zero or one PropertyLocalizedContent that matches the filter.
+     * @param {PropertyLocalizedContentFindUniqueArgs} args - Arguments to find a PropertyLocalizedContent
+     * @example
+     * // Get one PropertyLocalizedContent
+     * const propertyLocalizedContent = await prisma.propertyLocalizedContent.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PropertyLocalizedContentFindUniqueArgs>(args: SelectSubset<T, PropertyLocalizedContentFindUniqueArgs<ExtArgs>>): Prisma__PropertyLocalizedContentClient<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PropertyLocalizedContent that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PropertyLocalizedContentFindUniqueOrThrowArgs} args - Arguments to find a PropertyLocalizedContent
+     * @example
+     * // Get one PropertyLocalizedContent
+     * const propertyLocalizedContent = await prisma.propertyLocalizedContent.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PropertyLocalizedContentFindUniqueOrThrowArgs>(args: SelectSubset<T, PropertyLocalizedContentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PropertyLocalizedContentClient<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PropertyLocalizedContent that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertyLocalizedContentFindFirstArgs} args - Arguments to find a PropertyLocalizedContent
+     * @example
+     * // Get one PropertyLocalizedContent
+     * const propertyLocalizedContent = await prisma.propertyLocalizedContent.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PropertyLocalizedContentFindFirstArgs>(args?: SelectSubset<T, PropertyLocalizedContentFindFirstArgs<ExtArgs>>): Prisma__PropertyLocalizedContentClient<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PropertyLocalizedContent that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertyLocalizedContentFindFirstOrThrowArgs} args - Arguments to find a PropertyLocalizedContent
+     * @example
+     * // Get one PropertyLocalizedContent
+     * const propertyLocalizedContent = await prisma.propertyLocalizedContent.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PropertyLocalizedContentFindFirstOrThrowArgs>(args?: SelectSubset<T, PropertyLocalizedContentFindFirstOrThrowArgs<ExtArgs>>): Prisma__PropertyLocalizedContentClient<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PropertyLocalizedContents that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertyLocalizedContentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PropertyLocalizedContents
+     * const propertyLocalizedContents = await prisma.propertyLocalizedContent.findMany()
+     * 
+     * // Get first 10 PropertyLocalizedContents
+     * const propertyLocalizedContents = await prisma.propertyLocalizedContent.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const propertyLocalizedContentWithIdOnly = await prisma.propertyLocalizedContent.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PropertyLocalizedContentFindManyArgs>(args?: SelectSubset<T, PropertyLocalizedContentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PropertyLocalizedContent.
+     * @param {PropertyLocalizedContentCreateArgs} args - Arguments to create a PropertyLocalizedContent.
+     * @example
+     * // Create one PropertyLocalizedContent
+     * const PropertyLocalizedContent = await prisma.propertyLocalizedContent.create({
+     *   data: {
+     *     // ... data to create a PropertyLocalizedContent
+     *   }
+     * })
+     * 
+     */
+    create<T extends PropertyLocalizedContentCreateArgs>(args: SelectSubset<T, PropertyLocalizedContentCreateArgs<ExtArgs>>): Prisma__PropertyLocalizedContentClient<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PropertyLocalizedContents.
+     * @param {PropertyLocalizedContentCreateManyArgs} args - Arguments to create many PropertyLocalizedContents.
+     * @example
+     * // Create many PropertyLocalizedContents
+     * const propertyLocalizedContent = await prisma.propertyLocalizedContent.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PropertyLocalizedContentCreateManyArgs>(args?: SelectSubset<T, PropertyLocalizedContentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PropertyLocalizedContents and returns the data saved in the database.
+     * @param {PropertyLocalizedContentCreateManyAndReturnArgs} args - Arguments to create many PropertyLocalizedContents.
+     * @example
+     * // Create many PropertyLocalizedContents
+     * const propertyLocalizedContent = await prisma.propertyLocalizedContent.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PropertyLocalizedContents and only return the `id`
+     * const propertyLocalizedContentWithIdOnly = await prisma.propertyLocalizedContent.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PropertyLocalizedContentCreateManyAndReturnArgs>(args?: SelectSubset<T, PropertyLocalizedContentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PropertyLocalizedContent.
+     * @param {PropertyLocalizedContentDeleteArgs} args - Arguments to delete one PropertyLocalizedContent.
+     * @example
+     * // Delete one PropertyLocalizedContent
+     * const PropertyLocalizedContent = await prisma.propertyLocalizedContent.delete({
+     *   where: {
+     *     // ... filter to delete one PropertyLocalizedContent
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PropertyLocalizedContentDeleteArgs>(args: SelectSubset<T, PropertyLocalizedContentDeleteArgs<ExtArgs>>): Prisma__PropertyLocalizedContentClient<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PropertyLocalizedContent.
+     * @param {PropertyLocalizedContentUpdateArgs} args - Arguments to update one PropertyLocalizedContent.
+     * @example
+     * // Update one PropertyLocalizedContent
+     * const propertyLocalizedContent = await prisma.propertyLocalizedContent.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PropertyLocalizedContentUpdateArgs>(args: SelectSubset<T, PropertyLocalizedContentUpdateArgs<ExtArgs>>): Prisma__PropertyLocalizedContentClient<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PropertyLocalizedContents.
+     * @param {PropertyLocalizedContentDeleteManyArgs} args - Arguments to filter PropertyLocalizedContents to delete.
+     * @example
+     * // Delete a few PropertyLocalizedContents
+     * const { count } = await prisma.propertyLocalizedContent.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PropertyLocalizedContentDeleteManyArgs>(args?: SelectSubset<T, PropertyLocalizedContentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PropertyLocalizedContents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertyLocalizedContentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PropertyLocalizedContents
+     * const propertyLocalizedContent = await prisma.propertyLocalizedContent.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PropertyLocalizedContentUpdateManyArgs>(args: SelectSubset<T, PropertyLocalizedContentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PropertyLocalizedContents and returns the data updated in the database.
+     * @param {PropertyLocalizedContentUpdateManyAndReturnArgs} args - Arguments to update many PropertyLocalizedContents.
+     * @example
+     * // Update many PropertyLocalizedContents
+     * const propertyLocalizedContent = await prisma.propertyLocalizedContent.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PropertyLocalizedContents and only return the `id`
+     * const propertyLocalizedContentWithIdOnly = await prisma.propertyLocalizedContent.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PropertyLocalizedContentUpdateManyAndReturnArgs>(args: SelectSubset<T, PropertyLocalizedContentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PropertyLocalizedContent.
+     * @param {PropertyLocalizedContentUpsertArgs} args - Arguments to update or create a PropertyLocalizedContent.
+     * @example
+     * // Update or create a PropertyLocalizedContent
+     * const propertyLocalizedContent = await prisma.propertyLocalizedContent.upsert({
+     *   create: {
+     *     // ... data to create a PropertyLocalizedContent
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PropertyLocalizedContent we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PropertyLocalizedContentUpsertArgs>(args: SelectSubset<T, PropertyLocalizedContentUpsertArgs<ExtArgs>>): Prisma__PropertyLocalizedContentClient<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PropertyLocalizedContents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertyLocalizedContentCountArgs} args - Arguments to filter PropertyLocalizedContents to count.
+     * @example
+     * // Count the number of PropertyLocalizedContents
+     * const count = await prisma.propertyLocalizedContent.count({
+     *   where: {
+     *     // ... the filter for the PropertyLocalizedContents we want to count
+     *   }
+     * })
+    **/
+    count<T extends PropertyLocalizedContentCountArgs>(
+      args?: Subset<T, PropertyLocalizedContentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PropertyLocalizedContentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PropertyLocalizedContent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertyLocalizedContentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PropertyLocalizedContentAggregateArgs>(args: Subset<T, PropertyLocalizedContentAggregateArgs>): Prisma.PrismaPromise<GetPropertyLocalizedContentAggregateType<T>>
+
+    /**
+     * Group by PropertyLocalizedContent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PropertyLocalizedContentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PropertyLocalizedContentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PropertyLocalizedContentGroupByArgs['orderBy'] }
+        : { orderBy?: PropertyLocalizedContentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PropertyLocalizedContentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPropertyLocalizedContentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PropertyLocalizedContent model
+   */
+  readonly fields: PropertyLocalizedContentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PropertyLocalizedContent.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PropertyLocalizedContentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user_property<T extends UserPropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserPropertyDefaultArgs<ExtArgs>>): Prisma__UserPropertyClient<$Result.GetResult<Prisma.$UserPropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PropertyLocalizedContent model
+   */
+  interface PropertyLocalizedContentFieldRefs {
+    readonly id: FieldRef<"PropertyLocalizedContent", 'String'>
+    readonly user_property_id: FieldRef<"PropertyLocalizedContent", 'String'>
+    readonly content_type: FieldRef<"PropertyLocalizedContent", 'ContentType'>
+    readonly language: FieldRef<"PropertyLocalizedContent", 'ContentLanguage'>
+    readonly production: FieldRef<"PropertyLocalizedContent", 'String'>
+    readonly text: FieldRef<"PropertyLocalizedContent", 'String'>
+    readonly is_stale: FieldRef<"PropertyLocalizedContent", 'Boolean'>
+    readonly created_at: FieldRef<"PropertyLocalizedContent", 'DateTime'>
+    readonly updated_at: FieldRef<"PropertyLocalizedContent", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PropertyLocalizedContent findUnique
+   */
+  export type PropertyLocalizedContentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyLocalizedContent
+     */
+    select?: PropertyLocalizedContentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyLocalizedContent
+     */
+    omit?: PropertyLocalizedContentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyLocalizedContentInclude<ExtArgs> | null
+    /**
+     * Filter, which PropertyLocalizedContent to fetch.
+     */
+    where: PropertyLocalizedContentWhereUniqueInput
+  }
+
+  /**
+   * PropertyLocalizedContent findUniqueOrThrow
+   */
+  export type PropertyLocalizedContentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyLocalizedContent
+     */
+    select?: PropertyLocalizedContentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyLocalizedContent
+     */
+    omit?: PropertyLocalizedContentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyLocalizedContentInclude<ExtArgs> | null
+    /**
+     * Filter, which PropertyLocalizedContent to fetch.
+     */
+    where: PropertyLocalizedContentWhereUniqueInput
+  }
+
+  /**
+   * PropertyLocalizedContent findFirst
+   */
+  export type PropertyLocalizedContentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyLocalizedContent
+     */
+    select?: PropertyLocalizedContentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyLocalizedContent
+     */
+    omit?: PropertyLocalizedContentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyLocalizedContentInclude<ExtArgs> | null
+    /**
+     * Filter, which PropertyLocalizedContent to fetch.
+     */
+    where?: PropertyLocalizedContentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PropertyLocalizedContents to fetch.
+     */
+    orderBy?: PropertyLocalizedContentOrderByWithRelationInput | PropertyLocalizedContentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PropertyLocalizedContents.
+     */
+    cursor?: PropertyLocalizedContentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PropertyLocalizedContents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PropertyLocalizedContents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PropertyLocalizedContents.
+     */
+    distinct?: PropertyLocalizedContentScalarFieldEnum | PropertyLocalizedContentScalarFieldEnum[]
+  }
+
+  /**
+   * PropertyLocalizedContent findFirstOrThrow
+   */
+  export type PropertyLocalizedContentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyLocalizedContent
+     */
+    select?: PropertyLocalizedContentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyLocalizedContent
+     */
+    omit?: PropertyLocalizedContentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyLocalizedContentInclude<ExtArgs> | null
+    /**
+     * Filter, which PropertyLocalizedContent to fetch.
+     */
+    where?: PropertyLocalizedContentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PropertyLocalizedContents to fetch.
+     */
+    orderBy?: PropertyLocalizedContentOrderByWithRelationInput | PropertyLocalizedContentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PropertyLocalizedContents.
+     */
+    cursor?: PropertyLocalizedContentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PropertyLocalizedContents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PropertyLocalizedContents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PropertyLocalizedContents.
+     */
+    distinct?: PropertyLocalizedContentScalarFieldEnum | PropertyLocalizedContentScalarFieldEnum[]
+  }
+
+  /**
+   * PropertyLocalizedContent findMany
+   */
+  export type PropertyLocalizedContentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyLocalizedContent
+     */
+    select?: PropertyLocalizedContentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyLocalizedContent
+     */
+    omit?: PropertyLocalizedContentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyLocalizedContentInclude<ExtArgs> | null
+    /**
+     * Filter, which PropertyLocalizedContents to fetch.
+     */
+    where?: PropertyLocalizedContentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PropertyLocalizedContents to fetch.
+     */
+    orderBy?: PropertyLocalizedContentOrderByWithRelationInput | PropertyLocalizedContentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PropertyLocalizedContents.
+     */
+    cursor?: PropertyLocalizedContentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PropertyLocalizedContents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PropertyLocalizedContents.
+     */
+    skip?: number
+    distinct?: PropertyLocalizedContentScalarFieldEnum | PropertyLocalizedContentScalarFieldEnum[]
+  }
+
+  /**
+   * PropertyLocalizedContent create
+   */
+  export type PropertyLocalizedContentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyLocalizedContent
+     */
+    select?: PropertyLocalizedContentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyLocalizedContent
+     */
+    omit?: PropertyLocalizedContentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyLocalizedContentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PropertyLocalizedContent.
+     */
+    data: XOR<PropertyLocalizedContentCreateInput, PropertyLocalizedContentUncheckedCreateInput>
+  }
+
+  /**
+   * PropertyLocalizedContent createMany
+   */
+  export type PropertyLocalizedContentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PropertyLocalizedContents.
+     */
+    data: PropertyLocalizedContentCreateManyInput | PropertyLocalizedContentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PropertyLocalizedContent createManyAndReturn
+   */
+  export type PropertyLocalizedContentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyLocalizedContent
+     */
+    select?: PropertyLocalizedContentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyLocalizedContent
+     */
+    omit?: PropertyLocalizedContentOmit<ExtArgs> | null
+    /**
+     * The data used to create many PropertyLocalizedContents.
+     */
+    data: PropertyLocalizedContentCreateManyInput | PropertyLocalizedContentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyLocalizedContentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PropertyLocalizedContent update
+   */
+  export type PropertyLocalizedContentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyLocalizedContent
+     */
+    select?: PropertyLocalizedContentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyLocalizedContent
+     */
+    omit?: PropertyLocalizedContentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyLocalizedContentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PropertyLocalizedContent.
+     */
+    data: XOR<PropertyLocalizedContentUpdateInput, PropertyLocalizedContentUncheckedUpdateInput>
+    /**
+     * Choose, which PropertyLocalizedContent to update.
+     */
+    where: PropertyLocalizedContentWhereUniqueInput
+  }
+
+  /**
+   * PropertyLocalizedContent updateMany
+   */
+  export type PropertyLocalizedContentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PropertyLocalizedContents.
+     */
+    data: XOR<PropertyLocalizedContentUpdateManyMutationInput, PropertyLocalizedContentUncheckedUpdateManyInput>
+    /**
+     * Filter which PropertyLocalizedContents to update
+     */
+    where?: PropertyLocalizedContentWhereInput
+    /**
+     * Limit how many PropertyLocalizedContents to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PropertyLocalizedContent updateManyAndReturn
+   */
+  export type PropertyLocalizedContentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyLocalizedContent
+     */
+    select?: PropertyLocalizedContentSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyLocalizedContent
+     */
+    omit?: PropertyLocalizedContentOmit<ExtArgs> | null
+    /**
+     * The data used to update PropertyLocalizedContents.
+     */
+    data: XOR<PropertyLocalizedContentUpdateManyMutationInput, PropertyLocalizedContentUncheckedUpdateManyInput>
+    /**
+     * Filter which PropertyLocalizedContents to update
+     */
+    where?: PropertyLocalizedContentWhereInput
+    /**
+     * Limit how many PropertyLocalizedContents to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyLocalizedContentIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PropertyLocalizedContent upsert
+   */
+  export type PropertyLocalizedContentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyLocalizedContent
+     */
+    select?: PropertyLocalizedContentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyLocalizedContent
+     */
+    omit?: PropertyLocalizedContentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyLocalizedContentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PropertyLocalizedContent to update in case it exists.
+     */
+    where: PropertyLocalizedContentWhereUniqueInput
+    /**
+     * In case the PropertyLocalizedContent found by the `where` argument doesn't exist, create a new PropertyLocalizedContent with this data.
+     */
+    create: XOR<PropertyLocalizedContentCreateInput, PropertyLocalizedContentUncheckedCreateInput>
+    /**
+     * In case the PropertyLocalizedContent was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PropertyLocalizedContentUpdateInput, PropertyLocalizedContentUncheckedUpdateInput>
+  }
+
+  /**
+   * PropertyLocalizedContent delete
+   */
+  export type PropertyLocalizedContentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyLocalizedContent
+     */
+    select?: PropertyLocalizedContentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyLocalizedContent
+     */
+    omit?: PropertyLocalizedContentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyLocalizedContentInclude<ExtArgs> | null
+    /**
+     * Filter which PropertyLocalizedContent to delete.
+     */
+    where: PropertyLocalizedContentWhereUniqueInput
+  }
+
+  /**
+   * PropertyLocalizedContent deleteMany
+   */
+  export type PropertyLocalizedContentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PropertyLocalizedContents to delete
+     */
+    where?: PropertyLocalizedContentWhereInput
+    /**
+     * Limit how many PropertyLocalizedContents to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PropertyLocalizedContent without action
+   */
+  export type PropertyLocalizedContentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyLocalizedContent
+     */
+    select?: PropertyLocalizedContentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyLocalizedContent
+     */
+    omit?: PropertyLocalizedContentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyLocalizedContentInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AiBatchRun
+   */
+
+  export type AggregateAiBatchRun = {
+    _count: AiBatchRunCountAggregateOutputType | null
+    _min: AiBatchRunMinAggregateOutputType | null
+    _max: AiBatchRunMaxAggregateOutputType | null
+  }
+
+  export type AiBatchRunMinAggregateOutputType = {
+    id: string | null
+    kind: $Enums.AiBatchRunKind | null
+    status: $Enums.AiBatchRunStatus | null
+    openai_batch_id: string | null
+    config_id: string | null
+    ai_title_family_id: string | null
+    error_message: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type AiBatchRunMaxAggregateOutputType = {
+    id: string | null
+    kind: $Enums.AiBatchRunKind | null
+    status: $Enums.AiBatchRunStatus | null
+    openai_batch_id: string | null
+    config_id: string | null
+    ai_title_family_id: string | null
+    error_message: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type AiBatchRunCountAggregateOutputType = {
+    id: number
+    kind: number
+    status: number
+    openai_batch_id: number
+    config_id: number
+    ai_title_family_id: number
+    user_property_ids: number
+    metadata: number
+    error_message: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type AiBatchRunMinAggregateInputType = {
+    id?: true
+    kind?: true
+    status?: true
+    openai_batch_id?: true
+    config_id?: true
+    ai_title_family_id?: true
+    error_message?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type AiBatchRunMaxAggregateInputType = {
+    id?: true
+    kind?: true
+    status?: true
+    openai_batch_id?: true
+    config_id?: true
+    ai_title_family_id?: true
+    error_message?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type AiBatchRunCountAggregateInputType = {
+    id?: true
+    kind?: true
+    status?: true
+    openai_batch_id?: true
+    config_id?: true
+    ai_title_family_id?: true
+    user_property_ids?: true
+    metadata?: true
+    error_message?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type AiBatchRunAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AiBatchRun to aggregate.
+     */
+    where?: AiBatchRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AiBatchRuns to fetch.
+     */
+    orderBy?: AiBatchRunOrderByWithRelationInput | AiBatchRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AiBatchRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AiBatchRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AiBatchRuns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AiBatchRuns
+    **/
+    _count?: true | AiBatchRunCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AiBatchRunMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AiBatchRunMaxAggregateInputType
+  }
+
+  export type GetAiBatchRunAggregateType<T extends AiBatchRunAggregateArgs> = {
+        [P in keyof T & keyof AggregateAiBatchRun]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAiBatchRun[P]>
+      : GetScalarType<T[P], AggregateAiBatchRun[P]>
+  }
+
+
+
+
+  export type AiBatchRunGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AiBatchRunWhereInput
+    orderBy?: AiBatchRunOrderByWithAggregationInput | AiBatchRunOrderByWithAggregationInput[]
+    by: AiBatchRunScalarFieldEnum[] | AiBatchRunScalarFieldEnum
+    having?: AiBatchRunScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AiBatchRunCountAggregateInputType | true
+    _min?: AiBatchRunMinAggregateInputType
+    _max?: AiBatchRunMaxAggregateInputType
+  }
+
+  export type AiBatchRunGroupByOutputType = {
+    id: string
+    kind: $Enums.AiBatchRunKind
+    status: $Enums.AiBatchRunStatus
+    openai_batch_id: string | null
+    config_id: string | null
+    ai_title_family_id: string | null
+    user_property_ids: JsonValue
+    metadata: JsonValue | null
+    error_message: string | null
+    created_at: Date
+    updated_at: Date
+    _count: AiBatchRunCountAggregateOutputType | null
+    _min: AiBatchRunMinAggregateOutputType | null
+    _max: AiBatchRunMaxAggregateOutputType | null
+  }
+
+  type GetAiBatchRunGroupByPayload<T extends AiBatchRunGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AiBatchRunGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AiBatchRunGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AiBatchRunGroupByOutputType[P]>
+            : GetScalarType<T[P], AiBatchRunGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AiBatchRunSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kind?: boolean
+    status?: boolean
+    openai_batch_id?: boolean
+    config_id?: boolean
+    ai_title_family_id?: boolean
+    user_property_ids?: boolean
+    metadata?: boolean
+    error_message?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    config?: boolean | AiBatchRun$configArgs<ExtArgs>
+    ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
+  }, ExtArgs["result"]["aiBatchRun"]>
+
+  export type AiBatchRunSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kind?: boolean
+    status?: boolean
+    openai_batch_id?: boolean
+    config_id?: boolean
+    ai_title_family_id?: boolean
+    user_property_ids?: boolean
+    metadata?: boolean
+    error_message?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    config?: boolean | AiBatchRun$configArgs<ExtArgs>
+    ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
+  }, ExtArgs["result"]["aiBatchRun"]>
+
+  export type AiBatchRunSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kind?: boolean
+    status?: boolean
+    openai_batch_id?: boolean
+    config_id?: boolean
+    ai_title_family_id?: boolean
+    user_property_ids?: boolean
+    metadata?: boolean
+    error_message?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    config?: boolean | AiBatchRun$configArgs<ExtArgs>
+    ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
+  }, ExtArgs["result"]["aiBatchRun"]>
+
+  export type AiBatchRunSelectScalar = {
+    id?: boolean
+    kind?: boolean
+    status?: boolean
+    openai_batch_id?: boolean
+    config_id?: boolean
+    ai_title_family_id?: boolean
+    user_property_ids?: boolean
+    metadata?: boolean
+    error_message?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type AiBatchRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "kind" | "status" | "openai_batch_id" | "config_id" | "ai_title_family_id" | "user_property_ids" | "metadata" | "error_message" | "created_at" | "updated_at", ExtArgs["result"]["aiBatchRun"]>
+  export type AiBatchRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    config?: boolean | AiBatchRun$configArgs<ExtArgs>
+    ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
+  }
+  export type AiBatchRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    config?: boolean | AiBatchRun$configArgs<ExtArgs>
+    ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
+  }
+  export type AiBatchRunIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    config?: boolean | AiBatchRun$configArgs<ExtArgs>
+    ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
+  }
+
+  export type $AiBatchRunPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AiBatchRun"
+    objects: {
+      config: Prisma.$ContentPublishingConfigPayload<ExtArgs> | null
+      ai_title_family: Prisma.$AiTitleFamilyPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      kind: $Enums.AiBatchRunKind
+      status: $Enums.AiBatchRunStatus
+      openai_batch_id: string | null
+      config_id: string | null
+      ai_title_family_id: string | null
+      user_property_ids: Prisma.JsonValue
+      metadata: Prisma.JsonValue | null
+      error_message: string | null
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["aiBatchRun"]>
+    composites: {}
+  }
+
+  type AiBatchRunGetPayload<S extends boolean | null | undefined | AiBatchRunDefaultArgs> = $Result.GetResult<Prisma.$AiBatchRunPayload, S>
+
+  type AiBatchRunCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AiBatchRunFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AiBatchRunCountAggregateInputType | true
+    }
+
+  export interface AiBatchRunDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AiBatchRun'], meta: { name: 'AiBatchRun' } }
+    /**
+     * Find zero or one AiBatchRun that matches the filter.
+     * @param {AiBatchRunFindUniqueArgs} args - Arguments to find a AiBatchRun
+     * @example
+     * // Get one AiBatchRun
+     * const aiBatchRun = await prisma.aiBatchRun.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AiBatchRunFindUniqueArgs>(args: SelectSubset<T, AiBatchRunFindUniqueArgs<ExtArgs>>): Prisma__AiBatchRunClient<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AiBatchRun that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AiBatchRunFindUniqueOrThrowArgs} args - Arguments to find a AiBatchRun
+     * @example
+     * // Get one AiBatchRun
+     * const aiBatchRun = await prisma.aiBatchRun.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AiBatchRunFindUniqueOrThrowArgs>(args: SelectSubset<T, AiBatchRunFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AiBatchRunClient<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AiBatchRun that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiBatchRunFindFirstArgs} args - Arguments to find a AiBatchRun
+     * @example
+     * // Get one AiBatchRun
+     * const aiBatchRun = await prisma.aiBatchRun.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AiBatchRunFindFirstArgs>(args?: SelectSubset<T, AiBatchRunFindFirstArgs<ExtArgs>>): Prisma__AiBatchRunClient<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AiBatchRun that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiBatchRunFindFirstOrThrowArgs} args - Arguments to find a AiBatchRun
+     * @example
+     * // Get one AiBatchRun
+     * const aiBatchRun = await prisma.aiBatchRun.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AiBatchRunFindFirstOrThrowArgs>(args?: SelectSubset<T, AiBatchRunFindFirstOrThrowArgs<ExtArgs>>): Prisma__AiBatchRunClient<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AiBatchRuns that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiBatchRunFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AiBatchRuns
+     * const aiBatchRuns = await prisma.aiBatchRun.findMany()
+     * 
+     * // Get first 10 AiBatchRuns
+     * const aiBatchRuns = await prisma.aiBatchRun.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const aiBatchRunWithIdOnly = await prisma.aiBatchRun.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AiBatchRunFindManyArgs>(args?: SelectSubset<T, AiBatchRunFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AiBatchRun.
+     * @param {AiBatchRunCreateArgs} args - Arguments to create a AiBatchRun.
+     * @example
+     * // Create one AiBatchRun
+     * const AiBatchRun = await prisma.aiBatchRun.create({
+     *   data: {
+     *     // ... data to create a AiBatchRun
+     *   }
+     * })
+     * 
+     */
+    create<T extends AiBatchRunCreateArgs>(args: SelectSubset<T, AiBatchRunCreateArgs<ExtArgs>>): Prisma__AiBatchRunClient<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AiBatchRuns.
+     * @param {AiBatchRunCreateManyArgs} args - Arguments to create many AiBatchRuns.
+     * @example
+     * // Create many AiBatchRuns
+     * const aiBatchRun = await prisma.aiBatchRun.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AiBatchRunCreateManyArgs>(args?: SelectSubset<T, AiBatchRunCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AiBatchRuns and returns the data saved in the database.
+     * @param {AiBatchRunCreateManyAndReturnArgs} args - Arguments to create many AiBatchRuns.
+     * @example
+     * // Create many AiBatchRuns
+     * const aiBatchRun = await prisma.aiBatchRun.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AiBatchRuns and only return the `id`
+     * const aiBatchRunWithIdOnly = await prisma.aiBatchRun.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AiBatchRunCreateManyAndReturnArgs>(args?: SelectSubset<T, AiBatchRunCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AiBatchRun.
+     * @param {AiBatchRunDeleteArgs} args - Arguments to delete one AiBatchRun.
+     * @example
+     * // Delete one AiBatchRun
+     * const AiBatchRun = await prisma.aiBatchRun.delete({
+     *   where: {
+     *     // ... filter to delete one AiBatchRun
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AiBatchRunDeleteArgs>(args: SelectSubset<T, AiBatchRunDeleteArgs<ExtArgs>>): Prisma__AiBatchRunClient<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AiBatchRun.
+     * @param {AiBatchRunUpdateArgs} args - Arguments to update one AiBatchRun.
+     * @example
+     * // Update one AiBatchRun
+     * const aiBatchRun = await prisma.aiBatchRun.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AiBatchRunUpdateArgs>(args: SelectSubset<T, AiBatchRunUpdateArgs<ExtArgs>>): Prisma__AiBatchRunClient<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AiBatchRuns.
+     * @param {AiBatchRunDeleteManyArgs} args - Arguments to filter AiBatchRuns to delete.
+     * @example
+     * // Delete a few AiBatchRuns
+     * const { count } = await prisma.aiBatchRun.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AiBatchRunDeleteManyArgs>(args?: SelectSubset<T, AiBatchRunDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AiBatchRuns.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiBatchRunUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AiBatchRuns
+     * const aiBatchRun = await prisma.aiBatchRun.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AiBatchRunUpdateManyArgs>(args: SelectSubset<T, AiBatchRunUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AiBatchRuns and returns the data updated in the database.
+     * @param {AiBatchRunUpdateManyAndReturnArgs} args - Arguments to update many AiBatchRuns.
+     * @example
+     * // Update many AiBatchRuns
+     * const aiBatchRun = await prisma.aiBatchRun.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AiBatchRuns and only return the `id`
+     * const aiBatchRunWithIdOnly = await prisma.aiBatchRun.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AiBatchRunUpdateManyAndReturnArgs>(args: SelectSubset<T, AiBatchRunUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AiBatchRun.
+     * @param {AiBatchRunUpsertArgs} args - Arguments to update or create a AiBatchRun.
+     * @example
+     * // Update or create a AiBatchRun
+     * const aiBatchRun = await prisma.aiBatchRun.upsert({
+     *   create: {
+     *     // ... data to create a AiBatchRun
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AiBatchRun we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AiBatchRunUpsertArgs>(args: SelectSubset<T, AiBatchRunUpsertArgs<ExtArgs>>): Prisma__AiBatchRunClient<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AiBatchRuns.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiBatchRunCountArgs} args - Arguments to filter AiBatchRuns to count.
+     * @example
+     * // Count the number of AiBatchRuns
+     * const count = await prisma.aiBatchRun.count({
+     *   where: {
+     *     // ... the filter for the AiBatchRuns we want to count
+     *   }
+     * })
+    **/
+    count<T extends AiBatchRunCountArgs>(
+      args?: Subset<T, AiBatchRunCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AiBatchRunCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AiBatchRun.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiBatchRunAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AiBatchRunAggregateArgs>(args: Subset<T, AiBatchRunAggregateArgs>): Prisma.PrismaPromise<GetAiBatchRunAggregateType<T>>
+
+    /**
+     * Group by AiBatchRun.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AiBatchRunGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AiBatchRunGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AiBatchRunGroupByArgs['orderBy'] }
+        : { orderBy?: AiBatchRunGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AiBatchRunGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAiBatchRunGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AiBatchRun model
+   */
+  readonly fields: AiBatchRunFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AiBatchRun.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AiBatchRunClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    config<T extends AiBatchRun$configArgs<ExtArgs> = {}>(args?: Subset<T, AiBatchRun$configArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    ai_title_family<T extends AiBatchRun$ai_title_familyArgs<ExtArgs> = {}>(args?: Subset<T, AiBatchRun$ai_title_familyArgs<ExtArgs>>): Prisma__AiTitleFamilyClient<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AiBatchRun model
+   */
+  interface AiBatchRunFieldRefs {
+    readonly id: FieldRef<"AiBatchRun", 'String'>
+    readonly kind: FieldRef<"AiBatchRun", 'AiBatchRunKind'>
+    readonly status: FieldRef<"AiBatchRun", 'AiBatchRunStatus'>
+    readonly openai_batch_id: FieldRef<"AiBatchRun", 'String'>
+    readonly config_id: FieldRef<"AiBatchRun", 'String'>
+    readonly ai_title_family_id: FieldRef<"AiBatchRun", 'String'>
+    readonly user_property_ids: FieldRef<"AiBatchRun", 'Json'>
+    readonly metadata: FieldRef<"AiBatchRun", 'Json'>
+    readonly error_message: FieldRef<"AiBatchRun", 'String'>
+    readonly created_at: FieldRef<"AiBatchRun", 'DateTime'>
+    readonly updated_at: FieldRef<"AiBatchRun", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AiBatchRun findUnique
+   */
+  export type AiBatchRunFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
+    /**
+     * Filter, which AiBatchRun to fetch.
+     */
+    where: AiBatchRunWhereUniqueInput
+  }
+
+  /**
+   * AiBatchRun findUniqueOrThrow
+   */
+  export type AiBatchRunFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
+    /**
+     * Filter, which AiBatchRun to fetch.
+     */
+    where: AiBatchRunWhereUniqueInput
+  }
+
+  /**
+   * AiBatchRun findFirst
+   */
+  export type AiBatchRunFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
+    /**
+     * Filter, which AiBatchRun to fetch.
+     */
+    where?: AiBatchRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AiBatchRuns to fetch.
+     */
+    orderBy?: AiBatchRunOrderByWithRelationInput | AiBatchRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AiBatchRuns.
+     */
+    cursor?: AiBatchRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AiBatchRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AiBatchRuns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AiBatchRuns.
+     */
+    distinct?: AiBatchRunScalarFieldEnum | AiBatchRunScalarFieldEnum[]
+  }
+
+  /**
+   * AiBatchRun findFirstOrThrow
+   */
+  export type AiBatchRunFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
+    /**
+     * Filter, which AiBatchRun to fetch.
+     */
+    where?: AiBatchRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AiBatchRuns to fetch.
+     */
+    orderBy?: AiBatchRunOrderByWithRelationInput | AiBatchRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AiBatchRuns.
+     */
+    cursor?: AiBatchRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AiBatchRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AiBatchRuns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AiBatchRuns.
+     */
+    distinct?: AiBatchRunScalarFieldEnum | AiBatchRunScalarFieldEnum[]
+  }
+
+  /**
+   * AiBatchRun findMany
+   */
+  export type AiBatchRunFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
+    /**
+     * Filter, which AiBatchRuns to fetch.
+     */
+    where?: AiBatchRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AiBatchRuns to fetch.
+     */
+    orderBy?: AiBatchRunOrderByWithRelationInput | AiBatchRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AiBatchRuns.
+     */
+    cursor?: AiBatchRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AiBatchRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AiBatchRuns.
+     */
+    skip?: number
+    distinct?: AiBatchRunScalarFieldEnum | AiBatchRunScalarFieldEnum[]
+  }
+
+  /**
+   * AiBatchRun create
+   */
+  export type AiBatchRunCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AiBatchRun.
+     */
+    data: XOR<AiBatchRunCreateInput, AiBatchRunUncheckedCreateInput>
+  }
+
+  /**
+   * AiBatchRun createMany
+   */
+  export type AiBatchRunCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AiBatchRuns.
+     */
+    data: AiBatchRunCreateManyInput | AiBatchRunCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AiBatchRun createManyAndReturn
+   */
+  export type AiBatchRunCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * The data used to create many AiBatchRuns.
+     */
+    data: AiBatchRunCreateManyInput | AiBatchRunCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AiBatchRun update
+   */
+  export type AiBatchRunUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AiBatchRun.
+     */
+    data: XOR<AiBatchRunUpdateInput, AiBatchRunUncheckedUpdateInput>
+    /**
+     * Choose, which AiBatchRun to update.
+     */
+    where: AiBatchRunWhereUniqueInput
+  }
+
+  /**
+   * AiBatchRun updateMany
+   */
+  export type AiBatchRunUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AiBatchRuns.
+     */
+    data: XOR<AiBatchRunUpdateManyMutationInput, AiBatchRunUncheckedUpdateManyInput>
+    /**
+     * Filter which AiBatchRuns to update
+     */
+    where?: AiBatchRunWhereInput
+    /**
+     * Limit how many AiBatchRuns to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AiBatchRun updateManyAndReturn
+   */
+  export type AiBatchRunUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * The data used to update AiBatchRuns.
+     */
+    data: XOR<AiBatchRunUpdateManyMutationInput, AiBatchRunUncheckedUpdateManyInput>
+    /**
+     * Filter which AiBatchRuns to update
+     */
+    where?: AiBatchRunWhereInput
+    /**
+     * Limit how many AiBatchRuns to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AiBatchRun upsert
+   */
+  export type AiBatchRunUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AiBatchRun to update in case it exists.
+     */
+    where: AiBatchRunWhereUniqueInput
+    /**
+     * In case the AiBatchRun found by the `where` argument doesn't exist, create a new AiBatchRun with this data.
+     */
+    create: XOR<AiBatchRunCreateInput, AiBatchRunUncheckedCreateInput>
+    /**
+     * In case the AiBatchRun was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AiBatchRunUpdateInput, AiBatchRunUncheckedUpdateInput>
+  }
+
+  /**
+   * AiBatchRun delete
+   */
+  export type AiBatchRunDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
+    /**
+     * Filter which AiBatchRun to delete.
+     */
+    where: AiBatchRunWhereUniqueInput
+  }
+
+  /**
+   * AiBatchRun deleteMany
+   */
+  export type AiBatchRunDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AiBatchRuns to delete
+     */
+    where?: AiBatchRunWhereInput
+    /**
+     * Limit how many AiBatchRuns to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AiBatchRun.config
+   */
+  export type AiBatchRun$configArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ContentPublishingConfig
+     */
+    select?: ContentPublishingConfigSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ContentPublishingConfig
+     */
+    omit?: ContentPublishingConfigOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ContentPublishingConfigInclude<ExtArgs> | null
+    where?: ContentPublishingConfigWhereInput
+  }
+
+  /**
+   * AiBatchRun.ai_title_family
+   */
+  export type AiBatchRun$ai_title_familyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiTitleFamily
+     */
+    select?: AiTitleFamilySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiTitleFamily
+     */
+    omit?: AiTitleFamilyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiTitleFamilyInclude<ExtArgs> | null
+    where?: AiTitleFamilyWhereInput
+  }
+
+  /**
+   * AiBatchRun without action
+   */
+  export type AiBatchRunDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
   }
 
 
@@ -37214,6 +43678,7 @@ export namespace Prisma {
     base_url: 'base_url',
     country: 'country',
     city: 'city',
+    content_language: 'content_language',
     is_visible: 'is_visible',
     is_enabled: 'is_enabled',
     crawl_interval: 'crawl_interval',
@@ -37637,6 +44102,82 @@ export namespace Prisma {
   export type UserPropertyScalarFieldEnum = (typeof UserPropertyScalarFieldEnum)[keyof typeof UserPropertyScalarFieldEnum]
 
 
+  export const ContentPublishingConfigScalarFieldEnum: {
+    id: 'id',
+    user_tracked_agency_id: 'user_tracked_agency_id',
+    ai_titles_enabled: 'ai_titles_enabled',
+    use_ai_batch: 'use_ai_batch',
+    is_enabled: 'is_enabled',
+    notes: 'notes',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type ContentPublishingConfigScalarFieldEnum = (typeof ContentPublishingConfigScalarFieldEnum)[keyof typeof ContentPublishingConfigScalarFieldEnum]
+
+
+  export const ContentOutputScalarFieldEnum: {
+    id: 'id',
+    config_id: 'config_id',
+    language: 'language',
+    title_strategy: 'title_strategy',
+    description_strategy: 'description_strategy',
+    ai_title_family_id: 'ai_title_family_id',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type ContentOutputScalarFieldEnum = (typeof ContentOutputScalarFieldEnum)[keyof typeof ContentOutputScalarFieldEnum]
+
+
+  export const AiTitleFamilyScalarFieldEnum: {
+    id: 'id',
+    config_id: 'config_id',
+    name: 'name',
+    model: 'model',
+    use_batch: 'use_batch',
+    instructions: 'instructions',
+    generation_options: 'generation_options',
+    is_enabled: 'is_enabled',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type AiTitleFamilyScalarFieldEnum = (typeof AiTitleFamilyScalarFieldEnum)[keyof typeof AiTitleFamilyScalarFieldEnum]
+
+
+  export const PropertyLocalizedContentScalarFieldEnum: {
+    id: 'id',
+    user_property_id: 'user_property_id',
+    content_type: 'content_type',
+    language: 'language',
+    production: 'production',
+    text: 'text',
+    is_stale: 'is_stale',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type PropertyLocalizedContentScalarFieldEnum = (typeof PropertyLocalizedContentScalarFieldEnum)[keyof typeof PropertyLocalizedContentScalarFieldEnum]
+
+
+  export const AiBatchRunScalarFieldEnum: {
+    id: 'id',
+    kind: 'kind',
+    status: 'status',
+    openai_batch_id: 'openai_batch_id',
+    config_id: 'config_id',
+    ai_title_family_id: 'ai_title_family_id',
+    user_property_ids: 'user_property_ids',
+    metadata: 'metadata',
+    error_message: 'error_message',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type AiBatchRunScalarFieldEnum = (typeof AiBatchRunScalarFieldEnum)[keyof typeof AiBatchRunScalarFieldEnum]
+
+
   export const IntegrationPropertyScalarFieldEnum: {
     id: 'id',
     user_id: 'user_id',
@@ -37826,6 +44367,20 @@ export namespace Prisma {
    * Reference to a field of type 'QueryMode'
    */
   export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContentLanguage'
+   */
+  export type EnumContentLanguageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContentLanguage'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContentLanguage[]'
+   */
+  export type ListEnumContentLanguageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContentLanguage[]'>
     
 
 
@@ -38092,6 +44647,76 @@ export namespace Prisma {
    * Reference to a field of type 'PropertyHistoryEventType[]'
    */
   export type ListEnumPropertyHistoryEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PropertyHistoryEventType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'TitleProductionStrategy'
+   */
+  export type EnumTitleProductionStrategyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TitleProductionStrategy'>
+    
+
+
+  /**
+   * Reference to a field of type 'TitleProductionStrategy[]'
+   */
+  export type ListEnumTitleProductionStrategyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TitleProductionStrategy[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'DescriptionProductionStrategy'
+   */
+  export type EnumDescriptionProductionStrategyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DescriptionProductionStrategy'>
+    
+
+
+  /**
+   * Reference to a field of type 'DescriptionProductionStrategy[]'
+   */
+  export type ListEnumDescriptionProductionStrategyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DescriptionProductionStrategy[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContentType'
+   */
+  export type EnumContentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContentType'>
+    
+
+
+  /**
+   * Reference to a field of type 'ContentType[]'
+   */
+  export type ListEnumContentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContentType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'AiBatchRunKind'
+   */
+  export type EnumAiBatchRunKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiBatchRunKind'>
+    
+
+
+  /**
+   * Reference to a field of type 'AiBatchRunKind[]'
+   */
+  export type ListEnumAiBatchRunKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiBatchRunKind[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'AiBatchRunStatus'
+   */
+  export type EnumAiBatchRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiBatchRunStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'AiBatchRunStatus[]'
+   */
+  export type ListEnumAiBatchRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiBatchRunStatus[]'>
     
 
 
@@ -38472,6 +45097,7 @@ export namespace Prisma {
     base_url?: StringFilter<"SourceAgency"> | string
     country?: StringNullableFilter<"SourceAgency"> | string | null
     city?: StringNullableFilter<"SourceAgency"> | string | null
+    content_language?: EnumContentLanguageFilter<"SourceAgency"> | $Enums.ContentLanguage
     is_visible?: BoolFilter<"SourceAgency"> | boolean
     is_enabled?: BoolFilter<"SourceAgency"> | boolean
     crawl_interval?: StringFilter<"SourceAgency"> | string
@@ -38496,6 +45122,7 @@ export namespace Prisma {
     base_url?: SortOrder
     country?: SortOrderInput | SortOrder
     city?: SortOrderInput | SortOrder
+    content_language?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
     crawl_interval?: SortOrder
@@ -38523,6 +45150,7 @@ export namespace Prisma {
     name?: StringFilter<"SourceAgency"> | string
     country?: StringNullableFilter<"SourceAgency"> | string | null
     city?: StringNullableFilter<"SourceAgency"> | string | null
+    content_language?: EnumContentLanguageFilter<"SourceAgency"> | $Enums.ContentLanguage
     is_visible?: BoolFilter<"SourceAgency"> | boolean
     is_enabled?: BoolFilter<"SourceAgency"> | boolean
     crawl_interval?: StringFilter<"SourceAgency"> | string
@@ -38547,6 +45175,7 @@ export namespace Prisma {
     base_url?: SortOrder
     country?: SortOrderInput | SortOrder
     city?: SortOrderInput | SortOrder
+    content_language?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
     crawl_interval?: SortOrder
@@ -38571,6 +45200,7 @@ export namespace Prisma {
     base_url?: StringWithAggregatesFilter<"SourceAgency"> | string
     country?: StringNullableWithAggregatesFilter<"SourceAgency"> | string | null
     city?: StringNullableWithAggregatesFilter<"SourceAgency"> | string | null
+    content_language?: EnumContentLanguageWithAggregatesFilter<"SourceAgency"> | $Enums.ContentLanguage
     is_visible?: BoolWithAggregatesFilter<"SourceAgency"> | boolean
     is_enabled?: BoolWithAggregatesFilter<"SourceAgency"> | boolean
     crawl_interval?: StringWithAggregatesFilter<"SourceAgency"> | string
@@ -38609,6 +45239,7 @@ export namespace Prisma {
     source_agency?: XOR<SourceAgencyScalarRelationFilter, SourceAgencyWhereInput>
     crawl_runs?: CrawlRunListRelationFilter
     integration_link?: XOR<UserTrackedAgencyIntegrationLinkNullableScalarRelationFilter, UserTrackedAgencyIntegrationLinkWhereInput> | null
+    content_publishing_config?: XOR<ContentPublishingConfigNullableScalarRelationFilter, ContentPublishingConfigWhereInput> | null
   }
 
   export type UserTrackedAgencyOrderByWithRelationInput = {
@@ -38634,6 +45265,7 @@ export namespace Prisma {
     source_agency?: SourceAgencyOrderByWithRelationInput
     crawl_runs?: CrawlRunOrderByRelationAggregateInput
     integration_link?: UserTrackedAgencyIntegrationLinkOrderByWithRelationInput
+    content_publishing_config?: ContentPublishingConfigOrderByWithRelationInput
   }
 
   export type UserTrackedAgencyWhereUniqueInput = Prisma.AtLeast<{
@@ -38663,6 +45295,7 @@ export namespace Prisma {
     source_agency?: XOR<SourceAgencyScalarRelationFilter, SourceAgencyWhereInput>
     crawl_runs?: CrawlRunListRelationFilter
     integration_link?: XOR<UserTrackedAgencyIntegrationLinkNullableScalarRelationFilter, UserTrackedAgencyIntegrationLinkWhereInput> | null
+    content_publishing_config?: XOR<ContentPublishingConfigNullableScalarRelationFilter, ContentPublishingConfigWhereInput> | null
   }, "id" | "user_id_source_agency_id">
 
   export type UserTrackedAgencyOrderByWithAggregationInput = {
@@ -40558,6 +47191,7 @@ export namespace Prisma {
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     canonical_property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
     integration_properties?: IntegrationPropertyListRelationFilter
+    localized_contents?: PropertyLocalizedContentListRelationFilter
   }
 
   export type UserPropertyOrderByWithRelationInput = {
@@ -40610,6 +47244,7 @@ export namespace Prisma {
     user?: UserOrderByWithRelationInput
     canonical_property?: PropertyOrderByWithRelationInput
     integration_properties?: IntegrationPropertyOrderByRelationAggregateInput
+    localized_contents?: PropertyLocalizedContentOrderByRelationAggregateInput
   }
 
   export type UserPropertyWhereUniqueInput = Prisma.AtLeast<{
@@ -40666,6 +47301,7 @@ export namespace Prisma {
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     canonical_property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
     integration_properties?: IntegrationPropertyListRelationFilter
+    localized_contents?: PropertyLocalizedContentListRelationFilter
   }, "id" | "user_id_canonical_property_id">
 
   export type UserPropertyOrderByWithAggregationInput = {
@@ -40772,6 +47408,410 @@ export namespace Prisma {
     last_synced_at?: DateTimeNullableWithAggregatesFilter<"UserProperty"> | Date | string | null
     created_at?: DateTimeWithAggregatesFilter<"UserProperty"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserProperty"> | Date | string
+  }
+
+  export type ContentPublishingConfigWhereInput = {
+    AND?: ContentPublishingConfigWhereInput | ContentPublishingConfigWhereInput[]
+    OR?: ContentPublishingConfigWhereInput[]
+    NOT?: ContentPublishingConfigWhereInput | ContentPublishingConfigWhereInput[]
+    id?: StringFilter<"ContentPublishingConfig"> | string
+    user_tracked_agency_id?: StringFilter<"ContentPublishingConfig"> | string
+    ai_titles_enabled?: BoolFilter<"ContentPublishingConfig"> | boolean
+    use_ai_batch?: BoolFilter<"ContentPublishingConfig"> | boolean
+    is_enabled?: BoolFilter<"ContentPublishingConfig"> | boolean
+    notes?: StringNullableFilter<"ContentPublishingConfig"> | string | null
+    created_at?: DateTimeFilter<"ContentPublishingConfig"> | Date | string
+    updated_at?: DateTimeFilter<"ContentPublishingConfig"> | Date | string
+    user_tracked_agency?: XOR<UserTrackedAgencyScalarRelationFilter, UserTrackedAgencyWhereInput>
+    outputs?: ContentOutputListRelationFilter
+    ai_title_families?: AiTitleFamilyListRelationFilter
+    ai_batch_runs?: AiBatchRunListRelationFilter
+  }
+
+  export type ContentPublishingConfigOrderByWithRelationInput = {
+    id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    ai_titles_enabled?: SortOrder
+    use_ai_batch?: SortOrder
+    is_enabled?: SortOrder
+    notes?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    user_tracked_agency?: UserTrackedAgencyOrderByWithRelationInput
+    outputs?: ContentOutputOrderByRelationAggregateInput
+    ai_title_families?: AiTitleFamilyOrderByRelationAggregateInput
+    ai_batch_runs?: AiBatchRunOrderByRelationAggregateInput
+  }
+
+  export type ContentPublishingConfigWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    user_tracked_agency_id?: string
+    AND?: ContentPublishingConfigWhereInput | ContentPublishingConfigWhereInput[]
+    OR?: ContentPublishingConfigWhereInput[]
+    NOT?: ContentPublishingConfigWhereInput | ContentPublishingConfigWhereInput[]
+    ai_titles_enabled?: BoolFilter<"ContentPublishingConfig"> | boolean
+    use_ai_batch?: BoolFilter<"ContentPublishingConfig"> | boolean
+    is_enabled?: BoolFilter<"ContentPublishingConfig"> | boolean
+    notes?: StringNullableFilter<"ContentPublishingConfig"> | string | null
+    created_at?: DateTimeFilter<"ContentPublishingConfig"> | Date | string
+    updated_at?: DateTimeFilter<"ContentPublishingConfig"> | Date | string
+    user_tracked_agency?: XOR<UserTrackedAgencyScalarRelationFilter, UserTrackedAgencyWhereInput>
+    outputs?: ContentOutputListRelationFilter
+    ai_title_families?: AiTitleFamilyListRelationFilter
+    ai_batch_runs?: AiBatchRunListRelationFilter
+  }, "id" | "user_tracked_agency_id">
+
+  export type ContentPublishingConfigOrderByWithAggregationInput = {
+    id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    ai_titles_enabled?: SortOrder
+    use_ai_batch?: SortOrder
+    is_enabled?: SortOrder
+    notes?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: ContentPublishingConfigCountOrderByAggregateInput
+    _max?: ContentPublishingConfigMaxOrderByAggregateInput
+    _min?: ContentPublishingConfigMinOrderByAggregateInput
+  }
+
+  export type ContentPublishingConfigScalarWhereWithAggregatesInput = {
+    AND?: ContentPublishingConfigScalarWhereWithAggregatesInput | ContentPublishingConfigScalarWhereWithAggregatesInput[]
+    OR?: ContentPublishingConfigScalarWhereWithAggregatesInput[]
+    NOT?: ContentPublishingConfigScalarWhereWithAggregatesInput | ContentPublishingConfigScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ContentPublishingConfig"> | string
+    user_tracked_agency_id?: StringWithAggregatesFilter<"ContentPublishingConfig"> | string
+    ai_titles_enabled?: BoolWithAggregatesFilter<"ContentPublishingConfig"> | boolean
+    use_ai_batch?: BoolWithAggregatesFilter<"ContentPublishingConfig"> | boolean
+    is_enabled?: BoolWithAggregatesFilter<"ContentPublishingConfig"> | boolean
+    notes?: StringNullableWithAggregatesFilter<"ContentPublishingConfig"> | string | null
+    created_at?: DateTimeWithAggregatesFilter<"ContentPublishingConfig"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"ContentPublishingConfig"> | Date | string
+  }
+
+  export type ContentOutputWhereInput = {
+    AND?: ContentOutputWhereInput | ContentOutputWhereInput[]
+    OR?: ContentOutputWhereInput[]
+    NOT?: ContentOutputWhereInput | ContentOutputWhereInput[]
+    id?: StringFilter<"ContentOutput"> | string
+    config_id?: StringFilter<"ContentOutput"> | string
+    language?: EnumContentLanguageFilter<"ContentOutput"> | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyFilter<"ContentOutput"> | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyFilter<"ContentOutput"> | $Enums.DescriptionProductionStrategy
+    ai_title_family_id?: StringNullableFilter<"ContentOutput"> | string | null
+    created_at?: DateTimeFilter<"ContentOutput"> | Date | string
+    updated_at?: DateTimeFilter<"ContentOutput"> | Date | string
+    config?: XOR<ContentPublishingConfigScalarRelationFilter, ContentPublishingConfigWhereInput>
+    ai_title_family?: XOR<AiTitleFamilyNullableScalarRelationFilter, AiTitleFamilyWhereInput> | null
+  }
+
+  export type ContentOutputOrderByWithRelationInput = {
+    id?: SortOrder
+    config_id?: SortOrder
+    language?: SortOrder
+    title_strategy?: SortOrder
+    description_strategy?: SortOrder
+    ai_title_family_id?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    config?: ContentPublishingConfigOrderByWithRelationInput
+    ai_title_family?: AiTitleFamilyOrderByWithRelationInput
+  }
+
+  export type ContentOutputWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    config_id_language?: ContentOutputConfig_idLanguageCompoundUniqueInput
+    AND?: ContentOutputWhereInput | ContentOutputWhereInput[]
+    OR?: ContentOutputWhereInput[]
+    NOT?: ContentOutputWhereInput | ContentOutputWhereInput[]
+    config_id?: StringFilter<"ContentOutput"> | string
+    language?: EnumContentLanguageFilter<"ContentOutput"> | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyFilter<"ContentOutput"> | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyFilter<"ContentOutput"> | $Enums.DescriptionProductionStrategy
+    ai_title_family_id?: StringNullableFilter<"ContentOutput"> | string | null
+    created_at?: DateTimeFilter<"ContentOutput"> | Date | string
+    updated_at?: DateTimeFilter<"ContentOutput"> | Date | string
+    config?: XOR<ContentPublishingConfigScalarRelationFilter, ContentPublishingConfigWhereInput>
+    ai_title_family?: XOR<AiTitleFamilyNullableScalarRelationFilter, AiTitleFamilyWhereInput> | null
+  }, "id" | "config_id_language">
+
+  export type ContentOutputOrderByWithAggregationInput = {
+    id?: SortOrder
+    config_id?: SortOrder
+    language?: SortOrder
+    title_strategy?: SortOrder
+    description_strategy?: SortOrder
+    ai_title_family_id?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: ContentOutputCountOrderByAggregateInput
+    _max?: ContentOutputMaxOrderByAggregateInput
+    _min?: ContentOutputMinOrderByAggregateInput
+  }
+
+  export type ContentOutputScalarWhereWithAggregatesInput = {
+    AND?: ContentOutputScalarWhereWithAggregatesInput | ContentOutputScalarWhereWithAggregatesInput[]
+    OR?: ContentOutputScalarWhereWithAggregatesInput[]
+    NOT?: ContentOutputScalarWhereWithAggregatesInput | ContentOutputScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ContentOutput"> | string
+    config_id?: StringWithAggregatesFilter<"ContentOutput"> | string
+    language?: EnumContentLanguageWithAggregatesFilter<"ContentOutput"> | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyWithAggregatesFilter<"ContentOutput"> | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyWithAggregatesFilter<"ContentOutput"> | $Enums.DescriptionProductionStrategy
+    ai_title_family_id?: StringNullableWithAggregatesFilter<"ContentOutput"> | string | null
+    created_at?: DateTimeWithAggregatesFilter<"ContentOutput"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"ContentOutput"> | Date | string
+  }
+
+  export type AiTitleFamilyWhereInput = {
+    AND?: AiTitleFamilyWhereInput | AiTitleFamilyWhereInput[]
+    OR?: AiTitleFamilyWhereInput[]
+    NOT?: AiTitleFamilyWhereInput | AiTitleFamilyWhereInput[]
+    id?: StringFilter<"AiTitleFamily"> | string
+    config_id?: StringFilter<"AiTitleFamily"> | string
+    name?: StringFilter<"AiTitleFamily"> | string
+    model?: StringNullableFilter<"AiTitleFamily"> | string | null
+    use_batch?: BoolNullableFilter<"AiTitleFamily"> | boolean | null
+    instructions?: StringNullableFilter<"AiTitleFamily"> | string | null
+    generation_options?: JsonNullableFilter<"AiTitleFamily">
+    is_enabled?: BoolFilter<"AiTitleFamily"> | boolean
+    created_at?: DateTimeFilter<"AiTitleFamily"> | Date | string
+    updated_at?: DateTimeFilter<"AiTitleFamily"> | Date | string
+    config?: XOR<ContentPublishingConfigScalarRelationFilter, ContentPublishingConfigWhereInput>
+    outputs?: ContentOutputListRelationFilter
+    ai_batch_runs?: AiBatchRunListRelationFilter
+  }
+
+  export type AiTitleFamilyOrderByWithRelationInput = {
+    id?: SortOrder
+    config_id?: SortOrder
+    name?: SortOrder
+    model?: SortOrderInput | SortOrder
+    use_batch?: SortOrderInput | SortOrder
+    instructions?: SortOrderInput | SortOrder
+    generation_options?: SortOrderInput | SortOrder
+    is_enabled?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    config?: ContentPublishingConfigOrderByWithRelationInput
+    outputs?: ContentOutputOrderByRelationAggregateInput
+    ai_batch_runs?: AiBatchRunOrderByRelationAggregateInput
+  }
+
+  export type AiTitleFamilyWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    config_id_name?: AiTitleFamilyConfig_idNameCompoundUniqueInput
+    AND?: AiTitleFamilyWhereInput | AiTitleFamilyWhereInput[]
+    OR?: AiTitleFamilyWhereInput[]
+    NOT?: AiTitleFamilyWhereInput | AiTitleFamilyWhereInput[]
+    config_id?: StringFilter<"AiTitleFamily"> | string
+    name?: StringFilter<"AiTitleFamily"> | string
+    model?: StringNullableFilter<"AiTitleFamily"> | string | null
+    use_batch?: BoolNullableFilter<"AiTitleFamily"> | boolean | null
+    instructions?: StringNullableFilter<"AiTitleFamily"> | string | null
+    generation_options?: JsonNullableFilter<"AiTitleFamily">
+    is_enabled?: BoolFilter<"AiTitleFamily"> | boolean
+    created_at?: DateTimeFilter<"AiTitleFamily"> | Date | string
+    updated_at?: DateTimeFilter<"AiTitleFamily"> | Date | string
+    config?: XOR<ContentPublishingConfigScalarRelationFilter, ContentPublishingConfigWhereInput>
+    outputs?: ContentOutputListRelationFilter
+    ai_batch_runs?: AiBatchRunListRelationFilter
+  }, "id" | "config_id_name">
+
+  export type AiTitleFamilyOrderByWithAggregationInput = {
+    id?: SortOrder
+    config_id?: SortOrder
+    name?: SortOrder
+    model?: SortOrderInput | SortOrder
+    use_batch?: SortOrderInput | SortOrder
+    instructions?: SortOrderInput | SortOrder
+    generation_options?: SortOrderInput | SortOrder
+    is_enabled?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: AiTitleFamilyCountOrderByAggregateInput
+    _max?: AiTitleFamilyMaxOrderByAggregateInput
+    _min?: AiTitleFamilyMinOrderByAggregateInput
+  }
+
+  export type AiTitleFamilyScalarWhereWithAggregatesInput = {
+    AND?: AiTitleFamilyScalarWhereWithAggregatesInput | AiTitleFamilyScalarWhereWithAggregatesInput[]
+    OR?: AiTitleFamilyScalarWhereWithAggregatesInput[]
+    NOT?: AiTitleFamilyScalarWhereWithAggregatesInput | AiTitleFamilyScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AiTitleFamily"> | string
+    config_id?: StringWithAggregatesFilter<"AiTitleFamily"> | string
+    name?: StringWithAggregatesFilter<"AiTitleFamily"> | string
+    model?: StringNullableWithAggregatesFilter<"AiTitleFamily"> | string | null
+    use_batch?: BoolNullableWithAggregatesFilter<"AiTitleFamily"> | boolean | null
+    instructions?: StringNullableWithAggregatesFilter<"AiTitleFamily"> | string | null
+    generation_options?: JsonNullableWithAggregatesFilter<"AiTitleFamily">
+    is_enabled?: BoolWithAggregatesFilter<"AiTitleFamily"> | boolean
+    created_at?: DateTimeWithAggregatesFilter<"AiTitleFamily"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"AiTitleFamily"> | Date | string
+  }
+
+  export type PropertyLocalizedContentWhereInput = {
+    AND?: PropertyLocalizedContentWhereInput | PropertyLocalizedContentWhereInput[]
+    OR?: PropertyLocalizedContentWhereInput[]
+    NOT?: PropertyLocalizedContentWhereInput | PropertyLocalizedContentWhereInput[]
+    id?: StringFilter<"PropertyLocalizedContent"> | string
+    user_property_id?: StringFilter<"PropertyLocalizedContent"> | string
+    content_type?: EnumContentTypeFilter<"PropertyLocalizedContent"> | $Enums.ContentType
+    language?: EnumContentLanguageFilter<"PropertyLocalizedContent"> | $Enums.ContentLanguage
+    production?: StringFilter<"PropertyLocalizedContent"> | string
+    text?: StringFilter<"PropertyLocalizedContent"> | string
+    is_stale?: BoolFilter<"PropertyLocalizedContent"> | boolean
+    created_at?: DateTimeFilter<"PropertyLocalizedContent"> | Date | string
+    updated_at?: DateTimeFilter<"PropertyLocalizedContent"> | Date | string
+    user_property?: XOR<UserPropertyScalarRelationFilter, UserPropertyWhereInput>
+  }
+
+  export type PropertyLocalizedContentOrderByWithRelationInput = {
+    id?: SortOrder
+    user_property_id?: SortOrder
+    content_type?: SortOrder
+    language?: SortOrder
+    production?: SortOrder
+    text?: SortOrder
+    is_stale?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    user_property?: UserPropertyOrderByWithRelationInput
+  }
+
+  export type PropertyLocalizedContentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    user_property_id_content_type_language?: PropertyLocalizedContentUser_property_idContent_typeLanguageCompoundUniqueInput
+    AND?: PropertyLocalizedContentWhereInput | PropertyLocalizedContentWhereInput[]
+    OR?: PropertyLocalizedContentWhereInput[]
+    NOT?: PropertyLocalizedContentWhereInput | PropertyLocalizedContentWhereInput[]
+    user_property_id?: StringFilter<"PropertyLocalizedContent"> | string
+    content_type?: EnumContentTypeFilter<"PropertyLocalizedContent"> | $Enums.ContentType
+    language?: EnumContentLanguageFilter<"PropertyLocalizedContent"> | $Enums.ContentLanguage
+    production?: StringFilter<"PropertyLocalizedContent"> | string
+    text?: StringFilter<"PropertyLocalizedContent"> | string
+    is_stale?: BoolFilter<"PropertyLocalizedContent"> | boolean
+    created_at?: DateTimeFilter<"PropertyLocalizedContent"> | Date | string
+    updated_at?: DateTimeFilter<"PropertyLocalizedContent"> | Date | string
+    user_property?: XOR<UserPropertyScalarRelationFilter, UserPropertyWhereInput>
+  }, "id" | "user_property_id_content_type_language">
+
+  export type PropertyLocalizedContentOrderByWithAggregationInput = {
+    id?: SortOrder
+    user_property_id?: SortOrder
+    content_type?: SortOrder
+    language?: SortOrder
+    production?: SortOrder
+    text?: SortOrder
+    is_stale?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: PropertyLocalizedContentCountOrderByAggregateInput
+    _max?: PropertyLocalizedContentMaxOrderByAggregateInput
+    _min?: PropertyLocalizedContentMinOrderByAggregateInput
+  }
+
+  export type PropertyLocalizedContentScalarWhereWithAggregatesInput = {
+    AND?: PropertyLocalizedContentScalarWhereWithAggregatesInput | PropertyLocalizedContentScalarWhereWithAggregatesInput[]
+    OR?: PropertyLocalizedContentScalarWhereWithAggregatesInput[]
+    NOT?: PropertyLocalizedContentScalarWhereWithAggregatesInput | PropertyLocalizedContentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PropertyLocalizedContent"> | string
+    user_property_id?: StringWithAggregatesFilter<"PropertyLocalizedContent"> | string
+    content_type?: EnumContentTypeWithAggregatesFilter<"PropertyLocalizedContent"> | $Enums.ContentType
+    language?: EnumContentLanguageWithAggregatesFilter<"PropertyLocalizedContent"> | $Enums.ContentLanguage
+    production?: StringWithAggregatesFilter<"PropertyLocalizedContent"> | string
+    text?: StringWithAggregatesFilter<"PropertyLocalizedContent"> | string
+    is_stale?: BoolWithAggregatesFilter<"PropertyLocalizedContent"> | boolean
+    created_at?: DateTimeWithAggregatesFilter<"PropertyLocalizedContent"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"PropertyLocalizedContent"> | Date | string
+  }
+
+  export type AiBatchRunWhereInput = {
+    AND?: AiBatchRunWhereInput | AiBatchRunWhereInput[]
+    OR?: AiBatchRunWhereInput[]
+    NOT?: AiBatchRunWhereInput | AiBatchRunWhereInput[]
+    id?: StringFilter<"AiBatchRun"> | string
+    kind?: EnumAiBatchRunKindFilter<"AiBatchRun"> | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFilter<"AiBatchRun"> | $Enums.AiBatchRunStatus
+    openai_batch_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    config_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    ai_title_family_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    user_property_ids?: JsonFilter<"AiBatchRun">
+    metadata?: JsonNullableFilter<"AiBatchRun">
+    error_message?: StringNullableFilter<"AiBatchRun"> | string | null
+    created_at?: DateTimeFilter<"AiBatchRun"> | Date | string
+    updated_at?: DateTimeFilter<"AiBatchRun"> | Date | string
+    config?: XOR<ContentPublishingConfigNullableScalarRelationFilter, ContentPublishingConfigWhereInput> | null
+    ai_title_family?: XOR<AiTitleFamilyNullableScalarRelationFilter, AiTitleFamilyWhereInput> | null
+  }
+
+  export type AiBatchRunOrderByWithRelationInput = {
+    id?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    openai_batch_id?: SortOrderInput | SortOrder
+    config_id?: SortOrderInput | SortOrder
+    ai_title_family_id?: SortOrderInput | SortOrder
+    user_property_ids?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    error_message?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    config?: ContentPublishingConfigOrderByWithRelationInput
+    ai_title_family?: AiTitleFamilyOrderByWithRelationInput
+  }
+
+  export type AiBatchRunWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    openai_batch_id?: string
+    AND?: AiBatchRunWhereInput | AiBatchRunWhereInput[]
+    OR?: AiBatchRunWhereInput[]
+    NOT?: AiBatchRunWhereInput | AiBatchRunWhereInput[]
+    kind?: EnumAiBatchRunKindFilter<"AiBatchRun"> | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFilter<"AiBatchRun"> | $Enums.AiBatchRunStatus
+    config_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    ai_title_family_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    user_property_ids?: JsonFilter<"AiBatchRun">
+    metadata?: JsonNullableFilter<"AiBatchRun">
+    error_message?: StringNullableFilter<"AiBatchRun"> | string | null
+    created_at?: DateTimeFilter<"AiBatchRun"> | Date | string
+    updated_at?: DateTimeFilter<"AiBatchRun"> | Date | string
+    config?: XOR<ContentPublishingConfigNullableScalarRelationFilter, ContentPublishingConfigWhereInput> | null
+    ai_title_family?: XOR<AiTitleFamilyNullableScalarRelationFilter, AiTitleFamilyWhereInput> | null
+  }, "id" | "openai_batch_id">
+
+  export type AiBatchRunOrderByWithAggregationInput = {
+    id?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    openai_batch_id?: SortOrderInput | SortOrder
+    config_id?: SortOrderInput | SortOrder
+    ai_title_family_id?: SortOrderInput | SortOrder
+    user_property_ids?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    error_message?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: AiBatchRunCountOrderByAggregateInput
+    _max?: AiBatchRunMaxOrderByAggregateInput
+    _min?: AiBatchRunMinOrderByAggregateInput
+  }
+
+  export type AiBatchRunScalarWhereWithAggregatesInput = {
+    AND?: AiBatchRunScalarWhereWithAggregatesInput | AiBatchRunScalarWhereWithAggregatesInput[]
+    OR?: AiBatchRunScalarWhereWithAggregatesInput[]
+    NOT?: AiBatchRunScalarWhereWithAggregatesInput | AiBatchRunScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AiBatchRun"> | string
+    kind?: EnumAiBatchRunKindWithAggregatesFilter<"AiBatchRun"> | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusWithAggregatesFilter<"AiBatchRun"> | $Enums.AiBatchRunStatus
+    openai_batch_id?: StringNullableWithAggregatesFilter<"AiBatchRun"> | string | null
+    config_id?: StringNullableWithAggregatesFilter<"AiBatchRun"> | string | null
+    ai_title_family_id?: StringNullableWithAggregatesFilter<"AiBatchRun"> | string | null
+    user_property_ids?: JsonWithAggregatesFilter<"AiBatchRun">
+    metadata?: JsonNullableWithAggregatesFilter<"AiBatchRun">
+    error_message?: StringNullableWithAggregatesFilter<"AiBatchRun"> | string | null
+    created_at?: DateTimeWithAggregatesFilter<"AiBatchRun"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"AiBatchRun"> | Date | string
   }
 
   export type IntegrationPropertyWhereInput = {
@@ -41406,6 +48446,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -41430,6 +48471,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -41454,6 +48496,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -41478,6 +48521,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -41502,6 +48546,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -41520,6 +48565,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -41538,6 +48584,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -41571,6 +48618,7 @@ export namespace Prisma {
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateInput = {
@@ -41594,6 +48642,7 @@ export namespace Prisma {
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUpdateInput = {
@@ -41617,6 +48666,7 @@ export namespace Prisma {
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateInput = {
@@ -41640,6 +48690,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyCreateManyInput = {
@@ -43789,6 +50840,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutSaved_propertiesInput
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
+    localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateInput = {
@@ -43839,6 +50891,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
+    localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUpdateInput = {
@@ -43889,6 +50942,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
+    localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateInput = {
@@ -43939,6 +50993,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
+    localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyCreateManyInput = {
@@ -44082,6 +51137,446 @@ export namespace Prisma {
     is_modified?: BoolFieldUpdateOperationsInput | boolean
     pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContentPublishingConfigCreateInput = {
+    id?: string
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user_tracked_agency: UserTrackedAgencyCreateNestedOneWithoutContent_publishing_configInput
+    outputs?: ContentOutputCreateNestedManyWithoutConfigInput
+    ai_title_families?: AiTitleFamilyCreateNestedManyWithoutConfigInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutConfigInput
+  }
+
+  export type ContentPublishingConfigUncheckedCreateInput = {
+    id?: string
+    user_tracked_agency_id: string
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    outputs?: ContentOutputUncheckedCreateNestedManyWithoutConfigInput
+    ai_title_families?: AiTitleFamilyUncheckedCreateNestedManyWithoutConfigInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutConfigInput
+  }
+
+  export type ContentPublishingConfigUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ai_titles_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batch?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user_tracked_agency?: UserTrackedAgencyUpdateOneRequiredWithoutContent_publishing_configNestedInput
+    outputs?: ContentOutputUpdateManyWithoutConfigNestedInput
+    ai_title_families?: AiTitleFamilyUpdateManyWithoutConfigNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutConfigNestedInput
+  }
+
+  export type ContentPublishingConfigUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_tracked_agency_id?: StringFieldUpdateOperationsInput | string
+    ai_titles_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batch?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    outputs?: ContentOutputUncheckedUpdateManyWithoutConfigNestedInput
+    ai_title_families?: AiTitleFamilyUncheckedUpdateManyWithoutConfigNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutConfigNestedInput
+  }
+
+  export type ContentPublishingConfigCreateManyInput = {
+    id?: string
+    user_tracked_agency_id: string
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ContentPublishingConfigUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ai_titles_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batch?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContentPublishingConfigUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_tracked_agency_id?: StringFieldUpdateOperationsInput | string
+    ai_titles_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batch?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContentOutputCreateInput = {
+    id?: string
+    language: $Enums.ContentLanguage
+    title_strategy: $Enums.TitleProductionStrategy
+    description_strategy: $Enums.DescriptionProductionStrategy
+    created_at?: Date | string
+    updated_at?: Date | string
+    config: ContentPublishingConfigCreateNestedOneWithoutOutputsInput
+    ai_title_family?: AiTitleFamilyCreateNestedOneWithoutOutputsInput
+  }
+
+  export type ContentOutputUncheckedCreateInput = {
+    id?: string
+    config_id: string
+    language: $Enums.ContentLanguage
+    title_strategy: $Enums.TitleProductionStrategy
+    description_strategy: $Enums.DescriptionProductionStrategy
+    ai_title_family_id?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ContentOutputUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    config?: ContentPublishingConfigUpdateOneRequiredWithoutOutputsNestedInput
+    ai_title_family?: AiTitleFamilyUpdateOneWithoutOutputsNestedInput
+  }
+
+  export type ContentOutputUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    config_id?: StringFieldUpdateOperationsInput | string
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContentOutputCreateManyInput = {
+    id?: string
+    config_id: string
+    language: $Enums.ContentLanguage
+    title_strategy: $Enums.TitleProductionStrategy
+    description_strategy: $Enums.DescriptionProductionStrategy
+    ai_title_family_id?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ContentOutputUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContentOutputUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    config_id?: StringFieldUpdateOperationsInput | string
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiTitleFamilyCreateInput = {
+    id?: string
+    name: string
+    model?: string | null
+    use_batch?: boolean | null
+    instructions?: string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    config: ContentPublishingConfigCreateNestedOneWithoutAi_title_familiesInput
+    outputs?: ContentOutputCreateNestedManyWithoutAi_title_familyInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutAi_title_familyInput
+  }
+
+  export type AiTitleFamilyUncheckedCreateInput = {
+    id?: string
+    config_id: string
+    name: string
+    model?: string | null
+    use_batch?: boolean | null
+    instructions?: string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    outputs?: ContentOutputUncheckedCreateNestedManyWithoutAi_title_familyInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutAi_title_familyInput
+  }
+
+  export type AiTitleFamilyUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    config?: ContentPublishingConfigUpdateOneRequiredWithoutAi_title_familiesNestedInput
+    outputs?: ContentOutputUpdateManyWithoutAi_title_familyNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutAi_title_familyNestedInput
+  }
+
+  export type AiTitleFamilyUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    config_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    outputs?: ContentOutputUncheckedUpdateManyWithoutAi_title_familyNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutAi_title_familyNestedInput
+  }
+
+  export type AiTitleFamilyCreateManyInput = {
+    id?: string
+    config_id: string
+    name: string
+    model?: string | null
+    use_batch?: boolean | null
+    instructions?: string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AiTitleFamilyUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiTitleFamilyUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    config_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PropertyLocalizedContentCreateInput = {
+    id?: string
+    content_type: $Enums.ContentType
+    language: $Enums.ContentLanguage
+    production: string
+    text: string
+    is_stale?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    user_property: UserPropertyCreateNestedOneWithoutLocalized_contentsInput
+  }
+
+  export type PropertyLocalizedContentUncheckedCreateInput = {
+    id?: string
+    user_property_id: string
+    content_type: $Enums.ContentType
+    language: $Enums.ContentLanguage
+    production: string
+    text: string
+    is_stale?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type PropertyLocalizedContentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content_type?: EnumContentTypeFieldUpdateOperationsInput | $Enums.ContentType
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    production?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    is_stale?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user_property?: UserPropertyUpdateOneRequiredWithoutLocalized_contentsNestedInput
+  }
+
+  export type PropertyLocalizedContentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: StringFieldUpdateOperationsInput | string
+    content_type?: EnumContentTypeFieldUpdateOperationsInput | $Enums.ContentType
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    production?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    is_stale?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PropertyLocalizedContentCreateManyInput = {
+    id?: string
+    user_property_id: string
+    content_type: $Enums.ContentType
+    language: $Enums.ContentLanguage
+    production: string
+    text: string
+    is_stale?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type PropertyLocalizedContentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content_type?: EnumContentTypeFieldUpdateOperationsInput | $Enums.ContentType
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    production?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    is_stale?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PropertyLocalizedContentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_property_id?: StringFieldUpdateOperationsInput | string
+    content_type?: EnumContentTypeFieldUpdateOperationsInput | $Enums.ContentType
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    production?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    is_stale?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiBatchRunCreateInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    config?: ContentPublishingConfigCreateNestedOneWithoutAi_batch_runsInput
+    ai_title_family?: AiTitleFamilyCreateNestedOneWithoutAi_batch_runsInput
+  }
+
+  export type AiBatchRunUncheckedCreateInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    config_id?: string | null
+    ai_title_family_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AiBatchRunUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    config?: ContentPublishingConfigUpdateOneWithoutAi_batch_runsNestedInput
+    ai_title_family?: AiTitleFamilyUpdateOneWithoutAi_batch_runsNestedInput
+  }
+
+  export type AiBatchRunUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    config_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiBatchRunCreateManyInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    config_id?: string | null
+    ai_title_family_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AiBatchRunUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiBatchRunUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    config_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -44798,6 +52293,13 @@ export namespace Prisma {
     updated_at?: SortOrder
   }
 
+  export type EnumContentLanguageFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentLanguage | EnumContentLanguageFieldRefInput<$PrismaModel>
+    in?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel>
+    not?: NestedEnumContentLanguageFilter<$PrismaModel> | $Enums.ContentLanguage
+  }
+
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -44865,6 +52367,7 @@ export namespace Prisma {
     base_url?: SortOrder
     country?: SortOrder
     city?: SortOrder
+    content_language?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
     crawl_interval?: SortOrder
@@ -44883,6 +52386,7 @@ export namespace Prisma {
     base_url?: SortOrder
     country?: SortOrder
     city?: SortOrder
+    content_language?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
     crawl_interval?: SortOrder
@@ -44900,6 +52404,7 @@ export namespace Prisma {
     base_url?: SortOrder
     country?: SortOrder
     city?: SortOrder
+    content_language?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
     crawl_interval?: SortOrder
@@ -44909,6 +52414,16 @@ export namespace Prisma {
     last_error_message?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+  }
+
+  export type EnumContentLanguageWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentLanguage | EnumContentLanguageFieldRefInput<$PrismaModel>
+    in?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel>
+    not?: NestedEnumContentLanguageWithAggregatesFilter<$PrismaModel> | $Enums.ContentLanguage
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContentLanguageFilter<$PrismaModel>
+    _max?: NestedEnumContentLanguageFilter<$PrismaModel>
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -44958,6 +52473,11 @@ export namespace Prisma {
   export type SourceAgencyScalarRelationFilter = {
     is?: SourceAgencyWhereInput
     isNot?: SourceAgencyWhereInput
+  }
+
+  export type ContentPublishingConfigNullableScalarRelationFilter = {
+    is?: ContentPublishingConfigWhereInput | null
+    isNot?: ContentPublishingConfigWhereInput | null
   }
 
   export type UserTrackedAgencyUser_idSource_agency_idCompoundUniqueInput = {
@@ -46611,6 +54131,16 @@ export namespace Prisma {
     _max?: NestedEnumPropertyHistoryEventTypeFilter<$PrismaModel>
   }
 
+  export type PropertyLocalizedContentListRelationFilter = {
+    every?: PropertyLocalizedContentWhereInput
+    some?: PropertyLocalizedContentWhereInput
+    none?: PropertyLocalizedContentWhereInput
+  }
+
+  export type PropertyLocalizedContentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type UserPropertyUser_idCanonical_property_idCompoundUniqueInput = {
     user_id: string
     canonical_property_id: string
@@ -46785,9 +54315,340 @@ export namespace Prisma {
     price_web?: SortOrder
   }
 
+  export type ContentOutputListRelationFilter = {
+    every?: ContentOutputWhereInput
+    some?: ContentOutputWhereInput
+    none?: ContentOutputWhereInput
+  }
+
+  export type AiTitleFamilyListRelationFilter = {
+    every?: AiTitleFamilyWhereInput
+    some?: AiTitleFamilyWhereInput
+    none?: AiTitleFamilyWhereInput
+  }
+
+  export type AiBatchRunListRelationFilter = {
+    every?: AiBatchRunWhereInput
+    some?: AiBatchRunWhereInput
+    none?: AiBatchRunWhereInput
+  }
+
+  export type ContentOutputOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AiTitleFamilyOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AiBatchRunOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ContentPublishingConfigCountOrderByAggregateInput = {
+    id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    ai_titles_enabled?: SortOrder
+    use_ai_batch?: SortOrder
+    is_enabled?: SortOrder
+    notes?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type ContentPublishingConfigMaxOrderByAggregateInput = {
+    id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    ai_titles_enabled?: SortOrder
+    use_ai_batch?: SortOrder
+    is_enabled?: SortOrder
+    notes?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type ContentPublishingConfigMinOrderByAggregateInput = {
+    id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    ai_titles_enabled?: SortOrder
+    use_ai_batch?: SortOrder
+    is_enabled?: SortOrder
+    notes?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type EnumTitleProductionStrategyFilter<$PrismaModel = never> = {
+    equals?: $Enums.TitleProductionStrategy | EnumTitleProductionStrategyFieldRefInput<$PrismaModel>
+    in?: $Enums.TitleProductionStrategy[] | ListEnumTitleProductionStrategyFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TitleProductionStrategy[] | ListEnumTitleProductionStrategyFieldRefInput<$PrismaModel>
+    not?: NestedEnumTitleProductionStrategyFilter<$PrismaModel> | $Enums.TitleProductionStrategy
+  }
+
+  export type EnumDescriptionProductionStrategyFilter<$PrismaModel = never> = {
+    equals?: $Enums.DescriptionProductionStrategy | EnumDescriptionProductionStrategyFieldRefInput<$PrismaModel>
+    in?: $Enums.DescriptionProductionStrategy[] | ListEnumDescriptionProductionStrategyFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DescriptionProductionStrategy[] | ListEnumDescriptionProductionStrategyFieldRefInput<$PrismaModel>
+    not?: NestedEnumDescriptionProductionStrategyFilter<$PrismaModel> | $Enums.DescriptionProductionStrategy
+  }
+
+  export type ContentPublishingConfigScalarRelationFilter = {
+    is?: ContentPublishingConfigWhereInput
+    isNot?: ContentPublishingConfigWhereInput
+  }
+
+  export type AiTitleFamilyNullableScalarRelationFilter = {
+    is?: AiTitleFamilyWhereInput | null
+    isNot?: AiTitleFamilyWhereInput | null
+  }
+
+  export type ContentOutputConfig_idLanguageCompoundUniqueInput = {
+    config_id: string
+    language: $Enums.ContentLanguage
+  }
+
+  export type ContentOutputCountOrderByAggregateInput = {
+    id?: SortOrder
+    config_id?: SortOrder
+    language?: SortOrder
+    title_strategy?: SortOrder
+    description_strategy?: SortOrder
+    ai_title_family_id?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type ContentOutputMaxOrderByAggregateInput = {
+    id?: SortOrder
+    config_id?: SortOrder
+    language?: SortOrder
+    title_strategy?: SortOrder
+    description_strategy?: SortOrder
+    ai_title_family_id?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type ContentOutputMinOrderByAggregateInput = {
+    id?: SortOrder
+    config_id?: SortOrder
+    language?: SortOrder
+    title_strategy?: SortOrder
+    description_strategy?: SortOrder
+    ai_title_family_id?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type EnumTitleProductionStrategyWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TitleProductionStrategy | EnumTitleProductionStrategyFieldRefInput<$PrismaModel>
+    in?: $Enums.TitleProductionStrategy[] | ListEnumTitleProductionStrategyFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TitleProductionStrategy[] | ListEnumTitleProductionStrategyFieldRefInput<$PrismaModel>
+    not?: NestedEnumTitleProductionStrategyWithAggregatesFilter<$PrismaModel> | $Enums.TitleProductionStrategy
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTitleProductionStrategyFilter<$PrismaModel>
+    _max?: NestedEnumTitleProductionStrategyFilter<$PrismaModel>
+  }
+
+  export type EnumDescriptionProductionStrategyWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DescriptionProductionStrategy | EnumDescriptionProductionStrategyFieldRefInput<$PrismaModel>
+    in?: $Enums.DescriptionProductionStrategy[] | ListEnumDescriptionProductionStrategyFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DescriptionProductionStrategy[] | ListEnumDescriptionProductionStrategyFieldRefInput<$PrismaModel>
+    not?: NestedEnumDescriptionProductionStrategyWithAggregatesFilter<$PrismaModel> | $Enums.DescriptionProductionStrategy
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDescriptionProductionStrategyFilter<$PrismaModel>
+    _max?: NestedEnumDescriptionProductionStrategyFilter<$PrismaModel>
+  }
+
+  export type BoolNullableFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
+  }
+
+  export type AiTitleFamilyConfig_idNameCompoundUniqueInput = {
+    config_id: string
+    name: string
+  }
+
+  export type AiTitleFamilyCountOrderByAggregateInput = {
+    id?: SortOrder
+    config_id?: SortOrder
+    name?: SortOrder
+    model?: SortOrder
+    use_batch?: SortOrder
+    instructions?: SortOrder
+    generation_options?: SortOrder
+    is_enabled?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type AiTitleFamilyMaxOrderByAggregateInput = {
+    id?: SortOrder
+    config_id?: SortOrder
+    name?: SortOrder
+    model?: SortOrder
+    use_batch?: SortOrder
+    instructions?: SortOrder
+    is_enabled?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type AiTitleFamilyMinOrderByAggregateInput = {
+    id?: SortOrder
+    config_id?: SortOrder
+    name?: SortOrder
+    model?: SortOrder
+    use_batch?: SortOrder
+    instructions?: SortOrder
+    is_enabled?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type BoolNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableWithAggregatesFilter<$PrismaModel> | boolean | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBoolNullableFilter<$PrismaModel>
+    _max?: NestedBoolNullableFilter<$PrismaModel>
+  }
+
+  export type EnumContentTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentType | EnumContentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ContentType[] | ListEnumContentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContentType[] | ListEnumContentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumContentTypeFilter<$PrismaModel> | $Enums.ContentType
+  }
+
   export type UserPropertyScalarRelationFilter = {
     is?: UserPropertyWhereInput
     isNot?: UserPropertyWhereInput
+  }
+
+  export type PropertyLocalizedContentUser_property_idContent_typeLanguageCompoundUniqueInput = {
+    user_property_id: string
+    content_type: $Enums.ContentType
+    language: $Enums.ContentLanguage
+  }
+
+  export type PropertyLocalizedContentCountOrderByAggregateInput = {
+    id?: SortOrder
+    user_property_id?: SortOrder
+    content_type?: SortOrder
+    language?: SortOrder
+    production?: SortOrder
+    text?: SortOrder
+    is_stale?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type PropertyLocalizedContentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    user_property_id?: SortOrder
+    content_type?: SortOrder
+    language?: SortOrder
+    production?: SortOrder
+    text?: SortOrder
+    is_stale?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type PropertyLocalizedContentMinOrderByAggregateInput = {
+    id?: SortOrder
+    user_property_id?: SortOrder
+    content_type?: SortOrder
+    language?: SortOrder
+    production?: SortOrder
+    text?: SortOrder
+    is_stale?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type EnumContentTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentType | EnumContentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ContentType[] | ListEnumContentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContentType[] | ListEnumContentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumContentTypeWithAggregatesFilter<$PrismaModel> | $Enums.ContentType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContentTypeFilter<$PrismaModel>
+    _max?: NestedEnumContentTypeFilter<$PrismaModel>
+  }
+
+  export type EnumAiBatchRunKindFilter<$PrismaModel = never> = {
+    equals?: $Enums.AiBatchRunKind | EnumAiBatchRunKindFieldRefInput<$PrismaModel>
+    in?: $Enums.AiBatchRunKind[] | ListEnumAiBatchRunKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AiBatchRunKind[] | ListEnumAiBatchRunKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumAiBatchRunKindFilter<$PrismaModel> | $Enums.AiBatchRunKind
+  }
+
+  export type EnumAiBatchRunStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.AiBatchRunStatus | EnumAiBatchRunStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.AiBatchRunStatus[] | ListEnumAiBatchRunStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AiBatchRunStatus[] | ListEnumAiBatchRunStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumAiBatchRunStatusFilter<$PrismaModel> | $Enums.AiBatchRunStatus
+  }
+
+  export type AiBatchRunCountOrderByAggregateInput = {
+    id?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    openai_batch_id?: SortOrder
+    config_id?: SortOrder
+    ai_title_family_id?: SortOrder
+    user_property_ids?: SortOrder
+    metadata?: SortOrder
+    error_message?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type AiBatchRunMaxOrderByAggregateInput = {
+    id?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    openai_batch_id?: SortOrder
+    config_id?: SortOrder
+    ai_title_family_id?: SortOrder
+    error_message?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type AiBatchRunMinOrderByAggregateInput = {
+    id?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    openai_batch_id?: SortOrder
+    config_id?: SortOrder
+    ai_title_family_id?: SortOrder
+    error_message?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type EnumAiBatchRunKindWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AiBatchRunKind | EnumAiBatchRunKindFieldRefInput<$PrismaModel>
+    in?: $Enums.AiBatchRunKind[] | ListEnumAiBatchRunKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AiBatchRunKind[] | ListEnumAiBatchRunKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumAiBatchRunKindWithAggregatesFilter<$PrismaModel> | $Enums.AiBatchRunKind
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAiBatchRunKindFilter<$PrismaModel>
+    _max?: NestedEnumAiBatchRunKindFilter<$PrismaModel>
+  }
+
+  export type EnumAiBatchRunStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AiBatchRunStatus | EnumAiBatchRunStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.AiBatchRunStatus[] | ListEnumAiBatchRunStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AiBatchRunStatus[] | ListEnumAiBatchRunStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumAiBatchRunStatusWithAggregatesFilter<$PrismaModel> | $Enums.AiBatchRunStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAiBatchRunStatusFilter<$PrismaModel>
+    _max?: NestedEnumAiBatchRunStatusFilter<$PrismaModel>
   }
 
   export type IntegrationPropertyUser_idUser_integration_settings_idUser_property_idCompoundUniqueInput = {
@@ -47594,6 +55455,10 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type EnumContentLanguageFieldUpdateOperationsInput = {
+    set?: $Enums.ContentLanguage
+  }
+
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
   }
@@ -47795,6 +55660,12 @@ export namespace Prisma {
     connect?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
   }
 
+  export type ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput = {
+    create?: XOR<ContentPublishingConfigCreateWithoutUser_tracked_agencyInput, ContentPublishingConfigUncheckedCreateWithoutUser_tracked_agencyInput>
+    connectOrCreate?: ContentPublishingConfigCreateOrConnectWithoutUser_tracked_agencyInput
+    connect?: ContentPublishingConfigWhereUniqueInput
+  }
+
   export type CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput = {
     create?: XOR<CrawlRunCreateWithoutUser_tracked_agencyInput, CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput> | CrawlRunCreateWithoutUser_tracked_agencyInput[] | CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput[]
     connectOrCreate?: CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput | CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput[]
@@ -47806,6 +55677,12 @@ export namespace Prisma {
     create?: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_tracked_agencyInput>
     connectOrCreate?: UserTrackedAgencyIntegrationLinkCreateOrConnectWithoutUser_tracked_agencyInput
     connect?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
+  }
+
+  export type ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput = {
+    create?: XOR<ContentPublishingConfigCreateWithoutUser_tracked_agencyInput, ContentPublishingConfigUncheckedCreateWithoutUser_tracked_agencyInput>
+    connectOrCreate?: ContentPublishingConfigCreateOrConnectWithoutUser_tracked_agencyInput
+    connect?: ContentPublishingConfigWhereUniqueInput
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -47869,6 +55746,16 @@ export namespace Prisma {
     update?: XOR<XOR<UserTrackedAgencyIntegrationLinkUpdateToOneWithWhereWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUpdateWithoutUser_tracked_agencyInput>, UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_tracked_agencyInput>
   }
 
+  export type ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput = {
+    create?: XOR<ContentPublishingConfigCreateWithoutUser_tracked_agencyInput, ContentPublishingConfigUncheckedCreateWithoutUser_tracked_agencyInput>
+    connectOrCreate?: ContentPublishingConfigCreateOrConnectWithoutUser_tracked_agencyInput
+    upsert?: ContentPublishingConfigUpsertWithoutUser_tracked_agencyInput
+    disconnect?: ContentPublishingConfigWhereInput | boolean
+    delete?: ContentPublishingConfigWhereInput | boolean
+    connect?: ContentPublishingConfigWhereUniqueInput
+    update?: XOR<XOR<ContentPublishingConfigUpdateToOneWithWhereWithoutUser_tracked_agencyInput, ContentPublishingConfigUpdateWithoutUser_tracked_agencyInput>, ContentPublishingConfigUncheckedUpdateWithoutUser_tracked_agencyInput>
+  }
+
   export type CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput = {
     create?: XOR<CrawlRunCreateWithoutUser_tracked_agencyInput, CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput> | CrawlRunCreateWithoutUser_tracked_agencyInput[] | CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput[]
     connectOrCreate?: CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput | CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput[]
@@ -47891,6 +55778,16 @@ export namespace Prisma {
     delete?: UserTrackedAgencyIntegrationLinkWhereInput | boolean
     connect?: UserTrackedAgencyIntegrationLinkWhereUniqueInput
     update?: XOR<XOR<UserTrackedAgencyIntegrationLinkUpdateToOneWithWhereWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUpdateWithoutUser_tracked_agencyInput>, UserTrackedAgencyIntegrationLinkUncheckedUpdateWithoutUser_tracked_agencyInput>
+  }
+
+  export type ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput = {
+    create?: XOR<ContentPublishingConfigCreateWithoutUser_tracked_agencyInput, ContentPublishingConfigUncheckedCreateWithoutUser_tracked_agencyInput>
+    connectOrCreate?: ContentPublishingConfigCreateOrConnectWithoutUser_tracked_agencyInput
+    upsert?: ContentPublishingConfigUpsertWithoutUser_tracked_agencyInput
+    disconnect?: ContentPublishingConfigWhereInput | boolean
+    delete?: ContentPublishingConfigWhereInput | boolean
+    connect?: ContentPublishingConfigWhereUniqueInput
+    update?: XOR<XOR<ContentPublishingConfigUpdateToOneWithWhereWithoutUser_tracked_agencyInput, ContentPublishingConfigUpdateWithoutUser_tracked_agencyInput>, ContentPublishingConfigUncheckedUpdateWithoutUser_tracked_agencyInput>
   }
 
   export type UserTrackedAgencyCreateNestedOneWithoutIntegration_linkInput = {
@@ -49246,11 +57143,25 @@ export namespace Prisma {
     connect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
   }
 
+  export type PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput = {
+    create?: XOR<PropertyLocalizedContentCreateWithoutUser_propertyInput, PropertyLocalizedContentUncheckedCreateWithoutUser_propertyInput> | PropertyLocalizedContentCreateWithoutUser_propertyInput[] | PropertyLocalizedContentUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: PropertyLocalizedContentCreateOrConnectWithoutUser_propertyInput | PropertyLocalizedContentCreateOrConnectWithoutUser_propertyInput[]
+    createMany?: PropertyLocalizedContentCreateManyUser_propertyInputEnvelope
+    connect?: PropertyLocalizedContentWhereUniqueInput | PropertyLocalizedContentWhereUniqueInput[]
+  }
+
   export type IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput = {
     create?: XOR<IntegrationPropertyCreateWithoutUser_propertyInput, IntegrationPropertyUncheckedCreateWithoutUser_propertyInput> | IntegrationPropertyCreateWithoutUser_propertyInput[] | IntegrationPropertyUncheckedCreateWithoutUser_propertyInput[]
     connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutUser_propertyInput | IntegrationPropertyCreateOrConnectWithoutUser_propertyInput[]
     createMany?: IntegrationPropertyCreateManyUser_propertyInputEnvelope
     connect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
+  }
+
+  export type PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput = {
+    create?: XOR<PropertyLocalizedContentCreateWithoutUser_propertyInput, PropertyLocalizedContentUncheckedCreateWithoutUser_propertyInput> | PropertyLocalizedContentCreateWithoutUser_propertyInput[] | PropertyLocalizedContentUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: PropertyLocalizedContentCreateOrConnectWithoutUser_propertyInput | PropertyLocalizedContentCreateOrConnectWithoutUser_propertyInput[]
+    createMany?: PropertyLocalizedContentCreateManyUser_propertyInputEnvelope
+    connect?: PropertyLocalizedContentWhereUniqueInput | PropertyLocalizedContentWhereUniqueInput[]
   }
 
   export type UserUpdateOneRequiredWithoutSaved_propertiesNestedInput = {
@@ -49283,6 +57194,20 @@ export namespace Prisma {
     deleteMany?: IntegrationPropertyScalarWhereInput | IntegrationPropertyScalarWhereInput[]
   }
 
+  export type PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput = {
+    create?: XOR<PropertyLocalizedContentCreateWithoutUser_propertyInput, PropertyLocalizedContentUncheckedCreateWithoutUser_propertyInput> | PropertyLocalizedContentCreateWithoutUser_propertyInput[] | PropertyLocalizedContentUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: PropertyLocalizedContentCreateOrConnectWithoutUser_propertyInput | PropertyLocalizedContentCreateOrConnectWithoutUser_propertyInput[]
+    upsert?: PropertyLocalizedContentUpsertWithWhereUniqueWithoutUser_propertyInput | PropertyLocalizedContentUpsertWithWhereUniqueWithoutUser_propertyInput[]
+    createMany?: PropertyLocalizedContentCreateManyUser_propertyInputEnvelope
+    set?: PropertyLocalizedContentWhereUniqueInput | PropertyLocalizedContentWhereUniqueInput[]
+    disconnect?: PropertyLocalizedContentWhereUniqueInput | PropertyLocalizedContentWhereUniqueInput[]
+    delete?: PropertyLocalizedContentWhereUniqueInput | PropertyLocalizedContentWhereUniqueInput[]
+    connect?: PropertyLocalizedContentWhereUniqueInput | PropertyLocalizedContentWhereUniqueInput[]
+    update?: PropertyLocalizedContentUpdateWithWhereUniqueWithoutUser_propertyInput | PropertyLocalizedContentUpdateWithWhereUniqueWithoutUser_propertyInput[]
+    updateMany?: PropertyLocalizedContentUpdateManyWithWhereWithoutUser_propertyInput | PropertyLocalizedContentUpdateManyWithWhereWithoutUser_propertyInput[]
+    deleteMany?: PropertyLocalizedContentScalarWhereInput | PropertyLocalizedContentScalarWhereInput[]
+  }
+
   export type IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput = {
     create?: XOR<IntegrationPropertyCreateWithoutUser_propertyInput, IntegrationPropertyUncheckedCreateWithoutUser_propertyInput> | IntegrationPropertyCreateWithoutUser_propertyInput[] | IntegrationPropertyUncheckedCreateWithoutUser_propertyInput[]
     connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutUser_propertyInput | IntegrationPropertyCreateOrConnectWithoutUser_propertyInput[]
@@ -49295,6 +57220,358 @@ export namespace Prisma {
     update?: IntegrationPropertyUpdateWithWhereUniqueWithoutUser_propertyInput | IntegrationPropertyUpdateWithWhereUniqueWithoutUser_propertyInput[]
     updateMany?: IntegrationPropertyUpdateManyWithWhereWithoutUser_propertyInput | IntegrationPropertyUpdateManyWithWhereWithoutUser_propertyInput[]
     deleteMany?: IntegrationPropertyScalarWhereInput | IntegrationPropertyScalarWhereInput[]
+  }
+
+  export type PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput = {
+    create?: XOR<PropertyLocalizedContentCreateWithoutUser_propertyInput, PropertyLocalizedContentUncheckedCreateWithoutUser_propertyInput> | PropertyLocalizedContentCreateWithoutUser_propertyInput[] | PropertyLocalizedContentUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: PropertyLocalizedContentCreateOrConnectWithoutUser_propertyInput | PropertyLocalizedContentCreateOrConnectWithoutUser_propertyInput[]
+    upsert?: PropertyLocalizedContentUpsertWithWhereUniqueWithoutUser_propertyInput | PropertyLocalizedContentUpsertWithWhereUniqueWithoutUser_propertyInput[]
+    createMany?: PropertyLocalizedContentCreateManyUser_propertyInputEnvelope
+    set?: PropertyLocalizedContentWhereUniqueInput | PropertyLocalizedContentWhereUniqueInput[]
+    disconnect?: PropertyLocalizedContentWhereUniqueInput | PropertyLocalizedContentWhereUniqueInput[]
+    delete?: PropertyLocalizedContentWhereUniqueInput | PropertyLocalizedContentWhereUniqueInput[]
+    connect?: PropertyLocalizedContentWhereUniqueInput | PropertyLocalizedContentWhereUniqueInput[]
+    update?: PropertyLocalizedContentUpdateWithWhereUniqueWithoutUser_propertyInput | PropertyLocalizedContentUpdateWithWhereUniqueWithoutUser_propertyInput[]
+    updateMany?: PropertyLocalizedContentUpdateManyWithWhereWithoutUser_propertyInput | PropertyLocalizedContentUpdateManyWithWhereWithoutUser_propertyInput[]
+    deleteMany?: PropertyLocalizedContentScalarWhereInput | PropertyLocalizedContentScalarWhereInput[]
+  }
+
+  export type UserTrackedAgencyCreateNestedOneWithoutContent_publishing_configInput = {
+    create?: XOR<UserTrackedAgencyCreateWithoutContent_publishing_configInput, UserTrackedAgencyUncheckedCreateWithoutContent_publishing_configInput>
+    connectOrCreate?: UserTrackedAgencyCreateOrConnectWithoutContent_publishing_configInput
+    connect?: UserTrackedAgencyWhereUniqueInput
+  }
+
+  export type ContentOutputCreateNestedManyWithoutConfigInput = {
+    create?: XOR<ContentOutputCreateWithoutConfigInput, ContentOutputUncheckedCreateWithoutConfigInput> | ContentOutputCreateWithoutConfigInput[] | ContentOutputUncheckedCreateWithoutConfigInput[]
+    connectOrCreate?: ContentOutputCreateOrConnectWithoutConfigInput | ContentOutputCreateOrConnectWithoutConfigInput[]
+    createMany?: ContentOutputCreateManyConfigInputEnvelope
+    connect?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+  }
+
+  export type AiTitleFamilyCreateNestedManyWithoutConfigInput = {
+    create?: XOR<AiTitleFamilyCreateWithoutConfigInput, AiTitleFamilyUncheckedCreateWithoutConfigInput> | AiTitleFamilyCreateWithoutConfigInput[] | AiTitleFamilyUncheckedCreateWithoutConfigInput[]
+    connectOrCreate?: AiTitleFamilyCreateOrConnectWithoutConfigInput | AiTitleFamilyCreateOrConnectWithoutConfigInput[]
+    createMany?: AiTitleFamilyCreateManyConfigInputEnvelope
+    connect?: AiTitleFamilyWhereUniqueInput | AiTitleFamilyWhereUniqueInput[]
+  }
+
+  export type AiBatchRunCreateNestedManyWithoutConfigInput = {
+    create?: XOR<AiBatchRunCreateWithoutConfigInput, AiBatchRunUncheckedCreateWithoutConfigInput> | AiBatchRunCreateWithoutConfigInput[] | AiBatchRunUncheckedCreateWithoutConfigInput[]
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutConfigInput | AiBatchRunCreateOrConnectWithoutConfigInput[]
+    createMany?: AiBatchRunCreateManyConfigInputEnvelope
+    connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+  }
+
+  export type ContentOutputUncheckedCreateNestedManyWithoutConfigInput = {
+    create?: XOR<ContentOutputCreateWithoutConfigInput, ContentOutputUncheckedCreateWithoutConfigInput> | ContentOutputCreateWithoutConfigInput[] | ContentOutputUncheckedCreateWithoutConfigInput[]
+    connectOrCreate?: ContentOutputCreateOrConnectWithoutConfigInput | ContentOutputCreateOrConnectWithoutConfigInput[]
+    createMany?: ContentOutputCreateManyConfigInputEnvelope
+    connect?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+  }
+
+  export type AiTitleFamilyUncheckedCreateNestedManyWithoutConfigInput = {
+    create?: XOR<AiTitleFamilyCreateWithoutConfigInput, AiTitleFamilyUncheckedCreateWithoutConfigInput> | AiTitleFamilyCreateWithoutConfigInput[] | AiTitleFamilyUncheckedCreateWithoutConfigInput[]
+    connectOrCreate?: AiTitleFamilyCreateOrConnectWithoutConfigInput | AiTitleFamilyCreateOrConnectWithoutConfigInput[]
+    createMany?: AiTitleFamilyCreateManyConfigInputEnvelope
+    connect?: AiTitleFamilyWhereUniqueInput | AiTitleFamilyWhereUniqueInput[]
+  }
+
+  export type AiBatchRunUncheckedCreateNestedManyWithoutConfigInput = {
+    create?: XOR<AiBatchRunCreateWithoutConfigInput, AiBatchRunUncheckedCreateWithoutConfigInput> | AiBatchRunCreateWithoutConfigInput[] | AiBatchRunUncheckedCreateWithoutConfigInput[]
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutConfigInput | AiBatchRunCreateOrConnectWithoutConfigInput[]
+    createMany?: AiBatchRunCreateManyConfigInputEnvelope
+    connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+  }
+
+  export type UserTrackedAgencyUpdateOneRequiredWithoutContent_publishing_configNestedInput = {
+    create?: XOR<UserTrackedAgencyCreateWithoutContent_publishing_configInput, UserTrackedAgencyUncheckedCreateWithoutContent_publishing_configInput>
+    connectOrCreate?: UserTrackedAgencyCreateOrConnectWithoutContent_publishing_configInput
+    upsert?: UserTrackedAgencyUpsertWithoutContent_publishing_configInput
+    connect?: UserTrackedAgencyWhereUniqueInput
+    update?: XOR<XOR<UserTrackedAgencyUpdateToOneWithWhereWithoutContent_publishing_configInput, UserTrackedAgencyUpdateWithoutContent_publishing_configInput>, UserTrackedAgencyUncheckedUpdateWithoutContent_publishing_configInput>
+  }
+
+  export type ContentOutputUpdateManyWithoutConfigNestedInput = {
+    create?: XOR<ContentOutputCreateWithoutConfigInput, ContentOutputUncheckedCreateWithoutConfigInput> | ContentOutputCreateWithoutConfigInput[] | ContentOutputUncheckedCreateWithoutConfigInput[]
+    connectOrCreate?: ContentOutputCreateOrConnectWithoutConfigInput | ContentOutputCreateOrConnectWithoutConfigInput[]
+    upsert?: ContentOutputUpsertWithWhereUniqueWithoutConfigInput | ContentOutputUpsertWithWhereUniqueWithoutConfigInput[]
+    createMany?: ContentOutputCreateManyConfigInputEnvelope
+    set?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    disconnect?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    delete?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    connect?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    update?: ContentOutputUpdateWithWhereUniqueWithoutConfigInput | ContentOutputUpdateWithWhereUniqueWithoutConfigInput[]
+    updateMany?: ContentOutputUpdateManyWithWhereWithoutConfigInput | ContentOutputUpdateManyWithWhereWithoutConfigInput[]
+    deleteMany?: ContentOutputScalarWhereInput | ContentOutputScalarWhereInput[]
+  }
+
+  export type AiTitleFamilyUpdateManyWithoutConfigNestedInput = {
+    create?: XOR<AiTitleFamilyCreateWithoutConfigInput, AiTitleFamilyUncheckedCreateWithoutConfigInput> | AiTitleFamilyCreateWithoutConfigInput[] | AiTitleFamilyUncheckedCreateWithoutConfigInput[]
+    connectOrCreate?: AiTitleFamilyCreateOrConnectWithoutConfigInput | AiTitleFamilyCreateOrConnectWithoutConfigInput[]
+    upsert?: AiTitleFamilyUpsertWithWhereUniqueWithoutConfigInput | AiTitleFamilyUpsertWithWhereUniqueWithoutConfigInput[]
+    createMany?: AiTitleFamilyCreateManyConfigInputEnvelope
+    set?: AiTitleFamilyWhereUniqueInput | AiTitleFamilyWhereUniqueInput[]
+    disconnect?: AiTitleFamilyWhereUniqueInput | AiTitleFamilyWhereUniqueInput[]
+    delete?: AiTitleFamilyWhereUniqueInput | AiTitleFamilyWhereUniqueInput[]
+    connect?: AiTitleFamilyWhereUniqueInput | AiTitleFamilyWhereUniqueInput[]
+    update?: AiTitleFamilyUpdateWithWhereUniqueWithoutConfigInput | AiTitleFamilyUpdateWithWhereUniqueWithoutConfigInput[]
+    updateMany?: AiTitleFamilyUpdateManyWithWhereWithoutConfigInput | AiTitleFamilyUpdateManyWithWhereWithoutConfigInput[]
+    deleteMany?: AiTitleFamilyScalarWhereInput | AiTitleFamilyScalarWhereInput[]
+  }
+
+  export type AiBatchRunUpdateManyWithoutConfigNestedInput = {
+    create?: XOR<AiBatchRunCreateWithoutConfigInput, AiBatchRunUncheckedCreateWithoutConfigInput> | AiBatchRunCreateWithoutConfigInput[] | AiBatchRunUncheckedCreateWithoutConfigInput[]
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutConfigInput | AiBatchRunCreateOrConnectWithoutConfigInput[]
+    upsert?: AiBatchRunUpsertWithWhereUniqueWithoutConfigInput | AiBatchRunUpsertWithWhereUniqueWithoutConfigInput[]
+    createMany?: AiBatchRunCreateManyConfigInputEnvelope
+    set?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    disconnect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    delete?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    update?: AiBatchRunUpdateWithWhereUniqueWithoutConfigInput | AiBatchRunUpdateWithWhereUniqueWithoutConfigInput[]
+    updateMany?: AiBatchRunUpdateManyWithWhereWithoutConfigInput | AiBatchRunUpdateManyWithWhereWithoutConfigInput[]
+    deleteMany?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
+  }
+
+  export type ContentOutputUncheckedUpdateManyWithoutConfigNestedInput = {
+    create?: XOR<ContentOutputCreateWithoutConfigInput, ContentOutputUncheckedCreateWithoutConfigInput> | ContentOutputCreateWithoutConfigInput[] | ContentOutputUncheckedCreateWithoutConfigInput[]
+    connectOrCreate?: ContentOutputCreateOrConnectWithoutConfigInput | ContentOutputCreateOrConnectWithoutConfigInput[]
+    upsert?: ContentOutputUpsertWithWhereUniqueWithoutConfigInput | ContentOutputUpsertWithWhereUniqueWithoutConfigInput[]
+    createMany?: ContentOutputCreateManyConfigInputEnvelope
+    set?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    disconnect?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    delete?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    connect?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    update?: ContentOutputUpdateWithWhereUniqueWithoutConfigInput | ContentOutputUpdateWithWhereUniqueWithoutConfigInput[]
+    updateMany?: ContentOutputUpdateManyWithWhereWithoutConfigInput | ContentOutputUpdateManyWithWhereWithoutConfigInput[]
+    deleteMany?: ContentOutputScalarWhereInput | ContentOutputScalarWhereInput[]
+  }
+
+  export type AiTitleFamilyUncheckedUpdateManyWithoutConfigNestedInput = {
+    create?: XOR<AiTitleFamilyCreateWithoutConfigInput, AiTitleFamilyUncheckedCreateWithoutConfigInput> | AiTitleFamilyCreateWithoutConfigInput[] | AiTitleFamilyUncheckedCreateWithoutConfigInput[]
+    connectOrCreate?: AiTitleFamilyCreateOrConnectWithoutConfigInput | AiTitleFamilyCreateOrConnectWithoutConfigInput[]
+    upsert?: AiTitleFamilyUpsertWithWhereUniqueWithoutConfigInput | AiTitleFamilyUpsertWithWhereUniqueWithoutConfigInput[]
+    createMany?: AiTitleFamilyCreateManyConfigInputEnvelope
+    set?: AiTitleFamilyWhereUniqueInput | AiTitleFamilyWhereUniqueInput[]
+    disconnect?: AiTitleFamilyWhereUniqueInput | AiTitleFamilyWhereUniqueInput[]
+    delete?: AiTitleFamilyWhereUniqueInput | AiTitleFamilyWhereUniqueInput[]
+    connect?: AiTitleFamilyWhereUniqueInput | AiTitleFamilyWhereUniqueInput[]
+    update?: AiTitleFamilyUpdateWithWhereUniqueWithoutConfigInput | AiTitleFamilyUpdateWithWhereUniqueWithoutConfigInput[]
+    updateMany?: AiTitleFamilyUpdateManyWithWhereWithoutConfigInput | AiTitleFamilyUpdateManyWithWhereWithoutConfigInput[]
+    deleteMany?: AiTitleFamilyScalarWhereInput | AiTitleFamilyScalarWhereInput[]
+  }
+
+  export type AiBatchRunUncheckedUpdateManyWithoutConfigNestedInput = {
+    create?: XOR<AiBatchRunCreateWithoutConfigInput, AiBatchRunUncheckedCreateWithoutConfigInput> | AiBatchRunCreateWithoutConfigInput[] | AiBatchRunUncheckedCreateWithoutConfigInput[]
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutConfigInput | AiBatchRunCreateOrConnectWithoutConfigInput[]
+    upsert?: AiBatchRunUpsertWithWhereUniqueWithoutConfigInput | AiBatchRunUpsertWithWhereUniqueWithoutConfigInput[]
+    createMany?: AiBatchRunCreateManyConfigInputEnvelope
+    set?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    disconnect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    delete?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    update?: AiBatchRunUpdateWithWhereUniqueWithoutConfigInput | AiBatchRunUpdateWithWhereUniqueWithoutConfigInput[]
+    updateMany?: AiBatchRunUpdateManyWithWhereWithoutConfigInput | AiBatchRunUpdateManyWithWhereWithoutConfigInput[]
+    deleteMany?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
+  }
+
+  export type ContentPublishingConfigCreateNestedOneWithoutOutputsInput = {
+    create?: XOR<ContentPublishingConfigCreateWithoutOutputsInput, ContentPublishingConfigUncheckedCreateWithoutOutputsInput>
+    connectOrCreate?: ContentPublishingConfigCreateOrConnectWithoutOutputsInput
+    connect?: ContentPublishingConfigWhereUniqueInput
+  }
+
+  export type AiTitleFamilyCreateNestedOneWithoutOutputsInput = {
+    create?: XOR<AiTitleFamilyCreateWithoutOutputsInput, AiTitleFamilyUncheckedCreateWithoutOutputsInput>
+    connectOrCreate?: AiTitleFamilyCreateOrConnectWithoutOutputsInput
+    connect?: AiTitleFamilyWhereUniqueInput
+  }
+
+  export type EnumTitleProductionStrategyFieldUpdateOperationsInput = {
+    set?: $Enums.TitleProductionStrategy
+  }
+
+  export type EnumDescriptionProductionStrategyFieldUpdateOperationsInput = {
+    set?: $Enums.DescriptionProductionStrategy
+  }
+
+  export type ContentPublishingConfigUpdateOneRequiredWithoutOutputsNestedInput = {
+    create?: XOR<ContentPublishingConfigCreateWithoutOutputsInput, ContentPublishingConfigUncheckedCreateWithoutOutputsInput>
+    connectOrCreate?: ContentPublishingConfigCreateOrConnectWithoutOutputsInput
+    upsert?: ContentPublishingConfigUpsertWithoutOutputsInput
+    connect?: ContentPublishingConfigWhereUniqueInput
+    update?: XOR<XOR<ContentPublishingConfigUpdateToOneWithWhereWithoutOutputsInput, ContentPublishingConfigUpdateWithoutOutputsInput>, ContentPublishingConfigUncheckedUpdateWithoutOutputsInput>
+  }
+
+  export type AiTitleFamilyUpdateOneWithoutOutputsNestedInput = {
+    create?: XOR<AiTitleFamilyCreateWithoutOutputsInput, AiTitleFamilyUncheckedCreateWithoutOutputsInput>
+    connectOrCreate?: AiTitleFamilyCreateOrConnectWithoutOutputsInput
+    upsert?: AiTitleFamilyUpsertWithoutOutputsInput
+    disconnect?: AiTitleFamilyWhereInput | boolean
+    delete?: AiTitleFamilyWhereInput | boolean
+    connect?: AiTitleFamilyWhereUniqueInput
+    update?: XOR<XOR<AiTitleFamilyUpdateToOneWithWhereWithoutOutputsInput, AiTitleFamilyUpdateWithoutOutputsInput>, AiTitleFamilyUncheckedUpdateWithoutOutputsInput>
+  }
+
+  export type ContentPublishingConfigCreateNestedOneWithoutAi_title_familiesInput = {
+    create?: XOR<ContentPublishingConfigCreateWithoutAi_title_familiesInput, ContentPublishingConfigUncheckedCreateWithoutAi_title_familiesInput>
+    connectOrCreate?: ContentPublishingConfigCreateOrConnectWithoutAi_title_familiesInput
+    connect?: ContentPublishingConfigWhereUniqueInput
+  }
+
+  export type ContentOutputCreateNestedManyWithoutAi_title_familyInput = {
+    create?: XOR<ContentOutputCreateWithoutAi_title_familyInput, ContentOutputUncheckedCreateWithoutAi_title_familyInput> | ContentOutputCreateWithoutAi_title_familyInput[] | ContentOutputUncheckedCreateWithoutAi_title_familyInput[]
+    connectOrCreate?: ContentOutputCreateOrConnectWithoutAi_title_familyInput | ContentOutputCreateOrConnectWithoutAi_title_familyInput[]
+    createMany?: ContentOutputCreateManyAi_title_familyInputEnvelope
+    connect?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+  }
+
+  export type AiBatchRunCreateNestedManyWithoutAi_title_familyInput = {
+    create?: XOR<AiBatchRunCreateWithoutAi_title_familyInput, AiBatchRunUncheckedCreateWithoutAi_title_familyInput> | AiBatchRunCreateWithoutAi_title_familyInput[] | AiBatchRunUncheckedCreateWithoutAi_title_familyInput[]
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutAi_title_familyInput | AiBatchRunCreateOrConnectWithoutAi_title_familyInput[]
+    createMany?: AiBatchRunCreateManyAi_title_familyInputEnvelope
+    connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+  }
+
+  export type ContentOutputUncheckedCreateNestedManyWithoutAi_title_familyInput = {
+    create?: XOR<ContentOutputCreateWithoutAi_title_familyInput, ContentOutputUncheckedCreateWithoutAi_title_familyInput> | ContentOutputCreateWithoutAi_title_familyInput[] | ContentOutputUncheckedCreateWithoutAi_title_familyInput[]
+    connectOrCreate?: ContentOutputCreateOrConnectWithoutAi_title_familyInput | ContentOutputCreateOrConnectWithoutAi_title_familyInput[]
+    createMany?: ContentOutputCreateManyAi_title_familyInputEnvelope
+    connect?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+  }
+
+  export type AiBatchRunUncheckedCreateNestedManyWithoutAi_title_familyInput = {
+    create?: XOR<AiBatchRunCreateWithoutAi_title_familyInput, AiBatchRunUncheckedCreateWithoutAi_title_familyInput> | AiBatchRunCreateWithoutAi_title_familyInput[] | AiBatchRunUncheckedCreateWithoutAi_title_familyInput[]
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutAi_title_familyInput | AiBatchRunCreateOrConnectWithoutAi_title_familyInput[]
+    createMany?: AiBatchRunCreateManyAi_title_familyInputEnvelope
+    connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+  }
+
+  export type NullableBoolFieldUpdateOperationsInput = {
+    set?: boolean | null
+  }
+
+  export type ContentPublishingConfigUpdateOneRequiredWithoutAi_title_familiesNestedInput = {
+    create?: XOR<ContentPublishingConfigCreateWithoutAi_title_familiesInput, ContentPublishingConfigUncheckedCreateWithoutAi_title_familiesInput>
+    connectOrCreate?: ContentPublishingConfigCreateOrConnectWithoutAi_title_familiesInput
+    upsert?: ContentPublishingConfigUpsertWithoutAi_title_familiesInput
+    connect?: ContentPublishingConfigWhereUniqueInput
+    update?: XOR<XOR<ContentPublishingConfigUpdateToOneWithWhereWithoutAi_title_familiesInput, ContentPublishingConfigUpdateWithoutAi_title_familiesInput>, ContentPublishingConfigUncheckedUpdateWithoutAi_title_familiesInput>
+  }
+
+  export type ContentOutputUpdateManyWithoutAi_title_familyNestedInput = {
+    create?: XOR<ContentOutputCreateWithoutAi_title_familyInput, ContentOutputUncheckedCreateWithoutAi_title_familyInput> | ContentOutputCreateWithoutAi_title_familyInput[] | ContentOutputUncheckedCreateWithoutAi_title_familyInput[]
+    connectOrCreate?: ContentOutputCreateOrConnectWithoutAi_title_familyInput | ContentOutputCreateOrConnectWithoutAi_title_familyInput[]
+    upsert?: ContentOutputUpsertWithWhereUniqueWithoutAi_title_familyInput | ContentOutputUpsertWithWhereUniqueWithoutAi_title_familyInput[]
+    createMany?: ContentOutputCreateManyAi_title_familyInputEnvelope
+    set?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    disconnect?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    delete?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    connect?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    update?: ContentOutputUpdateWithWhereUniqueWithoutAi_title_familyInput | ContentOutputUpdateWithWhereUniqueWithoutAi_title_familyInput[]
+    updateMany?: ContentOutputUpdateManyWithWhereWithoutAi_title_familyInput | ContentOutputUpdateManyWithWhereWithoutAi_title_familyInput[]
+    deleteMany?: ContentOutputScalarWhereInput | ContentOutputScalarWhereInput[]
+  }
+
+  export type AiBatchRunUpdateManyWithoutAi_title_familyNestedInput = {
+    create?: XOR<AiBatchRunCreateWithoutAi_title_familyInput, AiBatchRunUncheckedCreateWithoutAi_title_familyInput> | AiBatchRunCreateWithoutAi_title_familyInput[] | AiBatchRunUncheckedCreateWithoutAi_title_familyInput[]
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutAi_title_familyInput | AiBatchRunCreateOrConnectWithoutAi_title_familyInput[]
+    upsert?: AiBatchRunUpsertWithWhereUniqueWithoutAi_title_familyInput | AiBatchRunUpsertWithWhereUniqueWithoutAi_title_familyInput[]
+    createMany?: AiBatchRunCreateManyAi_title_familyInputEnvelope
+    set?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    disconnect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    delete?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    update?: AiBatchRunUpdateWithWhereUniqueWithoutAi_title_familyInput | AiBatchRunUpdateWithWhereUniqueWithoutAi_title_familyInput[]
+    updateMany?: AiBatchRunUpdateManyWithWhereWithoutAi_title_familyInput | AiBatchRunUpdateManyWithWhereWithoutAi_title_familyInput[]
+    deleteMany?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
+  }
+
+  export type ContentOutputUncheckedUpdateManyWithoutAi_title_familyNestedInput = {
+    create?: XOR<ContentOutputCreateWithoutAi_title_familyInput, ContentOutputUncheckedCreateWithoutAi_title_familyInput> | ContentOutputCreateWithoutAi_title_familyInput[] | ContentOutputUncheckedCreateWithoutAi_title_familyInput[]
+    connectOrCreate?: ContentOutputCreateOrConnectWithoutAi_title_familyInput | ContentOutputCreateOrConnectWithoutAi_title_familyInput[]
+    upsert?: ContentOutputUpsertWithWhereUniqueWithoutAi_title_familyInput | ContentOutputUpsertWithWhereUniqueWithoutAi_title_familyInput[]
+    createMany?: ContentOutputCreateManyAi_title_familyInputEnvelope
+    set?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    disconnect?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    delete?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    connect?: ContentOutputWhereUniqueInput | ContentOutputWhereUniqueInput[]
+    update?: ContentOutputUpdateWithWhereUniqueWithoutAi_title_familyInput | ContentOutputUpdateWithWhereUniqueWithoutAi_title_familyInput[]
+    updateMany?: ContentOutputUpdateManyWithWhereWithoutAi_title_familyInput | ContentOutputUpdateManyWithWhereWithoutAi_title_familyInput[]
+    deleteMany?: ContentOutputScalarWhereInput | ContentOutputScalarWhereInput[]
+  }
+
+  export type AiBatchRunUncheckedUpdateManyWithoutAi_title_familyNestedInput = {
+    create?: XOR<AiBatchRunCreateWithoutAi_title_familyInput, AiBatchRunUncheckedCreateWithoutAi_title_familyInput> | AiBatchRunCreateWithoutAi_title_familyInput[] | AiBatchRunUncheckedCreateWithoutAi_title_familyInput[]
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutAi_title_familyInput | AiBatchRunCreateOrConnectWithoutAi_title_familyInput[]
+    upsert?: AiBatchRunUpsertWithWhereUniqueWithoutAi_title_familyInput | AiBatchRunUpsertWithWhereUniqueWithoutAi_title_familyInput[]
+    createMany?: AiBatchRunCreateManyAi_title_familyInputEnvelope
+    set?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    disconnect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    delete?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    update?: AiBatchRunUpdateWithWhereUniqueWithoutAi_title_familyInput | AiBatchRunUpdateWithWhereUniqueWithoutAi_title_familyInput[]
+    updateMany?: AiBatchRunUpdateManyWithWhereWithoutAi_title_familyInput | AiBatchRunUpdateManyWithWhereWithoutAi_title_familyInput[]
+    deleteMany?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
+  }
+
+  export type UserPropertyCreateNestedOneWithoutLocalized_contentsInput = {
+    create?: XOR<UserPropertyCreateWithoutLocalized_contentsInput, UserPropertyUncheckedCreateWithoutLocalized_contentsInput>
+    connectOrCreate?: UserPropertyCreateOrConnectWithoutLocalized_contentsInput
+    connect?: UserPropertyWhereUniqueInput
+  }
+
+  export type EnumContentTypeFieldUpdateOperationsInput = {
+    set?: $Enums.ContentType
+  }
+
+  export type UserPropertyUpdateOneRequiredWithoutLocalized_contentsNestedInput = {
+    create?: XOR<UserPropertyCreateWithoutLocalized_contentsInput, UserPropertyUncheckedCreateWithoutLocalized_contentsInput>
+    connectOrCreate?: UserPropertyCreateOrConnectWithoutLocalized_contentsInput
+    upsert?: UserPropertyUpsertWithoutLocalized_contentsInput
+    connect?: UserPropertyWhereUniqueInput
+    update?: XOR<XOR<UserPropertyUpdateToOneWithWhereWithoutLocalized_contentsInput, UserPropertyUpdateWithoutLocalized_contentsInput>, UserPropertyUncheckedUpdateWithoutLocalized_contentsInput>
+  }
+
+  export type ContentPublishingConfigCreateNestedOneWithoutAi_batch_runsInput = {
+    create?: XOR<ContentPublishingConfigCreateWithoutAi_batch_runsInput, ContentPublishingConfigUncheckedCreateWithoutAi_batch_runsInput>
+    connectOrCreate?: ContentPublishingConfigCreateOrConnectWithoutAi_batch_runsInput
+    connect?: ContentPublishingConfigWhereUniqueInput
+  }
+
+  export type AiTitleFamilyCreateNestedOneWithoutAi_batch_runsInput = {
+    create?: XOR<AiTitleFamilyCreateWithoutAi_batch_runsInput, AiTitleFamilyUncheckedCreateWithoutAi_batch_runsInput>
+    connectOrCreate?: AiTitleFamilyCreateOrConnectWithoutAi_batch_runsInput
+    connect?: AiTitleFamilyWhereUniqueInput
+  }
+
+  export type EnumAiBatchRunKindFieldUpdateOperationsInput = {
+    set?: $Enums.AiBatchRunKind
+  }
+
+  export type EnumAiBatchRunStatusFieldUpdateOperationsInput = {
+    set?: $Enums.AiBatchRunStatus
+  }
+
+  export type ContentPublishingConfigUpdateOneWithoutAi_batch_runsNestedInput = {
+    create?: XOR<ContentPublishingConfigCreateWithoutAi_batch_runsInput, ContentPublishingConfigUncheckedCreateWithoutAi_batch_runsInput>
+    connectOrCreate?: ContentPublishingConfigCreateOrConnectWithoutAi_batch_runsInput
+    upsert?: ContentPublishingConfigUpsertWithoutAi_batch_runsInput
+    disconnect?: ContentPublishingConfigWhereInput | boolean
+    delete?: ContentPublishingConfigWhereInput | boolean
+    connect?: ContentPublishingConfigWhereUniqueInput
+    update?: XOR<XOR<ContentPublishingConfigUpdateToOneWithWhereWithoutAi_batch_runsInput, ContentPublishingConfigUpdateWithoutAi_batch_runsInput>, ContentPublishingConfigUncheckedUpdateWithoutAi_batch_runsInput>
+  }
+
+  export type AiTitleFamilyUpdateOneWithoutAi_batch_runsNestedInput = {
+    create?: XOR<AiTitleFamilyCreateWithoutAi_batch_runsInput, AiTitleFamilyUncheckedCreateWithoutAi_batch_runsInput>
+    connectOrCreate?: AiTitleFamilyCreateOrConnectWithoutAi_batch_runsInput
+    upsert?: AiTitleFamilyUpsertWithoutAi_batch_runsInput
+    disconnect?: AiTitleFamilyWhereInput | boolean
+    delete?: AiTitleFamilyWhereInput | boolean
+    connect?: AiTitleFamilyWhereUniqueInput
+    update?: XOR<XOR<AiTitleFamilyUpdateToOneWithWhereWithoutAi_batch_runsInput, AiTitleFamilyUpdateWithoutAi_batch_runsInput>, AiTitleFamilyUncheckedUpdateWithoutAi_batch_runsInput>
   }
 
   export type UserCreateNestedOneWithoutIntegration_propertiesInput = {
@@ -49623,6 +57900,13 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
+  export type NestedEnumContentLanguageFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentLanguage | EnumContentLanguageFieldRefInput<$PrismaModel>
+    in?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel>
+    not?: NestedEnumContentLanguageFilter<$PrismaModel> | $Enums.ContentLanguage
+  }
+
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -49632,6 +57916,16 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedEnumContentLanguageWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentLanguage | EnumContentLanguageFieldRefInput<$PrismaModel>
+    in?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel>
+    not?: NestedEnumContentLanguageWithAggregatesFilter<$PrismaModel> | $Enums.ContentLanguage
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContentLanguageFilter<$PrismaModel>
+    _max?: NestedEnumContentLanguageFilter<$PrismaModel>
   }
 
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -50041,6 +58335,104 @@ export namespace Prisma {
     _max?: NestedEnumPropertyHistoryEventTypeFilter<$PrismaModel>
   }
 
+  export type NestedEnumTitleProductionStrategyFilter<$PrismaModel = never> = {
+    equals?: $Enums.TitleProductionStrategy | EnumTitleProductionStrategyFieldRefInput<$PrismaModel>
+    in?: $Enums.TitleProductionStrategy[] | ListEnumTitleProductionStrategyFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TitleProductionStrategy[] | ListEnumTitleProductionStrategyFieldRefInput<$PrismaModel>
+    not?: NestedEnumTitleProductionStrategyFilter<$PrismaModel> | $Enums.TitleProductionStrategy
+  }
+
+  export type NestedEnumDescriptionProductionStrategyFilter<$PrismaModel = never> = {
+    equals?: $Enums.DescriptionProductionStrategy | EnumDescriptionProductionStrategyFieldRefInput<$PrismaModel>
+    in?: $Enums.DescriptionProductionStrategy[] | ListEnumDescriptionProductionStrategyFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DescriptionProductionStrategy[] | ListEnumDescriptionProductionStrategyFieldRefInput<$PrismaModel>
+    not?: NestedEnumDescriptionProductionStrategyFilter<$PrismaModel> | $Enums.DescriptionProductionStrategy
+  }
+
+  export type NestedEnumTitleProductionStrategyWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TitleProductionStrategy | EnumTitleProductionStrategyFieldRefInput<$PrismaModel>
+    in?: $Enums.TitleProductionStrategy[] | ListEnumTitleProductionStrategyFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TitleProductionStrategy[] | ListEnumTitleProductionStrategyFieldRefInput<$PrismaModel>
+    not?: NestedEnumTitleProductionStrategyWithAggregatesFilter<$PrismaModel> | $Enums.TitleProductionStrategy
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTitleProductionStrategyFilter<$PrismaModel>
+    _max?: NestedEnumTitleProductionStrategyFilter<$PrismaModel>
+  }
+
+  export type NestedEnumDescriptionProductionStrategyWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DescriptionProductionStrategy | EnumDescriptionProductionStrategyFieldRefInput<$PrismaModel>
+    in?: $Enums.DescriptionProductionStrategy[] | ListEnumDescriptionProductionStrategyFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DescriptionProductionStrategy[] | ListEnumDescriptionProductionStrategyFieldRefInput<$PrismaModel>
+    not?: NestedEnumDescriptionProductionStrategyWithAggregatesFilter<$PrismaModel> | $Enums.DescriptionProductionStrategy
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDescriptionProductionStrategyFilter<$PrismaModel>
+    _max?: NestedEnumDescriptionProductionStrategyFilter<$PrismaModel>
+  }
+
+  export type NestedBoolNullableFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
+  }
+
+  export type NestedBoolNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableWithAggregatesFilter<$PrismaModel> | boolean | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBoolNullableFilter<$PrismaModel>
+    _max?: NestedBoolNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumContentTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentType | EnumContentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ContentType[] | ListEnumContentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContentType[] | ListEnumContentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumContentTypeFilter<$PrismaModel> | $Enums.ContentType
+  }
+
+  export type NestedEnumContentTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentType | EnumContentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ContentType[] | ListEnumContentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContentType[] | ListEnumContentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumContentTypeWithAggregatesFilter<$PrismaModel> | $Enums.ContentType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContentTypeFilter<$PrismaModel>
+    _max?: NestedEnumContentTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumAiBatchRunKindFilter<$PrismaModel = never> = {
+    equals?: $Enums.AiBatchRunKind | EnumAiBatchRunKindFieldRefInput<$PrismaModel>
+    in?: $Enums.AiBatchRunKind[] | ListEnumAiBatchRunKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AiBatchRunKind[] | ListEnumAiBatchRunKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumAiBatchRunKindFilter<$PrismaModel> | $Enums.AiBatchRunKind
+  }
+
+  export type NestedEnumAiBatchRunStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.AiBatchRunStatus | EnumAiBatchRunStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.AiBatchRunStatus[] | ListEnumAiBatchRunStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AiBatchRunStatus[] | ListEnumAiBatchRunStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumAiBatchRunStatusFilter<$PrismaModel> | $Enums.AiBatchRunStatus
+  }
+
+  export type NestedEnumAiBatchRunKindWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AiBatchRunKind | EnumAiBatchRunKindFieldRefInput<$PrismaModel>
+    in?: $Enums.AiBatchRunKind[] | ListEnumAiBatchRunKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AiBatchRunKind[] | ListEnumAiBatchRunKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumAiBatchRunKindWithAggregatesFilter<$PrismaModel> | $Enums.AiBatchRunKind
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAiBatchRunKindFilter<$PrismaModel>
+    _max?: NestedEnumAiBatchRunKindFilter<$PrismaModel>
+  }
+
+  export type NestedEnumAiBatchRunStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.AiBatchRunStatus | EnumAiBatchRunStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.AiBatchRunStatus[] | ListEnumAiBatchRunStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.AiBatchRunStatus[] | ListEnumAiBatchRunStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumAiBatchRunStatusWithAggregatesFilter<$PrismaModel> | $Enums.AiBatchRunStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumAiBatchRunStatusFilter<$PrismaModel>
+    _max?: NestedEnumAiBatchRunStatusFilter<$PrismaModel>
+  }
+
   export type NestedEnumDocumentTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.DocumentType | EnumDocumentTypeFieldRefInput<$PrismaModel>
     in?: $Enums.DocumentType[] | ListEnumDocumentTypeFieldRefInput<$PrismaModel>
@@ -50078,6 +58470,7 @@ export namespace Prisma {
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateWithoutUserInput = {
@@ -50100,6 +58493,7 @@ export namespace Prisma {
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyCreateOrConnectWithoutUserInput = {
@@ -50159,6 +58553,7 @@ export namespace Prisma {
     updated_at?: Date | string
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
+    localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutUserInput = {
@@ -50208,6 +58603,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
+    localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutUserInput = {
@@ -51298,6 +59694,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutTracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateWithoutSource_agencyInput = {
@@ -51320,6 +59717,7 @@ export namespace Prisma {
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyCreateOrConnectWithoutSource_agencyInput = {
@@ -51808,6 +60206,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -51831,6 +60230,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -51954,6 +60354,37 @@ export namespace Prisma {
     create: XOR<UserTrackedAgencyIntegrationLinkCreateWithoutUser_tracked_agencyInput, UserTrackedAgencyIntegrationLinkUncheckedCreateWithoutUser_tracked_agencyInput>
   }
 
+  export type ContentPublishingConfigCreateWithoutUser_tracked_agencyInput = {
+    id?: string
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    outputs?: ContentOutputCreateNestedManyWithoutConfigInput
+    ai_title_families?: AiTitleFamilyCreateNestedManyWithoutConfigInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutConfigInput
+  }
+
+  export type ContentPublishingConfigUncheckedCreateWithoutUser_tracked_agencyInput = {
+    id?: string
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    outputs?: ContentOutputUncheckedCreateNestedManyWithoutConfigInput
+    ai_title_families?: AiTitleFamilyUncheckedCreateNestedManyWithoutConfigInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutConfigInput
+  }
+
+  export type ContentPublishingConfigCreateOrConnectWithoutUser_tracked_agencyInput = {
+    where: ContentPublishingConfigWhereUniqueInput
+    create: XOR<ContentPublishingConfigCreateWithoutUser_tracked_agencyInput, ContentPublishingConfigUncheckedCreateWithoutUser_tracked_agencyInput>
+  }
+
   export type UserUpsertWithoutTracked_agenciesInput = {
     update: XOR<UserUpdateWithoutTracked_agenciesInput, UserUncheckedUpdateWithoutTracked_agenciesInput>
     create: XOR<UserCreateWithoutTracked_agenciesInput, UserUncheckedCreateWithoutTracked_agenciesInput>
@@ -52010,6 +60441,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -52033,6 +60465,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -52093,6 +60526,43 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ContentPublishingConfigUpsertWithoutUser_tracked_agencyInput = {
+    update: XOR<ContentPublishingConfigUpdateWithoutUser_tracked_agencyInput, ContentPublishingConfigUncheckedUpdateWithoutUser_tracked_agencyInput>
+    create: XOR<ContentPublishingConfigCreateWithoutUser_tracked_agencyInput, ContentPublishingConfigUncheckedCreateWithoutUser_tracked_agencyInput>
+    where?: ContentPublishingConfigWhereInput
+  }
+
+  export type ContentPublishingConfigUpdateToOneWithWhereWithoutUser_tracked_agencyInput = {
+    where?: ContentPublishingConfigWhereInput
+    data: XOR<ContentPublishingConfigUpdateWithoutUser_tracked_agencyInput, ContentPublishingConfigUncheckedUpdateWithoutUser_tracked_agencyInput>
+  }
+
+  export type ContentPublishingConfigUpdateWithoutUser_tracked_agencyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ai_titles_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batch?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    outputs?: ContentOutputUpdateManyWithoutConfigNestedInput
+    ai_title_families?: AiTitleFamilyUpdateManyWithoutConfigNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutConfigNestedInput
+  }
+
+  export type ContentPublishingConfigUncheckedUpdateWithoutUser_tracked_agencyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ai_titles_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batch?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    outputs?: ContentOutputUncheckedUpdateManyWithoutConfigNestedInput
+    ai_title_families?: AiTitleFamilyUncheckedUpdateManyWithoutConfigNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutConfigNestedInput
+  }
+
   export type UserTrackedAgencyCreateWithoutIntegration_linkInput = {
     id?: string
     enabled?: boolean
@@ -52113,6 +60583,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutTracked_agenciesInput
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateWithoutIntegration_linkInput = {
@@ -52135,6 +60606,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyCreateOrConnectWithoutIntegration_linkInput = {
@@ -52214,6 +60686,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateWithoutIntegration_linkInput = {
@@ -52236,6 +60709,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserIntegrationUpsertWithoutTracked_agency_linkInput = {
@@ -52291,6 +60765,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -52314,6 +60789,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -52652,6 +61128,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -52675,6 +61152,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -52879,6 +61357,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -52902,6 +61381,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -53057,6 +61537,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -53080,6 +61561,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -54038,6 +62520,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -54061,6 +62544,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -54103,6 +62587,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutTracked_agenciesInput
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateWithoutCrawl_runsInput = {
@@ -54125,6 +62610,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyCreateOrConnectWithoutCrawl_runsInput = {
@@ -54439,6 +62925,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -54462,6 +62949,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -54510,6 +62998,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateWithoutCrawl_runsInput = {
@@ -54532,6 +63021,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type ScraperUpsertWithoutCrawl_runsInput = {
@@ -55344,6 +63834,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -55367,6 +63858,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -55536,6 +64028,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -55559,6 +64052,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -55968,6 +64462,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -55991,6 +64486,7 @@ export namespace Prisma {
     base_url: string
     country?: string | null
     city?: string | null
+    content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
     crawl_interval?: string
@@ -56060,6 +64556,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -56083,6 +64580,7 @@ export namespace Prisma {
     base_url?: StringFieldUpdateOperationsInput | string
     country?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
@@ -56207,6 +64705,7 @@ export namespace Prisma {
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutSaved_propertiesInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
+    localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutCanonical_propertyInput = {
@@ -56256,6 +64755,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
+    localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutCanonical_propertyInput = {
@@ -57172,6 +65672,38 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type PropertyLocalizedContentCreateWithoutUser_propertyInput = {
+    id?: string
+    content_type: $Enums.ContentType
+    language: $Enums.ContentLanguage
+    production: string
+    text: string
+    is_stale?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type PropertyLocalizedContentUncheckedCreateWithoutUser_propertyInput = {
+    id?: string
+    content_type: $Enums.ContentType
+    language: $Enums.ContentLanguage
+    production: string
+    text: string
+    is_stale?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type PropertyLocalizedContentCreateOrConnectWithoutUser_propertyInput = {
+    where: PropertyLocalizedContentWhereUniqueInput
+    create: XOR<PropertyLocalizedContentCreateWithoutUser_propertyInput, PropertyLocalizedContentUncheckedCreateWithoutUser_propertyInput>
+  }
+
+  export type PropertyLocalizedContentCreateManyUser_propertyInputEnvelope = {
+    data: PropertyLocalizedContentCreateManyUser_propertyInput | PropertyLocalizedContentCreateManyUser_propertyInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutSaved_propertiesInput = {
     update: XOR<UserUpdateWithoutSaved_propertiesInput, UserUncheckedUpdateWithoutSaved_propertiesInput>
     create: XOR<UserCreateWithoutSaved_propertiesInput, UserUncheckedCreateWithoutSaved_propertiesInput>
@@ -57328,6 +65860,1006 @@ export namespace Prisma {
     data: XOR<IntegrationPropertyUpdateManyMutationInput, IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyInput>
   }
 
+  export type PropertyLocalizedContentUpsertWithWhereUniqueWithoutUser_propertyInput = {
+    where: PropertyLocalizedContentWhereUniqueInput
+    update: XOR<PropertyLocalizedContentUpdateWithoutUser_propertyInput, PropertyLocalizedContentUncheckedUpdateWithoutUser_propertyInput>
+    create: XOR<PropertyLocalizedContentCreateWithoutUser_propertyInput, PropertyLocalizedContentUncheckedCreateWithoutUser_propertyInput>
+  }
+
+  export type PropertyLocalizedContentUpdateWithWhereUniqueWithoutUser_propertyInput = {
+    where: PropertyLocalizedContentWhereUniqueInput
+    data: XOR<PropertyLocalizedContentUpdateWithoutUser_propertyInput, PropertyLocalizedContentUncheckedUpdateWithoutUser_propertyInput>
+  }
+
+  export type PropertyLocalizedContentUpdateManyWithWhereWithoutUser_propertyInput = {
+    where: PropertyLocalizedContentScalarWhereInput
+    data: XOR<PropertyLocalizedContentUpdateManyMutationInput, PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyInput>
+  }
+
+  export type PropertyLocalizedContentScalarWhereInput = {
+    AND?: PropertyLocalizedContentScalarWhereInput | PropertyLocalizedContentScalarWhereInput[]
+    OR?: PropertyLocalizedContentScalarWhereInput[]
+    NOT?: PropertyLocalizedContentScalarWhereInput | PropertyLocalizedContentScalarWhereInput[]
+    id?: StringFilter<"PropertyLocalizedContent"> | string
+    user_property_id?: StringFilter<"PropertyLocalizedContent"> | string
+    content_type?: EnumContentTypeFilter<"PropertyLocalizedContent"> | $Enums.ContentType
+    language?: EnumContentLanguageFilter<"PropertyLocalizedContent"> | $Enums.ContentLanguage
+    production?: StringFilter<"PropertyLocalizedContent"> | string
+    text?: StringFilter<"PropertyLocalizedContent"> | string
+    is_stale?: BoolFilter<"PropertyLocalizedContent"> | boolean
+    created_at?: DateTimeFilter<"PropertyLocalizedContent"> | Date | string
+    updated_at?: DateTimeFilter<"PropertyLocalizedContent"> | Date | string
+  }
+
+  export type UserTrackedAgencyCreateWithoutContent_publishing_configInput = {
+    id?: string
+    enabled?: boolean
+    concurrent_insertions?: number
+    insertion_interval_seconds?: number
+    max_properties?: number | null
+    text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
+    track_new_listings?: boolean
+    track_removed_listings?: boolean
+    track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
+    use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
+    watermark_manual_selection?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutTracked_agenciesInput
+    source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
+    crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+    integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
+  }
+
+  export type UserTrackedAgencyUncheckedCreateWithoutContent_publishing_configInput = {
+    id?: string
+    user_id: string
+    source_agency_id: string
+    enabled?: boolean
+    concurrent_insertions?: number
+    insertion_interval_seconds?: number
+    max_properties?: number | null
+    text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
+    track_new_listings?: boolean
+    track_removed_listings?: boolean
+    track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
+    use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
+    watermark_manual_selection?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+  }
+
+  export type UserTrackedAgencyCreateOrConnectWithoutContent_publishing_configInput = {
+    where: UserTrackedAgencyWhereUniqueInput
+    create: XOR<UserTrackedAgencyCreateWithoutContent_publishing_configInput, UserTrackedAgencyUncheckedCreateWithoutContent_publishing_configInput>
+  }
+
+  export type ContentOutputCreateWithoutConfigInput = {
+    id?: string
+    language: $Enums.ContentLanguage
+    title_strategy: $Enums.TitleProductionStrategy
+    description_strategy: $Enums.DescriptionProductionStrategy
+    created_at?: Date | string
+    updated_at?: Date | string
+    ai_title_family?: AiTitleFamilyCreateNestedOneWithoutOutputsInput
+  }
+
+  export type ContentOutputUncheckedCreateWithoutConfigInput = {
+    id?: string
+    language: $Enums.ContentLanguage
+    title_strategy: $Enums.TitleProductionStrategy
+    description_strategy: $Enums.DescriptionProductionStrategy
+    ai_title_family_id?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ContentOutputCreateOrConnectWithoutConfigInput = {
+    where: ContentOutputWhereUniqueInput
+    create: XOR<ContentOutputCreateWithoutConfigInput, ContentOutputUncheckedCreateWithoutConfigInput>
+  }
+
+  export type ContentOutputCreateManyConfigInputEnvelope = {
+    data: ContentOutputCreateManyConfigInput | ContentOutputCreateManyConfigInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AiTitleFamilyCreateWithoutConfigInput = {
+    id?: string
+    name: string
+    model?: string | null
+    use_batch?: boolean | null
+    instructions?: string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    outputs?: ContentOutputCreateNestedManyWithoutAi_title_familyInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutAi_title_familyInput
+  }
+
+  export type AiTitleFamilyUncheckedCreateWithoutConfigInput = {
+    id?: string
+    name: string
+    model?: string | null
+    use_batch?: boolean | null
+    instructions?: string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    outputs?: ContentOutputUncheckedCreateNestedManyWithoutAi_title_familyInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutAi_title_familyInput
+  }
+
+  export type AiTitleFamilyCreateOrConnectWithoutConfigInput = {
+    where: AiTitleFamilyWhereUniqueInput
+    create: XOR<AiTitleFamilyCreateWithoutConfigInput, AiTitleFamilyUncheckedCreateWithoutConfigInput>
+  }
+
+  export type AiTitleFamilyCreateManyConfigInputEnvelope = {
+    data: AiTitleFamilyCreateManyConfigInput | AiTitleFamilyCreateManyConfigInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AiBatchRunCreateWithoutConfigInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    ai_title_family?: AiTitleFamilyCreateNestedOneWithoutAi_batch_runsInput
+  }
+
+  export type AiBatchRunUncheckedCreateWithoutConfigInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    ai_title_family_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AiBatchRunCreateOrConnectWithoutConfigInput = {
+    where: AiBatchRunWhereUniqueInput
+    create: XOR<AiBatchRunCreateWithoutConfigInput, AiBatchRunUncheckedCreateWithoutConfigInput>
+  }
+
+  export type AiBatchRunCreateManyConfigInputEnvelope = {
+    data: AiBatchRunCreateManyConfigInput | AiBatchRunCreateManyConfigInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserTrackedAgencyUpsertWithoutContent_publishing_configInput = {
+    update: XOR<UserTrackedAgencyUpdateWithoutContent_publishing_configInput, UserTrackedAgencyUncheckedUpdateWithoutContent_publishing_configInput>
+    create: XOR<UserTrackedAgencyCreateWithoutContent_publishing_configInput, UserTrackedAgencyUncheckedCreateWithoutContent_publishing_configInput>
+    where?: UserTrackedAgencyWhereInput
+  }
+
+  export type UserTrackedAgencyUpdateToOneWithWhereWithoutContent_publishing_configInput = {
+    where?: UserTrackedAgencyWhereInput
+    data: XOR<UserTrackedAgencyUpdateWithoutContent_publishing_configInput, UserTrackedAgencyUncheckedUpdateWithoutContent_publishing_configInput>
+  }
+
+  export type UserTrackedAgencyUpdateWithoutContent_publishing_configInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
+    max_properties?: NullableIntFieldUpdateOperationsInput | number | null
+    text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
+    track_new_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
+    watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
+    source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
+    crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
+  }
+
+  export type UserTrackedAgencyUncheckedUpdateWithoutContent_publishing_configInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
+    max_properties?: NullableIntFieldUpdateOperationsInput | number | null
+    text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
+    track_new_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
+    watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+  }
+
+  export type ContentOutputUpsertWithWhereUniqueWithoutConfigInput = {
+    where: ContentOutputWhereUniqueInput
+    update: XOR<ContentOutputUpdateWithoutConfigInput, ContentOutputUncheckedUpdateWithoutConfigInput>
+    create: XOR<ContentOutputCreateWithoutConfigInput, ContentOutputUncheckedCreateWithoutConfigInput>
+  }
+
+  export type ContentOutputUpdateWithWhereUniqueWithoutConfigInput = {
+    where: ContentOutputWhereUniqueInput
+    data: XOR<ContentOutputUpdateWithoutConfigInput, ContentOutputUncheckedUpdateWithoutConfigInput>
+  }
+
+  export type ContentOutputUpdateManyWithWhereWithoutConfigInput = {
+    where: ContentOutputScalarWhereInput
+    data: XOR<ContentOutputUpdateManyMutationInput, ContentOutputUncheckedUpdateManyWithoutConfigInput>
+  }
+
+  export type ContentOutputScalarWhereInput = {
+    AND?: ContentOutputScalarWhereInput | ContentOutputScalarWhereInput[]
+    OR?: ContentOutputScalarWhereInput[]
+    NOT?: ContentOutputScalarWhereInput | ContentOutputScalarWhereInput[]
+    id?: StringFilter<"ContentOutput"> | string
+    config_id?: StringFilter<"ContentOutput"> | string
+    language?: EnumContentLanguageFilter<"ContentOutput"> | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyFilter<"ContentOutput"> | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyFilter<"ContentOutput"> | $Enums.DescriptionProductionStrategy
+    ai_title_family_id?: StringNullableFilter<"ContentOutput"> | string | null
+    created_at?: DateTimeFilter<"ContentOutput"> | Date | string
+    updated_at?: DateTimeFilter<"ContentOutput"> | Date | string
+  }
+
+  export type AiTitleFamilyUpsertWithWhereUniqueWithoutConfigInput = {
+    where: AiTitleFamilyWhereUniqueInput
+    update: XOR<AiTitleFamilyUpdateWithoutConfigInput, AiTitleFamilyUncheckedUpdateWithoutConfigInput>
+    create: XOR<AiTitleFamilyCreateWithoutConfigInput, AiTitleFamilyUncheckedCreateWithoutConfigInput>
+  }
+
+  export type AiTitleFamilyUpdateWithWhereUniqueWithoutConfigInput = {
+    where: AiTitleFamilyWhereUniqueInput
+    data: XOR<AiTitleFamilyUpdateWithoutConfigInput, AiTitleFamilyUncheckedUpdateWithoutConfigInput>
+  }
+
+  export type AiTitleFamilyUpdateManyWithWhereWithoutConfigInput = {
+    where: AiTitleFamilyScalarWhereInput
+    data: XOR<AiTitleFamilyUpdateManyMutationInput, AiTitleFamilyUncheckedUpdateManyWithoutConfigInput>
+  }
+
+  export type AiTitleFamilyScalarWhereInput = {
+    AND?: AiTitleFamilyScalarWhereInput | AiTitleFamilyScalarWhereInput[]
+    OR?: AiTitleFamilyScalarWhereInput[]
+    NOT?: AiTitleFamilyScalarWhereInput | AiTitleFamilyScalarWhereInput[]
+    id?: StringFilter<"AiTitleFamily"> | string
+    config_id?: StringFilter<"AiTitleFamily"> | string
+    name?: StringFilter<"AiTitleFamily"> | string
+    model?: StringNullableFilter<"AiTitleFamily"> | string | null
+    use_batch?: BoolNullableFilter<"AiTitleFamily"> | boolean | null
+    instructions?: StringNullableFilter<"AiTitleFamily"> | string | null
+    generation_options?: JsonNullableFilter<"AiTitleFamily">
+    is_enabled?: BoolFilter<"AiTitleFamily"> | boolean
+    created_at?: DateTimeFilter<"AiTitleFamily"> | Date | string
+    updated_at?: DateTimeFilter<"AiTitleFamily"> | Date | string
+  }
+
+  export type AiBatchRunUpsertWithWhereUniqueWithoutConfigInput = {
+    where: AiBatchRunWhereUniqueInput
+    update: XOR<AiBatchRunUpdateWithoutConfigInput, AiBatchRunUncheckedUpdateWithoutConfigInput>
+    create: XOR<AiBatchRunCreateWithoutConfigInput, AiBatchRunUncheckedCreateWithoutConfigInput>
+  }
+
+  export type AiBatchRunUpdateWithWhereUniqueWithoutConfigInput = {
+    where: AiBatchRunWhereUniqueInput
+    data: XOR<AiBatchRunUpdateWithoutConfigInput, AiBatchRunUncheckedUpdateWithoutConfigInput>
+  }
+
+  export type AiBatchRunUpdateManyWithWhereWithoutConfigInput = {
+    where: AiBatchRunScalarWhereInput
+    data: XOR<AiBatchRunUpdateManyMutationInput, AiBatchRunUncheckedUpdateManyWithoutConfigInput>
+  }
+
+  export type AiBatchRunScalarWhereInput = {
+    AND?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
+    OR?: AiBatchRunScalarWhereInput[]
+    NOT?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
+    id?: StringFilter<"AiBatchRun"> | string
+    kind?: EnumAiBatchRunKindFilter<"AiBatchRun"> | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFilter<"AiBatchRun"> | $Enums.AiBatchRunStatus
+    openai_batch_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    config_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    ai_title_family_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    user_property_ids?: JsonFilter<"AiBatchRun">
+    metadata?: JsonNullableFilter<"AiBatchRun">
+    error_message?: StringNullableFilter<"AiBatchRun"> | string | null
+    created_at?: DateTimeFilter<"AiBatchRun"> | Date | string
+    updated_at?: DateTimeFilter<"AiBatchRun"> | Date | string
+  }
+
+  export type ContentPublishingConfigCreateWithoutOutputsInput = {
+    id?: string
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user_tracked_agency: UserTrackedAgencyCreateNestedOneWithoutContent_publishing_configInput
+    ai_title_families?: AiTitleFamilyCreateNestedManyWithoutConfigInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutConfigInput
+  }
+
+  export type ContentPublishingConfigUncheckedCreateWithoutOutputsInput = {
+    id?: string
+    user_tracked_agency_id: string
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    ai_title_families?: AiTitleFamilyUncheckedCreateNestedManyWithoutConfigInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutConfigInput
+  }
+
+  export type ContentPublishingConfigCreateOrConnectWithoutOutputsInput = {
+    where: ContentPublishingConfigWhereUniqueInput
+    create: XOR<ContentPublishingConfigCreateWithoutOutputsInput, ContentPublishingConfigUncheckedCreateWithoutOutputsInput>
+  }
+
+  export type AiTitleFamilyCreateWithoutOutputsInput = {
+    id?: string
+    name: string
+    model?: string | null
+    use_batch?: boolean | null
+    instructions?: string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    config: ContentPublishingConfigCreateNestedOneWithoutAi_title_familiesInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutAi_title_familyInput
+  }
+
+  export type AiTitleFamilyUncheckedCreateWithoutOutputsInput = {
+    id?: string
+    config_id: string
+    name: string
+    model?: string | null
+    use_batch?: boolean | null
+    instructions?: string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutAi_title_familyInput
+  }
+
+  export type AiTitleFamilyCreateOrConnectWithoutOutputsInput = {
+    where: AiTitleFamilyWhereUniqueInput
+    create: XOR<AiTitleFamilyCreateWithoutOutputsInput, AiTitleFamilyUncheckedCreateWithoutOutputsInput>
+  }
+
+  export type ContentPublishingConfigUpsertWithoutOutputsInput = {
+    update: XOR<ContentPublishingConfigUpdateWithoutOutputsInput, ContentPublishingConfigUncheckedUpdateWithoutOutputsInput>
+    create: XOR<ContentPublishingConfigCreateWithoutOutputsInput, ContentPublishingConfigUncheckedCreateWithoutOutputsInput>
+    where?: ContentPublishingConfigWhereInput
+  }
+
+  export type ContentPublishingConfigUpdateToOneWithWhereWithoutOutputsInput = {
+    where?: ContentPublishingConfigWhereInput
+    data: XOR<ContentPublishingConfigUpdateWithoutOutputsInput, ContentPublishingConfigUncheckedUpdateWithoutOutputsInput>
+  }
+
+  export type ContentPublishingConfigUpdateWithoutOutputsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ai_titles_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batch?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user_tracked_agency?: UserTrackedAgencyUpdateOneRequiredWithoutContent_publishing_configNestedInput
+    ai_title_families?: AiTitleFamilyUpdateManyWithoutConfigNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutConfigNestedInput
+  }
+
+  export type ContentPublishingConfigUncheckedUpdateWithoutOutputsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_tracked_agency_id?: StringFieldUpdateOperationsInput | string
+    ai_titles_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batch?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    ai_title_families?: AiTitleFamilyUncheckedUpdateManyWithoutConfigNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutConfigNestedInput
+  }
+
+  export type AiTitleFamilyUpsertWithoutOutputsInput = {
+    update: XOR<AiTitleFamilyUpdateWithoutOutputsInput, AiTitleFamilyUncheckedUpdateWithoutOutputsInput>
+    create: XOR<AiTitleFamilyCreateWithoutOutputsInput, AiTitleFamilyUncheckedCreateWithoutOutputsInput>
+    where?: AiTitleFamilyWhereInput
+  }
+
+  export type AiTitleFamilyUpdateToOneWithWhereWithoutOutputsInput = {
+    where?: AiTitleFamilyWhereInput
+    data: XOR<AiTitleFamilyUpdateWithoutOutputsInput, AiTitleFamilyUncheckedUpdateWithoutOutputsInput>
+  }
+
+  export type AiTitleFamilyUpdateWithoutOutputsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    config?: ContentPublishingConfigUpdateOneRequiredWithoutAi_title_familiesNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutAi_title_familyNestedInput
+  }
+
+  export type AiTitleFamilyUncheckedUpdateWithoutOutputsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    config_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutAi_title_familyNestedInput
+  }
+
+  export type ContentPublishingConfigCreateWithoutAi_title_familiesInput = {
+    id?: string
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user_tracked_agency: UserTrackedAgencyCreateNestedOneWithoutContent_publishing_configInput
+    outputs?: ContentOutputCreateNestedManyWithoutConfigInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutConfigInput
+  }
+
+  export type ContentPublishingConfigUncheckedCreateWithoutAi_title_familiesInput = {
+    id?: string
+    user_tracked_agency_id: string
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    outputs?: ContentOutputUncheckedCreateNestedManyWithoutConfigInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutConfigInput
+  }
+
+  export type ContentPublishingConfigCreateOrConnectWithoutAi_title_familiesInput = {
+    where: ContentPublishingConfigWhereUniqueInput
+    create: XOR<ContentPublishingConfigCreateWithoutAi_title_familiesInput, ContentPublishingConfigUncheckedCreateWithoutAi_title_familiesInput>
+  }
+
+  export type ContentOutputCreateWithoutAi_title_familyInput = {
+    id?: string
+    language: $Enums.ContentLanguage
+    title_strategy: $Enums.TitleProductionStrategy
+    description_strategy: $Enums.DescriptionProductionStrategy
+    created_at?: Date | string
+    updated_at?: Date | string
+    config: ContentPublishingConfigCreateNestedOneWithoutOutputsInput
+  }
+
+  export type ContentOutputUncheckedCreateWithoutAi_title_familyInput = {
+    id?: string
+    config_id: string
+    language: $Enums.ContentLanguage
+    title_strategy: $Enums.TitleProductionStrategy
+    description_strategy: $Enums.DescriptionProductionStrategy
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ContentOutputCreateOrConnectWithoutAi_title_familyInput = {
+    where: ContentOutputWhereUniqueInput
+    create: XOR<ContentOutputCreateWithoutAi_title_familyInput, ContentOutputUncheckedCreateWithoutAi_title_familyInput>
+  }
+
+  export type ContentOutputCreateManyAi_title_familyInputEnvelope = {
+    data: ContentOutputCreateManyAi_title_familyInput | ContentOutputCreateManyAi_title_familyInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AiBatchRunCreateWithoutAi_title_familyInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    config?: ContentPublishingConfigCreateNestedOneWithoutAi_batch_runsInput
+  }
+
+  export type AiBatchRunUncheckedCreateWithoutAi_title_familyInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    config_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AiBatchRunCreateOrConnectWithoutAi_title_familyInput = {
+    where: AiBatchRunWhereUniqueInput
+    create: XOR<AiBatchRunCreateWithoutAi_title_familyInput, AiBatchRunUncheckedCreateWithoutAi_title_familyInput>
+  }
+
+  export type AiBatchRunCreateManyAi_title_familyInputEnvelope = {
+    data: AiBatchRunCreateManyAi_title_familyInput | AiBatchRunCreateManyAi_title_familyInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ContentPublishingConfigUpsertWithoutAi_title_familiesInput = {
+    update: XOR<ContentPublishingConfigUpdateWithoutAi_title_familiesInput, ContentPublishingConfigUncheckedUpdateWithoutAi_title_familiesInput>
+    create: XOR<ContentPublishingConfigCreateWithoutAi_title_familiesInput, ContentPublishingConfigUncheckedCreateWithoutAi_title_familiesInput>
+    where?: ContentPublishingConfigWhereInput
+  }
+
+  export type ContentPublishingConfigUpdateToOneWithWhereWithoutAi_title_familiesInput = {
+    where?: ContentPublishingConfigWhereInput
+    data: XOR<ContentPublishingConfigUpdateWithoutAi_title_familiesInput, ContentPublishingConfigUncheckedUpdateWithoutAi_title_familiesInput>
+  }
+
+  export type ContentPublishingConfigUpdateWithoutAi_title_familiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ai_titles_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batch?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user_tracked_agency?: UserTrackedAgencyUpdateOneRequiredWithoutContent_publishing_configNestedInput
+    outputs?: ContentOutputUpdateManyWithoutConfigNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutConfigNestedInput
+  }
+
+  export type ContentPublishingConfigUncheckedUpdateWithoutAi_title_familiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_tracked_agency_id?: StringFieldUpdateOperationsInput | string
+    ai_titles_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batch?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    outputs?: ContentOutputUncheckedUpdateManyWithoutConfigNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutConfigNestedInput
+  }
+
+  export type ContentOutputUpsertWithWhereUniqueWithoutAi_title_familyInput = {
+    where: ContentOutputWhereUniqueInput
+    update: XOR<ContentOutputUpdateWithoutAi_title_familyInput, ContentOutputUncheckedUpdateWithoutAi_title_familyInput>
+    create: XOR<ContentOutputCreateWithoutAi_title_familyInput, ContentOutputUncheckedCreateWithoutAi_title_familyInput>
+  }
+
+  export type ContentOutputUpdateWithWhereUniqueWithoutAi_title_familyInput = {
+    where: ContentOutputWhereUniqueInput
+    data: XOR<ContentOutputUpdateWithoutAi_title_familyInput, ContentOutputUncheckedUpdateWithoutAi_title_familyInput>
+  }
+
+  export type ContentOutputUpdateManyWithWhereWithoutAi_title_familyInput = {
+    where: ContentOutputScalarWhereInput
+    data: XOR<ContentOutputUpdateManyMutationInput, ContentOutputUncheckedUpdateManyWithoutAi_title_familyInput>
+  }
+
+  export type AiBatchRunUpsertWithWhereUniqueWithoutAi_title_familyInput = {
+    where: AiBatchRunWhereUniqueInput
+    update: XOR<AiBatchRunUpdateWithoutAi_title_familyInput, AiBatchRunUncheckedUpdateWithoutAi_title_familyInput>
+    create: XOR<AiBatchRunCreateWithoutAi_title_familyInput, AiBatchRunUncheckedCreateWithoutAi_title_familyInput>
+  }
+
+  export type AiBatchRunUpdateWithWhereUniqueWithoutAi_title_familyInput = {
+    where: AiBatchRunWhereUniqueInput
+    data: XOR<AiBatchRunUpdateWithoutAi_title_familyInput, AiBatchRunUncheckedUpdateWithoutAi_title_familyInput>
+  }
+
+  export type AiBatchRunUpdateManyWithWhereWithoutAi_title_familyInput = {
+    where: AiBatchRunScalarWhereInput
+    data: XOR<AiBatchRunUpdateManyMutationInput, AiBatchRunUncheckedUpdateManyWithoutAi_title_familyInput>
+  }
+
+  export type UserPropertyCreateWithoutLocalized_contentsInput = {
+    id?: string
+    property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
+    title: string
+    description?: string | null
+    listing_type?: $Enums.ListingType
+    property_type?: $Enums.PropertyType
+    status?: $Enums.PropertyStatus
+    price?: Decimal | DecimalJsLike | number | string | null
+    currency?: string | null
+    city?: string | null
+    district?: string | null
+    address?: string | null
+    postal_code?: string | null
+    country?: string | null
+    latitude?: Decimal | DecimalJsLike | number | string | null
+    longitude?: Decimal | DecimalJsLike | number | string | null
+    square_meters?: Decimal | DecimalJsLike | number | string | null
+    bedrooms?: number | null
+    bathrooms?: number | null
+    floor?: string | null
+    construction_year?: number | null
+    renovation_year?: number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: string | null
+    is_modified?: boolean
+    pending_crm_update?: boolean
+    last_synced_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutSaved_propertiesInput
+    canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
+    integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
+  }
+
+  export type UserPropertyUncheckedCreateWithoutLocalized_contentsInput = {
+    id?: string
+    user_id: string
+    canonical_property_id: string
+    property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
+    title: string
+    description?: string | null
+    listing_type?: $Enums.ListingType
+    property_type?: $Enums.PropertyType
+    status?: $Enums.PropertyStatus
+    price?: Decimal | DecimalJsLike | number | string | null
+    currency?: string | null
+    city?: string | null
+    district?: string | null
+    address?: string | null
+    postal_code?: string | null
+    country?: string | null
+    latitude?: Decimal | DecimalJsLike | number | string | null
+    longitude?: Decimal | DecimalJsLike | number | string | null
+    square_meters?: Decimal | DecimalJsLike | number | string | null
+    bedrooms?: number | null
+    bathrooms?: number | null
+    floor?: string | null
+    construction_year?: number | null
+    renovation_year?: number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: string | null
+    is_modified?: boolean
+    pending_crm_update?: boolean
+    last_synced_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
+  }
+
+  export type UserPropertyCreateOrConnectWithoutLocalized_contentsInput = {
+    where: UserPropertyWhereUniqueInput
+    create: XOR<UserPropertyCreateWithoutLocalized_contentsInput, UserPropertyUncheckedCreateWithoutLocalized_contentsInput>
+  }
+
+  export type UserPropertyUpsertWithoutLocalized_contentsInput = {
+    update: XOR<UserPropertyUpdateWithoutLocalized_contentsInput, UserPropertyUncheckedUpdateWithoutLocalized_contentsInput>
+    create: XOR<UserPropertyCreateWithoutLocalized_contentsInput, UserPropertyUncheckedCreateWithoutLocalized_contentsInput>
+    where?: UserPropertyWhereInput
+  }
+
+  export type UserPropertyUpdateToOneWithWhereWithoutLocalized_contentsInput = {
+    where?: UserPropertyWhereInput
+    data: XOR<UserPropertyUpdateWithoutLocalized_contentsInput, UserPropertyUncheckedUpdateWithoutLocalized_contentsInput>
+  }
+
+  export type UserPropertyUpdateWithoutLocalized_contentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
+    property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
+    status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
+    price?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    district?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    postal_code?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    longitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    square_meters?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    bedrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    bathrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    construction_year?: NullableIntFieldUpdateOperationsInput | number | null
+    renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
+    is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
+    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
+    canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
+    integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
+  }
+
+  export type UserPropertyUncheckedUpdateWithoutLocalized_contentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    canonical_property_id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
+    property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
+    status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
+    price?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    district?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    postal_code?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    longitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    square_meters?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    bedrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    bathrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    construction_year?: NullableIntFieldUpdateOperationsInput | number | null
+    renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
+    is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
+    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
+  }
+
+  export type ContentPublishingConfigCreateWithoutAi_batch_runsInput = {
+    id?: string
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user_tracked_agency: UserTrackedAgencyCreateNestedOneWithoutContent_publishing_configInput
+    outputs?: ContentOutputCreateNestedManyWithoutConfigInput
+    ai_title_families?: AiTitleFamilyCreateNestedManyWithoutConfigInput
+  }
+
+  export type ContentPublishingConfigUncheckedCreateWithoutAi_batch_runsInput = {
+    id?: string
+    user_tracked_agency_id: string
+    ai_titles_enabled?: boolean
+    use_ai_batch?: boolean
+    is_enabled?: boolean
+    notes?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    outputs?: ContentOutputUncheckedCreateNestedManyWithoutConfigInput
+    ai_title_families?: AiTitleFamilyUncheckedCreateNestedManyWithoutConfigInput
+  }
+
+  export type ContentPublishingConfigCreateOrConnectWithoutAi_batch_runsInput = {
+    where: ContentPublishingConfigWhereUniqueInput
+    create: XOR<ContentPublishingConfigCreateWithoutAi_batch_runsInput, ContentPublishingConfigUncheckedCreateWithoutAi_batch_runsInput>
+  }
+
+  export type AiTitleFamilyCreateWithoutAi_batch_runsInput = {
+    id?: string
+    name: string
+    model?: string | null
+    use_batch?: boolean | null
+    instructions?: string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    config: ContentPublishingConfigCreateNestedOneWithoutAi_title_familiesInput
+    outputs?: ContentOutputCreateNestedManyWithoutAi_title_familyInput
+  }
+
+  export type AiTitleFamilyUncheckedCreateWithoutAi_batch_runsInput = {
+    id?: string
+    config_id: string
+    name: string
+    model?: string | null
+    use_batch?: boolean | null
+    instructions?: string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    outputs?: ContentOutputUncheckedCreateNestedManyWithoutAi_title_familyInput
+  }
+
+  export type AiTitleFamilyCreateOrConnectWithoutAi_batch_runsInput = {
+    where: AiTitleFamilyWhereUniqueInput
+    create: XOR<AiTitleFamilyCreateWithoutAi_batch_runsInput, AiTitleFamilyUncheckedCreateWithoutAi_batch_runsInput>
+  }
+
+  export type ContentPublishingConfigUpsertWithoutAi_batch_runsInput = {
+    update: XOR<ContentPublishingConfigUpdateWithoutAi_batch_runsInput, ContentPublishingConfigUncheckedUpdateWithoutAi_batch_runsInput>
+    create: XOR<ContentPublishingConfigCreateWithoutAi_batch_runsInput, ContentPublishingConfigUncheckedCreateWithoutAi_batch_runsInput>
+    where?: ContentPublishingConfigWhereInput
+  }
+
+  export type ContentPublishingConfigUpdateToOneWithWhereWithoutAi_batch_runsInput = {
+    where?: ContentPublishingConfigWhereInput
+    data: XOR<ContentPublishingConfigUpdateWithoutAi_batch_runsInput, ContentPublishingConfigUncheckedUpdateWithoutAi_batch_runsInput>
+  }
+
+  export type ContentPublishingConfigUpdateWithoutAi_batch_runsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ai_titles_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batch?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user_tracked_agency?: UserTrackedAgencyUpdateOneRequiredWithoutContent_publishing_configNestedInput
+    outputs?: ContentOutputUpdateManyWithoutConfigNestedInput
+    ai_title_families?: AiTitleFamilyUpdateManyWithoutConfigNestedInput
+  }
+
+  export type ContentPublishingConfigUncheckedUpdateWithoutAi_batch_runsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_tracked_agency_id?: StringFieldUpdateOperationsInput | string
+    ai_titles_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batch?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    outputs?: ContentOutputUncheckedUpdateManyWithoutConfigNestedInput
+    ai_title_families?: AiTitleFamilyUncheckedUpdateManyWithoutConfigNestedInput
+  }
+
+  export type AiTitleFamilyUpsertWithoutAi_batch_runsInput = {
+    update: XOR<AiTitleFamilyUpdateWithoutAi_batch_runsInput, AiTitleFamilyUncheckedUpdateWithoutAi_batch_runsInput>
+    create: XOR<AiTitleFamilyCreateWithoutAi_batch_runsInput, AiTitleFamilyUncheckedCreateWithoutAi_batch_runsInput>
+    where?: AiTitleFamilyWhereInput
+  }
+
+  export type AiTitleFamilyUpdateToOneWithWhereWithoutAi_batch_runsInput = {
+    where?: AiTitleFamilyWhereInput
+    data: XOR<AiTitleFamilyUpdateWithoutAi_batch_runsInput, AiTitleFamilyUncheckedUpdateWithoutAi_batch_runsInput>
+  }
+
+  export type AiTitleFamilyUpdateWithoutAi_batch_runsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    config?: ContentPublishingConfigUpdateOneRequiredWithoutAi_title_familiesNestedInput
+    outputs?: ContentOutputUpdateManyWithoutAi_title_familyNestedInput
+  }
+
+  export type AiTitleFamilyUncheckedUpdateWithoutAi_batch_runsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    config_id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    outputs?: ContentOutputUncheckedUpdateManyWithoutAi_title_familyNestedInput
+  }
+
   export type UserCreateWithoutIntegration_propertiesInput = {
     id?: string
     email: string
@@ -57433,6 +66965,7 @@ export namespace Prisma {
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutSaved_propertiesInput
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
+    localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutIntegration_propertiesInput = {
@@ -57482,6 +67015,7 @@ export namespace Prisma {
     last_synced_at?: Date | string | null
     created_at?: Date | string
     updated_at?: Date | string
+    localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutIntegration_propertiesInput = {
@@ -57617,6 +67151,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
+    localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput = {
@@ -57666,6 +67201,7 @@ export namespace Prisma {
     last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type ComputerUseStepCreateWithoutScreenshot_beforeInput = {
@@ -57886,6 +67422,7 @@ export namespace Prisma {
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateWithoutUserInput = {
@@ -57908,6 +67445,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateManyWithoutUserInput = {
@@ -57977,6 +67515,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
+    localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutUserInput = {
@@ -58026,6 +67565,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
+    localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateManyWithoutUserInput = {
@@ -58688,6 +68228,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateWithoutSource_agencyInput = {
@@ -58710,6 +68251,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateManyWithoutSource_agencyInput = {
@@ -60071,6 +69613,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
+    localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutCanonical_propertyInput = {
@@ -60120,6 +69663,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
+    localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateManyWithoutCanonical_propertyInput = {
@@ -60210,6 +69754,17 @@ export namespace Prisma {
     updated_at?: Date | string
   }
 
+  export type PropertyLocalizedContentCreateManyUser_propertyInput = {
+    id?: string
+    content_type: $Enums.ContentType
+    language: $Enums.ContentLanguage
+    production: string
+    text: string
+    is_stale?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
   export type IntegrationPropertyUpdateWithoutUser_propertyInput = {
     id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
@@ -60236,6 +69791,275 @@ export namespace Prisma {
     user_integration_settings_id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PropertyLocalizedContentUpdateWithoutUser_propertyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content_type?: EnumContentTypeFieldUpdateOperationsInput | $Enums.ContentType
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    production?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    is_stale?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PropertyLocalizedContentUncheckedUpdateWithoutUser_propertyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content_type?: EnumContentTypeFieldUpdateOperationsInput | $Enums.ContentType
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    production?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    is_stale?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content_type?: EnumContentTypeFieldUpdateOperationsInput | $Enums.ContentType
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    production?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    is_stale?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContentOutputCreateManyConfigInput = {
+    id?: string
+    language: $Enums.ContentLanguage
+    title_strategy: $Enums.TitleProductionStrategy
+    description_strategy: $Enums.DescriptionProductionStrategy
+    ai_title_family_id?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AiTitleFamilyCreateManyConfigInput = {
+    id?: string
+    name: string
+    model?: string | null
+    use_batch?: boolean | null
+    instructions?: string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AiBatchRunCreateManyConfigInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    ai_title_family_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ContentOutputUpdateWithoutConfigInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    ai_title_family?: AiTitleFamilyUpdateOneWithoutOutputsNestedInput
+  }
+
+  export type ContentOutputUncheckedUpdateWithoutConfigInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContentOutputUncheckedUpdateManyWithoutConfigInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiTitleFamilyUpdateWithoutConfigInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    outputs?: ContentOutputUpdateManyWithoutAi_title_familyNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutAi_title_familyNestedInput
+  }
+
+  export type AiTitleFamilyUncheckedUpdateWithoutConfigInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    outputs?: ContentOutputUncheckedUpdateManyWithoutAi_title_familyNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutAi_title_familyNestedInput
+  }
+
+  export type AiTitleFamilyUncheckedUpdateManyWithoutConfigInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    use_batch?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    instructions?: NullableStringFieldUpdateOperationsInput | string | null
+    generation_options?: NullableJsonNullValueInput | InputJsonValue
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiBatchRunUpdateWithoutConfigInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    ai_title_family?: AiTitleFamilyUpdateOneWithoutAi_batch_runsNestedInput
+  }
+
+  export type AiBatchRunUncheckedUpdateWithoutConfigInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiBatchRunUncheckedUpdateManyWithoutConfigInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContentOutputCreateManyAi_title_familyInput = {
+    id?: string
+    config_id: string
+    language: $Enums.ContentLanguage
+    title_strategy: $Enums.TitleProductionStrategy
+    description_strategy: $Enums.DescriptionProductionStrategy
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AiBatchRunCreateManyAi_title_familyInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    config_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ContentOutputUpdateWithoutAi_title_familyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    config?: ContentPublishingConfigUpdateOneRequiredWithoutOutputsNestedInput
+  }
+
+  export type ContentOutputUncheckedUpdateWithoutAi_title_familyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    config_id?: StringFieldUpdateOperationsInput | string
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ContentOutputUncheckedUpdateManyWithoutAi_title_familyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    config_id?: StringFieldUpdateOperationsInput | string
+    language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
+    description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiBatchRunUpdateWithoutAi_title_familyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    config?: ContentPublishingConfigUpdateOneWithoutAi_batch_runsNestedInput
+  }
+
+  export type AiBatchRunUncheckedUpdateWithoutAi_title_familyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    config_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiBatchRunUncheckedUpdateManyWithoutAi_title_familyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    config_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }

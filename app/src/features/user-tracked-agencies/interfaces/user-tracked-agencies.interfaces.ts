@@ -22,6 +22,7 @@ export interface TrackableAgency {
   base_url: string;
   country: string | null;
   city: string | null;
+  content_language?: string | null;
   status: string;
   is_visible: boolean;
   is_enabled: boolean;

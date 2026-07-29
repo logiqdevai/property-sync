@@ -174,6 +174,7 @@ exports.Prisma.SourceAgencyScalarFieldEnum = {
   base_url: 'base_url',
   country: 'country',
   city: 'city',
+  content_language: 'content_language',
   is_visible: 'is_visible',
   is_enabled: 'is_enabled',
   crawl_interval: 'crawl_interval',
@@ -540,6 +541,67 @@ exports.Prisma.UserPropertyScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.ContentPublishingConfigScalarFieldEnum = {
+  id: 'id',
+  user_tracked_agency_id: 'user_tracked_agency_id',
+  ai_titles_enabled: 'ai_titles_enabled',
+  use_ai_batch: 'use_ai_batch',
+  is_enabled: 'is_enabled',
+  notes: 'notes',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ContentOutputScalarFieldEnum = {
+  id: 'id',
+  config_id: 'config_id',
+  language: 'language',
+  title_strategy: 'title_strategy',
+  description_strategy: 'description_strategy',
+  ai_title_family_id: 'ai_title_family_id',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.AiTitleFamilyScalarFieldEnum = {
+  id: 'id',
+  config_id: 'config_id',
+  name: 'name',
+  model: 'model',
+  use_batch: 'use_batch',
+  instructions: 'instructions',
+  generation_options: 'generation_options',
+  is_enabled: 'is_enabled',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.PropertyLocalizedContentScalarFieldEnum = {
+  id: 'id',
+  user_property_id: 'user_property_id',
+  content_type: 'content_type',
+  language: 'language',
+  production: 'production',
+  text: 'text',
+  is_stale: 'is_stale',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.AiBatchRunScalarFieldEnum = {
+  id: 'id',
+  kind: 'kind',
+  status: 'status',
+  openai_batch_id: 'openai_batch_id',
+  config_id: 'config_id',
+  ai_title_family_id: 'ai_title_family_id',
+  user_property_ids: 'user_property_ids',
+  metadata: 'metadata',
+  error_message: 'error_message',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.IntegrationPropertyScalarFieldEnum = {
   id: 'id',
   user_id: 'user_id',
@@ -630,6 +692,15 @@ exports.AuthType = exports.$Enums.AuthType = {
   BEARER_TOKEN: 'BEARER_TOKEN',
   API_KEY: 'API_KEY',
   OAUTH: 'OAUTH'
+};
+
+exports.ContentLanguage = exports.$Enums.ContentLanguage = {
+  EL: 'EL',
+  EN: 'EN',
+  DE: 'DE',
+  FR: 'FR',
+  IT: 'IT',
+  RU: 'RU'
 };
 
 exports.ScraperStatus = exports.$Enums.ScraperStatus = {
@@ -809,6 +880,34 @@ exports.PropertyHistoryEventType = exports.$Enums.PropertyHistoryEventType = {
   REAPPEARED: 'REAPPEARED'
 };
 
+exports.TitleProductionStrategy = exports.$Enums.TitleProductionStrategy = {
+  ORIGINAL: 'ORIGINAL',
+  TRANSLATE: 'TRANSLATE',
+  AI: 'AI'
+};
+
+exports.DescriptionProductionStrategy = exports.$Enums.DescriptionProductionStrategy = {
+  ORIGINAL: 'ORIGINAL',
+  TRANSLATE: 'TRANSLATE'
+};
+
+exports.ContentType = exports.$Enums.ContentType = {
+  TITLE: 'TITLE',
+  DESCRIPTION: 'DESCRIPTION'
+};
+
+exports.AiBatchRunKind = exports.$Enums.AiBatchRunKind = {
+  TITLE_FAMILY: 'TITLE_FAMILY'
+};
+
+exports.AiBatchRunStatus = exports.$Enums.AiBatchRunStatus = {
+  SUBMITTED: 'SUBMITTED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+};
+
 exports.DocumentType = exports.$Enums.DocumentType = {
   LOGO: 'LOGO',
   BANNER: 'BANNER',
@@ -844,6 +943,11 @@ exports.Prisma.ModelName = {
   PropertySourceLink: 'PropertySourceLink',
   PropertyHistory: 'PropertyHistory',
   UserProperty: 'UserProperty',
+  ContentPublishingConfig: 'ContentPublishingConfig',
+  ContentOutput: 'ContentOutput',
+  AiTitleFamily: 'AiTitleFamily',
+  PropertyLocalizedContent: 'PropertyLocalizedContent',
+  AiBatchRun: 'AiBatchRun',
   IntegrationProperty: 'IntegrationProperty',
   PlatformConfig: 'PlatformConfig',
   Document: 'Document'

@@ -40,6 +40,9 @@ import {
 import { EstateWebException } from '../exceptions/estateweb.exception';
 import { EstateWebIntegrationResolverService } from './estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from './estateweb-property.service';
+import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
+import { ContentResolutionService } from '@/modules/content-publishing/services/content-resolution.service';
+import { EstateWebAdLanguageMaps } from '@/modules/content-publishing/interfaces/content-publishing.interface';
 
 interface ImageEntry {
   url: string;
@@ -67,6 +70,8 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     private readonly prisma: PrismaService,
     private readonly estateWebPropertyService: EstateWebPropertyService,
     private readonly estateWebIntegrationResolverService: EstateWebIntegrationResolverService,
+    private readonly contentProductionService: ContentProductionService,
+    private readonly contentResolutionService: ContentResolutionService,
   ) {}
 
   async pushCreate(
@@ -76,7 +81,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   ): Promise<CmsPushCreateResult> {
     this.assertRequiredFields(userProperty);
 
-    const [pushSites, adLanguages] = await Promise.all([
+    const [pushSites, adLanguages, adMaps] = await Promise.all([
       this.resolvePushSitesForSync(
         userIntegrationId,
         userProperty.id,
@@ -86,6 +91,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       this.estateWebIntegrationResolverService.resolveAdLanguages(
         userIntegrationId,
       ),
+      this.resolveContentAds(userProperty, userIntegrationId),
     ]);
     await this.applySalesPriceStartIfNeeded(userIntegrationId, userProperty);
     const payload = this.buildPayload(
@@ -95,9 +101,10 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       undefined,
       options?.propertyNote,
       options?.sitesOverride !== undefined,
+      adMaps,
     );
     this.logger.log(
-      `EstateWeb CREATE payload: type_id=${payload.type_id} location_id=${payload.location_id} scope_id=${payload.scope_id} fields=${payload.fields?.length ?? 0} price=${payload.price ?? 'null'} lat_lng=${payload.lat_lng || 'none'} sites=${payload.sites.map((s) => `${s.agent_site_id}:${s.selected ? 1 : 0}`).join(',')} langs=${adLanguages.join(',')}`,
+      `EstateWeb CREATE payload: type_id=${payload.type_id} location_id=${payload.location_id} scope_id=${payload.scope_id} fields=${payload.fields?.length ?? 0} price=${payload.price ?? 'null'} lat_lng=${payload.lat_lng || 'none'} sites=${payload.sites.map((s) => `${s.agent_site_id}:${s.selected ? 1 : 0}`).join(',')} langs=${adMaps.languages.join(',')}`,
     );
 
     const result = await this.estateWebPropertyService.createProperty(
@@ -124,7 +131,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   ): Promise<void> {
     this.assertRequiredFields(userProperty);
 
-    const [pushSites, adLanguages] = await Promise.all([
+    const [pushSites, adLanguages, adMaps] = await Promise.all([
       this.resolvePushSitesForSync(
         userIntegrationId,
         userProperty.id,
@@ -134,6 +141,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       this.estateWebIntegrationResolverService.resolveAdLanguages(
         userIntegrationId,
       ),
+      this.resolveContentAds(userProperty, userIntegrationId),
     ]);
     await this.applySalesPriceStartIfNeeded(userIntegrationId, userProperty);
     const payload = this.buildPayload(
@@ -143,6 +151,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       Number(integrationPropertyId),
       options?.propertyNote,
       options?.sitesOverride !== undefined,
+      adMaps,
     ) as EstateWebUpdatePropertyPayload;
     await this.estateWebPropertyService.updateProperty(
       userIntegrationId,
@@ -662,6 +671,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     integrationPropertyId?: number,
     propertyNote?: string,
     useSitesAsProvided = false,
+    adMaps?: EstateWebAdLanguageMaps,
   ): EstateWebPropertyPayload {
     const price = userProperty?.price ? Number(userProperty.price) : 0;
     const priceStart = userProperty?.price_start
@@ -673,6 +683,9 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     const title = userProperty?.title ?? '';
     const description = userProperty?.description ?? '';
     const latLng = this.buildLatLng(userProperty);
+    const resolvedAds = adMaps
+      ? this.buildAdsFromMaps(adMaps)
+      : this.buildAds(title, description, adLanguages);
 
     return {
       id: integrationPropertyId ?? 0,
@@ -722,13 +735,40 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         show_on_relative_pages: site.show_on_relative_pages,
       })),
       gateways: [],
-      ads: this.buildAds(title, description, adLanguages),
+      ads: resolvedAds,
       foreign_agents: [],
       history: [],
       notes: [],
       price_negotiable: 0,
       note: propertyNote?.trim() ?? '',
     };
+  }
+
+  private async resolveContentAds(
+    userProperty: UserProperty,
+    userIntegrationId: string,
+  ): Promise<EstateWebAdLanguageMaps> {
+    await this.contentProductionService.ensureReady(userProperty.id);
+    const fallback =
+      await this.estateWebIntegrationResolverService.resolveAdLanguages(
+        userIntegrationId,
+      );
+    return this.contentResolutionService.resolveAdMaps(userProperty, fallback);
+  }
+
+  private buildAdsFromMaps(
+    adMaps: EstateWebAdLanguageMaps,
+  ): EstateWebPropertyAd[] {
+    return ESTATEWEB_INIT_LANGUAGES.map((lang) => {
+      const title = adMaps.titles[lang.id] ?? '';
+      const description = adMaps.descriptions[lang.id] ?? '';
+      return {
+        lang_id: lang.id,
+        title,
+        description,
+        text: description,
+      };
+    });
   }
 
   private buildAds(

@@ -16,6 +16,7 @@ import {
   useUpdateAgencyVisibility,
   useUpdateTrackerAdminSettings,
 } from "@/features/agencies/hooks/use-agencies";
+import type { AgencyFormValues } from "@/features/agencies/validation-schemas/agencies.schema";
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import { ScraperStatusChip } from "./components/scraper-status-chip";
 import { useCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
@@ -295,6 +296,9 @@ export default function AgencyDetailPage() {
                     country: agency.country ?? "",
                     city: agency.city ?? "",
                     notes: agency.notes ?? "",
+                    content_language:
+                      (agency.content_language as AgencyFormValues["content_language"]) ??
+                      "EL",
                     crawl_interval: agency.crawl_interval,
                   }}
                   onSubmit={(values) =>

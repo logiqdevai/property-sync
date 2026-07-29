@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ContentLanguages } from "@/features/content-publishing/interfaces/content-publishing.interfaces";
 
 export const agencyFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -6,6 +7,14 @@ export const agencyFormSchema = z.object({
   country: z.string().optional(),
   city: z.string().optional(),
   notes: z.string().optional(),
+  content_language: z.enum([
+    ContentLanguages.EL,
+    ContentLanguages.EN,
+    ContentLanguages.DE,
+    ContentLanguages.FR,
+    ContentLanguages.IT,
+    ContentLanguages.RU,
+  ]),
   crawl_interval: z
     .string()
     .min(1, "Crawl interval is required")

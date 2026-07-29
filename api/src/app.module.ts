@@ -29,6 +29,7 @@ import { QueuesModule } from './core/queues/queues.module';
 import { BullBoardModule } from './core/queues/bull-board.module';
 import { ConfigModule } from './shared/config/env/env.module';
 import { CmsSyncModule } from './modules/cms-sync/cms-sync.module';
+import { ContentPublishingModule } from './modules/content-publishing/content-publishing.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { CmsSyncModule } from './modules/cms-sync/cms-sync.module';
     UserDashboardModule,
     EstateWebAdminModule,
     CmsSyncModule,
+    ContentPublishingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

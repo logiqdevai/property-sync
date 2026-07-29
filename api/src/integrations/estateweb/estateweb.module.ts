@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
+import { ContentPublishingModule } from '@/modules/content-publishing/content-publishing.module';
 import { EstateWebConfig } from './config/estateweb.config';
 import { EstateWebAuthService } from './services/estateweb-auth.service';
 import { EstateWebClientService } from './services/estateweb-client.service';
@@ -13,7 +14,11 @@ import { EstateWebPropertyReconciliationService } from './services/estateweb-pro
 import { EstateWebSessionService } from './services/estateweb-session.service';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule],
+  imports: [
+    PrismaModule,
+    NotificationsModule,
+    forwardRef(() => ContentPublishingModule),
+  ],
   providers: [
     EstateWebConfig,
     EstateWebNotificationService,

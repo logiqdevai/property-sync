@@ -1,8 +1,9 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+﻿import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import OpenAI from 'openai';
 import { PropertyAiBatchService } from '@/integrations/ai-batch/services/property-ai-batch.service';
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
+import { AiTitleBatchService } from '@/modules/content-publishing/services/ai-title-batch.service';
 import { JobStatus, Prisma } from 'generated/prisma';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class OpenAiWebhooksService {
     private readonly prisma: PrismaService,
     private readonly propertyAiBatchService: PropertyAiBatchService,
     private readonly propertyNormalizationService: PropertyNormalizationService,
+    private readonly aiTitleBatchService: AiTitleBatchService,
   ) {}
 
   async handleWebhook(
@@ -79,6 +81,36 @@ export class OpenAiWebhooksService {
     });
 
     const batchId = event.data.id;
+    const titleBatch =
+      await this.aiTitleBatchService.findByOpenAiBatchId(batchId);
+
+    if (titleBatch) {
+      const apiKey = await this.resolveApiKey(userIntegrationId);
+      if (!apiKey) {
+        this.logger.warn(
+          `No API key for title batch ${batchId} on integration ${userIntegrationId}`,
+        );
+        return;
+      }
+
+      if (event.type === 'batch.completed') {
+        await this.aiTitleBatchService.completeBatch(batchId, apiKey);
+        return;
+      }
+
+      if (
+        event.type === 'batch.failed' ||
+        event.type === 'batch.expired' ||
+        event.type === 'batch.cancelled'
+      ) {
+        await this.aiTitleBatchService.markFailed(
+          batchId,
+          `OpenAI batch ${event.type}`,
+        );
+      }
+      return;
+    }
+
     const crawlRun = await this.findCrawlRunForBatch(
       batchId,
       userIntegrationId,
@@ -108,6 +140,16 @@ export class OpenAiWebhooksService {
         `OpenAI batch ${event.type}`,
       );
     }
+  }
+
+  private async resolveApiKey(
+    userIntegrationId: string,
+  ): Promise<string | null> {
+    const integration = await this.prisma.userIntegration.findUnique({
+      where: { id: userIntegrationId },
+      select: { api_key_secret: true },
+    });
+    return integration?.api_key_secret ?? null;
   }
 
   private async resolveWebhookSecret(

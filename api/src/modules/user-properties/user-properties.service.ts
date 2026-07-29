@@ -13,6 +13,7 @@ import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estat
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { CmsSyncAdapterFactory } from '@/modules/cms-sync/services/cms-sync-adapter.factory';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
+import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
 import { UserPropertyQueryType } from './dto/user-property-query.schema';
 import { AdminUserPropertyQueryType } from './dto/admin-user-property-query.schema';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
@@ -74,6 +75,7 @@ export class UserPropertiesService {
     private readonly estateWebIntegrationResolver: EstateWebIntegrationResolverService,
     private readonly dewatermarkOrchestrator: DewatermarkOrchestratorService,
     private readonly watermarkRemovalService: WatermarkRemovalService,
+    private readonly contentProductionService: ContentProductionService,
     @InjectQueue(WATERMARK_REMOVAL_QUEUE)
     private readonly watermarkRemovalQueue: Queue<WatermarkRemovalJobData>,
   ) {}
@@ -385,7 +387,12 @@ export class UserPropertiesService {
       }
     }
 
-    return serializePropertyForApi(
+    const contentChanged =
+      (dto.title !== undefined && dto.title !== existing.title) ||
+      (dto.description !== undefined &&
+        dto.description !== existing.description);
+
+    const updated = serializePropertyForApi(
       await this.prisma.userProperty.update({
         where: { id },
         data: this.buildUserPropertyUpdateData(
@@ -396,6 +403,20 @@ export class UserPropertiesService {
         ),
       }),
     );
+
+    if (contentChanged) {
+      const propertyId = id;
+      setImmediate(async () => {
+        try {
+          await this.contentProductionService.markStale(propertyId);
+          await this.contentProductionService.produceForProperty(propertyId, {
+            forceSyncAi: true,
+          });
+        } catch {}
+      });
+    }
+
+    return updated;
   }
 
   private buildUserPropertyUpdateData(

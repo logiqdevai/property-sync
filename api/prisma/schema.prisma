@@ -95,6 +95,43 @@ enum DiagnosticsArtifactKind {
   VIDEO
 }
 
+enum ContentLanguage {
+  EL
+  EN
+  DE
+  FR
+  IT
+  RU
+}
+
+enum ContentType {
+  TITLE
+  DESCRIPTION
+}
+
+enum TitleProductionStrategy {
+  ORIGINAL
+  TRANSLATE
+  AI
+}
+
+enum DescriptionProductionStrategy {
+  ORIGINAL
+  TRANSLATE
+}
+
+enum AiBatchRunKind {
+  TITLE_FAMILY
+}
+
+enum AiBatchRunStatus {
+  SUBMITTED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
 // Separate from CrawlRunStatus: an AI generation/self-heal session has different
 // terminal states than a production crawl (e.g. AWAITING_REVIEW has no crawl equivalent).
 enum GenerationRunStatus {
@@ -354,21 +391,22 @@ model UserIntegration {
 /// SourceAgency -> ScraperGenerationRun (AI builds a scraper) -> Scraper -> CrawlRun (production run)
 /// -> SourceProperty -> Property.
 model SourceAgency {
-  id                 String    @id @default(uuid())
+  id                 String           @id @default(uuid())
   name               String
-  base_url           String    @unique
+  base_url           String           @unique
   country            String?
   city               String?
-  is_visible         Boolean   @default(false) // not displayed to the user, only to the admin
-  is_enabled         Boolean   @default(false) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin
-  crawl_interval     String    @default("0 */6 * * *")
+  content_language   ContentLanguage  @default(EL)
+  is_visible         Boolean          @default(false) // not displayed to the user, only to the admin
+  is_enabled         Boolean          @default(false) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin
+  crawl_interval     String           @default("0 */6 * * *")
   notes              String?
   last_success_at    DateTime?
   last_failure_at    DateTime?
   last_error_message String?
   metadata           Json?
-  created_at         DateTime  @default(now())
-  updated_at         DateTime  @updatedAt
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
 
   scrapers                Scraper[]
   user_tracked_agencies   UserTrackedAgency[]
@@ -403,10 +441,11 @@ model UserTrackedAgency {
   created_at                   DateTime @default(now())
   updated_at                   DateTime @updatedAt
 
-  user             User                              @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  source_agency    SourceAgency                      @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
-  crawl_runs       CrawlRun[]
-  integration_link UserTrackedAgencyIntegrationLink?
+  user                      User                       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  source_agency             SourceAgency               @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  crawl_runs                CrawlRun[]
+  integration_link          UserTrackedAgencyIntegrationLink?
+  content_publishing_config ContentPublishingConfig?
 
   @@unique([user_id, source_agency_id])
   @@index([user_id])
@@ -968,15 +1007,111 @@ model UserProperty {
   created_at              DateTime       @default(now())
   updated_at              DateTime       @updatedAt
 
-  user                   User                  @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  canonical_property     Property              @relation(fields: [canonical_property_id], references: [id], onDelete: Cascade)
+  user                   User                       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  canonical_property     Property                   @relation(fields: [canonical_property_id], references: [id], onDelete: Cascade)
   integration_properties IntegrationProperty[]
+  localized_contents     PropertyLocalizedContent[]
 
   @@unique([user_id, canonical_property_id])
   @@index([user_id])
   @@index([canonical_property_id])
   @@index([property_id])
   @@map("user_properties")
+}
+
+model ContentPublishingConfig {
+  id                     String   @id @default(uuid())
+  user_tracked_agency_id String   @unique
+  ai_titles_enabled      Boolean  @default(false)
+  use_ai_batch           Boolean  @default(false)
+  is_enabled             Boolean  @default(true)
+  notes                  String?
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  user_tracked_agency UserTrackedAgency @relation(fields: [user_tracked_agency_id], references: [id], onDelete: Cascade)
+  outputs             ContentOutput[]
+  ai_title_families   AiTitleFamily[]
+  ai_batch_runs       AiBatchRun[]
+
+  @@map("content_publishing_configs")
+}
+
+model ContentOutput {
+  id                   String                         @id @default(uuid())
+  config_id            String
+  language             ContentLanguage
+  title_strategy       TitleProductionStrategy
+  description_strategy DescriptionProductionStrategy
+  ai_title_family_id   String?
+  created_at           DateTime                       @default(now())
+  updated_at           DateTime                       @updatedAt
+
+  config          ContentPublishingConfig @relation(fields: [config_id], references: [id], onDelete: Cascade)
+  ai_title_family AiTitleFamily?          @relation(fields: [ai_title_family_id], references: [id], onDelete: Restrict)
+
+  @@unique([config_id, language])
+  @@index([ai_title_family_id])
+  @@map("content_outputs")
+}
+
+model AiTitleFamily {
+  id                 String   @id @default(uuid())
+  config_id          String
+  name               String
+  model              String?
+  use_batch          Boolean?
+  instructions       String?
+  generation_options Json?
+  is_enabled         Boolean  @default(true)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  config        ContentPublishingConfig @relation(fields: [config_id], references: [id], onDelete: Cascade)
+  outputs       ContentOutput[]
+  ai_batch_runs AiBatchRun[]
+
+  @@unique([config_id, name])
+  @@map("ai_title_families")
+}
+
+model PropertyLocalizedContent {
+  id               String          @id @default(uuid())
+  user_property_id String
+  content_type     ContentType
+  language         ContentLanguage
+  production       String
+  text             String          @db.Text
+  is_stale         Boolean         @default(false)
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @updatedAt
+
+  user_property UserProperty @relation(fields: [user_property_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_property_id, content_type, language])
+  @@index([user_property_id])
+  @@map("property_localized_contents")
+}
+
+model AiBatchRun {
+  id                 String           @id @default(uuid())
+  kind               AiBatchRunKind   @default(TITLE_FAMILY)
+  status             AiBatchRunStatus @default(SUBMITTED)
+  openai_batch_id    String?          @unique
+  config_id          String?
+  ai_title_family_id String?
+  user_property_ids  Json
+  metadata           Json?
+  error_message      String?
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+
+  config          ContentPublishingConfig? @relation(fields: [config_id], references: [id], onDelete: SetNull)
+  ai_title_family AiTitleFamily?           @relation(fields: [ai_title_family_id], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([config_id])
+  @@map("ai_batch_runs")
 }
 
 model IntegrationProperty {
