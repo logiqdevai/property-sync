@@ -120,6 +120,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       userIntegrationId,
       userPropertyId: userProperty.id,
       sites: payload.sites,
+      ads: payload.ads ?? [],
     });
 
     await this.uploadImages(userIntegrationId, result.id, userProperty);
@@ -171,6 +172,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       userIntegrationId,
       userPropertyId: userProperty.id,
       sites: payload.sites,
+      ads: payload.ads ?? [],
     });
   }
 
@@ -203,6 +205,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       userIntegrationId,
       userPropertyId: userProperty.id,
       sites: [],
+      ads: [],
     });
   }
 
@@ -579,6 +582,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     userIntegrationId: string;
     userPropertyId: string;
     sites: EstateWebPropertySite[];
+    ads?: EstateWebPropertyAd[];
   }): Promise<void> {
     const integration = await this.prisma.userIntegration.findUnique({
       where: { id: params.userIntegrationId },
@@ -603,6 +607,13 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       show_on_relative_pages: site.show_on_relative_pages ? 1 : 0,
     }));
 
+    const ads = (params.ads ?? []).map((ad) => ({
+      lang_id: ad.lang_id,
+      title: ad.title ?? '',
+      description: ad.description ?? '',
+      text: ad.text ?? ad.description ?? '',
+    }));
+
     try {
       await this.prisma.integrationProperty.upsert({
         where: {
@@ -619,9 +630,13 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
             integration.user_integration_settings_id,
           user_property_id: params.userPropertyId,
           sites: sites as unknown as Prisma.InputJsonValue,
+          ads: ads as unknown as Prisma.InputJsonValue,
         },
         update: {
           sites: sites as unknown as Prisma.InputJsonValue,
+          ...(params.ads !== undefined
+            ? { ads: ads as unknown as Prisma.InputJsonValue }
+            : {}),
         },
       });
     } catch (error) {

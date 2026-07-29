@@ -43,6 +43,8 @@ import type {
   PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
 import type { IntegrationProperty } from "@/features/integration-property/interfaces/integration-property.interfaces";
+import type { PropertyLocalizedContent } from "@/features/user-properties/interfaces/user-properties.interfaces";
+import { getContentLanguageLabel } from "@/config/constants/dropdowns/agencies/content-language-form.options";
 import {
   resolvePropertyDisplayImages,
   type PropertyDisplayImage,
@@ -52,6 +54,15 @@ import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { formatDateTime } from "@/lib/date";
 import { formatPrice } from "@/lib/price";
 import { cn } from "@/lib/utils";
+
+const ESTATEWEB_LANG_BY_ID: Record<number, string> = {
+  1: "EL",
+  2: "EN",
+  3: "DE",
+  4: "FR",
+  5: "IT",
+  6: "RU",
+};
 
 export interface PropertyDetailViewData extends Partial<PropertyCmsFields> {
   title: string;
@@ -78,6 +89,7 @@ export interface PropertyDetailViewData extends Partial<PropertyCmsFields> {
   features: string[] | null;
   images: string[] | null;
   integration_property?: IntegrationProperty | null;
+  localized_contents?: PropertyLocalizedContent[];
   duplicate_group_id?: string | null;
   source_links?: PropertySourceLink[];
   history: PropertyHistoryEntry[];
@@ -88,6 +100,59 @@ function formatCmsMetadata(metadata: CmsPropertyMetadata | null | undefined): st
   return Object.entries(metadata)
     .filter(([, value]) => value != null && value !== "")
     .map(([key, value]) => `${key}: ${String(value)}`);
+}
+
+function buildLocalizedContentRows(property: PropertyDetailViewData): Array<{
+  key: string;
+  label: string;
+  title: string | null;
+  description: string | null;
+  source: "crm" | "generated";
+}> {
+  const ads = property.integration_property?.ads ?? null;
+  if (Array.isArray(ads) && ads.length > 0) {
+    return ads
+      .map((ad) => {
+        const title = ad.title?.trim() || null;
+        const description =
+          ad.description?.trim() || ad.text?.trim() || null;
+        if (!title && !description) return null;
+        const languageCode = ESTATEWEB_LANG_BY_ID[ad.lang_id] ?? String(ad.lang_id);
+        return {
+          key: `ad-${ad.lang_id}`,
+          label: getContentLanguageLabel(languageCode),
+          title,
+          description,
+          source: "crm" as const,
+        };
+      })
+      .filter((row): row is NonNullable<typeof row> => row != null);
+  }
+
+  const contents = property.localized_contents ?? [];
+  if (contents.length === 0) return [];
+
+  const byLanguage = new Map<
+    string,
+    { title: string | null; description: string | null }
+  >();
+  for (const row of contents) {
+    const current = byLanguage.get(row.language) ?? {
+      title: null,
+      description: null,
+    };
+    if (row.content_type === "TITLE") current.title = row.text;
+    if (row.content_type === "DESCRIPTION") current.description = row.text;
+    byLanguage.set(row.language, current);
+  }
+
+  return [...byLanguage.entries()].map(([language, values]) => ({
+    key: `loc-${language}`,
+    label: getContentLanguageLabel(language),
+    title: values.title,
+    description: values.description,
+    source: "generated" as const,
+  }));
 }
 
 function formatLocation(property: PropertyDetailViewData): string | null {
@@ -651,6 +716,7 @@ export function PropertyDetailView({
   const crmPropertyAppUrl = property.integration_property_id
     ? getCrmPropertyAppUrl(property.integration_property_id)
     : null;
+  const localizedContentRows = buildLocalizedContentRows(property);
 
   const specs = [
     property.bedrooms != null
@@ -859,6 +925,43 @@ export function PropertyDetailView({
               </p>
             </div>
           )}
+        </section>
+      )}
+
+      {localizedContentRows.length > 0 && (
+        <section className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:p-5">
+          <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-sm font-semibold text-foreground">
+              Localized content
+            </h2>
+            <span className="text-[11px] text-muted">
+              {localizedContentRows[0]?.source === "crm"
+                ? "Pushed to CRM"
+                : "Generated (not yet pushed)"}
+            </span>
+          </div>
+          <div className="flex min-w-0 flex-col gap-4">
+            {localizedContentRows.map((row) => (
+              <div
+                key={row.key}
+                className="min-w-0 border-t border-border pt-4 first:border-t-0 first:pt-0"
+              >
+                <h3 className="mb-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
+                  {row.label}
+                </h3>
+                {row.title ? (
+                  <p className="mb-2 text-sm font-medium text-foreground break-words">
+                    {row.title}
+                  </p>
+                ) : null}
+                {row.description ? (
+                  <p className="max-w-3xl text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">
+                    {row.description}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </div>
         </section>
       )}
 

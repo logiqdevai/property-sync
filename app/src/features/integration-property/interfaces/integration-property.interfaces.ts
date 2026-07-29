@@ -18,6 +18,13 @@ export interface IntegrationPropertySite {
   show_on_relative_pages: 0 | 1;
 }
 
+export interface IntegrationPropertyAd {
+  lang_id: number;
+  title?: string;
+  description?: string;
+  text?: string;
+}
+
 export interface IntegrationProperty {
   id: string;
   user_id: string;
@@ -25,6 +32,7 @@ export interface IntegrationProperty {
   user_property_id: string;
   images: IntegrationPropertyImage[] | null;
   sites: IntegrationPropertySite[] | null;
+  ads: IntegrationPropertyAd[] | null;
   created_at: string;
   updated_at: string;
 }

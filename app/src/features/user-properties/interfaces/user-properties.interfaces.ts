@@ -6,8 +6,21 @@ import type {
   PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
 import type { IntegrationProperty } from "@/features/integration-property/interfaces/integration-property.interfaces";
+import type { ContentLanguage } from "@/features/content-publishing/interfaces/content-publishing.interfaces";
 
 import type { PropertyCmsFields } from "@/features/properties/interfaces/cms-property.interface";
+
+export interface PropertyLocalizedContent {
+  id: string;
+  user_property_id: string;
+  content_type: "TITLE" | "DESCRIPTION";
+  language: ContentLanguage;
+  production: string;
+  text: string;
+  is_stale: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface UserProperty extends PropertyCmsFields {
   id: string;
@@ -55,6 +68,7 @@ export interface UserPropertyDetail extends UserProperty {
   source_links: PropertySourceLink[];
   history: PropertyHistoryEntry[];
   integration_property?: IntegrationProperty | null;
+  localized_contents?: PropertyLocalizedContent[];
 }
 
 export interface UpdateUserPropertyPayload {

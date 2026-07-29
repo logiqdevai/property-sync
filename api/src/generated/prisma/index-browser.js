@@ -633,6 +633,7 @@ exports.Prisma.IntegrationPropertyScalarFieldEnum = {
   user_property_id: 'user_property_id',
   images: 'images',
   sites: 'sites',
+  ads: 'ads',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };

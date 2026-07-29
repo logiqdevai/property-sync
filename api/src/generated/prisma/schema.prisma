@@ -1178,6 +1178,7 @@ model IntegrationProperty {
   user_property_id             String
   images                       Json?
   sites                        Json?
+  ads                          Json?
   created_at                   DateTime @default(now())
   updated_at                   DateTime @updatedAt
 

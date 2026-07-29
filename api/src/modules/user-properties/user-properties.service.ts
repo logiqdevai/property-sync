@@ -292,6 +292,9 @@ export class UserPropertiesService {
           orderBy: { updated_at: 'desc' },
           take: 1,
         },
+        localized_contents: {
+          orderBy: [{ language: 'asc' }, { content_type: 'asc' }],
+        },
         canonical_property: {
           include: {
             source_links: {
@@ -329,8 +332,12 @@ export class UserPropertiesService {
       throw new NotFoundException('Property not found');
     }
 
-    const { canonical_property, integration_properties, ...rest } =
-      userProperty;
+    const {
+      canonical_property,
+      integration_properties,
+      localized_contents,
+      ...rest
+    } = userProperty;
     const integrationProperty = integration_properties[0] ?? null;
 
     return serializePropertyForApi({
@@ -338,6 +345,7 @@ export class UserPropertiesService {
       duplicate_group_id: canonical_property.duplicate_group_id,
       source_links: canonical_property.source_links,
       history: canonical_property.history,
+      localized_contents,
       integration_property: integrationProperty
         ? {
             id: integrationProperty.id,
@@ -347,6 +355,7 @@ export class UserPropertiesService {
             user_property_id: integrationProperty.user_property_id,
             images: integrationProperty.images,
             sites: integrationProperty.sites,
+            ads: integrationProperty.ads,
             created_at: integrationProperty.created_at,
             updated_at: integrationProperty.updated_at,
           }
@@ -2358,6 +2367,9 @@ export class UserPropertiesService {
         integration_properties: {
           orderBy: { updated_at: 'desc' },
         },
+        localized_contents: {
+          orderBy: [{ language: 'asc' }, { content_type: 'asc' }],
+        },
         canonical_property: {
           include: {
             source_links: {
@@ -2395,8 +2407,13 @@ export class UserPropertiesService {
       throw new NotFoundException('User property not found');
     }
 
-    const { canonical_property, user, integration_properties, ...rest } =
-      userProperty;
+    const {
+      canonical_property,
+      user,
+      integration_properties,
+      localized_contents,
+      ...rest
+    } = userProperty;
     const integrationProperty =
       integration_properties.find((row) => row.user_id === userProperty.user_id) ??
       null;
@@ -2407,6 +2424,7 @@ export class UserPropertiesService {
       duplicate_group_id: canonical_property.duplicate_group_id,
       source_links: canonical_property.source_links,
       history: canonical_property.history,
+      localized_contents,
       integration_property: integrationProperty
         ? {
             id: integrationProperty.id,
@@ -2416,6 +2434,7 @@ export class UserPropertiesService {
             user_property_id: integrationProperty.user_property_id,
             images: integrationProperty.images,
             sites: integrationProperty.sites,
+            ads: integrationProperty.ads,
             created_at: integrationProperty.created_at,
             updated_at: integrationProperty.updated_at,
           }
