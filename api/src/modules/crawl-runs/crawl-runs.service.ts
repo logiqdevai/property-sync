@@ -7,6 +7,10 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CRAWL_QUEUE } from '@/core/queues/queues.constants';
+import {
+  DEFAULT_CRAWL_JOB_ATTEMPTS,
+  DEFAULT_CRAWL_JOB_BACKOFF_MS,
+} from '@/integrations/crawler/constants/crawler.constants';
 import { CrawlRunStatus, JobStatus, Prisma } from 'generated/prisma';
 import { CrawlRunQueryType } from './dto/crawl-run-query.schema';
 import { PaginatedResult } from './interfaces/crawl-run.interface';
@@ -48,7 +52,17 @@ export class CrawlRunsService {
       },
     });
 
-    await this.crawlQueue.add('crawl', { crawlRunId: run.id });
+    await this.crawlQueue.add(
+      'crawl',
+      { crawlRunId: run.id },
+      {
+        attempts: DEFAULT_CRAWL_JOB_ATTEMPTS,
+        backoff: {
+          type: 'exponential',
+          delay: DEFAULT_CRAWL_JOB_BACKOFF_MS,
+        },
+      },
+    );
 
     return run;
   }

@@ -13,6 +13,10 @@ import {
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
 } from '@/core/queues/queues.constants';
+import {
+  DEFAULT_CRAWL_JOB_ATTEMPTS,
+  DEFAULT_CRAWL_JOB_BACKOFF_MS,
+} from '@/integrations/crawler/constants/crawler.constants';
 import { JobStatus, Prisma } from 'generated/prisma';
 import { JobLogQueryType } from './dto/job-log-query.schema';
 import { PaginatedResult } from './interfaces/job-log.interface';
@@ -121,16 +125,24 @@ export class JobsService {
         : payload;
 
     const jobOptions =
-      jobLog.queue_name === WATERMARK_REMOVAL_QUEUE ||
-      jobLog.queue_name === CONTENT_PRODUCTION_QUEUE ||
-      jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE
+      jobLog.queue_name === CRAWL_QUEUE
         ? {
-            attempts: 3,
-            backoff: { type: 'exponential' as const, delay: 5000 },
-            removeOnComplete: 100,
-            removeOnFail: 200,
+            attempts: DEFAULT_CRAWL_JOB_ATTEMPTS,
+            backoff: {
+              type: 'exponential' as const,
+              delay: DEFAULT_CRAWL_JOB_BACKOFF_MS,
+            },
           }
-        : undefined;
+        : jobLog.queue_name === WATERMARK_REMOVAL_QUEUE ||
+            jobLog.queue_name === CONTENT_PRODUCTION_QUEUE ||
+            jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE
+          ? {
+              attempts: 3,
+              backoff: { type: 'exponential' as const, delay: 5000 },
+              removeOnComplete: 100,
+              removeOnFail: 200,
+            }
+          : undefined;
 
     if (jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE) {
       const payloadRecord = payload as {

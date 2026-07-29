@@ -679,9 +679,12 @@ model CrawlRun {
   @@map("crawl_runs")
 }
 
-/// Failure diagnostics package for a crawl run's main listing scrape. Only created when the run
-/// fails AND Scraper.diagnostics_mode is TRACE/FULL_DEBUG -- successful runs discard whatever was
-/// collected without persisting anything (see DiagnosticsCaptureService).
+/// Failure diagnostics package for a crawl run's main listing scrape. Created for any failed run
+/// regardless of Scraper.diagnostics_mode -- PRODUCTION gets screenshot/HTML/console log only,
+/// TRACE adds a Playwright trace.zip, FULL_DEBUG adds video + network HAR on top of that.
+/// Successful runs discard whatever was collected without persisting anything (see
+/// DiagnosticsCaptureService). Never created for watchdog-killed runs (crawl-run-watchdog.cron.ts)
+/// since there's no live page left to capture from once the worker process itself has died.
 model DiagnosticsPackage {
   id                 String          @id @default(uuid())
   crawl_run_id       String          @unique

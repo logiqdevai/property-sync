@@ -43,20 +43,15 @@ export class DiagnosticsCaptureService {
     private readonly prisma: PrismaService,
   ) {}
 
+  // Every mode (including PRODUCTION) now runs through here so a failure always
+  // leaves behind at least a screenshot/HTML/console-log DiagnosticsPackage --
+  // with 100 scrapers running unattended, "no diagnostics_mode flipped on" can't
+  // mean "no idea why it failed". TRACE/FULL_DEBUG add progressively heavier
+  // artifacts (Playwright trace, then video + HAR) on top of that baseline.
   async run<T extends DiagnosticsOutcome>(
     ctx: DiagnosticsRunContext,
     fn: (page: Page) => Promise<T>,
   ): Promise<T> {
-    if (ctx.mode === DiagnosticsMode.PRODUCTION) {
-      const { context, page } =
-        await this.stealthBrowserService.newStealthPage();
-      try {
-        return await fn(page);
-      } finally {
-        await this.stealthBrowserService.closeContext(context);
-      }
-    }
-
     return this.runWithDiagnostics(ctx, fn);
   }
 
@@ -65,6 +60,7 @@ export class DiagnosticsCaptureService {
     fn: (page: Page) => Promise<T>,
   ): Promise<T> {
     const startedAt = new Date();
+    const traceEnabled = ctx.mode !== DiagnosticsMode.PRODUCTION;
     const fullDebug = ctx.mode === DiagnosticsMode.FULL_DEBUG;
 
     const workDir = path.join(os.tmpdir(), 'diagnostics', ctx.crawlRunId);
@@ -90,7 +86,9 @@ export class DiagnosticsCaptureService {
     );
     page.on('pageerror', (err) => pushConsoleEntry('pageerror', err.message));
 
-    await context.tracing.start({ screenshots: true, snapshots: true });
+    if (traceEnabled) {
+      await context.tracing.start({ screenshots: true, snapshots: true });
+    }
 
     let outcome: T | null = null;
     let thrown: unknown = null;
@@ -138,7 +136,9 @@ export class DiagnosticsCaptureService {
 
     // Tracing is not retroactive but tracing.stop() always has to be called to release
     // resources -- passing no path discards it, matching the "discard on success" retention rule.
-    await context.tracing.stop(shouldKeep ? { path: tracePath } : undefined);
+    if (traceEnabled) {
+      await context.tracing.stop(shouldKeep ? { path: tracePath } : undefined);
+    }
 
     let browserVersion: string | undefined;
     try {
@@ -157,12 +157,14 @@ export class DiagnosticsCaptureService {
       return outcome as T;
     }
 
-    artifacts.push({
-      kind: DiagnosticsArtifactKind.TRACE,
-      filename: 'trace.zip',
-      contentType: 'application/zip',
-      buffer: await readFile(tracePath).catch(() => Buffer.alloc(0)),
-    });
+    if (traceEnabled) {
+      artifacts.push({
+        kind: DiagnosticsArtifactKind.TRACE,
+        filename: 'trace.zip',
+        contentType: 'application/zip',
+        buffer: await readFile(tracePath).catch(() => Buffer.alloc(0)),
+      });
+    }
 
     artifacts.push({
       kind: DiagnosticsArtifactKind.CONSOLE_LOG,

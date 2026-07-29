@@ -105,15 +105,33 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       return;
     }
 
-    if (run.status !== CrawlRunStatus.QUEUED) {
+    const attempt = job.attemptsMade + 1;
+    const maxAttempts = job.opts.attempts ?? 1;
+    const isRetry = job.attemptsMade > 0;
+
+    // A retry (BullMQ backoff or stalled-job recovery after a worker crash) finds the
+    // run still sitting in RUNNING or FAILED from the attempt that died mid-flight --
+    // that's expected, not a conflict, so it's fair game to reclaim. A first attempt
+    // only ever expects QUEUED; anything else means another worker already claimed it
+    // or it's in a terminal/cancelled state that shouldn't be touched.
+    const reclaimableStatuses: CrawlRunStatus[] = isRetry
+      ? [CrawlRunStatus.QUEUED, CrawlRunStatus.RUNNING, CrawlRunStatus.FAILED]
+      : [CrawlRunStatus.QUEUED];
+
+    if (!reclaimableStatuses.includes(run.status)) {
       this.logger.warn(
-        `crawl job ${crawlRunId}: run is ${run.status}, not QUEUED — skipping`,
+        `crawl job ${crawlRunId}: run is ${run.status}, not reclaimable on attempt ${attempt} — skipping`,
       );
       return;
     }
 
+    if (isRetry && run.status !== CrawlRunStatus.QUEUED) {
+      this.logger.warn(
+        `crawl job ${crawlRunId}: recovering from ${run.status} on attempt ${attempt}/${maxAttempts}`,
+      );
+    }
+
     const startedAt = new Date();
-    const attempt = job.attemptsMade + 1;
     const logId = await this.markJobActive(
       job,
       crawlRunId,
@@ -123,16 +141,18 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
     );
 
     const claimed = await this.prisma.crawlRun.updateMany({
-      where: { id: crawlRunId, status: CrawlRunStatus.QUEUED },
+      where: { id: crawlRunId, status: { in: reclaimableStatuses } },
       data: {
         status: CrawlRunStatus.RUNNING,
         started_at: startedAt,
+        finished_at: null,
+        error_message: null,
       },
     });
 
     if (claimed.count === 0) {
       this.logger.warn(
-        `crawl job ${crawlRunId}: could not claim QUEUED run — skipping`,
+        `crawl job ${crawlRunId}: could not claim run — skipping`,
       );
       await this.prisma.jobLog.update({
         where: { id: logId },
@@ -480,28 +500,46 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         return;
       }
 
+      const isFinalAttempt = attempt >= maxAttempts;
+
       let markedFailed = false;
       if (currentRun?.status === CrawlRunStatus.RUNNING) {
-        await this.prisma.crawlRun.update({
-          where: { id: crawlRunId },
-          data: {
-            status: CrawlRunStatus.FAILED,
-            finished_at: finishedAt,
-            duration_ms: finishedAt.getTime() - startedAt.getTime(),
-            error_message: message,
-          },
-        });
-        markedFailed = true;
+        if (isFinalAttempt) {
+          await this.prisma.crawlRun.update({
+            where: { id: crawlRunId },
+            data: {
+              status: CrawlRunStatus.FAILED,
+              finished_at: finishedAt,
+              duration_ms: finishedAt.getTime() - startedAt.getTime(),
+              error_message: message,
+            },
+          });
+          markedFailed = true;
 
-        this.notificationsService.create({
-          type: NotificationType.LARGE_CRAWL_FAILURE,
-          severity: NotificationSeverity.CRITICAL,
-          title: 'Crawl run failed',
-          message,
-          source_agency_id: currentRun.source_agency_id,
-          scraper_id: currentRun.scraper_id ?? undefined,
-          crawl_run_id: crawlRunId,
-        });
+          this.notificationsService.create({
+            type: NotificationType.LARGE_CRAWL_FAILURE,
+            severity: NotificationSeverity.CRITICAL,
+            title: 'Crawl run failed',
+            message,
+            source_agency_id: currentRun.source_agency_id,
+            scraper_id: currentRun.scraper_id ?? undefined,
+            crawl_run_id: crawlRunId,
+          });
+        } else {
+          // Leave status RUNNING so the next BullMQ retry can reclaim it cleanly --
+          // flipping to FAILED here would just get immediately overwritten anyway,
+          // and would fire a false-alarm notification for a failure that's about to
+          // be retried automatically.
+          this.logger.warn(
+            `crawl job ${crawlRunId}: attempt ${attempt}/${maxAttempts} failed, will retry: ${message}`,
+          );
+          await this.prisma.crawlRun.update({
+            where: { id: crawlRunId },
+            data: {
+              error_message: `Attempt ${attempt}/${maxAttempts} failed: ${message} -- retrying`,
+            },
+          });
+        }
       }
 
       if (markedFailed && currentRun?.scraper) {
