@@ -36,6 +36,7 @@ import DashboardIntegrationsPage from "@/pages/dashboard/integrations";
 import DashboardSyncRunsPage from "@/pages/dashboard/sync-runs";
 import DashboardSyncRunDetailPage from "@/pages/dashboard/sync-runs/detail";
 import DashboardAccountPage from "@/pages/dashboard/account";
+import DashboardCostLogsPage from "@/pages/dashboard/cost-logs";
 import IntegrationTargetsListPage from "@/pages/admin/integration-targets";
 import IntegrationTargetDetailPage from "@/pages/admin/integration-targets/detail";
 import AdminUsersListPage from "@/pages/admin/users";
@@ -79,6 +80,7 @@ export default function AppRoutes() {
         <Route path="sync-runs" element={<DashboardSyncRunsPage />} />
         <Route path="sync-runs/:id" element={<DashboardSyncRunDetailPage />} />
         <Route path="crawl-runs" element={<Navigate to={Routes.dashboard.syncRuns.list} replace />} />
+        <Route path="cost-logs" element={<DashboardCostLogsPage />} />
         <Route path="account" element={<DashboardAccountPage />} />
       </Route>
 

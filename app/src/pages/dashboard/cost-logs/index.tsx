@@ -1,11 +1,8 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Select, ListBox, Pagination, Table } from "@heroui/react";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { Routes } from "@/routes/routes";
-import { useAdminUsers } from "@/features/users/hooks/use-admin-users";
-import { useCostLogs } from "@/features/cost-logs/hooks/use-cost-logs";
+import { useUserCostLogs } from "@/features/cost-logs/hooks/use-cost-logs";
 import type {
   CostLogListQuery,
   CostLogOperationQuantity,
@@ -77,35 +74,29 @@ function formatOperationQuantityLine(
   return null;
 }
 
-export default function CostLogsListPage() {
-  const navigate = useNavigate();
-
+export default function DashboardCostLogsPage() {
   const [operationType, setOperationType] = useState<CostOperationType | "all">("all");
   const [provider, setProvider] = useState<CostProvider | "all">("all");
-  const [userId, setUserId] = useState<string | "all">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
 
-  const query = useMemo<CostLogListQuery>(
+  const query = useMemo<Omit<CostLogListQuery, "user_id">>(
     () => ({
       page,
       limit: 20,
       ...(operationType !== "all" && { operation_type: operationType }),
       ...(provider !== "all" && { provider }),
-      ...(userId !== "all" && { user_id: userId }),
       ...(dateFrom && { date_from: toStartOfDayIso(dateFrom) }),
       ...(dateTo && { date_to: toEndOfDayIso(dateTo) }),
     }),
-    [page, operationType, provider, userId, dateFrom, dateTo],
+    [page, operationType, provider, dateFrom, dateTo],
   );
 
-  const { data, isPending } = useCostLogs(query);
-  const { data: usersData } = useAdminUsers({ limit: 100 });
+  const { data, isPending } = useUserCostLogs(query);
 
   const logs = data?.data ?? [];
   const pagination = data?.pagination;
-  const users = usersData?.data ?? [];
   const byOperation = data?.by_operation ?? {};
   const quantityByOperation = data?.quantity_by_operation ?? {};
 
@@ -114,7 +105,7 @@ export default function CostLogsListPage() {
       <div>
         <p className="text-2xl font-semibold tracking-tight text-foreground">Cost logs</p>
         <p className="text-sm text-muted">
-          Billable operations across AI normalization, title generation, translation, and
+          Your billable operations across AI normalization, title generation, translation, and
           dewatermarking.
         </p>
       </div>
@@ -197,33 +188,6 @@ export default function CostLogsListPage() {
           </Select.Popover>
         </Select>
 
-        <Select
-          aria-label="Filter by user"
-          selectedKey={userId}
-          onSelectionChange={(key) => {
-            setPage(1);
-            setUserId(key as string | "all");
-          }}
-          className="w-56"
-        >
-          <Select.Trigger>
-            <Select.Value />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              <ListBox.Item key="all" id="all">
-                All users
-              </ListBox.Item>
-              {users.map((user) => (
-                <ListBox.Item key={user.id} id={user.id}>
-                  {user.email}
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
-
         <DatePickerField
           aria-label="From date"
           value={dateFrom}
@@ -243,7 +207,7 @@ export default function CostLogsListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={7} />
+        <TableSkeleton rows={8} columns={6} />
       ) : logs.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No cost logs found.
@@ -254,8 +218,7 @@ export default function CostLogsListPage() {
             <Table.ScrollContainer>
               <Table.Content aria-label="Cost logs">
                 <Table.Header>
-                  <Table.Column isRowHeader>User</Table.Column>
-                  <Table.Column>Operation</Table.Column>
+                  <Table.Column isRowHeader>Operation</Table.Column>
                   <Table.Column>Provider</Table.Column>
                   <Table.Column>Model</Table.Column>
                   <Table.Column>Quantity</Table.Column>
@@ -264,22 +227,12 @@ export default function CostLogsListPage() {
                 </Table.Header>
                 <Table.Body>
                   {logs.map((log) => (
-                    <Table.Row
-                      key={log.id}
-                      id={log.id}
-                      className={log.crawl_run_id ? "cursor-pointer" : undefined}
-                      onAction={
-                        log.crawl_run_id
-                          ? () => navigate(Routes.admin.crawlRuns.detail(log.crawl_run_id!))
-                          : undefined
-                      }
-                    >
+                    <Table.Row key={log.id} id={log.id}>
                       <Table.Cell>
                         <span className="font-medium text-foreground">
-                          {log.user?.email ?? "—"}
+                          {formatOperationLabel(log.operation_type)}
                         </span>
                       </Table.Cell>
-                      <Table.Cell>{formatOperationLabel(log.operation_type)}</Table.Cell>
                       <Table.Cell>{log.provider}</Table.Cell>
                       <Table.Cell>{log.model ?? "—"}</Table.Cell>
                       <Table.Cell>

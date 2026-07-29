@@ -26,3 +26,7 @@ export const CostLogQuerySchema = z.object({
 });
 
 export type CostLogQueryType = z.infer<typeof CostLogQuerySchema>;
+
+export const UserCostLogQuerySchema = CostLogQuerySchema.omit({ user_id: true });
+
+export type UserCostLogQueryType = z.infer<typeof UserCostLogQuerySchema>;

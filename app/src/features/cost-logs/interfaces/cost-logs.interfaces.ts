@@ -56,9 +56,16 @@ export interface CostLogListQuery {
   date_to?: string;
 }
 
+export interface CostLogOperationQuantity {
+  input_quantity: number;
+  output_quantity: number;
+  unit_count: number;
+}
+
 export interface CostLogListResponse extends PaginatedResponse<CostLog> {
   total_cost: string | null;
   by_operation: Record<string, string>;
+  quantity_by_operation: Record<string, CostLogOperationQuantity>;
 }
 
 export type { PaginationMeta };

@@ -18,6 +18,9 @@ export const Routes = {
             detail: (id: string) => `/dashboard/sync-runs/${id}`,
         },
         account: "/dashboard/account",
+        costLogs: {
+            list: "/dashboard/cost-logs",
+        },
     },
     admin: {
         root: "/admin",

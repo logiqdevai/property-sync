@@ -185,6 +185,10 @@ export const ApiRoutes = {
         list: "/cms-sync-runs",
         detail: (id: string) => `/cms-sync-runs/${id}`,
     },
+    costLogs: {
+        prefix: "/cost-logs",
+        list: "/cost-logs",
+    },
     userProperties: {
         prefix: "/properties",
         list: "/properties",
