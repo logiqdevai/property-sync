@@ -35,6 +35,8 @@ export class AiTitleBatchService {
     sourceLanguage: ContentLanguage;
     targetLanguages: ContentLanguage[];
     apiKey: string;
+    crawlRunId?: string | null;
+    changeTypesByPropertyId?: Record<string, string>;
     items: Array<{
       userPropertyId: string;
       title: string;
@@ -83,12 +85,14 @@ export class AiTitleBatchService {
         openai_batch_id: batchId,
         config_id: params.configId,
         ai_title_family_id: params.familyId,
+        crawl_run_id: params.crawlRunId ?? null,
         user_property_ids: params.items.map((i) => i.userPropertyId),
         metadata: {
           target_languages: params.targetLanguages,
           source_language: params.sourceLanguage,
           family_name: params.familyName,
           model,
+          change_types_by_property_id: params.changeTypesByPropertyId ?? {},
         },
       },
     });
@@ -103,6 +107,7 @@ export class AiTitleBatchService {
           batch_id: batchId,
           family_id: params.familyId,
           property_count: params.items.length,
+          crawl_run_id: params.crawlRunId ?? null,
         },
       },
     });

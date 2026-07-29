@@ -657,6 +657,7 @@ model CrawlRun {
   notifications       Notification[]
   diagnostics_package DiagnosticsPackage?
   cms_sync_runs       CmsSyncRun[]
+  ai_batch_runs       AiBatchRun[]
 
   @@index([source_agency_id])
   @@index([scraper_id])
@@ -1099,6 +1100,7 @@ model AiBatchRun {
   openai_batch_id    String?          @unique
   config_id          String?
   ai_title_family_id String?
+  crawl_run_id       String?
   user_property_ids  Json
   metadata           Json?
   error_message      String?
@@ -1107,9 +1109,11 @@ model AiBatchRun {
 
   config          ContentPublishingConfig? @relation(fields: [config_id], references: [id], onDelete: SetNull)
   ai_title_family AiTitleFamily?           @relation(fields: [ai_title_family_id], references: [id], onDelete: SetNull)
+  crawl_run       CrawlRun?                @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([config_id])
+  @@index([crawl_run_id])
   @@map("ai_batch_runs")
 }
 

@@ -6,6 +6,7 @@ import { CMS_SYNC_QUEUE } from '@/core/queues/queues.constants';
 import { CmsSyncRunsService } from '@/modules/cms-sync-runs/cms-sync-runs.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
+import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
 import {
   AffectedUserProperty,
   CmsSyncBatch,
@@ -47,6 +48,7 @@ export class CmsSyncOrchestratorService {
     private readonly cmsSyncRunsService: CmsSyncRunsService,
     private readonly estateWebResolver: EstateWebIntegrationResolverService,
     private readonly estateWebPropertyService: EstateWebPropertyService,
+    private readonly contentProductionService: ContentProductionService,
     @InjectQueue(CMS_SYNC_QUEUE)
     private readonly cmsSyncQueue: Queue<CmsSyncJobData>,
   ) {}
@@ -54,6 +56,7 @@ export class CmsSyncOrchestratorService {
   async planAndEnqueueCrawlSync(
     crawlRunId: string,
     affected: AffectedUserProperty[],
+    options?: { skipContentProduction?: boolean },
   ): Promise<void> {
     if (affected.length === 0) {
       this.logger.log(
@@ -66,10 +69,60 @@ export class CmsSyncOrchestratorService {
       `Crawl ${crawlRunId}: planning CMS sync for ${affected.length} affected user properties`,
     );
 
-    const byTracker = await this.groupByTracker(affected);
+    const readyAffected = options?.skipContentProduction
+      ? affected
+      : await this.filterReadyAfterContentProduction(affected, {
+          crawlRunId,
+          forceSyncAi: false,
+        });
+
+    if (readyAffected.length === 0) {
+      this.logger.log(
+        `Crawl ${crawlRunId}: all properties pending content AI batch; CMS sync deferred`,
+      );
+      return;
+    }
+
+    const byTracker = await this.groupByTracker(readyAffected);
 
     for (const trackerGroup of byTracker) {
       await this.processTrackerBatch(crawlRunId, trackerGroup);
+    }
+  }
+
+  async planAndEnqueueTitleBatchReady(
+    crawlRunId: string | null,
+    readyIds: string[],
+    changeTypesByPropertyId: Record<string, string>,
+  ): Promise<void> {
+    if (!readyIds.length) return;
+
+    const affected: AffectedUserProperty[] = readyIds.map((id) => ({
+      user_property_id: id,
+      change_type: this.toOperationType(changeTypesByPropertyId[id]),
+    }));
+
+    if (crawlRunId) {
+      await this.planAndEnqueueCrawlSync(crawlRunId, affected, {
+        skipContentProduction: true,
+      });
+      return;
+    }
+
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: readyIds } },
+      select: { id: true, user_id: true },
+    });
+    const byUser = new Map<string, string[]>();
+    for (const property of properties) {
+      const list = byUser.get(property.user_id) ?? [];
+      list.push(property.id);
+      byUser.set(property.user_id, list);
+    }
+    for (const [userId, ids] of byUser) {
+      await this.planAndEnqueueManualPropertyUpdate(userId, ids, {
+        skipContentProduction: true,
+      });
     }
   }
 
@@ -143,6 +196,21 @@ export class CmsSyncOrchestratorService {
       user_property: up,
     }));
 
+    const readyAffected = await this.filterReadyAfterContentProduction(
+      affected,
+      {
+        crawlRunId: null,
+        forceSyncAi: false,
+      },
+    );
+
+    if (readyAffected.length === 0) {
+      this.logger.log(
+        `Backfill ${userTrackedAgencyId}: all properties pending content AI batch; CMS sync deferred`,
+      );
+      return;
+    }
+
     const trackerGroup: TrackerGroup = {
       tracker: {
         id: tracker.id,
@@ -156,13 +224,13 @@ export class CmsSyncOrchestratorService {
         insertion_interval_seconds: tracker.insertion_interval_seconds,
         max_properties: tracker.max_properties,
       },
-      affected,
+      affected: readyAffected,
     };
 
     await this.processTrackerBatch(null, trackerGroup);
 
     this.logger.log(
-      `Backfill ${userTrackedAgencyId}: enqueued CMS sync for ${affected.length} property(s)`,
+      `Backfill ${userTrackedAgencyId}: enqueued CMS sync for ${readyAffected.length} property(s)`,
     );
   }
 
@@ -331,6 +399,7 @@ export class CmsSyncOrchestratorService {
   async planAndEnqueueManualPropertyUpdate(
     userId: string,
     userPropertyIds: string | string[],
+    options?: { skipContentProduction?: boolean; forceSyncAi?: boolean },
   ): Promise<{
     queued: number;
     batches_enqueued: number;
@@ -365,6 +434,35 @@ export class CmsSyncOrchestratorService {
       }
     }
 
+    let eligibleProperties = userProperties;
+    if (!options?.skipContentProduction) {
+      const changeTypesByPropertyId = Object.fromEntries(
+        userProperties.map((property) => [
+          property.id,
+          property.integration_property_id ? 'UPDATE' : 'CREATE',
+        ]),
+      );
+      const produced =
+        await this.contentProductionService.produceForUserProperties(
+          userProperties.map((property) => property.id),
+          {
+            forceSyncAi: options?.forceSyncAi ?? true,
+            changeTypesByPropertyId,
+          },
+        );
+      const readySet = new Set(produced.readyIds);
+      for (const id of produced.pendingBatchIds) {
+        failed.push({
+          user_property_id: id,
+          error:
+            'Content AI batch pending; CMS sync deferred until batch completes',
+        });
+      }
+      eligibleProperties = userProperties.filter((property) =>
+        readySet.has(property.id),
+      );
+    }
+
     const byTracker = new Map<
       string,
       {
@@ -384,7 +482,7 @@ export class CmsSyncOrchestratorService {
       }
     >();
 
-    for (const userProperty of userProperties) {
+    for (const userProperty of eligibleProperties) {
       const sourceAgencyId =
         userProperty.canonical_property.source_links[0]?.source_property
           .source_agency_id;
@@ -745,5 +843,52 @@ export class CmsSyncOrchestratorService {
         skipped_sibling_ids: op.skipped_sibling_ids,
       })),
     };
+  }
+
+  private async filterReadyAfterContentProduction(
+    affected: AffectedUserProperty[],
+    options: { crawlRunId: string | null; forceSyncAi: boolean },
+  ): Promise<AffectedUserProperty[]> {
+    const removable = affected.filter((item) => item.change_type === 'REMOVE');
+    const contentAffected = affected.filter(
+      (item) => item.change_type !== 'REMOVE',
+    );
+
+    if (!contentAffected.length) {
+      return removable;
+    }
+
+    const changeTypesByPropertyId = Object.fromEntries(
+      contentAffected.map((item) => [item.user_property_id, item.change_type]),
+    );
+
+    const produced =
+      await this.contentProductionService.produceForUserProperties(
+        contentAffected.map((item) => item.user_property_id),
+        {
+          crawlRunId: options.crawlRunId,
+          forceSyncAi: options.forceSyncAi,
+          changeTypesByPropertyId,
+        },
+      );
+
+    if (produced.pendingBatchIds.length) {
+      this.logger.log(
+        `Content AI batch pending for ${produced.pendingBatchIds.length} properties; CMS sync deferred for those`,
+      );
+    }
+
+    const readySet = new Set(produced.readyIds);
+    return [
+      ...removable,
+      ...contentAffected.filter((item) => readySet.has(item.user_property_id)),
+    ];
+  }
+
+  private toOperationType(value: string | undefined): CmsSyncOperationType {
+    if (value === 'CREATE' || value === 'UPDATE' || value === 'REMOVE') {
+      return value;
+    }
+    return 'UPDATE';
   }
 }

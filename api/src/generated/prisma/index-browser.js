@@ -595,6 +595,7 @@ exports.Prisma.AiBatchRunScalarFieldEnum = {
   openai_batch_id: 'openai_batch_id',
   config_id: 'config_id',
   ai_title_family_id: 'ai_title_family_id',
+  crawl_run_id: 'crawl_run_id',
   user_property_ids: 'user_property_ids',
   metadata: 'metadata',
   error_message: 'error_message',

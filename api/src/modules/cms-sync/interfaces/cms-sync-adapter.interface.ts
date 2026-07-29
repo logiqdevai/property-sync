@@ -41,6 +41,7 @@ export interface CmsSyncPushOptions {
   watermarkManualSelection?: boolean;
   propertyNote?: string;
   sitesOverride?: CmsSyncPushSiteOverride[];
+  forceContentProduction?: boolean;
 }
 
 export interface CmsSyncAdapter {

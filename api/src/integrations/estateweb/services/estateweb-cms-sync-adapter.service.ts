@@ -91,7 +91,11 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       this.estateWebIntegrationResolverService.resolveAdLanguages(
         userIntegrationId,
       ),
-      this.resolveContentAds(userProperty, userIntegrationId),
+      this.resolveContentAds(
+        userProperty,
+        userIntegrationId,
+        options?.forceContentProduction === true,
+      ),
     ]);
     await this.applySalesPriceStartIfNeeded(userIntegrationId, userProperty);
     const payload = this.buildPayload(
@@ -141,7 +145,11 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       this.estateWebIntegrationResolverService.resolveAdLanguages(
         userIntegrationId,
       ),
-      this.resolveContentAds(userProperty, userIntegrationId),
+      this.resolveContentAds(
+        userProperty,
+        userIntegrationId,
+        options?.forceContentProduction === true,
+      ),
     ]);
     await this.applySalesPriceStartIfNeeded(userIntegrationId, userProperty);
     const payload = this.buildPayload(
@@ -747,8 +755,11 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   private async resolveContentAds(
     userProperty: UserProperty,
     userIntegrationId: string,
+    forceContentProduction = false,
   ): Promise<EstateWebAdLanguageMaps> {
-    await this.contentProductionService.ensureReady(userProperty.id);
+    if (forceContentProduction) {
+      await this.contentProductionService.ensureReady(userProperty.id);
+    }
     const fallback =
       await this.estateWebIntegrationResolverService.resolveAdLanguages(
         userIntegrationId,

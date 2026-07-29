@@ -300,13 +300,11 @@ When `ai_titles_enabled = false`:
 For each enabled `AiTitleFamily` with one or more AI title outputs:
 
 1. Collect target languages from those outputs.
-2. Call OpenAI once with:
-   - source language
-   - original title + description (context)
-   - list of target languages
-   - fixed system prompt: produce one marketing title per target language; **translate when needed and rewrite/optimize**; do not invent facts
-3. Upsert one `PropertyLocalizedContent(content_type=TITLE, language=…)` per returned language.
-4. Sync vs batch follows `family.use_batch ?? config.use_ai_batch`. Batch must have a real submit path (cron or post-crawl enqueue) — a dead `use_batch` flag is not acceptable.
+2. After normalize (before CMS enqueue), process all affected properties for that family together:
+   - If `family.use_batch ?? config.use_ai_batch`: submit one OpenAI Batch JSONL (one line per property). Defer CMS enqueue for those properties until the batch webhook completes.
+   - Else: call OpenAI chat with a multi-property prompt (chunked), upsert titles, then enqueue CMS.
+3. Upsert one `PropertyLocalizedContent(content_type=TITLE, language=…)` per returned language per property.
+4. Single-property sync (`forceSyncAi`) remains for manual edits and `forceContentProduction` on CMS push.
 
 ### 5.5 Translation execution
 
@@ -315,6 +313,8 @@ Collect unique `(content_type, target_language)` pairs from outputs with strateg
 - Skip if `target_language === content_language` (should already be rejected at config time).
 - Skip if fresh non-stale `PropertyLocalizedContent` exists.
 - Call Google Translate; upsert.
+
+Run Google Translate in the same pre-CMS production phase as AI titles (not during normal EstateWeb push).
 
 ### 5.6 Publishing (`buildAds`)
 
@@ -328,7 +328,9 @@ for each EstateWeb language with no ContentOutput:
 
 No intersection with a parallel `estateweb_ad_languages` list is required. If a global allowlist is kept for account-level reasons, document it as a hard cap — not as the place where agency publishing is configured.
 
-Fallback when derived content is missing/stale: use ORIGINAL text for that slot (never empty if ORIGINAL exists), and regenerate async. Prefer delaying CMS push until localization for that property completes when possible (queue ordering), so the first publish is not systematically wrong.
+Fallback when derived content is missing/stale: use ORIGINAL text for that slot (never empty if ORIGINAL exists).
+
+Queue ordering: produce content after normalize and before CMS enqueue. When OpenAI title Batch is used, hold CMS create/update until the batch completes. Normal crawl CMS push does not call OpenAI/Google; pass `forceContentProduction` only for manual regenerate-and-push flows.
 
 ---
 
@@ -508,7 +510,7 @@ This UI maps 1:1 to `ContentOutput` + `AiTitleFamily`. No separate “translatio
 3. Replace `modules/localization` with `modules/content-publishing`.
 4. Point EstateWeb `buildAds` at the new resolver (UTA-scoped).
 5. Build tracker UI for outputs + families.
-6. Wire sync + batch AI title production; enforce queue ordering vs CMS push.
+6. Wire sync + multi-property + OpenAI Batch AI title production before CMS enqueue; defer CMS when Batch is pending; `forceContentProduction` on push for manual regenerate.
 7. Seed configs for the known Greek and English client cases; verify EstateWeb payloads.
 
 ---

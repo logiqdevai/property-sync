@@ -4498,6 +4498,7 @@ export namespace Prisma {
     property_history: number
     notifications: number
     cms_sync_runs: number
+    ai_batch_runs: number
   }
 
   export type CrawlRunCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4506,6 +4507,7 @@ export namespace Prisma {
     property_history?: boolean | CrawlRunCountOutputTypeCountProperty_historyArgs
     notifications?: boolean | CrawlRunCountOutputTypeCountNotificationsArgs
     cms_sync_runs?: boolean | CrawlRunCountOutputTypeCountCms_sync_runsArgs
+    ai_batch_runs?: boolean | CrawlRunCountOutputTypeCountAi_batch_runsArgs
   }
 
   // Custom InputTypes
@@ -4552,6 +4554,13 @@ export namespace Prisma {
    */
   export type CrawlRunCountOutputTypeCountCms_sync_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CmsSyncRunWhereInput
+  }
+
+  /**
+   * CrawlRunCountOutputType without action
+   */
+  export type CrawlRunCountOutputTypeCountAi_batch_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AiBatchRunWhereInput
   }
 
 
@@ -20057,6 +20066,7 @@ export namespace Prisma {
     notifications?: boolean | CrawlRun$notificationsArgs<ExtArgs>
     diagnostics_package?: boolean | CrawlRun$diagnostics_packageArgs<ExtArgs>
     cms_sync_runs?: boolean | CrawlRun$cms_sync_runsArgs<ExtArgs>
+    ai_batch_runs?: boolean | CrawlRun$ai_batch_runsArgs<ExtArgs>
     _count?: boolean | CrawlRunCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["crawlRun"]>
 
@@ -20167,6 +20177,7 @@ export namespace Prisma {
     notifications?: boolean | CrawlRun$notificationsArgs<ExtArgs>
     diagnostics_package?: boolean | CrawlRun$diagnostics_packageArgs<ExtArgs>
     cms_sync_runs?: boolean | CrawlRun$cms_sync_runsArgs<ExtArgs>
+    ai_batch_runs?: boolean | CrawlRun$ai_batch_runsArgs<ExtArgs>
     _count?: boolean | CrawlRunCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type CrawlRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -20192,6 +20203,7 @@ export namespace Prisma {
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
       diagnostics_package: Prisma.$DiagnosticsPackagePayload<ExtArgs> | null
       cms_sync_runs: Prisma.$CmsSyncRunPayload<ExtArgs>[]
+      ai_batch_runs: Prisma.$AiBatchRunPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -20624,6 +20636,7 @@ export namespace Prisma {
     notifications<T extends CrawlRun$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     diagnostics_package<T extends CrawlRun$diagnostics_packageArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$diagnostics_packageArgs<ExtArgs>>): Prisma__DiagnosticsPackageClient<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     cms_sync_runs<T extends CrawlRun$cms_sync_runsArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$cms_sync_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CmsSyncRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    ai_batch_runs<T extends CrawlRun$ai_batch_runsArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$ai_batch_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -21250,6 +21263,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CmsSyncRunScalarFieldEnum | CmsSyncRunScalarFieldEnum[]
+  }
+
+  /**
+   * CrawlRun.ai_batch_runs
+   */
+  export type CrawlRun$ai_batch_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
+    where?: AiBatchRunWhereInput
+    orderBy?: AiBatchRunOrderByWithRelationInput | AiBatchRunOrderByWithRelationInput[]
+    cursor?: AiBatchRunWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AiBatchRunScalarFieldEnum | AiBatchRunScalarFieldEnum[]
   }
 
   /**
@@ -38983,6 +39020,7 @@ export namespace Prisma {
     openai_batch_id: string | null
     config_id: string | null
     ai_title_family_id: string | null
+    crawl_run_id: string | null
     error_message: string | null
     created_at: Date | null
     updated_at: Date | null
@@ -38995,6 +39033,7 @@ export namespace Prisma {
     openai_batch_id: string | null
     config_id: string | null
     ai_title_family_id: string | null
+    crawl_run_id: string | null
     error_message: string | null
     created_at: Date | null
     updated_at: Date | null
@@ -39007,6 +39046,7 @@ export namespace Prisma {
     openai_batch_id: number
     config_id: number
     ai_title_family_id: number
+    crawl_run_id: number
     user_property_ids: number
     metadata: number
     error_message: number
@@ -39023,6 +39063,7 @@ export namespace Prisma {
     openai_batch_id?: true
     config_id?: true
     ai_title_family_id?: true
+    crawl_run_id?: true
     error_message?: true
     created_at?: true
     updated_at?: true
@@ -39035,6 +39076,7 @@ export namespace Prisma {
     openai_batch_id?: true
     config_id?: true
     ai_title_family_id?: true
+    crawl_run_id?: true
     error_message?: true
     created_at?: true
     updated_at?: true
@@ -39047,6 +39089,7 @@ export namespace Prisma {
     openai_batch_id?: true
     config_id?: true
     ai_title_family_id?: true
+    crawl_run_id?: true
     user_property_ids?: true
     metadata?: true
     error_message?: true
@@ -39134,6 +39177,7 @@ export namespace Prisma {
     openai_batch_id: string | null
     config_id: string | null
     ai_title_family_id: string | null
+    crawl_run_id: string | null
     user_property_ids: JsonValue
     metadata: JsonValue | null
     error_message: string | null
@@ -39165,6 +39209,7 @@ export namespace Prisma {
     openai_batch_id?: boolean
     config_id?: boolean
     ai_title_family_id?: boolean
+    crawl_run_id?: boolean
     user_property_ids?: boolean
     metadata?: boolean
     error_message?: boolean
@@ -39172,6 +39217,7 @@ export namespace Prisma {
     updated_at?: boolean
     config?: boolean | AiBatchRun$configArgs<ExtArgs>
     ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
+    crawl_run?: boolean | AiBatchRun$crawl_runArgs<ExtArgs>
   }, ExtArgs["result"]["aiBatchRun"]>
 
   export type AiBatchRunSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -39181,6 +39227,7 @@ export namespace Prisma {
     openai_batch_id?: boolean
     config_id?: boolean
     ai_title_family_id?: boolean
+    crawl_run_id?: boolean
     user_property_ids?: boolean
     metadata?: boolean
     error_message?: boolean
@@ -39188,6 +39235,7 @@ export namespace Prisma {
     updated_at?: boolean
     config?: boolean | AiBatchRun$configArgs<ExtArgs>
     ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
+    crawl_run?: boolean | AiBatchRun$crawl_runArgs<ExtArgs>
   }, ExtArgs["result"]["aiBatchRun"]>
 
   export type AiBatchRunSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -39197,6 +39245,7 @@ export namespace Prisma {
     openai_batch_id?: boolean
     config_id?: boolean
     ai_title_family_id?: boolean
+    crawl_run_id?: boolean
     user_property_ids?: boolean
     metadata?: boolean
     error_message?: boolean
@@ -39204,6 +39253,7 @@ export namespace Prisma {
     updated_at?: boolean
     config?: boolean | AiBatchRun$configArgs<ExtArgs>
     ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
+    crawl_run?: boolean | AiBatchRun$crawl_runArgs<ExtArgs>
   }, ExtArgs["result"]["aiBatchRun"]>
 
   export type AiBatchRunSelectScalar = {
@@ -39213,6 +39263,7 @@ export namespace Prisma {
     openai_batch_id?: boolean
     config_id?: boolean
     ai_title_family_id?: boolean
+    crawl_run_id?: boolean
     user_property_ids?: boolean
     metadata?: boolean
     error_message?: boolean
@@ -39220,18 +39271,21 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type AiBatchRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "kind" | "status" | "openai_batch_id" | "config_id" | "ai_title_family_id" | "user_property_ids" | "metadata" | "error_message" | "created_at" | "updated_at", ExtArgs["result"]["aiBatchRun"]>
+  export type AiBatchRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "kind" | "status" | "openai_batch_id" | "config_id" | "ai_title_family_id" | "crawl_run_id" | "user_property_ids" | "metadata" | "error_message" | "created_at" | "updated_at", ExtArgs["result"]["aiBatchRun"]>
   export type AiBatchRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     config?: boolean | AiBatchRun$configArgs<ExtArgs>
     ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
+    crawl_run?: boolean | AiBatchRun$crawl_runArgs<ExtArgs>
   }
   export type AiBatchRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     config?: boolean | AiBatchRun$configArgs<ExtArgs>
     ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
+    crawl_run?: boolean | AiBatchRun$crawl_runArgs<ExtArgs>
   }
   export type AiBatchRunIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     config?: boolean | AiBatchRun$configArgs<ExtArgs>
     ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
+    crawl_run?: boolean | AiBatchRun$crawl_runArgs<ExtArgs>
   }
 
   export type $AiBatchRunPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -39239,6 +39293,7 @@ export namespace Prisma {
     objects: {
       config: Prisma.$ContentPublishingConfigPayload<ExtArgs> | null
       ai_title_family: Prisma.$AiTitleFamilyPayload<ExtArgs> | null
+      crawl_run: Prisma.$CrawlRunPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -39247,6 +39302,7 @@ export namespace Prisma {
       openai_batch_id: string | null
       config_id: string | null
       ai_title_family_id: string | null
+      crawl_run_id: string | null
       user_property_ids: Prisma.JsonValue
       metadata: Prisma.JsonValue | null
       error_message: string | null
@@ -39648,6 +39704,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     config<T extends AiBatchRun$configArgs<ExtArgs> = {}>(args?: Subset<T, AiBatchRun$configArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     ai_title_family<T extends AiBatchRun$ai_title_familyArgs<ExtArgs> = {}>(args?: Subset<T, AiBatchRun$ai_title_familyArgs<ExtArgs>>): Prisma__AiTitleFamilyClient<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    crawl_run<T extends AiBatchRun$crawl_runArgs<ExtArgs> = {}>(args?: Subset<T, AiBatchRun$crawl_runArgs<ExtArgs>>): Prisma__CrawlRunClient<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -39683,6 +39740,7 @@ export namespace Prisma {
     readonly openai_batch_id: FieldRef<"AiBatchRun", 'String'>
     readonly config_id: FieldRef<"AiBatchRun", 'String'>
     readonly ai_title_family_id: FieldRef<"AiBatchRun", 'String'>
+    readonly crawl_run_id: FieldRef<"AiBatchRun", 'String'>
     readonly user_property_ids: FieldRef<"AiBatchRun", 'Json'>
     readonly metadata: FieldRef<"AiBatchRun", 'Json'>
     readonly error_message: FieldRef<"AiBatchRun", 'String'>
@@ -40119,6 +40177,25 @@ export namespace Prisma {
      */
     include?: AiTitleFamilyInclude<ExtArgs> | null
     where?: AiTitleFamilyWhereInput
+  }
+
+  /**
+   * AiBatchRun.crawl_run
+   */
+  export type AiBatchRun$crawl_runArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CrawlRun
+     */
+    select?: CrawlRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CrawlRun
+     */
+    omit?: CrawlRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CrawlRunInclude<ExtArgs> | null
+    where?: CrawlRunWhereInput
   }
 
   /**
@@ -44168,6 +44245,7 @@ export namespace Prisma {
     openai_batch_id: 'openai_batch_id',
     config_id: 'config_id',
     ai_title_family_id: 'ai_title_family_id',
+    crawl_run_id: 'crawl_run_id',
     user_property_ids: 'user_property_ids',
     metadata: 'metadata',
     error_message: 'error_message',
@@ -45937,6 +46015,7 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     diagnostics_package?: XOR<DiagnosticsPackageNullableScalarRelationFilter, DiagnosticsPackageWhereInput> | null
     cms_sync_runs?: CmsSyncRunListRelationFilter
+    ai_batch_runs?: AiBatchRunListRelationFilter
   }
 
   export type CrawlRunOrderByWithRelationInput = {
@@ -45976,6 +46055,7 @@ export namespace Prisma {
     notifications?: NotificationOrderByRelationAggregateInput
     diagnostics_package?: DiagnosticsPackageOrderByWithRelationInput
     cms_sync_runs?: CmsSyncRunOrderByRelationAggregateInput
+    ai_batch_runs?: AiBatchRunOrderByRelationAggregateInput
   }
 
   export type CrawlRunWhereUniqueInput = Prisma.AtLeast<{
@@ -46018,6 +46098,7 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     diagnostics_package?: XOR<DiagnosticsPackageNullableScalarRelationFilter, DiagnosticsPackageWhereInput> | null
     cms_sync_runs?: CmsSyncRunListRelationFilter
+    ai_batch_runs?: AiBatchRunListRelationFilter
   }, "id">
 
   export type CrawlRunOrderByWithAggregationInput = {
@@ -47736,6 +47817,7 @@ export namespace Prisma {
     openai_batch_id?: StringNullableFilter<"AiBatchRun"> | string | null
     config_id?: StringNullableFilter<"AiBatchRun"> | string | null
     ai_title_family_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    crawl_run_id?: StringNullableFilter<"AiBatchRun"> | string | null
     user_property_ids?: JsonFilter<"AiBatchRun">
     metadata?: JsonNullableFilter<"AiBatchRun">
     error_message?: StringNullableFilter<"AiBatchRun"> | string | null
@@ -47743,6 +47825,7 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"AiBatchRun"> | Date | string
     config?: XOR<ContentPublishingConfigNullableScalarRelationFilter, ContentPublishingConfigWhereInput> | null
     ai_title_family?: XOR<AiTitleFamilyNullableScalarRelationFilter, AiTitleFamilyWhereInput> | null
+    crawl_run?: XOR<CrawlRunNullableScalarRelationFilter, CrawlRunWhereInput> | null
   }
 
   export type AiBatchRunOrderByWithRelationInput = {
@@ -47752,6 +47835,7 @@ export namespace Prisma {
     openai_batch_id?: SortOrderInput | SortOrder
     config_id?: SortOrderInput | SortOrder
     ai_title_family_id?: SortOrderInput | SortOrder
+    crawl_run_id?: SortOrderInput | SortOrder
     user_property_ids?: SortOrder
     metadata?: SortOrderInput | SortOrder
     error_message?: SortOrderInput | SortOrder
@@ -47759,6 +47843,7 @@ export namespace Prisma {
     updated_at?: SortOrder
     config?: ContentPublishingConfigOrderByWithRelationInput
     ai_title_family?: AiTitleFamilyOrderByWithRelationInput
+    crawl_run?: CrawlRunOrderByWithRelationInput
   }
 
   export type AiBatchRunWhereUniqueInput = Prisma.AtLeast<{
@@ -47771,6 +47856,7 @@ export namespace Prisma {
     status?: EnumAiBatchRunStatusFilter<"AiBatchRun"> | $Enums.AiBatchRunStatus
     config_id?: StringNullableFilter<"AiBatchRun"> | string | null
     ai_title_family_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    crawl_run_id?: StringNullableFilter<"AiBatchRun"> | string | null
     user_property_ids?: JsonFilter<"AiBatchRun">
     metadata?: JsonNullableFilter<"AiBatchRun">
     error_message?: StringNullableFilter<"AiBatchRun"> | string | null
@@ -47778,6 +47864,7 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"AiBatchRun"> | Date | string
     config?: XOR<ContentPublishingConfigNullableScalarRelationFilter, ContentPublishingConfigWhereInput> | null
     ai_title_family?: XOR<AiTitleFamilyNullableScalarRelationFilter, AiTitleFamilyWhereInput> | null
+    crawl_run?: XOR<CrawlRunNullableScalarRelationFilter, CrawlRunWhereInput> | null
   }, "id" | "openai_batch_id">
 
   export type AiBatchRunOrderByWithAggregationInput = {
@@ -47787,6 +47874,7 @@ export namespace Prisma {
     openai_batch_id?: SortOrderInput | SortOrder
     config_id?: SortOrderInput | SortOrder
     ai_title_family_id?: SortOrderInput | SortOrder
+    crawl_run_id?: SortOrderInput | SortOrder
     user_property_ids?: SortOrder
     metadata?: SortOrderInput | SortOrder
     error_message?: SortOrderInput | SortOrder
@@ -47807,6 +47895,7 @@ export namespace Prisma {
     openai_batch_id?: StringNullableWithAggregatesFilter<"AiBatchRun"> | string | null
     config_id?: StringNullableWithAggregatesFilter<"AiBatchRun"> | string | null
     ai_title_family_id?: StringNullableWithAggregatesFilter<"AiBatchRun"> | string | null
+    crawl_run_id?: StringNullableWithAggregatesFilter<"AiBatchRun"> | string | null
     user_property_ids?: JsonWithAggregatesFilter<"AiBatchRun">
     metadata?: JsonNullableWithAggregatesFilter<"AiBatchRun">
     error_message?: StringNullableWithAggregatesFilter<"AiBatchRun"> | string | null
@@ -49371,6 +49460,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateInput = {
@@ -49407,6 +49497,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUpdateInput = {
@@ -49443,6 +49534,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateInput = {
@@ -49479,6 +49571,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunCreateManyInput = {
@@ -51497,6 +51590,7 @@ export namespace Prisma {
     updated_at?: Date | string
     config?: ContentPublishingConfigCreateNestedOneWithoutAi_batch_runsInput
     ai_title_family?: AiTitleFamilyCreateNestedOneWithoutAi_batch_runsInput
+    crawl_run?: CrawlRunCreateNestedOneWithoutAi_batch_runsInput
   }
 
   export type AiBatchRunUncheckedCreateInput = {
@@ -51506,6 +51600,7 @@ export namespace Prisma {
     openai_batch_id?: string | null
     config_id?: string | null
     ai_title_family_id?: string | null
+    crawl_run_id?: string | null
     user_property_ids: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
@@ -51525,6 +51620,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     config?: ContentPublishingConfigUpdateOneWithoutAi_batch_runsNestedInput
     ai_title_family?: AiTitleFamilyUpdateOneWithoutAi_batch_runsNestedInput
+    crawl_run?: CrawlRunUpdateOneWithoutAi_batch_runsNestedInput
   }
 
   export type AiBatchRunUncheckedUpdateInput = {
@@ -51534,6 +51630,7 @@ export namespace Prisma {
     openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
     config_id?: NullableStringFieldUpdateOperationsInput | string | null
     ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     user_property_ids?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51548,6 +51645,7 @@ export namespace Prisma {
     openai_batch_id?: string | null
     config_id?: string | null
     ai_title_family_id?: string | null
+    crawl_run_id?: string | null
     user_property_ids: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
@@ -51574,6 +51672,7 @@ export namespace Prisma {
     openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
     config_id?: NullableStringFieldUpdateOperationsInput | string | null
     ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     user_property_ids?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -53186,11 +53285,21 @@ export namespace Prisma {
     isNot?: DiagnosticsPackageWhereInput | null
   }
 
+  export type AiBatchRunListRelationFilter = {
+    every?: AiBatchRunWhereInput
+    some?: AiBatchRunWhereInput
+    none?: AiBatchRunWhereInput
+  }
+
   export type JobLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type PropertyHistoryOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AiBatchRunOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -54327,21 +54436,11 @@ export namespace Prisma {
     none?: AiTitleFamilyWhereInput
   }
 
-  export type AiBatchRunListRelationFilter = {
-    every?: AiBatchRunWhereInput
-    some?: AiBatchRunWhereInput
-    none?: AiBatchRunWhereInput
-  }
-
   export type ContentOutputOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type AiTitleFamilyOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type AiBatchRunOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -54600,6 +54699,7 @@ export namespace Prisma {
     openai_batch_id?: SortOrder
     config_id?: SortOrder
     ai_title_family_id?: SortOrder
+    crawl_run_id?: SortOrder
     user_property_ids?: SortOrder
     metadata?: SortOrder
     error_message?: SortOrder
@@ -54614,6 +54714,7 @@ export namespace Prisma {
     openai_batch_id?: SortOrder
     config_id?: SortOrder
     ai_title_family_id?: SortOrder
+    crawl_run_id?: SortOrder
     error_message?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -54626,6 +54727,7 @@ export namespace Prisma {
     openai_batch_id?: SortOrder
     config_id?: SortOrder
     ai_title_family_id?: SortOrder
+    crawl_run_id?: SortOrder
     error_message?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -56437,6 +56539,13 @@ export namespace Prisma {
     connect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
   }
 
+  export type AiBatchRunCreateNestedManyWithoutCrawl_runInput = {
+    create?: XOR<AiBatchRunCreateWithoutCrawl_runInput, AiBatchRunUncheckedCreateWithoutCrawl_runInput> | AiBatchRunCreateWithoutCrawl_runInput[] | AiBatchRunUncheckedCreateWithoutCrawl_runInput[]
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutCrawl_runInput | AiBatchRunCreateOrConnectWithoutCrawl_runInput[]
+    createMany?: AiBatchRunCreateManyCrawl_runInputEnvelope
+    connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+  }
+
   export type JobLogUncheckedCreateNestedManyWithoutCrawl_runInput = {
     create?: XOR<JobLogCreateWithoutCrawl_runInput, JobLogUncheckedCreateWithoutCrawl_runInput> | JobLogCreateWithoutCrawl_runInput[] | JobLogUncheckedCreateWithoutCrawl_runInput[]
     connectOrCreate?: JobLogCreateOrConnectWithoutCrawl_runInput | JobLogCreateOrConnectWithoutCrawl_runInput[]
@@ -56476,6 +56585,13 @@ export namespace Prisma {
     connectOrCreate?: CmsSyncRunCreateOrConnectWithoutCrawl_runInput | CmsSyncRunCreateOrConnectWithoutCrawl_runInput[]
     createMany?: CmsSyncRunCreateManyCrawl_runInputEnvelope
     connect?: CmsSyncRunWhereUniqueInput | CmsSyncRunWhereUniqueInput[]
+  }
+
+  export type AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput = {
+    create?: XOR<AiBatchRunCreateWithoutCrawl_runInput, AiBatchRunUncheckedCreateWithoutCrawl_runInput> | AiBatchRunCreateWithoutCrawl_runInput[] | AiBatchRunUncheckedCreateWithoutCrawl_runInput[]
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutCrawl_runInput | AiBatchRunCreateOrConnectWithoutCrawl_runInput[]
+    createMany?: AiBatchRunCreateManyCrawl_runInputEnvelope
+    connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
   }
 
   export type EnumCrawlRunStatusFieldUpdateOperationsInput = {
@@ -56590,6 +56706,20 @@ export namespace Prisma {
     deleteMany?: CmsSyncRunScalarWhereInput | CmsSyncRunScalarWhereInput[]
   }
 
+  export type AiBatchRunUpdateManyWithoutCrawl_runNestedInput = {
+    create?: XOR<AiBatchRunCreateWithoutCrawl_runInput, AiBatchRunUncheckedCreateWithoutCrawl_runInput> | AiBatchRunCreateWithoutCrawl_runInput[] | AiBatchRunUncheckedCreateWithoutCrawl_runInput[]
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutCrawl_runInput | AiBatchRunCreateOrConnectWithoutCrawl_runInput[]
+    upsert?: AiBatchRunUpsertWithWhereUniqueWithoutCrawl_runInput | AiBatchRunUpsertWithWhereUniqueWithoutCrawl_runInput[]
+    createMany?: AiBatchRunCreateManyCrawl_runInputEnvelope
+    set?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    disconnect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    delete?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    update?: AiBatchRunUpdateWithWhereUniqueWithoutCrawl_runInput | AiBatchRunUpdateWithWhereUniqueWithoutCrawl_runInput[]
+    updateMany?: AiBatchRunUpdateManyWithWhereWithoutCrawl_runInput | AiBatchRunUpdateManyWithWhereWithoutCrawl_runInput[]
+    deleteMany?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
+  }
+
   export type JobLogUncheckedUpdateManyWithoutCrawl_runNestedInput = {
     create?: XOR<JobLogCreateWithoutCrawl_runInput, JobLogUncheckedCreateWithoutCrawl_runInput> | JobLogCreateWithoutCrawl_runInput[] | JobLogUncheckedCreateWithoutCrawl_runInput[]
     connectOrCreate?: JobLogCreateOrConnectWithoutCrawl_runInput | JobLogCreateOrConnectWithoutCrawl_runInput[]
@@ -56668,6 +56798,20 @@ export namespace Prisma {
     update?: CmsSyncRunUpdateWithWhereUniqueWithoutCrawl_runInput | CmsSyncRunUpdateWithWhereUniqueWithoutCrawl_runInput[]
     updateMany?: CmsSyncRunUpdateManyWithWhereWithoutCrawl_runInput | CmsSyncRunUpdateManyWithWhereWithoutCrawl_runInput[]
     deleteMany?: CmsSyncRunScalarWhereInput | CmsSyncRunScalarWhereInput[]
+  }
+
+  export type AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput = {
+    create?: XOR<AiBatchRunCreateWithoutCrawl_runInput, AiBatchRunUncheckedCreateWithoutCrawl_runInput> | AiBatchRunCreateWithoutCrawl_runInput[] | AiBatchRunUncheckedCreateWithoutCrawl_runInput[]
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutCrawl_runInput | AiBatchRunCreateOrConnectWithoutCrawl_runInput[]
+    upsert?: AiBatchRunUpsertWithWhereUniqueWithoutCrawl_runInput | AiBatchRunUpsertWithWhereUniqueWithoutCrawl_runInput[]
+    createMany?: AiBatchRunCreateManyCrawl_runInputEnvelope
+    set?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    disconnect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    delete?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+    update?: AiBatchRunUpdateWithWhereUniqueWithoutCrawl_runInput | AiBatchRunUpdateWithWhereUniqueWithoutCrawl_runInput[]
+    updateMany?: AiBatchRunUpdateManyWithWhereWithoutCrawl_runInput | AiBatchRunUpdateManyWithWhereWithoutCrawl_runInput[]
+    deleteMany?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
   }
 
   export type CrawlRunCreateNestedOneWithoutDiagnostics_packageInput = {
@@ -57546,6 +57690,12 @@ export namespace Prisma {
     connect?: AiTitleFamilyWhereUniqueInput
   }
 
+  export type CrawlRunCreateNestedOneWithoutAi_batch_runsInput = {
+    create?: XOR<CrawlRunCreateWithoutAi_batch_runsInput, CrawlRunUncheckedCreateWithoutAi_batch_runsInput>
+    connectOrCreate?: CrawlRunCreateOrConnectWithoutAi_batch_runsInput
+    connect?: CrawlRunWhereUniqueInput
+  }
+
   export type EnumAiBatchRunKindFieldUpdateOperationsInput = {
     set?: $Enums.AiBatchRunKind
   }
@@ -57572,6 +57722,16 @@ export namespace Prisma {
     delete?: AiTitleFamilyWhereInput | boolean
     connect?: AiTitleFamilyWhereUniqueInput
     update?: XOR<XOR<AiTitleFamilyUpdateToOneWithWhereWithoutAi_batch_runsInput, AiTitleFamilyUpdateWithoutAi_batch_runsInput>, AiTitleFamilyUncheckedUpdateWithoutAi_batch_runsInput>
+  }
+
+  export type CrawlRunUpdateOneWithoutAi_batch_runsNestedInput = {
+    create?: XOR<CrawlRunCreateWithoutAi_batch_runsInput, CrawlRunUncheckedCreateWithoutAi_batch_runsInput>
+    connectOrCreate?: CrawlRunCreateOrConnectWithoutAi_batch_runsInput
+    upsert?: CrawlRunUpsertWithoutAi_batch_runsInput
+    disconnect?: CrawlRunWhereInput | boolean
+    delete?: CrawlRunWhereInput | boolean
+    connect?: CrawlRunWhereUniqueInput
+    update?: XOR<XOR<CrawlRunUpdateToOneWithWhereWithoutAi_batch_runsInput, CrawlRunUpdateWithoutAi_batch_runsInput>, CrawlRunUncheckedUpdateWithoutAi_batch_runsInput>
   }
 
   export type UserCreateNestedOneWithoutIntegration_propertiesInput = {
@@ -59807,6 +59967,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutSource_agencyInput = {
@@ -59842,6 +60003,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutSource_agencyInput = {
@@ -60286,6 +60448,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput = {
@@ -60321,6 +60484,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput = {
@@ -60874,6 +61038,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutScraperInput = {
@@ -60909,6 +61074,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutScraperInput = {
@@ -62330,6 +62496,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutExecution_tracesInput = {
@@ -62365,6 +62532,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutExecution_tracesInput = {
@@ -62477,6 +62645,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutExecution_tracesInput = {
@@ -62512,6 +62681,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type SourceAgencyCreateWithoutCrawl_runsInput = {
@@ -62908,6 +63078,44 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type AiBatchRunCreateWithoutCrawl_runInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    config?: ContentPublishingConfigCreateNestedOneWithoutAi_batch_runsInput
+    ai_title_family?: AiTitleFamilyCreateNestedOneWithoutAi_batch_runsInput
+  }
+
+  export type AiBatchRunUncheckedCreateWithoutCrawl_runInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    config_id?: string | null
+    ai_title_family_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AiBatchRunCreateOrConnectWithoutCrawl_runInput = {
+    where: AiBatchRunWhereUniqueInput
+    create: XOR<AiBatchRunCreateWithoutCrawl_runInput, AiBatchRunUncheckedCreateWithoutCrawl_runInput>
+  }
+
+  export type AiBatchRunCreateManyCrawl_runInputEnvelope = {
+    data: AiBatchRunCreateManyCrawl_runInput | AiBatchRunCreateManyCrawl_runInput[]
+    skipDuplicates?: boolean
+  }
+
   export type SourceAgencyUpsertWithoutCrawl_runsInput = {
     update: XOR<SourceAgencyUpdateWithoutCrawl_runsInput, SourceAgencyUncheckedUpdateWithoutCrawl_runsInput>
     create: XOR<SourceAgencyCreateWithoutCrawl_runsInput, SourceAgencyUncheckedCreateWithoutCrawl_runsInput>
@@ -63251,6 +63459,40 @@ export namespace Prisma {
     data: XOR<CmsSyncRunUpdateManyMutationInput, CmsSyncRunUncheckedUpdateManyWithoutCrawl_runInput>
   }
 
+  export type AiBatchRunUpsertWithWhereUniqueWithoutCrawl_runInput = {
+    where: AiBatchRunWhereUniqueInput
+    update: XOR<AiBatchRunUpdateWithoutCrawl_runInput, AiBatchRunUncheckedUpdateWithoutCrawl_runInput>
+    create: XOR<AiBatchRunCreateWithoutCrawl_runInput, AiBatchRunUncheckedCreateWithoutCrawl_runInput>
+  }
+
+  export type AiBatchRunUpdateWithWhereUniqueWithoutCrawl_runInput = {
+    where: AiBatchRunWhereUniqueInput
+    data: XOR<AiBatchRunUpdateWithoutCrawl_runInput, AiBatchRunUncheckedUpdateWithoutCrawl_runInput>
+  }
+
+  export type AiBatchRunUpdateManyWithWhereWithoutCrawl_runInput = {
+    where: AiBatchRunScalarWhereInput
+    data: XOR<AiBatchRunUpdateManyMutationInput, AiBatchRunUncheckedUpdateManyWithoutCrawl_runInput>
+  }
+
+  export type AiBatchRunScalarWhereInput = {
+    AND?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
+    OR?: AiBatchRunScalarWhereInput[]
+    NOT?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
+    id?: StringFilter<"AiBatchRun"> | string
+    kind?: EnumAiBatchRunKindFilter<"AiBatchRun"> | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFilter<"AiBatchRun"> | $Enums.AiBatchRunStatus
+    openai_batch_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    config_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    ai_title_family_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    crawl_run_id?: StringNullableFilter<"AiBatchRun"> | string | null
+    user_property_ids?: JsonFilter<"AiBatchRun">
+    metadata?: JsonNullableFilter<"AiBatchRun">
+    error_message?: StringNullableFilter<"AiBatchRun"> | string | null
+    created_at?: DateTimeFilter<"AiBatchRun"> | Date | string
+    updated_at?: DateTimeFilter<"AiBatchRun"> | Date | string
+  }
+
   export type CrawlRunCreateWithoutDiagnostics_packageInput = {
     id?: string
     status?: $Enums.CrawlRunStatus
@@ -63284,6 +63526,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutDiagnostics_packageInput = {
@@ -63319,6 +63562,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutDiagnostics_packageInput = {
@@ -63453,6 +63697,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutDiagnostics_packageInput = {
@@ -63488,6 +63733,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type ScraperUpsertWithoutDiagnostics_packagesInput = {
@@ -63705,6 +63951,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutJob_logsInput = {
@@ -63740,6 +63987,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutJob_logsInput = {
@@ -63791,6 +64039,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutJob_logsInput = {
@@ -63826,6 +64075,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type SourceAgencyCreateWithoutNotificationsInput = {
@@ -63969,6 +64219,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutNotificationsInput = {
@@ -64004,6 +64255,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutNotificationsInput = {
@@ -64175,6 +64427,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutNotificationsInput = {
@@ -64210,6 +64463,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunCreateWithoutCms_sync_runsInput = {
@@ -64245,6 +64499,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutCms_sync_runsInput = {
@@ -64280,6 +64535,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutCms_sync_runsInput = {
@@ -64372,6 +64628,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutCms_sync_runsInput = {
@@ -64407,6 +64664,7 @@ export namespace Prisma {
     property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type UserIntegrationUpsertWithoutSync_runsInput = {
@@ -65290,6 +65548,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutProperty_historyInput = {
@@ -65325,6 +65584,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutProperty_historyInput = {
@@ -65477,6 +65737,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutProperty_historyInput = {
@@ -65512,6 +65773,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type UserCreateWithoutSaved_propertiesInput = {
@@ -66021,6 +66283,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     ai_title_family?: AiTitleFamilyCreateNestedOneWithoutAi_batch_runsInput
+    crawl_run?: CrawlRunCreateNestedOneWithoutAi_batch_runsInput
   }
 
   export type AiBatchRunUncheckedCreateWithoutConfigInput = {
@@ -66029,6 +66292,7 @@ export namespace Prisma {
     status?: $Enums.AiBatchRunStatus
     openai_batch_id?: string | null
     ai_title_family_id?: string | null
+    crawl_run_id?: string | null
     user_property_ids: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
@@ -66179,23 +66443,6 @@ export namespace Prisma {
   export type AiBatchRunUpdateManyWithWhereWithoutConfigInput = {
     where: AiBatchRunScalarWhereInput
     data: XOR<AiBatchRunUpdateManyMutationInput, AiBatchRunUncheckedUpdateManyWithoutConfigInput>
-  }
-
-  export type AiBatchRunScalarWhereInput = {
-    AND?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
-    OR?: AiBatchRunScalarWhereInput[]
-    NOT?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
-    id?: StringFilter<"AiBatchRun"> | string
-    kind?: EnumAiBatchRunKindFilter<"AiBatchRun"> | $Enums.AiBatchRunKind
-    status?: EnumAiBatchRunStatusFilter<"AiBatchRun"> | $Enums.AiBatchRunStatus
-    openai_batch_id?: StringNullableFilter<"AiBatchRun"> | string | null
-    config_id?: StringNullableFilter<"AiBatchRun"> | string | null
-    ai_title_family_id?: StringNullableFilter<"AiBatchRun"> | string | null
-    user_property_ids?: JsonFilter<"AiBatchRun">
-    metadata?: JsonNullableFilter<"AiBatchRun">
-    error_message?: StringNullableFilter<"AiBatchRun"> | string | null
-    created_at?: DateTimeFilter<"AiBatchRun"> | Date | string
-    updated_at?: DateTimeFilter<"AiBatchRun"> | Date | string
   }
 
   export type ContentPublishingConfigCreateWithoutOutputsInput = {
@@ -66410,6 +66657,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     config?: ContentPublishingConfigCreateNestedOneWithoutAi_batch_runsInput
+    crawl_run?: CrawlRunCreateNestedOneWithoutAi_batch_runsInput
   }
 
   export type AiBatchRunUncheckedCreateWithoutAi_title_familyInput = {
@@ -66418,6 +66666,7 @@ export namespace Prisma {
     status?: $Enums.AiBatchRunStatus
     openai_batch_id?: string | null
     config_id?: string | null
+    crawl_run_id?: string | null
     user_property_ids: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
@@ -66784,6 +67033,83 @@ export namespace Prisma {
     create: XOR<AiTitleFamilyCreateWithoutAi_batch_runsInput, AiTitleFamilyUncheckedCreateWithoutAi_batch_runsInput>
   }
 
+  export type CrawlRunCreateWithoutAi_batch_runsInput = {
+    id?: string
+    status?: $Enums.CrawlRunStatus
+    started_at?: Date | string | null
+    finished_at?: Date | string | null
+    duration_ms?: number | null
+    total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_linked?: number
+    total_failed?: number
+    error_message?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: string | null
+    ai_input_tokens?: number | null
+    ai_output_tokens?: number | null
+    ai_input_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: Decimal | DecimalJsLike | number | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    source_agency: SourceAgencyCreateNestedOneWithoutCrawl_runsInput
+    user_tracked_agency?: UserTrackedAgencyCreateNestedOneWithoutCrawl_runsInput
+    scraper?: ScraperCreateNestedOneWithoutCrawl_runsInput
+    job_logs?: JobLogCreateNestedManyWithoutCrawl_runInput
+    execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
+    property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
+    notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
+  }
+
+  export type CrawlRunUncheckedCreateWithoutAi_batch_runsInput = {
+    id?: string
+    source_agency_id: string
+    scraper_id?: string | null
+    user_tracked_agency_id?: string | null
+    status?: $Enums.CrawlRunStatus
+    started_at?: Date | string | null
+    finished_at?: Date | string | null
+    duration_ms?: number | null
+    total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_linked?: number
+    total_failed?: number
+    error_message?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: string | null
+    ai_input_tokens?: number | null
+    ai_output_tokens?: number | null
+    ai_input_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: Decimal | DecimalJsLike | number | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    job_logs?: JobLogUncheckedCreateNestedManyWithoutCrawl_runInput
+    execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
+    property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
+  }
+
+  export type CrawlRunCreateOrConnectWithoutAi_batch_runsInput = {
+    where: CrawlRunWhereUniqueInput
+    create: XOR<CrawlRunCreateWithoutAi_batch_runsInput, CrawlRunUncheckedCreateWithoutAi_batch_runsInput>
+  }
+
   export type ContentPublishingConfigUpsertWithoutAi_batch_runsInput = {
     update: XOR<ContentPublishingConfigUpdateWithoutAi_batch_runsInput, ContentPublishingConfigUncheckedUpdateWithoutAi_batch_runsInput>
     create: XOR<ContentPublishingConfigCreateWithoutAi_batch_runsInput, ContentPublishingConfigUncheckedCreateWithoutAi_batch_runsInput>
@@ -66858,6 +67184,89 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     outputs?: ContentOutputUncheckedUpdateManyWithoutAi_title_familyNestedInput
+  }
+
+  export type CrawlRunUpsertWithoutAi_batch_runsInput = {
+    update: XOR<CrawlRunUpdateWithoutAi_batch_runsInput, CrawlRunUncheckedUpdateWithoutAi_batch_runsInput>
+    create: XOR<CrawlRunCreateWithoutAi_batch_runsInput, CrawlRunUncheckedCreateWithoutAi_batch_runsInput>
+    where?: CrawlRunWhereInput
+  }
+
+  export type CrawlRunUpdateToOneWithWhereWithoutAi_batch_runsInput = {
+    where?: CrawlRunWhereInput
+    data: XOR<CrawlRunUpdateWithoutAi_batch_runsInput, CrawlRunUncheckedUpdateWithoutAi_batch_runsInput>
+  }
+
+  export type CrawlRunUpdateWithoutAi_batch_runsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
+    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_input_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_output_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    source_agency?: SourceAgencyUpdateOneRequiredWithoutCrawl_runsNestedInput
+    user_tracked_agency?: UserTrackedAgencyUpdateOneWithoutCrawl_runsNestedInput
+    scraper?: ScraperUpdateOneWithoutCrawl_runsNestedInput
+    job_logs?: JobLogUpdateManyWithoutCrawl_runNestedInput
+    execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
+    property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
+    notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
+  }
+
+  export type CrawlRunUncheckedUpdateWithoutAi_batch_runsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: StringFieldUpdateOperationsInput | string
+    scraper_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
+    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_input_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_output_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    job_logs?: JobLogUncheckedUpdateManyWithoutCrawl_runNestedInput
+    execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
+    property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type UserCreateWithoutIntegration_propertiesInput = {
@@ -68357,6 +68766,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutSource_agencyInput = {
@@ -68392,6 +68802,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateManyWithoutSource_agencyInput = {
@@ -68598,6 +69009,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutUser_tracked_agencyInput = {
@@ -68633,6 +69045,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyInput = {
@@ -68792,6 +69205,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutScraperInput = {
@@ -68827,6 +69241,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateManyWithoutScraperInput = {
@@ -69179,6 +69594,20 @@ export namespace Prisma {
     updated_at?: Date | string
   }
 
+  export type AiBatchRunCreateManyCrawl_runInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    config_id?: string | null
+    ai_title_family_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
   export type JobLogUpdateWithoutCrawl_runInput = {
     id?: StringFieldUpdateOperationsInput | string
     queue_name?: StringFieldUpdateOperationsInput | string
@@ -69388,6 +69817,48 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiBatchRunUpdateWithoutCrawl_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    config?: ContentPublishingConfigUpdateOneWithoutAi_batch_runsNestedInput
+    ai_title_family?: AiTitleFamilyUpdateOneWithoutAi_batch_runsNestedInput
+  }
+
+  export type AiBatchRunUncheckedUpdateWithoutCrawl_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    config_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AiBatchRunUncheckedUpdateManyWithoutCrawl_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    config_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -69856,6 +70327,7 @@ export namespace Prisma {
     status?: $Enums.AiBatchRunStatus
     openai_batch_id?: string | null
     ai_title_family_id?: string | null
+    crawl_run_id?: string | null
     user_property_ids: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
@@ -69944,6 +70416,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     ai_title_family?: AiTitleFamilyUpdateOneWithoutAi_batch_runsNestedInput
+    crawl_run?: CrawlRunUpdateOneWithoutAi_batch_runsNestedInput
   }
 
   export type AiBatchRunUncheckedUpdateWithoutConfigInput = {
@@ -69952,6 +70425,7 @@ export namespace Prisma {
     status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
     openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
     ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     user_property_ids?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -69965,6 +70439,7 @@ export namespace Prisma {
     status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
     openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
     ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     user_property_ids?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -69988,6 +70463,7 @@ export namespace Prisma {
     status?: $Enums.AiBatchRunStatus
     openai_batch_id?: string | null
     config_id?: string | null
+    crawl_run_id?: string | null
     user_property_ids: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
@@ -70036,6 +70512,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     config?: ContentPublishingConfigUpdateOneWithoutAi_batch_runsNestedInput
+    crawl_run?: CrawlRunUpdateOneWithoutAi_batch_runsNestedInput
   }
 
   export type AiBatchRunUncheckedUpdateWithoutAi_title_familyInput = {
@@ -70044,6 +70521,7 @@ export namespace Prisma {
     status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
     openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
     config_id?: NullableStringFieldUpdateOperationsInput | string | null
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     user_property_ids?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -70057,6 +70535,7 @@ export namespace Prisma {
     status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
     openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
     config_id?: NullableStringFieldUpdateOperationsInput | string | null
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     user_property_ids?: JsonNullValueInput | InputJsonValue
     metadata?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null

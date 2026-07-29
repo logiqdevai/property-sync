@@ -7,6 +7,7 @@ import { EstateWebModule } from '@/integrations/estateweb/estateweb.module';
 import { CmsSyncRunsModule } from '@/modules/cms-sync-runs/cms-sync-runs.module';
 import { CrawlRunsModule } from '@/modules/crawl-runs/crawl-runs.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
+import { ContentPublishingModule } from '@/modules/content-publishing/content-publishing.module';
 import { CmsSyncAdapterFactory } from './services/cms-sync-adapter.factory';
 import { CmsSyncOrchestratorService } from './services/cms-sync-orchestrator.service';
 import { CmsSyncBatchService } from './services/cms-sync-batch.service';
@@ -20,6 +21,7 @@ import { AdminCmsSyncController } from './admin-cms-sync.controller';
     CmsSyncRunsModule,
     forwardRef(() => CrawlRunsModule),
     NotificationsModule,
+    ContentPublishingModule,
   ],
   controllers: [AdminCmsSyncController],
   providers: [

@@ -4,7 +4,15 @@ import OpenAI from 'openai';
 import { PropertyAiBatchService } from '@/integrations/ai-batch/services/property-ai-batch.service';
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
 import { AiTitleBatchService } from '@/modules/content-publishing/services/ai-title-batch.service';
-import { JobStatus, Prisma } from 'generated/prisma';
+import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
+import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
+import { NotificationsService } from '@/modules/notifications/notifications.service';
+import {
+  JobStatus,
+  NotificationSeverity,
+  NotificationType,
+  Prisma,
+} from 'generated/prisma';
 
 @Injectable()
 export class OpenAiWebhooksService {
@@ -16,6 +24,9 @@ export class OpenAiWebhooksService {
     private readonly propertyAiBatchService: PropertyAiBatchService,
     private readonly propertyNormalizationService: PropertyNormalizationService,
     private readonly aiTitleBatchService: AiTitleBatchService,
+    private readonly contentProductionService: ContentProductionService,
+    private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async handleWebhook(
@@ -95,6 +106,32 @@ export class OpenAiWebhooksService {
 
       if (event.type === 'batch.completed') {
         await this.aiTitleBatchService.completeBatch(batchId, apiKey);
+        const ready =
+          await this.contentProductionService.getReadyPropertyIdsAfterTitleBatch(
+            batchId,
+          );
+        if (ready.readyIds.length) {
+          try {
+            await this.cmsSyncOrchestratorService.planAndEnqueueTitleBatchReady(
+              ready.crawlRunId,
+              ready.readyIds,
+              ready.changeTypesByPropertyId,
+            );
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            this.logger.error(
+              `Failed to enqueue CMS sync after title batch ${batchId}: ${message}`,
+            );
+            this.notificationsService.create({
+              type: NotificationType.CMS_SYNC_FAILURE,
+              severity: NotificationSeverity.CRITICAL,
+              title: 'CMS sync enqueue failed after title batch',
+              message: `Title batch ${batchId} completed but CMS enqueue failed. ${message}`,
+              crawl_run_id: ready.crawlRunId,
+            });
+          }
+        }
         return;
       }
 
@@ -107,6 +144,13 @@ export class OpenAiWebhooksService {
           batchId,
           `OpenAI batch ${event.type}`,
         );
+        this.notificationsService.create({
+          type: NotificationType.CMS_SYNC_FAILURE,
+          severity: NotificationSeverity.CRITICAL,
+          title: 'Content title AI batch failed',
+          message: `OpenAI title batch ${batchId} ${event.type}. CMS push held for affected properties.`,
+          crawl_run_id: titleBatch.crawl_run_id,
+        });
       }
       return;
     }

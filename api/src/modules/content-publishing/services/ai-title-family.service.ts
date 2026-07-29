@@ -3,7 +3,10 @@ import { ContentLanguage } from 'generated/prisma';
 import { AiService } from '@/integrations/ai/services/ai.service';
 import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import {
+  AI_TITLE_MULTI_PROPERTY_CHUNK_SIZE,
+  AI_TITLE_MULTI_PROPERTY_SYSTEM_PROMPT,
   AI_TITLE_SYSTEM_PROMPT,
+  buildAiTitleMultiPropertyUserPrompt,
   buildAiTitleUserPrompt,
 } from '../constants/ai-title-prompt';
 
@@ -45,6 +48,62 @@ export class AiTitleFamilyService {
     return this.parseTitlesResponse(result.response, input.targetLanguages);
   }
 
+  async generateTitlesForProperties(input: {
+    sourceLanguage: ContentLanguage;
+    targetLanguages: ContentLanguage[];
+    items: Array<{
+      userPropertyId: string;
+      title: string;
+      description: string | null;
+    }>;
+    instructions?: string | null;
+    model?: string | null;
+    apiKey?: string;
+    chunkSize?: number;
+  }): Promise<
+    Map<string, Partial<Record<ContentLanguage, string>>>
+  > {
+    const out = new Map<string, Partial<Record<ContentLanguage, string>>>();
+    if (!input.targetLanguages.length || !input.items.length) return out;
+
+    const chunkSize = Math.max(
+      1,
+      input.chunkSize ?? AI_TITLE_MULTI_PROPERTY_CHUNK_SIZE,
+    );
+
+    for (let i = 0; i < input.items.length; i += chunkSize) {
+      const chunk = input.items.slice(i, i + chunkSize);
+      const prompt = buildAiTitleMultiPropertyUserPrompt({
+        sourceLanguage: input.sourceLanguage,
+        targetLanguages: input.targetLanguages,
+        items: chunk,
+        familyInstructions: input.instructions,
+      });
+
+      const maxTokens = Math.min(8000, 400 + chunk.length * 350);
+      const result = await this.aiService.generateText({
+        provider: 'openai',
+        model: input.model || AiDefaults.model,
+        apiKey: input.apiKey,
+        system: AI_TITLE_MULTI_PROPERTY_SYSTEM_PROMPT,
+        prompt,
+        temperature: 0.4,
+        maxTokens,
+      });
+
+      const parsed = this.parseMultiPropertyTitlesResponse(
+        result.response,
+        input.targetLanguages,
+        chunk.map((item) => item.userPropertyId),
+      );
+      for (const [propertyId, titles] of parsed) {
+        out.set(propertyId, titles);
+      }
+    }
+
+    return out;
+  }
+
   parseTitlesResponse(
     raw: string,
     targetLanguages: ContentLanguage[],
@@ -67,6 +126,54 @@ export class AiTitleFamilyService {
         ? (parsed.titles as Record<string, unknown>)
         : (parsed as Record<string, unknown>);
 
+    return this.pickLanguageTitles(titles, targetLanguages);
+  }
+
+  parseMultiPropertyTitlesResponse(
+    raw: string,
+    targetLanguages: ContentLanguage[],
+    expectedPropertyIds: string[],
+  ): Map<string, Partial<Record<ContentLanguage, string>>> {
+    const jsonText = this.extractJson(raw);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(jsonText);
+    } catch (error) {
+      this.logger.error(`Failed to parse multi-property AI title JSON: ${raw}`);
+      throw error;
+    }
+
+    const properties =
+      parsed &&
+      typeof parsed === 'object' &&
+      'properties' in parsed &&
+      parsed.properties &&
+      typeof parsed.properties === 'object'
+        ? (parsed.properties as Record<string, unknown>)
+        : (parsed as Record<string, unknown>);
+
+    const out = new Map<string, Partial<Record<ContentLanguage, string>>>();
+    const expected = new Set(expectedPropertyIds);
+
+    for (const [propertyId, value] of Object.entries(properties)) {
+      if (!expected.has(propertyId)) continue;
+      if (!value || typeof value !== 'object') continue;
+      out.set(
+        propertyId,
+        this.pickLanguageTitles(
+          value as Record<string, unknown>,
+          targetLanguages,
+        ),
+      );
+    }
+
+    return out;
+  }
+
+  private pickLanguageTitles(
+    titles: Record<string, unknown>,
+    targetLanguages: ContentLanguage[],
+  ): Partial<Record<ContentLanguage, string>> {
     const out: Partial<Record<ContentLanguage, string>> = {};
     for (const lang of targetLanguages) {
       const value = titles[lang];

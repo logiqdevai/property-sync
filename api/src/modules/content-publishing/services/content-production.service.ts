@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
+  AiBatchRunKind,
+  AiBatchRunStatus,
   ContentLanguage,
   ContentType,
   DescriptionProductionStrategy,
@@ -11,6 +13,19 @@ import { ContentPublishingConfigWithRelations } from '../interfaces/content-publ
 import { GoogleTranslationService } from './google-translation.service';
 import { AiTitleFamilyService } from './ai-title-family.service';
 import { AiTitleBatchService } from './ai-title-batch.service';
+
+type PropertyContentRow = {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  canonical_property_id: string;
+};
+
+export type ProduceForPropertiesResult = {
+  readyIds: string[];
+  pendingBatchIds: string[];
+};
 
 @Injectable()
 export class ContentProductionService {
@@ -36,25 +51,287 @@ export class ContentProductionService {
 
   async produceForProperty(
     userPropertyId: string,
-    options?: { forceSyncAi?: boolean },
+    options?: { forceSyncAi?: boolean; crawlRunId?: string | null },
   ): Promise<{ pendingBatch: boolean }> {
-    const context = await this.resolveContext(userPropertyId);
-    if (!context?.config?.is_enabled) {
-      return { pendingBatch: false };
+    const result = await this.produceForUserProperties([userPropertyId], {
+      forceSyncAi: options?.forceSyncAi,
+      crawlRunId: options?.crawlRunId,
+    });
+    return { pendingBatch: result.pendingBatchIds.includes(userPropertyId) };
+  }
+
+  async produceForUserProperties(
+    userPropertyIds: string[],
+    options?: {
+      forceSyncAi?: boolean;
+      crawlRunId?: string | null;
+      changeTypesByPropertyId?: Record<string, string>;
+    },
+  ): Promise<ProduceForPropertiesResult> {
+    const uniqueIds = [...new Set(userPropertyIds.filter(Boolean))];
+    if (!uniqueIds.length) {
+      return { readyIds: [], pendingBatchIds: [] };
     }
 
-    const { userProperty, contentLanguage, config } = context;
-    let pendingBatch = false;
+    const forceSyncAi = options?.forceSyncAi ?? false;
+    const pendingBatchIds = new Set<string>();
+    const processedIds = new Set<string>();
 
-    await this.produceTranslations(userProperty, contentLanguage, config);
-    pendingBatch = await this.produceAiTitles(
-      userProperty,
-      contentLanguage,
-      config,
-      options?.forceSyncAi ?? false,
-    );
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: uniqueIds } },
+      select: {
+        id: true,
+        user_id: true,
+        title: true,
+        description: true,
+        canonical_property_id: true,
+      },
+    });
+    const propertyById = new Map(properties.map((p) => [p.id, p]));
 
-    return { pendingBatch };
+    const groups = await this.groupByTrackerConfig(properties);
+
+    for (const group of groups) {
+      if (!group.config?.is_enabled) {
+        for (const property of group.properties) {
+          processedIds.add(property.id);
+        }
+        continue;
+      }
+
+      await Promise.all(
+        group.properties.map((property) =>
+          this.produceTranslations(
+            property,
+            group.contentLanguage,
+            group.config!,
+          ),
+        ),
+      );
+
+      if (!group.config.ai_titles_enabled) {
+        for (const property of group.properties) {
+          processedIds.add(property.id);
+        }
+        continue;
+      }
+
+      const families = group.config.ai_title_families.filter((f) => f.is_enabled);
+      const pendingForGroup = new Set<string>();
+
+      for (const family of families) {
+        const targetLanguages = group.config.outputs
+          .filter(
+            (o) =>
+              o.title_strategy === TitleProductionStrategy.AI &&
+              o.ai_title_family_id === family.id,
+          )
+          .map((o) => o.language);
+
+        if (!targetLanguages.length) continue;
+
+        const needingWork: PropertyContentRow[] = [];
+        for (const property of group.properties) {
+          const needs = await this.needsAiWork(property.id, targetLanguages);
+          if (needs) needingWork.push(property);
+        }
+        if (!needingWork.length) continue;
+
+        const useBatch =
+          !forceSyncAi && (family.use_batch ?? group.config.use_ai_batch);
+
+        if (useBatch) {
+          const apiKey = await this.resolveOpenAiApiKey(group.userId);
+          if (!apiKey) {
+            this.logger.warn(
+              `No OpenAI key for user ${group.userId}; falling back to sync AI titles`,
+            );
+          } else {
+            const changeTypes: Record<string, string> = {};
+            for (const property of needingWork) {
+              const change =
+                options?.changeTypesByPropertyId?.[property.id] ?? 'UPDATE';
+              changeTypes[property.id] = change;
+            }
+            await this.aiTitleBatchService.submitFamilyBatch({
+              configId: group.config.id,
+              familyId: family.id,
+              familyName: family.name,
+              instructions: family.instructions,
+              model: family.model,
+              sourceLanguage: group.contentLanguage,
+              targetLanguages,
+              apiKey,
+              crawlRunId: options?.crawlRunId ?? null,
+              changeTypesByPropertyId: changeTypes,
+              items: needingWork.map((property) => ({
+                userPropertyId: property.id,
+                title: property.title,
+                description: property.description,
+              })),
+            });
+            for (const property of needingWork) {
+              pendingForGroup.add(property.id);
+              pendingBatchIds.add(property.id);
+            }
+            continue;
+          }
+        }
+
+        try {
+          const apiKey = await this.resolveOpenAiApiKey(group.userId);
+          const titlesByProperty =
+            await this.aiTitleFamilyService.generateTitlesForProperties({
+              sourceLanguage: group.contentLanguage,
+              targetLanguages,
+              instructions: family.instructions,
+              model: family.model,
+              apiKey: apiKey ?? undefined,
+              items: needingWork.map((property) => ({
+                userPropertyId: property.id,
+                title: property.title,
+                description: property.description,
+              })),
+            });
+
+          for (const property of needingWork) {
+            const titles = titlesByProperty.get(property.id) ?? {};
+            for (const [language, text] of Object.entries(titles)) {
+              if (!text) continue;
+              await this.upsertLocalized({
+                userPropertyId: property.id,
+                contentType: ContentType.TITLE,
+                language: language as ContentLanguage,
+                production: 'AI',
+                text,
+              });
+            }
+          }
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          this.logger.error(
+            `AI title generation failed for family ${family.name}: ${message}`,
+          );
+        }
+      }
+
+      for (const property of group.properties) {
+        processedIds.add(property.id);
+        if (pendingForGroup.has(property.id)) {
+          pendingBatchIds.add(property.id);
+        }
+      }
+    }
+
+    for (const id of uniqueIds) {
+      if (!propertyById.has(id)) continue;
+      processedIds.add(id);
+    }
+
+    const readyIds = [...processedIds].filter((id) => !pendingBatchIds.has(id));
+    return {
+      readyIds,
+      pendingBatchIds: [...pendingBatchIds],
+    };
+  }
+
+  async getReadyPropertyIdsAfterTitleBatch(
+    batchId: string,
+  ): Promise<{
+    crawlRunId: string | null;
+    readyIds: string[];
+    changeTypesByPropertyId: Record<string, string>;
+  }> {
+    const run = await this.prisma.aiBatchRun.findUnique({
+      where: { openai_batch_id: batchId },
+    });
+    if (!run || run.kind !== AiBatchRunKind.TITLE_FAMILY) {
+      return { crawlRunId: null, readyIds: [], changeTypesByPropertyId: {} };
+    }
+
+    const propertyIds = Array.isArray(run.user_property_ids)
+      ? (run.user_property_ids as string[])
+      : [];
+    const meta = (run.metadata ?? {}) as {
+      change_types_by_property_id?: Record<string, string>;
+    };
+    const changeTypesByPropertyId = meta.change_types_by_property_id ?? {};
+
+    if (!propertyIds.length) {
+      return {
+        crawlRunId: run.crawl_run_id,
+        readyIds: [],
+        changeTypesByPropertyId,
+      };
+    }
+
+    const openRuns = await this.prisma.aiBatchRun.findMany({
+      where: {
+        kind: AiBatchRunKind.TITLE_FAMILY,
+        status: {
+          in: [AiBatchRunStatus.SUBMITTED, AiBatchRunStatus.IN_PROGRESS],
+        },
+        id: { not: run.id },
+        ...(run.crawl_run_id
+          ? { crawl_run_id: run.crawl_run_id }
+          : {}),
+      },
+      select: {
+        user_property_ids: true,
+        crawl_run_id: true,
+      },
+    });
+
+    const blocked = new Set<string>();
+    for (const open of openRuns) {
+      if (!run.crawl_run_id && open.crawl_run_id) continue;
+      const ids = Array.isArray(open.user_property_ids)
+        ? (open.user_property_ids as string[])
+        : [];
+      for (const id of ids) {
+        if (propertyIds.includes(id)) blocked.add(id);
+      }
+    }
+
+    return {
+      crawlRunId: run.crawl_run_id,
+      readyIds: propertyIds.filter((id) => !blocked.has(id)),
+      changeTypesByPropertyId,
+    };
+  }
+
+  private async groupByTrackerConfig(properties: PropertyContentRow[]) {
+    type Group = {
+      userId: string;
+      contentLanguage: ContentLanguage;
+      config: ContentPublishingConfigWithRelations | null;
+      properties: PropertyContentRow[];
+    };
+
+    const groups = new Map<string, Group>();
+
+    for (const property of properties) {
+      const context = await this.resolveContextForProperty(property);
+      const key = context
+        ? `${context.trackerId}:${context.config?.id ?? 'none'}`
+        : `none:${property.id}`;
+
+      const existing = groups.get(key);
+      if (existing) {
+        existing.properties.push(property);
+        continue;
+      }
+
+      groups.set(key, {
+        userId: property.user_id,
+        contentLanguage: context?.contentLanguage ?? ContentLanguage.EL,
+        config: context?.config ?? null,
+        properties: [property],
+      });
+    }
+
+    return [...groups.values()];
   }
 
   private async produceTranslations(
@@ -128,103 +405,6 @@ export class ContentProductionService {
     }
   }
 
-  private async produceAiTitles(
-    userProperty: {
-      id: string;
-      user_id: string;
-      title: string;
-      description: string | null;
-    },
-    contentLanguage: ContentLanguage,
-    config: ContentPublishingConfigWithRelations,
-    forceSyncAi: boolean,
-  ): Promise<boolean> {
-    if (!config.ai_titles_enabled) return false;
-
-    let pendingBatch = false;
-    const families = config.ai_title_families.filter((f) => f.is_enabled);
-
-    for (const family of families) {
-      const targetLanguages = config.outputs
-        .filter(
-          (o) =>
-            o.title_strategy === TitleProductionStrategy.AI &&
-            o.ai_title_family_id === family.id,
-        )
-        .map((o) => o.language);
-
-      if (!targetLanguages.length) continue;
-
-      const needsWork = await this.needsAiWork(
-        userProperty.id,
-        targetLanguages,
-      );
-      if (!needsWork) continue;
-
-      const useBatch =
-        !forceSyncAi && (family.use_batch ?? config.use_ai_batch);
-
-      if (useBatch) {
-        const apiKey = await this.resolveOpenAiApiKey(userProperty.user_id);
-        if (!apiKey) {
-          this.logger.warn(
-            `No OpenAI key for user ${userProperty.user_id}; falling back to sync AI titles`,
-          );
-        } else {
-          await this.aiTitleBatchService.submitFamilyBatch({
-            configId: config.id,
-            familyId: family.id,
-            familyName: family.name,
-            instructions: family.instructions,
-            model: family.model,
-            sourceLanguage: contentLanguage,
-            targetLanguages,
-            apiKey,
-            items: [
-              {
-                userPropertyId: userProperty.id,
-                title: userProperty.title,
-                description: userProperty.description,
-              },
-            ],
-          });
-          pendingBatch = true;
-          continue;
-        }
-      }
-
-      try {
-        const apiKey = await this.resolveOpenAiApiKey(userProperty.user_id);
-        const titles = await this.aiTitleFamilyService.generateTitles({
-          sourceLanguage: contentLanguage,
-          targetLanguages,
-          title: userProperty.title,
-          description: userProperty.description,
-          instructions: family.instructions,
-          model: family.model,
-          apiKey: apiKey ?? undefined,
-        });
-        for (const [language, text] of Object.entries(titles)) {
-          if (!text) continue;
-          await this.upsertLocalized({
-            userPropertyId: userProperty.id,
-            contentType: ContentType.TITLE,
-            language: language as ContentLanguage,
-            production: 'AI',
-            text,
-          });
-        }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        this.logger.error(
-          `AI title generation failed for ${userProperty.id} family ${family.name}: ${message}`,
-        );
-      }
-    }
-
-    return pendingBatch;
-  }
-
   private async needsAiWork(
     userPropertyId: string,
     languages: ContentLanguage[],
@@ -286,19 +466,7 @@ export class ContentProductionService {
     return integration?.api_key_secret ?? null;
   }
 
-  private async resolveContext(userPropertyId: string) {
-    const userProperty = await this.prisma.userProperty.findUnique({
-      where: { id: userPropertyId },
-      select: {
-        id: true,
-        user_id: true,
-        title: true,
-        description: true,
-        canonical_property_id: true,
-      },
-    });
-    if (!userProperty) return null;
-
+  private async resolveContextForProperty(userProperty: PropertyContentRow) {
     const canonical = await this.prisma.property.findUnique({
       where: { id: userProperty.canonical_property_id },
       include: {
@@ -339,7 +507,7 @@ export class ContentProductionService {
     if (!tracker) return null;
 
     return {
-      userProperty,
+      trackerId: tracker.id,
       contentLanguage: tracker.source_agency.content_language,
       config: tracker.content_publishing_config,
     };

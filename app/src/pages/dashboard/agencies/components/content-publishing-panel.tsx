@@ -251,11 +251,13 @@ export function ContentPublishingPanel({
                 <Modal.Heading>Content publishing</Modal.Heading>
               </Modal.Header>
               <Modal.Body className="flex max-h-[min(70vh,40rem)] flex-col gap-4 overflow-y-auto">
-                <p className="text-xs text-muted">
-                  Source language: {getContentLanguageLabel(resolvedSource)}.
-                  Choose EstateWeb languages and how titles/descriptions are
-                  produced.
-                </p>
+        <p className="text-xs text-muted">
+          Source language: {getContentLanguageLabel(resolvedSource)}.
+          Choose EstateWeb languages and how titles/descriptions are
+          produced. OpenAI Batch delays CMS publish until the batch
+          completes; otherwise titles generate in multi-property sync
+          before enqueue.
+        </p>
 
                 {isPending ? (
                   <div className="flex flex-col gap-2">
