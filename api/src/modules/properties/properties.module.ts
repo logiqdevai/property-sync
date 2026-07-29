@@ -16,6 +16,7 @@ import { UserPropertiesModule } from '@/modules/user-properties/user-properties.
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { CmsSyncModule } from '@/modules/cms-sync/cms-sync.module';
 import { CostLogsModule } from '@/modules/cost-logs/cost-logs.module';
+import { ContentPublishingModule } from '@/modules/content-publishing/content-publishing.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { CostLogsModule } from '@/modules/cost-logs/cost-logs.module';
     PlatformConfigModule,
     CmsSyncModule,
     CostLogsModule,
+    ContentPublishingModule,
     BullModule.registerQueue({ name: AI_BATCH_COMPLETE_QUEUE }),
   ],
   controllers: [PropertiesController],

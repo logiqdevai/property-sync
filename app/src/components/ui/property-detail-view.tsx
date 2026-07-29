@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Button, Checkbox, Chip, useOverlayState } from "@heroui/react";
+import { Button, Checkbox, Chip, ListBox, Select, useOverlayState } from "@heroui/react";
 import {
   Bath,
   BedDouble,
@@ -104,6 +104,7 @@ function formatCmsMetadata(metadata: CmsPropertyMetadata | null | undefined): st
 
 function buildLocalizedContentRows(property: PropertyDetailViewData): Array<{
   key: string;
+  language: string;
   label: string;
   title: string | null;
   description: string | null;
@@ -117,10 +118,11 @@ function buildLocalizedContentRows(property: PropertyDetailViewData): Array<{
         const description =
           ad.description?.trim() || ad.text?.trim() || null;
         if (!title && !description) return null;
-        const languageCode = ESTATEWEB_LANG_BY_ID[ad.lang_id] ?? String(ad.lang_id);
+        const language = ESTATEWEB_LANG_BY_ID[ad.lang_id] ?? String(ad.lang_id);
         return {
           key: `ad-${ad.lang_id}`,
-          label: getContentLanguageLabel(languageCode),
+          language,
+          label: getContentLanguageLabel(language),
           title,
           description,
           source: "crm" as const,
@@ -148,6 +150,7 @@ function buildLocalizedContentRows(property: PropertyDetailViewData): Array<{
 
   return [...byLanguage.entries()].map(([language, values]) => ({
     key: `loc-${language}`,
+    language,
     label: getContentLanguageLabel(language),
     title: values.title,
     description: values.description,
@@ -717,6 +720,23 @@ export function PropertyDetailView({
     ? getCrmPropertyAppUrl(property.integration_property_id)
     : null;
   const localizedContentRows = buildLocalizedContentRows(property);
+  const defaultLocalizedLanguage =
+    localizedContentRows.find((row) => row.language === "EL")?.language ??
+    localizedContentRows[0]?.language ??
+    null;
+  const [selectedLocalizedLanguage, setSelectedLocalizedLanguage] = useState<
+    string | null
+  >(defaultLocalizedLanguage);
+  const activeLocalizedLanguage =
+    localizedContentRows.some(
+      (row) => row.language === selectedLocalizedLanguage,
+    )
+      ? selectedLocalizedLanguage
+      : defaultLocalizedLanguage;
+  const selectedLocalizedContent =
+    localizedContentRows.find(
+      (row) => row.language === activeLocalizedLanguage,
+    ) ?? null;
 
   const specs = [
     property.bedrooms != null
@@ -928,39 +948,65 @@ export function PropertyDetailView({
         </section>
       )}
 
-      {localizedContentRows.length > 0 && (
+      {selectedLocalizedContent && (
         <section className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:p-5">
-          <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-sm font-semibold text-foreground">
-              Localized content
-            </h2>
-            <span className="text-[11px] text-muted">
-              {localizedContentRows[0]?.source === "crm"
-                ? "Pushed to CRM"
-                : "Generated (not yet pushed)"}
-            </span>
-          </div>
-          <div className="flex min-w-0 flex-col gap-4">
-            {localizedContentRows.map((row) => (
-              <div
-                key={row.key}
-                className="min-w-0 border-t border-border pt-4 first:border-t-0 first:pt-0"
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <h2 className="text-sm font-semibold text-foreground">
+                Localized content
+              </h2>
+              <span className="text-[11px] text-muted">
+                {selectedLocalizedContent.source === "crm"
+                  ? "Pushed to CRM"
+                  : "Generated (not yet pushed)"}
+              </span>
+            </div>
+            {localizedContentRows.length > 1 ? (
+              <Select
+                className="w-full max-w-[11rem]"
+                selectedKey={activeLocalizedLanguage ?? undefined}
+                onSelectionChange={(key) => {
+                  if (typeof key === "string") {
+                    setSelectedLocalizedLanguage(key);
+                  }
+                }}
+                aria-label="Localized content language"
               >
-                <h3 className="mb-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
-                  {row.label}
-                </h3>
-                {row.title ? (
-                  <p className="mb-2 text-sm font-medium text-foreground break-words">
-                    {row.title}
-                  </p>
-                ) : null}
-                {row.description ? (
-                  <p className="max-w-3xl text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">
-                    {row.description}
-                  </p>
-                ) : null}
-              </div>
-            ))}
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {localizedContentRows.map((row) => (
+                      <ListBox.Item
+                        key={row.language}
+                        id={row.language}
+                        textValue={row.label}
+                      >
+                        {row.label}
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+            ) : (
+              <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted">
+                {selectedLocalizedContent.label}
+              </span>
+            )}
+          </div>
+          <div className="min-w-0">
+            {selectedLocalizedContent.title ? (
+              <p className="mb-2 text-sm font-medium text-foreground break-words">
+                {selectedLocalizedContent.title}
+              </p>
+            ) : null}
+            {selectedLocalizedContent.description ? (
+              <p className="max-w-3xl text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">
+                {selectedLocalizedContent.description}
+              </p>
+            ) : null}
           </div>
         </section>
       )}

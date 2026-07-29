@@ -59,15 +59,25 @@ export function resolveSalesPricingSettings(
   };
 }
 
+const SALE_PERCENTAGE_STEP = 0.01;
+const CLEAN_PRICE_STEP = 1000;
+
 export function pickSalePercentage(start: number, end: number): number {
   if (end <= start) {
-    return start;
+    return Math.round(start / SALE_PERCENTAGE_STEP) * SALE_PERCENTAGE_STEP;
   }
-  return start + Math.random() * (end - start);
+
+  const startSteps = Math.round(start / SALE_PERCENTAGE_STEP);
+  const endSteps = Math.round(end / SALE_PERCENTAGE_STEP);
+  const randomStep =
+    startSteps + Math.floor(Math.random() * (endSteps - startSteps + 1));
+
+  return Math.round(randomStep * SALE_PERCENTAGE_STEP * 100) / 100;
 }
 
 export function computeSalePriceStart(price: number, pct: number): number {
-  return Math.ceil(price * (1 + pct));
+  const rawPriceStart = price * (1 + pct);
+  return Math.round(rawPriceStart / CLEAN_PRICE_STEP) * CLEAN_PRICE_STEP;
 }
 
 export function shouldApplySalesPriceStart(

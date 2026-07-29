@@ -7,6 +7,7 @@ import {
 import { randomUUID } from 'crypto';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
+import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
 import {
   applyTextTruncatePieces,
   normalizeTextTruncatePieces,
@@ -24,6 +25,7 @@ export class PropertiesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly gcsService: GcsService,
+    private readonly contentProductionService: ContentProductionService,
   ) {}
 
   private buildWhere(query: PropertyQueryType): Prisma.PropertyWhereInput {
@@ -363,6 +365,7 @@ export class PropertiesService {
     }
 
     let updated = 0;
+    const changedUserPropertyIds: string[] = [];
 
     await this.prisma.$transaction(async (tx) => {
       for (const property of properties) {
@@ -422,11 +425,23 @@ export class PropertiesService {
               description: linkedDescription,
             },
           });
+          changedUserPropertyIds.push(userProperty.id);
         }
 
         updated += 1;
       }
     });
+
+    if (changedUserPropertyIds.length > 0) {
+      setImmediate(async () => {
+        try {
+          await this.contentProductionService.produceForUserProperties(
+            changedUserPropertyIds,
+            { markStaleFirst: true, forceSyncAi: true },
+          );
+        } catch {}
+      });
+    }
 
     return { updated, total: uniqueIds.length };
   }

@@ -1746,6 +1746,18 @@ export class UserPropertiesService {
       { timeout: 30_000 },
     );
 
+    const changedIds = propertyUpdates.map((update) => update.id);
+    if (changedIds.length > 0) {
+      setImmediate(async () => {
+        try {
+          await this.contentProductionService.produceForUserProperties(
+            changedIds,
+            { markStaleFirst: true, forceSyncAi: true },
+          );
+        } catch {}
+      });
+    }
+
     return { updated: propertyUpdates.length, total: uniqueIds.length };
   }
 
@@ -2643,6 +2655,18 @@ export class UserPropertiesService {
       },
       { timeout: 30_000 },
     );
+
+    const changedIds = propertyUpdates.map((update) => update.id);
+    if (changedIds.length > 0) {
+      setImmediate(async () => {
+        try {
+          await this.contentProductionService.produceForUserProperties(
+            changedIds,
+            { markStaleFirst: true, forceSyncAi: true },
+          );
+        } catch {}
+      });
+    }
 
     return { updated: propertyUpdates.length, total: uniqueIds.length };
   }

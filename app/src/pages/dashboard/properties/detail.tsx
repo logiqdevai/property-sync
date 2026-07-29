@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Percent, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
+import { Languages, Pencil, Percent, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
 import { Button, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
@@ -30,6 +30,7 @@ import {
   useUpdateUserPropertyIntegrationImages,
   useRemoveUserPropertyWatermarkImages,
   useRemoveUserPropertiesWatermarkImages,
+  useProduceUserPropertyContent,
   usePushUserPropertyToCrm,
   useTruncateUserPropertyDescriptions,
   useUpdateUserProperty,
@@ -45,6 +46,7 @@ import { EstateWebFlatPickerModal } from "./components/estateweb-flat-picker-mod
 import { EstateWebLocationPickerModal } from "./components/estateweb-location-picker-modal";
 import { EstateWebPropertyTypePickerModal } from "./components/estateweb-property-type-picker-modal";
 import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-modal";
+import { ProduceContentModal } from "./components/produce-content-modal";
 import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
 
 const fieldClassName =
@@ -107,6 +109,7 @@ export default function DashboardPropertyDetailPage() {
   const updateSalesPricesConfirm = useOverlayState();
   const manageSitesModal = useOverlayState();
   const removeWatermarkModal = useOverlayState();
+  const produceContentModal = useOverlayState();
   const locationPicker = useOverlayState();
   const floorPicker = useOverlayState();
   const energyClassPicker = useOverlayState();
@@ -125,6 +128,7 @@ export default function DashboardPropertyDetailPage() {
   const updateIntegrationImages = useUpdateUserPropertyIntegrationImages();
   const removeWatermarkImages = useRemoveUserPropertyWatermarkImages();
   const removeWatermarksByCount = useRemoveUserPropertiesWatermarkImages();
+  const produceContent = useProduceUserPropertyContent();
   const truncateDescriptions = useTruncateUserPropertyDescriptions();
   const { data: locationCatalog = [] } = useEstateWebLocationCatalog(isEditing);
   const { data: floorCatalog = [], isPending: floorCatalogPending } =
@@ -272,6 +276,13 @@ export default function DashboardPropertyDetailPage() {
         isDisabled: isEditing || !property.integration_property_id,
       },
       {
+        id: "produce-content",
+        label: "Produce content",
+        variant: "default" as const,
+        icon: Languages,
+        isDisabled: isEditing || produceContent.isPending,
+      },
+      {
         id: "update-sales-prices",
         label: "Update sales prices on CRM",
         variant: "default" as const,
@@ -336,6 +347,7 @@ export default function DashboardPropertyDetailPage() {
     isAdmin,
     isEditing,
     property,
+    produceContent.isPending,
     pushToCrm.isPending,
     removeWatermarksByCount.isPending,
     updateProperty.isPending,
@@ -388,6 +400,10 @@ export default function DashboardPropertyDetailPage() {
     }
     if (actionId === "manage-estateweb-sites") {
       manageSitesModal.open();
+      return;
+    }
+    if (actionId === "produce-content") {
+      produceContentModal.open();
       return;
     }
     if (actionId === "update-sales-prices") {
@@ -507,7 +523,8 @@ export default function DashboardPropertyDetailPage() {
               createIntegrationImages.isPending ||
               updateIntegrationImages.isPending ||
               removeWatermarkImages.isPending ||
-              removeWatermarksByCount.isPending
+              removeWatermarksByCount.isPending ||
+              produceContent.isPending
             }
           />
         }
@@ -858,6 +875,27 @@ export default function DashboardPropertyDetailPage() {
                 });
               }}
               isPending={removeWatermarksByCount.isPending}
+            />
+            <ProduceContentModal
+              state={produceContentModal}
+              propertyCount={1}
+              onConfirm={async ({
+                runTranslations,
+                runAiTitles,
+                useAiBatch,
+                regenerate,
+                pushToCrm: pushLanguagesToCrm,
+              }) => {
+                await produceContent.mutateAsync({
+                  ids: [property.id],
+                  run_translations: runTranslations,
+                  run_ai_titles: runAiTitles,
+                  use_ai_batch: useAiBatch,
+                  regenerate,
+                  push_to_crm: pushLanguagesToCrm,
+                });
+              }}
+              isPending={produceContent.isPending}
             />
             <ConfirmationDialog
               state={unlinkConfirm}
