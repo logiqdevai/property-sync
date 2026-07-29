@@ -8,6 +8,15 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 const EMAIL = 'akinitakritis@gmail.com';
 
+const GREEK_FAMILY = 'Primary markets (Greek)';
+const ENGLISH_FAMILY = 'English markets';
+
+const GREEK_FAMILY_INSTRUCTIONS =
+  'Write EVERY title in Greek. Slot codes EL, DE, FR, RU are EstateWeb destinations only. Produce 4 distinct Greek marketing titles (one per slot), using the original Greek title and description. Do not write German, French, or Russian.';
+
+const ENGLISH_FAMILY_INSTRUCTIONS =
+  'Write EVERY title in English. Slot codes EN and IT are EstateWeb destinations only. Produce 2 distinct English marketing titles (one per slot), using the original Greek title and description as source. Do not write Italian.';
+
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL as string,
 });
@@ -18,7 +27,8 @@ async function replaceConfig(
   input: {
     ai_titles_enabled: boolean;
     use_ai_batch: boolean;
-    families: Array<{ name: string }>;
+    notes?: string;
+    families: Array<{ name: string; instructions?: string | null }>;
     outputs: Array<{
       language: ContentLanguage;
       title_strategy: TitleProductionStrategy;
@@ -49,7 +59,7 @@ async function replaceConfig(
         ai_titles_enabled: input.ai_titles_enabled,
         use_ai_batch: input.use_ai_batch,
         is_enabled: true,
-        notes: 'Seeded for akinitakritis goal configs',
+        notes: input.notes ?? 'Seeded for akinitakritis goal configs',
       },
     });
   } else {
@@ -59,7 +69,7 @@ async function replaceConfig(
         ai_titles_enabled: input.ai_titles_enabled,
         use_ai_batch: input.use_ai_batch,
         is_enabled: true,
-        notes: 'Seeded for akinitakritis goal configs',
+        notes: input.notes ?? 'Seeded for akinitakritis goal configs',
       },
     });
   }
@@ -74,6 +84,7 @@ async function replaceConfig(
         data: {
           config_id: config.id,
           name: family.name,
+          instructions: family.instructions ?? null,
           is_enabled: true,
         },
       }),
@@ -129,7 +140,7 @@ async function main() {
     const agency = tracker.source_agency;
     const looksEnglish =
       agency.content_language === ContentLanguage.EN ||
-      /english|uk|britain|britain|usa|america/i.test(agency.name) ||
+      /english|uk|britain|usa|america/i.test(agency.name) ||
       agency.country === 'GB' ||
       agency.country === 'UK' ||
       agency.country === 'US';
@@ -140,7 +151,9 @@ async function main() {
     } else if (
       agency.content_language === ContentLanguage.EL ||
       agency.country === 'GR' ||
-      /krit|crete|greece|ελλ|ακίνητ/i.test(`${agency.name} ${agency.base_url}`)
+      /krit|crete|greece|ελλ|ακίνητ|bitsimis/i.test(
+        `${agency.name} ${agency.base_url}`,
+      )
     ) {
       contentLanguage = ContentLanguage.EL;
     }
@@ -180,31 +193,54 @@ async function main() {
     await replaceConfig(tracker.id, {
       ai_titles_enabled: true,
       use_ai_batch: true,
-      families: [{ name: 'Primary markets' }],
+      notes:
+        'bitsimis: Greek original descriptions on EL/DE/FR/RU; AI Greek titles on those slots; AI English titles + Google EN descriptions on EN/IT',
+      families: [
+        {
+          name: GREEK_FAMILY,
+          instructions: GREEK_FAMILY_INSTRUCTIONS,
+        },
+        {
+          name: ENGLISH_FAMILY,
+          instructions: ENGLISH_FAMILY_INSTRUCTIONS,
+        },
+      ],
       outputs: [
         {
           language: ContentLanguage.EL,
           title_strategy: TitleProductionStrategy.AI,
           description_strategy: DescriptionProductionStrategy.ORIGINAL,
-          familyName: 'Primary markets',
+          familyName: GREEK_FAMILY,
         },
         {
           language: ContentLanguage.DE,
           title_strategy: TitleProductionStrategy.AI,
-          description_strategy: DescriptionProductionStrategy.TRANSLATE,
-          familyName: 'Primary markets',
+          description_strategy: DescriptionProductionStrategy.ORIGINAL,
+          familyName: GREEK_FAMILY,
         },
         {
           language: ContentLanguage.FR,
           title_strategy: TitleProductionStrategy.AI,
-          description_strategy: DescriptionProductionStrategy.TRANSLATE,
-          familyName: 'Primary markets',
+          description_strategy: DescriptionProductionStrategy.ORIGINAL,
+          familyName: GREEK_FAMILY,
         },
         {
           language: ContentLanguage.RU,
           title_strategy: TitleProductionStrategy.AI,
+          description_strategy: DescriptionProductionStrategy.ORIGINAL,
+          familyName: GREEK_FAMILY,
+        },
+        {
+          language: ContentLanguage.EN,
+          title_strategy: TitleProductionStrategy.AI,
           description_strategy: DescriptionProductionStrategy.TRANSLATE,
-          familyName: 'Primary markets',
+          familyName: ENGLISH_FAMILY,
+        },
+        {
+          language: ContentLanguage.IT,
+          title_strategy: TitleProductionStrategy.AI,
+          description_strategy: DescriptionProductionStrategy.TRANSLATE,
+          familyName: ENGLISH_FAMILY,
         },
       ],
     });
@@ -230,9 +266,10 @@ async function main() {
         agency: t.source_agency.name,
         content_language: t.source_agency.content_language,
         ai_titles_enabled: t.content_publishing_config?.ai_titles_enabled,
-        families: t.content_publishing_config?.ai_title_families.map(
-          (f) => f.name,
-        ),
+        families: t.content_publishing_config?.ai_title_families.map((f) => ({
+          name: f.name,
+          instructions: f.instructions,
+        })),
         outputs: t.content_publishing_config?.outputs.map((o) => ({
           language: o.language,
           title: o.title_strategy,

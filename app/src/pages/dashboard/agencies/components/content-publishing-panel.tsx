@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Button,
   Checkbox,
@@ -55,11 +55,10 @@ interface DraftOutput {
   enabled: boolean;
   title_strategy: TitleProductionStrategy;
   description_strategy: DescriptionProductionStrategy;
-  ai_title_family: string;
+  ai_title_family_key: string;
 }
 
-let familyKeySeq = 0;
-const nextFamilyKey = () => `family-${++familyKeySeq}`;
+const nextFamilyKey = () => crypto.randomUUID();
 
 const emptyFamilies = (): DraftFamily[] => [
   {
@@ -71,14 +70,25 @@ const emptyFamilies = (): DraftFamily[] => [
   },
 ];
 
-const emptyOutputs = (sourceLanguage: ContentLanguage): DraftOutput[] =>
+const emptyOutputs = (
+  sourceLanguage: ContentLanguage,
+  defaultFamilyKey: string,
+): DraftOutput[] =>
   ContentLanguageFormOptions.map((lang) => ({
     language: lang.id,
     enabled: lang.id === sourceLanguage,
     title_strategy: TitleProductionStrategies.ORIGINAL,
     description_strategy: DescriptionProductionStrategies.ORIGINAL,
-    ai_title_family: "Primary markets",
+    ai_title_family_key: defaultFamilyKey,
   }));
+
+const createDefaultDraft = (sourceLanguage: ContentLanguage) => {
+  const families = emptyFamilies();
+  return {
+    families,
+    outputs: emptyOutputs(sourceLanguage, families[0].key),
+  };
+};
 
 export function ContentPublishingPanel({
   agencyId,
@@ -95,35 +105,47 @@ export function ContentPublishingPanel({
   const [aiTitlesEnabled, setAiTitlesEnabled] = useState(false);
   const [useAiBatch, setUseAiBatch] = useState(false);
   const [isEnabled, setIsEnabled] = useState(true);
-  const [families, setFamilies] = useState<DraftFamily[]>(emptyFamilies);
-  const [outputs, setOutputs] = useState<DraftOutput[]>(() =>
-    emptyOutputs(resolvedSource),
+  const draftSeed = useRef<ReturnType<typeof createDefaultDraft> | null>(null);
+  if (!draftSeed.current) {
+    draftSeed.current = createDefaultDraft(resolvedSource);
+  }
+  const [families, setFamilies] = useState<DraftFamily[]>(
+    draftSeed.current.families,
+  );
+  const [outputs, setOutputs] = useState<DraftOutput[]>(
+    draftSeed.current.outputs,
   );
 
   useEffect(() => {
     if (!data) {
+      const defaults = createDefaultDraft(resolvedSource);
       setAiTitlesEnabled(false);
       setUseAiBatch(false);
       setIsEnabled(true);
-      setFamilies(emptyFamilies());
-      setOutputs(emptyOutputs(resolvedSource));
+      setFamilies(defaults.families);
+      setOutputs(defaults.outputs);
       return;
     }
 
     setAiTitlesEnabled(data.ai_titles_enabled);
     setUseAiBatch(data.use_ai_batch);
     setIsEnabled(data.is_enabled);
-    setFamilies(
-      data.ai_title_families.length
-        ? data.ai_title_families.map((family) => ({
-            key: family.id || nextFamilyKey(),
-            name: family.name,
-            instructions: family.instructions ?? "",
-            use_batch: family.use_batch,
-            is_enabled: family.is_enabled,
-          }))
-        : emptyFamilies(),
+
+    const nextFamilies: DraftFamily[] = data.ai_title_families.length
+      ? data.ai_title_families.map((family) => ({
+          key: family.id,
+          name: family.name,
+          instructions: family.instructions ?? "",
+          use_batch: family.use_batch,
+          is_enabled: family.is_enabled,
+        }))
+      : emptyFamilies();
+    setFamilies(nextFamilies);
+
+    const familyKeyByName = new Map(
+      nextFamilies.map((family) => [family.name, family.key]),
     );
+    const fallbackFamilyKey = nextFamilies[0]?.key ?? nextFamilyKey();
 
     const enabledByLang = new Map(
       data.outputs.map((output) => [output.language, output]),
@@ -131,6 +153,8 @@ export function ContentPublishingPanel({
     setOutputs(
       ContentLanguageFormOptions.map((lang) => {
         const existing = enabledByLang.get(lang.id);
+        const familyName =
+          existing?.ai_title_family_name ?? data.ai_title_families[0]?.name;
         return {
           language: lang.id,
           enabled: Boolean(existing),
@@ -139,14 +163,17 @@ export function ContentPublishingPanel({
           description_strategy:
             existing?.description_strategy ??
             DescriptionProductionStrategies.ORIGINAL,
-          ai_title_family:
-            existing?.ai_title_family_name ??
-            data.ai_title_families[0]?.name ??
-            "Primary markets",
+          ai_title_family_key: familyName
+            ? (familyKeyByName.get(familyName) ?? fallbackFamilyKey)
+            : fallbackFamilyKey,
         };
       }),
     );
   }, [data, resolvedSource]);
+
+  const familyNameByKey = new Map(
+    families.map((family) => [family.key, family.name]),
+  );
 
   const buildPayload = (): UpsertContentPublishingConfigPayload => {
     const enabledOutputs: UpsertContentOutputPayload[] = outputs
@@ -157,7 +184,7 @@ export function ContentPublishingPanel({
         description_strategy: output.description_strategy,
         ai_title_family:
           output.title_strategy === TitleProductionStrategies.AI
-            ? output.ai_title_family
+            ? (familyNameByKey.get(output.ai_title_family_key) ?? null)
             : null,
       }));
 
@@ -327,6 +354,7 @@ export function ContentPublishingPanel({
                           >
                             <div className="flex items-center gap-2">
                               <Input
+                                id={`ai-family-name-${family.key}`}
                                 aria-label={`Family ${index + 1} name`}
                                 value={family.name}
                                 onChange={(event) => {
@@ -338,16 +366,6 @@ export function ContentPublishingPanel({
                                         : item,
                                     ),
                                   );
-                                  setOutputs((prev) =>
-                                    prev.map((item) =>
-                                      item.ai_title_family === family.name
-                                        ? {
-                                            ...item,
-                                            ai_title_family: nextName,
-                                          }
-                                        : item,
-                                    ),
-                                  );
                                 }}
                                 fullWidth
                               />
@@ -356,18 +374,18 @@ export function ContentPublishingPanel({
                                 variant="danger"
                                 isDisabled={families.length <= 1}
                                 onPress={() => {
-                                  setFamilies((prev) =>
-                                    prev.filter((item) => item.key !== family.key),
+                                  const remaining = families.filter(
+                                    (item) => item.key !== family.key,
                                   );
+                                  const fallbackKey =
+                                    remaining[0]?.key ?? nextFamilyKey();
+                                  setFamilies(remaining);
                                   setOutputs((prev) =>
                                     prev.map((item) =>
-                                      item.ai_title_family === family.name
+                                      item.ai_title_family_key === family.key
                                         ? {
                                             ...item,
-                                            ai_title_family:
-                                              families.find(
-                                                (f) => f.key !== family.key,
-                                              )?.name ?? "Primary markets",
+                                            ai_title_family_key: fallbackKey,
                                           }
                                         : item,
                                     ),
@@ -378,6 +396,7 @@ export function ContentPublishingPanel({
                               </Button>
                             </div>
                             <TextArea
+                              id={`ai-family-instructions-${family.key}`}
                               aria-label={`Family ${index + 1} instructions`}
                               value={family.instructions}
                               onChange={(event) =>
@@ -517,7 +536,7 @@ export function ContentPublishingPanel({
                           TitleProductionStrategies.AI ? (
                             <Select
                               aria-label={`${output.language} AI family`}
-                              selectedKey={output.ai_title_family}
+                              selectedKey={output.ai_title_family_key}
                               isDisabled={!output.enabled}
                               onSelectionChange={(key) => {
                                 if (!key) return;
@@ -526,7 +545,7 @@ export function ContentPublishingPanel({
                                     item.language === output.language
                                       ? {
                                           ...item,
-                                          ai_title_family: String(key),
+                                          ai_title_family_key: String(key),
                                         }
                                       : item,
                                   ),
@@ -540,7 +559,7 @@ export function ContentPublishingPanel({
                               <Select.Popover>
                                 <ListBox
                                   items={families.map((family) => ({
-                                    id: family.name,
+                                    id: family.key,
                                     label: family.name,
                                   }))}
                                 >
