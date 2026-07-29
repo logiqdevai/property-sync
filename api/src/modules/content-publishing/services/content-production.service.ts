@@ -4,6 +4,7 @@ import {
   AiBatchRunStatus,
   ContentLanguage,
   ContentType,
+  CostOperationType,
   DescriptionProductionStrategy,
   IntegrationType,
   ListingType,
@@ -11,6 +12,8 @@ import {
   TitleProductionStrategy,
 } from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { CostLogsService } from '@/modules/cost-logs/cost-logs.service';
+import { GOOGLE_TRANSLATE_COST_PER_CHAR } from '@/integrations/google-translate/constants/google-translate.constants';
 import { ContentPublishingConfigWithRelations } from '../interfaces/content-publishing.interface';
 import {
   AiTitlePropertyFacts,
@@ -64,6 +67,7 @@ export class ContentProductionService {
     private readonly googleTranslationService: GoogleTranslationService,
     private readonly aiTitleFamilyService: AiTitleFamilyService,
     private readonly aiTitleBatchService: AiTitleBatchService,
+    private readonly costLogsService: CostLogsService,
   ) {}
 
   async markStale(userPropertyId: string): Promise<void> {
@@ -218,6 +222,7 @@ export class ContentProductionService {
             property,
             group.contentLanguage,
             group.config,
+            group.userId,
           );
           translationsWritten += written;
           translationsByProperty.set(property.id, written);
@@ -395,6 +400,7 @@ export class ContentProductionService {
               writingLanguage,
               targetLanguages,
               apiKey,
+              userId: group.userId,
               crawlRunId: options?.crawlRunId ?? null,
               changeTypesByPropertyId: changeTypes,
               items: needingWork.map((property) => ({
@@ -428,6 +434,7 @@ export class ContentProductionService {
               instructions: family.instructions,
               model: family.model,
               apiKey: apiKey ?? undefined,
+              userId: group.userId,
               items: needingWork.map((property) => ({
                 userPropertyId: property.id,
                 title: property.title,
@@ -670,6 +677,7 @@ export class ContentProductionService {
     userProperty: { id: string; title: string; description: string | null },
     contentLanguage: ContentLanguage,
     config: ContentPublishingConfigWithRelations,
+    userId: string,
   ): Promise<number> {
     const jobs: Array<{
       contentType: ContentType;
@@ -756,6 +764,15 @@ export class ContentProductionService {
           language: job.language,
           production: 'TRANSLATE',
           text,
+        });
+        await this.costLogsService.record({
+          userId,
+          operationType: CostOperationType.TRANSLATION,
+          provider: IntegrationType.GOOGLE_TRANSLATE,
+          inputQuantity: job.sourceText.length,
+          totalCost: job.sourceText.length * GOOGLE_TRANSLATE_COST_PER_CHAR,
+          userPropertyId: userProperty.id,
+          metadata: { content_type: job.contentType, target_language: job.language },
         });
         written += 1;
         this.logger.log(

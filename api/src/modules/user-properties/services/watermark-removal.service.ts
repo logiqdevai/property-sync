@@ -9,7 +9,9 @@ import { DewatermarkOrchestratorService } from '@/integrations/dewatermark/servi
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
 import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
 import { GcsFolders } from '@/shared/config/gcs-folders';
-import { IntegrationType, Prisma } from 'generated/prisma';
+import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
+import { CostLogsService } from '@/modules/cost-logs/cost-logs.service';
+import { CostOperationType, IntegrationType, Prisma } from 'generated/prisma';
 import { EstateWebIntegrationPropertyImage } from '../interfaces/integration-property-image.interface';
 import {
   WatermarkRemovalJobData,
@@ -46,7 +48,25 @@ export class WatermarkRemovalService {
     private readonly dewatermarkOrchestrator: DewatermarkOrchestratorService,
     private readonly gcsService: GcsService,
     private readonly estateWebCmsSyncAdapter: EstateWebCmsSyncAdapter,
+    private readonly platformConfigService: PlatformConfigService,
+    private readonly costLogsService: CostLogsService,
   ) {}
+
+  private async recordDewatermarkCost(params: {
+    userId: string;
+    userPropertyId: string;
+  }): Promise<void> {
+    const costPerImage =
+      await this.platformConfigService.getDewatermarkCostPerImage();
+    await this.costLogsService.record({
+      userId: params.userId,
+      operationType: CostOperationType.DEWATERMARK,
+      provider: IntegrationType.DEWATERMARK,
+      unitCount: 1,
+      totalCost: costPerImage,
+      userPropertyId: params.userPropertyId,
+    });
+  }
 
   async applyTrackerWatermarkPipeline(params: {
     userPropertyId: string;
@@ -113,6 +133,11 @@ export class WatermarkRemovalService {
           );
           continue;
         }
+
+        await this.recordDewatermarkCost({
+          userId: params.userId,
+          userPropertyId: params.userPropertyId,
+        });
 
         const filename = `watermark-removed-${params.userPropertyId}-${index}-${Date.now()}.jpg`;
         const gcsUpload = await this.gcsService.uploadImageFromBuffer(
@@ -313,6 +338,11 @@ export class WatermarkRemovalService {
       step: 'dewatermark_decode',
       status: 'ok',
       detail: `output_bytes=${processedBuffer.length}`,
+    });
+
+    await this.recordDewatermarkCost({
+      userId: params.userId,
+      userPropertyId: params.userPropertyId,
     });
 
     const zindex =

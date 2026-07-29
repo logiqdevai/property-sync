@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, Min, ValidateIf } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, Min, ValidateIf } from 'class-validator';
 
 // Every field is nullable: null explicitly resets that setting back to its
 // in-code default (see PlatformConfigService.getCrawlerConfig), omitting
@@ -117,4 +117,16 @@ export class UpdatePlatformConfigDto {
   @IsInt()
   @Min(100)
   normalization_ai_raw_description_max_chars?: number | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
+      'Cost (USD) attributed per dewatermarked image in the cost log; null resets to the in-code default',
+    example: 0.02,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsNumber()
+  @Min(0)
+  dewatermark_cost_per_image?: number | null;
 }

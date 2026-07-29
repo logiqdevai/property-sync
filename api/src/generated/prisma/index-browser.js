@@ -605,6 +605,27 @@ exports.Prisma.AiBatchRunScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.CostLogScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  operation_type: 'operation_type',
+  provider: 'provider',
+  model: 'model',
+  input_quantity: 'input_quantity',
+  output_quantity: 'output_quantity',
+  unit_count: 'unit_count',
+  input_cost: 'input_cost',
+  output_cost: 'output_cost',
+  total_cost: 'total_cost',
+  currency: 'currency',
+  crawl_run_id: 'crawl_run_id',
+  user_property_id: 'user_property_id',
+  user_tracked_agency_id: 'user_tracked_agency_id',
+  ai_batch_run_id: 'ai_batch_run_id',
+  metadata: 'metadata',
+  created_at: 'created_at'
+};
+
 exports.Prisma.IntegrationPropertyScalarFieldEnum = {
   id: 'id',
   user_id: 'user_id',
@@ -628,6 +649,7 @@ exports.Prisma.PlatformConfigScalarFieldEnum = {
   crawler_job_timeout_ms: 'crawler_job_timeout_ms',
   crawler_chromium_max_contexts_before_restart: 'crawler_chromium_max_contexts_before_restart',
   normalization_ai_raw_description_max_chars: 'normalization_ai_raw_description_max_chars',
+  dewatermark_cost_per_image: 'dewatermark_cost_per_image',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };
@@ -686,7 +708,8 @@ exports.IntegrationType = exports.$Enums.IntegrationType = {
   ANTHROPIC: 'ANTHROPIC',
   GEMINI: 'GEMINI',
   DEEPSEEK: 'DEEPSEEK',
-  DEWATERMARK: 'DEWATERMARK'
+  DEWATERMARK: 'DEWATERMARK',
+  GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE'
 };
 
 exports.AuthType = exports.$Enums.AuthType = {
@@ -911,6 +934,14 @@ exports.AiBatchRunStatus = exports.$Enums.AiBatchRunStatus = {
   CANCELLED: 'CANCELLED'
 };
 
+exports.CostOperationType = exports.$Enums.CostOperationType = {
+  NORMALIZATION: 'NORMALIZATION',
+  TITLE_GENERATION: 'TITLE_GENERATION',
+  TRANSLATION: 'TRANSLATION',
+  DEWATERMARK: 'DEWATERMARK',
+  OTHER: 'OTHER'
+};
+
 exports.DocumentType = exports.$Enums.DocumentType = {
   LOGO: 'LOGO',
   BANNER: 'BANNER',
@@ -951,6 +982,7 @@ exports.Prisma.ModelName = {
   AiTitleFamily: 'AiTitleFamily',
   PropertyLocalizedContent: 'PropertyLocalizedContent',
   AiBatchRun: 'AiBatchRun',
+  CostLog: 'CostLog',
   IntegrationProperty: 'IntegrationProperty',
   PlatformConfig: 'PlatformConfig',
   Document: 'Document'

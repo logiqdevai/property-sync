@@ -11,11 +11,14 @@ export interface CrawlerConfigFieldDef {
     | "crawler_worker_concurrency"
     | "crawler_job_timeout_ms"
     | "crawler_chromium_max_contexts_before_restart"
-    | "normalization_ai_raw_description_max_chars";
+    | "normalization_ai_raw_description_max_chars"
+    | "dewatermark_cost_per_image";
   label: string;
   defaultValue: number;
   min: number;
   hint: string;
+  isDecimal?: boolean;
+  step?: number;
 }
 
 export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
@@ -89,6 +92,15 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
     min: 100,
     hint: "Max characters of scraped description sent to AI for field extraction. Full text is still stored on the property.",
   },
+  {
+    key: "dewatermark_cost_per_image",
+    label: "Dewatermark cost per image (USD)",
+    defaultValue: 0.02,
+    min: 0,
+    hint: "Cost attributed per dewatermarked image in the cost log.",
+    isDecimal: true,
+    step: 0.01,
+  },
 ];
 
 function optionalIntegerField(min: number) {
@@ -105,18 +117,38 @@ function optionalIntegerField(min: number) {
     );
 }
 
+function optionalDecimalField(min: number) {
+  return z
+    .string()
+    .optional()
+    .refine(
+      (value) => {
+        if (!value?.trim()) return true;
+        const parsed = Number(value);
+        return Number.isFinite(parsed) && parsed >= min;
+      },
+      { message: `Enter a number ≥ ${min}, or leave blank to use the default` },
+    );
+}
+
 export const crawlerConfigFormSchema = z.object(
   Object.fromEntries(
-    CRAWLER_CONFIG_FIELDS.map((field) => [field.key, optionalIntegerField(field.min)]),
+    CRAWLER_CONFIG_FIELDS.map((field) => [
+      field.key,
+      field.isDecimal ? optionalDecimalField(field.min) : optionalIntegerField(field.min),
+    ]),
   ) as Record<CrawlerConfigFieldDef["key"], ReturnType<typeof optionalIntegerField>>,
 );
 
 export type CrawlerConfigFormValues = z.infer<typeof crawlerConfigFormSchema>;
 
-export function parseOptionalConfigNumber(value: string | undefined): number | null | undefined {
+export function parseOptionalConfigNumber(
+  value: string | undefined,
+  isDecimal?: boolean,
+): number | null | undefined {
   const trimmed = value?.trim();
   if (!trimmed) return null;
   const parsed = Number(trimmed);
-  if (!Number.isInteger(parsed)) return undefined;
+  if (isDecimal ? !Number.isFinite(parsed) : !Number.isInteger(parsed)) return undefined;
   return parsed;
 }

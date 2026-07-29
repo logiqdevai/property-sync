@@ -4,11 +4,16 @@ import {
   AiBatchRunStatus,
   ContentLanguage,
   ContentType,
+  CostOperationType,
+  IntegrationType,
   JobStatus,
 } from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { AiBatchClientService } from '@/integrations/ai-batch/services/ai-batch-client.service';
 import { AiDefaults } from '@/integrations/ai/utils/ai.config';
+import { calculateAiCost } from '@/integrations/ai/utils/ai-cost';
+import { AiProviders } from '@/integrations/ai/interfaces/ai.interface';
+import { CostLogsService } from '@/modules/cost-logs/cost-logs.service';
 import { OPENAI_BATCH_QUEUE } from '@/core/queues/queues.constants';
 import {
   AI_TITLE_SYSTEM_PROMPT,
@@ -25,6 +30,7 @@ export class AiTitleBatchService {
     private readonly prisma: PrismaService,
     private readonly aiBatchClient: AiBatchClientService,
     private readonly aiTitleFamilyService: AiTitleFamilyService,
+    private readonly costLogsService: CostLogsService,
   ) {}
 
   async submitFamilyBatch(params: {
@@ -37,6 +43,7 @@ export class AiTitleBatchService {
     writingLanguage: ContentLanguage;
     targetLanguages: ContentLanguage[];
     apiKey: string;
+    userId?: string | null;
     crawlRunId?: string | null;
     changeTypesByPropertyId?: Record<string, string>;
     items: Array<{
@@ -98,6 +105,7 @@ export class AiTitleBatchService {
           writing_language: params.writingLanguage,
           family_name: params.familyName,
           model,
+          user_id: params.userId ?? null,
           change_types_by_property_id: params.changeTypesByPropertyId ?? {},
         },
       },
@@ -154,10 +162,13 @@ export class AiTitleBatchService {
     const meta = (run.metadata ?? {}) as {
       target_languages?: ContentLanguage[];
       writing_language?: ContentLanguage;
+      model?: string;
+      user_id?: string | null;
     };
     const targetLanguages = meta.target_languages ?? [];
     const writingLanguage =
       meta.writing_language ?? ContentLanguage.EN;
+    const model = meta.model || AiDefaults.model;
 
     const propertyIds = Array.isArray(run.user_property_ids)
       ? (run.user_property_ids as string[])
@@ -179,7 +190,12 @@ export class AiTitleBatchService {
       if (!line.trim()) continue;
       let parsed: {
         custom_id?: string;
-        response?: { body?: { choices?: Array<{ message?: { content?: string } }> } };
+        response?: {
+          body?: {
+            choices?: Array<{ message?: { content?: string } }>;
+            usage?: { prompt_tokens?: number; completion_tokens?: number };
+          };
+        };
       };
       try {
         parsed = JSON.parse(line);
@@ -190,6 +206,30 @@ export class AiTitleBatchService {
       const content =
         parsed.response?.body?.choices?.[0]?.message?.content ?? '';
       if (!userPropertyId || !content) continue;
+
+      const usage = parsed.response?.body?.usage;
+      if (usage) {
+        const cost = calculateAiCost({
+          provider: AiProviders.openai,
+          model,
+          inputTokens: usage.prompt_tokens ?? 0,
+          outputTokens: usage.completion_tokens ?? 0,
+          isBatch: true,
+        });
+        await this.costLogsService.record({
+          userId: meta.user_id,
+          operationType: CostOperationType.TITLE_GENERATION,
+          provider: IntegrationType.OPENAI,
+          model,
+          inputQuantity: cost.inputTokens,
+          outputQuantity: cost.outputTokens,
+          inputCost: cost.inputCost,
+          outputCost: cost.outputCost,
+          totalCost: cost.totalCost,
+          userPropertyId,
+          aiBatchRunId: run.id,
+        });
+      }
 
       const titles = this.aiTitleFamilyService.applySquareMetersGuard(
         this.aiTitleFamilyService.parseTitlesResponse(

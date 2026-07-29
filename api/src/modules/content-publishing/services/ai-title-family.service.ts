@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ContentLanguage } from 'generated/prisma';
+import { ContentLanguage, CostOperationType, IntegrationType } from 'generated/prisma';
 import { AiService } from '@/integrations/ai/services/ai.service';
 import { AiDefaults } from '@/integrations/ai/utils/ai.config';
+import { CostLogsService } from '@/modules/cost-logs/cost-logs.service';
 import {
   AI_TITLE_MULTI_PROPERTY_CHUNK_SIZE,
   AI_TITLE_MULTI_PROPERTY_SYSTEM_PROMPT,
@@ -17,7 +18,10 @@ import {
 export class AiTitleFamilyService {
   private readonly logger = new Logger(AiTitleFamilyService.name);
 
-  constructor(private readonly aiService: AiService) {}
+  constructor(
+    private readonly aiService: AiService,
+    private readonly costLogsService: CostLogsService,
+  ) {}
 
   async generateTitles(input: {
     sourceLanguage: ContentLanguage;
@@ -29,6 +33,8 @@ export class AiTitleFamilyService {
     instructions?: string | null;
     model?: string | null;
     apiKey?: string;
+    userId?: string | null;
+    userPropertyId?: string | null;
   }): Promise<Partial<Record<ContentLanguage, string>>> {
     if (!input.targetLanguages.length) return {};
 
@@ -50,6 +56,19 @@ export class AiTitleFamilyService {
       prompt,
       temperature: 0.4,
       maxTokens: 1200,
+    });
+
+    await this.costLogsService.record({
+      userId: input.userId,
+      operationType: CostOperationType.TITLE_GENERATION,
+      provider: IntegrationType.OPENAI,
+      model: input.model || AiDefaults.model,
+      inputQuantity: result.usage.inputTokens,
+      outputQuantity: result.usage.outputTokens,
+      inputCost: result.usage.inputCost,
+      outputCost: result.usage.outputCost,
+      totalCost: result.usage.totalCost,
+      userPropertyId: input.userPropertyId,
     });
 
     const titles = this.parseTitlesResponse(result.response, input.targetLanguages);
@@ -74,6 +93,7 @@ export class AiTitleFamilyService {
     model?: string | null;
     apiKey?: string;
     chunkSize?: number;
+    userId?: string | null;
   }): Promise<
     Map<string, Partial<Record<ContentLanguage, string>>>
   > {
@@ -116,6 +136,21 @@ export class AiTitleFamilyService {
       this.logger.log(
         `[generateTitlesForProperties] chunk response chars=${result.response?.length ?? 0}`,
       );
+
+      await this.costLogsService.record({
+        userId: input.userId,
+        operationType: CostOperationType.TITLE_GENERATION,
+        provider: IntegrationType.OPENAI,
+        model: input.model || AiDefaults.model,
+        inputQuantity: result.usage.inputTokens,
+        outputQuantity: result.usage.outputTokens,
+        inputCost: result.usage.inputCost,
+        outputCost: result.usage.outputCost,
+        totalCost: result.usage.totalCost,
+        userPropertyId:
+          chunk.length === 1 ? chunk[0].userPropertyId : undefined,
+        metadata: { user_property_ids: chunk.map((item) => item.userPropertyId) },
+      });
 
       const parsed = this.parseMultiPropertyTitlesResponse(
         result.response,

@@ -184,6 +184,13 @@ export type PropertyLocalizedContent = $Result.DefaultSelection<Prisma.$Property
  */
 export type AiBatchRun = $Result.DefaultSelection<Prisma.$AiBatchRunPayload>
 /**
+ * Model CostLog
+ * Unified billable-operation ledger -- one row per cost-incurring call (AI normalization,
+ * AI title generation, Google Translate, Dewatermark image processing, ...). Sits alongside
+ * (not instead of) CrawlRun.ai_* columns, which stay as the crawl-runs page's own summary.
+ */
+export type CostLog = $Result.DefaultSelection<Prisma.$CostLogPayload>
+/**
  * Model IntegrationProperty
  * 
  */
@@ -465,10 +472,22 @@ export const IntegrationType: {
   ANTHROPIC: 'ANTHROPIC',
   GEMINI: 'GEMINI',
   DEEPSEEK: 'DEEPSEEK',
-  DEWATERMARK: 'DEWATERMARK'
+  DEWATERMARK: 'DEWATERMARK',
+  GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE'
 };
 
 export type IntegrationType = (typeof IntegrationType)[keyof typeof IntegrationType]
+
+
+export const CostOperationType: {
+  NORMALIZATION: 'NORMALIZATION',
+  TITLE_GENERATION: 'TITLE_GENERATION',
+  TRANSLATION: 'TRANSLATION',
+  DEWATERMARK: 'DEWATERMARK',
+  OTHER: 'OTHER'
+};
+
+export type CostOperationType = (typeof CostOperationType)[keyof typeof CostOperationType]
 
 
 export const AuthType: {
@@ -653,6 +672,10 @@ export const PropertyType: typeof $Enums.PropertyType
 export type IntegrationType = $Enums.IntegrationType
 
 export const IntegrationType: typeof $Enums.IntegrationType
+
+export type CostOperationType = $Enums.CostOperationType
+
+export const CostOperationType: typeof $Enums.CostOperationType
 
 export type AuthType = $Enums.AuthType
 
@@ -1074,6 +1097,16 @@ export class PrismaClient<
     * ```
     */
   get aiBatchRun(): Prisma.AiBatchRunDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.costLog`: Exposes CRUD operations for the **CostLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CostLogs
+    * const costLogs = await prisma.costLog.findMany()
+    * ```
+    */
+  get costLog(): Prisma.CostLogDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.integrationProperty`: Exposes CRUD operations for the **IntegrationProperty** model.
@@ -1566,6 +1599,7 @@ export namespace Prisma {
     AiTitleFamily: 'AiTitleFamily',
     PropertyLocalizedContent: 'PropertyLocalizedContent',
     AiBatchRun: 'AiBatchRun',
+    CostLog: 'CostLog',
     IntegrationProperty: 'IntegrationProperty',
     PlatformConfig: 'PlatformConfig',
     Document: 'Document'
@@ -1584,7 +1618,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "notification" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "contentPublishingConfig" | "contentOutput" | "aiTitleFamily" | "propertyLocalizedContent" | "aiBatchRun" | "integrationProperty" | "platformConfig" | "document"
+      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "notification" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "contentPublishingConfig" | "contentOutput" | "aiTitleFamily" | "propertyLocalizedContent" | "aiBatchRun" | "costLog" | "integrationProperty" | "platformConfig" | "document"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3660,6 +3694,80 @@ export namespace Prisma {
           }
         }
       }
+      CostLog: {
+        payload: Prisma.$CostLogPayload<ExtArgs>
+        fields: Prisma.CostLogFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CostLogFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CostLogFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostLogPayload>
+          }
+          findFirst: {
+            args: Prisma.CostLogFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CostLogFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostLogPayload>
+          }
+          findMany: {
+            args: Prisma.CostLogFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostLogPayload>[]
+          }
+          create: {
+            args: Prisma.CostLogCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostLogPayload>
+          }
+          createMany: {
+            args: Prisma.CostLogCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.CostLogCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostLogPayload>[]
+          }
+          delete: {
+            args: Prisma.CostLogDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostLogPayload>
+          }
+          update: {
+            args: Prisma.CostLogUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.CostLogDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CostLogUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.CostLogUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostLogPayload>[]
+          }
+          upsert: {
+            args: Prisma.CostLogUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CostLogPayload>
+          }
+          aggregate: {
+            args: Prisma.CostLogAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCostLog>
+          }
+          groupBy: {
+            args: Prisma.CostLogGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CostLogGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CostLogCountArgs<ExtArgs>
+            result: $Utils.Optional<CostLogCountAggregateOutputType> | number
+          }
+        }
+      }
       IntegrationProperty: {
         payload: Prisma.$IntegrationPropertyPayload<ExtArgs>
         fields: Prisma.IntegrationPropertyFieldRefs
@@ -4018,6 +4126,7 @@ export namespace Prisma {
     aiTitleFamily?: AiTitleFamilyOmit
     propertyLocalizedContent?: PropertyLocalizedContentOmit
     aiBatchRun?: AiBatchRunOmit
+    costLog?: CostLogOmit
     integrationProperty?: IntegrationPropertyOmit
     platformConfig?: PlatformConfigOmit
     document?: DocumentOmit
@@ -4106,6 +4215,7 @@ export namespace Prisma {
     user_integrations: number
     user_integration_settings: number
     integration_properties: number
+    cost_logs: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4114,6 +4224,7 @@ export namespace Prisma {
     user_integrations?: boolean | UserCountOutputTypeCountUser_integrationsArgs
     user_integration_settings?: boolean | UserCountOutputTypeCountUser_integration_settingsArgs
     integration_properties?: boolean | UserCountOutputTypeCountIntegration_propertiesArgs
+    cost_logs?: boolean | UserCountOutputTypeCountCost_logsArgs
   }
 
   // Custom InputTypes
@@ -4160,6 +4271,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountIntegration_propertiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: IntegrationPropertyWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCost_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CostLogWhereInput
   }
 
 
@@ -4356,10 +4474,12 @@ export namespace Prisma {
 
   export type UserTrackedAgencyCountOutputType = {
     crawl_runs: number
+    cost_logs: number
   }
 
   export type UserTrackedAgencyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     crawl_runs?: boolean | UserTrackedAgencyCountOutputTypeCountCrawl_runsArgs
+    cost_logs?: boolean | UserTrackedAgencyCountOutputTypeCountCost_logsArgs
   }
 
   // Custom InputTypes
@@ -4378,6 +4498,13 @@ export namespace Prisma {
    */
   export type UserTrackedAgencyCountOutputTypeCountCrawl_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CrawlRunWhereInput
+  }
+
+  /**
+   * UserTrackedAgencyCountOutputType without action
+   */
+  export type UserTrackedAgencyCountOutputTypeCountCost_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CostLogWhereInput
   }
 
 
@@ -4499,6 +4626,7 @@ export namespace Prisma {
     notifications: number
     cms_sync_runs: number
     ai_batch_runs: number
+    cost_logs: number
   }
 
   export type CrawlRunCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4508,6 +4636,7 @@ export namespace Prisma {
     notifications?: boolean | CrawlRunCountOutputTypeCountNotificationsArgs
     cms_sync_runs?: boolean | CrawlRunCountOutputTypeCountCms_sync_runsArgs
     ai_batch_runs?: boolean | CrawlRunCountOutputTypeCountAi_batch_runsArgs
+    cost_logs?: boolean | CrawlRunCountOutputTypeCountCost_logsArgs
   }
 
   // Custom InputTypes
@@ -4561,6 +4690,13 @@ export namespace Prisma {
    */
   export type CrawlRunCountOutputTypeCountAi_batch_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AiBatchRunWhereInput
+  }
+
+  /**
+   * CrawlRunCountOutputType without action
+   */
+  export type CrawlRunCountOutputTypeCountCost_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CostLogWhereInput
   }
 
 
@@ -4682,11 +4818,13 @@ export namespace Prisma {
   export type UserPropertyCountOutputType = {
     integration_properties: number
     localized_contents: number
+    cost_logs: number
   }
 
   export type UserPropertyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     integration_properties?: boolean | UserPropertyCountOutputTypeCountIntegration_propertiesArgs
     localized_contents?: boolean | UserPropertyCountOutputTypeCountLocalized_contentsArgs
+    cost_logs?: boolean | UserPropertyCountOutputTypeCountCost_logsArgs
   }
 
   // Custom InputTypes
@@ -4712,6 +4850,13 @@ export namespace Prisma {
    */
   export type UserPropertyCountOutputTypeCountLocalized_contentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PropertyLocalizedContentWhereInput
+  }
+
+  /**
+   * UserPropertyCountOutputType without action
+   */
+  export type UserPropertyCountOutputTypeCountCost_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CostLogWhereInput
   }
 
 
@@ -4801,6 +4946,37 @@ export namespace Prisma {
    */
   export type AiTitleFamilyCountOutputTypeCountAi_batch_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AiBatchRunWhereInput
+  }
+
+
+  /**
+   * Count Type AiBatchRunCountOutputType
+   */
+
+  export type AiBatchRunCountOutputType = {
+    cost_logs: number
+  }
+
+  export type AiBatchRunCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    cost_logs?: boolean | AiBatchRunCountOutputTypeCountCost_logsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * AiBatchRunCountOutputType without action
+   */
+  export type AiBatchRunCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRunCountOutputType
+     */
+    select?: AiBatchRunCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * AiBatchRunCountOutputType without action
+   */
+  export type AiBatchRunCountOutputTypeCountCost_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CostLogWhereInput
   }
 
 
@@ -5033,6 +5209,7 @@ export namespace Prisma {
     user_integrations?: boolean | User$user_integrationsArgs<ExtArgs>
     user_integration_settings?: boolean | User$user_integration_settingsArgs<ExtArgs>
     integration_properties?: boolean | User$integration_propertiesArgs<ExtArgs>
+    cost_logs?: boolean | User$cost_logsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -5073,6 +5250,7 @@ export namespace Prisma {
     user_integrations?: boolean | User$user_integrationsArgs<ExtArgs>
     user_integration_settings?: boolean | User$user_integration_settingsArgs<ExtArgs>
     integration_properties?: boolean | User$integration_propertiesArgs<ExtArgs>
+    cost_logs?: boolean | User$cost_logsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -5086,6 +5264,7 @@ export namespace Prisma {
       user_integrations: Prisma.$UserIntegrationPayload<ExtArgs>[]
       user_integration_settings: Prisma.$UserIntegrationSettingsPayload<ExtArgs>[]
       integration_properties: Prisma.$IntegrationPropertyPayload<ExtArgs>[]
+      cost_logs: Prisma.$CostLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5494,6 +5673,7 @@ export namespace Prisma {
     user_integrations<T extends User$user_integrationsArgs<ExtArgs> = {}>(args?: Subset<T, User$user_integrationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserIntegrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     user_integration_settings<T extends User$user_integration_settingsArgs<ExtArgs> = {}>(args?: Subset<T, User$user_integration_settingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserIntegrationSettingsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     integration_properties<T extends User$integration_propertiesArgs<ExtArgs> = {}>(args?: Subset<T, User$integration_propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    cost_logs<T extends User$cost_logsArgs<ExtArgs> = {}>(args?: Subset<T, User$cost_logsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6035,6 +6215,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: IntegrationPropertyScalarFieldEnum | IntegrationPropertyScalarFieldEnum[]
+  }
+
+  /**
+   * User.cost_logs
+   */
+  export type User$cost_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    where?: CostLogWhereInput
+    orderBy?: CostLogOrderByWithRelationInput | CostLogOrderByWithRelationInput[]
+    cursor?: CostLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CostLogScalarFieldEnum | CostLogScalarFieldEnum[]
   }
 
   /**
@@ -11243,6 +11447,7 @@ export namespace Prisma {
     crawl_runs?: boolean | UserTrackedAgency$crawl_runsArgs<ExtArgs>
     integration_link?: boolean | UserTrackedAgency$integration_linkArgs<ExtArgs>
     content_publishing_config?: boolean | UserTrackedAgency$content_publishing_configArgs<ExtArgs>
+    cost_logs?: boolean | UserTrackedAgency$cost_logsArgs<ExtArgs>
     _count?: boolean | UserTrackedAgencyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userTrackedAgency"]>
 
@@ -11320,6 +11525,7 @@ export namespace Prisma {
     crawl_runs?: boolean | UserTrackedAgency$crawl_runsArgs<ExtArgs>
     integration_link?: boolean | UserTrackedAgency$integration_linkArgs<ExtArgs>
     content_publishing_config?: boolean | UserTrackedAgency$content_publishing_configArgs<ExtArgs>
+    cost_logs?: boolean | UserTrackedAgency$cost_logsArgs<ExtArgs>
     _count?: boolean | UserTrackedAgencyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserTrackedAgencyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11339,6 +11545,7 @@ export namespace Prisma {
       crawl_runs: Prisma.$CrawlRunPayload<ExtArgs>[]
       integration_link: Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs> | null
       content_publishing_config: Prisma.$ContentPublishingConfigPayload<ExtArgs> | null
+      cost_logs: Prisma.$CostLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -11758,6 +11965,7 @@ export namespace Prisma {
     crawl_runs<T extends UserTrackedAgency$crawl_runsArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$crawl_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     integration_link<T extends UserTrackedAgency$integration_linkArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$integration_linkArgs<ExtArgs>>): Prisma__UserTrackedAgencyIntegrationLinkClient<$Result.GetResult<Prisma.$UserTrackedAgencyIntegrationLinkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     content_publishing_config<T extends UserTrackedAgency$content_publishing_configArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$content_publishing_configArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    cost_logs<T extends UserTrackedAgency$cost_logsArgs<ExtArgs> = {}>(args?: Subset<T, UserTrackedAgency$cost_logsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12260,6 +12468,30 @@ export namespace Prisma {
      */
     include?: ContentPublishingConfigInclude<ExtArgs> | null
     where?: ContentPublishingConfigWhereInput
+  }
+
+  /**
+   * UserTrackedAgency.cost_logs
+   */
+  export type UserTrackedAgency$cost_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    where?: CostLogWhereInput
+    orderBy?: CostLogOrderByWithRelationInput | CostLogOrderByWithRelationInput[]
+    cursor?: CostLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CostLogScalarFieldEnum | CostLogScalarFieldEnum[]
   }
 
   /**
@@ -20067,6 +20299,7 @@ export namespace Prisma {
     diagnostics_package?: boolean | CrawlRun$diagnostics_packageArgs<ExtArgs>
     cms_sync_runs?: boolean | CrawlRun$cms_sync_runsArgs<ExtArgs>
     ai_batch_runs?: boolean | CrawlRun$ai_batch_runsArgs<ExtArgs>
+    cost_logs?: boolean | CrawlRun$cost_logsArgs<ExtArgs>
     _count?: boolean | CrawlRunCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["crawlRun"]>
 
@@ -20178,6 +20411,7 @@ export namespace Prisma {
     diagnostics_package?: boolean | CrawlRun$diagnostics_packageArgs<ExtArgs>
     cms_sync_runs?: boolean | CrawlRun$cms_sync_runsArgs<ExtArgs>
     ai_batch_runs?: boolean | CrawlRun$ai_batch_runsArgs<ExtArgs>
+    cost_logs?: boolean | CrawlRun$cost_logsArgs<ExtArgs>
     _count?: boolean | CrawlRunCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type CrawlRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -20204,6 +20438,7 @@ export namespace Prisma {
       diagnostics_package: Prisma.$DiagnosticsPackagePayload<ExtArgs> | null
       cms_sync_runs: Prisma.$CmsSyncRunPayload<ExtArgs>[]
       ai_batch_runs: Prisma.$AiBatchRunPayload<ExtArgs>[]
+      cost_logs: Prisma.$CostLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -20637,6 +20872,7 @@ export namespace Prisma {
     diagnostics_package<T extends CrawlRun$diagnostics_packageArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$diagnostics_packageArgs<ExtArgs>>): Prisma__DiagnosticsPackageClient<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     cms_sync_runs<T extends CrawlRun$cms_sync_runsArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$cms_sync_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CmsSyncRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ai_batch_runs<T extends CrawlRun$ai_batch_runsArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$ai_batch_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    cost_logs<T extends CrawlRun$cost_logsArgs<ExtArgs> = {}>(args?: Subset<T, CrawlRun$cost_logsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -21287,6 +21523,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AiBatchRunScalarFieldEnum | AiBatchRunScalarFieldEnum[]
+  }
+
+  /**
+   * CrawlRun.cost_logs
+   */
+  export type CrawlRun$cost_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    where?: CostLogWhereInput
+    orderBy?: CostLogOrderByWithRelationInput | CostLogOrderByWithRelationInput[]
+    cursor?: CostLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CostLogScalarFieldEnum | CostLogScalarFieldEnum[]
   }
 
   /**
@@ -33248,6 +33508,7 @@ export namespace Prisma {
     canonical_property?: boolean | PropertyDefaultArgs<ExtArgs>
     integration_properties?: boolean | UserProperty$integration_propertiesArgs<ExtArgs>
     localized_contents?: boolean | UserProperty$localized_contentsArgs<ExtArgs>
+    cost_logs?: boolean | UserProperty$cost_logsArgs<ExtArgs>
     _count?: boolean | UserPropertyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userProperty"]>
 
@@ -33408,6 +33669,7 @@ export namespace Prisma {
     canonical_property?: boolean | PropertyDefaultArgs<ExtArgs>
     integration_properties?: boolean | UserProperty$integration_propertiesArgs<ExtArgs>
     localized_contents?: boolean | UserProperty$localized_contentsArgs<ExtArgs>
+    cost_logs?: boolean | UserProperty$cost_logsArgs<ExtArgs>
     _count?: boolean | UserPropertyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserPropertyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -33426,6 +33688,7 @@ export namespace Prisma {
       canonical_property: Prisma.$PropertyPayload<ExtArgs>
       integration_properties: Prisma.$IntegrationPropertyPayload<ExtArgs>[]
       localized_contents: Prisma.$PropertyLocalizedContentPayload<ExtArgs>[]
+      cost_logs: Prisma.$CostLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -33872,6 +34135,7 @@ export namespace Prisma {
     canonical_property<T extends PropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyDefaultArgs<ExtArgs>>): Prisma__PropertyClient<$Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     integration_properties<T extends UserProperty$integration_propertiesArgs<ExtArgs> = {}>(args?: Subset<T, UserProperty$integration_propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IntegrationPropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     localized_contents<T extends UserProperty$localized_contentsArgs<ExtArgs> = {}>(args?: Subset<T, UserProperty$localized_contentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyLocalizedContentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    cost_logs<T extends UserProperty$cost_logsArgs<ExtArgs> = {}>(args?: Subset<T, UserProperty$cost_logsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -34388,6 +34652,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: PropertyLocalizedContentScalarFieldEnum | PropertyLocalizedContentScalarFieldEnum[]
+  }
+
+  /**
+   * UserProperty.cost_logs
+   */
+  export type UserProperty$cost_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    where?: CostLogWhereInput
+    orderBy?: CostLogOrderByWithRelationInput | CostLogOrderByWithRelationInput[]
+    cursor?: CostLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CostLogScalarFieldEnum | CostLogScalarFieldEnum[]
   }
 
   /**
@@ -39244,6 +39532,8 @@ export namespace Prisma {
     config?: boolean | AiBatchRun$configArgs<ExtArgs>
     ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
     crawl_run?: boolean | AiBatchRun$crawl_runArgs<ExtArgs>
+    cost_logs?: boolean | AiBatchRun$cost_logsArgs<ExtArgs>
+    _count?: boolean | AiBatchRunCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["aiBatchRun"]>
 
   export type AiBatchRunSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -39302,6 +39592,8 @@ export namespace Prisma {
     config?: boolean | AiBatchRun$configArgs<ExtArgs>
     ai_title_family?: boolean | AiBatchRun$ai_title_familyArgs<ExtArgs>
     crawl_run?: boolean | AiBatchRun$crawl_runArgs<ExtArgs>
+    cost_logs?: boolean | AiBatchRun$cost_logsArgs<ExtArgs>
+    _count?: boolean | AiBatchRunCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type AiBatchRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     config?: boolean | AiBatchRun$configArgs<ExtArgs>
@@ -39320,6 +39612,7 @@ export namespace Prisma {
       config: Prisma.$ContentPublishingConfigPayload<ExtArgs> | null
       ai_title_family: Prisma.$AiTitleFamilyPayload<ExtArgs> | null
       crawl_run: Prisma.$CrawlRunPayload<ExtArgs> | null
+      cost_logs: Prisma.$CostLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -39731,6 +40024,7 @@ export namespace Prisma {
     config<T extends AiBatchRun$configArgs<ExtArgs> = {}>(args?: Subset<T, AiBatchRun$configArgs<ExtArgs>>): Prisma__ContentPublishingConfigClient<$Result.GetResult<Prisma.$ContentPublishingConfigPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     ai_title_family<T extends AiBatchRun$ai_title_familyArgs<ExtArgs> = {}>(args?: Subset<T, AiBatchRun$ai_title_familyArgs<ExtArgs>>): Prisma__AiTitleFamilyClient<$Result.GetResult<Prisma.$AiTitleFamilyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     crawl_run<T extends AiBatchRun$crawl_runArgs<ExtArgs> = {}>(args?: Subset<T, AiBatchRun$crawl_runArgs<ExtArgs>>): Prisma__CrawlRunClient<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    cost_logs<T extends AiBatchRun$cost_logsArgs<ExtArgs> = {}>(args?: Subset<T, AiBatchRun$cost_logsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -40225,6 +40519,30 @@ export namespace Prisma {
   }
 
   /**
+   * AiBatchRun.cost_logs
+   */
+  export type AiBatchRun$cost_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    where?: CostLogWhereInput
+    orderBy?: CostLogOrderByWithRelationInput | CostLogOrderByWithRelationInput[]
+    cursor?: CostLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CostLogScalarFieldEnum | CostLogScalarFieldEnum[]
+  }
+
+  /**
    * AiBatchRun without action
    */
   export type AiBatchRunDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -40240,6 +40558,1410 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: AiBatchRunInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model CostLog
+   */
+
+  export type AggregateCostLog = {
+    _count: CostLogCountAggregateOutputType | null
+    _avg: CostLogAvgAggregateOutputType | null
+    _sum: CostLogSumAggregateOutputType | null
+    _min: CostLogMinAggregateOutputType | null
+    _max: CostLogMaxAggregateOutputType | null
+  }
+
+  export type CostLogAvgAggregateOutputType = {
+    input_quantity: number | null
+    output_quantity: number | null
+    unit_count: number | null
+    input_cost: Decimal | null
+    output_cost: Decimal | null
+    total_cost: Decimal | null
+  }
+
+  export type CostLogSumAggregateOutputType = {
+    input_quantity: number | null
+    output_quantity: number | null
+    unit_count: number | null
+    input_cost: Decimal | null
+    output_cost: Decimal | null
+    total_cost: Decimal | null
+  }
+
+  export type CostLogMinAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    operation_type: $Enums.CostOperationType | null
+    provider: $Enums.IntegrationType | null
+    model: string | null
+    input_quantity: number | null
+    output_quantity: number | null
+    unit_count: number | null
+    input_cost: Decimal | null
+    output_cost: Decimal | null
+    total_cost: Decimal | null
+    currency: string | null
+    crawl_run_id: string | null
+    user_property_id: string | null
+    user_tracked_agency_id: string | null
+    ai_batch_run_id: string | null
+    created_at: Date | null
+  }
+
+  export type CostLogMaxAggregateOutputType = {
+    id: string | null
+    user_id: string | null
+    operation_type: $Enums.CostOperationType | null
+    provider: $Enums.IntegrationType | null
+    model: string | null
+    input_quantity: number | null
+    output_quantity: number | null
+    unit_count: number | null
+    input_cost: Decimal | null
+    output_cost: Decimal | null
+    total_cost: Decimal | null
+    currency: string | null
+    crawl_run_id: string | null
+    user_property_id: string | null
+    user_tracked_agency_id: string | null
+    ai_batch_run_id: string | null
+    created_at: Date | null
+  }
+
+  export type CostLogCountAggregateOutputType = {
+    id: number
+    user_id: number
+    operation_type: number
+    provider: number
+    model: number
+    input_quantity: number
+    output_quantity: number
+    unit_count: number
+    input_cost: number
+    output_cost: number
+    total_cost: number
+    currency: number
+    crawl_run_id: number
+    user_property_id: number
+    user_tracked_agency_id: number
+    ai_batch_run_id: number
+    metadata: number
+    created_at: number
+    _all: number
+  }
+
+
+  export type CostLogAvgAggregateInputType = {
+    input_quantity?: true
+    output_quantity?: true
+    unit_count?: true
+    input_cost?: true
+    output_cost?: true
+    total_cost?: true
+  }
+
+  export type CostLogSumAggregateInputType = {
+    input_quantity?: true
+    output_quantity?: true
+    unit_count?: true
+    input_cost?: true
+    output_cost?: true
+    total_cost?: true
+  }
+
+  export type CostLogMinAggregateInputType = {
+    id?: true
+    user_id?: true
+    operation_type?: true
+    provider?: true
+    model?: true
+    input_quantity?: true
+    output_quantity?: true
+    unit_count?: true
+    input_cost?: true
+    output_cost?: true
+    total_cost?: true
+    currency?: true
+    crawl_run_id?: true
+    user_property_id?: true
+    user_tracked_agency_id?: true
+    ai_batch_run_id?: true
+    created_at?: true
+  }
+
+  export type CostLogMaxAggregateInputType = {
+    id?: true
+    user_id?: true
+    operation_type?: true
+    provider?: true
+    model?: true
+    input_quantity?: true
+    output_quantity?: true
+    unit_count?: true
+    input_cost?: true
+    output_cost?: true
+    total_cost?: true
+    currency?: true
+    crawl_run_id?: true
+    user_property_id?: true
+    user_tracked_agency_id?: true
+    ai_batch_run_id?: true
+    created_at?: true
+  }
+
+  export type CostLogCountAggregateInputType = {
+    id?: true
+    user_id?: true
+    operation_type?: true
+    provider?: true
+    model?: true
+    input_quantity?: true
+    output_quantity?: true
+    unit_count?: true
+    input_cost?: true
+    output_cost?: true
+    total_cost?: true
+    currency?: true
+    crawl_run_id?: true
+    user_property_id?: true
+    user_tracked_agency_id?: true
+    ai_batch_run_id?: true
+    metadata?: true
+    created_at?: true
+    _all?: true
+  }
+
+  export type CostLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CostLog to aggregate.
+     */
+    where?: CostLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CostLogs to fetch.
+     */
+    orderBy?: CostLogOrderByWithRelationInput | CostLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CostLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CostLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CostLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CostLogs
+    **/
+    _count?: true | CostLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: CostLogAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: CostLogSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CostLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CostLogMaxAggregateInputType
+  }
+
+  export type GetCostLogAggregateType<T extends CostLogAggregateArgs> = {
+        [P in keyof T & keyof AggregateCostLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCostLog[P]>
+      : GetScalarType<T[P], AggregateCostLog[P]>
+  }
+
+
+
+
+  export type CostLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CostLogWhereInput
+    orderBy?: CostLogOrderByWithAggregationInput | CostLogOrderByWithAggregationInput[]
+    by: CostLogScalarFieldEnum[] | CostLogScalarFieldEnum
+    having?: CostLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CostLogCountAggregateInputType | true
+    _avg?: CostLogAvgAggregateInputType
+    _sum?: CostLogSumAggregateInputType
+    _min?: CostLogMinAggregateInputType
+    _max?: CostLogMaxAggregateInputType
+  }
+
+  export type CostLogGroupByOutputType = {
+    id: string
+    user_id: string | null
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model: string | null
+    input_quantity: number | null
+    output_quantity: number | null
+    unit_count: number | null
+    input_cost: Decimal | null
+    output_cost: Decimal | null
+    total_cost: Decimal
+    currency: string
+    crawl_run_id: string | null
+    user_property_id: string | null
+    user_tracked_agency_id: string | null
+    ai_batch_run_id: string | null
+    metadata: JsonValue | null
+    created_at: Date
+    _count: CostLogCountAggregateOutputType | null
+    _avg: CostLogAvgAggregateOutputType | null
+    _sum: CostLogSumAggregateOutputType | null
+    _min: CostLogMinAggregateOutputType | null
+    _max: CostLogMaxAggregateOutputType | null
+  }
+
+  type GetCostLogGroupByPayload<T extends CostLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CostLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CostLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CostLogGroupByOutputType[P]>
+            : GetScalarType<T[P], CostLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CostLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    operation_type?: boolean
+    provider?: boolean
+    model?: boolean
+    input_quantity?: boolean
+    output_quantity?: boolean
+    unit_count?: boolean
+    input_cost?: boolean
+    output_cost?: boolean
+    total_cost?: boolean
+    currency?: boolean
+    crawl_run_id?: boolean
+    user_property_id?: boolean
+    user_tracked_agency_id?: boolean
+    ai_batch_run_id?: boolean
+    metadata?: boolean
+    created_at?: boolean
+    user?: boolean | CostLog$userArgs<ExtArgs>
+    crawl_run?: boolean | CostLog$crawl_runArgs<ExtArgs>
+    user_property?: boolean | CostLog$user_propertyArgs<ExtArgs>
+    user_tracked_agency?: boolean | CostLog$user_tracked_agencyArgs<ExtArgs>
+    ai_batch_run?: boolean | CostLog$ai_batch_runArgs<ExtArgs>
+  }, ExtArgs["result"]["costLog"]>
+
+  export type CostLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    operation_type?: boolean
+    provider?: boolean
+    model?: boolean
+    input_quantity?: boolean
+    output_quantity?: boolean
+    unit_count?: boolean
+    input_cost?: boolean
+    output_cost?: boolean
+    total_cost?: boolean
+    currency?: boolean
+    crawl_run_id?: boolean
+    user_property_id?: boolean
+    user_tracked_agency_id?: boolean
+    ai_batch_run_id?: boolean
+    metadata?: boolean
+    created_at?: boolean
+    user?: boolean | CostLog$userArgs<ExtArgs>
+    crawl_run?: boolean | CostLog$crawl_runArgs<ExtArgs>
+    user_property?: boolean | CostLog$user_propertyArgs<ExtArgs>
+    user_tracked_agency?: boolean | CostLog$user_tracked_agencyArgs<ExtArgs>
+    ai_batch_run?: boolean | CostLog$ai_batch_runArgs<ExtArgs>
+  }, ExtArgs["result"]["costLog"]>
+
+  export type CostLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    operation_type?: boolean
+    provider?: boolean
+    model?: boolean
+    input_quantity?: boolean
+    output_quantity?: boolean
+    unit_count?: boolean
+    input_cost?: boolean
+    output_cost?: boolean
+    total_cost?: boolean
+    currency?: boolean
+    crawl_run_id?: boolean
+    user_property_id?: boolean
+    user_tracked_agency_id?: boolean
+    ai_batch_run_id?: boolean
+    metadata?: boolean
+    created_at?: boolean
+    user?: boolean | CostLog$userArgs<ExtArgs>
+    crawl_run?: boolean | CostLog$crawl_runArgs<ExtArgs>
+    user_property?: boolean | CostLog$user_propertyArgs<ExtArgs>
+    user_tracked_agency?: boolean | CostLog$user_tracked_agencyArgs<ExtArgs>
+    ai_batch_run?: boolean | CostLog$ai_batch_runArgs<ExtArgs>
+  }, ExtArgs["result"]["costLog"]>
+
+  export type CostLogSelectScalar = {
+    id?: boolean
+    user_id?: boolean
+    operation_type?: boolean
+    provider?: boolean
+    model?: boolean
+    input_quantity?: boolean
+    output_quantity?: boolean
+    unit_count?: boolean
+    input_cost?: boolean
+    output_cost?: boolean
+    total_cost?: boolean
+    currency?: boolean
+    crawl_run_id?: boolean
+    user_property_id?: boolean
+    user_tracked_agency_id?: boolean
+    ai_batch_run_id?: boolean
+    metadata?: boolean
+    created_at?: boolean
+  }
+
+  export type CostLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "operation_type" | "provider" | "model" | "input_quantity" | "output_quantity" | "unit_count" | "input_cost" | "output_cost" | "total_cost" | "currency" | "crawl_run_id" | "user_property_id" | "user_tracked_agency_id" | "ai_batch_run_id" | "metadata" | "created_at", ExtArgs["result"]["costLog"]>
+  export type CostLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | CostLog$userArgs<ExtArgs>
+    crawl_run?: boolean | CostLog$crawl_runArgs<ExtArgs>
+    user_property?: boolean | CostLog$user_propertyArgs<ExtArgs>
+    user_tracked_agency?: boolean | CostLog$user_tracked_agencyArgs<ExtArgs>
+    ai_batch_run?: boolean | CostLog$ai_batch_runArgs<ExtArgs>
+  }
+  export type CostLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | CostLog$userArgs<ExtArgs>
+    crawl_run?: boolean | CostLog$crawl_runArgs<ExtArgs>
+    user_property?: boolean | CostLog$user_propertyArgs<ExtArgs>
+    user_tracked_agency?: boolean | CostLog$user_tracked_agencyArgs<ExtArgs>
+    ai_batch_run?: boolean | CostLog$ai_batch_runArgs<ExtArgs>
+  }
+  export type CostLogIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | CostLog$userArgs<ExtArgs>
+    crawl_run?: boolean | CostLog$crawl_runArgs<ExtArgs>
+    user_property?: boolean | CostLog$user_propertyArgs<ExtArgs>
+    user_tracked_agency?: boolean | CostLog$user_tracked_agencyArgs<ExtArgs>
+    ai_batch_run?: boolean | CostLog$ai_batch_runArgs<ExtArgs>
+  }
+
+  export type $CostLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CostLog"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs> | null
+      crawl_run: Prisma.$CrawlRunPayload<ExtArgs> | null
+      user_property: Prisma.$UserPropertyPayload<ExtArgs> | null
+      user_tracked_agency: Prisma.$UserTrackedAgencyPayload<ExtArgs> | null
+      ai_batch_run: Prisma.$AiBatchRunPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      user_id: string | null
+      operation_type: $Enums.CostOperationType
+      provider: $Enums.IntegrationType
+      model: string | null
+      input_quantity: number | null
+      output_quantity: number | null
+      unit_count: number | null
+      input_cost: Prisma.Decimal | null
+      output_cost: Prisma.Decimal | null
+      total_cost: Prisma.Decimal
+      currency: string
+      crawl_run_id: string | null
+      user_property_id: string | null
+      user_tracked_agency_id: string | null
+      ai_batch_run_id: string | null
+      metadata: Prisma.JsonValue | null
+      created_at: Date
+    }, ExtArgs["result"]["costLog"]>
+    composites: {}
+  }
+
+  type CostLogGetPayload<S extends boolean | null | undefined | CostLogDefaultArgs> = $Result.GetResult<Prisma.$CostLogPayload, S>
+
+  type CostLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CostLogFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CostLogCountAggregateInputType | true
+    }
+
+  export interface CostLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CostLog'], meta: { name: 'CostLog' } }
+    /**
+     * Find zero or one CostLog that matches the filter.
+     * @param {CostLogFindUniqueArgs} args - Arguments to find a CostLog
+     * @example
+     * // Get one CostLog
+     * const costLog = await prisma.costLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CostLogFindUniqueArgs>(args: SelectSubset<T, CostLogFindUniqueArgs<ExtArgs>>): Prisma__CostLogClient<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CostLog that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CostLogFindUniqueOrThrowArgs} args - Arguments to find a CostLog
+     * @example
+     * // Get one CostLog
+     * const costLog = await prisma.costLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CostLogFindUniqueOrThrowArgs>(args: SelectSubset<T, CostLogFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CostLogClient<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CostLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostLogFindFirstArgs} args - Arguments to find a CostLog
+     * @example
+     * // Get one CostLog
+     * const costLog = await prisma.costLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CostLogFindFirstArgs>(args?: SelectSubset<T, CostLogFindFirstArgs<ExtArgs>>): Prisma__CostLogClient<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CostLog that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostLogFindFirstOrThrowArgs} args - Arguments to find a CostLog
+     * @example
+     * // Get one CostLog
+     * const costLog = await prisma.costLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CostLogFindFirstOrThrowArgs>(args?: SelectSubset<T, CostLogFindFirstOrThrowArgs<ExtArgs>>): Prisma__CostLogClient<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CostLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostLogFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CostLogs
+     * const costLogs = await prisma.costLog.findMany()
+     * 
+     * // Get first 10 CostLogs
+     * const costLogs = await prisma.costLog.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const costLogWithIdOnly = await prisma.costLog.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CostLogFindManyArgs>(args?: SelectSubset<T, CostLogFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CostLog.
+     * @param {CostLogCreateArgs} args - Arguments to create a CostLog.
+     * @example
+     * // Create one CostLog
+     * const CostLog = await prisma.costLog.create({
+     *   data: {
+     *     // ... data to create a CostLog
+     *   }
+     * })
+     * 
+     */
+    create<T extends CostLogCreateArgs>(args: SelectSubset<T, CostLogCreateArgs<ExtArgs>>): Prisma__CostLogClient<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CostLogs.
+     * @param {CostLogCreateManyArgs} args - Arguments to create many CostLogs.
+     * @example
+     * // Create many CostLogs
+     * const costLog = await prisma.costLog.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CostLogCreateManyArgs>(args?: SelectSubset<T, CostLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many CostLogs and returns the data saved in the database.
+     * @param {CostLogCreateManyAndReturnArgs} args - Arguments to create many CostLogs.
+     * @example
+     * // Create many CostLogs
+     * const costLog = await prisma.costLog.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many CostLogs and only return the `id`
+     * const costLogWithIdOnly = await prisma.costLog.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends CostLogCreateManyAndReturnArgs>(args?: SelectSubset<T, CostLogCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a CostLog.
+     * @param {CostLogDeleteArgs} args - Arguments to delete one CostLog.
+     * @example
+     * // Delete one CostLog
+     * const CostLog = await prisma.costLog.delete({
+     *   where: {
+     *     // ... filter to delete one CostLog
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CostLogDeleteArgs>(args: SelectSubset<T, CostLogDeleteArgs<ExtArgs>>): Prisma__CostLogClient<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CostLog.
+     * @param {CostLogUpdateArgs} args - Arguments to update one CostLog.
+     * @example
+     * // Update one CostLog
+     * const costLog = await prisma.costLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CostLogUpdateArgs>(args: SelectSubset<T, CostLogUpdateArgs<ExtArgs>>): Prisma__CostLogClient<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CostLogs.
+     * @param {CostLogDeleteManyArgs} args - Arguments to filter CostLogs to delete.
+     * @example
+     * // Delete a few CostLogs
+     * const { count } = await prisma.costLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CostLogDeleteManyArgs>(args?: SelectSubset<T, CostLogDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CostLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CostLogs
+     * const costLog = await prisma.costLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CostLogUpdateManyArgs>(args: SelectSubset<T, CostLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CostLogs and returns the data updated in the database.
+     * @param {CostLogUpdateManyAndReturnArgs} args - Arguments to update many CostLogs.
+     * @example
+     * // Update many CostLogs
+     * const costLog = await prisma.costLog.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more CostLogs and only return the `id`
+     * const costLogWithIdOnly = await prisma.costLog.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends CostLogUpdateManyAndReturnArgs>(args: SelectSubset<T, CostLogUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one CostLog.
+     * @param {CostLogUpsertArgs} args - Arguments to update or create a CostLog.
+     * @example
+     * // Update or create a CostLog
+     * const costLog = await prisma.costLog.upsert({
+     *   create: {
+     *     // ... data to create a CostLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CostLog we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CostLogUpsertArgs>(args: SelectSubset<T, CostLogUpsertArgs<ExtArgs>>): Prisma__CostLogClient<$Result.GetResult<Prisma.$CostLogPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of CostLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostLogCountArgs} args - Arguments to filter CostLogs to count.
+     * @example
+     * // Count the number of CostLogs
+     * const count = await prisma.costLog.count({
+     *   where: {
+     *     // ... the filter for the CostLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends CostLogCountArgs>(
+      args?: Subset<T, CostLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CostLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CostLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CostLogAggregateArgs>(args: Subset<T, CostLogAggregateArgs>): Prisma.PrismaPromise<GetCostLogAggregateType<T>>
+
+    /**
+     * Group by CostLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CostLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CostLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CostLogGroupByArgs['orderBy'] }
+        : { orderBy?: CostLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CostLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCostLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CostLog model
+   */
+  readonly fields: CostLogFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CostLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CostLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends CostLog$userArgs<ExtArgs> = {}>(args?: Subset<T, CostLog$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    crawl_run<T extends CostLog$crawl_runArgs<ExtArgs> = {}>(args?: Subset<T, CostLog$crawl_runArgs<ExtArgs>>): Prisma__CrawlRunClient<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    user_property<T extends CostLog$user_propertyArgs<ExtArgs> = {}>(args?: Subset<T, CostLog$user_propertyArgs<ExtArgs>>): Prisma__UserPropertyClient<$Result.GetResult<Prisma.$UserPropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    user_tracked_agency<T extends CostLog$user_tracked_agencyArgs<ExtArgs> = {}>(args?: Subset<T, CostLog$user_tracked_agencyArgs<ExtArgs>>): Prisma__UserTrackedAgencyClient<$Result.GetResult<Prisma.$UserTrackedAgencyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    ai_batch_run<T extends CostLog$ai_batch_runArgs<ExtArgs> = {}>(args?: Subset<T, CostLog$ai_batch_runArgs<ExtArgs>>): Prisma__AiBatchRunClient<$Result.GetResult<Prisma.$AiBatchRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CostLog model
+   */
+  interface CostLogFieldRefs {
+    readonly id: FieldRef<"CostLog", 'String'>
+    readonly user_id: FieldRef<"CostLog", 'String'>
+    readonly operation_type: FieldRef<"CostLog", 'CostOperationType'>
+    readonly provider: FieldRef<"CostLog", 'IntegrationType'>
+    readonly model: FieldRef<"CostLog", 'String'>
+    readonly input_quantity: FieldRef<"CostLog", 'Int'>
+    readonly output_quantity: FieldRef<"CostLog", 'Int'>
+    readonly unit_count: FieldRef<"CostLog", 'Int'>
+    readonly input_cost: FieldRef<"CostLog", 'Decimal'>
+    readonly output_cost: FieldRef<"CostLog", 'Decimal'>
+    readonly total_cost: FieldRef<"CostLog", 'Decimal'>
+    readonly currency: FieldRef<"CostLog", 'String'>
+    readonly crawl_run_id: FieldRef<"CostLog", 'String'>
+    readonly user_property_id: FieldRef<"CostLog", 'String'>
+    readonly user_tracked_agency_id: FieldRef<"CostLog", 'String'>
+    readonly ai_batch_run_id: FieldRef<"CostLog", 'String'>
+    readonly metadata: FieldRef<"CostLog", 'Json'>
+    readonly created_at: FieldRef<"CostLog", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CostLog findUnique
+   */
+  export type CostLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    /**
+     * Filter, which CostLog to fetch.
+     */
+    where: CostLogWhereUniqueInput
+  }
+
+  /**
+   * CostLog findUniqueOrThrow
+   */
+  export type CostLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    /**
+     * Filter, which CostLog to fetch.
+     */
+    where: CostLogWhereUniqueInput
+  }
+
+  /**
+   * CostLog findFirst
+   */
+  export type CostLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    /**
+     * Filter, which CostLog to fetch.
+     */
+    where?: CostLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CostLogs to fetch.
+     */
+    orderBy?: CostLogOrderByWithRelationInput | CostLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CostLogs.
+     */
+    cursor?: CostLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CostLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CostLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CostLogs.
+     */
+    distinct?: CostLogScalarFieldEnum | CostLogScalarFieldEnum[]
+  }
+
+  /**
+   * CostLog findFirstOrThrow
+   */
+  export type CostLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    /**
+     * Filter, which CostLog to fetch.
+     */
+    where?: CostLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CostLogs to fetch.
+     */
+    orderBy?: CostLogOrderByWithRelationInput | CostLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CostLogs.
+     */
+    cursor?: CostLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CostLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CostLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CostLogs.
+     */
+    distinct?: CostLogScalarFieldEnum | CostLogScalarFieldEnum[]
+  }
+
+  /**
+   * CostLog findMany
+   */
+  export type CostLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    /**
+     * Filter, which CostLogs to fetch.
+     */
+    where?: CostLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CostLogs to fetch.
+     */
+    orderBy?: CostLogOrderByWithRelationInput | CostLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CostLogs.
+     */
+    cursor?: CostLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CostLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CostLogs.
+     */
+    skip?: number
+    distinct?: CostLogScalarFieldEnum | CostLogScalarFieldEnum[]
+  }
+
+  /**
+   * CostLog create
+   */
+  export type CostLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CostLog.
+     */
+    data: XOR<CostLogCreateInput, CostLogUncheckedCreateInput>
+  }
+
+  /**
+   * CostLog createMany
+   */
+  export type CostLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CostLogs.
+     */
+    data: CostLogCreateManyInput | CostLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CostLog createManyAndReturn
+   */
+  export type CostLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * The data used to create many CostLogs.
+     */
+    data: CostLogCreateManyInput | CostLogCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CostLog update
+   */
+  export type CostLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CostLog.
+     */
+    data: XOR<CostLogUpdateInput, CostLogUncheckedUpdateInput>
+    /**
+     * Choose, which CostLog to update.
+     */
+    where: CostLogWhereUniqueInput
+  }
+
+  /**
+   * CostLog updateMany
+   */
+  export type CostLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CostLogs.
+     */
+    data: XOR<CostLogUpdateManyMutationInput, CostLogUncheckedUpdateManyInput>
+    /**
+     * Filter which CostLogs to update
+     */
+    where?: CostLogWhereInput
+    /**
+     * Limit how many CostLogs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CostLog updateManyAndReturn
+   */
+  export type CostLogUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * The data used to update CostLogs.
+     */
+    data: XOR<CostLogUpdateManyMutationInput, CostLogUncheckedUpdateManyInput>
+    /**
+     * Filter which CostLogs to update
+     */
+    where?: CostLogWhereInput
+    /**
+     * Limit how many CostLogs to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CostLog upsert
+   */
+  export type CostLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CostLog to update in case it exists.
+     */
+    where: CostLogWhereUniqueInput
+    /**
+     * In case the CostLog found by the `where` argument doesn't exist, create a new CostLog with this data.
+     */
+    create: XOR<CostLogCreateInput, CostLogUncheckedCreateInput>
+    /**
+     * In case the CostLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CostLogUpdateInput, CostLogUncheckedUpdateInput>
+  }
+
+  /**
+   * CostLog delete
+   */
+  export type CostLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
+    /**
+     * Filter which CostLog to delete.
+     */
+    where: CostLogWhereUniqueInput
+  }
+
+  /**
+   * CostLog deleteMany
+   */
+  export type CostLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CostLogs to delete
+     */
+    where?: CostLogWhereInput
+    /**
+     * Limit how many CostLogs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CostLog.user
+   */
+  export type CostLog$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * CostLog.crawl_run
+   */
+  export type CostLog$crawl_runArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CrawlRun
+     */
+    select?: CrawlRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CrawlRun
+     */
+    omit?: CrawlRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CrawlRunInclude<ExtArgs> | null
+    where?: CrawlRunWhereInput
+  }
+
+  /**
+   * CostLog.user_property
+   */
+  export type CostLog$user_propertyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserProperty
+     */
+    select?: UserPropertySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserProperty
+     */
+    omit?: UserPropertyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPropertyInclude<ExtArgs> | null
+    where?: UserPropertyWhereInput
+  }
+
+  /**
+   * CostLog.user_tracked_agency
+   */
+  export type CostLog$user_tracked_agencyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserTrackedAgency
+     */
+    select?: UserTrackedAgencySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserTrackedAgency
+     */
+    omit?: UserTrackedAgencyOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserTrackedAgencyInclude<ExtArgs> | null
+    where?: UserTrackedAgencyWhereInput
+  }
+
+  /**
+   * CostLog.ai_batch_run
+   */
+  export type CostLog$ai_batch_runArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AiBatchRun
+     */
+    select?: AiBatchRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AiBatchRun
+     */
+    omit?: AiBatchRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AiBatchRunInclude<ExtArgs> | null
+    where?: AiBatchRunWhereInput
+  }
+
+  /**
+   * CostLog without action
+   */
+  export type CostLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CostLog
+     */
+    select?: CostLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CostLog
+     */
+    omit?: CostLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CostLogInclude<ExtArgs> | null
   }
 
 
@@ -41371,6 +43093,7 @@ export namespace Prisma {
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
     normalization_ai_raw_description_max_chars: number | null
+    dewatermark_cost_per_image: Decimal | null
   }
 
   export type PlatformConfigSumAggregateOutputType = {
@@ -41384,6 +43107,7 @@ export namespace Prisma {
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
     normalization_ai_raw_description_max_chars: number | null
+    dewatermark_cost_per_image: Decimal | null
   }
 
   export type PlatformConfigMinAggregateOutputType = {
@@ -41398,6 +43122,7 @@ export namespace Prisma {
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
     normalization_ai_raw_description_max_chars: number | null
+    dewatermark_cost_per_image: Decimal | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -41414,6 +43139,7 @@ export namespace Prisma {
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
     normalization_ai_raw_description_max_chars: number | null
+    dewatermark_cost_per_image: Decimal | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -41430,6 +43156,7 @@ export namespace Prisma {
     crawler_job_timeout_ms: number
     crawler_chromium_max_contexts_before_restart: number
     normalization_ai_raw_description_max_chars: number
+    dewatermark_cost_per_image: number
     created_at: number
     updated_at: number
     _all: number
@@ -41447,6 +43174,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
     normalization_ai_raw_description_max_chars?: true
+    dewatermark_cost_per_image?: true
   }
 
   export type PlatformConfigSumAggregateInputType = {
@@ -41460,6 +43188,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
     normalization_ai_raw_description_max_chars?: true
+    dewatermark_cost_per_image?: true
   }
 
   export type PlatformConfigMinAggregateInputType = {
@@ -41474,6 +43203,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
     normalization_ai_raw_description_max_chars?: true
+    dewatermark_cost_per_image?: true
     created_at?: true
     updated_at?: true
   }
@@ -41490,6 +43220,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
     normalization_ai_raw_description_max_chars?: true
+    dewatermark_cost_per_image?: true
     created_at?: true
     updated_at?: true
   }
@@ -41506,6 +43237,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
     normalization_ai_raw_description_max_chars?: true
+    dewatermark_cost_per_image?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -41609,6 +43341,7 @@ export namespace Prisma {
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
     normalization_ai_raw_description_max_chars: number | null
+    dewatermark_cost_per_image: Decimal | null
     created_at: Date
     updated_at: Date
     _count: PlatformConfigCountAggregateOutputType | null
@@ -41644,6 +43377,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: boolean
     crawler_chromium_max_contexts_before_restart?: boolean
     normalization_ai_raw_description_max_chars?: boolean
+    dewatermark_cost_per_image?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["platformConfig"]>
@@ -41660,6 +43394,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: boolean
     crawler_chromium_max_contexts_before_restart?: boolean
     normalization_ai_raw_description_max_chars?: boolean
+    dewatermark_cost_per_image?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["platformConfig"]>
@@ -41676,6 +43411,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: boolean
     crawler_chromium_max_contexts_before_restart?: boolean
     normalization_ai_raw_description_max_chars?: boolean
+    dewatermark_cost_per_image?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["platformConfig"]>
@@ -41692,11 +43428,12 @@ export namespace Prisma {
     crawler_job_timeout_ms?: boolean
     crawler_chromium_max_contexts_before_restart?: boolean
     normalization_ai_raw_description_max_chars?: boolean
+    dewatermark_cost_per_image?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "normalization_ai_raw_description_max_chars" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
+  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "normalization_ai_raw_description_max_chars" | "dewatermark_cost_per_image" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
 
   export type $PlatformConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "PlatformConfig"
@@ -41713,6 +43450,7 @@ export namespace Prisma {
       crawler_job_timeout_ms: number | null
       crawler_chromium_max_contexts_before_restart: number | null
       normalization_ai_raw_description_max_chars: number | null
+      dewatermark_cost_per_image: Prisma.Decimal | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["platformConfig"]>
@@ -42149,6 +43887,7 @@ export namespace Prisma {
     readonly crawler_job_timeout_ms: FieldRef<"PlatformConfig", 'Int'>
     readonly crawler_chromium_max_contexts_before_restart: FieldRef<"PlatformConfig", 'Int'>
     readonly normalization_ai_raw_description_max_chars: FieldRef<"PlatformConfig", 'Int'>
+    readonly dewatermark_cost_per_image: FieldRef<"PlatformConfig", 'Decimal'>
     readonly created_at: FieldRef<"PlatformConfig", 'DateTime'>
     readonly updated_at: FieldRef<"PlatformConfig", 'DateTime'>
   }
@@ -44284,6 +46023,30 @@ export namespace Prisma {
   export type AiBatchRunScalarFieldEnum = (typeof AiBatchRunScalarFieldEnum)[keyof typeof AiBatchRunScalarFieldEnum]
 
 
+  export const CostLogScalarFieldEnum: {
+    id: 'id',
+    user_id: 'user_id',
+    operation_type: 'operation_type',
+    provider: 'provider',
+    model: 'model',
+    input_quantity: 'input_quantity',
+    output_quantity: 'output_quantity',
+    unit_count: 'unit_count',
+    input_cost: 'input_cost',
+    output_cost: 'output_cost',
+    total_cost: 'total_cost',
+    currency: 'currency',
+    crawl_run_id: 'crawl_run_id',
+    user_property_id: 'user_property_id',
+    user_tracked_agency_id: 'user_tracked_agency_id',
+    ai_batch_run_id: 'ai_batch_run_id',
+    metadata: 'metadata',
+    created_at: 'created_at'
+  };
+
+  export type CostLogScalarFieldEnum = (typeof CostLogScalarFieldEnum)[keyof typeof CostLogScalarFieldEnum]
+
+
   export const IntegrationPropertyScalarFieldEnum: {
     id: 'id',
     user_id: 'user_id',
@@ -44310,6 +46073,7 @@ export namespace Prisma {
     crawler_job_timeout_ms: 'crawler_job_timeout_ms',
     crawler_chromium_max_contexts_before_restart: 'crawler_chromium_max_contexts_before_restart',
     normalization_ai_raw_description_max_chars: 'normalization_ai_raw_description_max_chars',
+    dewatermark_cost_per_image: 'dewatermark_cost_per_image',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -44827,6 +46591,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'CostOperationType'
+   */
+  export type EnumCostOperationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CostOperationType'>
+    
+
+
+  /**
+   * Reference to a field of type 'CostOperationType[]'
+   */
+  export type ListEnumCostOperationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CostOperationType[]'>
+    
+
+
+  /**
    * Reference to a field of type 'DocumentType'
    */
   export type EnumDocumentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentType'>
@@ -44873,6 +46651,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationListRelationFilter
     user_integration_settings?: UserIntegrationSettingsListRelationFilter
     integration_properties?: IntegrationPropertyListRelationFilter
+    cost_logs?: CostLogListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -44888,6 +46667,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationOrderByRelationAggregateInput
     user_integration_settings?: UserIntegrationSettingsOrderByRelationAggregateInput
     integration_properties?: IntegrationPropertyOrderByRelationAggregateInput
+    cost_logs?: CostLogOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -44906,6 +46686,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationListRelationFilter
     user_integration_settings?: UserIntegrationSettingsListRelationFilter
     integration_properties?: IntegrationPropertyListRelationFilter
+    cost_logs?: CostLogListRelationFilter
   }, "id" | "email" | "phone">
 
   export type UserOrderByWithAggregationInput = {
@@ -45346,6 +47127,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunListRelationFilter
     integration_link?: XOR<UserTrackedAgencyIntegrationLinkNullableScalarRelationFilter, UserTrackedAgencyIntegrationLinkWhereInput> | null
     content_publishing_config?: XOR<ContentPublishingConfigNullableScalarRelationFilter, ContentPublishingConfigWhereInput> | null
+    cost_logs?: CostLogListRelationFilter
   }
 
   export type UserTrackedAgencyOrderByWithRelationInput = {
@@ -45372,6 +47154,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunOrderByRelationAggregateInput
     integration_link?: UserTrackedAgencyIntegrationLinkOrderByWithRelationInput
     content_publishing_config?: ContentPublishingConfigOrderByWithRelationInput
+    cost_logs?: CostLogOrderByRelationAggregateInput
   }
 
   export type UserTrackedAgencyWhereUniqueInput = Prisma.AtLeast<{
@@ -45402,6 +47185,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunListRelationFilter
     integration_link?: XOR<UserTrackedAgencyIntegrationLinkNullableScalarRelationFilter, UserTrackedAgencyIntegrationLinkWhereInput> | null
     content_publishing_config?: XOR<ContentPublishingConfigNullableScalarRelationFilter, ContentPublishingConfigWhereInput> | null
+    cost_logs?: CostLogListRelationFilter
   }, "id" | "user_id_source_agency_id">
 
   export type UserTrackedAgencyOrderByWithAggregationInput = {
@@ -46044,6 +47828,7 @@ export namespace Prisma {
     diagnostics_package?: XOR<DiagnosticsPackageNullableScalarRelationFilter, DiagnosticsPackageWhereInput> | null
     cms_sync_runs?: CmsSyncRunListRelationFilter
     ai_batch_runs?: AiBatchRunListRelationFilter
+    cost_logs?: CostLogListRelationFilter
   }
 
   export type CrawlRunOrderByWithRelationInput = {
@@ -46084,6 +47869,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageOrderByWithRelationInput
     cms_sync_runs?: CmsSyncRunOrderByRelationAggregateInput
     ai_batch_runs?: AiBatchRunOrderByRelationAggregateInput
+    cost_logs?: CostLogOrderByRelationAggregateInput
   }
 
   export type CrawlRunWhereUniqueInput = Prisma.AtLeast<{
@@ -46127,6 +47913,7 @@ export namespace Prisma {
     diagnostics_package?: XOR<DiagnosticsPackageNullableScalarRelationFilter, DiagnosticsPackageWhereInput> | null
     cms_sync_runs?: CmsSyncRunListRelationFilter
     ai_batch_runs?: AiBatchRunListRelationFilter
+    cost_logs?: CostLogListRelationFilter
   }, "id">
 
   export type CrawlRunOrderByWithAggregationInput = {
@@ -47301,6 +49088,7 @@ export namespace Prisma {
     canonical_property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
     integration_properties?: IntegrationPropertyListRelationFilter
     localized_contents?: PropertyLocalizedContentListRelationFilter
+    cost_logs?: CostLogListRelationFilter
   }
 
   export type UserPropertyOrderByWithRelationInput = {
@@ -47354,6 +49142,7 @@ export namespace Prisma {
     canonical_property?: PropertyOrderByWithRelationInput
     integration_properties?: IntegrationPropertyOrderByRelationAggregateInput
     localized_contents?: PropertyLocalizedContentOrderByRelationAggregateInput
+    cost_logs?: CostLogOrderByRelationAggregateInput
   }
 
   export type UserPropertyWhereUniqueInput = Prisma.AtLeast<{
@@ -47411,6 +49200,7 @@ export namespace Prisma {
     canonical_property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
     integration_properties?: IntegrationPropertyListRelationFilter
     localized_contents?: PropertyLocalizedContentListRelationFilter
+    cost_logs?: CostLogListRelationFilter
   }, "id" | "user_id_canonical_property_id">
 
   export type UserPropertyOrderByWithAggregationInput = {
@@ -47864,6 +49654,7 @@ export namespace Prisma {
     config?: XOR<ContentPublishingConfigNullableScalarRelationFilter, ContentPublishingConfigWhereInput> | null
     ai_title_family?: XOR<AiTitleFamilyNullableScalarRelationFilter, AiTitleFamilyWhereInput> | null
     crawl_run?: XOR<CrawlRunNullableScalarRelationFilter, CrawlRunWhereInput> | null
+    cost_logs?: CostLogListRelationFilter
   }
 
   export type AiBatchRunOrderByWithRelationInput = {
@@ -47882,6 +49673,7 @@ export namespace Prisma {
     config?: ContentPublishingConfigOrderByWithRelationInput
     ai_title_family?: AiTitleFamilyOrderByWithRelationInput
     crawl_run?: CrawlRunOrderByWithRelationInput
+    cost_logs?: CostLogOrderByRelationAggregateInput
   }
 
   export type AiBatchRunWhereUniqueInput = Prisma.AtLeast<{
@@ -47903,6 +49695,7 @@ export namespace Prisma {
     config?: XOR<ContentPublishingConfigNullableScalarRelationFilter, ContentPublishingConfigWhereInput> | null
     ai_title_family?: XOR<AiTitleFamilyNullableScalarRelationFilter, AiTitleFamilyWhereInput> | null
     crawl_run?: XOR<CrawlRunNullableScalarRelationFilter, CrawlRunWhereInput> | null
+    cost_logs?: CostLogListRelationFilter
   }, "id" | "openai_batch_id">
 
   export type AiBatchRunOrderByWithAggregationInput = {
@@ -47939,6 +49732,140 @@ export namespace Prisma {
     error_message?: StringNullableWithAggregatesFilter<"AiBatchRun"> | string | null
     created_at?: DateTimeWithAggregatesFilter<"AiBatchRun"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"AiBatchRun"> | Date | string
+  }
+
+  export type CostLogWhereInput = {
+    AND?: CostLogWhereInput | CostLogWhereInput[]
+    OR?: CostLogWhereInput[]
+    NOT?: CostLogWhereInput | CostLogWhereInput[]
+    id?: StringFilter<"CostLog"> | string
+    user_id?: StringNullableFilter<"CostLog"> | string | null
+    operation_type?: EnumCostOperationTypeFilter<"CostLog"> | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFilter<"CostLog"> | $Enums.IntegrationType
+    model?: StringNullableFilter<"CostLog"> | string | null
+    input_quantity?: IntNullableFilter<"CostLog"> | number | null
+    output_quantity?: IntNullableFilter<"CostLog"> | number | null
+    unit_count?: IntNullableFilter<"CostLog"> | number | null
+    input_cost?: DecimalNullableFilter<"CostLog"> | Decimal | DecimalJsLike | number | string | null
+    output_cost?: DecimalNullableFilter<"CostLog"> | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFilter<"CostLog"> | Decimal | DecimalJsLike | number | string
+    currency?: StringFilter<"CostLog"> | string
+    crawl_run_id?: StringNullableFilter<"CostLog"> | string | null
+    user_property_id?: StringNullableFilter<"CostLog"> | string | null
+    user_tracked_agency_id?: StringNullableFilter<"CostLog"> | string | null
+    ai_batch_run_id?: StringNullableFilter<"CostLog"> | string | null
+    metadata?: JsonNullableFilter<"CostLog">
+    created_at?: DateTimeFilter<"CostLog"> | Date | string
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    crawl_run?: XOR<CrawlRunNullableScalarRelationFilter, CrawlRunWhereInput> | null
+    user_property?: XOR<UserPropertyNullableScalarRelationFilter, UserPropertyWhereInput> | null
+    user_tracked_agency?: XOR<UserTrackedAgencyNullableScalarRelationFilter, UserTrackedAgencyWhereInput> | null
+    ai_batch_run?: XOR<AiBatchRunNullableScalarRelationFilter, AiBatchRunWhereInput> | null
+  }
+
+  export type CostLogOrderByWithRelationInput = {
+    id?: SortOrder
+    user_id?: SortOrderInput | SortOrder
+    operation_type?: SortOrder
+    provider?: SortOrder
+    model?: SortOrderInput | SortOrder
+    input_quantity?: SortOrderInput | SortOrder
+    output_quantity?: SortOrderInput | SortOrder
+    unit_count?: SortOrderInput | SortOrder
+    input_cost?: SortOrderInput | SortOrder
+    output_cost?: SortOrderInput | SortOrder
+    total_cost?: SortOrder
+    currency?: SortOrder
+    crawl_run_id?: SortOrderInput | SortOrder
+    user_property_id?: SortOrderInput | SortOrder
+    user_tracked_agency_id?: SortOrderInput | SortOrder
+    ai_batch_run_id?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    user?: UserOrderByWithRelationInput
+    crawl_run?: CrawlRunOrderByWithRelationInput
+    user_property?: UserPropertyOrderByWithRelationInput
+    user_tracked_agency?: UserTrackedAgencyOrderByWithRelationInput
+    ai_batch_run?: AiBatchRunOrderByWithRelationInput
+  }
+
+  export type CostLogWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: CostLogWhereInput | CostLogWhereInput[]
+    OR?: CostLogWhereInput[]
+    NOT?: CostLogWhereInput | CostLogWhereInput[]
+    user_id?: StringNullableFilter<"CostLog"> | string | null
+    operation_type?: EnumCostOperationTypeFilter<"CostLog"> | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFilter<"CostLog"> | $Enums.IntegrationType
+    model?: StringNullableFilter<"CostLog"> | string | null
+    input_quantity?: IntNullableFilter<"CostLog"> | number | null
+    output_quantity?: IntNullableFilter<"CostLog"> | number | null
+    unit_count?: IntNullableFilter<"CostLog"> | number | null
+    input_cost?: DecimalNullableFilter<"CostLog"> | Decimal | DecimalJsLike | number | string | null
+    output_cost?: DecimalNullableFilter<"CostLog"> | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFilter<"CostLog"> | Decimal | DecimalJsLike | number | string
+    currency?: StringFilter<"CostLog"> | string
+    crawl_run_id?: StringNullableFilter<"CostLog"> | string | null
+    user_property_id?: StringNullableFilter<"CostLog"> | string | null
+    user_tracked_agency_id?: StringNullableFilter<"CostLog"> | string | null
+    ai_batch_run_id?: StringNullableFilter<"CostLog"> | string | null
+    metadata?: JsonNullableFilter<"CostLog">
+    created_at?: DateTimeFilter<"CostLog"> | Date | string
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    crawl_run?: XOR<CrawlRunNullableScalarRelationFilter, CrawlRunWhereInput> | null
+    user_property?: XOR<UserPropertyNullableScalarRelationFilter, UserPropertyWhereInput> | null
+    user_tracked_agency?: XOR<UserTrackedAgencyNullableScalarRelationFilter, UserTrackedAgencyWhereInput> | null
+    ai_batch_run?: XOR<AiBatchRunNullableScalarRelationFilter, AiBatchRunWhereInput> | null
+  }, "id">
+
+  export type CostLogOrderByWithAggregationInput = {
+    id?: SortOrder
+    user_id?: SortOrderInput | SortOrder
+    operation_type?: SortOrder
+    provider?: SortOrder
+    model?: SortOrderInput | SortOrder
+    input_quantity?: SortOrderInput | SortOrder
+    output_quantity?: SortOrderInput | SortOrder
+    unit_count?: SortOrderInput | SortOrder
+    input_cost?: SortOrderInput | SortOrder
+    output_cost?: SortOrderInput | SortOrder
+    total_cost?: SortOrder
+    currency?: SortOrder
+    crawl_run_id?: SortOrderInput | SortOrder
+    user_property_id?: SortOrderInput | SortOrder
+    user_tracked_agency_id?: SortOrderInput | SortOrder
+    ai_batch_run_id?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    _count?: CostLogCountOrderByAggregateInput
+    _avg?: CostLogAvgOrderByAggregateInput
+    _max?: CostLogMaxOrderByAggregateInput
+    _min?: CostLogMinOrderByAggregateInput
+    _sum?: CostLogSumOrderByAggregateInput
+  }
+
+  export type CostLogScalarWhereWithAggregatesInput = {
+    AND?: CostLogScalarWhereWithAggregatesInput | CostLogScalarWhereWithAggregatesInput[]
+    OR?: CostLogScalarWhereWithAggregatesInput[]
+    NOT?: CostLogScalarWhereWithAggregatesInput | CostLogScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"CostLog"> | string
+    user_id?: StringNullableWithAggregatesFilter<"CostLog"> | string | null
+    operation_type?: EnumCostOperationTypeWithAggregatesFilter<"CostLog"> | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeWithAggregatesFilter<"CostLog"> | $Enums.IntegrationType
+    model?: StringNullableWithAggregatesFilter<"CostLog"> | string | null
+    input_quantity?: IntNullableWithAggregatesFilter<"CostLog"> | number | null
+    output_quantity?: IntNullableWithAggregatesFilter<"CostLog"> | number | null
+    unit_count?: IntNullableWithAggregatesFilter<"CostLog"> | number | null
+    input_cost?: DecimalNullableWithAggregatesFilter<"CostLog"> | Decimal | DecimalJsLike | number | string | null
+    output_cost?: DecimalNullableWithAggregatesFilter<"CostLog"> | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalWithAggregatesFilter<"CostLog"> | Decimal | DecimalJsLike | number | string
+    currency?: StringWithAggregatesFilter<"CostLog"> | string
+    crawl_run_id?: StringNullableWithAggregatesFilter<"CostLog"> | string | null
+    user_property_id?: StringNullableWithAggregatesFilter<"CostLog"> | string | null
+    user_tracked_agency_id?: StringNullableWithAggregatesFilter<"CostLog"> | string | null
+    ai_batch_run_id?: StringNullableWithAggregatesFilter<"CostLog"> | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"CostLog">
+    created_at?: DateTimeWithAggregatesFilter<"CostLog"> | Date | string
   }
 
   export type IntegrationPropertyWhereInput = {
@@ -48033,6 +49960,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: IntNullableFilter<"PlatformConfig"> | number | null
     crawler_chromium_max_contexts_before_restart?: IntNullableFilter<"PlatformConfig"> | number | null
     normalization_ai_raw_description_max_chars?: IntNullableFilter<"PlatformConfig"> | number | null
+    dewatermark_cost_per_image?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     created_at?: DateTimeFilter<"PlatformConfig"> | Date | string
     updated_at?: DateTimeFilter<"PlatformConfig"> | Date | string
   }
@@ -48049,6 +49977,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: SortOrderInput | SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrderInput | SortOrder
     normalization_ai_raw_description_max_chars?: SortOrderInput | SortOrder
+    dewatermark_cost_per_image?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -48068,6 +49997,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: IntNullableFilter<"PlatformConfig"> | number | null
     crawler_chromium_max_contexts_before_restart?: IntNullableFilter<"PlatformConfig"> | number | null
     normalization_ai_raw_description_max_chars?: IntNullableFilter<"PlatformConfig"> | number | null
+    dewatermark_cost_per_image?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     created_at?: DateTimeFilter<"PlatformConfig"> | Date | string
     updated_at?: DateTimeFilter<"PlatformConfig"> | Date | string
   }, "id">
@@ -48084,6 +50014,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: SortOrderInput | SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrderInput | SortOrder
     normalization_ai_raw_description_max_chars?: SortOrderInput | SortOrder
+    dewatermark_cost_per_image?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: PlatformConfigCountOrderByAggregateInput
@@ -48108,6 +50039,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     crawler_chromium_max_contexts_before_restart?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     normalization_ai_raw_description_max_chars?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
+    dewatermark_cost_per_image?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     created_at?: DateTimeWithAggregatesFilter<"PlatformConfig"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"PlatformConfig"> | Date | string
   }
@@ -48205,6 +50137,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -48220,6 +50153,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -48235,6 +50169,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -48250,6 +50185,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -48746,6 +50682,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogCreateNestedManyWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateInput = {
@@ -48770,6 +50707,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUpdateInput = {
@@ -48794,6 +50732,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateInput = {
@@ -48818,6 +50757,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyCreateManyInput = {
@@ -49499,6 +51439,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateInput = {
@@ -49536,6 +51477,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUpdateInput = {
@@ -49573,6 +51515,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateInput = {
@@ -49610,6 +51553,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunCreateManyInput = {
@@ -50972,6 +52916,7 @@ export namespace Prisma {
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
+    cost_logs?: CostLogCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateInput = {
@@ -51023,6 +52968,7 @@ export namespace Prisma {
     updated_at?: Date | string
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUpdateInput = {
@@ -51074,6 +53020,7 @@ export namespace Prisma {
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateInput = {
@@ -51125,6 +53072,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyCreateManyInput = {
@@ -51643,6 +53591,7 @@ export namespace Prisma {
     config?: ContentPublishingConfigCreateNestedOneWithoutAi_batch_runsInput
     ai_title_family?: AiTitleFamilyCreateNestedOneWithoutAi_batch_runsInput
     crawl_run?: CrawlRunCreateNestedOneWithoutAi_batch_runsInput
+    cost_logs?: CostLogCreateNestedManyWithoutAi_batch_runInput
   }
 
   export type AiBatchRunUncheckedCreateInput = {
@@ -51658,6 +53607,7 @@ export namespace Prisma {
     error_message?: string | null
     created_at?: Date | string
     updated_at?: Date | string
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutAi_batch_runInput
   }
 
   export type AiBatchRunUpdateInput = {
@@ -51673,6 +53623,7 @@ export namespace Prisma {
     config?: ContentPublishingConfigUpdateOneWithoutAi_batch_runsNestedInput
     ai_title_family?: AiTitleFamilyUpdateOneWithoutAi_batch_runsNestedInput
     crawl_run?: CrawlRunUpdateOneWithoutAi_batch_runsNestedInput
+    cost_logs?: CostLogUpdateManyWithoutAi_batch_runNestedInput
   }
 
   export type AiBatchRunUncheckedUpdateInput = {
@@ -51688,6 +53639,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    cost_logs?: CostLogUncheckedUpdateManyWithoutAi_batch_runNestedInput
   }
 
   export type AiBatchRunCreateManyInput = {
@@ -51730,6 +53682,148 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostLogCreateInput = {
+    id?: string
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    user?: UserCreateNestedOneWithoutCost_logsInput
+    crawl_run?: CrawlRunCreateNestedOneWithoutCost_logsInput
+    user_property?: UserPropertyCreateNestedOneWithoutCost_logsInput
+    user_tracked_agency?: UserTrackedAgencyCreateNestedOneWithoutCost_logsInput
+    ai_batch_run?: AiBatchRunCreateNestedOneWithoutCost_logsInput
+  }
+
+  export type CostLogUncheckedCreateInput = {
+    id?: string
+    user_id?: string | null
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    crawl_run_id?: string | null
+    user_property_id?: string | null
+    user_tracked_agency_id?: string | null
+    ai_batch_run_id?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+  }
+
+  export type CostLogUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutCost_logsNestedInput
+    crawl_run?: CrawlRunUpdateOneWithoutCost_logsNestedInput
+    user_property?: UserPropertyUpdateOneWithoutCost_logsNestedInput
+    user_tracked_agency?: UserTrackedAgencyUpdateOneWithoutCost_logsNestedInput
+    ai_batch_run?: AiBatchRunUpdateOneWithoutCost_logsNestedInput
+  }
+
+  export type CostLogUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: NullableStringFieldUpdateOperationsInput | string | null
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_batch_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostLogCreateManyInput = {
+    id?: string
+    user_id?: string | null
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    crawl_run_id?: string | null
+    user_property_id?: string | null
+    user_tracked_agency_id?: string | null
+    ai_batch_run_id?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+  }
+
+  export type CostLogUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostLogUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: NullableStringFieldUpdateOperationsInput | string | null
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_batch_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type IntegrationPropertyCreateInput = {
@@ -51818,6 +53912,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: number | null
     crawler_chromium_max_contexts_before_restart?: number | null
     normalization_ai_raw_description_max_chars?: number | null
+    dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -51834,6 +53929,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: number | null
     crawler_chromium_max_contexts_before_restart?: number | null
     normalization_ai_raw_description_max_chars?: number | null
+    dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -51850,6 +53946,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -51866,6 +53963,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -51882,6 +53980,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: number | null
     crawler_chromium_max_contexts_before_restart?: number | null
     normalization_ai_raw_description_max_chars?: number | null
+    dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -51898,6 +53997,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -51914,6 +54014,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
+    dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -52088,6 +54189,12 @@ export namespace Prisma {
     none?: IntegrationPropertyWhereInput
   }
 
+  export type CostLogListRelationFilter = {
+    every?: CostLogWhereInput
+    some?: CostLogWhereInput
+    none?: CostLogWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -52110,6 +54217,10 @@ export namespace Prisma {
   }
 
   export type IntegrationPropertyOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CostLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -54828,6 +56939,144 @@ export namespace Prisma {
     _max?: NestedEnumAiBatchRunStatusFilter<$PrismaModel>
   }
 
+  export type EnumCostOperationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.CostOperationType | EnumCostOperationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.CostOperationType[] | ListEnumCostOperationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CostOperationType[] | ListEnumCostOperationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumCostOperationTypeFilter<$PrismaModel> | $Enums.CostOperationType
+  }
+
+  export type DecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
+  export type UserPropertyNullableScalarRelationFilter = {
+    is?: UserPropertyWhereInput | null
+    isNot?: UserPropertyWhereInput | null
+  }
+
+  export type AiBatchRunNullableScalarRelationFilter = {
+    is?: AiBatchRunWhereInput | null
+    isNot?: AiBatchRunWhereInput | null
+  }
+
+  export type CostLogCountOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    operation_type?: SortOrder
+    provider?: SortOrder
+    model?: SortOrder
+    input_quantity?: SortOrder
+    output_quantity?: SortOrder
+    unit_count?: SortOrder
+    input_cost?: SortOrder
+    output_cost?: SortOrder
+    total_cost?: SortOrder
+    currency?: SortOrder
+    crawl_run_id?: SortOrder
+    user_property_id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    ai_batch_run_id?: SortOrder
+    metadata?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type CostLogAvgOrderByAggregateInput = {
+    input_quantity?: SortOrder
+    output_quantity?: SortOrder
+    unit_count?: SortOrder
+    input_cost?: SortOrder
+    output_cost?: SortOrder
+    total_cost?: SortOrder
+  }
+
+  export type CostLogMaxOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    operation_type?: SortOrder
+    provider?: SortOrder
+    model?: SortOrder
+    input_quantity?: SortOrder
+    output_quantity?: SortOrder
+    unit_count?: SortOrder
+    input_cost?: SortOrder
+    output_cost?: SortOrder
+    total_cost?: SortOrder
+    currency?: SortOrder
+    crawl_run_id?: SortOrder
+    user_property_id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    ai_batch_run_id?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type CostLogMinOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    operation_type?: SortOrder
+    provider?: SortOrder
+    model?: SortOrder
+    input_quantity?: SortOrder
+    output_quantity?: SortOrder
+    unit_count?: SortOrder
+    input_cost?: SortOrder
+    output_cost?: SortOrder
+    total_cost?: SortOrder
+    currency?: SortOrder
+    crawl_run_id?: SortOrder
+    user_property_id?: SortOrder
+    user_tracked_agency_id?: SortOrder
+    ai_batch_run_id?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type CostLogSumOrderByAggregateInput = {
+    input_quantity?: SortOrder
+    output_quantity?: SortOrder
+    unit_count?: SortOrder
+    input_cost?: SortOrder
+    output_cost?: SortOrder
+    total_cost?: SortOrder
+  }
+
+  export type EnumCostOperationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CostOperationType | EnumCostOperationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.CostOperationType[] | ListEnumCostOperationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CostOperationType[] | ListEnumCostOperationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumCostOperationTypeWithAggregatesFilter<$PrismaModel> | $Enums.CostOperationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCostOperationTypeFilter<$PrismaModel>
+    _max?: NestedEnumCostOperationTypeFilter<$PrismaModel>
+  }
+
+  export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
   export type IntegrationPropertyUser_idUser_integration_settings_idUser_property_idCompoundUniqueInput = {
     user_id: string
     user_integration_settings_id: string
@@ -54875,6 +57124,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
+    dewatermark_cost_per_image?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -54890,6 +57140,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
+    dewatermark_cost_per_image?: SortOrder
   }
 
   export type PlatformConfigMaxOrderByAggregateInput = {
@@ -54904,6 +57155,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
+    dewatermark_cost_per_image?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -54920,6 +57172,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
+    dewatermark_cost_per_image?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -54935,6 +57188,7 @@ export namespace Prisma {
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
+    dewatermark_cost_per_image?: SortOrder
   }
 
   export type EnumDocumentTypeFilter<$PrismaModel = never> = {
@@ -55033,6 +57287,13 @@ export namespace Prisma {
     connect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
   }
 
+  export type CostLogCreateNestedManyWithoutUserInput = {
+    create?: XOR<CostLogCreateWithoutUserInput, CostLogUncheckedCreateWithoutUserInput> | CostLogCreateWithoutUserInput[] | CostLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutUserInput | CostLogCreateOrConnectWithoutUserInput[]
+    createMany?: CostLogCreateManyUserInputEnvelope
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+  }
+
   export type UserTrackedAgencyUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<UserTrackedAgencyCreateWithoutUserInput, UserTrackedAgencyUncheckedCreateWithoutUserInput> | UserTrackedAgencyCreateWithoutUserInput[] | UserTrackedAgencyUncheckedCreateWithoutUserInput[]
     connectOrCreate?: UserTrackedAgencyCreateOrConnectWithoutUserInput | UserTrackedAgencyCreateOrConnectWithoutUserInput[]
@@ -55066,6 +57327,13 @@ export namespace Prisma {
     connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutUserInput | IntegrationPropertyCreateOrConnectWithoutUserInput[]
     createMany?: IntegrationPropertyCreateManyUserInputEnvelope
     connect?: IntegrationPropertyWhereUniqueInput | IntegrationPropertyWhereUniqueInput[]
+  }
+
+  export type CostLogUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<CostLogCreateWithoutUserInput, CostLogUncheckedCreateWithoutUserInput> | CostLogCreateWithoutUserInput[] | CostLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutUserInput | CostLogCreateOrConnectWithoutUserInput[]
+    createMany?: CostLogCreateManyUserInputEnvelope
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -55154,6 +57422,20 @@ export namespace Prisma {
     deleteMany?: IntegrationPropertyScalarWhereInput | IntegrationPropertyScalarWhereInput[]
   }
 
+  export type CostLogUpdateManyWithoutUserNestedInput = {
+    create?: XOR<CostLogCreateWithoutUserInput, CostLogUncheckedCreateWithoutUserInput> | CostLogCreateWithoutUserInput[] | CostLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutUserInput | CostLogCreateOrConnectWithoutUserInput[]
+    upsert?: CostLogUpsertWithWhereUniqueWithoutUserInput | CostLogUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: CostLogCreateManyUserInputEnvelope
+    set?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    disconnect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    delete?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    update?: CostLogUpdateWithWhereUniqueWithoutUserInput | CostLogUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: CostLogUpdateManyWithWhereWithoutUserInput | CostLogUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
+  }
+
   export type UserTrackedAgencyUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<UserTrackedAgencyCreateWithoutUserInput, UserTrackedAgencyUncheckedCreateWithoutUserInput> | UserTrackedAgencyCreateWithoutUserInput[] | UserTrackedAgencyUncheckedCreateWithoutUserInput[]
     connectOrCreate?: UserTrackedAgencyCreateOrConnectWithoutUserInput | UserTrackedAgencyCreateOrConnectWithoutUserInput[]
@@ -55222,6 +57504,20 @@ export namespace Prisma {
     update?: IntegrationPropertyUpdateWithWhereUniqueWithoutUserInput | IntegrationPropertyUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: IntegrationPropertyUpdateManyWithWhereWithoutUserInput | IntegrationPropertyUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: IntegrationPropertyScalarWhereInput | IntegrationPropertyScalarWhereInput[]
+  }
+
+  export type CostLogUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<CostLogCreateWithoutUserInput, CostLogUncheckedCreateWithoutUserInput> | CostLogCreateWithoutUserInput[] | CostLogUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutUserInput | CostLogCreateOrConnectWithoutUserInput[]
+    upsert?: CostLogUpsertWithWhereUniqueWithoutUserInput | CostLogUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: CostLogCreateManyUserInputEnvelope
+    set?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    disconnect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    delete?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    update?: CostLogUpdateWithWhereUniqueWithoutUserInput | CostLogUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: CostLogUpdateManyWithWhereWithoutUserInput | CostLogUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
   }
 
   export type UserIntegrationCreateNestedManyWithoutIntegration_targetInput = {
@@ -55843,6 +58139,13 @@ export namespace Prisma {
     connect?: ContentPublishingConfigWhereUniqueInput
   }
 
+  export type CostLogCreateNestedManyWithoutUser_tracked_agencyInput = {
+    create?: XOR<CostLogCreateWithoutUser_tracked_agencyInput, CostLogUncheckedCreateWithoutUser_tracked_agencyInput> | CostLogCreateWithoutUser_tracked_agencyInput[] | CostLogUncheckedCreateWithoutUser_tracked_agencyInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutUser_tracked_agencyInput | CostLogCreateOrConnectWithoutUser_tracked_agencyInput[]
+    createMany?: CostLogCreateManyUser_tracked_agencyInputEnvelope
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+  }
+
   export type CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput = {
     create?: XOR<CrawlRunCreateWithoutUser_tracked_agencyInput, CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput> | CrawlRunCreateWithoutUser_tracked_agencyInput[] | CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput[]
     connectOrCreate?: CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput | CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput[]
@@ -55860,6 +58163,13 @@ export namespace Prisma {
     create?: XOR<ContentPublishingConfigCreateWithoutUser_tracked_agencyInput, ContentPublishingConfigUncheckedCreateWithoutUser_tracked_agencyInput>
     connectOrCreate?: ContentPublishingConfigCreateOrConnectWithoutUser_tracked_agencyInput
     connect?: ContentPublishingConfigWhereUniqueInput
+  }
+
+  export type CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput = {
+    create?: XOR<CostLogCreateWithoutUser_tracked_agencyInput, CostLogUncheckedCreateWithoutUser_tracked_agencyInput> | CostLogCreateWithoutUser_tracked_agencyInput[] | CostLogUncheckedCreateWithoutUser_tracked_agencyInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutUser_tracked_agencyInput | CostLogCreateOrConnectWithoutUser_tracked_agencyInput[]
+    createMany?: CostLogCreateManyUser_tracked_agencyInputEnvelope
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -55933,6 +58243,20 @@ export namespace Prisma {
     update?: XOR<XOR<ContentPublishingConfigUpdateToOneWithWhereWithoutUser_tracked_agencyInput, ContentPublishingConfigUpdateWithoutUser_tracked_agencyInput>, ContentPublishingConfigUncheckedUpdateWithoutUser_tracked_agencyInput>
   }
 
+  export type CostLogUpdateManyWithoutUser_tracked_agencyNestedInput = {
+    create?: XOR<CostLogCreateWithoutUser_tracked_agencyInput, CostLogUncheckedCreateWithoutUser_tracked_agencyInput> | CostLogCreateWithoutUser_tracked_agencyInput[] | CostLogUncheckedCreateWithoutUser_tracked_agencyInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutUser_tracked_agencyInput | CostLogCreateOrConnectWithoutUser_tracked_agencyInput[]
+    upsert?: CostLogUpsertWithWhereUniqueWithoutUser_tracked_agencyInput | CostLogUpsertWithWhereUniqueWithoutUser_tracked_agencyInput[]
+    createMany?: CostLogCreateManyUser_tracked_agencyInputEnvelope
+    set?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    disconnect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    delete?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    update?: CostLogUpdateWithWhereUniqueWithoutUser_tracked_agencyInput | CostLogUpdateWithWhereUniqueWithoutUser_tracked_agencyInput[]
+    updateMany?: CostLogUpdateManyWithWhereWithoutUser_tracked_agencyInput | CostLogUpdateManyWithWhereWithoutUser_tracked_agencyInput[]
+    deleteMany?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
+  }
+
   export type CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput = {
     create?: XOR<CrawlRunCreateWithoutUser_tracked_agencyInput, CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput> | CrawlRunCreateWithoutUser_tracked_agencyInput[] | CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput[]
     connectOrCreate?: CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput | CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput[]
@@ -55965,6 +58289,20 @@ export namespace Prisma {
     delete?: ContentPublishingConfigWhereInput | boolean
     connect?: ContentPublishingConfigWhereUniqueInput
     update?: XOR<XOR<ContentPublishingConfigUpdateToOneWithWhereWithoutUser_tracked_agencyInput, ContentPublishingConfigUpdateWithoutUser_tracked_agencyInput>, ContentPublishingConfigUncheckedUpdateWithoutUser_tracked_agencyInput>
+  }
+
+  export type CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput = {
+    create?: XOR<CostLogCreateWithoutUser_tracked_agencyInput, CostLogUncheckedCreateWithoutUser_tracked_agencyInput> | CostLogCreateWithoutUser_tracked_agencyInput[] | CostLogUncheckedCreateWithoutUser_tracked_agencyInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutUser_tracked_agencyInput | CostLogCreateOrConnectWithoutUser_tracked_agencyInput[]
+    upsert?: CostLogUpsertWithWhereUniqueWithoutUser_tracked_agencyInput | CostLogUpsertWithWhereUniqueWithoutUser_tracked_agencyInput[]
+    createMany?: CostLogCreateManyUser_tracked_agencyInputEnvelope
+    set?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    disconnect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    delete?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    update?: CostLogUpdateWithWhereUniqueWithoutUser_tracked_agencyInput | CostLogUpdateWithWhereUniqueWithoutUser_tracked_agencyInput[]
+    updateMany?: CostLogUpdateManyWithWhereWithoutUser_tracked_agencyInput | CostLogUpdateManyWithWhereWithoutUser_tracked_agencyInput[]
+    deleteMany?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
   }
 
   export type UserTrackedAgencyCreateNestedOneWithoutIntegration_linkInput = {
@@ -56621,6 +58959,13 @@ export namespace Prisma {
     connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
   }
 
+  export type CostLogCreateNestedManyWithoutCrawl_runInput = {
+    create?: XOR<CostLogCreateWithoutCrawl_runInput, CostLogUncheckedCreateWithoutCrawl_runInput> | CostLogCreateWithoutCrawl_runInput[] | CostLogUncheckedCreateWithoutCrawl_runInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutCrawl_runInput | CostLogCreateOrConnectWithoutCrawl_runInput[]
+    createMany?: CostLogCreateManyCrawl_runInputEnvelope
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+  }
+
   export type JobLogUncheckedCreateNestedManyWithoutCrawl_runInput = {
     create?: XOR<JobLogCreateWithoutCrawl_runInput, JobLogUncheckedCreateWithoutCrawl_runInput> | JobLogCreateWithoutCrawl_runInput[] | JobLogUncheckedCreateWithoutCrawl_runInput[]
     connectOrCreate?: JobLogCreateOrConnectWithoutCrawl_runInput | JobLogCreateOrConnectWithoutCrawl_runInput[]
@@ -56667,6 +59012,13 @@ export namespace Prisma {
     connectOrCreate?: AiBatchRunCreateOrConnectWithoutCrawl_runInput | AiBatchRunCreateOrConnectWithoutCrawl_runInput[]
     createMany?: AiBatchRunCreateManyCrawl_runInputEnvelope
     connect?: AiBatchRunWhereUniqueInput | AiBatchRunWhereUniqueInput[]
+  }
+
+  export type CostLogUncheckedCreateNestedManyWithoutCrawl_runInput = {
+    create?: XOR<CostLogCreateWithoutCrawl_runInput, CostLogUncheckedCreateWithoutCrawl_runInput> | CostLogCreateWithoutCrawl_runInput[] | CostLogUncheckedCreateWithoutCrawl_runInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutCrawl_runInput | CostLogCreateOrConnectWithoutCrawl_runInput[]
+    createMany?: CostLogCreateManyCrawl_runInputEnvelope
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
   }
 
   export type EnumCrawlRunStatusFieldUpdateOperationsInput = {
@@ -56795,6 +59147,20 @@ export namespace Prisma {
     deleteMany?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
   }
 
+  export type CostLogUpdateManyWithoutCrawl_runNestedInput = {
+    create?: XOR<CostLogCreateWithoutCrawl_runInput, CostLogUncheckedCreateWithoutCrawl_runInput> | CostLogCreateWithoutCrawl_runInput[] | CostLogUncheckedCreateWithoutCrawl_runInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutCrawl_runInput | CostLogCreateOrConnectWithoutCrawl_runInput[]
+    upsert?: CostLogUpsertWithWhereUniqueWithoutCrawl_runInput | CostLogUpsertWithWhereUniqueWithoutCrawl_runInput[]
+    createMany?: CostLogCreateManyCrawl_runInputEnvelope
+    set?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    disconnect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    delete?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    update?: CostLogUpdateWithWhereUniqueWithoutCrawl_runInput | CostLogUpdateWithWhereUniqueWithoutCrawl_runInput[]
+    updateMany?: CostLogUpdateManyWithWhereWithoutCrawl_runInput | CostLogUpdateManyWithWhereWithoutCrawl_runInput[]
+    deleteMany?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
+  }
+
   export type JobLogUncheckedUpdateManyWithoutCrawl_runNestedInput = {
     create?: XOR<JobLogCreateWithoutCrawl_runInput, JobLogUncheckedCreateWithoutCrawl_runInput> | JobLogCreateWithoutCrawl_runInput[] | JobLogUncheckedCreateWithoutCrawl_runInput[]
     connectOrCreate?: JobLogCreateOrConnectWithoutCrawl_runInput | JobLogCreateOrConnectWithoutCrawl_runInput[]
@@ -56887,6 +59253,20 @@ export namespace Prisma {
     update?: AiBatchRunUpdateWithWhereUniqueWithoutCrawl_runInput | AiBatchRunUpdateWithWhereUniqueWithoutCrawl_runInput[]
     updateMany?: AiBatchRunUpdateManyWithWhereWithoutCrawl_runInput | AiBatchRunUpdateManyWithWhereWithoutCrawl_runInput[]
     deleteMany?: AiBatchRunScalarWhereInput | AiBatchRunScalarWhereInput[]
+  }
+
+  export type CostLogUncheckedUpdateManyWithoutCrawl_runNestedInput = {
+    create?: XOR<CostLogCreateWithoutCrawl_runInput, CostLogUncheckedCreateWithoutCrawl_runInput> | CostLogCreateWithoutCrawl_runInput[] | CostLogUncheckedCreateWithoutCrawl_runInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutCrawl_runInput | CostLogCreateOrConnectWithoutCrawl_runInput[]
+    upsert?: CostLogUpsertWithWhereUniqueWithoutCrawl_runInput | CostLogUpsertWithWhereUniqueWithoutCrawl_runInput[]
+    createMany?: CostLogCreateManyCrawl_runInputEnvelope
+    set?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    disconnect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    delete?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    update?: CostLogUpdateWithWhereUniqueWithoutCrawl_runInput | CostLogUpdateWithWhereUniqueWithoutCrawl_runInput[]
+    updateMany?: CostLogUpdateManyWithWhereWithoutCrawl_runInput | CostLogUpdateManyWithWhereWithoutCrawl_runInput[]
+    deleteMany?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
   }
 
   export type CrawlRunCreateNestedOneWithoutDiagnostics_packageInput = {
@@ -57369,6 +59749,13 @@ export namespace Prisma {
     connect?: PropertyLocalizedContentWhereUniqueInput | PropertyLocalizedContentWhereUniqueInput[]
   }
 
+  export type CostLogCreateNestedManyWithoutUser_propertyInput = {
+    create?: XOR<CostLogCreateWithoutUser_propertyInput, CostLogUncheckedCreateWithoutUser_propertyInput> | CostLogCreateWithoutUser_propertyInput[] | CostLogUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutUser_propertyInput | CostLogCreateOrConnectWithoutUser_propertyInput[]
+    createMany?: CostLogCreateManyUser_propertyInputEnvelope
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+  }
+
   export type IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput = {
     create?: XOR<IntegrationPropertyCreateWithoutUser_propertyInput, IntegrationPropertyUncheckedCreateWithoutUser_propertyInput> | IntegrationPropertyCreateWithoutUser_propertyInput[] | IntegrationPropertyUncheckedCreateWithoutUser_propertyInput[]
     connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutUser_propertyInput | IntegrationPropertyCreateOrConnectWithoutUser_propertyInput[]
@@ -57381,6 +59768,13 @@ export namespace Prisma {
     connectOrCreate?: PropertyLocalizedContentCreateOrConnectWithoutUser_propertyInput | PropertyLocalizedContentCreateOrConnectWithoutUser_propertyInput[]
     createMany?: PropertyLocalizedContentCreateManyUser_propertyInputEnvelope
     connect?: PropertyLocalizedContentWhereUniqueInput | PropertyLocalizedContentWhereUniqueInput[]
+  }
+
+  export type CostLogUncheckedCreateNestedManyWithoutUser_propertyInput = {
+    create?: XOR<CostLogCreateWithoutUser_propertyInput, CostLogUncheckedCreateWithoutUser_propertyInput> | CostLogCreateWithoutUser_propertyInput[] | CostLogUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutUser_propertyInput | CostLogCreateOrConnectWithoutUser_propertyInput[]
+    createMany?: CostLogCreateManyUser_propertyInputEnvelope
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
   }
 
   export type UserUpdateOneRequiredWithoutSaved_propertiesNestedInput = {
@@ -57427,6 +59821,20 @@ export namespace Prisma {
     deleteMany?: PropertyLocalizedContentScalarWhereInput | PropertyLocalizedContentScalarWhereInput[]
   }
 
+  export type CostLogUpdateManyWithoutUser_propertyNestedInput = {
+    create?: XOR<CostLogCreateWithoutUser_propertyInput, CostLogUncheckedCreateWithoutUser_propertyInput> | CostLogCreateWithoutUser_propertyInput[] | CostLogUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutUser_propertyInput | CostLogCreateOrConnectWithoutUser_propertyInput[]
+    upsert?: CostLogUpsertWithWhereUniqueWithoutUser_propertyInput | CostLogUpsertWithWhereUniqueWithoutUser_propertyInput[]
+    createMany?: CostLogCreateManyUser_propertyInputEnvelope
+    set?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    disconnect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    delete?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    update?: CostLogUpdateWithWhereUniqueWithoutUser_propertyInput | CostLogUpdateWithWhereUniqueWithoutUser_propertyInput[]
+    updateMany?: CostLogUpdateManyWithWhereWithoutUser_propertyInput | CostLogUpdateManyWithWhereWithoutUser_propertyInput[]
+    deleteMany?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
+  }
+
   export type IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput = {
     create?: XOR<IntegrationPropertyCreateWithoutUser_propertyInput, IntegrationPropertyUncheckedCreateWithoutUser_propertyInput> | IntegrationPropertyCreateWithoutUser_propertyInput[] | IntegrationPropertyUncheckedCreateWithoutUser_propertyInput[]
     connectOrCreate?: IntegrationPropertyCreateOrConnectWithoutUser_propertyInput | IntegrationPropertyCreateOrConnectWithoutUser_propertyInput[]
@@ -57453,6 +59861,20 @@ export namespace Prisma {
     update?: PropertyLocalizedContentUpdateWithWhereUniqueWithoutUser_propertyInput | PropertyLocalizedContentUpdateWithWhereUniqueWithoutUser_propertyInput[]
     updateMany?: PropertyLocalizedContentUpdateManyWithWhereWithoutUser_propertyInput | PropertyLocalizedContentUpdateManyWithWhereWithoutUser_propertyInput[]
     deleteMany?: PropertyLocalizedContentScalarWhereInput | PropertyLocalizedContentScalarWhereInput[]
+  }
+
+  export type CostLogUncheckedUpdateManyWithoutUser_propertyNestedInput = {
+    create?: XOR<CostLogCreateWithoutUser_propertyInput, CostLogUncheckedCreateWithoutUser_propertyInput> | CostLogCreateWithoutUser_propertyInput[] | CostLogUncheckedCreateWithoutUser_propertyInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutUser_propertyInput | CostLogCreateOrConnectWithoutUser_propertyInput[]
+    upsert?: CostLogUpsertWithWhereUniqueWithoutUser_propertyInput | CostLogUpsertWithWhereUniqueWithoutUser_propertyInput[]
+    createMany?: CostLogCreateManyUser_propertyInputEnvelope
+    set?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    disconnect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    delete?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    update?: CostLogUpdateWithWhereUniqueWithoutUser_propertyInput | CostLogUpdateWithWhereUniqueWithoutUser_propertyInput[]
+    updateMany?: CostLogUpdateManyWithWhereWithoutUser_propertyInput | CostLogUpdateManyWithWhereWithoutUser_propertyInput[]
+    deleteMany?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
   }
 
   export type UserTrackedAgencyCreateNestedOneWithoutContent_publishing_configInput = {
@@ -57775,6 +60197,20 @@ export namespace Prisma {
     connect?: CrawlRunWhereUniqueInput
   }
 
+  export type CostLogCreateNestedManyWithoutAi_batch_runInput = {
+    create?: XOR<CostLogCreateWithoutAi_batch_runInput, CostLogUncheckedCreateWithoutAi_batch_runInput> | CostLogCreateWithoutAi_batch_runInput[] | CostLogUncheckedCreateWithoutAi_batch_runInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutAi_batch_runInput | CostLogCreateOrConnectWithoutAi_batch_runInput[]
+    createMany?: CostLogCreateManyAi_batch_runInputEnvelope
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+  }
+
+  export type CostLogUncheckedCreateNestedManyWithoutAi_batch_runInput = {
+    create?: XOR<CostLogCreateWithoutAi_batch_runInput, CostLogUncheckedCreateWithoutAi_batch_runInput> | CostLogCreateWithoutAi_batch_runInput[] | CostLogUncheckedCreateWithoutAi_batch_runInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutAi_batch_runInput | CostLogCreateOrConnectWithoutAi_batch_runInput[]
+    createMany?: CostLogCreateManyAi_batch_runInputEnvelope
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+  }
+
   export type EnumAiBatchRunKindFieldUpdateOperationsInput = {
     set?: $Enums.AiBatchRunKind
   }
@@ -57811,6 +60247,126 @@ export namespace Prisma {
     delete?: CrawlRunWhereInput | boolean
     connect?: CrawlRunWhereUniqueInput
     update?: XOR<XOR<CrawlRunUpdateToOneWithWhereWithoutAi_batch_runsInput, CrawlRunUpdateWithoutAi_batch_runsInput>, CrawlRunUncheckedUpdateWithoutAi_batch_runsInput>
+  }
+
+  export type CostLogUpdateManyWithoutAi_batch_runNestedInput = {
+    create?: XOR<CostLogCreateWithoutAi_batch_runInput, CostLogUncheckedCreateWithoutAi_batch_runInput> | CostLogCreateWithoutAi_batch_runInput[] | CostLogUncheckedCreateWithoutAi_batch_runInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutAi_batch_runInput | CostLogCreateOrConnectWithoutAi_batch_runInput[]
+    upsert?: CostLogUpsertWithWhereUniqueWithoutAi_batch_runInput | CostLogUpsertWithWhereUniqueWithoutAi_batch_runInput[]
+    createMany?: CostLogCreateManyAi_batch_runInputEnvelope
+    set?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    disconnect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    delete?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    update?: CostLogUpdateWithWhereUniqueWithoutAi_batch_runInput | CostLogUpdateWithWhereUniqueWithoutAi_batch_runInput[]
+    updateMany?: CostLogUpdateManyWithWhereWithoutAi_batch_runInput | CostLogUpdateManyWithWhereWithoutAi_batch_runInput[]
+    deleteMany?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
+  }
+
+  export type CostLogUncheckedUpdateManyWithoutAi_batch_runNestedInput = {
+    create?: XOR<CostLogCreateWithoutAi_batch_runInput, CostLogUncheckedCreateWithoutAi_batch_runInput> | CostLogCreateWithoutAi_batch_runInput[] | CostLogUncheckedCreateWithoutAi_batch_runInput[]
+    connectOrCreate?: CostLogCreateOrConnectWithoutAi_batch_runInput | CostLogCreateOrConnectWithoutAi_batch_runInput[]
+    upsert?: CostLogUpsertWithWhereUniqueWithoutAi_batch_runInput | CostLogUpsertWithWhereUniqueWithoutAi_batch_runInput[]
+    createMany?: CostLogCreateManyAi_batch_runInputEnvelope
+    set?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    disconnect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    delete?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
+    update?: CostLogUpdateWithWhereUniqueWithoutAi_batch_runInput | CostLogUpdateWithWhereUniqueWithoutAi_batch_runInput[]
+    updateMany?: CostLogUpdateManyWithWhereWithoutAi_batch_runInput | CostLogUpdateManyWithWhereWithoutAi_batch_runInput[]
+    deleteMany?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutCost_logsInput = {
+    create?: XOR<UserCreateWithoutCost_logsInput, UserUncheckedCreateWithoutCost_logsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCost_logsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type CrawlRunCreateNestedOneWithoutCost_logsInput = {
+    create?: XOR<CrawlRunCreateWithoutCost_logsInput, CrawlRunUncheckedCreateWithoutCost_logsInput>
+    connectOrCreate?: CrawlRunCreateOrConnectWithoutCost_logsInput
+    connect?: CrawlRunWhereUniqueInput
+  }
+
+  export type UserPropertyCreateNestedOneWithoutCost_logsInput = {
+    create?: XOR<UserPropertyCreateWithoutCost_logsInput, UserPropertyUncheckedCreateWithoutCost_logsInput>
+    connectOrCreate?: UserPropertyCreateOrConnectWithoutCost_logsInput
+    connect?: UserPropertyWhereUniqueInput
+  }
+
+  export type UserTrackedAgencyCreateNestedOneWithoutCost_logsInput = {
+    create?: XOR<UserTrackedAgencyCreateWithoutCost_logsInput, UserTrackedAgencyUncheckedCreateWithoutCost_logsInput>
+    connectOrCreate?: UserTrackedAgencyCreateOrConnectWithoutCost_logsInput
+    connect?: UserTrackedAgencyWhereUniqueInput
+  }
+
+  export type AiBatchRunCreateNestedOneWithoutCost_logsInput = {
+    create?: XOR<AiBatchRunCreateWithoutCost_logsInput, AiBatchRunUncheckedCreateWithoutCost_logsInput>
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutCost_logsInput
+    connect?: AiBatchRunWhereUniqueInput
+  }
+
+  export type EnumCostOperationTypeFieldUpdateOperationsInput = {
+    set?: $Enums.CostOperationType
+  }
+
+  export type DecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type UserUpdateOneWithoutCost_logsNestedInput = {
+    create?: XOR<UserCreateWithoutCost_logsInput, UserUncheckedCreateWithoutCost_logsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCost_logsInput
+    upsert?: UserUpsertWithoutCost_logsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCost_logsInput, UserUpdateWithoutCost_logsInput>, UserUncheckedUpdateWithoutCost_logsInput>
+  }
+
+  export type CrawlRunUpdateOneWithoutCost_logsNestedInput = {
+    create?: XOR<CrawlRunCreateWithoutCost_logsInput, CrawlRunUncheckedCreateWithoutCost_logsInput>
+    connectOrCreate?: CrawlRunCreateOrConnectWithoutCost_logsInput
+    upsert?: CrawlRunUpsertWithoutCost_logsInput
+    disconnect?: CrawlRunWhereInput | boolean
+    delete?: CrawlRunWhereInput | boolean
+    connect?: CrawlRunWhereUniqueInput
+    update?: XOR<XOR<CrawlRunUpdateToOneWithWhereWithoutCost_logsInput, CrawlRunUpdateWithoutCost_logsInput>, CrawlRunUncheckedUpdateWithoutCost_logsInput>
+  }
+
+  export type UserPropertyUpdateOneWithoutCost_logsNestedInput = {
+    create?: XOR<UserPropertyCreateWithoutCost_logsInput, UserPropertyUncheckedCreateWithoutCost_logsInput>
+    connectOrCreate?: UserPropertyCreateOrConnectWithoutCost_logsInput
+    upsert?: UserPropertyUpsertWithoutCost_logsInput
+    disconnect?: UserPropertyWhereInput | boolean
+    delete?: UserPropertyWhereInput | boolean
+    connect?: UserPropertyWhereUniqueInput
+    update?: XOR<XOR<UserPropertyUpdateToOneWithWhereWithoutCost_logsInput, UserPropertyUpdateWithoutCost_logsInput>, UserPropertyUncheckedUpdateWithoutCost_logsInput>
+  }
+
+  export type UserTrackedAgencyUpdateOneWithoutCost_logsNestedInput = {
+    create?: XOR<UserTrackedAgencyCreateWithoutCost_logsInput, UserTrackedAgencyUncheckedCreateWithoutCost_logsInput>
+    connectOrCreate?: UserTrackedAgencyCreateOrConnectWithoutCost_logsInput
+    upsert?: UserTrackedAgencyUpsertWithoutCost_logsInput
+    disconnect?: UserTrackedAgencyWhereInput | boolean
+    delete?: UserTrackedAgencyWhereInput | boolean
+    connect?: UserTrackedAgencyWhereUniqueInput
+    update?: XOR<XOR<UserTrackedAgencyUpdateToOneWithWhereWithoutCost_logsInput, UserTrackedAgencyUpdateWithoutCost_logsInput>, UserTrackedAgencyUncheckedUpdateWithoutCost_logsInput>
+  }
+
+  export type AiBatchRunUpdateOneWithoutCost_logsNestedInput = {
+    create?: XOR<AiBatchRunCreateWithoutCost_logsInput, AiBatchRunUncheckedCreateWithoutCost_logsInput>
+    connectOrCreate?: AiBatchRunCreateOrConnectWithoutCost_logsInput
+    upsert?: AiBatchRunUpsertWithoutCost_logsInput
+    disconnect?: AiBatchRunWhereInput | boolean
+    delete?: AiBatchRunWhereInput | boolean
+    connect?: AiBatchRunWhereUniqueInput
+    update?: XOR<XOR<AiBatchRunUpdateToOneWithWhereWithoutCost_logsInput, AiBatchRunUpdateWithoutCost_logsInput>, AiBatchRunUncheckedUpdateWithoutCost_logsInput>
   }
 
   export type UserCreateNestedOneWithoutIntegration_propertiesInput = {
@@ -58689,6 +61245,50 @@ export namespace Prisma {
     _max?: NestedEnumAiBatchRunStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumCostOperationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.CostOperationType | EnumCostOperationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.CostOperationType[] | ListEnumCostOperationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CostOperationType[] | ListEnumCostOperationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumCostOperationTypeFilter<$PrismaModel> | $Enums.CostOperationType
+  }
+
+  export type NestedDecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type NestedEnumCostOperationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CostOperationType | EnumCostOperationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.CostOperationType[] | ListEnumCostOperationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.CostOperationType[] | ListEnumCostOperationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumCostOperationTypeWithAggregatesFilter<$PrismaModel> | $Enums.CostOperationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCostOperationTypeFilter<$PrismaModel>
+    _max?: NestedEnumCostOperationTypeFilter<$PrismaModel>
+  }
+
+  export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
   export type NestedEnumDocumentTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.DocumentType | EnumDocumentTypeFieldRefInput<$PrismaModel>
     in?: $Enums.DocumentType[] | ListEnumDocumentTypeFieldRefInput<$PrismaModel>
@@ -58727,6 +61327,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogCreateNestedManyWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateWithoutUserInput = {
@@ -58750,6 +61351,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyCreateOrConnectWithoutUserInput = {
@@ -58810,6 +61412,7 @@ export namespace Prisma {
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
+    cost_logs?: CostLogCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutUserInput = {
@@ -58860,6 +61463,7 @@ export namespace Prisma {
     updated_at?: Date | string
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutUserInput = {
@@ -58975,6 +61579,56 @@ export namespace Prisma {
 
   export type IntegrationPropertyCreateManyUserInputEnvelope = {
     data: IntegrationPropertyCreateManyUserInput | IntegrationPropertyCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CostLogCreateWithoutUserInput = {
+    id?: string
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    crawl_run?: CrawlRunCreateNestedOneWithoutCost_logsInput
+    user_property?: UserPropertyCreateNestedOneWithoutCost_logsInput
+    user_tracked_agency?: UserTrackedAgencyCreateNestedOneWithoutCost_logsInput
+    ai_batch_run?: AiBatchRunCreateNestedOneWithoutCost_logsInput
+  }
+
+  export type CostLogUncheckedCreateWithoutUserInput = {
+    id?: string
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    crawl_run_id?: string | null
+    user_property_id?: string | null
+    user_tracked_agency_id?: string | null
+    ai_batch_run_id?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+  }
+
+  export type CostLogCreateOrConnectWithoutUserInput = {
+    where: CostLogWhereUniqueInput
+    create: XOR<CostLogCreateWithoutUserInput, CostLogUncheckedCreateWithoutUserInput>
+  }
+
+  export type CostLogCreateManyUserInputEnvelope = {
+    data: CostLogCreateManyUserInput | CostLogCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -59180,6 +61834,46 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
   }
 
+  export type CostLogUpsertWithWhereUniqueWithoutUserInput = {
+    where: CostLogWhereUniqueInput
+    update: XOR<CostLogUpdateWithoutUserInput, CostLogUncheckedUpdateWithoutUserInput>
+    create: XOR<CostLogCreateWithoutUserInput, CostLogUncheckedCreateWithoutUserInput>
+  }
+
+  export type CostLogUpdateWithWhereUniqueWithoutUserInput = {
+    where: CostLogWhereUniqueInput
+    data: XOR<CostLogUpdateWithoutUserInput, CostLogUncheckedUpdateWithoutUserInput>
+  }
+
+  export type CostLogUpdateManyWithWhereWithoutUserInput = {
+    where: CostLogScalarWhereInput
+    data: XOR<CostLogUpdateManyMutationInput, CostLogUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type CostLogScalarWhereInput = {
+    AND?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
+    OR?: CostLogScalarWhereInput[]
+    NOT?: CostLogScalarWhereInput | CostLogScalarWhereInput[]
+    id?: StringFilter<"CostLog"> | string
+    user_id?: StringNullableFilter<"CostLog"> | string | null
+    operation_type?: EnumCostOperationTypeFilter<"CostLog"> | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFilter<"CostLog"> | $Enums.IntegrationType
+    model?: StringNullableFilter<"CostLog"> | string | null
+    input_quantity?: IntNullableFilter<"CostLog"> | number | null
+    output_quantity?: IntNullableFilter<"CostLog"> | number | null
+    unit_count?: IntNullableFilter<"CostLog"> | number | null
+    input_cost?: DecimalNullableFilter<"CostLog"> | Decimal | DecimalJsLike | number | string | null
+    output_cost?: DecimalNullableFilter<"CostLog"> | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFilter<"CostLog"> | Decimal | DecimalJsLike | number | string
+    currency?: StringFilter<"CostLog"> | string
+    crawl_run_id?: StringNullableFilter<"CostLog"> | string | null
+    user_property_id?: StringNullableFilter<"CostLog"> | string | null
+    user_tracked_agency_id?: StringNullableFilter<"CostLog"> | string | null
+    ai_batch_run_id?: StringNullableFilter<"CostLog"> | string | null
+    metadata?: JsonNullableFilter<"CostLog">
+    created_at?: DateTimeFilter<"CostLog"> | Date | string
+  }
+
   export type UserIntegrationCreateWithoutIntegration_targetInput = {
     id?: string
     api_key_secret?: string | null
@@ -59300,6 +61994,7 @@ export namespace Prisma {
     saved_properties?: UserPropertyCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUser_integration_settingsInput = {
@@ -59314,6 +62009,7 @@ export namespace Prisma {
     saved_properties?: UserPropertyUncheckedCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUser_integration_settingsInput = {
@@ -59451,6 +62147,7 @@ export namespace Prisma {
     saved_properties?: UserPropertyUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUser_integration_settingsInput = {
@@ -59465,6 +62162,7 @@ export namespace Prisma {
     saved_properties?: UserPropertyUncheckedUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type IntegrationTargetUpsertWithoutUser_integration_settingsInput = {
@@ -59619,6 +62317,7 @@ export namespace Prisma {
     saved_properties?: UserPropertyCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUser_integrationsInput = {
@@ -59633,6 +62332,7 @@ export namespace Prisma {
     saved_properties?: UserPropertyUncheckedCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUser_integrationsInput = {
@@ -59786,6 +62486,7 @@ export namespace Prisma {
     saved_properties?: UserPropertyUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUser_integrationsInput = {
@@ -59800,6 +62501,7 @@ export namespace Prisma {
     saved_properties?: UserPropertyUncheckedUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type IntegrationTargetUpsertWithoutUser_integrationsInput = {
@@ -59951,6 +62653,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogCreateNestedManyWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateWithoutSource_agencyInput = {
@@ -59974,6 +62677,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyCreateOrConnectWithoutSource_agencyInput = {
@@ -60064,6 +62768,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutSource_agencyInput = {
@@ -60100,6 +62805,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutSource_agencyInput = {
@@ -60437,6 +63143,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTracked_agenciesInput = {
@@ -60451,6 +63158,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTracked_agenciesInput = {
@@ -60545,6 +63253,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutUser_tracked_agencyInput = {
@@ -60581,6 +63290,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutUser_tracked_agencyInput = {
@@ -60645,6 +63355,56 @@ export namespace Prisma {
     create: XOR<ContentPublishingConfigCreateWithoutUser_tracked_agencyInput, ContentPublishingConfigUncheckedCreateWithoutUser_tracked_agencyInput>
   }
 
+  export type CostLogCreateWithoutUser_tracked_agencyInput = {
+    id?: string
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    user?: UserCreateNestedOneWithoutCost_logsInput
+    crawl_run?: CrawlRunCreateNestedOneWithoutCost_logsInput
+    user_property?: UserPropertyCreateNestedOneWithoutCost_logsInput
+    ai_batch_run?: AiBatchRunCreateNestedOneWithoutCost_logsInput
+  }
+
+  export type CostLogUncheckedCreateWithoutUser_tracked_agencyInput = {
+    id?: string
+    user_id?: string | null
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    crawl_run_id?: string | null
+    user_property_id?: string | null
+    ai_batch_run_id?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+  }
+
+  export type CostLogCreateOrConnectWithoutUser_tracked_agencyInput = {
+    where: CostLogWhereUniqueInput
+    create: XOR<CostLogCreateWithoutUser_tracked_agencyInput, CostLogUncheckedCreateWithoutUser_tracked_agencyInput>
+  }
+
+  export type CostLogCreateManyUser_tracked_agencyInputEnvelope = {
+    data: CostLogCreateManyUser_tracked_agencyInput | CostLogCreateManyUser_tracked_agencyInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutTracked_agenciesInput = {
     update: XOR<UserUpdateWithoutTracked_agenciesInput, UserUncheckedUpdateWithoutTracked_agenciesInput>
     create: XOR<UserCreateWithoutTracked_agenciesInput, UserUncheckedCreateWithoutTracked_agenciesInput>
@@ -60668,6 +63428,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTracked_agenciesInput = {
@@ -60682,6 +63443,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type SourceAgencyUpsertWithoutUser_tracked_agenciesInput = {
@@ -60823,6 +63585,22 @@ export namespace Prisma {
     ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutConfigNestedInput
   }
 
+  export type CostLogUpsertWithWhereUniqueWithoutUser_tracked_agencyInput = {
+    where: CostLogWhereUniqueInput
+    update: XOR<CostLogUpdateWithoutUser_tracked_agencyInput, CostLogUncheckedUpdateWithoutUser_tracked_agencyInput>
+    create: XOR<CostLogCreateWithoutUser_tracked_agencyInput, CostLogUncheckedCreateWithoutUser_tracked_agencyInput>
+  }
+
+  export type CostLogUpdateWithWhereUniqueWithoutUser_tracked_agencyInput = {
+    where: CostLogWhereUniqueInput
+    data: XOR<CostLogUpdateWithoutUser_tracked_agencyInput, CostLogUncheckedUpdateWithoutUser_tracked_agencyInput>
+  }
+
+  export type CostLogUpdateManyWithWhereWithoutUser_tracked_agencyInput = {
+    where: CostLogScalarWhereInput
+    data: XOR<CostLogUpdateManyMutationInput, CostLogUncheckedUpdateManyWithoutUser_tracked_agencyInput>
+  }
+
   export type UserTrackedAgencyCreateWithoutIntegration_linkInput = {
     id?: string
     enabled?: boolean
@@ -60844,6 +63622,7 @@ export namespace Prisma {
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogCreateNestedManyWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateWithoutIntegration_linkInput = {
@@ -60867,6 +63646,7 @@ export namespace Prisma {
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyCreateOrConnectWithoutIntegration_linkInput = {
@@ -60947,6 +63727,7 @@ export namespace Prisma {
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateWithoutIntegration_linkInput = {
@@ -60970,6 +63751,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserIntegrationUpsertWithoutTracked_agency_linkInput = {
@@ -61135,6 +63917,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutScraperInput = {
@@ -61171,6 +63954,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutScraperInput = {
@@ -62593,6 +65377,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutExecution_tracesInput = {
@@ -62629,6 +65414,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutExecution_tracesInput = {
@@ -62742,6 +65528,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutExecution_tracesInput = {
@@ -62778,6 +65565,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type SourceAgencyCreateWithoutCrawl_runsInput = {
@@ -62854,6 +65642,7 @@ export namespace Prisma {
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogCreateNestedManyWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateWithoutCrawl_runsInput = {
@@ -62877,6 +65666,7 @@ export namespace Prisma {
     updated_at?: Date | string
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
     content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyCreateOrConnectWithoutCrawl_runsInput = {
@@ -63186,6 +65976,7 @@ export namespace Prisma {
     updated_at?: Date | string
     config?: ContentPublishingConfigCreateNestedOneWithoutAi_batch_runsInput
     ai_title_family?: AiTitleFamilyCreateNestedOneWithoutAi_batch_runsInput
+    cost_logs?: CostLogCreateNestedManyWithoutAi_batch_runInput
   }
 
   export type AiBatchRunUncheckedCreateWithoutCrawl_runInput = {
@@ -63200,6 +65991,7 @@ export namespace Prisma {
     error_message?: string | null
     created_at?: Date | string
     updated_at?: Date | string
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutAi_batch_runInput
   }
 
   export type AiBatchRunCreateOrConnectWithoutCrawl_runInput = {
@@ -63209,6 +66001,56 @@ export namespace Prisma {
 
   export type AiBatchRunCreateManyCrawl_runInputEnvelope = {
     data: AiBatchRunCreateManyCrawl_runInput | AiBatchRunCreateManyCrawl_runInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type CostLogCreateWithoutCrawl_runInput = {
+    id?: string
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    user?: UserCreateNestedOneWithoutCost_logsInput
+    user_property?: UserPropertyCreateNestedOneWithoutCost_logsInput
+    user_tracked_agency?: UserTrackedAgencyCreateNestedOneWithoutCost_logsInput
+    ai_batch_run?: AiBatchRunCreateNestedOneWithoutCost_logsInput
+  }
+
+  export type CostLogUncheckedCreateWithoutCrawl_runInput = {
+    id?: string
+    user_id?: string | null
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    user_property_id?: string | null
+    user_tracked_agency_id?: string | null
+    ai_batch_run_id?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+  }
+
+  export type CostLogCreateOrConnectWithoutCrawl_runInput = {
+    where: CostLogWhereUniqueInput
+    create: XOR<CostLogCreateWithoutCrawl_runInput, CostLogUncheckedCreateWithoutCrawl_runInput>
+  }
+
+  export type CostLogCreateManyCrawl_runInputEnvelope = {
+    data: CostLogCreateManyCrawl_runInput | CostLogCreateManyCrawl_runInput[]
     skipDuplicates?: boolean
   }
 
@@ -63303,6 +66145,7 @@ export namespace Prisma {
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateWithoutCrawl_runsInput = {
@@ -63326,6 +66169,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
   }
 
   export type ScraperUpsertWithoutCrawl_runsInput = {
@@ -63589,6 +66433,22 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"AiBatchRun"> | Date | string
   }
 
+  export type CostLogUpsertWithWhereUniqueWithoutCrawl_runInput = {
+    where: CostLogWhereUniqueInput
+    update: XOR<CostLogUpdateWithoutCrawl_runInput, CostLogUncheckedUpdateWithoutCrawl_runInput>
+    create: XOR<CostLogCreateWithoutCrawl_runInput, CostLogUncheckedCreateWithoutCrawl_runInput>
+  }
+
+  export type CostLogUpdateWithWhereUniqueWithoutCrawl_runInput = {
+    where: CostLogWhereUniqueInput
+    data: XOR<CostLogUpdateWithoutCrawl_runInput, CostLogUncheckedUpdateWithoutCrawl_runInput>
+  }
+
+  export type CostLogUpdateManyWithWhereWithoutCrawl_runInput = {
+    where: CostLogScalarWhereInput
+    data: XOR<CostLogUpdateManyMutationInput, CostLogUncheckedUpdateManyWithoutCrawl_runInput>
+  }
+
   export type CrawlRunCreateWithoutDiagnostics_packageInput = {
     id?: string
     status?: $Enums.CrawlRunStatus
@@ -63623,6 +66483,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutDiagnostics_packageInput = {
@@ -63659,6 +66520,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutDiagnostics_packageInput = {
@@ -63794,6 +66656,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutDiagnostics_packageInput = {
@@ -63830,6 +66693,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type ScraperUpsertWithoutDiagnostics_packagesInput = {
@@ -64048,6 +66912,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutJob_logsInput = {
@@ -64084,6 +66949,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutJob_logsInput = {
@@ -64136,6 +67002,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutJob_logsInput = {
@@ -64172,6 +67039,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type SourceAgencyCreateWithoutNotificationsInput = {
@@ -64316,6 +67184,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutNotificationsInput = {
@@ -64352,6 +67221,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutNotificationsInput = {
@@ -64524,6 +67394,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutNotificationsInput = {
@@ -64560,6 +67431,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunCreateWithoutCms_sync_runsInput = {
@@ -64596,6 +67468,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutCms_sync_runsInput = {
@@ -64632,6 +67505,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutCms_sync_runsInput = {
@@ -64725,6 +67599,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutCms_sync_runsInput = {
@@ -64761,6 +67636,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type UserIntegrationUpsertWithoutSync_runsInput = {
@@ -65060,6 +67936,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutSaved_propertiesInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
+    cost_logs?: CostLogCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutCanonical_propertyInput = {
@@ -65110,6 +67987,7 @@ export namespace Prisma {
     updated_at?: Date | string
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
     localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutCanonical_propertyInput = {
@@ -65645,6 +68523,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutProperty_historyInput = {
@@ -65681,6 +68560,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
     ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutProperty_historyInput = {
@@ -65834,6 +68714,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutProperty_historyInput = {
@@ -65870,6 +68751,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type UserCreateWithoutSaved_propertiesInput = {
@@ -65884,6 +68766,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSaved_propertiesInput = {
@@ -65898,6 +68781,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSaved_propertiesInput = {
@@ -66062,6 +68946,56 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CostLogCreateWithoutUser_propertyInput = {
+    id?: string
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    user?: UserCreateNestedOneWithoutCost_logsInput
+    crawl_run?: CrawlRunCreateNestedOneWithoutCost_logsInput
+    user_tracked_agency?: UserTrackedAgencyCreateNestedOneWithoutCost_logsInput
+    ai_batch_run?: AiBatchRunCreateNestedOneWithoutCost_logsInput
+  }
+
+  export type CostLogUncheckedCreateWithoutUser_propertyInput = {
+    id?: string
+    user_id?: string | null
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    crawl_run_id?: string | null
+    user_tracked_agency_id?: string | null
+    ai_batch_run_id?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+  }
+
+  export type CostLogCreateOrConnectWithoutUser_propertyInput = {
+    where: CostLogWhereUniqueInput
+    create: XOR<CostLogCreateWithoutUser_propertyInput, CostLogUncheckedCreateWithoutUser_propertyInput>
+  }
+
+  export type CostLogCreateManyUser_propertyInputEnvelope = {
+    data: CostLogCreateManyUser_propertyInput | CostLogCreateManyUser_propertyInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutSaved_propertiesInput = {
     update: XOR<UserUpdateWithoutSaved_propertiesInput, UserUncheckedUpdateWithoutSaved_propertiesInput>
     create: XOR<UserCreateWithoutSaved_propertiesInput, UserUncheckedCreateWithoutSaved_propertiesInput>
@@ -66085,6 +69019,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSaved_propertiesInput = {
@@ -66099,6 +69034,7 @@ export namespace Prisma {
     user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type PropertyUpsertWithoutUser_property_copiesInput = {
@@ -66249,6 +69185,22 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"PropertyLocalizedContent"> | Date | string
   }
 
+  export type CostLogUpsertWithWhereUniqueWithoutUser_propertyInput = {
+    where: CostLogWhereUniqueInput
+    update: XOR<CostLogUpdateWithoutUser_propertyInput, CostLogUncheckedUpdateWithoutUser_propertyInput>
+    create: XOR<CostLogCreateWithoutUser_propertyInput, CostLogUncheckedCreateWithoutUser_propertyInput>
+  }
+
+  export type CostLogUpdateWithWhereUniqueWithoutUser_propertyInput = {
+    where: CostLogWhereUniqueInput
+    data: XOR<CostLogUpdateWithoutUser_propertyInput, CostLogUncheckedUpdateWithoutUser_propertyInput>
+  }
+
+  export type CostLogUpdateManyWithWhereWithoutUser_propertyInput = {
+    where: CostLogScalarWhereInput
+    data: XOR<CostLogUpdateManyMutationInput, CostLogUncheckedUpdateManyWithoutUser_propertyInput>
+  }
+
   export type UserTrackedAgencyCreateWithoutContent_publishing_configInput = {
     id?: string
     enabled?: boolean
@@ -66270,6 +69222,7 @@ export namespace Prisma {
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogCreateNestedManyWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyUncheckedCreateWithoutContent_publishing_configInput = {
@@ -66293,6 +69246,7 @@ export namespace Prisma {
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
   }
 
   export type UserTrackedAgencyCreateOrConnectWithoutContent_publishing_configInput = {
@@ -66384,6 +69338,7 @@ export namespace Prisma {
     updated_at?: Date | string
     ai_title_family?: AiTitleFamilyCreateNestedOneWithoutAi_batch_runsInput
     crawl_run?: CrawlRunCreateNestedOneWithoutAi_batch_runsInput
+    cost_logs?: CostLogCreateNestedManyWithoutAi_batch_runInput
   }
 
   export type AiBatchRunUncheckedCreateWithoutConfigInput = {
@@ -66398,6 +69353,7 @@ export namespace Prisma {
     error_message?: string | null
     created_at?: Date | string
     updated_at?: Date | string
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutAi_batch_runInput
   }
 
   export type AiBatchRunCreateOrConnectWithoutConfigInput = {
@@ -66442,6 +69398,7 @@ export namespace Prisma {
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateWithoutContent_publishing_configInput = {
@@ -66465,6 +69422,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
   }
 
   export type ContentOutputUpsertWithWhereUniqueWithoutConfigInput = {
@@ -66766,6 +69724,7 @@ export namespace Prisma {
     updated_at?: Date | string
     config?: ContentPublishingConfigCreateNestedOneWithoutAi_batch_runsInput
     crawl_run?: CrawlRunCreateNestedOneWithoutAi_batch_runsInput
+    cost_logs?: CostLogCreateNestedManyWithoutAi_batch_runInput
   }
 
   export type AiBatchRunUncheckedCreateWithoutAi_title_familyInput = {
@@ -66780,6 +69739,7 @@ export namespace Prisma {
     error_message?: string | null
     created_at?: Date | string
     updated_at?: Date | string
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutAi_batch_runInput
   }
 
   export type AiBatchRunCreateOrConnectWithoutAi_title_familyInput = {
@@ -66909,6 +69869,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutSaved_propertiesInput
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
     integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
+    cost_logs?: CostLogCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutLocalized_contentsInput = {
@@ -66959,6 +69920,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutLocalized_contentsInput = {
@@ -67025,6 +69987,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutLocalized_contentsInput = {
@@ -67075,6 +70038,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type ContentPublishingConfigCreateWithoutAi_batch_runsInput = {
@@ -67177,6 +70141,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunUncheckedCreateWithoutAi_batch_runsInput = {
@@ -67213,11 +70178,62 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
     diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
     cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutCrawl_runInput
   }
 
   export type CrawlRunCreateOrConnectWithoutAi_batch_runsInput = {
     where: CrawlRunWhereUniqueInput
     create: XOR<CrawlRunCreateWithoutAi_batch_runsInput, CrawlRunUncheckedCreateWithoutAi_batch_runsInput>
+  }
+
+  export type CostLogCreateWithoutAi_batch_runInput = {
+    id?: string
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+    user?: UserCreateNestedOneWithoutCost_logsInput
+    crawl_run?: CrawlRunCreateNestedOneWithoutCost_logsInput
+    user_property?: UserPropertyCreateNestedOneWithoutCost_logsInput
+    user_tracked_agency?: UserTrackedAgencyCreateNestedOneWithoutCost_logsInput
+  }
+
+  export type CostLogUncheckedCreateWithoutAi_batch_runInput = {
+    id?: string
+    user_id?: string | null
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    crawl_run_id?: string | null
+    user_property_id?: string | null
+    user_tracked_agency_id?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+  }
+
+  export type CostLogCreateOrConnectWithoutAi_batch_runInput = {
+    where: CostLogWhereUniqueInput
+    create: XOR<CostLogCreateWithoutAi_batch_runInput, CostLogUncheckedCreateWithoutAi_batch_runInput>
+  }
+
+  export type CostLogCreateManyAi_batch_runInputEnvelope = {
+    data: CostLogCreateManyAi_batch_runInput | CostLogCreateManyAi_batch_runInput[]
+    skipDuplicates?: boolean
   }
 
   export type ContentPublishingConfigUpsertWithoutAi_batch_runsInput = {
@@ -67343,6 +70359,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutAi_batch_runsInput = {
@@ -67379,6 +70396,671 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutCrawl_runNestedInput
+  }
+
+  export type CostLogUpsertWithWhereUniqueWithoutAi_batch_runInput = {
+    where: CostLogWhereUniqueInput
+    update: XOR<CostLogUpdateWithoutAi_batch_runInput, CostLogUncheckedUpdateWithoutAi_batch_runInput>
+    create: XOR<CostLogCreateWithoutAi_batch_runInput, CostLogUncheckedCreateWithoutAi_batch_runInput>
+  }
+
+  export type CostLogUpdateWithWhereUniqueWithoutAi_batch_runInput = {
+    where: CostLogWhereUniqueInput
+    data: XOR<CostLogUpdateWithoutAi_batch_runInput, CostLogUncheckedUpdateWithoutAi_batch_runInput>
+  }
+
+  export type CostLogUpdateManyWithWhereWithoutAi_batch_runInput = {
+    where: CostLogScalarWhereInput
+    data: XOR<CostLogUpdateManyMutationInput, CostLogUncheckedUpdateManyWithoutAi_batch_runInput>
+  }
+
+  export type UserCreateWithoutCost_logsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutUserInput
+    saved_properties?: UserPropertyCreateNestedManyWithoutUserInput
+    user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
+    user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
+    integration_properties?: IntegrationPropertyCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutCost_logsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    password: string
+    role: $Enums.AuthRole
+    created_at?: Date | string
+    updated_at?: Date | string
+    tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutUserInput
+    saved_properties?: UserPropertyUncheckedCreateNestedManyWithoutUserInput
+    user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
+    user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
+    integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutCost_logsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCost_logsInput, UserUncheckedCreateWithoutCost_logsInput>
+  }
+
+  export type CrawlRunCreateWithoutCost_logsInput = {
+    id?: string
+    status?: $Enums.CrawlRunStatus
+    started_at?: Date | string | null
+    finished_at?: Date | string | null
+    duration_ms?: number | null
+    total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_linked?: number
+    total_failed?: number
+    error_message?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: string | null
+    ai_input_tokens?: number | null
+    ai_output_tokens?: number | null
+    ai_input_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: Decimal | DecimalJsLike | number | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    source_agency: SourceAgencyCreateNestedOneWithoutCrawl_runsInput
+    user_tracked_agency?: UserTrackedAgencyCreateNestedOneWithoutCrawl_runsInput
+    scraper?: ScraperCreateNestedOneWithoutCrawl_runsInput
+    job_logs?: JobLogCreateNestedManyWithoutCrawl_runInput
+    execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutCrawl_runInput
+    property_history?: PropertyHistoryCreateNestedManyWithoutCrawl_runInput
+    notifications?: NotificationCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunCreateNestedManyWithoutCrawl_runInput
+  }
+
+  export type CrawlRunUncheckedCreateWithoutCost_logsInput = {
+    id?: string
+    source_agency_id: string
+    scraper_id?: string | null
+    user_tracked_agency_id?: string | null
+    status?: $Enums.CrawlRunStatus
+    started_at?: Date | string | null
+    finished_at?: Date | string | null
+    duration_ms?: number | null
+    total_found?: number
+    total_new_listings?: number
+    total_refreshed_listings?: number
+    total_created?: number
+    total_updated?: number
+    total_removed?: number
+    total_linked?: number
+    total_failed?: number
+    error_message?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: string | null
+    ai_input_tokens?: number | null
+    ai_output_tokens?: number | null
+    ai_input_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: Decimal | DecimalJsLike | number | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    job_logs?: JobLogUncheckedCreateNestedManyWithoutCrawl_runInput
+    execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutCrawl_runInput
+    property_history?: PropertyHistoryUncheckedCreateNestedManyWithoutCrawl_runInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutCrawl_runInput
+    diagnostics_package?: DiagnosticsPackageUncheckedCreateNestedOneWithoutCrawl_runInput
+    cms_sync_runs?: CmsSyncRunUncheckedCreateNestedManyWithoutCrawl_runInput
+    ai_batch_runs?: AiBatchRunUncheckedCreateNestedManyWithoutCrawl_runInput
+  }
+
+  export type CrawlRunCreateOrConnectWithoutCost_logsInput = {
+    where: CrawlRunWhereUniqueInput
+    create: XOR<CrawlRunCreateWithoutCost_logsInput, CrawlRunUncheckedCreateWithoutCost_logsInput>
+  }
+
+  export type UserPropertyCreateWithoutCost_logsInput = {
+    id?: string
+    property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
+    title: string
+    description?: string | null
+    listing_type?: $Enums.ListingType
+    property_type?: $Enums.PropertyType
+    status?: $Enums.PropertyStatus
+    price?: Decimal | DecimalJsLike | number | string | null
+    currency?: string | null
+    city?: string | null
+    district?: string | null
+    address?: string | null
+    postal_code?: string | null
+    country?: string | null
+    latitude?: Decimal | DecimalJsLike | number | string | null
+    longitude?: Decimal | DecimalJsLike | number | string | null
+    square_meters?: Decimal | DecimalJsLike | number | string | null
+    bedrooms?: number | null
+    bathrooms?: number | null
+    floor?: string | null
+    construction_year?: number | null
+    renovation_year?: number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: string | null
+    is_modified?: boolean
+    pending_crm_update?: boolean
+    last_synced_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutSaved_propertiesInput
+    canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
+    integration_properties?: IntegrationPropertyCreateNestedManyWithoutUser_propertyInput
+    localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
+  }
+
+  export type UserPropertyUncheckedCreateWithoutCost_logsInput = {
+    id?: string
+    user_id: string
+    canonical_property_id: string
+    property_id: string
+    internal_id?: string | null
+    integration_property_id?: string | null
+    title: string
+    description?: string | null
+    listing_type?: $Enums.ListingType
+    property_type?: $Enums.PropertyType
+    status?: $Enums.PropertyStatus
+    price?: Decimal | DecimalJsLike | number | string | null
+    currency?: string | null
+    city?: string | null
+    district?: string | null
+    address?: string | null
+    postal_code?: string | null
+    country?: string | null
+    latitude?: Decimal | DecimalJsLike | number | string | null
+    longitude?: Decimal | DecimalJsLike | number | string | null
+    square_meters?: Decimal | DecimalJsLike | number | string | null
+    bedrooms?: number | null
+    bathrooms?: number | null
+    floor?: string | null
+    construction_year?: number | null
+    renovation_year?: number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: number | null
+    estateweb_location_id?: number | null
+    estateweb_scope_id?: number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: string | null
+    distance_airport?: string | null
+    distance_port?: string | null
+    distance_beach?: string | null
+    price_start?: Decimal | DecimalJsLike | number | string | null
+    price_web?: Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: string | null
+    is_modified?: boolean
+    pending_crm_update?: boolean
+    last_synced_at?: Date | string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    integration_properties?: IntegrationPropertyUncheckedCreateNestedManyWithoutUser_propertyInput
+    localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
+  }
+
+  export type UserPropertyCreateOrConnectWithoutCost_logsInput = {
+    where: UserPropertyWhereUniqueInput
+    create: XOR<UserPropertyCreateWithoutCost_logsInput, UserPropertyUncheckedCreateWithoutCost_logsInput>
+  }
+
+  export type UserTrackedAgencyCreateWithoutCost_logsInput = {
+    id?: string
+    enabled?: boolean
+    concurrent_insertions?: number
+    insertion_interval_seconds?: number
+    max_properties?: number | null
+    text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
+    track_new_listings?: boolean
+    track_removed_listings?: boolean
+    track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
+    use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
+    watermark_manual_selection?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutTracked_agenciesInput
+    source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
+    crawl_runs?: CrawlRunCreateNestedManyWithoutUser_tracked_agencyInput
+    integration_link?: UserTrackedAgencyIntegrationLinkCreateNestedOneWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigCreateNestedOneWithoutUser_tracked_agencyInput
+  }
+
+  export type UserTrackedAgencyUncheckedCreateWithoutCost_logsInput = {
+    id?: string
+    user_id: string
+    source_agency_id: string
+    enabled?: boolean
+    concurrent_insertions?: number
+    insertion_interval_seconds?: number
+    max_properties?: number | null
+    text_truncate_pieces?: UserTrackedAgencyCreatetext_truncate_piecesInput | string[]
+    track_new_listings?: boolean
+    track_removed_listings?: boolean
+    track_updated_listings?: boolean
+    auto_update_to_crm?: boolean
+    use_ai_batching?: boolean
+    remove_watermark?: boolean
+    watermark_image_count?: number
+    watermark_manual_selection?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+    content_publishing_config?: ContentPublishingConfigUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
+  }
+
+  export type UserTrackedAgencyCreateOrConnectWithoutCost_logsInput = {
+    where: UserTrackedAgencyWhereUniqueInput
+    create: XOR<UserTrackedAgencyCreateWithoutCost_logsInput, UserTrackedAgencyUncheckedCreateWithoutCost_logsInput>
+  }
+
+  export type AiBatchRunCreateWithoutCost_logsInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    config?: ContentPublishingConfigCreateNestedOneWithoutAi_batch_runsInput
+    ai_title_family?: AiTitleFamilyCreateNestedOneWithoutAi_batch_runsInput
+    crawl_run?: CrawlRunCreateNestedOneWithoutAi_batch_runsInput
+  }
+
+  export type AiBatchRunUncheckedCreateWithoutCost_logsInput = {
+    id?: string
+    kind?: $Enums.AiBatchRunKind
+    status?: $Enums.AiBatchRunStatus
+    openai_batch_id?: string | null
+    config_id?: string | null
+    ai_title_family_id?: string | null
+    crawl_run_id?: string | null
+    user_property_ids: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type AiBatchRunCreateOrConnectWithoutCost_logsInput = {
+    where: AiBatchRunWhereUniqueInput
+    create: XOR<AiBatchRunCreateWithoutCost_logsInput, AiBatchRunUncheckedCreateWithoutCost_logsInput>
+  }
+
+  export type UserUpsertWithoutCost_logsInput = {
+    update: XOR<UserUpdateWithoutCost_logsInput, UserUncheckedUpdateWithoutCost_logsInput>
+    create: XOR<UserCreateWithoutCost_logsInput, UserUncheckedCreateWithoutCost_logsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCost_logsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCost_logsInput, UserUncheckedUpdateWithoutCost_logsInput>
+  }
+
+  export type UserUpdateWithoutCost_logsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    tracked_agencies?: UserTrackedAgencyUpdateManyWithoutUserNestedInput
+    saved_properties?: UserPropertyUpdateManyWithoutUserNestedInput
+    user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
+    user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
+    integration_properties?: IntegrationPropertyUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCost_logsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumAuthRoleFieldUpdateOperationsInput | $Enums.AuthRole
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutUserNestedInput
+    saved_properties?: UserPropertyUncheckedUpdateManyWithoutUserNestedInput
+    user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
+    user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
+    integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type CrawlRunUpsertWithoutCost_logsInput = {
+    update: XOR<CrawlRunUpdateWithoutCost_logsInput, CrawlRunUncheckedUpdateWithoutCost_logsInput>
+    create: XOR<CrawlRunCreateWithoutCost_logsInput, CrawlRunUncheckedCreateWithoutCost_logsInput>
+    where?: CrawlRunWhereInput
+  }
+
+  export type CrawlRunUpdateToOneWithWhereWithoutCost_logsInput = {
+    where?: CrawlRunWhereInput
+    data: XOR<CrawlRunUpdateWithoutCost_logsInput, CrawlRunUncheckedUpdateWithoutCost_logsInput>
+  }
+
+  export type CrawlRunUpdateWithoutCost_logsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
+    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_input_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_output_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    source_agency?: SourceAgencyUpdateOneRequiredWithoutCrawl_runsNestedInput
+    user_tracked_agency?: UserTrackedAgencyUpdateOneWithoutCrawl_runsNestedInput
+    scraper?: ScraperUpdateOneWithoutCrawl_runsNestedInput
+    job_logs?: JobLogUpdateManyWithoutCrawl_runNestedInput
+    execution_traces?: ScraperExecutionTraceUpdateManyWithoutCrawl_runNestedInput
+    property_history?: PropertyHistoryUpdateManyWithoutCrawl_runNestedInput
+    notifications?: NotificationUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
+  }
+
+  export type CrawlRunUncheckedUpdateWithoutCost_logsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: StringFieldUpdateOperationsInput | string
+    scraper_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
+    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    total_found?: IntFieldUpdateOperationsInput | number
+    total_new_listings?: IntFieldUpdateOperationsInput | number
+    total_refreshed_listings?: IntFieldUpdateOperationsInput | number
+    total_created?: IntFieldUpdateOperationsInput | number
+    total_updated?: IntFieldUpdateOperationsInput | number
+    total_removed?: IntFieldUpdateOperationsInput | number
+    total_linked?: IntFieldUpdateOperationsInput | number
+    total_failed?: IntFieldUpdateOperationsInput | number
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    ai_model?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_input_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_output_tokens?: NullableIntFieldUpdateOperationsInput | number | null
+    ai_input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_total_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    ai_average_cost_per_property?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    job_logs?: JobLogUncheckedUpdateManyWithoutCrawl_runNestedInput
+    execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutCrawl_runNestedInput
+    property_history?: PropertyHistoryUncheckedUpdateManyWithoutCrawl_runNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutCrawl_runNestedInput
+    diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
+    cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+  }
+
+  export type UserPropertyUpsertWithoutCost_logsInput = {
+    update: XOR<UserPropertyUpdateWithoutCost_logsInput, UserPropertyUncheckedUpdateWithoutCost_logsInput>
+    create: XOR<UserPropertyCreateWithoutCost_logsInput, UserPropertyUncheckedCreateWithoutCost_logsInput>
+    where?: UserPropertyWhereInput
+  }
+
+  export type UserPropertyUpdateToOneWithWhereWithoutCost_logsInput = {
+    where?: UserPropertyWhereInput
+    data: XOR<UserPropertyUpdateWithoutCost_logsInput, UserPropertyUncheckedUpdateWithoutCost_logsInput>
+  }
+
+  export type UserPropertyUpdateWithoutCost_logsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
+    property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
+    status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
+    price?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    district?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    postal_code?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    longitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    square_meters?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    bedrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    bathrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    construction_year?: NullableIntFieldUpdateOperationsInput | number | null
+    renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
+    is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
+    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
+    canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
+    integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
+    localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
+  }
+
+  export type UserPropertyUncheckedUpdateWithoutCost_logsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    canonical_property_id?: StringFieldUpdateOperationsInput | string
+    property_id?: StringFieldUpdateOperationsInput | string
+    internal_id?: NullableStringFieldUpdateOperationsInput | string | null
+    integration_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_type?: EnumListingTypeFieldUpdateOperationsInput | $Enums.ListingType
+    property_type?: EnumPropertyTypeFieldUpdateOperationsInput | $Enums.PropertyType
+    status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
+    price?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    currency?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    district?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    postal_code?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    latitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    longitude?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    square_meters?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    bedrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    bathrooms?: NullableIntFieldUpdateOperationsInput | number | null
+    floor?: NullableStringFieldUpdateOperationsInput | string | null
+    construction_year?: NullableIntFieldUpdateOperationsInput | number | null
+    renovation_year?: NullableIntFieldUpdateOperationsInput | number | null
+    features?: NullableJsonNullValueInput | InputJsonValue
+    images?: NullableJsonNullValueInput | InputJsonValue
+    normalized_data?: NullableJsonNullValueInput | InputJsonValue
+    estateweb_type_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_location_id?: NullableIntFieldUpdateOperationsInput | number | null
+    estateweb_scope_id?: NullableIntFieldUpdateOperationsInput | number | null
+    cms_fields?: NullableJsonNullValueInput | InputJsonValue
+    cms_metadata?: NullableJsonNullValueInput | InputJsonValue
+    video_url?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_airport?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_port?: NullableStringFieldUpdateOperationsInput | string | null
+    distance_beach?: NullableStringFieldUpdateOperationsInput | string | null
+    price_start?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    price_web?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    duplicate_group_id?: NullableStringFieldUpdateOperationsInput | string | null
+    is_modified?: BoolFieldUpdateOperationsInput | boolean
+    pending_crm_update?: BoolFieldUpdateOperationsInput | boolean
+    last_synced_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
+    localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
+  }
+
+  export type UserTrackedAgencyUpsertWithoutCost_logsInput = {
+    update: XOR<UserTrackedAgencyUpdateWithoutCost_logsInput, UserTrackedAgencyUncheckedUpdateWithoutCost_logsInput>
+    create: XOR<UserTrackedAgencyCreateWithoutCost_logsInput, UserTrackedAgencyUncheckedCreateWithoutCost_logsInput>
+    where?: UserTrackedAgencyWhereInput
+  }
+
+  export type UserTrackedAgencyUpdateToOneWithWhereWithoutCost_logsInput = {
+    where?: UserTrackedAgencyWhereInput
+    data: XOR<UserTrackedAgencyUpdateWithoutCost_logsInput, UserTrackedAgencyUncheckedUpdateWithoutCost_logsInput>
+  }
+
+  export type UserTrackedAgencyUpdateWithoutCost_logsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
+    max_properties?: NullableIntFieldUpdateOperationsInput | number | null
+    text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
+    track_new_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
+    watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
+    source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
+    crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
+  }
+
+  export type UserTrackedAgencyUncheckedUpdateWithoutCost_logsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: StringFieldUpdateOperationsInput | string
+    enabled?: BoolFieldUpdateOperationsInput | boolean
+    concurrent_insertions?: IntFieldUpdateOperationsInput | number
+    insertion_interval_seconds?: IntFieldUpdateOperationsInput | number
+    max_properties?: NullableIntFieldUpdateOperationsInput | number | null
+    text_truncate_pieces?: UserTrackedAgencyUpdatetext_truncate_piecesInput | string[]
+    track_new_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
+    track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
+    auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
+    remove_watermark?: BoolFieldUpdateOperationsInput | boolean
+    watermark_image_count?: IntFieldUpdateOperationsInput | number
+    watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
+    integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+    content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+  }
+
+  export type AiBatchRunUpsertWithoutCost_logsInput = {
+    update: XOR<AiBatchRunUpdateWithoutCost_logsInput, AiBatchRunUncheckedUpdateWithoutCost_logsInput>
+    create: XOR<AiBatchRunCreateWithoutCost_logsInput, AiBatchRunUncheckedCreateWithoutCost_logsInput>
+    where?: AiBatchRunWhereInput
+  }
+
+  export type AiBatchRunUpdateToOneWithWhereWithoutCost_logsInput = {
+    where?: AiBatchRunWhereInput
+    data: XOR<AiBatchRunUpdateWithoutCost_logsInput, AiBatchRunUncheckedUpdateWithoutCost_logsInput>
+  }
+
+  export type AiBatchRunUpdateWithoutCost_logsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    config?: ContentPublishingConfigUpdateOneWithoutAi_batch_runsNestedInput
+    ai_title_family?: AiTitleFamilyUpdateOneWithoutAi_batch_runsNestedInput
+    crawl_run?: CrawlRunUpdateOneWithoutAi_batch_runsNestedInput
+  }
+
+  export type AiBatchRunUncheckedUpdateWithoutCost_logsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    kind?: EnumAiBatchRunKindFieldUpdateOperationsInput | $Enums.AiBatchRunKind
+    status?: EnumAiBatchRunStatusFieldUpdateOperationsInput | $Enums.AiBatchRunStatus
+    openai_batch_id?: NullableStringFieldUpdateOperationsInput | string | null
+    config_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_ids?: JsonNullValueInput | InputJsonValue
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserCreateWithoutIntegration_propertiesInput = {
@@ -67393,6 +71075,7 @@ export namespace Prisma {
     saved_properties?: UserPropertyCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutIntegration_propertiesInput = {
@@ -67407,6 +71090,7 @@ export namespace Prisma {
     saved_properties?: UserPropertyUncheckedCreateNestedManyWithoutUserInput
     user_integrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     user_integration_settings?: UserIntegrationSettingsUncheckedCreateNestedManyWithoutUserInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutIntegration_propertiesInput = {
@@ -67487,6 +71171,7 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutSaved_propertiesInput
     canonical_property: PropertyCreateNestedOneWithoutUser_property_copiesInput
     localized_contents?: PropertyLocalizedContentCreateNestedManyWithoutUser_propertyInput
+    cost_logs?: CostLogCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyUncheckedCreateWithoutIntegration_propertiesInput = {
@@ -67537,6 +71222,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     localized_contents?: PropertyLocalizedContentUncheckedCreateNestedManyWithoutUser_propertyInput
+    cost_logs?: CostLogUncheckedCreateNestedManyWithoutUser_propertyInput
   }
 
   export type UserPropertyCreateOrConnectWithoutIntegration_propertiesInput = {
@@ -67567,6 +71253,7 @@ export namespace Prisma {
     saved_properties?: UserPropertyUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutIntegration_propertiesInput = {
@@ -67581,6 +71268,7 @@ export namespace Prisma {
     saved_properties?: UserPropertyUncheckedUpdateManyWithoutUserNestedInput
     user_integrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     user_integration_settings?: UserIntegrationSettingsUncheckedUpdateManyWithoutUserNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserIntegrationSettingsUpsertWithoutIntegration_propertiesInput = {
@@ -67673,6 +71361,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
     localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput = {
@@ -67723,6 +71412,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type ComputerUseStepCreateWithoutScreenshot_beforeInput = {
@@ -67923,6 +71613,26 @@ export namespace Prisma {
     updated_at?: Date | string
   }
 
+  export type CostLogCreateManyUserInput = {
+    id?: string
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    crawl_run_id?: string | null
+    user_property_id?: string | null
+    user_tracked_agency_id?: string | null
+    ai_batch_run_id?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+  }
+
   export type UserTrackedAgencyUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     enabled?: BoolFieldUpdateOperationsInput | boolean
@@ -67944,6 +71654,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateWithoutUserInput = {
@@ -67967,6 +71678,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateManyWithoutUserInput = {
@@ -68037,6 +71749,7 @@ export namespace Prisma {
     canonical_property?: PropertyUpdateOneRequiredWithoutUser_property_copiesNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutUserInput = {
@@ -68087,6 +71800,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateManyWithoutUserInput = {
@@ -68245,6 +71959,66 @@ export namespace Prisma {
     sites?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostLogUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    crawl_run?: CrawlRunUpdateOneWithoutCost_logsNestedInput
+    user_property?: UserPropertyUpdateOneWithoutCost_logsNestedInput
+    user_tracked_agency?: UserTrackedAgencyUpdateOneWithoutCost_logsNestedInput
+    ai_batch_run?: AiBatchRunUpdateOneWithoutCost_logsNestedInput
+  }
+
+  export type CostLogUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_batch_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostLogUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_batch_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserIntegrationCreateManyIntegration_targetInput = {
@@ -68750,6 +72524,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateWithoutSource_agencyInput = {
@@ -68773,6 +72548,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
     content_publishing_config?: ContentPublishingConfigUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
   }
 
   export type UserTrackedAgencyUncheckedUpdateManyWithoutSource_agencyInput = {
@@ -68879,6 +72655,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutSource_agencyInput = {
@@ -68915,6 +72692,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateManyWithoutSource_agencyInput = {
@@ -69088,6 +72866,26 @@ export namespace Prisma {
     updated_at?: Date | string
   }
 
+  export type CostLogCreateManyUser_tracked_agencyInput = {
+    id?: string
+    user_id?: string | null
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    crawl_run_id?: string | null
+    user_property_id?: string | null
+    ai_batch_run_id?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+  }
+
   export type CrawlRunUpdateWithoutUser_tracked_agencyInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumCrawlRunStatusFieldUpdateOperationsInput | $Enums.CrawlRunStatus
@@ -69122,6 +72920,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutUser_tracked_agencyInput = {
@@ -69158,6 +72957,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyInput = {
@@ -69187,6 +72987,66 @@ export namespace Prisma {
     ai_average_cost_per_property?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostLogUpdateWithoutUser_tracked_agencyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutCost_logsNestedInput
+    crawl_run?: CrawlRunUpdateOneWithoutCost_logsNestedInput
+    user_property?: UserPropertyUpdateOneWithoutCost_logsNestedInput
+    ai_batch_run?: AiBatchRunUpdateOneWithoutCost_logsNestedInput
+  }
+
+  export type CostLogUncheckedUpdateWithoutUser_tracked_agencyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: NullableStringFieldUpdateOperationsInput | string | null
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_batch_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostLogUncheckedUpdateManyWithoutUser_tracked_agencyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: NullableStringFieldUpdateOperationsInput | string | null
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_batch_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CrawlRunCreateManyScraperInput = {
@@ -69318,6 +73178,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateWithoutScraperInput = {
@@ -69354,6 +73215,7 @@ export namespace Prisma {
     diagnostics_package?: DiagnosticsPackageUncheckedUpdateOneWithoutCrawl_runNestedInput
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutCrawl_runNestedInput
   }
 
   export type CrawlRunUncheckedUpdateManyWithoutScraperInput = {
@@ -69720,6 +73582,26 @@ export namespace Prisma {
     updated_at?: Date | string
   }
 
+  export type CostLogCreateManyCrawl_runInput = {
+    id?: string
+    user_id?: string | null
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    user_property_id?: string | null
+    user_tracked_agency_id?: string | null
+    ai_batch_run_id?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+  }
+
   export type JobLogUpdateWithoutCrawl_runInput = {
     id?: StringFieldUpdateOperationsInput | string
     queue_name?: StringFieldUpdateOperationsInput | string
@@ -69945,6 +73827,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     config?: ContentPublishingConfigUpdateOneWithoutAi_batch_runsNestedInput
     ai_title_family?: AiTitleFamilyUpdateOneWithoutAi_batch_runsNestedInput
+    cost_logs?: CostLogUpdateManyWithoutAi_batch_runNestedInput
   }
 
   export type AiBatchRunUncheckedUpdateWithoutCrawl_runInput = {
@@ -69959,6 +73842,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    cost_logs?: CostLogUncheckedUpdateManyWithoutAi_batch_runNestedInput
   }
 
   export type AiBatchRunUncheckedUpdateManyWithoutCrawl_runInput = {
@@ -69973,6 +73857,66 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostLogUpdateWithoutCrawl_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutCost_logsNestedInput
+    user_property?: UserPropertyUpdateOneWithoutCost_logsNestedInput
+    user_tracked_agency?: UserTrackedAgencyUpdateOneWithoutCost_logsNestedInput
+    ai_batch_run?: AiBatchRunUpdateOneWithoutCost_logsNestedInput
+  }
+
+  export type CostLogUncheckedUpdateWithoutCrawl_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: NullableStringFieldUpdateOperationsInput | string | null
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_batch_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostLogUncheckedUpdateManyWithoutCrawl_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: NullableStringFieldUpdateOperationsInput | string | null
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_batch_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DiagnosticsArtifactCreateManyDiagnostics_packageInput = {
@@ -70197,6 +74141,7 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutSaved_propertiesNestedInput
     integration_properties?: IntegrationPropertyUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUpdateManyWithoutUser_propertyNestedInput
+    cost_logs?: CostLogUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateWithoutCanonical_propertyInput = {
@@ -70247,6 +74192,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_properties?: IntegrationPropertyUncheckedUpdateManyWithoutUser_propertyNestedInput
     localized_contents?: PropertyLocalizedContentUncheckedUpdateManyWithoutUser_propertyNestedInput
+    cost_logs?: CostLogUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
   export type UserPropertyUncheckedUpdateManyWithoutCanonical_propertyInput = {
@@ -70348,6 +74294,26 @@ export namespace Prisma {
     updated_at?: Date | string
   }
 
+  export type CostLogCreateManyUser_propertyInput = {
+    id?: string
+    user_id?: string | null
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    crawl_run_id?: string | null
+    user_tracked_agency_id?: string | null
+    ai_batch_run_id?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+  }
+
   export type IntegrationPropertyUpdateWithoutUser_propertyInput = {
     id?: StringFieldUpdateOperationsInput | string
     images?: NullableJsonNullValueInput | InputJsonValue
@@ -70409,6 +74375,66 @@ export namespace Prisma {
     is_stale?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostLogUpdateWithoutUser_propertyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutCost_logsNestedInput
+    crawl_run?: CrawlRunUpdateOneWithoutCost_logsNestedInput
+    user_tracked_agency?: UserTrackedAgencyUpdateOneWithoutCost_logsNestedInput
+    ai_batch_run?: AiBatchRunUpdateOneWithoutCost_logsNestedInput
+  }
+
+  export type CostLogUncheckedUpdateWithoutUser_propertyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: NullableStringFieldUpdateOperationsInput | string | null
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_batch_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostLogUncheckedUpdateManyWithoutUser_propertyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: NullableStringFieldUpdateOperationsInput | string | null
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    ai_batch_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ContentOutputCreateManyConfigInput = {
@@ -70537,6 +74563,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     ai_title_family?: AiTitleFamilyUpdateOneWithoutAi_batch_runsNestedInput
     crawl_run?: CrawlRunUpdateOneWithoutAi_batch_runsNestedInput
+    cost_logs?: CostLogUpdateManyWithoutAi_batch_runNestedInput
   }
 
   export type AiBatchRunUncheckedUpdateWithoutConfigInput = {
@@ -70551,6 +74578,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    cost_logs?: CostLogUncheckedUpdateManyWithoutAi_batch_runNestedInput
   }
 
   export type AiBatchRunUncheckedUpdateManyWithoutConfigInput = {
@@ -70637,6 +74665,7 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     config?: ContentPublishingConfigUpdateOneWithoutAi_batch_runsNestedInput
     crawl_run?: CrawlRunUpdateOneWithoutAi_batch_runsNestedInput
+    cost_logs?: CostLogUpdateManyWithoutAi_batch_runNestedInput
   }
 
   export type AiBatchRunUncheckedUpdateWithoutAi_title_familyInput = {
@@ -70651,6 +74680,7 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    cost_logs?: CostLogUncheckedUpdateManyWithoutAi_batch_runNestedInput
   }
 
   export type AiBatchRunUncheckedUpdateManyWithoutAi_title_familyInput = {
@@ -70665,6 +74695,86 @@ export namespace Prisma {
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostLogCreateManyAi_batch_runInput = {
+    id?: string
+    user_id?: string | null
+    operation_type: $Enums.CostOperationType
+    provider: $Enums.IntegrationType
+    model?: string | null
+    input_quantity?: number | null
+    output_quantity?: number | null
+    unit_count?: number | null
+    input_cost?: Decimal | DecimalJsLike | number | string | null
+    output_cost?: Decimal | DecimalJsLike | number | string | null
+    total_cost: Decimal | DecimalJsLike | number | string
+    currency?: string
+    crawl_run_id?: string | null
+    user_property_id?: string | null
+    user_tracked_agency_id?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: Date | string
+  }
+
+  export type CostLogUpdateWithoutAi_batch_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutCost_logsNestedInput
+    crawl_run?: CrawlRunUpdateOneWithoutCost_logsNestedInput
+    user_property?: UserPropertyUpdateOneWithoutCost_logsNestedInput
+    user_tracked_agency?: UserTrackedAgencyUpdateOneWithoutCost_logsNestedInput
+  }
+
+  export type CostLogUncheckedUpdateWithoutAi_batch_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: NullableStringFieldUpdateOperationsInput | string | null
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CostLogUncheckedUpdateManyWithoutAi_batch_runInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_id?: NullableStringFieldUpdateOperationsInput | string | null
+    operation_type?: EnumCostOperationTypeFieldUpdateOperationsInput | $Enums.CostOperationType
+    provider?: EnumIntegrationTypeFieldUpdateOperationsInput | $Enums.IntegrationType
+    model?: NullableStringFieldUpdateOperationsInput | string | null
+    input_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    output_quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unit_count?: NullableIntFieldUpdateOperationsInput | number | null
+    input_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    output_cost?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    total_cost?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
+    user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ComputerUseStepCreateManyScreenshot_beforeInput = {

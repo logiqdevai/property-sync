@@ -30,6 +30,7 @@ import { BullBoardModule } from './core/queues/bull-board.module';
 import { ConfigModule } from './shared/config/env/env.module';
 import { CmsSyncModule } from './modules/cms-sync/cms-sync.module';
 import { ContentPublishingModule } from './modules/content-publishing/content-publishing.module';
+import { CostLogsModule } from './modules/cost-logs/cost-logs.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { ContentPublishingModule } from './modules/content-publishing/content-pu
     EstateWebAdminModule,
     CmsSyncModule,
     ContentPublishingModule,
+    CostLogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

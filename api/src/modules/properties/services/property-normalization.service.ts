@@ -16,6 +16,7 @@ import {
 } from '@/modules/user-properties/user-properties.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
+import { CostLogsService } from '@/modules/cost-logs/cost-logs.service';
 import {
   PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD,
   PROPERTY_REMOVAL_SPIKE_RATIO_THRESHOLD,
@@ -43,6 +44,7 @@ import {
 } from '../utils/property-normalization.utils';
 import { PropertySyncChangeType } from '@/modules/cms-sync/interfaces/cms-sync-batch.interface';
 import {
+  CostOperationType,
   IntegrationType,
   NotificationSeverity,
   NotificationType,
@@ -95,6 +97,7 @@ export class PropertyNormalizationService {
     private readonly userPropertiesService: UserPropertiesService,
     private readonly notificationsService: NotificationsService,
     private readonly platformConfigService: PlatformConfigService,
+    private readonly costLogsService: CostLogsService,
   ) {}
 
   async normalizeForCrawlRun(
@@ -1035,6 +1038,19 @@ export class PropertyNormalizationService {
     });
   }
 
+  private async resolveUserIdForCrawlRun(
+    crawlRunId: string,
+  ): Promise<string | null> {
+    const crawlRun = await this.prisma.crawlRun.findUnique({
+      where: { id: crawlRunId },
+      select: {
+        user_tracked_agency_id: true,
+        user_tracked_agency: { select: { user_id: true } },
+      },
+    });
+    return crawlRun?.user_tracked_agency?.user_id ?? null;
+  }
+
   private async persistAiCosts(params: {
     crawlRunId: string;
     model: string;
@@ -1067,6 +1083,21 @@ export class PropertyNormalizationService {
           ai_average_cost_per_property: report.average_cost_per_property,
         },
       });
+
+      const userId = await this.resolveUserIdForCrawlRun(params.crawlRunId);
+      await this.costLogsService.record({
+        userId,
+        operationType: CostOperationType.NORMALIZATION,
+        provider: params.provider,
+        model: report.model,
+        inputQuantity: report.input_tokens,
+        outputQuantity: report.output_tokens,
+        inputCost: report.input_cost,
+        outputCost: report.output_cost,
+        totalCost: report.total_cost,
+        crawlRunId: params.crawlRunId,
+        metadata: { created_count: params.createdCount },
+      });
       return;
     }
 
@@ -1093,6 +1124,21 @@ export class PropertyNormalizationService {
               ? cost.totalCost / params.createdCount
               : null,
         },
+      });
+
+      const userId = await this.resolveUserIdForCrawlRun(params.crawlRunId);
+      await this.costLogsService.record({
+        userId,
+        operationType: CostOperationType.NORMALIZATION,
+        provider: params.provider,
+        model: params.model,
+        inputQuantity: cost.inputTokens,
+        outputQuantity: cost.outputTokens,
+        inputCost: cost.inputCost,
+        outputCost: cost.outputCost,
+        totalCost: cost.totalCost,
+        crawlRunId: params.crawlRunId,
+        metadata: { created_count: params.createdCount, is_batch: params.isBatch ?? false },
       });
     }
   }

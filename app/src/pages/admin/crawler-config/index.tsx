@@ -38,7 +38,10 @@ export default function CrawlerConfigPage() {
 
   const submit = (values: CrawlerConfigFormValues) => {
     const payload = Object.fromEntries(
-      CRAWLER_CONFIG_FIELDS.map((field) => [field.key, parseOptionalConfigNumber(values[field.key])]),
+      CRAWLER_CONFIG_FIELDS.map((field) => [
+        field.key,
+        parseOptionalConfigNumber(values[field.key], field.isDecimal),
+      ]),
     ) as UpdatePlatformConfigPayload;
 
     updateConfig.mutate(payload);
@@ -65,7 +68,7 @@ export default function CrawlerConfigPage() {
                 id={`crawler-config-${field.key}`}
                 type="number"
                 min={field.min}
-                step={1}
+                step={field.step ?? 1}
                 {...register(field.key)}
                 placeholder={`Default: ${field.defaultValue}`}
                 fullWidth

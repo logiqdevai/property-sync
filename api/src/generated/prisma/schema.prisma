@@ -216,6 +216,16 @@ enum IntegrationType {
   GEMINI
   DEEPSEEK
   DEWATERMARK
+  GOOGLE_TRANSLATE
+}
+
+// New: unified cost logging -- what kind of billable operation incurred the cost.
+enum CostOperationType {
+  NORMALIZATION
+  TITLE_GENERATION
+  TRANSLATION
+  DEWATERMARK
+  OTHER
 }
 
 enum AuthType {
@@ -313,6 +323,7 @@ model User {
   user_integrations         UserIntegration[]
   user_integration_settings UserIntegrationSettings[]
   integration_properties    IntegrationProperty[]
+  cost_logs                 CostLog[]
 
   @@index([email])
   @@index([phone])
@@ -446,6 +457,7 @@ model UserTrackedAgency {
   crawl_runs                CrawlRun[]
   integration_link          UserTrackedAgencyIntegrationLink?
   content_publishing_config ContentPublishingConfig?
+  cost_logs                 CostLog[]
 
   @@unique([user_id, source_agency_id])
   @@index([user_id])
@@ -658,6 +670,7 @@ model CrawlRun {
   diagnostics_package DiagnosticsPackage?
   cms_sync_runs       CmsSyncRun[]
   ai_batch_runs       AiBatchRun[]
+  cost_logs           CostLog[]
 
   @@index([source_agency_id])
   @@index([scraper_id])
@@ -1011,6 +1024,7 @@ model UserProperty {
   canonical_property     Property                   @relation(fields: [canonical_property_id], references: [id], onDelete: Cascade)
   integration_properties IntegrationProperty[]
   localized_contents     PropertyLocalizedContent[]
+  cost_logs              CostLog[]
 
   @@unique([user_id, canonical_property_id])
   @@index([user_id])
@@ -1112,11 +1126,49 @@ model AiBatchRun {
   config          ContentPublishingConfig? @relation(fields: [config_id], references: [id], onDelete: SetNull)
   ai_title_family AiTitleFamily?           @relation(fields: [ai_title_family_id], references: [id], onDelete: SetNull)
   crawl_run       CrawlRun?                @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)
+  cost_logs       CostLog[]
 
   @@index([status])
   @@index([config_id])
   @@index([crawl_run_id])
   @@map("ai_batch_runs")
+}
+
+/// Unified billable-operation ledger -- one row per cost-incurring call (AI normalization,
+/// AI title generation, Google Translate, Dewatermark image processing, ...). Sits alongside
+/// (not instead of) CrawlRun.ai_* columns, which stay as the crawl-runs page's own summary.
+model CostLog {
+  id                     String            @id @default(uuid())
+  user_id                String?
+  operation_type         CostOperationType
+  provider               IntegrationType
+  model                  String?
+  input_quantity         Int? // tokens (AI) or characters (translation)
+  output_quantity        Int? // output tokens (AI)
+  unit_count             Int? // e.g. images processed (dewatermark)
+  input_cost             Decimal?          @db.Decimal(12, 6)
+  output_cost            Decimal?          @db.Decimal(12, 6)
+  total_cost             Decimal           @db.Decimal(12, 6)
+  currency               String            @default("USD")
+  crawl_run_id           String?
+  user_property_id       String?
+  user_tracked_agency_id String?
+  ai_batch_run_id        String?
+  metadata               Json?
+  created_at             DateTime          @default(now())
+
+  user                User?              @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  crawl_run           CrawlRun?          @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)
+  user_property       UserProperty?      @relation(fields: [user_property_id], references: [id], onDelete: SetNull)
+  user_tracked_agency UserTrackedAgency? @relation(fields: [user_tracked_agency_id], references: [id], onDelete: SetNull)
+  ai_batch_run        AiBatchRun?        @relation(fields: [ai_batch_run_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([operation_type])
+  @@index([provider])
+  @@index([created_at])
+  @@index([crawl_run_id])
+  @@map("cost_logs")
 }
 
 model IntegrationProperty {
@@ -1156,6 +1208,7 @@ model PlatformConfig {
   crawler_job_timeout_ms                       Int?
   crawler_chromium_max_contexts_before_restart Int?
   normalization_ai_raw_description_max_chars   Int?
+  dewatermark_cost_per_image                   Decimal? @db.Decimal(12, 6)
   created_at                                   DateTime @default(now())
   updated_at                                   DateTime @updatedAt
 

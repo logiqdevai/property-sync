@@ -15,6 +15,7 @@ import { AiBatchCompleteProcessor } from '@/background/ai-batch-complete.process
 import { UserPropertiesModule } from '@/modules/user-properties/user-properties.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { CmsSyncModule } from '@/modules/cms-sync/cms-sync.module';
+import { CostLogsModule } from '@/modules/cost-logs/cost-logs.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { CmsSyncModule } from '@/modules/cms-sync/cms-sync.module';
     GcsIntegrationModule,
     PlatformConfigModule,
     CmsSyncModule,
+    CostLogsModule,
     BullModule.registerQueue({ name: AI_BATCH_COMPLETE_QUEUE }),
   ],
   controllers: [PropertiesController],

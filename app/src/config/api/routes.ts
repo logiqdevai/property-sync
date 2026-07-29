@@ -63,6 +63,10 @@ export const ApiRoutes = {
             cancel: (id: string) => `/admin/crawl-runs/${id}/cancel`,
             bulkDelete: "/admin/crawl-runs/bulk-delete",
         },
+        costLogs: {
+            prefix: "/admin/cost-logs",
+            list: "/admin/cost-logs",
+        },
         cmsSyncRuns: {
             prefix: "/admin/cms-sync-runs",
             list: "/admin/cms-sync-runs",

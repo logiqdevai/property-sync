@@ -18,6 +18,9 @@ import { PlatformConfig } from 'generated/prisma';
 
 const SINGLETON_ID = 'singleton';
 
+// Fallback used until an admin sets a real per-image rate in PlatformConfig.
+const DEFAULT_DEWATERMARK_COST_PER_IMAGE = 0.02;
+
 // Cached in-memory so high-frequency callers (e.g. a new browser context per crawl
 // page/detail item) don't hit the DB on every call. A short TTL -- rather than
 // invalidate-on-write only -- means the cache also self-heals from writes this
@@ -67,6 +70,14 @@ export class PlatformConfigService {
         row?.normalization_ai_raw_description_max_chars ??
         DEFAULT_AI_RAW_DESCRIPTION_MAX_CHARS,
     };
+  }
+
+  async getDewatermarkCostPerImage(): Promise<number> {
+    const row = await this.getCachedRow();
+    const value = row?.dewatermark_cost_per_image;
+    return value !== null && value !== undefined
+      ? Number(value)
+      : DEFAULT_DEWATERMARK_COST_PER_IMAGE;
   }
 
   async getRaw(): Promise<PlatformConfig> {

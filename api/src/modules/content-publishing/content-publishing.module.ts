@@ -3,6 +3,7 @@ import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import { GoogleTranslateModule } from '@/integrations/google-translate/google-translate.module';
 import { AiIntegrationModule } from '@/integrations/ai/ai.module';
 import { AiBatchModule } from '@/integrations/ai-batch/ai-batch.module';
+import { CostLogsModule } from '@/modules/cost-logs/cost-logs.module';
 import { ContentPublishingController } from './content-publishing.controller';
 import { ContentPublishingConfigService } from './services/content-publishing-config.service';
 import { ContentProductionService } from './services/content-production.service';
@@ -17,6 +18,7 @@ import { AiTitleBatchService } from './services/ai-title-batch.service';
     GoogleTranslateModule,
     AiIntegrationModule,
     forwardRef(() => AiBatchModule),
+    CostLogsModule,
   ],
   controllers: [ContentPublishingController],
   providers: [
