@@ -62,6 +62,16 @@ export class UpsertContentOutputDto {
   description_strategy: DescriptionProductionStrategy;
 
   @ApiPropertyOptional({
+    enum: ContentLanguage,
+    nullable: true,
+    description:
+      'Language of derived description text. Defaults to slot language. Set EN on IT slot to reuse English translation.',
+  })
+  @IsOptional()
+  @IsEnum(ContentLanguage)
+  description_content_language?: ContentLanguage | null;
+
+  @ApiPropertyOptional({
     description: 'Required when title_strategy is AI; family name within config',
   })
   @ValidateIf((o: UpsertContentOutputDto) => o.title_strategy === 'AI')

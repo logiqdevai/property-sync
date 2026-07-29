@@ -116,6 +116,11 @@ export class ContentPublishingConfigService {
               language: output.language,
               title_strategy: output.title_strategy,
               description_strategy: output.description_strategy,
+              description_content_language:
+                output.description_content_language &&
+                output.description_content_language !== output.language
+                  ? output.description_content_language
+                  : null,
               ai_title_family_id: familyId,
             },
           });
@@ -219,13 +224,15 @@ export class ContentPublishingConfigService {
         );
       }
 
+      const descriptionLanguage =
+        output.description_content_language ?? output.language;
       if (
         output.description_strategy ===
           DescriptionProductionStrategy.TRANSLATE &&
-        output.language === sourceLanguage
+        descriptionLanguage === sourceLanguage
       ) {
         throw new BadRequestException(
-          `Use ORIGINAL for description when language equals source (${sourceLanguage})`,
+          `Use ORIGINAL for description when content language equals source (${sourceLanguage})`,
         );
       }
     }
@@ -301,6 +308,8 @@ export class ContentPublishingConfigService {
           language: output.language,
           title_strategy: output.title_strategy,
           description_strategy: output.description_strategy,
+          description_content_language:
+            output.description_content_language ?? null,
           ai_title_family_id: output.ai_title_family_id,
           ai_title_family_name: output.ai_title_family?.name ?? null,
         })),

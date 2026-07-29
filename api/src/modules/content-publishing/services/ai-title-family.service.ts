@@ -81,6 +81,9 @@ export class AiTitleFamilyService {
       });
 
       const maxTokens = Math.min(8000, 400 + chunk.length * 350);
+      this.logger.log(
+        `[generateTitlesForProperties] chunk=${i / chunkSize + 1} size=${chunk.length} langs=${input.targetLanguages.join(',')} maxTokens=${maxTokens} model=${input.model || AiDefaults.model} hasApiKey=${Boolean(input.apiKey)}`,
+      );
       const result = await this.aiService.generateText({
         provider: 'openai',
         model: input.model || AiDefaults.model,
@@ -91,10 +94,17 @@ export class AiTitleFamilyService {
         maxTokens,
       });
 
+      this.logger.log(
+        `[generateTitlesForProperties] chunk response chars=${result.response?.length ?? 0}`,
+      );
+
       const parsed = this.parseMultiPropertyTitlesResponse(
         result.response,
         input.targetLanguages,
         chunk.map((item) => item.userPropertyId),
+      );
+      this.logger.log(
+        `[generateTitlesForProperties] parsed properties=${parsed.size} expected=${chunk.length}`,
       );
       for (const [propertyId, titles] of parsed) {
         out.set(propertyId, titles);

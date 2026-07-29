@@ -44,6 +44,14 @@ export class ContentOutputEntity {
   @ApiProperty({ enum: DescriptionProductionStrategy })
   description_strategy: DescriptionProductionStrategy;
 
+  @ApiPropertyOptional({
+    enum: ContentLanguage,
+    nullable: true,
+    description:
+      'Language of derived description text for this EstateWeb slot. Defaults to slot language.',
+  })
+  description_content_language: ContentLanguage | null;
+
   @ApiPropertyOptional({ nullable: true })
   ai_title_family_id: string | null;
 

@@ -35608,6 +35608,7 @@ export namespace Prisma {
     language: $Enums.ContentLanguage | null
     title_strategy: $Enums.TitleProductionStrategy | null
     description_strategy: $Enums.DescriptionProductionStrategy | null
+    description_content_language: $Enums.ContentLanguage | null
     ai_title_family_id: string | null
     created_at: Date | null
     updated_at: Date | null
@@ -35619,6 +35620,7 @@ export namespace Prisma {
     language: $Enums.ContentLanguage | null
     title_strategy: $Enums.TitleProductionStrategy | null
     description_strategy: $Enums.DescriptionProductionStrategy | null
+    description_content_language: $Enums.ContentLanguage | null
     ai_title_family_id: string | null
     created_at: Date | null
     updated_at: Date | null
@@ -35630,6 +35632,7 @@ export namespace Prisma {
     language: number
     title_strategy: number
     description_strategy: number
+    description_content_language: number
     ai_title_family_id: number
     created_at: number
     updated_at: number
@@ -35643,6 +35646,7 @@ export namespace Prisma {
     language?: true
     title_strategy?: true
     description_strategy?: true
+    description_content_language?: true
     ai_title_family_id?: true
     created_at?: true
     updated_at?: true
@@ -35654,6 +35658,7 @@ export namespace Prisma {
     language?: true
     title_strategy?: true
     description_strategy?: true
+    description_content_language?: true
     ai_title_family_id?: true
     created_at?: true
     updated_at?: true
@@ -35665,6 +35670,7 @@ export namespace Prisma {
     language?: true
     title_strategy?: true
     description_strategy?: true
+    description_content_language?: true
     ai_title_family_id?: true
     created_at?: true
     updated_at?: true
@@ -35749,6 +35755,7 @@ export namespace Prisma {
     language: $Enums.ContentLanguage
     title_strategy: $Enums.TitleProductionStrategy
     description_strategy: $Enums.DescriptionProductionStrategy
+    description_content_language: $Enums.ContentLanguage | null
     ai_title_family_id: string | null
     created_at: Date
     updated_at: Date
@@ -35777,6 +35784,7 @@ export namespace Prisma {
     language?: boolean
     title_strategy?: boolean
     description_strategy?: boolean
+    description_content_language?: boolean
     ai_title_family_id?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -35790,6 +35798,7 @@ export namespace Prisma {
     language?: boolean
     title_strategy?: boolean
     description_strategy?: boolean
+    description_content_language?: boolean
     ai_title_family_id?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -35803,6 +35812,7 @@ export namespace Prisma {
     language?: boolean
     title_strategy?: boolean
     description_strategy?: boolean
+    description_content_language?: boolean
     ai_title_family_id?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -35816,12 +35826,13 @@ export namespace Prisma {
     language?: boolean
     title_strategy?: boolean
     description_strategy?: boolean
+    description_content_language?: boolean
     ai_title_family_id?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type ContentOutputOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "config_id" | "language" | "title_strategy" | "description_strategy" | "ai_title_family_id" | "created_at" | "updated_at", ExtArgs["result"]["contentOutput"]>
+  export type ContentOutputOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "config_id" | "language" | "title_strategy" | "description_strategy" | "description_content_language" | "ai_title_family_id" | "created_at" | "updated_at", ExtArgs["result"]["contentOutput"]>
   export type ContentOutputInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     config?: boolean | ContentPublishingConfigDefaultArgs<ExtArgs>
     ai_title_family?: boolean | ContentOutput$ai_title_familyArgs<ExtArgs>
@@ -35847,6 +35858,7 @@ export namespace Prisma {
       language: $Enums.ContentLanguage
       title_strategy: $Enums.TitleProductionStrategy
       description_strategy: $Enums.DescriptionProductionStrategy
+      description_content_language: $Enums.ContentLanguage | null
       ai_title_family_id: string | null
       created_at: Date
       updated_at: Date
@@ -36280,6 +36292,7 @@ export namespace Prisma {
     readonly language: FieldRef<"ContentOutput", 'ContentLanguage'>
     readonly title_strategy: FieldRef<"ContentOutput", 'TitleProductionStrategy'>
     readonly description_strategy: FieldRef<"ContentOutput", 'DescriptionProductionStrategy'>
+    readonly description_content_language: FieldRef<"ContentOutput", 'ContentLanguage'>
     readonly ai_title_family_id: FieldRef<"ContentOutput", 'String'>
     readonly created_at: FieldRef<"ContentOutput", 'DateTime'>
     readonly updated_at: FieldRef<"ContentOutput", 'DateTime'>
@@ -44199,6 +44212,7 @@ export namespace Prisma {
     language: 'language',
     title_strategy: 'title_strategy',
     description_strategy: 'description_strategy',
+    description_content_language: 'description_content_language',
     ai_title_family_id: 'ai_title_family_id',
     created_at: 'created_at',
     updated_at: 'updated_at'
@@ -47579,6 +47593,7 @@ export namespace Prisma {
     language?: EnumContentLanguageFilter<"ContentOutput"> | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyFilter<"ContentOutput"> | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyFilter<"ContentOutput"> | $Enums.DescriptionProductionStrategy
+    description_content_language?: EnumContentLanguageNullableFilter<"ContentOutput"> | $Enums.ContentLanguage | null
     ai_title_family_id?: StringNullableFilter<"ContentOutput"> | string | null
     created_at?: DateTimeFilter<"ContentOutput"> | Date | string
     updated_at?: DateTimeFilter<"ContentOutput"> | Date | string
@@ -47592,6 +47607,7 @@ export namespace Prisma {
     language?: SortOrder
     title_strategy?: SortOrder
     description_strategy?: SortOrder
+    description_content_language?: SortOrderInput | SortOrder
     ai_title_family_id?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -47609,6 +47625,7 @@ export namespace Prisma {
     language?: EnumContentLanguageFilter<"ContentOutput"> | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyFilter<"ContentOutput"> | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyFilter<"ContentOutput"> | $Enums.DescriptionProductionStrategy
+    description_content_language?: EnumContentLanguageNullableFilter<"ContentOutput"> | $Enums.ContentLanguage | null
     ai_title_family_id?: StringNullableFilter<"ContentOutput"> | string | null
     created_at?: DateTimeFilter<"ContentOutput"> | Date | string
     updated_at?: DateTimeFilter<"ContentOutput"> | Date | string
@@ -47622,6 +47639,7 @@ export namespace Prisma {
     language?: SortOrder
     title_strategy?: SortOrder
     description_strategy?: SortOrder
+    description_content_language?: SortOrderInput | SortOrder
     ai_title_family_id?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -47639,6 +47657,7 @@ export namespace Prisma {
     language?: EnumContentLanguageWithAggregatesFilter<"ContentOutput"> | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyWithAggregatesFilter<"ContentOutput"> | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyWithAggregatesFilter<"ContentOutput"> | $Enums.DescriptionProductionStrategy
+    description_content_language?: EnumContentLanguageNullableWithAggregatesFilter<"ContentOutput"> | $Enums.ContentLanguage | null
     ai_title_family_id?: StringNullableWithAggregatesFilter<"ContentOutput"> | string | null
     created_at?: DateTimeWithAggregatesFilter<"ContentOutput"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"ContentOutput"> | Date | string
@@ -51327,6 +51346,7 @@ export namespace Prisma {
     language: $Enums.ContentLanguage
     title_strategy: $Enums.TitleProductionStrategy
     description_strategy: $Enums.DescriptionProductionStrategy
+    description_content_language?: $Enums.ContentLanguage | null
     created_at?: Date | string
     updated_at?: Date | string
     config: ContentPublishingConfigCreateNestedOneWithoutOutputsInput
@@ -51339,6 +51359,7 @@ export namespace Prisma {
     language: $Enums.ContentLanguage
     title_strategy: $Enums.TitleProductionStrategy
     description_strategy: $Enums.DescriptionProductionStrategy
+    description_content_language?: $Enums.ContentLanguage | null
     ai_title_family_id?: string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -51349,6 +51370,7 @@ export namespace Prisma {
     language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    description_content_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     config?: ContentPublishingConfigUpdateOneRequiredWithoutOutputsNestedInput
@@ -51361,6 +51383,7 @@ export namespace Prisma {
     language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    description_content_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51372,6 +51395,7 @@ export namespace Prisma {
     language: $Enums.ContentLanguage
     title_strategy: $Enums.TitleProductionStrategy
     description_strategy: $Enums.DescriptionProductionStrategy
+    description_content_language?: $Enums.ContentLanguage | null
     ai_title_family_id?: string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -51382,6 +51406,7 @@ export namespace Prisma {
     language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    description_content_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -51392,6 +51417,7 @@ export namespace Prisma {
     language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    description_content_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -54491,6 +54517,13 @@ export namespace Prisma {
     not?: NestedEnumDescriptionProductionStrategyFilter<$PrismaModel> | $Enums.DescriptionProductionStrategy
   }
 
+  export type EnumContentLanguageNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentLanguage | EnumContentLanguageFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumContentLanguageNullableFilter<$PrismaModel> | $Enums.ContentLanguage | null
+  }
+
   export type ContentPublishingConfigScalarRelationFilter = {
     is?: ContentPublishingConfigWhereInput
     isNot?: ContentPublishingConfigWhereInput
@@ -54512,6 +54545,7 @@ export namespace Prisma {
     language?: SortOrder
     title_strategy?: SortOrder
     description_strategy?: SortOrder
+    description_content_language?: SortOrder
     ai_title_family_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -54523,6 +54557,7 @@ export namespace Prisma {
     language?: SortOrder
     title_strategy?: SortOrder
     description_strategy?: SortOrder
+    description_content_language?: SortOrder
     ai_title_family_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -54534,6 +54569,7 @@ export namespace Prisma {
     language?: SortOrder
     title_strategy?: SortOrder
     description_strategy?: SortOrder
+    description_content_language?: SortOrder
     ai_title_family_id?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -54557,6 +54593,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumDescriptionProductionStrategyFilter<$PrismaModel>
     _max?: NestedEnumDescriptionProductionStrategyFilter<$PrismaModel>
+  }
+
+  export type EnumContentLanguageNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentLanguage | EnumContentLanguageFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumContentLanguageNullableWithAggregatesFilter<$PrismaModel> | $Enums.ContentLanguage | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumContentLanguageNullableFilter<$PrismaModel>
+    _max?: NestedEnumContentLanguageNullableFilter<$PrismaModel>
   }
 
   export type BoolNullableFilter<$PrismaModel = never> = {
@@ -57540,6 +57586,10 @@ export namespace Prisma {
     set?: $Enums.DescriptionProductionStrategy
   }
 
+  export type NullableEnumContentLanguageFieldUpdateOperationsInput = {
+    set?: $Enums.ContentLanguage | null
+  }
+
   export type ContentPublishingConfigUpdateOneRequiredWithoutOutputsNestedInput = {
     create?: XOR<ContentPublishingConfigCreateWithoutOutputsInput, ContentPublishingConfigUncheckedCreateWithoutOutputsInput>
     connectOrCreate?: ContentPublishingConfigCreateOrConnectWithoutOutputsInput
@@ -58509,6 +58559,13 @@ export namespace Prisma {
     not?: NestedEnumDescriptionProductionStrategyFilter<$PrismaModel> | $Enums.DescriptionProductionStrategy
   }
 
+  export type NestedEnumContentLanguageNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentLanguage | EnumContentLanguageFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumContentLanguageNullableFilter<$PrismaModel> | $Enums.ContentLanguage | null
+  }
+
   export type NestedEnumTitleProductionStrategyWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.TitleProductionStrategy | EnumTitleProductionStrategyFieldRefInput<$PrismaModel>
     in?: $Enums.TitleProductionStrategy[] | ListEnumTitleProductionStrategyFieldRefInput<$PrismaModel>
@@ -58527,6 +58584,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumDescriptionProductionStrategyFilter<$PrismaModel>
     _max?: NestedEnumDescriptionProductionStrategyFilter<$PrismaModel>
+  }
+
+  export type NestedEnumContentLanguageNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentLanguage | EnumContentLanguageFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ContentLanguage[] | ListEnumContentLanguageFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumContentLanguageNullableWithAggregatesFilter<$PrismaModel> | $Enums.ContentLanguage | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumContentLanguageNullableFilter<$PrismaModel>
+    _max?: NestedEnumContentLanguageNullableFilter<$PrismaModel>
   }
 
   export type NestedBoolNullableFilter<$PrismaModel = never> = {
@@ -66209,6 +66276,7 @@ export namespace Prisma {
     language: $Enums.ContentLanguage
     title_strategy: $Enums.TitleProductionStrategy
     description_strategy: $Enums.DescriptionProductionStrategy
+    description_content_language?: $Enums.ContentLanguage | null
     created_at?: Date | string
     updated_at?: Date | string
     ai_title_family?: AiTitleFamilyCreateNestedOneWithoutOutputsInput
@@ -66219,6 +66287,7 @@ export namespace Prisma {
     language: $Enums.ContentLanguage
     title_strategy: $Enums.TitleProductionStrategy
     description_strategy: $Enums.DescriptionProductionStrategy
+    description_content_language?: $Enums.ContentLanguage | null
     ai_title_family_id?: string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -66392,6 +66461,7 @@ export namespace Prisma {
     language?: EnumContentLanguageFilter<"ContentOutput"> | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyFilter<"ContentOutput"> | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyFilter<"ContentOutput"> | $Enums.DescriptionProductionStrategy
+    description_content_language?: EnumContentLanguageNullableFilter<"ContentOutput"> | $Enums.ContentLanguage | null
     ai_title_family_id?: StringNullableFilter<"ContentOutput"> | string | null
     created_at?: DateTimeFilter<"ContentOutput"> | Date | string
     updated_at?: DateTimeFilter<"ContentOutput"> | Date | string
@@ -66621,6 +66691,7 @@ export namespace Prisma {
     language: $Enums.ContentLanguage
     title_strategy: $Enums.TitleProductionStrategy
     description_strategy: $Enums.DescriptionProductionStrategy
+    description_content_language?: $Enums.ContentLanguage | null
     created_at?: Date | string
     updated_at?: Date | string
     config: ContentPublishingConfigCreateNestedOneWithoutOutputsInput
@@ -66632,6 +66703,7 @@ export namespace Prisma {
     language: $Enums.ContentLanguage
     title_strategy: $Enums.TitleProductionStrategy
     description_strategy: $Enums.DescriptionProductionStrategy
+    description_content_language?: $Enums.ContentLanguage | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -70304,6 +70376,7 @@ export namespace Prisma {
     language: $Enums.ContentLanguage
     title_strategy: $Enums.TitleProductionStrategy
     description_strategy: $Enums.DescriptionProductionStrategy
+    description_content_language?: $Enums.ContentLanguage | null
     ai_title_family_id?: string | null
     created_at?: Date | string
     updated_at?: Date | string
@@ -70340,6 +70413,7 @@ export namespace Prisma {
     language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    description_content_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     ai_title_family?: AiTitleFamilyUpdateOneWithoutOutputsNestedInput
@@ -70350,6 +70424,7 @@ export namespace Prisma {
     language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    description_content_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70360,6 +70435,7 @@ export namespace Prisma {
     language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    description_content_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     ai_title_family_id?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -70453,6 +70529,7 @@ export namespace Prisma {
     language: $Enums.ContentLanguage
     title_strategy: $Enums.TitleProductionStrategy
     description_strategy: $Enums.DescriptionProductionStrategy
+    description_content_language?: $Enums.ContentLanguage | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -70476,6 +70553,7 @@ export namespace Prisma {
     language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    description_content_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     config?: ContentPublishingConfigUpdateOneRequiredWithoutOutputsNestedInput
@@ -70487,6 +70565,7 @@ export namespace Prisma {
     language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    description_content_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -70497,6 +70576,7 @@ export namespace Prisma {
     language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     title_strategy?: EnumTitleProductionStrategyFieldUpdateOperationsInput | $Enums.TitleProductionStrategy
     description_strategy?: EnumDescriptionProductionStrategyFieldUpdateOperationsInput | $Enums.DescriptionProductionStrategy
+    description_content_language?: NullableEnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }

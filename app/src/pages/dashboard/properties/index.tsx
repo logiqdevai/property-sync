@@ -12,7 +12,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Globe, Layers, ListFilter, Percent, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { Globe, Languages, Layers, ListFilter, Percent, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/table-row-actions-menu";
 import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-modal";
 import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
+import { ProduceContentModal } from "./components/produce-content-modal";
 import {
   PropertyStatuses,
   type PropertyStatus,
@@ -43,6 +44,7 @@ import {
   useDeleteUserProperties,
   useDeleteUserProperty,
   useDedupeUserPropertyGroups,
+  useProduceUserPropertyContent,
   usePushUserPropertiesToCrm,
   usePushUserPropertyToCrm,
   useRemoveUserPropertiesWatermarkImages,
@@ -91,6 +93,12 @@ const PROPERTY_REMOVE_WATERMARK_ACTION: TableRowAction = {
   icon: Sparkles,
 };
 
+const PROPERTY_PRODUCE_CONTENT_ACTION: TableRowAction = {
+  id: "produce-content",
+  label: "Produce content",
+  icon: Languages,
+};
+
 const PROPERTY_DELETE_ACTION: TableRowAction = {
   id: "delete",
   label: "Delete",
@@ -106,9 +114,13 @@ export default function DashboardPropertiesListPage() {
   const splitConfirm = useOverlayState();
   const manageSitesModal = useOverlayState();
   const removeWatermarkModal = useOverlayState();
+  const produceContentModal = useOverlayState();
   const updateSalesPricesConfirm = useOverlayState();
   const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
   const [removeWatermarkPropertyIds, setRemoveWatermarkPropertyIds] = useState<
+    string[]
+  >([]);
+  const [produceContentPropertyIds, setProduceContentPropertyIds] = useState<
     string[]
   >([]);
   const [salesPricesPropertyIds, setSalesPricesPropertyIds] = useState<string[]>([]);
@@ -182,6 +194,7 @@ export default function DashboardPropertiesListPage() {
   const pushToCrm = usePushUserPropertyToCrm();
   const pushSelectedToCrm = usePushUserPropertiesToCrm();
   const removeWatermarks = useRemoveUserPropertiesWatermarkImages();
+  const produceContent = useProduceUserPropertyContent();
   const updateSalesPrices = useUpdateUserPropertySalesPrices();
 
   const properties = data?.data ?? [];
@@ -222,6 +235,11 @@ export default function DashboardPropertiesListPage() {
     removeWatermarkModal.open();
   };
 
+  const openProduceContent = (ids: string[]) => {
+    setProduceContentPropertyIds(ids);
+    produceContentModal.open();
+  };
+
   const openUpdateSalesPrices = (ids: string[]) => {
     setSalesPricesPropertyIds(ids);
     updateSalesPricesConfirm.open();
@@ -234,6 +252,12 @@ export default function DashboardPropertiesListPage() {
         label: "Push to CRM",
         icon: Upload,
         isDisabled: selectedCount < 1 || pushSelectedToCrm.isPending,
+      },
+      {
+        id: "produce-content",
+        label: "Produce content",
+        icon: Languages,
+        isDisabled: selectedCount < 1 || produceContent.isPending,
       },
       {
         id: "manage-estateweb-sites",
@@ -294,6 +318,7 @@ export default function DashboardPropertiesListPage() {
     canManageBulk,
     dedupeDeleteCount,
     duplicateGroup,
+    produceContent.isPending,
     pushSelectedToCrm.isPending,
     removeWatermarks.isPending,
     selectedCount,
@@ -392,6 +417,10 @@ export default function DashboardPropertiesListPage() {
     }
     if (actionId === "remove-watermarks") {
       openRemoveWatermarks(Array.from(selectedIds));
+      return;
+    }
+    if (actionId === "produce-content") {
+      openProduceContent(Array.from(selectedIds));
       return;
     }
     if (actionId === "truncate") {
@@ -796,6 +825,10 @@ export default function DashboardPropertiesListPage() {
                     pushToCrm.isPending && pushToCrm.variables === property.id,
                 },
                 {
+                  ...PROPERTY_PRODUCE_CONTENT_ACTION,
+                  isDisabled: produceContent.isPending,
+                },
+                {
                   ...PROPERTY_MANAGE_SITES_ACTION,
                   isDisabled: !property.integration_property_id,
                 },
@@ -834,6 +867,10 @@ export default function DashboardPropertiesListPage() {
                   onAction={(actionId) => {
                     if (actionId === "push-to-crm") {
                       pushToCrm.mutate(property.id);
+                      return;
+                    }
+                    if (actionId === "produce-content") {
+                      openProduceContent([property.id]);
                       return;
                     }
                     if (actionId === "manage-estateweb-sites") {
@@ -902,6 +939,10 @@ export default function DashboardPropertiesListPage() {
                           ...PROPERTY_PUSH_ACTION,
                           isDisabled:
                             pushToCrm.isPending && pushToCrm.variables === property.id,
+                        },
+                        {
+                          ...PROPERTY_PRODUCE_CONTENT_ACTION,
+                          isDisabled: produceContent.isPending,
                         },
                         {
                           ...PROPERTY_MANAGE_SITES_ACTION,
@@ -992,6 +1033,10 @@ export default function DashboardPropertiesListPage() {
                             onAction={(actionId) => {
                               if (actionId === "push-to-crm") {
                                 pushToCrm.mutate(property.id);
+                                return;
+                              }
+                              if (actionId === "produce-content") {
+                                openProduceContent([property.id]);
                                 return;
                               }
                               if (actionId === "manage-estateweb-sites") {
@@ -1122,6 +1167,28 @@ export default function DashboardPropertiesListPage() {
           });
         }}
         isPending={removeWatermarks.isPending}
+      />
+      <ProduceContentModal
+        state={produceContentModal}
+        propertyCount={produceContentPropertyIds.length}
+        onConfirm={async ({
+          runTranslations,
+          runAiTitles,
+          useAiBatch,
+          regenerate,
+          pushToCrm,
+        }) => {
+          await produceContent.mutateAsync({
+            ids: produceContentPropertyIds,
+            run_translations: runTranslations,
+            run_ai_titles: runAiTitles,
+            use_ai_batch: useAiBatch,
+            regenerate,
+            push_to_crm: pushToCrm,
+          });
+          clearSelection();
+        }}
+        isPending={produceContent.isPending}
       />
     </div>
   );

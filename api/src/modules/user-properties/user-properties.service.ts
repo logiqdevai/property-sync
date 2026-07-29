@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -67,6 +68,8 @@ export interface SyncForPropertyResult {
 
 @Injectable()
 export class UserPropertiesService {
+  private readonly logger = new Logger(UserPropertiesService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
@@ -511,6 +514,147 @@ export class UserPropertiesService {
       }
 
       return result;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(message);
+    }
+  }
+
+  async produceContent(
+    userId: string,
+    ids: string[],
+    options: {
+      runTranslations?: boolean;
+      runAiTitles?: boolean;
+      useAiBatch?: boolean;
+      regenerate?: boolean;
+      pushToCrm?: boolean;
+    },
+  ) {
+    const idList = [...new Set(ids.filter(Boolean))];
+    if (idList.length === 0) {
+      throw new BadRequestException('No properties selected');
+    }
+
+    const runTranslations = options.runTranslations ?? true;
+    const runAiTitles = options.runAiTitles ?? true;
+    const pushToCrm = options.pushToCrm ?? true;
+    if (!runTranslations && !runAiTitles) {
+      throw new BadRequestException(
+        'Select at least translations or AI titles',
+      );
+    }
+
+    const owned = await this.prisma.userProperty.findMany({
+      where: { id: { in: idList }, user_id: userId },
+      select: { id: true },
+    });
+
+    if (owned.length === 0) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const ownedIds = owned.map((row) => row.id);
+    const ownedSet = new Set(ownedIds);
+    const notOwnedFailed = idList
+      .filter((id) => !ownedSet.has(id))
+      .map((id) => ({
+        user_property_id: id,
+        error: 'Property not found',
+      }));
+
+    const useAiBatch = options.useAiBatch ?? false;
+
+    this.logger.log(
+      `[produceContent] user=${userId} ids=${ownedIds.length} translations=${runTranslations} ai=${runAiTitles} batch=${useAiBatch} regenerate=${options.regenerate ?? true} pushToCrm=${pushToCrm}`,
+    );
+
+    try {
+      const result =
+        await this.contentProductionService.produceForUserProperties(
+          ownedIds,
+          {
+            forceSyncAi: !useAiBatch,
+            forceBatchAi: useAiBatch,
+            runTranslations,
+            runAiTitles,
+            markStaleFirst: options.regenerate ?? true,
+          },
+        );
+
+      const failed = [...notOwnedFailed, ...result.failed];
+      let cmsPushed = 0;
+      let cmsFailed: Array<{ user_property_id: string; error: string }> = [];
+
+      if (pushToCrm && result.readyIds.length) {
+        this.logger.log(
+          `[produceContent] pushing CRM sync inline for ready=${result.readyIds.length}`,
+        );
+
+        const readyProperties = await this.prisma.userProperty.findMany({
+          where: { id: { in: result.readyIds }, user_id: userId },
+        });
+        const byId = new Map(
+          readyProperties.map((property) => [property.id, property]),
+        );
+
+        for (const id of result.readyIds) {
+          const property = byId.get(id);
+          if (!property) {
+            cmsFailed.push({ user_property_id: id, error: 'Property not found after produce' });
+            continue;
+          }
+          if (!property.integration_property_id) {
+            cmsFailed.push({
+              user_property_id: id,
+              error: 'Property not yet linked to EstateWeb CMS (not pushed before); push manually first',
+            });
+            continue;
+          }
+          try {
+            const { userIntegrationId } =
+              await this.resolveCmsIntegrationForProperty(property);
+            this.logger.log(
+              `[produceContent] pushUpdate property=${id} integration=${userIntegrationId} integrationPropertyId=${property.integration_property_id}`,
+            );
+            await this.estateWebCmsSyncAdapter.pushUpdate(
+              userIntegrationId,
+              property.integration_property_id,
+              property,
+            );
+            cmsPushed++;
+            this.logger.log(
+              `[produceContent] pushUpdate success property=${id}`,
+            );
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            this.logger.error(
+              `[produceContent] pushUpdate failed property=${id}: ${message}`,
+            );
+            cmsFailed.push({ user_property_id: id, error: message });
+          }
+        }
+
+        this.logger.log(
+          `[produceContent] CRM push done pushed=${cmsPushed} failed=${cmsFailed.length}`,
+        );
+      } else if (pushToCrm) {
+        this.logger.warn(
+          `[produceContent] push_to_crm requested but no ready properties to sync`,
+        );
+      }
+
+      return {
+        ready_count: result.readyIds.length,
+        pending_batch_count: result.pendingBatchIds.length,
+        ready_ids: result.readyIds,
+        pending_batch_ids: result.pendingBatchIds,
+        translations_written: result.translationsWritten,
+        titles_written: result.titlesWritten,
+        cms_queued: cmsPushed,
+        failed,
+        cms_failed: cmsFailed,
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(message);

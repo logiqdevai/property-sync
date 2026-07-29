@@ -33,6 +33,7 @@ async function replaceConfig(
       language: ContentLanguage;
       title_strategy: TitleProductionStrategy;
       description_strategy: DescriptionProductionStrategy;
+      description_content_language?: ContentLanguage | null;
       familyName?: string;
     }>;
   },
@@ -100,6 +101,11 @@ async function replaceConfig(
           language: output.language,
           title_strategy: output.title_strategy,
           description_strategy: output.description_strategy,
+          description_content_language:
+            output.description_content_language &&
+            output.description_content_language !== output.language
+              ? output.description_content_language
+              : null,
           ai_title_family_id: output.familyName
             ? (familyByName.get(output.familyName)?.id ?? null)
             : null,
@@ -194,7 +200,7 @@ async function main() {
       ai_titles_enabled: true,
       use_ai_batch: true,
       notes:
-        'bitsimis: Greek original descriptions on EL/DE/FR/RU; AI Greek titles on those slots; AI English titles + Google EN descriptions on EN/IT',
+        'bitsimis: Greek original descriptions on EL/DE/FR/RU; AI Greek titles on those slots; 2 distinct AI English titles on EN/IT; same Google EN description on EN/IT',
       families: [
         {
           name: GREEK_FAMILY,
@@ -240,6 +246,7 @@ async function main() {
           language: ContentLanguage.IT,
           title_strategy: TitleProductionStrategy.AI,
           description_strategy: DescriptionProductionStrategy.TRANSLATE,
+          description_content_language: ContentLanguage.EN,
           familyName: ENGLISH_FAMILY,
         },
       ],
@@ -274,6 +281,7 @@ async function main() {
           language: o.language,
           title: o.title_strategy,
           description: o.description_strategy,
+          description_content_language: o.description_content_language,
           family: o.ai_title_family?.name ?? null,
         })),
       })),

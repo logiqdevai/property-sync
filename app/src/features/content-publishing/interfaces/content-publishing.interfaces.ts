@@ -40,6 +40,7 @@ export interface ContentOutput {
   language: ContentLanguage;
   title_strategy: TitleProductionStrategy;
   description_strategy: DescriptionProductionStrategy;
+  description_content_language: ContentLanguage | null;
   ai_title_family_id: string | null;
   ai_title_family_name: string | null;
 }
@@ -68,6 +69,7 @@ export interface UpsertContentOutputPayload {
   language: ContentLanguage;
   title_strategy: TitleProductionStrategy;
   description_strategy: DescriptionProductionStrategy;
+  description_content_language?: ContentLanguage | null;
   ai_title_family?: string | null;
 }
 

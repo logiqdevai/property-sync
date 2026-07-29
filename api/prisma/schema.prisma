@@ -1039,14 +1039,15 @@ model ContentPublishingConfig {
 }
 
 model ContentOutput {
-  id                   String                         @id @default(uuid())
-  config_id            String
-  language             ContentLanguage
-  title_strategy       TitleProductionStrategy
-  description_strategy DescriptionProductionStrategy
-  ai_title_family_id   String?
-  created_at           DateTime                       @default(now())
-  updated_at           DateTime                       @updatedAt
+  id                          String                         @id @default(uuid())
+  config_id                   String
+  language                    ContentLanguage
+  title_strategy              TitleProductionStrategy
+  description_strategy        DescriptionProductionStrategy
+  description_content_language ContentLanguage?
+  ai_title_family_id          String?
+  created_at                  DateTime                       @default(now())
+  updated_at                  DateTime                       @updatedAt
 
   config          ContentPublishingConfig @relation(fields: [config_id], references: [id], onDelete: Cascade)
   ai_title_family AiTitleFamily?          @relation(fields: [ai_title_family_id], references: [id], onDelete: Restrict)

@@ -253,3 +253,24 @@ export interface BulkRemoveWatermarkImagesResponse {
   failed: Array<{ user_property_id: string; error: string }>;
   message: string;
 }
+
+export interface ProduceUserPropertyContentPayload {
+  ids: string[];
+  run_translations?: boolean;
+  run_ai_titles?: boolean;
+  use_ai_batch?: boolean;
+  regenerate?: boolean;
+  push_to_crm?: boolean;
+}
+
+export interface ProduceUserPropertyContentResponse {
+  ready_count: number;
+  pending_batch_count: number;
+  ready_ids: string[];
+  pending_batch_ids: string[];
+  translations_written: number;
+  titles_written: number;
+  cms_queued: number;
+  failed: Array<{ user_property_id: string; error: string }>;
+  cms_failed: Array<{ user_property_id: string; error: string }>;
+}

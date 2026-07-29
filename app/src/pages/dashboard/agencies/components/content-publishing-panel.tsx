@@ -55,6 +55,7 @@ interface DraftOutput {
   enabled: boolean;
   title_strategy: TitleProductionStrategy;
   description_strategy: DescriptionProductionStrategy;
+  description_content_language: ContentLanguage | null;
   ai_title_family_key: string;
 }
 
@@ -79,6 +80,7 @@ const emptyOutputs = (
     enabled: lang.id === sourceLanguage,
     title_strategy: TitleProductionStrategies.ORIGINAL,
     description_strategy: DescriptionProductionStrategies.ORIGINAL,
+    description_content_language: null,
     ai_title_family_key: defaultFamilyKey,
   }));
 
@@ -163,6 +165,8 @@ export function ContentPublishingPanel({
           description_strategy:
             existing?.description_strategy ??
             DescriptionProductionStrategies.ORIGINAL,
+          description_content_language:
+            existing?.description_content_language ?? null,
           ai_title_family_key: familyName
             ? (familyKeyByName.get(familyName) ?? fallbackFamilyKey)
             : fallbackFamilyKey,
@@ -182,6 +186,13 @@ export function ContentPublishingPanel({
         language: output.language,
         title_strategy: output.title_strategy,
         description_strategy: output.description_strategy,
+        description_content_language:
+          output.description_strategy ===
+            DescriptionProductionStrategies.TRANSLATE &&
+          output.description_content_language &&
+          output.description_content_language !== output.language
+            ? output.description_content_language
+            : null,
         ai_title_family:
           output.title_strategy === TitleProductionStrategies.AI
             ? (familyNameByKey.get(output.ai_title_family_key) ?? null)
@@ -508,6 +519,11 @@ export function ContentPublishingPanel({
                                         description_strategy: String(
                                           key,
                                         ) as DescriptionProductionStrategy,
+                                        description_content_language:
+                                          String(key) ===
+                                          DescriptionProductionStrategies.TRANSLATE
+                                            ? item.description_content_language
+                                            : null,
                                       }
                                     : item,
                                 ),
@@ -533,6 +549,52 @@ export function ContentPublishingPanel({
                               </ListBox>
                             </Select.Popover>
                           </Select>
+
+                          {output.description_strategy ===
+                          DescriptionProductionStrategies.TRANSLATE ? (
+                            <Select
+                              aria-label={`${output.language} description content language`}
+                              selectedKey={
+                                output.description_content_language ??
+                                output.language
+                              }
+                              isDisabled={!output.enabled}
+                              onSelectionChange={(key) => {
+                                if (!key) return;
+                                const next = String(key) as ContentLanguage;
+                                setOutputs((prev) =>
+                                  prev.map((item) =>
+                                    item.language === output.language
+                                      ? {
+                                          ...item,
+                                          description_content_language:
+                                            next === item.language
+                                              ? null
+                                              : next,
+                                        }
+                                      : item,
+                                  ),
+                                );
+                              }}
+                            >
+                              <Label>Desc language</Label>
+                              <Select.Trigger>
+                                <Select.Value />
+                              </Select.Trigger>
+                              <Select.Popover>
+                                <ListBox items={[...ContentLanguageFormOptions]}>
+                                  {(option) => (
+                                    <ListBox.Item
+                                      id={option.id}
+                                      textValue={option.label}
+                                    >
+                                      {option.label}
+                                    </ListBox.Item>
+                                  )}
+                                </ListBox>
+                              </Select.Popover>
+                            </Select>
+                          ) : null}
 
                           {output.title_strategy ===
                           TitleProductionStrategies.AI ? (

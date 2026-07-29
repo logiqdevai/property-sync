@@ -26,6 +26,7 @@ import {
   removeAdminUserPropertyWatermarkImages,
   removeUserPropertyWatermarkImages,
   removeUserPropertiesWatermarkImages,
+  produceUserPropertyContent,
   splitAdminUserProperties,
   splitUserProperties,
   truncateAdminUserPropertyDescriptions,
@@ -52,6 +53,8 @@ import type {
   RemoveWatermarkImagesPayload,
   BulkRemoveWatermarkImagesPayload,
   BulkRemoveWatermarkImagesResponse,
+  ProduceUserPropertyContentPayload,
+  ProduceUserPropertyContentResponse,
   UpdateUserPropertyPayload,
   UserPropertyCountQuery,
   UserPropertyListQuery,
@@ -407,6 +410,52 @@ export const useRemoveUserPropertiesWatermarkImages = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not start watermark removal",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useProduceUserPropertyContent = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: ProduceUserPropertyContentPayload) =>
+      produceUserPropertyContent(payload),
+    onSuccess: (data: ProduceUserPropertyContentResponse) => {
+      void queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      const failedCount = data.failed?.length ?? 0;
+      const cmsFailedCount = data.cms_failed?.length ?? 0;
+      const parts = [
+        `${data.translations_written ?? 0} translations`,
+        `${data.titles_written ?? 0} AI titles`,
+        `${data.ready_count} ready`,
+        data.pending_batch_count > 0
+          ? `${data.pending_batch_count} in AI batch`
+          : null,
+        typeof data.cms_queued === "number"
+          ? `${data.cms_queued} CRM queued`
+          : null,
+        failedCount > 0 ? `${failedCount} failed` : null,
+        cmsFailedCount > 0 ? `${cmsFailedCount} CRM failed` : null,
+      ].filter(Boolean);
+      const firstError =
+        data.failed?.[0]?.error || data.cms_failed?.[0]?.error;
+      toast({
+        title: "Content production finished",
+        description: firstError
+          ? `${parts.join(" · ")}. ${firstError}`
+          : parts.join(" · "),
+        duration: 7000,
+        variant:
+          failedCount > 0 || cmsFailedCount > 0 || data.pending_batch_count > 0
+            ? "warning"
+            : "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not produce content",
         description: error.message,
         variant: "error",
       });

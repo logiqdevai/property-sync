@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -42,6 +44,8 @@ import {
 } from './dto/user-property-query.schema';
 import { UserPropertyEntity } from './entities/user-property.entity';
 import { MigrateIntegrationImagesDto } from './dto/migrate-integration-images.dto';
+import { ProduceUserPropertyContentDto } from './dto/produce-user-property-content.dto';
+import { ProduceUserPropertyContentResponseEntity } from './entities/produce-user-property-content-response.entity';
 
 @ApiTags('User Properties')
 @ApiBearerAuth()
@@ -210,6 +214,32 @@ export class UserPropertiesController {
     @Body() dto: DeleteUserPropertiesDto,
   ) {
     return this.userPropertiesService.pushToCrm(userId, dto.ids);
+  }
+
+  @Post('produce-content')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Manually translate and/or generate AI titles for selected properties, then optionally push ads to EstateWeb CRM',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Content production completed or AI title batch submitted',
+    type: ProduceUserPropertyContentResponseEntity,
+  })
+  @ApiResponse({ status: 400, description: 'Cannot produce content' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  produceContent(
+    @CurrentUser('id') userId: string,
+    @Body() dto: ProduceUserPropertyContentDto,
+  ) {
+    return this.userPropertiesService.produceContent(userId, dto.ids, {
+      runTranslations: dto.run_translations,
+      runAiTitles: dto.run_ai_titles,
+      useAiBatch: dto.use_ai_batch,
+      regenerate: dto.regenerate,
+      pushToCrm: dto.push_to_crm,
+    });
   }
 
   @Post('update-estateweb-sites')

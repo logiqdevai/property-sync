@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
   ContentType,
   DescriptionProductionStrategy,
@@ -19,6 +19,8 @@ import { ContentPublishingConfigService } from './content-publishing-config.serv
 
 @Injectable()
 export class ContentResolutionService {
+  private readonly logger = new Logger(ContentResolutionService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly contentPublishingConfigService: ContentPublishingConfigService,
@@ -76,7 +78,14 @@ export class ContentResolutionService {
     const context = await this.resolveContextForUserProperty(userProperty);
     const config = context?.config;
 
+    this.logger.log(
+      `[resolveAdMaps] property=${userProperty.id} tracker=${context?.trackerId ?? 'none'} configId=${config?.id ?? 'null'} enabled=${config?.is_enabled ?? false} outputs=${config?.outputs?.length ?? 0}`,
+    );
+
     if (!config || !config.is_enabled) {
+      this.logger.warn(
+        `[resolveAdMaps] property=${userProperty.id} using legacy broadcast (no enabled content publishing config)`,
+      );
       return this.legacyBroadcast(userProperty, fallbackLanguages);
     }
 
@@ -85,6 +94,10 @@ export class ContentResolutionService {
     });
     const byKey = new Map(
       localized.map((row) => [`${row.content_type}:${row.language}`, row]),
+    );
+
+    this.logger.log(
+      `[resolveAdMaps] property=${userProperty.id} localizedRows=${localized.length} stale=${localized.filter((r) => r.is_stale).length}`,
     );
 
     const titles: Partial<Record<EstateWebLanguageId, string>> = {};
@@ -100,19 +113,30 @@ export class ContentResolutionService {
       const estatewebId = CONTENT_LANGUAGE_TO_ESTATEWEB_ID[output.language];
       languages.push(estatewebId);
 
+      const titleLocalized = byKey.get(
+        `${ContentType.TITLE}:${output.language}`,
+      )?.text;
+      const descriptionLanguage =
+        output.description_content_language ?? output.language;
+      const descriptionLocalized = byKey.get(
+        `${ContentType.DESCRIPTION}:${descriptionLanguage}`,
+      )?.text;
+
       titles[estatewebId] = this.resolveField({
         strategy: output.title_strategy,
         original: userProperty.title,
-        localized: byKey.get(`${ContentType.TITLE}:${output.language}`)?.text,
+        localized: titleLocalized,
       });
 
       descriptions[estatewebId] = this.resolveField({
         strategy: output.description_strategy,
         original: userProperty.description ?? '',
-        localized: byKey.get(
-          `${ContentType.DESCRIPTION}:${output.language}`,
-        )?.text,
+        localized: descriptionLocalized,
       });
+
+      this.logger.log(
+        `[resolveAdMaps] property=${userProperty.id} slot=${output.language}->${estatewebId} titleStrategy=${output.title_strategy} descStrategy=${output.description_strategy} descContentLang=${descriptionLanguage} titleChars=${titles[estatewebId]?.length ?? 0} descChars=${descriptions[estatewebId]?.length ?? 0} titleFromLocalized=${Boolean(titleLocalized?.trim())} descFromLocalized=${Boolean(descriptionLocalized?.trim())}`,
+      );
     }
 
     return {
@@ -127,13 +151,13 @@ export class ContentResolutionService {
     original: string;
     localized?: string | null;
   }): string {
-    if (input.strategy === TitleProductionStrategy.ORIGINAL) {
+    if (input.strategy === 'ORIGINAL') {
       return input.original ?? '';
     }
     if (input.localized?.trim()) {
       return input.localized;
     }
-    return input.original ?? '';
+    return '';
   }
 
   private legacyBroadcast(

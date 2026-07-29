@@ -22,9 +22,17 @@ type PropertyContentRow = {
   canonical_property_id: string;
 };
 
+export type ProducePropertyFailure = {
+  user_property_id: string;
+  error: string;
+};
+
 export type ProduceForPropertiesResult = {
   readyIds: string[];
   pendingBatchIds: string[];
+  failed: ProducePropertyFailure[];
+  translationsWritten: number;
+  titlesWritten: number;
 };
 
 @Injectable()
@@ -39,13 +47,17 @@ export class ContentProductionService {
   ) {}
 
   async markStale(userPropertyId: string): Promise<void> {
-    await this.prisma.propertyLocalizedContent.updateMany({
+    const result = await this.prisma.propertyLocalizedContent.updateMany({
       where: { user_property_id: userPropertyId },
       data: { is_stale: true },
     });
+    this.logger.log(
+      `[markStale] userProperty=${userPropertyId} rows=${result.count}`,
+    );
   }
 
   async ensureReady(userPropertyId: string): Promise<void> {
+    this.logger.log(`[ensureReady] start userProperty=${userPropertyId}`);
     await this.produceForProperty(userPropertyId, { forceSyncAi: true });
   }
 
@@ -64,18 +76,51 @@ export class ContentProductionService {
     userPropertyIds: string[],
     options?: {
       forceSyncAi?: boolean;
+      forceBatchAi?: boolean;
       crawlRunId?: string | null;
       changeTypesByPropertyId?: Record<string, string>;
+      runTranslations?: boolean;
+      runAiTitles?: boolean;
+      markStaleFirst?: boolean;
     },
   ): Promise<ProduceForPropertiesResult> {
     const uniqueIds = [...new Set(userPropertyIds.filter(Boolean))];
+    const empty: ProduceForPropertiesResult = {
+      readyIds: [],
+      pendingBatchIds: [],
+      failed: [],
+      translationsWritten: 0,
+      titlesWritten: 0,
+    };
     if (!uniqueIds.length) {
-      return { readyIds: [], pendingBatchIds: [] };
+      this.logger.warn('[produceForUserProperties] no ids provided');
+      return empty;
     }
 
     const forceSyncAi = options?.forceSyncAi ?? false;
+    const forceBatchAi = options?.forceBatchAi ?? false;
+    const runTranslations = options?.runTranslations ?? true;
+    const runAiTitles = options?.runAiTitles ?? true;
     const pendingBatchIds = new Set<string>();
-    const processedIds = new Set<string>();
+    const readyIds = new Set<string>();
+    const failedMap = new Map<string, string>();
+    let translationsWritten = 0;
+    let titlesWritten = 0;
+
+    this.logger.log(
+      `[produceForUserProperties] start ids=${uniqueIds.length} runTranslations=${runTranslations} runAiTitles=${runAiTitles} forceSyncAi=${forceSyncAi} forceBatchAi=${forceBatchAi} markStaleFirst=${options?.markStaleFirst === true} crawlRunId=${options?.crawlRunId ?? 'none'}`,
+    );
+
+    if (options?.markStaleFirst) {
+      const staleResult =
+        await this.prisma.propertyLocalizedContent.updateMany({
+          where: { user_property_id: { in: uniqueIds } },
+          data: { is_stale: true },
+        });
+      this.logger.log(
+        `[produceForUserProperties] marked stale rows=${staleResult.count} for ${uniqueIds.length} properties`,
+      );
+    }
 
     const properties = await this.prisma.userProperty.findMany({
       where: { id: { in: uniqueIds } },
@@ -87,37 +132,165 @@ export class ContentProductionService {
         canonical_property_id: true,
       },
     });
+    this.logger.log(
+      `[produceForUserProperties] loaded properties=${properties.length}/${uniqueIds.length}`,
+    );
+
     const propertyById = new Map(properties.map((p) => [p.id, p]));
+    for (const id of uniqueIds) {
+      if (!propertyById.has(id)) {
+        failedMap.set(id, 'Property not found in database');
+        this.logger.warn(
+          `[produceForUserProperties] missing property id=${id}`,
+        );
+      }
+    }
 
     const groups = await this.groupByTrackerConfig(properties);
+    this.logger.log(
+      `[produceForUserProperties] grouped into ${groups.length} tracker/config group(s)`,
+    );
 
     for (const group of groups) {
-      if (!group.config?.is_enabled) {
+      const groupPropertyIds = group.properties.map((p) => p.id).join(',');
+      this.logger.log(
+        `[produceForUserProperties] group userId=${group.userId} contentLanguage=${group.contentLanguage} configId=${group.config?.id ?? 'null'} configEnabled=${group.config?.is_enabled ?? false} aiTitlesEnabled=${group.config?.ai_titles_enabled ?? false} outputs=${group.config?.outputs?.length ?? 0} families=${group.config?.ai_title_families?.length ?? 0} properties=[${groupPropertyIds}] reason=${group.resolveReason}`,
+      );
+
+      if (!group.config) {
         for (const property of group.properties) {
-          processedIds.add(property.id);
+          const error =
+            group.resolveReason ||
+            'No content publishing config for this property agency';
+          failedMap.set(property.id, error);
+          this.logger.warn(
+            `[produceForUserProperties] skip/fail property=${property.id}: ${error}`,
+          );
         }
         continue;
       }
 
-      await Promise.all(
-        group.properties.map((property) =>
-          this.produceTranslations(
+      if (!group.config.is_enabled) {
+        for (const property of group.properties) {
+          const error = 'Content publishing config is disabled';
+          failedMap.set(property.id, error);
+          this.logger.warn(
+            `[produceForUserProperties] skip/fail property=${property.id}: ${error}`,
+          );
+        }
+        continue;
+      }
+
+      const titlesByProperty = new Map<string, number>();
+      const translationsByProperty = new Map<string, number>();
+
+      if (runTranslations) {
+        this.logger.log(
+          `[produceForUserProperties] translations start for ${group.properties.length} properties googleConfigured=${this.googleTranslationService.isConfigured()}`,
+        );
+        for (const property of group.properties) {
+          const written = await this.produceTranslations(
             property,
             group.contentLanguage,
-            group.config!,
-          ),
-        ),
-      );
+            group.config,
+          );
+          translationsWritten += written;
+          translationsByProperty.set(property.id, written);
+          this.logger.log(
+            `[produceForUserProperties] translations done property=${property.id} written=${written}`,
+          );
+        }
+      } else {
+        this.logger.log(
+          `[produceForUserProperties] translations skipped (runTranslations=false)`,
+        );
+      }
+
+      if (!runAiTitles) {
+        this.logger.log(
+          `[produceForUserProperties] AI titles skipped (runAiTitles=false)`,
+        );
+        for (const property of group.properties) {
+          readyIds.add(property.id);
+        }
+        continue;
+      }
 
       if (!group.config.ai_titles_enabled) {
+        this.logger.log(
+          `[produceForUserProperties] AI titles disabled on config=${group.config.id}; marking ready after translations`,
+        );
         for (const property of group.properties) {
-          processedIds.add(property.id);
+          readyIds.add(property.id);
         }
         continue;
       }
 
       const families = group.config.ai_title_families.filter((f) => f.is_enabled);
+      this.logger.log(
+        `[produceForUserProperties] AI families enabled=${families.length}/${group.config.ai_title_families.length}`,
+      );
+
+      if (!families.length) {
+        for (const property of group.properties) {
+          const error =
+            'AI titles enabled but no enabled AI title families configured';
+          failedMap.set(property.id, error);
+          this.logger.warn(
+            `[produceForUserProperties] fail property=${property.id}: ${error}`,
+          );
+        }
+        continue;
+      }
+
+      const linkedAiOutputs = group.config.outputs.filter(
+        (o) => o.title_strategy === TitleProductionStrategy.AI,
+      );
+      const coveredLanguages = new Set(
+        families.flatMap((family) =>
+          group.config!.outputs
+            .filter(
+              (o) =>
+                o.title_strategy === TitleProductionStrategy.AI &&
+                o.ai_title_family_id === family.id,
+            )
+            .map((o) => o.language),
+        ),
+      );
+      const uncoveredAiOutputs = linkedAiOutputs.filter(
+        (o) => !coveredLanguages.has(o.language),
+      );
+      if (!linkedAiOutputs.length) {
+        for (const property of group.properties) {
+          const error =
+            'AI titles enabled but no output slots use title_strategy=AI';
+          failedMap.set(property.id, error);
+          this.logger.warn(
+            `[produceForUserProperties] fail property=${property.id}: ${error}`,
+          );
+        }
+        continue;
+      }
+      if (uncoveredAiOutputs.length) {
+        this.logger.warn(
+          `[produceForUserProperties] AI output slots missing family link: ${uncoveredAiOutputs.map((o) => o.language).join(',')}`,
+        );
+      }
+      if (coveredLanguages.size === 0) {
+        for (const property of group.properties) {
+          const error =
+            'AI title output slots are not linked to any enabled AI title family (ai_title_family_id)';
+          failedMap.set(property.id, error);
+          this.logger.warn(
+            `[produceForUserProperties] fail property=${property.id}: ${error}`,
+          );
+        }
+        continue;
+      }
+
       const pendingForGroup = new Set<string>();
+      const aiFailedForGroup = new Map<string, string>();
+      const aiNeededAny = new Map<string, boolean>();
 
       for (const family of families) {
         const targetLanguages = group.config.outputs
@@ -128,31 +301,62 @@ export class ContentProductionService {
           )
           .map((o) => o.language);
 
-        if (!targetLanguages.length) continue;
+        this.logger.log(
+          `[produceForUserProperties] family="${family.name}" id=${family.id} model=${family.model ?? 'default'} use_batch=${family.use_batch} targetLanguages=[${targetLanguages.join(',')}]`,
+        );
+
+        if (!targetLanguages.length) {
+          this.logger.warn(
+            `[produceForUserProperties] family="${family.name}" has no AI title output slots linked; skipping family`,
+          );
+          continue;
+        }
 
         const needingWork: PropertyContentRow[] = [];
         for (const property of group.properties) {
           const needs = await this.needsAiWork(property.id, targetLanguages);
+          aiNeededAny.set(
+            property.id,
+            (aiNeededAny.get(property.id) ?? false) || needs,
+          );
+          this.logger.log(
+            `[produceForUserProperties] needsAiWork property=${property.id} family="${family.name}" langs=[${targetLanguages.join(',')}] needs=${needs}`,
+          );
           if (needs) needingWork.push(property);
         }
-        if (!needingWork.length) continue;
 
-        const useBatch =
-          !forceSyncAi && (family.use_batch ?? group.config.use_ai_batch);
+        if (!needingWork.length) {
+          this.logger.log(
+            `[produceForUserProperties] family="${family.name}" no properties need AI work`,
+          );
+          continue;
+        }
+
+        const useBatch = forceBatchAi
+          ? true
+          : forceSyncAi
+            ? false
+            : (family.use_batch ?? group.config.use_ai_batch);
+
+        this.logger.log(
+          `[produceForUserProperties] family="${family.name}" mode=${useBatch ? 'batch' : 'sync'} needing=${needingWork.length}`,
+        );
 
         if (useBatch) {
           const apiKey = await this.resolveOpenAiApiKey(group.userId);
           if (!apiKey) {
             this.logger.warn(
-              `No OpenAI key for user ${group.userId}; falling back to sync AI titles`,
+              `[produceForUserProperties] no OpenAI key for user=${group.userId}; falling back to sync for family="${family.name}"`,
             );
           } else {
             const changeTypes: Record<string, string> = {};
             for (const property of needingWork) {
-              const change =
+              changeTypes[property.id] =
                 options?.changeTypesByPropertyId?.[property.id] ?? 'UPDATE';
-              changeTypes[property.id] = change;
             }
+            this.logger.log(
+              `[produceForUserProperties] submitting OpenAI batch family="${family.name}" items=${needingWork.length}`,
+            );
             await this.aiTitleBatchService.submitFamilyBatch({
               configId: group.config.id,
               familyId: family.id,
@@ -174,13 +378,19 @@ export class ContentProductionService {
               pendingForGroup.add(property.id);
               pendingBatchIds.add(property.id);
             }
+            this.logger.log(
+              `[produceForUserProperties] batch submitted family="${family.name}" pending=[${needingWork.map((p) => p.id).join(',')}]`,
+            );
             continue;
           }
         }
 
         try {
           const apiKey = await this.resolveOpenAiApiKey(group.userId);
-          const titlesByProperty =
+          this.logger.log(
+            `[produceForUserProperties] sync AI generate start family="${family.name}" items=${needingWork.length} hasUserApiKey=${Boolean(apiKey)}`,
+          );
+          const generated =
             await this.aiTitleFamilyService.generateTitlesForProperties({
               sourceLanguage: group.contentLanguage,
               targetLanguages,
@@ -194,59 +404,144 @@ export class ContentProductionService {
               })),
             });
 
+          this.logger.log(
+            `[produceForUserProperties] sync AI generate response properties=${generated.size} family="${family.name}"`,
+          );
+
           for (const property of needingWork) {
-            const titles = titlesByProperty.get(property.id) ?? {};
-            for (const [language, text] of Object.entries(titles)) {
-              if (!text) continue;
+            const titles = generated.get(property.id) ?? {};
+            const langs = Object.entries(titles).filter(
+              ([, text]) => Boolean(text?.trim()),
+            );
+            this.logger.log(
+              `[produceForUserProperties] AI titles property=${property.id} family="${family.name}" returnedLangs=[${langs.map(([l]) => l).join(',')}] count=${langs.length}`,
+            );
+
+            if (!langs.length) {
+              aiFailedForGroup.set(
+                property.id,
+                `AI returned no titles for family "${family.name}"`,
+              );
+              continue;
+            }
+
+            for (const [language, text] of langs) {
               await this.upsertLocalized({
                 userPropertyId: property.id,
                 contentType: ContentType.TITLE,
                 language: language as ContentLanguage,
                 production: 'AI',
-                text,
+                text: text!,
               });
+              titlesWritten += 1;
+              titlesByProperty.set(
+                property.id,
+                (titlesByProperty.get(property.id) ?? 0) + 1,
+              );
+              this.logger.log(
+                `[produceForUserProperties] upserted AI title property=${property.id} lang=${language} chars=${text!.length}`,
+              );
             }
           }
         } catch (error) {
           const message =
             error instanceof Error ? error.message : String(error);
           this.logger.error(
-            `AI title generation failed for family ${family.name}: ${message}`,
+            `[produceForUserProperties] AI title generation failed family="${family.name}": ${message}`,
+            error instanceof Error ? error.stack : undefined,
           );
+          for (const property of needingWork) {
+            aiFailedForGroup.set(
+              property.id,
+              `AI title generation failed for family "${family.name}": ${message}`,
+            );
+          }
         }
       }
 
       for (const property of group.properties) {
-        processedIds.add(property.id);
         if (pendingForGroup.has(property.id)) {
           pendingBatchIds.add(property.id);
+          this.logger.log(
+            `[produceForUserProperties] property=${property.id} status=pending_batch translations=${translationsByProperty.get(property.id) ?? 0}`,
+          );
+          continue;
         }
+
+        const aiError = aiFailedForGroup.get(property.id);
+        if (aiError) {
+          failedMap.set(property.id, aiError);
+          this.logger.warn(
+            `[produceForUserProperties] property=${property.id} status=failed error=${aiError}`,
+          );
+          continue;
+        }
+
+        const neededAi = aiNeededAny.get(property.id) ?? false;
+        const writtenTitles = titlesByProperty.get(property.id) ?? 0;
+        if (neededAi && writtenTitles === 0) {
+          const error =
+            'AI titles were required but none were written (check OpenAI key, family→output links, and model response)';
+          failedMap.set(property.id, error);
+          this.logger.warn(
+            `[produceForUserProperties] property=${property.id} status=failed error=${error}`,
+          );
+          continue;
+        }
+
+        readyIds.add(property.id);
+        this.logger.log(
+          `[produceForUserProperties] property=${property.id} status=ready translations=${translationsByProperty.get(property.id) ?? 0} titles=${writtenTitles}`,
+        );
       }
     }
 
-    for (const id of uniqueIds) {
-      if (!propertyById.has(id)) continue;
-      processedIds.add(id);
+    for (const id of pendingBatchIds) {
+      readyIds.delete(id);
+      failedMap.delete(id);
+    }
+    for (const id of failedMap.keys()) {
+      readyIds.delete(id);
     }
 
-    const readyIds = [...processedIds].filter((id) => !pendingBatchIds.has(id));
-    return {
-      readyIds,
+    const result: ProduceForPropertiesResult = {
+      readyIds: [...readyIds],
       pendingBatchIds: [...pendingBatchIds],
+      failed: [...failedMap.entries()].map(([user_property_id, error]) => ({
+        user_property_id,
+        error,
+      })),
+      translationsWritten,
+      titlesWritten,
     };
+
+    this.logger.log(
+      `[produceForUserProperties] done ready=${result.readyIds.length} pendingBatch=${result.pendingBatchIds.length} failed=${result.failed.length} translationsWritten=${translationsWritten} titlesWritten=${titlesWritten}`,
+    );
+    if (result.failed.length) {
+      this.logger.warn(
+        `[produceForUserProperties] failures=${JSON.stringify(result.failed)}`,
+      );
+    }
+
+    return result;
   }
 
-  async getReadyPropertyIdsAfterTitleBatch(
-    batchId: string,
-  ): Promise<{
+  async getReadyPropertyIdsAfterTitleBatch(batchId: string): Promise<{
     crawlRunId: string | null;
     readyIds: string[];
     changeTypesByPropertyId: Record<string, string>;
   }> {
+    this.logger.log(
+      `[getReadyPropertyIdsAfterTitleBatch] batchId=${batchId}`,
+    );
     const run = await this.prisma.aiBatchRun.findUnique({
       where: { openai_batch_id: batchId },
     });
     if (!run || run.kind !== AiBatchRunKind.TITLE_FAMILY) {
+      this.logger.warn(
+        `[getReadyPropertyIdsAfterTitleBatch] run missing or wrong kind batchId=${batchId}`,
+      );
       return { crawlRunId: null, readyIds: [], changeTypesByPropertyId: {} };
     }
 
@@ -273,9 +568,7 @@ export class ContentProductionService {
           in: [AiBatchRunStatus.SUBMITTED, AiBatchRunStatus.IN_PROGRESS],
         },
         id: { not: run.id },
-        ...(run.crawl_run_id
-          ? { crawl_run_id: run.crawl_run_id }
-          : {}),
+        ...(run.crawl_run_id ? { crawl_run_id: run.crawl_run_id } : {}),
       },
       select: {
         user_property_ids: true,
@@ -294,9 +587,14 @@ export class ContentProductionService {
       }
     }
 
+    const readyIds = propertyIds.filter((id) => !blocked.has(id));
+    this.logger.log(
+      `[getReadyPropertyIdsAfterTitleBatch] crawlRunId=${run.crawl_run_id} ready=${readyIds.length} blocked=${blocked.size}`,
+    );
+
     return {
       crawlRunId: run.crawl_run_id,
-      readyIds: propertyIds.filter((id) => !blocked.has(id)),
+      readyIds,
       changeTypesByPropertyId,
     };
   }
@@ -307,6 +605,7 @@ export class ContentProductionService {
       contentLanguage: ContentLanguage;
       config: ContentPublishingConfigWithRelations | null;
       properties: PropertyContentRow[];
+      resolveReason: string;
     };
 
     const groups = new Map<string, Group>();
@@ -328,6 +627,7 @@ export class ContentProductionService {
         contentLanguage: context?.contentLanguage ?? ContentLanguage.EL,
         config: context?.config ?? null,
         properties: [property],
+        resolveReason: context?.resolveReason ?? 'Unknown resolve failure',
       });
     }
 
@@ -338,7 +638,7 @@ export class ContentProductionService {
     userProperty: { id: string; title: string; description: string | null },
     contentLanguage: ContentLanguage,
     config: ContentPublishingConfigWithRelations,
-  ): Promise<void> {
+  ): Promise<number> {
     const jobs: Array<{
       contentType: ContentType;
       language: ContentLanguage;
@@ -360,18 +660,39 @@ export class ContentProductionService {
       if (
         output.description_strategy ===
           DescriptionProductionStrategy.TRANSLATE &&
-        output.language !== contentLanguage &&
         userProperty.description
       ) {
-        jobs.push({
-          contentType: ContentType.DESCRIPTION,
-          language: output.language,
-          sourceText: userProperty.description,
-        });
+        const descriptionLanguage =
+          output.description_content_language ?? output.language;
+        if (descriptionLanguage !== contentLanguage) {
+          jobs.push({
+            contentType: ContentType.DESCRIPTION,
+            language: descriptionLanguage,
+            sourceText: userProperty.description,
+          });
+        }
       }
     }
 
+    const uniqueJobs = new Map<
+      string,
+      {
+        contentType: ContentType;
+        language: ContentLanguage;
+        sourceText: string;
+      }
+    >();
     for (const job of jobs) {
+      uniqueJobs.set(`${job.contentType}:${job.language}`, job);
+    }
+    const dedupedJobs = [...uniqueJobs.values()];
+
+    this.logger.log(
+      `[produceTranslations] property=${userProperty.id} jobs=${dedupedJobs.length} outputs=${config.outputs.length}`,
+    );
+
+    let written = 0;
+    for (const job of dedupedJobs) {
       const existing = await this.prisma.propertyLocalizedContent.findUnique({
         where: {
           user_property_id_content_type_language: {
@@ -381,9 +702,17 @@ export class ContentProductionService {
           },
         },
       });
-      if (existing && !existing.is_stale) continue;
+      if (existing && !existing.is_stale && existing.text?.trim()) {
+        this.logger.log(
+          `[produceTranslations] skip fresh property=${userProperty.id} ${job.contentType}/${job.language}`,
+        );
+        continue;
+      }
 
       try {
+        this.logger.log(
+          `[produceTranslations] translating property=${userProperty.id} ${job.contentType} ${contentLanguage}->${job.language} chars=${job.sourceText.length}`,
+        );
         const text = await this.googleTranslationService.translate(
           job.sourceText,
           contentLanguage,
@@ -396,13 +725,20 @@ export class ContentProductionService {
           production: 'TRANSLATE',
           text,
         });
+        written += 1;
+        this.logger.log(
+          `[produceTranslations] wrote property=${userProperty.id} ${job.contentType}/${job.language} chars=${text.length}`,
+        );
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         this.logger.error(
-          `Translate failed for ${userProperty.id} ${job.contentType}/${job.language}: ${message}`,
+          `[produceTranslations] failed property=${userProperty.id} ${job.contentType}/${job.language}: ${message}`,
+          error instanceof Error ? error.stack : undefined,
         );
       }
     }
+
+    return written;
   }
 
   private async needsAiWork(
@@ -463,10 +799,17 @@ export class ContentProductionService {
       },
       orderBy: [{ is_default: 'desc' }, { created_at: 'asc' }],
     });
+    this.logger.log(
+      `[resolveOpenAiApiKey] userId=${userId} found=${Boolean(integration?.api_key_secret)} integrationId=${integration?.id ?? 'none'}`,
+    );
     return integration?.api_key_secret ?? null;
   }
 
   private async resolveContextForProperty(userProperty: PropertyContentRow) {
+    this.logger.log(
+      `[resolveContext] property=${userProperty.id} canonical=${userProperty.canonical_property_id} user=${userProperty.user_id}`,
+    );
+
     const canonical = await this.prisma.property.findUnique({
       where: { id: userProperty.canonical_property_id },
       include: {
@@ -482,9 +825,32 @@ export class ContentProductionService {
       },
     });
 
+    if (!canonical) {
+      this.logger.warn(
+        `[resolveContext] property=${userProperty.id} canonical property missing`,
+      );
+      return {
+        trackerId: 'none',
+        contentLanguage: ContentLanguage.EL,
+        config: null as ContentPublishingConfigWithRelations | null,
+        resolveReason: 'Canonical property missing',
+      };
+    }
+
     const sourceAgencyId =
-      canonical?.source_links[0]?.source_property.source_agency_id;
-    if (!sourceAgencyId) return null;
+      canonical.source_links[0]?.source_property.source_agency_id;
+    if (!sourceAgencyId) {
+      this.logger.warn(
+        `[resolveContext] property=${userProperty.id} no source_links/source_agency_id`,
+      );
+      return {
+        trackerId: 'none',
+        contentLanguage: ContentLanguage.EL,
+        config: null as ContentPublishingConfigWithRelations | null,
+        resolveReason:
+          'Property has no source agency link; cannot resolve content publishing config',
+      };
+    }
 
     const tracker = await this.prisma.userTrackedAgency.findUnique({
       where: {
@@ -504,12 +870,30 @@ export class ContentProductionService {
       },
     });
 
-    if (!tracker) return null;
+    if (!tracker) {
+      this.logger.warn(
+        `[resolveContext] property=${userProperty.id} no UserTrackedAgency for sourceAgency=${sourceAgencyId}`,
+      );
+      return {
+        trackerId: 'none',
+        contentLanguage: ContentLanguage.EL,
+        config: null as ContentPublishingConfigWithRelations | null,
+        resolveReason: `No tracked agency for source agency ${sourceAgencyId}`,
+      };
+    }
+
+    const config = tracker.content_publishing_config;
+    this.logger.log(
+      `[resolveContext] property=${userProperty.id} tracker=${tracker.id} sourceAgency=${sourceAgencyId} contentLanguage=${tracker.source_agency.content_language} configId=${config?.id ?? 'null'} enabled=${config?.is_enabled ?? false} outputs=${config?.outputs?.length ?? 0} families=${config?.ai_title_families?.length ?? 0}`,
+    );
 
     return {
       trackerId: tracker.id,
       contentLanguage: tracker.source_agency.content_language,
-      config: tracker.content_publishing_config,
+      config,
+      resolveReason: config
+        ? 'ok'
+        : `No content publishing config on tracker ${tracker.id}`,
     };
   }
 }

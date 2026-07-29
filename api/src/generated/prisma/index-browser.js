@@ -558,6 +558,7 @@ exports.Prisma.ContentOutputScalarFieldEnum = {
   language: 'language',
   title_strategy: 'title_strategy',
   description_strategy: 'description_strategy',
+  description_content_language: 'description_content_language',
   ai_title_family_id: 'ai_title_family_id',
   created_at: 'created_at',
   updated_at: 'updated_at'
