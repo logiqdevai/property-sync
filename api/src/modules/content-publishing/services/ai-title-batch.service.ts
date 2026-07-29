@@ -153,8 +153,27 @@ export class AiTitleBatchService {
     );
     const meta = (run.metadata ?? {}) as {
       target_languages?: ContentLanguage[];
+      writing_language?: ContentLanguage;
     };
     const targetLanguages = meta.target_languages ?? [];
+    const writingLanguage =
+      meta.writing_language ?? ContentLanguage.EN;
+
+    const propertyIds = Array.isArray(run.user_property_ids)
+      ? (run.user_property_ids as string[])
+      : [];
+    const properties = propertyIds.length
+      ? await this.prisma.userProperty.findMany({
+          where: { id: { in: propertyIds } },
+          select: { id: true, square_meters: true },
+        })
+      : [];
+    const factsByPropertyId = new Map(
+      properties.map((property) => [
+        property.id,
+        { square_meters: property.square_meters?.toString() ?? null },
+      ]),
+    );
 
     for (const line of output.split('\n')) {
       if (!line.trim()) continue;
@@ -172,9 +191,13 @@ export class AiTitleBatchService {
         parsed.response?.body?.choices?.[0]?.message?.content ?? '';
       if (!userPropertyId || !content) continue;
 
-      const titles = this.aiTitleFamilyService.parseTitlesResponse(
-        content,
-        targetLanguages,
+      const titles = this.aiTitleFamilyService.applySquareMetersGuard(
+        this.aiTitleFamilyService.parseTitlesResponse(
+          content,
+          targetLanguages,
+        ),
+        factsByPropertyId.get(userPropertyId) ?? {},
+        writingLanguage,
       );
       for (const [language, text] of Object.entries(titles)) {
         if (!text) continue;

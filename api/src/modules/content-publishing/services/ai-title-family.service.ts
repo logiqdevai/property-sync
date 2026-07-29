@@ -9,6 +9,8 @@ import {
   AiTitlePropertyFacts,
   buildAiTitleMultiPropertyUserPrompt,
   buildAiTitleUserPrompt,
+  ensureTitlesIncludeSquareMeters,
+  titleIncludesSquareMeters,
 } from '../constants/ai-title-prompt';
 
 @Injectable()
@@ -50,7 +52,12 @@ export class AiTitleFamilyService {
       maxTokens: 1200,
     });
 
-    return this.parseTitlesResponse(result.response, input.targetLanguages);
+    const titles = this.parseTitlesResponse(result.response, input.targetLanguages);
+    return this.applySquareMetersGuard(
+      titles,
+      input.facts,
+      input.writingLanguage,
+    );
   }
 
   async generateTitlesForProperties(input: {
@@ -72,6 +79,10 @@ export class AiTitleFamilyService {
   > {
     const out = new Map<string, Partial<Record<ContentLanguage, string>>>();
     if (!input.targetLanguages.length || !input.items.length) return out;
+
+    const factsByPropertyId = new Map(
+      input.items.map((item) => [item.userPropertyId, item.facts]),
+    );
 
     const chunkSize = Math.max(
       1,
@@ -115,11 +126,36 @@ export class AiTitleFamilyService {
         `[generateTitlesForProperties] parsed properties=${parsed.size} expected=${chunk.length}`,
       );
       for (const [propertyId, titles] of parsed) {
-        out.set(propertyId, titles);
+        const facts = factsByPropertyId.get(propertyId) ?? {};
+        out.set(
+          propertyId,
+          this.applySquareMetersGuard(
+            titles,
+            facts,
+            input.writingLanguage,
+          ),
+        );
       }
     }
 
     return out;
+  }
+
+  applySquareMetersGuard(
+    titles: Partial<Record<ContentLanguage, string>>,
+    facts: AiTitlePropertyFacts,
+    writingLanguage: ContentLanguage,
+  ): Partial<Record<ContentLanguage, string>> {
+    const missing = Object.entries(titles).filter(
+      ([, title]) =>
+        Boolean(title) && !titleIncludesSquareMeters(title!, facts.square_meters),
+    );
+    if (missing.length) {
+      this.logger.warn(
+        `[applySquareMetersGuard] injecting square_meters into langs=[${missing.map(([lang]) => lang).join(',')}] size=${facts.square_meters ?? 'n/a'}`,
+      );
+    }
+    return ensureTitlesIncludeSquareMeters(titles, facts, writingLanguage);
   }
 
   parseTitlesResponse(
