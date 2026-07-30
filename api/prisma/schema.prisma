@@ -220,6 +220,11 @@ enum IntegrationType {
   AZURE
 }
 
+enum TranslationProvider {
+  GOOGLE_TRANSLATE
+  AZURE
+}
+
 // New: unified cost logging -- what kind of billable operation incurred the cost.
 enum CostOperationType {
   NORMALIZATION
@@ -1228,6 +1233,9 @@ model PlatformConfig {
   crawler_chromium_max_contexts_before_restart Int?
   normalization_ai_raw_description_max_chars   Int?
   dewatermark_cost_per_image                   Decimal? @db.Decimal(12, 6)
+  google_translate_cost_per_million_chars      Decimal? @db.Decimal(12, 6)
+  azure_translate_cost_per_million_chars       Decimal? @db.Decimal(12, 6)
+  translation_provider                         TranslationProvider?
   created_at                                   DateTime @default(now())
   updated_at                                   DateTime @updatedAt
 

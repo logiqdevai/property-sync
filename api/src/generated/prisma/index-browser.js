@@ -660,6 +660,9 @@ exports.Prisma.PlatformConfigScalarFieldEnum = {
   crawler_chromium_max_contexts_before_restart: 'crawler_chromium_max_contexts_before_restart',
   normalization_ai_raw_description_max_chars: 'normalization_ai_raw_description_max_chars',
   dewatermark_cost_per_image: 'dewatermark_cost_per_image',
+  google_translate_cost_per_million_chars: 'google_translate_cost_per_million_chars',
+  azure_translate_cost_per_million_chars: 'azure_translate_cost_per_million_chars',
+  translation_provider: 'translation_provider',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };
@@ -951,6 +954,11 @@ exports.CostOperationType = exports.$Enums.CostOperationType = {
   TRANSLATION: 'TRANSLATION',
   DEWATERMARK: 'DEWATERMARK',
   OTHER: 'OTHER'
+};
+
+exports.TranslationProvider = exports.$Enums.TranslationProvider = {
+  GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE',
+  AZURE: 'AZURE'
 };
 
 exports.DocumentType = exports.$Enums.DocumentType = {

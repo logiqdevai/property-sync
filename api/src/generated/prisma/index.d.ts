@@ -488,6 +488,14 @@ export const IntegrationType: {
 export type IntegrationType = (typeof IntegrationType)[keyof typeof IntegrationType]
 
 
+export const TranslationProvider: {
+  GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE',
+  AZURE: 'AZURE'
+};
+
+export type TranslationProvider = (typeof TranslationProvider)[keyof typeof TranslationProvider]
+
+
 export const CostOperationType: {
   NORMALIZATION: 'NORMALIZATION',
   TITLE_GENERATION: 'TITLE_GENERATION',
@@ -681,6 +689,10 @@ export const PropertyType: typeof $Enums.PropertyType
 export type IntegrationType = $Enums.IntegrationType
 
 export const IntegrationType: typeof $Enums.IntegrationType
+
+export type TranslationProvider = $Enums.TranslationProvider
+
+export const TranslationProvider: typeof $Enums.TranslationProvider
 
 export type CostOperationType = $Enums.CostOperationType
 
@@ -44206,6 +44218,8 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
+    google_translate_cost_per_million_chars: Decimal | null
+    azure_translate_cost_per_million_chars: Decimal | null
   }
 
   export type PlatformConfigSumAggregateOutputType = {
@@ -44220,6 +44234,8 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
+    google_translate_cost_per_million_chars: Decimal | null
+    azure_translate_cost_per_million_chars: Decimal | null
   }
 
   export type PlatformConfigMinAggregateOutputType = {
@@ -44235,6 +44251,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
+    google_translate_cost_per_million_chars: Decimal | null
+    azure_translate_cost_per_million_chars: Decimal | null
+    translation_provider: $Enums.TranslationProvider | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -44252,6 +44271,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
+    google_translate_cost_per_million_chars: Decimal | null
+    azure_translate_cost_per_million_chars: Decimal | null
+    translation_provider: $Enums.TranslationProvider | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -44269,6 +44291,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart: number
     normalization_ai_raw_description_max_chars: number
     dewatermark_cost_per_image: number
+    google_translate_cost_per_million_chars: number
+    azure_translate_cost_per_million_chars: number
+    translation_provider: number
     created_at: number
     updated_at: number
     _all: number
@@ -44287,6 +44312,8 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
+    google_translate_cost_per_million_chars?: true
+    azure_translate_cost_per_million_chars?: true
   }
 
   export type PlatformConfigSumAggregateInputType = {
@@ -44301,6 +44328,8 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
+    google_translate_cost_per_million_chars?: true
+    azure_translate_cost_per_million_chars?: true
   }
 
   export type PlatformConfigMinAggregateInputType = {
@@ -44316,6 +44345,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
+    google_translate_cost_per_million_chars?: true
+    azure_translate_cost_per_million_chars?: true
+    translation_provider?: true
     created_at?: true
     updated_at?: true
   }
@@ -44333,6 +44365,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
+    google_translate_cost_per_million_chars?: true
+    azure_translate_cost_per_million_chars?: true
+    translation_provider?: true
     created_at?: true
     updated_at?: true
   }
@@ -44350,6 +44385,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
+    google_translate_cost_per_million_chars?: true
+    azure_translate_cost_per_million_chars?: true
+    translation_provider?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -44454,6 +44492,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
+    google_translate_cost_per_million_chars: Decimal | null
+    azure_translate_cost_per_million_chars: Decimal | null
+    translation_provider: $Enums.TranslationProvider | null
     created_at: Date
     updated_at: Date
     _count: PlatformConfigCountAggregateOutputType | null
@@ -44490,6 +44531,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: boolean
     normalization_ai_raw_description_max_chars?: boolean
     dewatermark_cost_per_image?: boolean
+    google_translate_cost_per_million_chars?: boolean
+    azure_translate_cost_per_million_chars?: boolean
+    translation_provider?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["platformConfig"]>
@@ -44507,6 +44551,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: boolean
     normalization_ai_raw_description_max_chars?: boolean
     dewatermark_cost_per_image?: boolean
+    google_translate_cost_per_million_chars?: boolean
+    azure_translate_cost_per_million_chars?: boolean
+    translation_provider?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["platformConfig"]>
@@ -44524,6 +44571,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: boolean
     normalization_ai_raw_description_max_chars?: boolean
     dewatermark_cost_per_image?: boolean
+    google_translate_cost_per_million_chars?: boolean
+    azure_translate_cost_per_million_chars?: boolean
+    translation_provider?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["platformConfig"]>
@@ -44541,11 +44591,14 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: boolean
     normalization_ai_raw_description_max_chars?: boolean
     dewatermark_cost_per_image?: boolean
+    google_translate_cost_per_million_chars?: boolean
+    azure_translate_cost_per_million_chars?: boolean
+    translation_provider?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "normalization_ai_raw_description_max_chars" | "dewatermark_cost_per_image" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
+  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "normalization_ai_raw_description_max_chars" | "dewatermark_cost_per_image" | "google_translate_cost_per_million_chars" | "azure_translate_cost_per_million_chars" | "translation_provider" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
 
   export type $PlatformConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "PlatformConfig"
@@ -44563,6 +44616,9 @@ export namespace Prisma {
       crawler_chromium_max_contexts_before_restart: number | null
       normalization_ai_raw_description_max_chars: number | null
       dewatermark_cost_per_image: Prisma.Decimal | null
+      google_translate_cost_per_million_chars: Prisma.Decimal | null
+      azure_translate_cost_per_million_chars: Prisma.Decimal | null
+      translation_provider: $Enums.TranslationProvider | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["platformConfig"]>
@@ -45000,6 +45056,9 @@ export namespace Prisma {
     readonly crawler_chromium_max_contexts_before_restart: FieldRef<"PlatformConfig", 'Int'>
     readonly normalization_ai_raw_description_max_chars: FieldRef<"PlatformConfig", 'Int'>
     readonly dewatermark_cost_per_image: FieldRef<"PlatformConfig", 'Decimal'>
+    readonly google_translate_cost_per_million_chars: FieldRef<"PlatformConfig", 'Decimal'>
+    readonly azure_translate_cost_per_million_chars: FieldRef<"PlatformConfig", 'Decimal'>
+    readonly translation_provider: FieldRef<"PlatformConfig", 'TranslationProvider'>
     readonly created_at: FieldRef<"PlatformConfig", 'DateTime'>
     readonly updated_at: FieldRef<"PlatformConfig", 'DateTime'>
   }
@@ -47199,6 +47258,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart: 'crawler_chromium_max_contexts_before_restart',
     normalization_ai_raw_description_max_chars: 'normalization_ai_raw_description_max_chars',
     dewatermark_cost_per_image: 'dewatermark_cost_per_image',
+    google_translate_cost_per_million_chars: 'google_translate_cost_per_million_chars',
+    azure_translate_cost_per_million_chars: 'azure_translate_cost_per_million_chars',
+    translation_provider: 'translation_provider',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -47726,6 +47788,20 @@ export namespace Prisma {
    * Reference to a field of type 'CostOperationType[]'
    */
   export type ListEnumCostOperationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CostOperationType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'TranslationProvider'
+   */
+  export type EnumTranslationProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TranslationProvider'>
+    
+
+
+  /**
+   * Reference to a field of type 'TranslationProvider[]'
+   */
+  export type ListEnumTranslationProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TranslationProvider[]'>
     
 
 
@@ -51148,6 +51224,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: IntNullableFilter<"PlatformConfig"> | number | null
     normalization_ai_raw_description_max_chars?: IntNullableFilter<"PlatformConfig"> | number | null
     dewatermark_cost_per_image?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    google_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    azure_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    translation_provider?: EnumTranslationProviderNullableFilter<"PlatformConfig"> | $Enums.TranslationProvider | null
     created_at?: DateTimeFilter<"PlatformConfig"> | Date | string
     updated_at?: DateTimeFilter<"PlatformConfig"> | Date | string
   }
@@ -51165,6 +51244,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: SortOrderInput | SortOrder
     normalization_ai_raw_description_max_chars?: SortOrderInput | SortOrder
     dewatermark_cost_per_image?: SortOrderInput | SortOrder
+    google_translate_cost_per_million_chars?: SortOrderInput | SortOrder
+    azure_translate_cost_per_million_chars?: SortOrderInput | SortOrder
+    translation_provider?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -51185,6 +51267,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: IntNullableFilter<"PlatformConfig"> | number | null
     normalization_ai_raw_description_max_chars?: IntNullableFilter<"PlatformConfig"> | number | null
     dewatermark_cost_per_image?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    google_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    azure_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    translation_provider?: EnumTranslationProviderNullableFilter<"PlatformConfig"> | $Enums.TranslationProvider | null
     created_at?: DateTimeFilter<"PlatformConfig"> | Date | string
     updated_at?: DateTimeFilter<"PlatformConfig"> | Date | string
   }, "id">
@@ -51202,6 +51287,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: SortOrderInput | SortOrder
     normalization_ai_raw_description_max_chars?: SortOrderInput | SortOrder
     dewatermark_cost_per_image?: SortOrderInput | SortOrder
+    google_translate_cost_per_million_chars?: SortOrderInput | SortOrder
+    azure_translate_cost_per_million_chars?: SortOrderInput | SortOrder
+    translation_provider?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: PlatformConfigCountOrderByAggregateInput
@@ -51227,6 +51315,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     normalization_ai_raw_description_max_chars?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     dewatermark_cost_per_image?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    google_translate_cost_per_million_chars?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    azure_translate_cost_per_million_chars?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
+    translation_provider?: EnumTranslationProviderNullableWithAggregatesFilter<"PlatformConfig"> | $Enums.TranslationProvider | null
     created_at?: DateTimeWithAggregatesFilter<"PlatformConfig"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"PlatformConfig"> | Date | string
   }
@@ -55170,6 +55261,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: number | null
     normalization_ai_raw_description_max_chars?: number | null
     dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
+    google_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
+    azure_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
+    translation_provider?: $Enums.TranslationProvider | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -55187,6 +55281,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: number | null
     normalization_ai_raw_description_max_chars?: number | null
     dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
+    google_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
+    azure_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
+    translation_provider?: $Enums.TranslationProvider | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -55204,6 +55301,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    azure_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    translation_provider?: NullableEnumTranslationProviderFieldUpdateOperationsInput | $Enums.TranslationProvider | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -55221,6 +55321,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    azure_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    translation_provider?: NullableEnumTranslationProviderFieldUpdateOperationsInput | $Enums.TranslationProvider | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -55238,6 +55341,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: number | null
     normalization_ai_raw_description_max_chars?: number | null
     dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
+    google_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
+    azure_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
+    translation_provider?: $Enums.TranslationProvider | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -55255,6 +55361,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    azure_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    translation_provider?: NullableEnumTranslationProviderFieldUpdateOperationsInput | $Enums.TranslationProvider | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -55272,6 +55381,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    azure_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    translation_provider?: NullableEnumTranslationProviderFieldUpdateOperationsInput | $Enums.TranslationProvider | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58397,6 +58509,13 @@ export namespace Prisma {
     updated_at?: SortOrder
   }
 
+  export type EnumTranslationProviderNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.TranslationProvider | EnumTranslationProviderFieldRefInput<$PrismaModel> | null
+    in?: $Enums.TranslationProvider[] | ListEnumTranslationProviderFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.TranslationProvider[] | ListEnumTranslationProviderFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumTranslationProviderNullableFilter<$PrismaModel> | $Enums.TranslationProvider | null
+  }
+
   export type PlatformConfigCountOrderByAggregateInput = {
     id?: SortOrder
     crawler_max_pages?: SortOrder
@@ -58410,6 +58529,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
+    google_translate_cost_per_million_chars?: SortOrder
+    azure_translate_cost_per_million_chars?: SortOrder
+    translation_provider?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -58426,6 +58548,8 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
+    google_translate_cost_per_million_chars?: SortOrder
+    azure_translate_cost_per_million_chars?: SortOrder
   }
 
   export type PlatformConfigMaxOrderByAggregateInput = {
@@ -58441,6 +58565,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
+    google_translate_cost_per_million_chars?: SortOrder
+    azure_translate_cost_per_million_chars?: SortOrder
+    translation_provider?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -58458,6 +58585,9 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
+    google_translate_cost_per_million_chars?: SortOrder
+    azure_translate_cost_per_million_chars?: SortOrder
+    translation_provider?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -58474,6 +58604,18 @@ export namespace Prisma {
     crawler_chromium_max_contexts_before_restart?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
+    google_translate_cost_per_million_chars?: SortOrder
+    azure_translate_cost_per_million_chars?: SortOrder
+  }
+
+  export type EnumTranslationProviderNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TranslationProvider | EnumTranslationProviderFieldRefInput<$PrismaModel> | null
+    in?: $Enums.TranslationProvider[] | ListEnumTranslationProviderFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.TranslationProvider[] | ListEnumTranslationProviderFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumTranslationProviderNullableWithAggregatesFilter<$PrismaModel> | $Enums.TranslationProvider | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumTranslationProviderNullableFilter<$PrismaModel>
+    _max?: NestedEnumTranslationProviderNullableFilter<$PrismaModel>
   }
 
   export type EnumDocumentTypeFilter<$PrismaModel = never> = {
@@ -61696,6 +61838,10 @@ export namespace Prisma {
     update?: XOR<XOR<UserPropertyUpdateToOneWithWhereWithoutIntegration_propertiesInput, UserPropertyUpdateWithoutIntegration_propertiesInput>, UserPropertyUncheckedUpdateWithoutIntegration_propertiesInput>
   }
 
+  export type NullableEnumTranslationProviderFieldUpdateOperationsInput = {
+    set?: $Enums.TranslationProvider | null
+  }
+
   export type ComputerUseStepCreateNestedManyWithoutScreenshot_beforeInput = {
     create?: XOR<ComputerUseStepCreateWithoutScreenshot_beforeInput, ComputerUseStepUncheckedCreateWithoutScreenshot_beforeInput> | ComputerUseStepCreateWithoutScreenshot_beforeInput[] | ComputerUseStepUncheckedCreateWithoutScreenshot_beforeInput[]
     connectOrCreate?: ComputerUseStepCreateOrConnectWithoutScreenshot_beforeInput | ComputerUseStepCreateOrConnectWithoutScreenshot_beforeInput[]
@@ -62572,6 +62718,23 @@ export namespace Prisma {
     _sum?: NestedDecimalFilter<$PrismaModel>
     _min?: NestedDecimalFilter<$PrismaModel>
     _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
+  export type NestedEnumTranslationProviderNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.TranslationProvider | EnumTranslationProviderFieldRefInput<$PrismaModel> | null
+    in?: $Enums.TranslationProvider[] | ListEnumTranslationProviderFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.TranslationProvider[] | ListEnumTranslationProviderFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumTranslationProviderNullableFilter<$PrismaModel> | $Enums.TranslationProvider | null
+  }
+
+  export type NestedEnumTranslationProviderNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TranslationProvider | EnumTranslationProviderFieldRefInput<$PrismaModel> | null
+    in?: $Enums.TranslationProvider[] | ListEnumTranslationProviderFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.TranslationProvider[] | ListEnumTranslationProviderFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumTranslationProviderNullableWithAggregatesFilter<$PrismaModel> | $Enums.TranslationProvider | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumTranslationProviderNullableFilter<$PrismaModel>
+    _max?: NestedEnumTranslationProviderNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumDocumentTypeFilter<$PrismaModel = never> = {

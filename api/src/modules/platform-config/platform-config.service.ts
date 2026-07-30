@@ -12,20 +12,21 @@ import {
   DEFAULT_SELECTOR_TIMEOUT_MS,
 } from '@/integrations/crawler/constants/crawler.constants';
 import { ResolvedCrawlerConfig } from '@/integrations/crawler/interfaces/crawler-runtime-config.interface';
+import { DEFAULT_AZURE_TRANSLATE_COST_PER_MILLION_CHARS } from '@/integrations/azure-translate/constants/azure-translate.constants';
+import { DEFAULT_GOOGLE_TRANSLATE_COST_PER_MILLION_CHARS } from '@/integrations/google-translate/constants/google-translate.constants';
 import { DEFAULT_AI_RAW_DESCRIPTION_MAX_CHARS } from '@/modules/properties/constants/normalization.constants';
 import { UpdatePlatformConfigDto } from './dto/update-platform-config.dto';
-import { PlatformConfig } from 'generated/prisma';
+import {
+  IntegrationType,
+  PlatformConfig,
+  TranslationProvider,
+} from 'generated/prisma';
 
 const SINGLETON_ID = 'singleton';
 
-// Fallback used until an admin sets a real per-image rate in PlatformConfig.
 const DEFAULT_DEWATERMARK_COST_PER_IMAGE = 0.02;
+const DEFAULT_TRANSLATION_PROVIDER = TranslationProvider.GOOGLE_TRANSLATE;
 
-// Cached in-memory so high-frequency callers (e.g. a new browser context per crawl
-// page/detail item) don't hit the DB on every call. A short TTL -- rather than
-// invalidate-on-write only -- means the cache also self-heals from writes this
-// process didn't make itself: a seed script, a direct DB edit, or another app
-// instance's PATCH in a multi-instance deployment.
 const CACHE_TTL_MS = 30_000;
 
 export interface ResolvedNormalizationConfig {
@@ -34,7 +35,6 @@ export interface ResolvedNormalizationConfig {
 
 @Injectable()
 export class PlatformConfigService {
-  // `undefined` means "not fetched yet" -- distinct from a confirmed-missing row (`null`).
   private cachedRow: PlatformConfig | null | undefined = undefined;
   private cachedAt = 0;
 
@@ -78,6 +78,48 @@ export class PlatformConfigService {
     return value !== null && value !== undefined
       ? Number(value)
       : DEFAULT_DEWATERMARK_COST_PER_IMAGE;
+  }
+
+  async getGoogleTranslateCostPerMillionChars(): Promise<number> {
+    const row = await this.getCachedRow();
+    const value = row?.google_translate_cost_per_million_chars;
+    return value !== null && value !== undefined
+      ? Number(value)
+      : DEFAULT_GOOGLE_TRANSLATE_COST_PER_MILLION_CHARS;
+  }
+
+  async getAzureTranslateCostPerMillionChars(): Promise<number> {
+    const row = await this.getCachedRow();
+    const value = row?.azure_translate_cost_per_million_chars;
+    return value !== null && value !== undefined
+      ? Number(value)
+      : DEFAULT_AZURE_TRANSLATE_COST_PER_MILLION_CHARS;
+  }
+
+  async getTranslationProvider(): Promise<TranslationProvider> {
+    const row = await this.getCachedRow();
+    return row?.translation_provider ?? DEFAULT_TRANSLATION_PROVIDER;
+  }
+
+  async getTranslateCost(
+    provider:
+      | typeof IntegrationType.GOOGLE_TRANSLATE
+      | typeof IntegrationType.AZURE,
+    characterCount: number,
+  ): Promise<number> {
+    const costPerMillion =
+      provider === IntegrationType.AZURE
+        ? await this.getAzureTranslateCostPerMillionChars()
+        : await this.getGoogleTranslateCostPerMillionChars();
+    return (characterCount * costPerMillion) / 1_000_000;
+  }
+
+  toIntegrationType(
+    provider: TranslationProvider,
+  ): typeof IntegrationType.GOOGLE_TRANSLATE | typeof IntegrationType.AZURE {
+    return provider === TranslationProvider.AZURE
+      ? IntegrationType.AZURE
+      : IntegrationType.GOOGLE_TRANSLATE;
   }
 
   async getRaw(): Promise<PlatformConfig> {

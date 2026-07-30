@@ -1,18 +1,24 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, Label, Input, FieldError, Tabs } from "@heroui/react";
+import { FieldError, Form, Input, Label, ListBox, Select, Tabs } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { TranslationProviderFormOptions } from "@/config/constants/dropdowns/platform-config/translation-provider-form.options";
 import { usePlatformConfig, useUpdatePlatformConfig } from "@/features/platform-config/hooks/use-platform-config";
 import {
   CRAWLER_CONFIG_FIELDS,
   CRAWLER_CONFIG_GROUP_ORDER,
+  CrawlerConfigGroups,
   crawlerConfigFormSchema,
+  DEFAULT_TRANSLATION_PROVIDER,
   parseOptionalConfigNumber,
   type CrawlerConfigFormValues,
 } from "@/features/platform-config/validation-schemas/crawler-config-fields.schema";
-import type { UpdatePlatformConfigPayload } from "@/features/platform-config/interfaces/platform-config.interfaces";
+import type {
+  TranslationProvider,
+  UpdatePlatformConfigPayload,
+} from "@/features/platform-config/interfaces/platform-config.interfaces";
 import { NotificationSettingsPanel } from "./components/notification-settings-panel";
 
 function toFormValue(value: number | null): string {
@@ -33,26 +39,38 @@ export default function CrawlerConfigPage() {
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<CrawlerConfigFormValues>({
     resolver: zodResolver(crawlerConfigFormSchema),
-    defaultValues: Object.fromEntries(CRAWLER_CONFIG_FIELDS.map((field) => [field.key, ""])),
+    defaultValues: {
+      ...Object.fromEntries(CRAWLER_CONFIG_FIELDS.map((field) => [field.key, ""])),
+      translation_provider: DEFAULT_TRANSLATION_PROVIDER,
+    },
   });
 
   useEffect(() => {
     if (!data) return;
-    reset(Object.fromEntries(CRAWLER_CONFIG_FIELDS.map((field) => [field.key, toFormValue(data[field.key])])));
+    reset({
+      ...Object.fromEntries(
+        CRAWLER_CONFIG_FIELDS.map((field) => [field.key, toFormValue(data[field.key])]),
+      ),
+      translation_provider: data.translation_provider ?? DEFAULT_TRANSLATION_PROVIDER,
+    });
   }, [data, reset]);
 
   const submit = (values: CrawlerConfigFormValues) => {
-    const payload = Object.fromEntries(
-      CRAWLER_CONFIG_FIELDS.map((field) => [
-        field.key,
-        parseOptionalConfigNumber(values[field.key], field.isDecimal),
-      ]),
-    ) as UpdatePlatformConfigPayload;
+    const payload = {
+      ...Object.fromEntries(
+        CRAWLER_CONFIG_FIELDS.map((field) => [
+          field.key,
+          parseOptionalConfigNumber(values[field.key], field.isDecimal),
+        ]),
+      ),
+      translation_provider: values.translation_provider,
+    } as UpdatePlatformConfigPayload;
 
     updateConfig.mutate(payload);
   };
@@ -94,6 +112,9 @@ export default function CrawlerConfigPage() {
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 {CRAWLER_CONFIG_GROUP_ORDER.map((group) => {
                   const fields = CRAWLER_CONFIG_FIELDS.filter((field) => field.group === group.id);
+                  const showTranslationProvider =
+                    group.id === CrawlerConfigGroups.AI_AND_COSTS;
+
                   return (
                     <section
                       key={group.id}
@@ -104,6 +125,45 @@ export default function CrawlerConfigPage() {
                         <p className="text-sm text-muted mt-1">{group.description}</p>
                       </div>
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {showTranslationProvider ? (
+                          <div className="flex flex-col gap-1 sm:col-span-2">
+                            <Controller
+                              name="translation_provider"
+                              control={control}
+                              render={({ field }) => (
+                                <Select
+                                  selectedKey={field.value}
+                                  onSelectionChange={(key) => {
+                                    if (key == null) return;
+                                    field.onChange(key as TranslationProvider);
+                                  }}
+                                >
+                                  <Label>Translation provider</Label>
+                                  <Select.Trigger>
+                                    <Select.Value />
+                                    <Select.Indicator />
+                                  </Select.Trigger>
+                                  <Select.Popover>
+                                    <ListBox items={TranslationProviderFormOptions}>
+                                      {(option) => (
+                                        <ListBox.Item id={option.id} textValue={option.label}>
+                                          {option.label}
+                                          <ListBox.ItemIndicator />
+                                        </ListBox.Item>
+                                      )}
+                                    </ListBox>
+                                  </Select.Popover>
+                                </Select>
+                              )}
+                            />
+                            {errors.translation_provider && (
+                              <FieldError>{errors.translation_provider.message}</FieldError>
+                            )}
+                            <span className="text-xs text-muted">
+                              Provider used for content publishing translations and cost logs.
+                            </span>
+                          </div>
+                        ) : null}
                         {fields.map((field) => (
                           <div key={field.key} className="flex flex-col gap-1">
                             <Label htmlFor={`crawler-config-${field.key}`}>{field.label}</Label>

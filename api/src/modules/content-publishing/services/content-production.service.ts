@@ -10,15 +10,17 @@ import {
   ListingType,
   PropertyType,
   TitleProductionStrategy,
+  TranslationProvider,
 } from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { CostLogsService } from '@/modules/cost-logs/cost-logs.service';
-import { GOOGLE_TRANSLATE_COST_PER_CHAR } from '@/integrations/google-translate/constants/google-translate.constants';
+import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import { ContentPublishingConfigWithRelations } from '../interfaces/content-publishing.interface';
 import {
   AiTitlePropertyFacts,
 } from '../constants/ai-title-prompt';
 import { GoogleTranslationService } from './google-translation.service';
+import { AzureTranslationService } from './azure-translation.service';
 import { AiTitleFamilyService } from './ai-title-family.service';
 import { AiTitleBatchService } from './ai-title-batch.service';
 
@@ -65,9 +67,11 @@ export class ContentProductionService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly googleTranslationService: GoogleTranslationService,
+    private readonly azureTranslationService: AzureTranslationService,
     private readonly aiTitleFamilyService: AiTitleFamilyService,
     private readonly aiTitleBatchService: AiTitleBatchService,
     private readonly costLogsService: CostLogsService,
+    private readonly platformConfigService: PlatformConfigService,
   ) {}
 
   async markStale(userPropertyId: string): Promise<void> {
@@ -214,8 +218,10 @@ export class ContentProductionService {
       const translationsByProperty = new Map<string, number>();
 
       if (runTranslations) {
+        const translationProvider =
+          await this.platformConfigService.getTranslationProvider();
         this.logger.log(
-          `[produceForUserProperties] translations start for ${group.properties.length} properties googleConfigured=${this.googleTranslationService.isConfigured()}`,
+          `[produceForUserProperties] translations start for ${group.properties.length} properties provider=${translationProvider}`,
         );
         for (const property of group.properties) {
           const written = await this.produceTranslations(
@@ -223,6 +229,7 @@ export class ContentProductionService {
             group.contentLanguage,
             group.config,
             group.userId,
+            translationProvider,
           );
           translationsWritten += written;
           translationsByProperty.set(property.id, written);
@@ -678,6 +685,7 @@ export class ContentProductionService {
     contentLanguage: ContentLanguage,
     config: ContentPublishingConfigWithRelations,
     userId: string,
+    translationProvider: TranslationProvider,
   ): Promise<number> {
     const jobs: Array<{
       contentType: ContentType;
@@ -751,13 +759,21 @@ export class ContentProductionService {
 
       try {
         this.logger.log(
-          `[produceTranslations] translating property=${userProperty.id} ${job.contentType} ${contentLanguage}->${job.language} chars=${job.sourceText.length}`,
+          `[produceTranslations] translating property=${userProperty.id} ${job.contentType} ${contentLanguage}->${job.language} chars=${job.sourceText.length} provider=${translationProvider}`,
         );
-        const text = await this.googleTranslationService.translate(
-          job.sourceText,
-          contentLanguage,
-          job.language,
-        );
+        const text =
+          translationProvider === TranslationProvider.AZURE
+            ? await this.azureTranslationService.translate(
+                userId,
+                job.sourceText,
+                contentLanguage,
+                job.language,
+              )
+            : await this.googleTranslationService.translate(
+                job.sourceText,
+                contentLanguage,
+                job.language,
+              );
         await this.upsertLocalized({
           userPropertyId: userProperty.id,
           contentType: job.contentType,
@@ -765,14 +781,24 @@ export class ContentProductionService {
           production: 'TRANSLATE',
           text,
         });
+        const costProvider =
+          this.platformConfigService.toIntegrationType(translationProvider);
+        const totalCost = await this.platformConfigService.getTranslateCost(
+          costProvider,
+          job.sourceText.length,
+        );
         await this.costLogsService.record({
           userId,
           operationType: CostOperationType.TRANSLATION,
-          provider: IntegrationType.GOOGLE_TRANSLATE,
+          provider: costProvider,
           inputQuantity: job.sourceText.length,
-          totalCost: job.sourceText.length * GOOGLE_TRANSLATE_COST_PER_CHAR,
+          totalCost,
           userPropertyId: userProperty.id,
-          metadata: { content_type: job.contentType, target_language: job.language },
+          metadata: {
+            content_type: job.contentType,
+            target_language: job.language,
+            translation_provider: translationProvider,
+          },
         });
         written += 1;
         this.logger.log(

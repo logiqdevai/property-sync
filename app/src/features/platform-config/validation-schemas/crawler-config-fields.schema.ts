@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  TranslationProviders,
+  type TranslationProvider,
+} from "@/features/platform-config/interfaces/platform-config.interfaces";
 
 export const CrawlerConfigGroups = {
   LISTING_CRAWL: "listing_crawl",
@@ -32,7 +36,7 @@ export const CRAWLER_CONFIG_GROUP_ORDER: {
   {
     id: CrawlerConfigGroups.AI_AND_COSTS,
     label: "AI & costs",
-    description: "Normalization AI input limits and per-image cost attribution.",
+    description: "Normalization AI input limits, translation provider, and cost attribution.",
   },
 ];
 
@@ -48,7 +52,9 @@ export interface CrawlerConfigFieldDef {
     | "crawler_job_timeout_ms"
     | "crawler_chromium_max_contexts_before_restart"
     | "normalization_ai_raw_description_max_chars"
-    | "dewatermark_cost_per_image";
+    | "dewatermark_cost_per_image"
+    | "google_translate_cost_per_million_chars"
+    | "azure_translate_cost_per_million_chars";
   group: CrawlerConfigGroup;
   label: string;
   defaultValue: number;
@@ -149,6 +155,26 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
     isDecimal: true,
     step: 0.01,
   },
+  {
+    key: "google_translate_cost_per_million_chars",
+    group: CrawlerConfigGroups.AI_AND_COSTS,
+    label: "Google Translate cost per million chars (USD)",
+    defaultValue: 20,
+    min: 0,
+    hint: "Google Cloud Translation Basic public rate. Used for TRANSLATION cost logs.",
+    isDecimal: true,
+    step: 0.01,
+  },
+  {
+    key: "azure_translate_cost_per_million_chars",
+    group: CrawlerConfigGroups.AI_AND_COSTS,
+    label: "Azure Translator cost per million chars (USD)",
+    defaultValue: 10,
+    min: 0,
+    hint: "Azure Translator S1 standard text translation public rate. Used for TRANSLATION cost logs.",
+    isDecimal: true,
+    step: 0.01,
+  },
 ];
 
 function optionalIntegerField(min: number) {
@@ -179,16 +205,23 @@ function optionalDecimalField(min: number) {
     );
 }
 
-export const crawlerConfigFormSchema = z.object(
-  Object.fromEntries(
+export const crawlerConfigFormSchema = z.object({
+  ...(Object.fromEntries(
     CRAWLER_CONFIG_FIELDS.map((field) => [
       field.key,
       field.isDecimal ? optionalDecimalField(field.min) : optionalIntegerField(field.min),
     ]),
-  ) as Record<CrawlerConfigFieldDef["key"], ReturnType<typeof optionalIntegerField>>,
-);
+  ) as Record<CrawlerConfigFieldDef["key"], ReturnType<typeof optionalIntegerField>>),
+  translation_provider: z.enum([
+    TranslationProviders.GOOGLE_TRANSLATE,
+    TranslationProviders.AZURE,
+  ]),
+});
 
 export type CrawlerConfigFormValues = z.infer<typeof crawlerConfigFormSchema>;
+
+export const DEFAULT_TRANSLATION_PROVIDER: TranslationProvider =
+  TranslationProviders.GOOGLE_TRANSLATE;
 
 export function parseOptionalConfigNumber(
   value: string | undefined,

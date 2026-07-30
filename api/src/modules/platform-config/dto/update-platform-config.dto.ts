@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsNumber, IsOptional, Min, ValidateIf } from 'class-validator';
+import { IsEnum, IsInt, IsNumber, IsOptional, Min, ValidateIf } from 'class-validator';
+import { TranslationProvider } from 'generated/prisma';
 
 // Every field is nullable: null explicitly resets that setting back to its
 // in-code default (see PlatformConfigService.getCrawlerConfig), omitting
@@ -129,4 +130,40 @@ export class UpdatePlatformConfigDto {
   @IsNumber()
   @Min(0)
   dewatermark_cost_per_image?: number | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
+      'Cost (USD) per million characters for Google Translate cost logs; null resets to the in-code default ($20)',
+    example: 20,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsNumber()
+  @Min(0)
+  google_translate_cost_per_million_chars?: number | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
+      'Cost (USD) per million characters for Azure Translator cost logs; null resets to the in-code default ($10)',
+    example: 10,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsNumber()
+  @Min(0)
+  azure_translate_cost_per_million_chars?: number | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    enum: TranslationProvider,
+    description:
+      'Active translation provider for content publishing; null resets to Google Translate',
+    example: TranslationProvider.GOOGLE_TRANSLATE,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsEnum(TranslationProvider)
+  translation_provider?: TranslationProvider | null;
 }
