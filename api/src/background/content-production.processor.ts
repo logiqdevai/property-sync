@@ -36,9 +36,6 @@ export class ContentProductionProcessor
 
   async process(job: Job<ContentProductionJobData>): Promise<void> {
     const { job_log_id, user_property_id, total } = job.data;
-    this.logger.log(
-      `[process] job_log=${job_log_id} property=${user_property_id} attempt=${job.attemptsMade + 1}`,
-    );
 
     await this.ensureJobActive(job_log_id, job, total);
 
@@ -46,9 +43,6 @@ export class ContentProductionProcessor
       const item =
         await this.contentProductionJobService.processProperty(job.data);
       await this.recordItemResult(job_log_id, item, total);
-      this.logger.log(
-        `[process] job_log=${job_log_id} property=${user_property_id} status=${item.status}`,
-      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(

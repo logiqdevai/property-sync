@@ -97,7 +97,11 @@ export class PlatformConfigService {
   }
 
   async getTranslationProvider(): Promise<TranslationProvider> {
-    const row = await this.getCachedRow();
+    const row = await this.prisma.platformConfig.findUnique({
+      where: { id: SINGLETON_ID },
+      select: { translation_provider: true },
+    });
+    this.cachedAt = 0;
     return row?.translation_provider ?? DEFAULT_TRANSLATION_PROVIDER;
   }
 
@@ -114,10 +118,10 @@ export class PlatformConfigService {
     return (characterCount * costPerMillion) / 1_000_000;
   }
 
-  toIntegrationType(
-    provider: TranslationProvider,
+  toCostLogProvider(
+    provider: TranslationProvider | string,
   ): typeof IntegrationType.GOOGLE_TRANSLATE | typeof IntegrationType.AZURE {
-    return provider === TranslationProvider.AZURE
+    return provider === TranslationProvider.AZURE || provider === 'AZURE'
       ? IntegrationType.AZURE
       : IntegrationType.GOOGLE_TRANSLATE;
   }

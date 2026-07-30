@@ -649,10 +649,6 @@ export class UserPropertiesService {
       },
     });
 
-    this.logger.log(
-      `[produceContent] queued job_log=${jobLog.id} user=${userId} ids=${ownedIds.length} translations=${runTranslations} ai=${runAiTitles} batch=${useAiBatch} regenerate=${regenerate} pushToCrm=${pushToCrm}`,
-    );
-
     await this.contentProductionQueue.addBulk(
       ownedIds.map((userPropertyId) => {
         const jobData: ContentProductionJobData = {

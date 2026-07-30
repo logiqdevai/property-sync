@@ -79,13 +79,9 @@ export class ContentProductionService {
       where: { user_property_id: userPropertyId },
       data: { is_stale: true },
     });
-    this.logger.log(
-      `[markStale] userProperty=${userPropertyId} rows=${result.count}`,
-    );
   }
 
   async ensureReady(userPropertyId: string): Promise<void> {
-    this.logger.log(`[ensureReady] start userProperty=${userPropertyId}`);
     await this.produceForProperty(userPropertyId, { forceSyncAi: true });
   }
 
@@ -135,19 +131,12 @@ export class ContentProductionService {
     let translationsWritten = 0;
     let titlesWritten = 0;
 
-    this.logger.log(
-      `[produceForUserProperties] start ids=${uniqueIds.length} runTranslations=${runTranslations} runAiTitles=${runAiTitles} forceSyncAi=${forceSyncAi} forceBatchAi=${forceBatchAi} markStaleFirst=${options?.markStaleFirst === true} crawlRunId=${options?.crawlRunId ?? 'none'}`,
-    );
 
     if (options?.markStaleFirst) {
-      const staleResult =
-        await this.prisma.propertyLocalizedContent.updateMany({
-          where: { user_property_id: { in: uniqueIds } },
-          data: { is_stale: true },
-        });
-      this.logger.log(
-        `[produceForUserProperties] marked stale rows=${staleResult.count} for ${uniqueIds.length} properties`,
-      );
+      await this.prisma.propertyLocalizedContent.updateMany({
+        where: { user_property_id: { in: uniqueIds } },
+        data: { is_stale: true },
+      });
     }
 
     const properties = await this.prisma.userProperty.findMany({
@@ -165,9 +154,6 @@ export class ContentProductionService {
         property_type: true,
       },
     });
-    this.logger.log(
-      `[produceForUserProperties] loaded properties=${properties.length}/${uniqueIds.length}`,
-    );
 
     const propertyById = new Map(properties.map((p) => [p.id, p]));
     for (const id of uniqueIds) {
@@ -180,16 +166,8 @@ export class ContentProductionService {
     }
 
     const groups = await this.groupByTrackerConfig(properties);
-    this.logger.log(
-      `[produceForUserProperties] grouped into ${groups.length} tracker/config group(s)`,
-    );
 
     for (const group of groups) {
-      const groupPropertyIds = group.properties.map((p) => p.id).join(',');
-      this.logger.log(
-        `[produceForUserProperties] group userId=${group.userId} contentLanguage=${group.contentLanguage} configId=${group.config?.id ?? 'null'} configEnabled=${group.config?.is_enabled ?? false} aiTitlesEnabled=${group.config?.ai_titles_enabled ?? false} outputs=${group.config?.outputs?.length ?? 0} families=${group.config?.ai_title_families?.length ?? 0} properties=[${groupPropertyIds}] reason=${group.resolveReason}`,
-      );
-
       if (!group.config) {
         for (const property of group.properties) {
           const error =
@@ -220,9 +198,6 @@ export class ContentProductionService {
       if (runTranslations) {
         const translationProvider =
           await this.platformConfigService.getTranslationProvider();
-        this.logger.log(
-          `[produceForUserProperties] translations start for ${group.properties.length} properties provider=${translationProvider}`,
-        );
         for (const property of group.properties) {
           const written = await this.produceTranslations(
             property,
@@ -233,20 +208,10 @@ export class ContentProductionService {
           );
           translationsWritten += written;
           translationsByProperty.set(property.id, written);
-          this.logger.log(
-            `[produceForUserProperties] translations done property=${property.id} written=${written}`,
-          );
         }
-      } else {
-        this.logger.log(
-          `[produceForUserProperties] translations skipped (runTranslations=false)`,
-        );
       }
 
       if (!runAiTitles) {
-        this.logger.log(
-          `[produceForUserProperties] AI titles skipped (runAiTitles=false)`,
-        );
         for (const property of group.properties) {
           readyIds.add(property.id);
         }
@@ -254,9 +219,6 @@ export class ContentProductionService {
       }
 
       if (!group.config.ai_titles_enabled) {
-        this.logger.log(
-          `[produceForUserProperties] AI titles disabled on config=${group.config.id}; marking ready after translations`,
-        );
         for (const property of group.properties) {
           readyIds.add(property.id);
         }
@@ -264,9 +226,6 @@ export class ContentProductionService {
       }
 
       const families = group.config.ai_title_families.filter((f) => f.is_enabled);
-      this.logger.log(
-        `[produceForUserProperties] AI families enabled=${families.length}/${group.config.ai_title_families.length}`,
-      );
 
       if (!families.length) {
         for (const property of group.properties) {
@@ -338,9 +297,6 @@ export class ContentProductionService {
           )
           .map((o) => o.language);
 
-        this.logger.log(
-          `[produceForUserProperties] family="${family.name}" id=${family.id} model=${family.model ?? 'default'} use_batch=${family.use_batch} writingLanguage=${family.writing_language ?? group.contentLanguage} targetLanguages=[${targetLanguages.join(',')}]`,
-        );
 
         if (!targetLanguages.length) {
           this.logger.warn(
@@ -359,16 +315,10 @@ export class ContentProductionService {
             property.id,
             (aiNeededAny.get(property.id) ?? false) || needs,
           );
-          this.logger.log(
-            `[produceForUserProperties] needsAiWork property=${property.id} family="${family.name}" langs=[${targetLanguages.join(',')}] needs=${needs}`,
-          );
           if (needs) needingWork.push(property);
         }
 
         if (!needingWork.length) {
-          this.logger.log(
-            `[produceForUserProperties] family="${family.name}" no properties need AI work`,
-          );
           continue;
         }
 
@@ -378,9 +328,6 @@ export class ContentProductionService {
             ? false
             : (family.use_batch ?? group.config.use_ai_batch);
 
-        this.logger.log(
-          `[produceForUserProperties] family="${family.name}" mode=${useBatch ? 'batch' : 'sync'} needing=${needingWork.length}`,
-        );
 
         if (useBatch) {
           const apiKey = await this.resolveOpenAiApiKey(group.userId);
@@ -394,9 +341,6 @@ export class ContentProductionService {
               changeTypes[property.id] =
                 options?.changeTypesByPropertyId?.[property.id] ?? 'UPDATE';
             }
-            this.logger.log(
-              `[produceForUserProperties] submitting OpenAI batch family="${family.name}" items=${needingWork.length}`,
-            );
             await this.aiTitleBatchService.submitFamilyBatch({
               configId: group.config.id,
               familyId: family.id,
@@ -421,18 +365,12 @@ export class ContentProductionService {
               pendingForGroup.add(property.id);
               pendingBatchIds.add(property.id);
             }
-            this.logger.log(
-              `[produceForUserProperties] batch submitted family="${family.name}" pending=[${needingWork.map((p) => p.id).join(',')}]`,
-            );
             continue;
           }
         }
 
         try {
           const apiKey = await this.resolveOpenAiApiKey(group.userId);
-          this.logger.log(
-            `[produceForUserProperties] sync AI generate start family="${family.name}" items=${needingWork.length} hasUserApiKey=${Boolean(apiKey)} writing=${writingLanguage}`,
-          );
           const generated =
             await this.aiTitleFamilyService.generateTitlesForProperties({
               sourceLanguage: group.contentLanguage,
@@ -450,17 +388,11 @@ export class ContentProductionService {
               })),
             });
 
-          this.logger.log(
-            `[produceForUserProperties] sync AI generate response properties=${generated.size} family="${family.name}"`,
-          );
 
           for (const property of needingWork) {
             const titles = generated.get(property.id) ?? {};
             const langs = Object.entries(titles).filter(
               ([, text]) => Boolean(text?.trim()),
-            );
-            this.logger.log(
-              `[produceForUserProperties] AI titles property=${property.id} family="${family.name}" returnedLangs=[${langs.map(([l]) => l).join(',')}] count=${langs.length}`,
             );
 
             if (!langs.length) {
@@ -484,9 +416,6 @@ export class ContentProductionService {
                 property.id,
                 (titlesByProperty.get(property.id) ?? 0) + 1,
               );
-              this.logger.log(
-                `[produceForUserProperties] upserted AI title property=${property.id} lang=${language} chars=${text!.length}`,
-              );
             }
           }
         } catch (error) {
@@ -508,9 +437,6 @@ export class ContentProductionService {
       for (const property of group.properties) {
         if (pendingForGroup.has(property.id)) {
           pendingBatchIds.add(property.id);
-          this.logger.log(
-            `[produceForUserProperties] property=${property.id} status=pending_batch translations=${translationsByProperty.get(property.id) ?? 0}`,
-          );
           continue;
         }
 
@@ -536,9 +462,6 @@ export class ContentProductionService {
         }
 
         readyIds.add(property.id);
-        this.logger.log(
-          `[produceForUserProperties] property=${property.id} status=ready translations=${translationsByProperty.get(property.id) ?? 0} titles=${writtenTitles}`,
-        );
       }
     }
 
@@ -561,9 +484,6 @@ export class ContentProductionService {
       titlesWritten,
     };
 
-    this.logger.log(
-      `[produceForUserProperties] done ready=${result.readyIds.length} pendingBatch=${result.pendingBatchIds.length} failed=${result.failed.length} translationsWritten=${translationsWritten} titlesWritten=${titlesWritten}`,
-    );
     if (result.failed.length) {
       this.logger.warn(
         `[produceForUserProperties] failures=${JSON.stringify(result.failed)}`,
@@ -578,9 +498,6 @@ export class ContentProductionService {
     readyIds: string[];
     changeTypesByPropertyId: Record<string, string>;
   }> {
-    this.logger.log(
-      `[getReadyPropertyIdsAfterTitleBatch] batchId=${batchId}`,
-    );
     const run = await this.prisma.aiBatchRun.findUnique({
       where: { openai_batch_id: batchId },
     });
@@ -634,9 +551,6 @@ export class ContentProductionService {
     }
 
     const readyIds = propertyIds.filter((id) => !blocked.has(id));
-    this.logger.log(
-      `[getReadyPropertyIdsAfterTitleBatch] crawlRunId=${run.crawl_run_id} ready=${readyIds.length} blocked=${blocked.size}`,
-    );
 
     return {
       crawlRunId: run.crawl_run_id,
@@ -735,9 +649,6 @@ export class ContentProductionService {
     }
     const dedupedJobs = [...uniqueJobs.values()];
 
-    this.logger.log(
-      `[produceTranslations] property=${userProperty.id} jobs=${dedupedJobs.length} outputs=${config.outputs.length}`,
-    );
 
     let written = 0;
     for (const job of dedupedJobs) {
@@ -751,18 +662,14 @@ export class ContentProductionService {
         },
       });
       if (existing && !existing.is_stale && existing.text?.trim()) {
-        this.logger.log(
-          `[produceTranslations] skip fresh property=${userProperty.id} ${job.contentType}/${job.language}`,
-        );
         continue;
       }
 
       try {
-        this.logger.log(
-          `[produceTranslations] translating property=${userProperty.id} ${job.contentType} ${contentLanguage}->${job.language} chars=${job.sourceText.length} provider=${translationProvider}`,
-        );
+        const costProvider =
+          this.platformConfigService.toCostLogProvider(translationProvider);
         const text =
-          translationProvider === TranslationProvider.AZURE
+          costProvider === IntegrationType.AZURE
             ? await this.azureTranslationService.translate(
                 userId,
                 job.sourceText,
@@ -781,8 +688,6 @@ export class ContentProductionService {
           production: 'TRANSLATE',
           text,
         });
-        const costProvider =
-          this.platformConfigService.toIntegrationType(translationProvider);
         const totalCost = await this.platformConfigService.getTranslateCost(
           costProvider,
           job.sourceText.length,
@@ -797,13 +702,10 @@ export class ContentProductionService {
           metadata: {
             content_type: job.contentType,
             target_language: job.language,
-            translation_provider: translationProvider,
+            translation_provider: costProvider,
           },
         });
         written += 1;
-        this.logger.log(
-          `[produceTranslations] wrote property=${userProperty.id} ${job.contentType}/${job.language} chars=${text.length}`,
-        );
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         this.logger.error(
@@ -874,16 +776,10 @@ export class ContentProductionService {
       },
       orderBy: [{ is_default: 'desc' }, { created_at: 'asc' }],
     });
-    this.logger.log(
-      `[resolveOpenAiApiKey] userId=${userId} found=${Boolean(integration?.api_key_secret)} integrationId=${integration?.id ?? 'none'}`,
-    );
     return integration?.api_key_secret ?? null;
   }
 
   private async resolveContextForProperty(userProperty: PropertyContentRow) {
-    this.logger.log(
-      `[resolveContext] property=${userProperty.id} canonical=${userProperty.canonical_property_id} user=${userProperty.user_id}`,
-    );
 
     const canonical = await this.prisma.property.findUnique({
       where: { id: userProperty.canonical_property_id },
@@ -958,9 +854,6 @@ export class ContentProductionService {
     }
 
     const config = tracker.content_publishing_config;
-    this.logger.log(
-      `[resolveContext] property=${userProperty.id} tracker=${tracker.id} sourceAgency=${sourceAgencyId} contentLanguage=${tracker.source_agency.content_language} configId=${config?.id ?? 'null'} enabled=${config?.is_enabled ?? false} outputs=${config?.outputs?.length ?? 0} families=${config?.ai_title_families?.length ?? 0}`,
-    );
 
     return {
       trackerId: tracker.id,

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
@@ -11,8 +11,6 @@ import {
 
 @Injectable()
 export class ContentProductionJobService {
-  private readonly logger = new Logger(ContentProductionJobService.name);
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly contentProductionService: ContentProductionService,
@@ -106,9 +104,6 @@ export class ContentProductionJobService {
         property.canonical_property_id,
       );
 
-      this.logger.log(
-        `[processProperty] pushUpdate property=${data.user_property_id} integration=${userIntegrationId}`,
-      );
       await this.estateWebCmsSyncAdapter.pushUpdate(
         userIntegrationId,
         property.integration_property_id,
