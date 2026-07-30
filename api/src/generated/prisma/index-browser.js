@@ -380,6 +380,15 @@ exports.Prisma.NotificationScalarFieldEnum = {
   created_at: 'created_at'
 };
 
+exports.Prisma.NotificationSettingScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  enabled: 'enabled',
+  min_severity: 'min_severity',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.CmsSyncRunScalarFieldEnum = {
   id: 'id',
   crawl_run_id: 'crawl_run_id',
@@ -972,6 +981,7 @@ exports.Prisma.ModelName = {
   DiagnosticsArtifact: 'DiagnosticsArtifact',
   JobLog: 'JobLog',
   Notification: 'Notification',
+  NotificationSetting: 'NotificationSetting',
   CmsSyncRun: 'CmsSyncRun',
   SourceProperty: 'SourceProperty',
   Property: 'Property',

@@ -35,6 +35,7 @@ export const NotificationTypeLabels: Record<NotificationType, string> = {
   [NotificationTypes.ESTATEWEB_INVALID_PROPERTY_ID]: "invalid property id",
   [NotificationTypes.ESTATEWEB_LINK_NOT_FOUND]: "link not found",
   [NotificationTypes.ESTATEWEB_SESSION_PERSIST_FAILED]: "session persist failed",
+  [NotificationTypes.AI_NORMALIZATION_FAILURE]: "AI normalization failure",
 };
 
 export function getNotificationTypeLabel(type: NotificationType | string): string {

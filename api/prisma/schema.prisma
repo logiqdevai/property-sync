@@ -785,6 +785,19 @@ model Notification {
   @@map("notifications")
 }
 
+// Per-type outbound alerting preference. A missing row means "enabled at INFO"
+// (the same as an explicit row with defaults) -- see NotificationSettingsService.
+model NotificationSetting {
+  id           String               @id @default(uuid())
+  type         NotificationType     @unique
+  enabled      Boolean              @default(true)
+  min_severity NotificationSeverity @default(INFO)
+  created_at   DateTime             @default(now())
+  updated_at   DateTime             @updatedAt
+
+  @@map("notification_settings")
+}
+
 // New: spec section 15 -- one batch push of affected properties to a single
 // UserIntegration (e.g. one EstateWeb account). NOT one row per property: total_created/
 // total_updated/total_removed/total_linked/total_failed hold the outcome breakdown for the whole batch.

@@ -21,6 +21,7 @@ import { UserPropertiesModule } from './modules/user-properties/user-properties.
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { IntegrationTargetsModule } from './modules/integration-targets/integration-targets.module';
 import { PlatformConfigModule } from './modules/platform-config/platform-config.module';
+import { NotificationSettingsModule } from './modules/notification-settings/notification-settings.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { UserDashboardModule } from './modules/user-dashboard/user-dashboard.module';
 import { EstateWebAdminModule } from './modules/estateweb/estateweb-admin.module';
@@ -57,6 +58,7 @@ import { CostLogsModule } from './modules/cost-logs/cost-logs.module';
     UserTrackedAgenciesModule,
     UserPropertiesModule,
     NotificationsModule,
+    NotificationSettingsModule,
     IntegrationTargetsModule,
     PlatformConfigModule,
     DashboardModule,

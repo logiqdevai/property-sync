@@ -157,6 +157,10 @@ export const ApiRoutes = {
         platformConfig: {
             root: "/admin/platform-config",
         },
+        notificationSettings: {
+            list: "/admin/notification-settings",
+            detail: (type: string) => `/admin/notification-settings/${type}`,
+        },
         users: {
             prefix: "/admin/users",
             list: "/admin/users",

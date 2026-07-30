@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { TelegramService } from '@/integrations/notifications/telegram/services/telegram.service';
+import { NotificationSettingsService } from '@/modules/notification-settings/notification-settings.service';
 import { NotificationQueryType } from './dto/notification-query.schema';
 import {
   CreateNotificationInput,
@@ -15,6 +16,7 @@ export class NotificationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly telegramService: TelegramService,
+    private readonly notificationSettingsService: NotificationSettingsService,
   ) {}
 
   create(input: CreateNotificationInput): void {
@@ -25,7 +27,14 @@ export class NotificationsService {
         });
 
         try {
-          await this.telegramService.sendNotification(notification);
+          const shouldSend = await this.notificationSettingsService.shouldSend(
+            notification.type,
+            notification.severity,
+          );
+
+          if (shouldSend) {
+            await this.telegramService.sendNotification(notification);
+          }
         } catch (error) {
           const message =
             error instanceof Error ? error.message : String(error);
