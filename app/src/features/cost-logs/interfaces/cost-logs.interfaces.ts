@@ -18,6 +18,7 @@ export const CostProviders = {
   DEEPSEEK: "DEEPSEEK",
   DEWATERMARK: "DEWATERMARK",
   GOOGLE_TRANSLATE: "GOOGLE_TRANSLATE",
+  AZURE: "AZURE",
 } as const;
 
 export type CostProvider = (typeof CostProviders)[keyof typeof CostProviders];

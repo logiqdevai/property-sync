@@ -719,7 +719,8 @@ exports.IntegrationType = exports.$Enums.IntegrationType = {
   GEMINI: 'GEMINI',
   DEEPSEEK: 'DEEPSEEK',
   DEWATERMARK: 'DEWATERMARK',
-  GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE'
+  GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE',
+  AZURE: 'AZURE'
 };
 
 exports.AuthType = exports.$Enums.AuthType = {

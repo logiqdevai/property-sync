@@ -481,7 +481,8 @@ export const IntegrationType: {
   GEMINI: 'GEMINI',
   DEEPSEEK: 'DEEPSEEK',
   DEWATERMARK: 'DEWATERMARK',
-  GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE'
+  GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE',
+  AZURE: 'AZURE'
 };
 
 export type IntegrationType = (typeof IntegrationType)[keyof typeof IntegrationType]

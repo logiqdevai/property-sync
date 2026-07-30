@@ -28,6 +28,14 @@ export const IntegrationTypeDescriptionOptions: { id: IntegrationType; descripti
     id: IntegrationTypes.DEWATERMARK,
     description: "Remove watermarks from listing images with your Dewatermark API key.",
   },
+  {
+    id: IntegrationTypes.GOOGLE_TRANSLATE,
+    description: "Translate listing content with Google Cloud Translation.",
+  },
+  {
+    id: IntegrationTypes.AZURE,
+    description: "Translate listing content with Azure Translator.",
+  },
 ];
 
 export function getIntegrationTypeDescription(type: IntegrationType | string): string {

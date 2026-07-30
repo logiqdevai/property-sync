@@ -217,6 +217,7 @@ enum IntegrationType {
   DEEPSEEK
   DEWATERMARK
   GOOGLE_TRANSLATE
+  AZURE
 }
 
 // New: unified cost logging -- what kind of billable operation incurred the cost.

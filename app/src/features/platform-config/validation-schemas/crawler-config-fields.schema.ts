@@ -1,5 +1,41 @@
 import { z } from "zod";
 
+export const CrawlerConfigGroups = {
+  LISTING_CRAWL: "listing_crawl",
+  DETAIL_ENRICHMENT: "detail_enrichment",
+  WORKER: "worker",
+  AI_AND_COSTS: "ai_and_costs",
+} as const;
+
+export type CrawlerConfigGroup = (typeof CrawlerConfigGroups)[keyof typeof CrawlerConfigGroups];
+
+export const CRAWLER_CONFIG_GROUP_ORDER: {
+  id: CrawlerConfigGroup;
+  label: string;
+  description: string;
+}[] = [
+  {
+    id: CrawlerConfigGroups.LISTING_CRAWL,
+    label: "Listing crawl",
+    description: "Pagination, timeouts, and scroll behavior for listing pages.",
+  },
+  {
+    id: CrawlerConfigGroups.DETAIL_ENRICHMENT,
+    label: "Detail enrichment",
+    description: "Concurrency and pacing when opening individual listing detail pages.",
+  },
+  {
+    id: CrawlerConfigGroups.WORKER,
+    label: "Crawl worker",
+    description: "Job throughput, timeouts, and Chromium process recycling.",
+  },
+  {
+    id: CrawlerConfigGroups.AI_AND_COSTS,
+    label: "AI & costs",
+    description: "Normalization AI input limits and per-image cost attribution.",
+  },
+];
+
 export interface CrawlerConfigFieldDef {
   key:
     | "crawler_max_pages"
@@ -13,6 +49,7 @@ export interface CrawlerConfigFieldDef {
     | "crawler_chromium_max_contexts_before_restart"
     | "normalization_ai_raw_description_max_chars"
     | "dewatermark_cost_per_image";
+  group: CrawlerConfigGroup;
   label: string;
   defaultValue: number;
   min: number;
@@ -24,6 +61,7 @@ export interface CrawlerConfigFieldDef {
 export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
   {
     key: "crawler_max_pages",
+    group: CrawlerConfigGroups.LISTING_CRAWL,
     label: "Max pages",
     defaultValue: 50,
     min: 1,
@@ -31,6 +69,7 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
   },
   {
     key: "crawler_page_timeout_ms",
+    group: CrawlerConfigGroups.LISTING_CRAWL,
     label: "Page timeout (ms)",
     defaultValue: 30_000,
     min: 1,
@@ -38,6 +77,7 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
   },
   {
     key: "crawler_selector_timeout_ms",
+    group: CrawlerConfigGroups.LISTING_CRAWL,
     label: "Selector timeout (ms)",
     defaultValue: 15_000,
     min: 1,
@@ -45,6 +85,7 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
   },
   {
     key: "crawler_scroll_pause_ms",
+    group: CrawlerConfigGroups.LISTING_CRAWL,
     label: "Scroll pause (ms)",
     defaultValue: 1_500,
     min: 0,
@@ -52,6 +93,7 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
   },
   {
     key: "crawler_detail_concurrency",
+    group: CrawlerConfigGroups.DETAIL_ENRICHMENT,
     label: "Detail concurrency",
     defaultValue: 3,
     min: 1,
@@ -59,6 +101,7 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
   },
   {
     key: "crawler_detail_delay_ms",
+    group: CrawlerConfigGroups.DETAIL_ENRICHMENT,
     label: "Detail delay (ms)",
     defaultValue: 500,
     min: 0,
@@ -66,6 +109,7 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
   },
   {
     key: "crawler_worker_concurrency",
+    group: CrawlerConfigGroups.WORKER,
     label: "Crawl worker concurrency",
     defaultValue: 5,
     min: 1,
@@ -73,6 +117,7 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
   },
   {
     key: "crawler_job_timeout_ms",
+    group: CrawlerConfigGroups.WORKER,
     label: "Crawl job timeout (ms)",
     defaultValue: 1_800_000,
     min: 1,
@@ -80,6 +125,7 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
   },
   {
     key: "crawler_chromium_max_contexts_before_restart",
+    group: CrawlerConfigGroups.WORKER,
     label: "Chromium max contexts before restart",
     defaultValue: 250,
     min: 1,
@@ -87,6 +133,7 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
   },
   {
     key: "normalization_ai_raw_description_max_chars",
+    group: CrawlerConfigGroups.AI_AND_COSTS,
     label: "AI raw description max chars",
     defaultValue: 2000,
     min: 100,
@@ -94,6 +141,7 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
   },
   {
     key: "dewatermark_cost_per_image",
+    group: CrawlerConfigGroups.AI_AND_COSTS,
     label: "Dewatermark cost per image (USD)",
     defaultValue: 0.02,
     min: 0,
