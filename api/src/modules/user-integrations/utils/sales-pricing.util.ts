@@ -101,9 +101,62 @@ export function pickSalePercentage(
   return Math.round(step * SALE_PERCENTAGE_STEP * 100) / 100;
 }
 
-export function computeSalePriceStart(price: number, pct: number): number {
+export function computeSalePriceStart(
+  price: number,
+  pct: number,
+): number | null {
+  if (!Number.isFinite(price) || price < CLEAN_PRICE_STEP) {
+    return null;
+  }
+  if (!Number.isFinite(pct) || pct < 0) {
+    return null;
+  }
+
   const rawPriceStart = price * (1 + pct);
-  return Math.round(rawPriceStart / CLEAN_PRICE_STEP) * CLEAN_PRICE_STEP;
+  let rounded =
+    Math.round(rawPriceStart / CLEAN_PRICE_STEP) * CLEAN_PRICE_STEP;
+
+  if (rounded <= price) {
+    rounded =
+      Math.ceil((price + CLEAN_PRICE_STEP) / CLEAN_PRICE_STEP) *
+      CLEAN_PRICE_STEP;
+  }
+
+  if (rounded <= price) {
+    return null;
+  }
+
+  return rounded;
+}
+
+export function resolveSaleBasePrice(
+  price: number | null | undefined | Prisma.Decimal,
+  priceWeb?: number | null | undefined | Prisma.Decimal,
+  squareMeters?: number | null | undefined | Prisma.Decimal,
+): number | null {
+  const p = toFiniteNumber(price);
+  const w = toFiniteNumber(priceWeb);
+  const sqm = toFiniteNumber(squareMeters);
+
+  const webLooksLikeListing = w != null && w >= CLEAN_PRICE_STEP;
+  const priceLooksLikeMisparsedSqm =
+    p != null &&
+    webLooksLikeListing &&
+    w! / p >= 10 &&
+    ((sqm != null && sqm > 0 && Math.abs(p - sqm) / sqm <= 0.25) ||
+      p < 20_000);
+
+  if (priceLooksLikeMisparsedSqm) {
+    return w!;
+  }
+
+  if (p != null && p >= CLEAN_PRICE_STEP) {
+    return p;
+  }
+  if (webLooksLikeListing) {
+    return w!;
+  }
+  return null;
 }
 
 export function hasValidSalePriceStart(
@@ -129,7 +182,7 @@ export function shouldApplySalesPriceStart(
   }
 
   const priceNum = toFiniteNumber(price);
-  if (priceNum == null || priceNum <= 0) {
+  if (priceNum == null || priceNum < CLEAN_PRICE_STEP) {
     return false;
   }
 

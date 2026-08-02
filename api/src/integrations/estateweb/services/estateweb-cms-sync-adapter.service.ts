@@ -35,6 +35,7 @@ import {
   computeSalePriceStart,
   hasValidSalePriceStart,
   pickSalePercentage,
+  resolveSaleBasePrice,
   resolveSalesPricingSettings,
   shouldApplySalesPriceStart,
 } from '@/modules/user-integrations/utils/sales-pricing.util';
@@ -672,11 +673,17 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     ]);
 
     const sales = resolveSalesPricingSettings(integration?.settings?.settings);
+    const basePrice = resolveSaleBasePrice(
+      userProperty.price,
+      userProperty.price_web,
+      userProperty.square_meters,
+    );
     if (
+      basePrice == null ||
       !shouldApplySalesPriceStart(
         canonical?.price_start,
         sales,
-        userProperty.price,
+        basePrice,
         forceRecalc,
       )
     ) {
@@ -685,18 +692,23 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
     if (
       !forceRecalc &&
-      hasValidSalePriceStart(userProperty.price_start, userProperty.price)
+      hasValidSalePriceStart(userProperty.price_start, basePrice)
     ) {
       return;
     }
 
-    const price = Number(userProperty.price);
     const pct = pickSalePercentage(
       sales.sale_percentage_start,
       sales.sale_percentage_end,
       userProperty.id,
     );
-    const nextPriceStart = computeSalePriceStart(price, pct);
+    const nextPriceStart = computeSalePriceStart(basePrice, pct);
+    if (nextPriceStart == null) {
+      this.logger.warn(
+        `Skipping sales price_start for property=${userProperty.id}: base=${basePrice} produced invalid start`,
+      );
+      return;
+    }
 
     await this.prisma.userProperty.update({
       where: { id: userProperty.id },
@@ -715,13 +727,26 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     useSitesAsProvided = false,
     adMaps?: EstateWebAdLanguageMaps,
   ): EstateWebPropertyPayload {
-    const price = userProperty?.price ? Number(userProperty.price) : 0;
-    const priceStart = userProperty?.price_start
-      ? Number(userProperty.price_start)
-      : price;
-    const priceWeb = userProperty?.price_web
-      ? Number(userProperty.price_web)
-      : price;
+    const price =
+      resolveSaleBasePrice(
+        userProperty?.price,
+        userProperty?.price_web,
+        userProperty?.square_meters,
+      ) ?? (userProperty?.price ? Number(userProperty.price) : 0);
+    const priceStartRaw =
+      userProperty?.price_start != null
+        ? Number(userProperty.price_start)
+        : NaN;
+    const priceStart =
+      Number.isFinite(priceStartRaw) && priceStartRaw > price
+        ? priceStartRaw
+        : price;
+    const priceWebRaw =
+      userProperty?.price_web != null ? Number(userProperty.price_web) : NaN;
+    const priceWeb =
+      Number.isFinite(priceWebRaw) && priceWebRaw >= price
+        ? priceWebRaw
+        : price;
     const title = userProperty?.title ?? '';
     const description = userProperty?.description ?? '';
     const latLng = this.buildLatLng(userProperty);
