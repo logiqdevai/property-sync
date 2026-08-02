@@ -1,4 +1,4 @@
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, Label, Input, FieldError, Select, ListBox } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -27,7 +27,7 @@ export function AgencyForm({ defaultValues, submitLabel, isPending, onSubmit, on
     handleSubmit,
     formState: { errors },
   } = useForm<AgencyFormValues>({
-    resolver: zodResolver(agencyFormSchema),
+    resolver: zodResolver(agencyFormSchema) as Resolver<AgencyFormValues>,
     defaultValues: {
       name: defaultValues?.name ?? "",
       base_url: defaultValues?.base_url ?? "",

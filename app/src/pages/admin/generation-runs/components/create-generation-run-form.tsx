@@ -1,4 +1,4 @@
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, Label, TextArea, Input, FieldError, Select, ListBox } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -38,7 +38,7 @@ export function CreateGenerationRunForm({
     control,
     formState: { errors },
   } = useForm<CreateGenerationRunFormValues>({
-    resolver: zodResolver(createGenerationRunFormSchema),
+    resolver: zodResolver(createGenerationRunFormSchema) as Resolver<CreateGenerationRunFormValues>,
     defaultValues: {
       source_agency_id: defaultAgencyId ?? "",
       scraper_id: defaultScraperId,
