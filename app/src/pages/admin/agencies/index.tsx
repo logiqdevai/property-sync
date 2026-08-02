@@ -26,6 +26,7 @@ import {
   useDeleteAgency,
   useUpdateAgencyVisibility,
 } from "@/features/agencies/hooks/use-agencies";
+import { toAgencyBlockHandlingPayload } from "@/features/agencies/validation-schemas/agencies.schema";
 import type { AgencyListQuery, SourceAgency } from "@/features/agencies/interfaces/agencies.interfaces";
 import {
   AgencyVisibilityFilterOptions,
@@ -292,21 +293,43 @@ export default function AgenciesListPage() {
 
       <Modal state={createModal}>
         <Modal.Backdrop isDismissable>
-          <Modal.Container>
+          <Modal.Container size="lg">
             <Modal.Dialog>
               <Modal.Header>
                 <Modal.Heading>New agency</Modal.Heading>
               </Modal.Header>
-              <Modal.Body>
+              <Modal.Body className="max-h-[70vh] overflow-y-auto">
                 <AgencyForm
                   submitLabel="Create"
                   isPending={createAgency.isPending}
                   onCancel={createModal.close}
-                  onSubmit={(values) =>
-                    createAgency.mutate(values, {
-                      onSuccess: () => createModal.close(),
-                    })
-                  }
+                  onSubmit={(values) => {
+                    const blockHandling = toAgencyBlockHandlingPayload(values);
+                    createAgency.mutate(
+                      {
+                        name: values.name,
+                        base_url: values.base_url,
+                        country: values.country,
+                        city: values.city,
+                        notes: values.notes,
+                        content_language: values.content_language,
+                        crawl_interval: values.crawl_interval,
+                        ...(blockHandling.block_handling_wait_timeout_ms != null && {
+                          block_handling_wait_timeout_ms:
+                            blockHandling.block_handling_wait_timeout_ms,
+                        }),
+                        ...(blockHandling.block_handling_min_ready_body_length !=
+                          null && {
+                          block_handling_min_ready_body_length:
+                            blockHandling.block_handling_min_ready_body_length,
+                        }),
+                        ...(blockHandling.block_rules.length > 0 && {
+                          block_rules: blockHandling.block_rules,
+                        }),
+                      },
+                      { onSuccess: () => createModal.close() },
+                    );
+                  }}
                 />
               </Modal.Body>
             </Modal.Dialog>

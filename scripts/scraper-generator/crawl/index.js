@@ -4,6 +4,7 @@ import { ROOT_DIR, OUTPUT_DIR, NORMALIZATION_CACHE_PATH } from './config.js';
 import { uuid, now, contentHash } from './utils.js';
 import { runCrawl } from './crawler.js';
 import { enrichDetailPages } from './detail.js';
+import { resolveBlockHandlingConfigForUrl } from './block-handling.js';
 import { normalizeWithAI, buildPropertyRecord } from './normalize.js';
 import { detectDuplicates } from './duplicates.js';
 import { buildCostReport, emptyUsage } from './cost.js';
@@ -62,12 +63,14 @@ async function main() {
   console.log(`  Pagination: ${config.pagination?.type ?? 'none'}`);
   console.log(`  Output:     ${OUTPUT_DIR}\n`);
 
+  const blockHandlingConfig = await resolveBlockHandlingConfigForUrl(config.start_url);
+
   console.log('[ Phase 1: Crawl ]');
-  const { items, steps, success, errorSummary } = await runCrawl(config);
+  const { items, steps, success, errorSummary } = await runCrawl(config, blockHandlingConfig);
   console.log(`  Extracted ${items.length} raw listings\n`);
 
   console.log('[ Phase 1b: Detail Page Enrichment ]');
-  await enrichDetailPages(items, config.detail_page ?? null);
+  await enrichDetailPages(items, config.detail_page ?? null, blockHandlingConfig);
   console.log();
 
   console.log('[ Phase 2: SourceProperty ]');

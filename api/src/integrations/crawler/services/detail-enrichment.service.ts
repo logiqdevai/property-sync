@@ -11,6 +11,8 @@ import {
   CrawlItem,
   DetailPageConfig,
 } from '../interfaces/scraper-config.interface';
+import { waitForBotChallengeClearance } from '../block-handling/block-handling.utils';
+import { BlockHandlingConfig } from '../block-handling/block-handling.interface';
 import { StealthBrowserService } from './stealth-browser.service';
 
 interface DetailEnrichmentResult {
@@ -28,6 +30,7 @@ interface DetailEnrichmentResult {
 export interface DetailEnrichmentOptions {
   deadlineAt?: number;
   onBatchComplete?: () => void | Promise<void>;
+  blockHandlingConfig?: BlockHandlingConfig;
 }
 
 @Injectable()
@@ -71,6 +74,7 @@ export class DetailEnrichmentService {
             detailConfig,
             page_timeout_ms,
             sourceAgencyId,
+            options?.blockHandlingConfig,
           ),
         ),
       );
@@ -118,6 +122,7 @@ export class DetailEnrichmentService {
     detailConfig: DetailPageConfig | null | undefined,
     pageTimeoutMs: number,
     sourceAgencyId?: string,
+    blockHandlingConfig?: BlockHandlingConfig,
   ): Promise<DetailEnrichmentResult> {
     const empty: DetailEnrichmentResult = {
       images: [],
@@ -138,11 +143,15 @@ export class DetailEnrichmentService {
         timeout: pageTimeoutMs,
       });
 
+      await waitForBotChallengeClearance(
+        page,
+        blockHandlingConfig,
+        Math.min(15_000, pageTimeoutMs),
+      );
+
       if (response && !response.ok()) {
         return { ...empty, error: `HTTP ${response.status()}` };
       }
-
-      await page.waitForTimeout(1000);
 
       const extracted = await page.evaluate((cfg) => {
         const images: string[] = [];

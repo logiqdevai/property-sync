@@ -1,29 +1,40 @@
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
 import { API_SCREENSHOT_JPEG_QUALITY } from '../constants/generation.constants';
 import { GenerationAction } from '../interfaces/computer-use.interface';
+import {
+  STEALTH_CONTEXT_OPTIONS,
+  STEALTH_LAUNCH_ARGS,
+  applyStealthInitScript,
+} from '@/integrations/crawler/utils/stealth.utils';
+import { waitForBotChallengeClearance } from '@/integrations/crawler/block-handling/block-handling.utils';
+import { BlockHandlingConfig } from '@/integrations/crawler/block-handling/block-handling.interface';
 
-/**
- * One instance = one generation run's browser session (launch -> steps -> close).
- * Instantiated directly with `new` per run by the orchestrator rather than injected as a
- * singleton, since it holds mutable per-session state (active page/tab) that concurrent
- * runs must not share.
- */
 export class PlaywrightDriverService {
   private browser: Browser | null = null;
   private context: BrowserContext | null = null;
   private page: Page | null = null;
+  private blockHandlingConfig: BlockHandlingConfig | undefined;
 
-  async launch(url: string): Promise<void> {
-    this.browser = await chromium.launch({ headless: true });
+  async launch(
+    url: string,
+    blockHandlingConfig?: BlockHandlingConfig,
+  ): Promise<void> {
+    this.blockHandlingConfig = blockHandlingConfig;
+    this.browser = await chromium.launch({
+      headless: true,
+      args: [...STEALTH_LAUNCH_ARGS],
+    });
     this.context = await this.browser.newContext({
+      ...STEALTH_CONTEXT_OPTIONS,
       viewport: { width: 1280, height: 800 },
     });
+    await applyStealthInitScript(this.context);
     this.page = await this.context.newPage();
     await this.page.goto(url, {
       waitUntil: 'domcontentloaded',
       timeout: 30000,
     });
-    await this.page.waitForTimeout(2000);
+    await waitForBotChallengeClearance(this.page, this.blockHandlingConfig);
   }
 
   get currentPage(): Page {
@@ -70,7 +81,11 @@ export class PlaywrightDriverService {
           await newPage
             .waitForLoadState('domcontentloaded', { timeout: 15000 })
             .catch(() => {});
-          await newPage.waitForTimeout(1000);
+          await waitForBotChallengeClearance(
+            newPage,
+            this.blockHandlingConfig,
+            15000,
+          );
           await newPage.bringToFront();
           this.page = newPage;
           return newPage;
@@ -78,14 +93,22 @@ export class PlaywrightDriverService {
         await page
           .waitForLoadState('domcontentloaded', { timeout: 15000 })
           .catch(() => {});
-        await page.waitForTimeout(1500);
+        await waitForBotChallengeClearance(
+          page,
+          this.blockHandlingConfig,
+          15000,
+        );
         return page;
       }
       case 'go_back':
         await page
           .goBack({ timeout: 15000, waitUntil: 'domcontentloaded' })
           .catch(() => {});
-        await page.waitForTimeout(1500);
+        await waitForBotChallengeClearance(
+          page,
+          this.blockHandlingConfig,
+          15000,
+        );
         return page;
       case 'close_tab': {
         const pages = context.pages();
@@ -116,7 +139,7 @@ export class PlaywrightDriverService {
           waitUntil: 'domcontentloaded',
           timeout: 30000,
         });
-        await page.waitForTimeout(2000);
+        await waitForBotChallengeClearance(page, this.blockHandlingConfig);
         return page;
       case 'wait':
         await page.waitForTimeout(3000);

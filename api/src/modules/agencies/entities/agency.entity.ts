@@ -40,6 +40,28 @@ export class Agency {
   @ApiProperty({ nullable: true })
   last_error_message: string | null;
 
+  @ApiProperty({ nullable: true })
+  block_handling_wait_timeout_ms: number | null;
+
+  @ApiProperty({ nullable: true })
+  block_handling_min_ready_body_length: number | null;
+
+  @ApiProperty({
+    required: false,
+    description: 'Present on GET /admin/agencies/:id',
+    type: 'array',
+  })
+  block_rules?: Array<{
+    id: string;
+    label: string | null;
+    signal: string;
+    source: string;
+    pattern: string;
+    is_regex: boolean;
+    regex_flags: string | null;
+    position: number;
+  }>;
+
   @ApiProperty()
   created_at: Date;
 

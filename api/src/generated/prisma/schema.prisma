@@ -309,6 +309,24 @@ enum ScraperVersionCreatedBy {
   USER
 }
 
+// Terminal vs transient bot-block signal (see BlockRule). BLOCKED means stop
+// immediately (hard 403/error page); CHALLENGE means keep waiting for it to clear
+// (token/JS challenge page that resolves itself).
+enum BlockSignal {
+  BLOCKED
+  CHALLENGE
+}
+
+// Which part of the page a BlockRule's pattern is tested against.
+enum BlockRuleSource {
+  TITLE
+  TEXT
+  HTML
+  PATH
+  SCRIPT_CONTENT
+  SELECTOR
+}
+
 // ---------------------------------------------------------------
 // USERS & CMS
 // ---------------------------------------------------------------
@@ -422,8 +440,15 @@ model SourceAgency {
   last_failure_at    DateTime?
   last_error_message String?
   metadata           Json?
-  created_at         DateTime        @default(now())
-  updated_at         DateTime        @updatedAt
+
+  // Per-agency overrides for the shared bot-block/challenge detection engine (see
+  // api/src/integrations/crawler/block-handling). Null means "use the built-in
+  // defaults" -- most agencies never need to touch these.
+  block_handling_wait_timeout_ms       Int?
+  block_handling_min_ready_body_length Int?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   scrapers                Scraper[]
   user_tracked_agencies   UserTrackedAgency[]
@@ -431,10 +456,35 @@ model SourceAgency {
   crawl_runs              CrawlRun[]
   source_properties       SourceProperty[]
   notifications           Notification[]
+  block_rules             BlockRule[]
 
   @@index([is_visible])
   @@index([is_enabled])
   @@map("source_agencies")
+}
+
+/// One bot-block/challenge detection rule for a SourceAgency, merged with the built-in
+/// baseline rule set at runtime (see block-handling.constants.ts) by both the Generation
+/// Run and the production crawler/detail-enrichment. Lets each agency's specific
+/// CloudFront/WAF/challenge quirks (a selector, a path token, a script signature, ...) be
+/// configured as data instead of hardcoded in shared scraping code.
+model BlockRule {
+  id               String          @id @default(uuid())
+  source_agency_id String
+  label            String? // human-readable name shown in the admin UI, e.g. "CloudFront token challenge"
+  signal           BlockSignal // BLOCKED = stop immediately; CHALLENGE = keep waiting for it to clear
+  source           BlockRuleSource // what part of the page `pattern` is tested against
+  pattern          String // substring, or regex source when is_regex; CSS selector when source = SELECTOR
+  is_regex         Boolean         @default(false)
+  regex_flags      String? // regex flags, defaults to "i" when is_regex is true
+  position         Int             @default(0) // evaluation/display order within the agency
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @updatedAt
+
+  source_agency SourceAgency @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+
+  @@index([source_agency_id])
+  @@map("block_rules")
 }
 
 /// Which SourceAgencies a user follows/monitors, and which kinds of change notify them.

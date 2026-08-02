@@ -8,11 +8,11 @@ import {
   OUTPUT_DIR,
 } from './config.js';
 import { now } from './utils.js';
-import { launchBrowser, newStealthPage } from './browser.js';
+import { launchBrowser, newStealthPage, waitForBotChallengeClearance } from './browser.js';
 import { extractField } from './extract.js';
 import { dumpDebugInfo } from './debug.js';
 
-export async function runCrawl(config) {
+export async function runCrawl(config, blockHandlingConfig) {
   const steps = [];
   const items = [];
   let success = false;
@@ -29,7 +29,7 @@ export async function runCrawl(config) {
   try {
     log('navigate', { url: config.start_url });
     await page.goto(config.start_url, { waitUntil: 'domcontentloaded', timeout: PAGE_TIMEOUT_MS });
-    await page.waitForTimeout(2000);
+    await waitForBotChallengeClearance(page, blockHandlingConfig);
 
     let pageNum = 0;
     let prevUrl = null;
@@ -167,7 +167,7 @@ export async function runCrawl(config) {
         const url = new URL(page.url());
         url.searchParams.set(paramName, String(pageNum + 2));
         await page.goto(url.href, { waitUntil: 'domcontentloaded', timeout: PAGE_TIMEOUT_MS });
-        await page.waitForTimeout(2000);
+        await waitForBotChallengeClearance(page, blockHandlingConfig);
         advanced = true;
       }
 

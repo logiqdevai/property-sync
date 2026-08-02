@@ -16,7 +16,10 @@ import {
   useUpdateAgencyVisibility,
   useUpdateTrackerAdminSettings,
 } from "@/features/agencies/hooks/use-agencies";
-import type { AgencyFormValues } from "@/features/agencies/validation-schemas/agencies.schema";
+import {
+  toAgencyBlockHandlingPayload,
+  type AgencyFormValues,
+} from "@/features/agencies/validation-schemas/agencies.schema";
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import { ScraperStatusChip } from "./components/scraper-status-chip";
 import { useCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
@@ -300,13 +303,30 @@ export default function AgencyDetailPage() {
                       (agency.content_language as AgencyFormValues["content_language"]) ??
                       "EL",
                     crawl_interval: agency.crawl_interval,
+                    block_handling_wait_timeout_ms:
+                      agency.block_handling_wait_timeout_ms ?? undefined,
+                    block_handling_min_ready_body_length:
+                      agency.block_handling_min_ready_body_length ?? undefined,
+                    block_rules: agency.block_rules ?? [],
                   }}
-                  onSubmit={(values) =>
+                  onSubmit={(values) => {
                     updateAgency.mutate(
-                      { id: agency.id, payload: values },
+                      {
+                        id: agency.id,
+                        payload: {
+                          name: values.name,
+                          base_url: values.base_url,
+                          country: values.country,
+                          city: values.city,
+                          notes: values.notes,
+                          content_language: values.content_language,
+                          crawl_interval: values.crawl_interval,
+                          ...toAgencyBlockHandlingPayload(values),
+                        },
+                      },
                       { onSuccess: () => editModal.close() },
-                    )
-                  }
+                    );
+                  }}
                 />
               </Modal.Body>
             </Modal.Dialog>

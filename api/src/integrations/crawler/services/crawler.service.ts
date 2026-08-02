@@ -11,6 +11,11 @@ import {
   ScraperConfig,
 } from '../interfaces/scraper-config.interface';
 import { crawlTimestamp } from '../utils/crawler.utils';
+import {
+  isBlockedPage,
+  waitForBotChallengeClearance,
+} from '../block-handling/block-handling.utils';
+import { BlockHandlingConfig } from '../block-handling/block-handling.interface';
 import { CrawlerDebugService } from './crawler-debug.service';
 import { FieldExtractionService } from './field-extraction.service';
 
@@ -33,9 +38,10 @@ export class CrawlerService {
     config: ScraperConfig,
     diagnosticsCtx: DiagnosticsRunContext,
     options?: CrawlRunOptions,
+    blockHandlingConfig?: BlockHandlingConfig,
   ): Promise<CrawlResult> {
     return this.diagnosticsCaptureService.run(diagnosticsCtx, (page) =>
-      this.scrapeListingPages(page, config, options),
+      this.scrapeListingPages(page, config, options, blockHandlingConfig),
     );
   }
 
@@ -43,6 +49,7 @@ export class CrawlerService {
     page: Page,
     config: ScraperConfig,
     options?: CrawlRunOptions,
+    blockHandlingConfig?: BlockHandlingConfig,
   ): Promise<CrawlResult> {
     const crawlerConfig = await this.platformConfigService.getCrawlerConfig();
     const steps: CrawlStep[] = [];
@@ -63,10 +70,19 @@ export class CrawlerService {
         timeout: crawlerConfig.page_timeout_ms,
       });
 
-      if (response && !response.ok()) {
+      await waitForBotChallengeClearance(
+        page,
+        blockHandlingConfig,
+        Math.min(20_000, crawlerConfig.page_timeout_ms),
+      );
+
+      const blocked = await isBlockedPage(page, blockHandlingConfig);
+
+      if (blocked || (response && !response.ok())) {
+        const status = blocked ? 403 : response!.status();
         networkError = true;
-        errorSummary = `HTTP ${response.status()} on ${config.start_url}`;
-        log('network_error', { status: response.status() });
+        errorSummary = `HTTP ${status} on ${config.start_url}`;
+        log('network_error', { status, blocked });
         return {
           items,
           steps,
@@ -76,8 +92,6 @@ export class CrawlerService {
           zeroListingsPage0,
         };
       }
-
-      await page.waitForTimeout(2000);
 
       let pageNum = 0;
       let prevUrl: string | null = null;
@@ -203,6 +217,7 @@ export class CrawlerService {
           log,
           crawlerConfig,
           config.listing_selector,
+          blockHandlingConfig,
         );
         if (!advanced) break;
         pageNum++;
@@ -233,6 +248,7 @@ export class CrawlerService {
     log: (msg: string, data?: Record<string, unknown>) => void,
     crawlerConfig: ResolvedCrawlerConfig,
     listingSelector?: string,
+    blockHandlingConfig?: BlockHandlingConfig,
   ): Promise<boolean> {
     if (
       pagination.type === 'next_button' ||
@@ -348,11 +364,15 @@ export class CrawlerService {
         waitUntil: 'domcontentloaded',
         timeout: crawlerConfig.page_timeout_ms,
       });
+      await waitForBotChallengeClearance(
+        page,
+        blockHandlingConfig,
+        Math.min(15_000, crawlerConfig.page_timeout_ms),
+      );
       if (response && !response.ok()) {
         log('network_error', { status: response.status(), url: url.href });
         return false;
       }
-      await page.waitForTimeout(2000);
       return true;
     }
 

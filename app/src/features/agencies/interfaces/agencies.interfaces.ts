@@ -21,6 +21,27 @@ export interface AgencyTrackedUser {
   };
 }
 
+export type BlockSignal = "BLOCKED" | "CHALLENGE";
+
+export type BlockRuleSource =
+  | "TITLE"
+  | "TEXT"
+  | "HTML"
+  | "PATH"
+  | "SCRIPT_CONTENT"
+  | "SELECTOR";
+
+export interface BlockRule {
+  id?: string;
+  label?: string | null;
+  signal: BlockSignal;
+  source: BlockRuleSource;
+  pattern: string;
+  is_regex?: boolean;
+  regex_flags?: string | null;
+  position?: number;
+}
+
 export interface SourceAgency {
   id: string;
   name: string;
@@ -35,6 +56,9 @@ export interface SourceAgency {
   last_success_at: string | null;
   last_failure_at: string | null;
   last_error_message: string | null;
+  block_handling_wait_timeout_ms?: number | null;
+  block_handling_min_ready_body_length?: number | null;
+  block_rules?: BlockRule[];
   created_at: string;
   updated_at: string;
   _count?: {
@@ -55,6 +79,9 @@ export interface CreateAgencyPayload {
   is_visible?: boolean;
   is_enabled?: boolean;
   content_language?: string;
+  block_handling_wait_timeout_ms?: number | null;
+  block_handling_min_ready_body_length?: number | null;
+  block_rules?: BlockRule[];
 }
 
 export interface UpdateAgencyPayload extends Partial<CreateAgencyPayload> {}

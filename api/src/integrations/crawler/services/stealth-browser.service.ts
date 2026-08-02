@@ -12,9 +12,11 @@ import {
   Page,
 } from 'playwright';
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
-
-const STEALTH_UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+import {
+  STEALTH_CONTEXT_OPTIONS,
+  STEALTH_LAUNCH_ARGS,
+  applyStealthInitScript,
+} from '../utils/stealth.utils';
 
 export interface StealthPageSession {
   context: BrowserContext;
@@ -46,20 +48,10 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
     const browser = await this.ensureBrowser();
     this.contextsSinceLaunch++;
     const context = await browser.newContext({
-      userAgent: STEALTH_UA,
-      viewport: { width: 1280, height: 900 },
-      extraHTTPHeaders: {
-        'Accept-Language': 'en-US,en;q=0.9',
-        Accept:
-          'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      },
+      ...STEALTH_CONTEXT_OPTIONS,
       ...contextOptions,
     });
-    await context.addInitScript(() => {
-      Object.defineProperty(navigator, 'webdriver', {
-        get: () => undefined,
-      });
-    });
+    await applyStealthInitScript(context);
     const page = await context.newPage();
     return { context, page };
   }
@@ -104,16 +96,7 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
 
     this.browser = await chromium.launch({
       headless: true,
-      args: [
-        '--disable-blink-features=AutomationControlled',
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        // Docker's default /dev/shm is 64MB regardless of host RAM/CPU -- content-heavy
-        // listing pages can exhaust that, leaving Chromium's renderer unresponsive and
-        // context/browser close() calls hanging with no timeout. This routes shared
-        // memory through /tmp instead.
-        '--disable-dev-shm-usage',
-      ],
+      args: [...STEALTH_LAUNCH_ARGS],
     });
     this.contextsSinceLaunch = 0;
 

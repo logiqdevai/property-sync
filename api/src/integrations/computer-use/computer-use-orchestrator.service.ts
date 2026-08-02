@@ -23,7 +23,10 @@ import {
   compactImageMessages,
   extractResumeUrl,
 } from './utils/generation-message.util';
-import { isAccessBlockedPage } from './utils/access-blocked.util';
+import {
+  isAccessBarrierPage,
+  buildBlockHandlingConfig,
+} from '@/integrations/crawler/block-handling/block-handling.utils';
 
 const INITIAL_STEP_HINT =
   'Initial page. Follow the mandatory workflow: find the listings page, inspect cards, visit a detail page, test pagination, then call done.';
@@ -47,7 +50,9 @@ export class ComputerUseOrchestratorService {
     const run = await this.prisma.scraperGenerationRun.findUniqueOrThrow({
       where: { id: generationRunId },
       include: {
-        source_agency: true,
+        source_agency: {
+          include: { block_rules: true },
+        },
         steps: {
           orderBy: { step_index: 'asc' },
         },
@@ -75,6 +80,7 @@ export class ComputerUseOrchestratorService {
       DEFAULT_GENERATION_MODEL;
     const targetUrl = run.source_agency.base_url;
     const systemPrompt = this.buildSystemPrompt(run.prompt);
+    const blockHandlingConfig = buildBlockHandlingConfig(run.source_agency);
 
     const driver = new PlaywrightDriverService();
     const messages: Anthropic.MessageParam[] = [];
@@ -86,7 +92,7 @@ export class ComputerUseOrchestratorService {
     const shouldResume = options.resume === true && run.steps.length > 0;
 
     try {
-      await driver.launch(targetUrl);
+      await driver.launch(targetUrl, blockHandlingConfig);
 
       if (await this.isCancelled(generationRunId)) {
         wasCancelled = true;
@@ -126,14 +132,17 @@ export class ComputerUseOrchestratorService {
           break;
         }
 
-        const accessBlocked = await isAccessBlockedPage(driver.currentPage);
+        const accessBlocked = await isAccessBarrierPage(
+          driver.currentPage,
+          blockHandlingConfig,
+        );
         if (accessBlocked) {
           consecutiveAccessErrors += 1;
           this.logger.warn(
-            `generation run ${generationRunId}: access blocked (${consecutiveAccessErrors}/${MAX_CONSECUTIVE_ACCESS_ERRORS}) url=${driver.currentPage.url()}`,
+            `generation run ${generationRunId}: access barrier (${consecutiveAccessErrors}/${MAX_CONSECUTIVE_ACCESS_ERRORS}) url=${driver.currentPage.url()}`,
           );
           if (consecutiveAccessErrors >= MAX_CONSECUTIVE_ACCESS_ERRORS) {
-            failureReason = `Website blocked access ${MAX_CONSECUTIVE_ACCESS_ERRORS} times in a row (CloudFront/WAF 403 or similar). Stopping generation.`;
+            failureReason = `Website blocked or challenged access ${MAX_CONSECUTIVE_ACCESS_ERRORS} times in a row (WAF/bot interstitial/captcha). Stopping generation.`;
             break;
           }
         } else {
@@ -153,7 +162,7 @@ export class ComputerUseOrchestratorService {
         ];
         if (accessBlocked) {
           stepHintParts.push(
-            `WARNING: page looks access-blocked (CloudFront/WAF 403). Consecutive blocks: ${consecutiveAccessErrors}/${MAX_CONSECUTIVE_ACCESS_ERRORS}. If the real site cannot load, do not invent selectors — try a short wait then reload once. After ${MAX_CONSECUTIVE_ACCESS_ERRORS} blocks the run will stop.`,
+            `WARNING: page looks access-blocked or bot-challenged (WAF/Imperva/CloudFront/captcha). Consecutive barriers: ${consecutiveAccessErrors}/${MAX_CONSECUTIVE_ACCESS_ERRORS}. Do not invent selectors from an interstitial. After ${MAX_CONSECUTIVE_ACCESS_ERRORS} barriers the run will stop.`,
           );
         }
 
@@ -224,7 +233,10 @@ export class ComputerUseOrchestratorService {
         });
 
         if (action.action === 'done') {
-          if (accessBlocked || (await isAccessBlockedPage(driver.currentPage))) {
+          if (
+            accessBlocked ||
+            (await isAccessBarrierPage(driver.currentPage, blockHandlingConfig))
+          ) {
             await this.prisma.computerUseStep.update({
               where: { id: step.id },
               data: {
@@ -235,7 +247,7 @@ export class ComputerUseOrchestratorService {
             messages.push({
               role: 'user',
               content:
-                'Rejected "done": the current page is still an access-blocked error page (CloudFront/WAF 403). Do not invent listing selectors from an error page. Wait/reload only if useful; otherwise the run will stop after repeated blocks.',
+                'Rejected "done": the current page is still an access-blocked or bot-challenge interstitial (WAF/Imperva/CloudFront/captcha). Do not invent listing selectors from that page. Wait/reload only if useful; otherwise the run will stop after repeated barriers.',
             });
             stepIndex += 1;
             continue;
@@ -245,6 +257,7 @@ export class ComputerUseOrchestratorService {
             driver.activeContext,
             driver.currentPage,
             action.config as never,
+            blockHandlingConfig,
           );
 
           if (errors.length > 0) {

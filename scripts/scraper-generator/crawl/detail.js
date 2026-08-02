@@ -1,11 +1,11 @@
 import { PAGE_TIMEOUT_MS, DETAIL_CONCURRENCY, DETAIL_DELAY_MS } from './config.js';
-import { launchBrowser, newStealthPage } from './browser.js';
+import { launchBrowser, newStealthPage, waitForBotChallengeClearance } from './browser.js';
 
-async function enrichOneDetailPage(browser, item, detailConfig) {
+async function enrichOneDetailPage(browser, item, detailConfig, blockHandlingConfig) {
   const page = await newStealthPage(browser);
   try {
     await page.goto(item.source_url, { waitUntil: 'domcontentloaded', timeout: PAGE_TIMEOUT_MS });
-    await page.waitForTimeout(1000);
+    await waitForBotChallengeClearance(page, blockHandlingConfig, Math.min(15_000, PAGE_TIMEOUT_MS));
 
     return await page.evaluate((cfg) => {
       const images = [];
@@ -150,7 +150,7 @@ async function enrichOneDetailPage(browser, item, detailConfig) {
   }
 }
 
-export async function enrichDetailPages(items, detailConfig) {
+export async function enrichDetailPages(items, detailConfig, blockHandlingConfig) {
   console.log(`  Enriching ${items.length} detail pages (concurrency: ${DETAIL_CONCURRENCY})...`);
   const browser = await launchBrowser();
 
@@ -158,7 +158,7 @@ export async function enrichDetailPages(items, detailConfig) {
     let done = 0;
     for (let i = 0; i < items.length; i += DETAIL_CONCURRENCY) {
       const batch = items.slice(i, i + DETAIL_CONCURRENCY);
-      const results = await Promise.all(batch.map(item => enrichOneDetailPage(browser, item, detailConfig)));
+      const results = await Promise.all(batch.map(item => enrichOneDetailPage(browser, item, detailConfig, blockHandlingConfig)));
 
       for (let j = 0; j < batch.length; j++) {
         const item = batch[j];

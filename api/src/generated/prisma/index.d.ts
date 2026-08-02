@@ -44,6 +44,15 @@ export type UserIntegration = $Result.DefaultSelection<Prisma.$UserIntegrationPa
  */
 export type SourceAgency = $Result.DefaultSelection<Prisma.$SourceAgencyPayload>
 /**
+ * Model BlockRule
+ * One bot-block/challenge detection rule for a SourceAgency, merged with the built-in
+ * baseline rule set at runtime (see block-handling.constants.ts) by both the Generation
+ * Run and the production crawler/detail-enrichment. Lets each agency's specific
+ * CloudFront/WAF/challenge quirks (a selector, a path token, a script signature, ...) be
+ * configured as data instead of hardcoded in shared scraping code.
+ */
+export type BlockRule = $Result.DefaultSelection<Prisma.$BlockRulePayload>
+/**
  * Model UserTrackedAgency
  * Which SourceAgencies a user follows/monitors, and which kinds of change notify them.
  */
@@ -596,6 +605,26 @@ export const ScraperVersionCreatedBy: {
 
 export type ScraperVersionCreatedBy = (typeof ScraperVersionCreatedBy)[keyof typeof ScraperVersionCreatedBy]
 
+
+export const BlockSignal: {
+  BLOCKED: 'BLOCKED',
+  CHALLENGE: 'CHALLENGE'
+};
+
+export type BlockSignal = (typeof BlockSignal)[keyof typeof BlockSignal]
+
+
+export const BlockRuleSource: {
+  TITLE: 'TITLE',
+  TEXT: 'TEXT',
+  HTML: 'HTML',
+  PATH: 'PATH',
+  SCRIPT_CONTENT: 'SCRIPT_CONTENT',
+  SELECTOR: 'SELECTOR'
+};
+
+export type BlockRuleSource = (typeof BlockRuleSource)[keyof typeof BlockRuleSource]
+
 }
 
 export type AuthRole = $Enums.AuthRole
@@ -721,6 +750,14 @@ export const NotificationSeverity: typeof $Enums.NotificationSeverity
 export type ScraperVersionCreatedBy = $Enums.ScraperVersionCreatedBy
 
 export const ScraperVersionCreatedBy: typeof $Enums.ScraperVersionCreatedBy
+
+export type BlockSignal = $Enums.BlockSignal
+
+export const BlockSignal: typeof $Enums.BlockSignal
+
+export type BlockRuleSource = $Enums.BlockRuleSource
+
+export const BlockRuleSource: typeof $Enums.BlockRuleSource
 
 /**
  * ##  Prisma Client ʲˢ
@@ -888,6 +925,16 @@ export class PrismaClient<
     * ```
     */
   get sourceAgency(): Prisma.SourceAgencyDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.blockRule`: Exposes CRUD operations for the **BlockRule** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more BlockRules
+    * const blockRules = await prisma.blockRule.findMany()
+    * ```
+    */
+  get blockRule(): Prisma.BlockRuleDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.userTrackedAgency`: Exposes CRUD operations for the **UserTrackedAgency** model.
@@ -1607,6 +1654,7 @@ export namespace Prisma {
     UserIntegrationSettings: 'UserIntegrationSettings',
     UserIntegration: 'UserIntegration',
     SourceAgency: 'SourceAgency',
+    BlockRule: 'BlockRule',
     UserTrackedAgency: 'UserTrackedAgency',
     UserTrackedAgencyIntegrationLink: 'UserTrackedAgencyIntegrationLink',
     Scraper: 'Scraper',
@@ -1650,7 +1698,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "notification" | "notificationSetting" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "contentPublishingConfig" | "contentOutput" | "aiTitleFamily" | "propertyLocalizedContent" | "aiBatchRun" | "costLog" | "integrationProperty" | "platformConfig" | "document"
+      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "blockRule" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "notification" | "notificationSetting" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "contentPublishingConfig" | "contentOutput" | "aiTitleFamily" | "propertyLocalizedContent" | "aiBatchRun" | "costLog" | "integrationProperty" | "platformConfig" | "document"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2021,6 +2069,80 @@ export namespace Prisma {
           count: {
             args: Prisma.SourceAgencyCountArgs<ExtArgs>
             result: $Utils.Optional<SourceAgencyCountAggregateOutputType> | number
+          }
+        }
+      }
+      BlockRule: {
+        payload: Prisma.$BlockRulePayload<ExtArgs>
+        fields: Prisma.BlockRuleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BlockRuleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BlockRulePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BlockRuleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BlockRulePayload>
+          }
+          findFirst: {
+            args: Prisma.BlockRuleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BlockRulePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BlockRuleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BlockRulePayload>
+          }
+          findMany: {
+            args: Prisma.BlockRuleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BlockRulePayload>[]
+          }
+          create: {
+            args: Prisma.BlockRuleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BlockRulePayload>
+          }
+          createMany: {
+            args: Prisma.BlockRuleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.BlockRuleCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BlockRulePayload>[]
+          }
+          delete: {
+            args: Prisma.BlockRuleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BlockRulePayload>
+          }
+          update: {
+            args: Prisma.BlockRuleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BlockRulePayload>
+          }
+          deleteMany: {
+            args: Prisma.BlockRuleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BlockRuleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.BlockRuleUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BlockRulePayload>[]
+          }
+          upsert: {
+            args: Prisma.BlockRuleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BlockRulePayload>
+          }
+          aggregate: {
+            args: Prisma.BlockRuleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBlockRule>
+          }
+          groupBy: {
+            args: Prisma.BlockRuleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BlockRuleGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BlockRuleCountArgs<ExtArgs>
+            result: $Utils.Optional<BlockRuleCountAggregateOutputType> | number
           }
         }
       }
@@ -4209,6 +4331,7 @@ export namespace Prisma {
     userIntegrationSettings?: UserIntegrationSettingsOmit
     userIntegration?: UserIntegrationOmit
     sourceAgency?: SourceAgencyOmit
+    blockRule?: BlockRuleOmit
     userTrackedAgency?: UserTrackedAgencyOmit
     userTrackedAgencyIntegrationLink?: UserTrackedAgencyIntegrationLinkOmit
     scraper?: ScraperOmit
@@ -4510,6 +4633,7 @@ export namespace Prisma {
     crawl_runs: number
     source_properties: number
     notifications: number
+    block_rules: number
   }
 
   export type SourceAgencyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4519,6 +4643,7 @@ export namespace Prisma {
     crawl_runs?: boolean | SourceAgencyCountOutputTypeCountCrawl_runsArgs
     source_properties?: boolean | SourceAgencyCountOutputTypeCountSource_propertiesArgs
     notifications?: boolean | SourceAgencyCountOutputTypeCountNotificationsArgs
+    block_rules?: boolean | SourceAgencyCountOutputTypeCountBlock_rulesArgs
   }
 
   // Custom InputTypes
@@ -4572,6 +4697,13 @@ export namespace Prisma {
    */
   export type SourceAgencyCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: NotificationWhereInput
+  }
+
+  /**
+   * SourceAgencyCountOutputType without action
+   */
+  export type SourceAgencyCountOutputTypeCountBlock_rulesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BlockRuleWhereInput
   }
 
 
@@ -9896,8 +10028,20 @@ export namespace Prisma {
 
   export type AggregateSourceAgency = {
     _count: SourceAgencyCountAggregateOutputType | null
+    _avg: SourceAgencyAvgAggregateOutputType | null
+    _sum: SourceAgencySumAggregateOutputType | null
     _min: SourceAgencyMinAggregateOutputType | null
     _max: SourceAgencyMaxAggregateOutputType | null
+  }
+
+  export type SourceAgencyAvgAggregateOutputType = {
+    block_handling_wait_timeout_ms: number | null
+    block_handling_min_ready_body_length: number | null
+  }
+
+  export type SourceAgencySumAggregateOutputType = {
+    block_handling_wait_timeout_ms: number | null
+    block_handling_min_ready_body_length: number | null
   }
 
   export type SourceAgencyMinAggregateOutputType = {
@@ -9914,6 +10058,8 @@ export namespace Prisma {
     last_success_at: Date | null
     last_failure_at: Date | null
     last_error_message: string | null
+    block_handling_wait_timeout_ms: number | null
+    block_handling_min_ready_body_length: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -9932,6 +10078,8 @@ export namespace Prisma {
     last_success_at: Date | null
     last_failure_at: Date | null
     last_error_message: string | null
+    block_handling_wait_timeout_ms: number | null
+    block_handling_min_ready_body_length: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -9951,11 +10099,23 @@ export namespace Prisma {
     last_failure_at: number
     last_error_message: number
     metadata: number
+    block_handling_wait_timeout_ms: number
+    block_handling_min_ready_body_length: number
     created_at: number
     updated_at: number
     _all: number
   }
 
+
+  export type SourceAgencyAvgAggregateInputType = {
+    block_handling_wait_timeout_ms?: true
+    block_handling_min_ready_body_length?: true
+  }
+
+  export type SourceAgencySumAggregateInputType = {
+    block_handling_wait_timeout_ms?: true
+    block_handling_min_ready_body_length?: true
+  }
 
   export type SourceAgencyMinAggregateInputType = {
     id?: true
@@ -9971,6 +10131,8 @@ export namespace Prisma {
     last_success_at?: true
     last_failure_at?: true
     last_error_message?: true
+    block_handling_wait_timeout_ms?: true
+    block_handling_min_ready_body_length?: true
     created_at?: true
     updated_at?: true
   }
@@ -9989,6 +10151,8 @@ export namespace Prisma {
     last_success_at?: true
     last_failure_at?: true
     last_error_message?: true
+    block_handling_wait_timeout_ms?: true
+    block_handling_min_ready_body_length?: true
     created_at?: true
     updated_at?: true
   }
@@ -10008,6 +10172,8 @@ export namespace Prisma {
     last_failure_at?: true
     last_error_message?: true
     metadata?: true
+    block_handling_wait_timeout_ms?: true
+    block_handling_min_ready_body_length?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -10051,6 +10217,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: SourceAgencyAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SourceAgencySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: SourceAgencyMinAggregateInputType
@@ -10081,6 +10259,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: SourceAgencyCountAggregateInputType | true
+    _avg?: SourceAgencyAvgAggregateInputType
+    _sum?: SourceAgencySumAggregateInputType
     _min?: SourceAgencyMinAggregateInputType
     _max?: SourceAgencyMaxAggregateInputType
   }
@@ -10100,9 +10280,13 @@ export namespace Prisma {
     last_failure_at: Date | null
     last_error_message: string | null
     metadata: JsonValue | null
+    block_handling_wait_timeout_ms: number | null
+    block_handling_min_ready_body_length: number | null
     created_at: Date
     updated_at: Date
     _count: SourceAgencyCountAggregateOutputType | null
+    _avg: SourceAgencyAvgAggregateOutputType | null
+    _sum: SourceAgencySumAggregateOutputType | null
     _min: SourceAgencyMinAggregateOutputType | null
     _max: SourceAgencyMaxAggregateOutputType | null
   }
@@ -10136,6 +10320,8 @@ export namespace Prisma {
     last_failure_at?: boolean
     last_error_message?: boolean
     metadata?: boolean
+    block_handling_wait_timeout_ms?: boolean
+    block_handling_min_ready_body_length?: boolean
     created_at?: boolean
     updated_at?: boolean
     scrapers?: boolean | SourceAgency$scrapersArgs<ExtArgs>
@@ -10144,6 +10330,7 @@ export namespace Prisma {
     crawl_runs?: boolean | SourceAgency$crawl_runsArgs<ExtArgs>
     source_properties?: boolean | SourceAgency$source_propertiesArgs<ExtArgs>
     notifications?: boolean | SourceAgency$notificationsArgs<ExtArgs>
+    block_rules?: boolean | SourceAgency$block_rulesArgs<ExtArgs>
     _count?: boolean | SourceAgencyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["sourceAgency"]>
 
@@ -10162,6 +10349,8 @@ export namespace Prisma {
     last_failure_at?: boolean
     last_error_message?: boolean
     metadata?: boolean
+    block_handling_wait_timeout_ms?: boolean
+    block_handling_min_ready_body_length?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["sourceAgency"]>
@@ -10181,6 +10370,8 @@ export namespace Prisma {
     last_failure_at?: boolean
     last_error_message?: boolean
     metadata?: boolean
+    block_handling_wait_timeout_ms?: boolean
+    block_handling_min_ready_body_length?: boolean
     created_at?: boolean
     updated_at?: boolean
   }, ExtArgs["result"]["sourceAgency"]>
@@ -10200,11 +10391,13 @@ export namespace Prisma {
     last_failure_at?: boolean
     last_error_message?: boolean
     metadata?: boolean
+    block_handling_wait_timeout_ms?: boolean
+    block_handling_min_ready_body_length?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type SourceAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "base_url" | "country" | "city" | "content_language" | "is_visible" | "is_enabled" | "crawl_interval" | "notes" | "last_success_at" | "last_failure_at" | "last_error_message" | "metadata" | "created_at" | "updated_at", ExtArgs["result"]["sourceAgency"]>
+  export type SourceAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "base_url" | "country" | "city" | "content_language" | "is_visible" | "is_enabled" | "crawl_interval" | "notes" | "last_success_at" | "last_failure_at" | "last_error_message" | "metadata" | "block_handling_wait_timeout_ms" | "block_handling_min_ready_body_length" | "created_at" | "updated_at", ExtArgs["result"]["sourceAgency"]>
   export type SourceAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     scrapers?: boolean | SourceAgency$scrapersArgs<ExtArgs>
     user_tracked_agencies?: boolean | SourceAgency$user_tracked_agenciesArgs<ExtArgs>
@@ -10212,6 +10405,7 @@ export namespace Prisma {
     crawl_runs?: boolean | SourceAgency$crawl_runsArgs<ExtArgs>
     source_properties?: boolean | SourceAgency$source_propertiesArgs<ExtArgs>
     notifications?: boolean | SourceAgency$notificationsArgs<ExtArgs>
+    block_rules?: boolean | SourceAgency$block_rulesArgs<ExtArgs>
     _count?: boolean | SourceAgencyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type SourceAgencyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -10226,6 +10420,7 @@ export namespace Prisma {
       crawl_runs: Prisma.$CrawlRunPayload<ExtArgs>[]
       source_properties: Prisma.$SourcePropertyPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
+      block_rules: Prisma.$BlockRulePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -10242,6 +10437,8 @@ export namespace Prisma {
       last_failure_at: Date | null
       last_error_message: string | null
       metadata: Prisma.JsonValue | null
+      block_handling_wait_timeout_ms: number | null
+      block_handling_min_ready_body_length: number | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["sourceAgency"]>
@@ -10644,6 +10841,7 @@ export namespace Prisma {
     crawl_runs<T extends SourceAgency$crawl_runsArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgency$crawl_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     source_properties<T extends SourceAgency$source_propertiesArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgency$source_propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SourcePropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends SourceAgency$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgency$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    block_rules<T extends SourceAgency$block_rulesArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgency$block_rulesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BlockRulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10687,6 +10885,8 @@ export namespace Prisma {
     readonly last_failure_at: FieldRef<"SourceAgency", 'DateTime'>
     readonly last_error_message: FieldRef<"SourceAgency", 'String'>
     readonly metadata: FieldRef<"SourceAgency", 'Json'>
+    readonly block_handling_wait_timeout_ms: FieldRef<"SourceAgency", 'Int'>
+    readonly block_handling_min_ready_body_length: FieldRef<"SourceAgency", 'Int'>
     readonly created_at: FieldRef<"SourceAgency", 'DateTime'>
     readonly updated_at: FieldRef<"SourceAgency", 'DateTime'>
   }
@@ -11221,6 +11421,30 @@ export namespace Prisma {
   }
 
   /**
+   * SourceAgency.block_rules
+   */
+  export type SourceAgency$block_rulesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BlockRule
+     */
+    select?: BlockRuleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BlockRule
+     */
+    omit?: BlockRuleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BlockRuleInclude<ExtArgs> | null
+    where?: BlockRuleWhereInput
+    orderBy?: BlockRuleOrderByWithRelationInput | BlockRuleOrderByWithRelationInput[]
+    cursor?: BlockRuleWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BlockRuleScalarFieldEnum | BlockRuleScalarFieldEnum[]
+  }
+
+  /**
    * SourceAgency without action
    */
   export type SourceAgencyDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11236,6 +11460,1176 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: SourceAgencyInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model BlockRule
+   */
+
+  export type AggregateBlockRule = {
+    _count: BlockRuleCountAggregateOutputType | null
+    _avg: BlockRuleAvgAggregateOutputType | null
+    _sum: BlockRuleSumAggregateOutputType | null
+    _min: BlockRuleMinAggregateOutputType | null
+    _max: BlockRuleMaxAggregateOutputType | null
+  }
+
+  export type BlockRuleAvgAggregateOutputType = {
+    position: number | null
+  }
+
+  export type BlockRuleSumAggregateOutputType = {
+    position: number | null
+  }
+
+  export type BlockRuleMinAggregateOutputType = {
+    id: string | null
+    source_agency_id: string | null
+    label: string | null
+    signal: $Enums.BlockSignal | null
+    source: $Enums.BlockRuleSource | null
+    pattern: string | null
+    is_regex: boolean | null
+    regex_flags: string | null
+    position: number | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type BlockRuleMaxAggregateOutputType = {
+    id: string | null
+    source_agency_id: string | null
+    label: string | null
+    signal: $Enums.BlockSignal | null
+    source: $Enums.BlockRuleSource | null
+    pattern: string | null
+    is_regex: boolean | null
+    regex_flags: string | null
+    position: number | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type BlockRuleCountAggregateOutputType = {
+    id: number
+    source_agency_id: number
+    label: number
+    signal: number
+    source: number
+    pattern: number
+    is_regex: number
+    regex_flags: number
+    position: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type BlockRuleAvgAggregateInputType = {
+    position?: true
+  }
+
+  export type BlockRuleSumAggregateInputType = {
+    position?: true
+  }
+
+  export type BlockRuleMinAggregateInputType = {
+    id?: true
+    source_agency_id?: true
+    label?: true
+    signal?: true
+    source?: true
+    pattern?: true
+    is_regex?: true
+    regex_flags?: true
+    position?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type BlockRuleMaxAggregateInputType = {
+    id?: true
+    source_agency_id?: true
+    label?: true
+    signal?: true
+    source?: true
+    pattern?: true
+    is_regex?: true
+    regex_flags?: true
+    position?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type BlockRuleCountAggregateInputType = {
+    id?: true
+    source_agency_id?: true
+    label?: true
+    signal?: true
+    source?: true
+    pattern?: true
+    is_regex?: true
+    regex_flags?: true
+    position?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type BlockRuleAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BlockRule to aggregate.
+     */
+    where?: BlockRuleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BlockRules to fetch.
+     */
+    orderBy?: BlockRuleOrderByWithRelationInput | BlockRuleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BlockRuleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BlockRules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BlockRules.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned BlockRules
+    **/
+    _count?: true | BlockRuleCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: BlockRuleAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: BlockRuleSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BlockRuleMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BlockRuleMaxAggregateInputType
+  }
+
+  export type GetBlockRuleAggregateType<T extends BlockRuleAggregateArgs> = {
+        [P in keyof T & keyof AggregateBlockRule]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBlockRule[P]>
+      : GetScalarType<T[P], AggregateBlockRule[P]>
+  }
+
+
+
+
+  export type BlockRuleGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BlockRuleWhereInput
+    orderBy?: BlockRuleOrderByWithAggregationInput | BlockRuleOrderByWithAggregationInput[]
+    by: BlockRuleScalarFieldEnum[] | BlockRuleScalarFieldEnum
+    having?: BlockRuleScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BlockRuleCountAggregateInputType | true
+    _avg?: BlockRuleAvgAggregateInputType
+    _sum?: BlockRuleSumAggregateInputType
+    _min?: BlockRuleMinAggregateInputType
+    _max?: BlockRuleMaxAggregateInputType
+  }
+
+  export type BlockRuleGroupByOutputType = {
+    id: string
+    source_agency_id: string
+    label: string | null
+    signal: $Enums.BlockSignal
+    source: $Enums.BlockRuleSource
+    pattern: string
+    is_regex: boolean
+    regex_flags: string | null
+    position: number
+    created_at: Date
+    updated_at: Date
+    _count: BlockRuleCountAggregateOutputType | null
+    _avg: BlockRuleAvgAggregateOutputType | null
+    _sum: BlockRuleSumAggregateOutputType | null
+    _min: BlockRuleMinAggregateOutputType | null
+    _max: BlockRuleMaxAggregateOutputType | null
+  }
+
+  type GetBlockRuleGroupByPayload<T extends BlockRuleGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BlockRuleGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BlockRuleGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BlockRuleGroupByOutputType[P]>
+            : GetScalarType<T[P], BlockRuleGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BlockRuleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    source_agency_id?: boolean
+    label?: boolean
+    signal?: boolean
+    source?: boolean
+    pattern?: boolean
+    is_regex?: boolean
+    regex_flags?: boolean
+    position?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["blockRule"]>
+
+  export type BlockRuleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    source_agency_id?: boolean
+    label?: boolean
+    signal?: boolean
+    source?: boolean
+    pattern?: boolean
+    is_regex?: boolean
+    regex_flags?: boolean
+    position?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["blockRule"]>
+
+  export type BlockRuleSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    source_agency_id?: boolean
+    label?: boolean
+    signal?: boolean
+    source?: boolean
+    pattern?: boolean
+    is_regex?: boolean
+    regex_flags?: boolean
+    position?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["blockRule"]>
+
+  export type BlockRuleSelectScalar = {
+    id?: boolean
+    source_agency_id?: boolean
+    label?: boolean
+    signal?: boolean
+    source?: boolean
+    pattern?: boolean
+    is_regex?: boolean
+    regex_flags?: boolean
+    position?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type BlockRuleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "label" | "signal" | "source" | "pattern" | "is_regex" | "regex_flags" | "position" | "created_at" | "updated_at", ExtArgs["result"]["blockRule"]>
+  export type BlockRuleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
+  }
+  export type BlockRuleIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
+  }
+  export type BlockRuleIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
+  }
+
+  export type $BlockRulePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "BlockRule"
+    objects: {
+      source_agency: Prisma.$SourceAgencyPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      source_agency_id: string
+      label: string | null
+      signal: $Enums.BlockSignal
+      source: $Enums.BlockRuleSource
+      pattern: string
+      is_regex: boolean
+      regex_flags: string | null
+      position: number
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["blockRule"]>
+    composites: {}
+  }
+
+  type BlockRuleGetPayload<S extends boolean | null | undefined | BlockRuleDefaultArgs> = $Result.GetResult<Prisma.$BlockRulePayload, S>
+
+  type BlockRuleCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<BlockRuleFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: BlockRuleCountAggregateInputType | true
+    }
+
+  export interface BlockRuleDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['BlockRule'], meta: { name: 'BlockRule' } }
+    /**
+     * Find zero or one BlockRule that matches the filter.
+     * @param {BlockRuleFindUniqueArgs} args - Arguments to find a BlockRule
+     * @example
+     * // Get one BlockRule
+     * const blockRule = await prisma.blockRule.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BlockRuleFindUniqueArgs>(args: SelectSubset<T, BlockRuleFindUniqueArgs<ExtArgs>>): Prisma__BlockRuleClient<$Result.GetResult<Prisma.$BlockRulePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one BlockRule that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {BlockRuleFindUniqueOrThrowArgs} args - Arguments to find a BlockRule
+     * @example
+     * // Get one BlockRule
+     * const blockRule = await prisma.blockRule.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BlockRuleFindUniqueOrThrowArgs>(args: SelectSubset<T, BlockRuleFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BlockRuleClient<$Result.GetResult<Prisma.$BlockRulePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BlockRule that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BlockRuleFindFirstArgs} args - Arguments to find a BlockRule
+     * @example
+     * // Get one BlockRule
+     * const blockRule = await prisma.blockRule.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BlockRuleFindFirstArgs>(args?: SelectSubset<T, BlockRuleFindFirstArgs<ExtArgs>>): Prisma__BlockRuleClient<$Result.GetResult<Prisma.$BlockRulePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BlockRule that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BlockRuleFindFirstOrThrowArgs} args - Arguments to find a BlockRule
+     * @example
+     * // Get one BlockRule
+     * const blockRule = await prisma.blockRule.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BlockRuleFindFirstOrThrowArgs>(args?: SelectSubset<T, BlockRuleFindFirstOrThrowArgs<ExtArgs>>): Prisma__BlockRuleClient<$Result.GetResult<Prisma.$BlockRulePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more BlockRules that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BlockRuleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all BlockRules
+     * const blockRules = await prisma.blockRule.findMany()
+     * 
+     * // Get first 10 BlockRules
+     * const blockRules = await prisma.blockRule.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const blockRuleWithIdOnly = await prisma.blockRule.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends BlockRuleFindManyArgs>(args?: SelectSubset<T, BlockRuleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BlockRulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a BlockRule.
+     * @param {BlockRuleCreateArgs} args - Arguments to create a BlockRule.
+     * @example
+     * // Create one BlockRule
+     * const BlockRule = await prisma.blockRule.create({
+     *   data: {
+     *     // ... data to create a BlockRule
+     *   }
+     * })
+     * 
+     */
+    create<T extends BlockRuleCreateArgs>(args: SelectSubset<T, BlockRuleCreateArgs<ExtArgs>>): Prisma__BlockRuleClient<$Result.GetResult<Prisma.$BlockRulePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many BlockRules.
+     * @param {BlockRuleCreateManyArgs} args - Arguments to create many BlockRules.
+     * @example
+     * // Create many BlockRules
+     * const blockRule = await prisma.blockRule.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BlockRuleCreateManyArgs>(args?: SelectSubset<T, BlockRuleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many BlockRules and returns the data saved in the database.
+     * @param {BlockRuleCreateManyAndReturnArgs} args - Arguments to create many BlockRules.
+     * @example
+     * // Create many BlockRules
+     * const blockRule = await prisma.blockRule.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many BlockRules and only return the `id`
+     * const blockRuleWithIdOnly = await prisma.blockRule.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends BlockRuleCreateManyAndReturnArgs>(args?: SelectSubset<T, BlockRuleCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BlockRulePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a BlockRule.
+     * @param {BlockRuleDeleteArgs} args - Arguments to delete one BlockRule.
+     * @example
+     * // Delete one BlockRule
+     * const BlockRule = await prisma.blockRule.delete({
+     *   where: {
+     *     // ... filter to delete one BlockRule
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BlockRuleDeleteArgs>(args: SelectSubset<T, BlockRuleDeleteArgs<ExtArgs>>): Prisma__BlockRuleClient<$Result.GetResult<Prisma.$BlockRulePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one BlockRule.
+     * @param {BlockRuleUpdateArgs} args - Arguments to update one BlockRule.
+     * @example
+     * // Update one BlockRule
+     * const blockRule = await prisma.blockRule.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BlockRuleUpdateArgs>(args: SelectSubset<T, BlockRuleUpdateArgs<ExtArgs>>): Prisma__BlockRuleClient<$Result.GetResult<Prisma.$BlockRulePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more BlockRules.
+     * @param {BlockRuleDeleteManyArgs} args - Arguments to filter BlockRules to delete.
+     * @example
+     * // Delete a few BlockRules
+     * const { count } = await prisma.blockRule.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BlockRuleDeleteManyArgs>(args?: SelectSubset<T, BlockRuleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BlockRules.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BlockRuleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many BlockRules
+     * const blockRule = await prisma.blockRule.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BlockRuleUpdateManyArgs>(args: SelectSubset<T, BlockRuleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BlockRules and returns the data updated in the database.
+     * @param {BlockRuleUpdateManyAndReturnArgs} args - Arguments to update many BlockRules.
+     * @example
+     * // Update many BlockRules
+     * const blockRule = await prisma.blockRule.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more BlockRules and only return the `id`
+     * const blockRuleWithIdOnly = await prisma.blockRule.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends BlockRuleUpdateManyAndReturnArgs>(args: SelectSubset<T, BlockRuleUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BlockRulePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one BlockRule.
+     * @param {BlockRuleUpsertArgs} args - Arguments to update or create a BlockRule.
+     * @example
+     * // Update or create a BlockRule
+     * const blockRule = await prisma.blockRule.upsert({
+     *   create: {
+     *     // ... data to create a BlockRule
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the BlockRule we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BlockRuleUpsertArgs>(args: SelectSubset<T, BlockRuleUpsertArgs<ExtArgs>>): Prisma__BlockRuleClient<$Result.GetResult<Prisma.$BlockRulePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of BlockRules.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BlockRuleCountArgs} args - Arguments to filter BlockRules to count.
+     * @example
+     * // Count the number of BlockRules
+     * const count = await prisma.blockRule.count({
+     *   where: {
+     *     // ... the filter for the BlockRules we want to count
+     *   }
+     * })
+    **/
+    count<T extends BlockRuleCountArgs>(
+      args?: Subset<T, BlockRuleCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BlockRuleCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a BlockRule.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BlockRuleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BlockRuleAggregateArgs>(args: Subset<T, BlockRuleAggregateArgs>): Prisma.PrismaPromise<GetBlockRuleAggregateType<T>>
+
+    /**
+     * Group by BlockRule.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BlockRuleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BlockRuleGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BlockRuleGroupByArgs['orderBy'] }
+        : { orderBy?: BlockRuleGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BlockRuleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBlockRuleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the BlockRule model
+   */
+  readonly fields: BlockRuleFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for BlockRule.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BlockRuleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    source_agency<T extends SourceAgencyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgencyDefaultArgs<ExtArgs>>): Prisma__SourceAgencyClient<$Result.GetResult<Prisma.$SourceAgencyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the BlockRule model
+   */
+  interface BlockRuleFieldRefs {
+    readonly id: FieldRef<"BlockRule", 'String'>
+    readonly source_agency_id: FieldRef<"BlockRule", 'String'>
+    readonly label: FieldRef<"BlockRule", 'String'>
+    readonly signal: FieldRef<"BlockRule", 'BlockSignal'>
+    readonly source: FieldRef<"BlockRule", 'BlockRuleSource'>
+    readonly pattern: FieldRef<"BlockRule", 'String'>
+    readonly is_regex: FieldRef<"BlockRule", 'Boolean'>
+    readonly regex_flags: FieldRef<"BlockRule", 'String'>
+    readonly position: FieldRef<"BlockRule", 'Int'>
+    readonly created_at: FieldRef<"BlockRule", 'DateTime'>
+    readonly updated_at: FieldRef<"BlockRule", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * BlockRule findUnique
+   */
+  export type BlockRuleFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BlockRule
+     */
+    select?: BlockRuleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BlockRule
+     */
+    omit?: BlockRuleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BlockRuleInclude<ExtArgs> | null
+    /**
+     * Filter, which BlockRule to fetch.
+     */
+    where: BlockRuleWhereUniqueInput
+  }
+
+  /**
+   * BlockRule findUniqueOrThrow
+   */
+  export type BlockRuleFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BlockRule
+     */
+    select?: BlockRuleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BlockRule
+     */
+    omit?: BlockRuleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BlockRuleInclude<ExtArgs> | null
+    /**
+     * Filter, which BlockRule to fetch.
+     */
+    where: BlockRuleWhereUniqueInput
+  }
+
+  /**
+   * BlockRule findFirst
+   */
+  export type BlockRuleFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BlockRule
+     */
+    select?: BlockRuleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BlockRule
+     */
+    omit?: BlockRuleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BlockRuleInclude<ExtArgs> | null
+    /**
+     * Filter, which BlockRule to fetch.
+     */
+    where?: BlockRuleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BlockRules to fetch.
+     */
+    orderBy?: BlockRuleOrderByWithRelationInput | BlockRuleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BlockRules.
+     */
+    cursor?: BlockRuleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BlockRules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BlockRules.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BlockRules.
+     */
+    distinct?: BlockRuleScalarFieldEnum | BlockRuleScalarFieldEnum[]
+  }
+
+  /**
+   * BlockRule findFirstOrThrow
+   */
+  export type BlockRuleFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BlockRule
+     */
+    select?: BlockRuleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BlockRule
+     */
+    omit?: BlockRuleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BlockRuleInclude<ExtArgs> | null
+    /**
+     * Filter, which BlockRule to fetch.
+     */
+    where?: BlockRuleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BlockRules to fetch.
+     */
+    orderBy?: BlockRuleOrderByWithRelationInput | BlockRuleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BlockRules.
+     */
+    cursor?: BlockRuleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BlockRules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BlockRules.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BlockRules.
+     */
+    distinct?: BlockRuleScalarFieldEnum | BlockRuleScalarFieldEnum[]
+  }
+
+  /**
+   * BlockRule findMany
+   */
+  export type BlockRuleFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BlockRule
+     */
+    select?: BlockRuleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BlockRule
+     */
+    omit?: BlockRuleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BlockRuleInclude<ExtArgs> | null
+    /**
+     * Filter, which BlockRules to fetch.
+     */
+    where?: BlockRuleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BlockRules to fetch.
+     */
+    orderBy?: BlockRuleOrderByWithRelationInput | BlockRuleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing BlockRules.
+     */
+    cursor?: BlockRuleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BlockRules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BlockRules.
+     */
+    skip?: number
+    distinct?: BlockRuleScalarFieldEnum | BlockRuleScalarFieldEnum[]
+  }
+
+  /**
+   * BlockRule create
+   */
+  export type BlockRuleCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BlockRule
+     */
+    select?: BlockRuleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BlockRule
+     */
+    omit?: BlockRuleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BlockRuleInclude<ExtArgs> | null
+    /**
+     * The data needed to create a BlockRule.
+     */
+    data: XOR<BlockRuleCreateInput, BlockRuleUncheckedCreateInput>
+  }
+
+  /**
+   * BlockRule createMany
+   */
+  export type BlockRuleCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many BlockRules.
+     */
+    data: BlockRuleCreateManyInput | BlockRuleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * BlockRule createManyAndReturn
+   */
+  export type BlockRuleCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BlockRule
+     */
+    select?: BlockRuleSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BlockRule
+     */
+    omit?: BlockRuleOmit<ExtArgs> | null
+    /**
+     * The data used to create many BlockRules.
+     */
+    data: BlockRuleCreateManyInput | BlockRuleCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BlockRuleIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BlockRule update
+   */
+  export type BlockRuleUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BlockRule
+     */
+    select?: BlockRuleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BlockRule
+     */
+    omit?: BlockRuleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BlockRuleInclude<ExtArgs> | null
+    /**
+     * The data needed to update a BlockRule.
+     */
+    data: XOR<BlockRuleUpdateInput, BlockRuleUncheckedUpdateInput>
+    /**
+     * Choose, which BlockRule to update.
+     */
+    where: BlockRuleWhereUniqueInput
+  }
+
+  /**
+   * BlockRule updateMany
+   */
+  export type BlockRuleUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update BlockRules.
+     */
+    data: XOR<BlockRuleUpdateManyMutationInput, BlockRuleUncheckedUpdateManyInput>
+    /**
+     * Filter which BlockRules to update
+     */
+    where?: BlockRuleWhereInput
+    /**
+     * Limit how many BlockRules to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * BlockRule updateManyAndReturn
+   */
+  export type BlockRuleUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BlockRule
+     */
+    select?: BlockRuleSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BlockRule
+     */
+    omit?: BlockRuleOmit<ExtArgs> | null
+    /**
+     * The data used to update BlockRules.
+     */
+    data: XOR<BlockRuleUpdateManyMutationInput, BlockRuleUncheckedUpdateManyInput>
+    /**
+     * Filter which BlockRules to update
+     */
+    where?: BlockRuleWhereInput
+    /**
+     * Limit how many BlockRules to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BlockRuleIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BlockRule upsert
+   */
+  export type BlockRuleUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BlockRule
+     */
+    select?: BlockRuleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BlockRule
+     */
+    omit?: BlockRuleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BlockRuleInclude<ExtArgs> | null
+    /**
+     * The filter to search for the BlockRule to update in case it exists.
+     */
+    where: BlockRuleWhereUniqueInput
+    /**
+     * In case the BlockRule found by the `where` argument doesn't exist, create a new BlockRule with this data.
+     */
+    create: XOR<BlockRuleCreateInput, BlockRuleUncheckedCreateInput>
+    /**
+     * In case the BlockRule was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BlockRuleUpdateInput, BlockRuleUncheckedUpdateInput>
+  }
+
+  /**
+   * BlockRule delete
+   */
+  export type BlockRuleDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BlockRule
+     */
+    select?: BlockRuleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BlockRule
+     */
+    omit?: BlockRuleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BlockRuleInclude<ExtArgs> | null
+    /**
+     * Filter which BlockRule to delete.
+     */
+    where: BlockRuleWhereUniqueInput
+  }
+
+  /**
+   * BlockRule deleteMany
+   */
+  export type BlockRuleDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BlockRules to delete
+     */
+    where?: BlockRuleWhereInput
+    /**
+     * Limit how many BlockRules to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * BlockRule without action
+   */
+  export type BlockRuleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BlockRule
+     */
+    select?: BlockRuleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BlockRule
+     */
+    omit?: BlockRuleOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BlockRuleInclude<ExtArgs> | null
   }
 
 
@@ -46700,11 +48094,30 @@ export namespace Prisma {
     last_failure_at: 'last_failure_at',
     last_error_message: 'last_error_message',
     metadata: 'metadata',
+    block_handling_wait_timeout_ms: 'block_handling_wait_timeout_ms',
+    block_handling_min_ready_body_length: 'block_handling_min_ready_body_length',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
 
   export type SourceAgencyScalarFieldEnum = (typeof SourceAgencyScalarFieldEnum)[keyof typeof SourceAgencyScalarFieldEnum]
+
+
+  export const BlockRuleScalarFieldEnum: {
+    id: 'id',
+    source_agency_id: 'source_agency_id',
+    label: 'label',
+    signal: 'signal',
+    source: 'source',
+    pattern: 'pattern',
+    is_regex: 'is_regex',
+    regex_flags: 'regex_flags',
+    position: 'position',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type BlockRuleScalarFieldEnum = (typeof BlockRuleScalarFieldEnum)[keyof typeof BlockRuleScalarFieldEnum]
 
 
   export const UserTrackedAgencyScalarFieldEnum: {
@@ -47456,6 +48869,34 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'BlockSignal'
+   */
+  export type EnumBlockSignalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BlockSignal'>
+    
+
+
+  /**
+   * Reference to a field of type 'BlockSignal[]'
+   */
+  export type ListEnumBlockSignalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BlockSignal[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'BlockRuleSource'
+   */
+  export type EnumBlockRuleSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BlockRuleSource'>
+    
+
+
+  /**
+   * Reference to a field of type 'BlockRuleSource[]'
+   */
+  export type ListEnumBlockRuleSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BlockRuleSource[]'>
+    
+
+
+  /**
    * Reference to a field of type 'ScraperStatus'
    */
   export type EnumScraperStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScraperStatus'>
@@ -48194,6 +49635,8 @@ export namespace Prisma {
     last_failure_at?: DateTimeNullableFilter<"SourceAgency"> | Date | string | null
     last_error_message?: StringNullableFilter<"SourceAgency"> | string | null
     metadata?: JsonNullableFilter<"SourceAgency">
+    block_handling_wait_timeout_ms?: IntNullableFilter<"SourceAgency"> | number | null
+    block_handling_min_ready_body_length?: IntNullableFilter<"SourceAgency"> | number | null
     created_at?: DateTimeFilter<"SourceAgency"> | Date | string
     updated_at?: DateTimeFilter<"SourceAgency"> | Date | string
     scrapers?: ScraperListRelationFilter
@@ -48202,6 +49645,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunListRelationFilter
     source_properties?: SourcePropertyListRelationFilter
     notifications?: NotificationListRelationFilter
+    block_rules?: BlockRuleListRelationFilter
   }
 
   export type SourceAgencyOrderByWithRelationInput = {
@@ -48219,6 +49663,8 @@ export namespace Prisma {
     last_failure_at?: SortOrderInput | SortOrder
     last_error_message?: SortOrderInput | SortOrder
     metadata?: SortOrderInput | SortOrder
+    block_handling_wait_timeout_ms?: SortOrderInput | SortOrder
+    block_handling_min_ready_body_length?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     scrapers?: ScraperOrderByRelationAggregateInput
@@ -48227,6 +49673,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunOrderByRelationAggregateInput
     source_properties?: SourcePropertyOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
+    block_rules?: BlockRuleOrderByRelationAggregateInput
   }
 
   export type SourceAgencyWhereUniqueInput = Prisma.AtLeast<{
@@ -48247,6 +49694,8 @@ export namespace Prisma {
     last_failure_at?: DateTimeNullableFilter<"SourceAgency"> | Date | string | null
     last_error_message?: StringNullableFilter<"SourceAgency"> | string | null
     metadata?: JsonNullableFilter<"SourceAgency">
+    block_handling_wait_timeout_ms?: IntNullableFilter<"SourceAgency"> | number | null
+    block_handling_min_ready_body_length?: IntNullableFilter<"SourceAgency"> | number | null
     created_at?: DateTimeFilter<"SourceAgency"> | Date | string
     updated_at?: DateTimeFilter<"SourceAgency"> | Date | string
     scrapers?: ScraperListRelationFilter
@@ -48255,6 +49704,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunListRelationFilter
     source_properties?: SourcePropertyListRelationFilter
     notifications?: NotificationListRelationFilter
+    block_rules?: BlockRuleListRelationFilter
   }, "id" | "base_url">
 
   export type SourceAgencyOrderByWithAggregationInput = {
@@ -48272,11 +49722,15 @@ export namespace Prisma {
     last_failure_at?: SortOrderInput | SortOrder
     last_error_message?: SortOrderInput | SortOrder
     metadata?: SortOrderInput | SortOrder
+    block_handling_wait_timeout_ms?: SortOrderInput | SortOrder
+    block_handling_min_ready_body_length?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: SourceAgencyCountOrderByAggregateInput
+    _avg?: SourceAgencyAvgOrderByAggregateInput
     _max?: SourceAgencyMaxOrderByAggregateInput
     _min?: SourceAgencyMinOrderByAggregateInput
+    _sum?: SourceAgencySumOrderByAggregateInput
   }
 
   export type SourceAgencyScalarWhereWithAggregatesInput = {
@@ -48297,8 +49751,97 @@ export namespace Prisma {
     last_failure_at?: DateTimeNullableWithAggregatesFilter<"SourceAgency"> | Date | string | null
     last_error_message?: StringNullableWithAggregatesFilter<"SourceAgency"> | string | null
     metadata?: JsonNullableWithAggregatesFilter<"SourceAgency">
+    block_handling_wait_timeout_ms?: IntNullableWithAggregatesFilter<"SourceAgency"> | number | null
+    block_handling_min_ready_body_length?: IntNullableWithAggregatesFilter<"SourceAgency"> | number | null
     created_at?: DateTimeWithAggregatesFilter<"SourceAgency"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"SourceAgency"> | Date | string
+  }
+
+  export type BlockRuleWhereInput = {
+    AND?: BlockRuleWhereInput | BlockRuleWhereInput[]
+    OR?: BlockRuleWhereInput[]
+    NOT?: BlockRuleWhereInput | BlockRuleWhereInput[]
+    id?: StringFilter<"BlockRule"> | string
+    source_agency_id?: StringFilter<"BlockRule"> | string
+    label?: StringNullableFilter<"BlockRule"> | string | null
+    signal?: EnumBlockSignalFilter<"BlockRule"> | $Enums.BlockSignal
+    source?: EnumBlockRuleSourceFilter<"BlockRule"> | $Enums.BlockRuleSource
+    pattern?: StringFilter<"BlockRule"> | string
+    is_regex?: BoolFilter<"BlockRule"> | boolean
+    regex_flags?: StringNullableFilter<"BlockRule"> | string | null
+    position?: IntFilter<"BlockRule"> | number
+    created_at?: DateTimeFilter<"BlockRule"> | Date | string
+    updated_at?: DateTimeFilter<"BlockRule"> | Date | string
+    source_agency?: XOR<SourceAgencyScalarRelationFilter, SourceAgencyWhereInput>
+  }
+
+  export type BlockRuleOrderByWithRelationInput = {
+    id?: SortOrder
+    source_agency_id?: SortOrder
+    label?: SortOrderInput | SortOrder
+    signal?: SortOrder
+    source?: SortOrder
+    pattern?: SortOrder
+    is_regex?: SortOrder
+    regex_flags?: SortOrderInput | SortOrder
+    position?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    source_agency?: SourceAgencyOrderByWithRelationInput
+  }
+
+  export type BlockRuleWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: BlockRuleWhereInput | BlockRuleWhereInput[]
+    OR?: BlockRuleWhereInput[]
+    NOT?: BlockRuleWhereInput | BlockRuleWhereInput[]
+    source_agency_id?: StringFilter<"BlockRule"> | string
+    label?: StringNullableFilter<"BlockRule"> | string | null
+    signal?: EnumBlockSignalFilter<"BlockRule"> | $Enums.BlockSignal
+    source?: EnumBlockRuleSourceFilter<"BlockRule"> | $Enums.BlockRuleSource
+    pattern?: StringFilter<"BlockRule"> | string
+    is_regex?: BoolFilter<"BlockRule"> | boolean
+    regex_flags?: StringNullableFilter<"BlockRule"> | string | null
+    position?: IntFilter<"BlockRule"> | number
+    created_at?: DateTimeFilter<"BlockRule"> | Date | string
+    updated_at?: DateTimeFilter<"BlockRule"> | Date | string
+    source_agency?: XOR<SourceAgencyScalarRelationFilter, SourceAgencyWhereInput>
+  }, "id">
+
+  export type BlockRuleOrderByWithAggregationInput = {
+    id?: SortOrder
+    source_agency_id?: SortOrder
+    label?: SortOrderInput | SortOrder
+    signal?: SortOrder
+    source?: SortOrder
+    pattern?: SortOrder
+    is_regex?: SortOrder
+    regex_flags?: SortOrderInput | SortOrder
+    position?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: BlockRuleCountOrderByAggregateInput
+    _avg?: BlockRuleAvgOrderByAggregateInput
+    _max?: BlockRuleMaxOrderByAggregateInput
+    _min?: BlockRuleMinOrderByAggregateInput
+    _sum?: BlockRuleSumOrderByAggregateInput
+  }
+
+  export type BlockRuleScalarWhereWithAggregatesInput = {
+    AND?: BlockRuleScalarWhereWithAggregatesInput | BlockRuleScalarWhereWithAggregatesInput[]
+    OR?: BlockRuleScalarWhereWithAggregatesInput[]
+    NOT?: BlockRuleScalarWhereWithAggregatesInput | BlockRuleScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"BlockRule"> | string
+    source_agency_id?: StringWithAggregatesFilter<"BlockRule"> | string
+    label?: StringNullableWithAggregatesFilter<"BlockRule"> | string | null
+    signal?: EnumBlockSignalWithAggregatesFilter<"BlockRule"> | $Enums.BlockSignal
+    source?: EnumBlockRuleSourceWithAggregatesFilter<"BlockRule"> | $Enums.BlockRuleSource
+    pattern?: StringWithAggregatesFilter<"BlockRule"> | string
+    is_regex?: BoolWithAggregatesFilter<"BlockRule"> | boolean
+    regex_flags?: StringNullableWithAggregatesFilter<"BlockRule"> | string | null
+    position?: IntWithAggregatesFilter<"BlockRule"> | number
+    created_at?: DateTimeWithAggregatesFilter<"BlockRule"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"BlockRule"> | Date | string
   }
 
   export type UserTrackedAgencyWhereInput = {
@@ -51796,6 +53339,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
@@ -51804,6 +53349,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyUncheckedCreateInput = {
@@ -51821,6 +53367,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -51829,6 +53377,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleUncheckedCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyUpdateInput = {
@@ -51846,6 +53395,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
@@ -51854,6 +53405,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type SourceAgencyUncheckedUpdateInput = {
@@ -51871,6 +53423,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -51879,6 +53433,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUncheckedUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type SourceAgencyCreateManyInput = {
@@ -51896,6 +53451,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -51915,6 +53472,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -51934,6 +53493,105 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BlockRuleCreateInput = {
+    id?: string
+    label?: string | null
+    signal: $Enums.BlockSignal
+    source: $Enums.BlockRuleSource
+    pattern: string
+    is_regex?: boolean
+    regex_flags?: string | null
+    position?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    source_agency: SourceAgencyCreateNestedOneWithoutBlock_rulesInput
+  }
+
+  export type BlockRuleUncheckedCreateInput = {
+    id?: string
+    source_agency_id: string
+    label?: string | null
+    signal: $Enums.BlockSignal
+    source: $Enums.BlockRuleSource
+    pattern: string
+    is_regex?: boolean
+    regex_flags?: string | null
+    position?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type BlockRuleUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
+    signal?: EnumBlockSignalFieldUpdateOperationsInput | $Enums.BlockSignal
+    source?: EnumBlockRuleSourceFieldUpdateOperationsInput | $Enums.BlockRuleSource
+    pattern?: StringFieldUpdateOperationsInput | string
+    is_regex?: BoolFieldUpdateOperationsInput | boolean
+    regex_flags?: NullableStringFieldUpdateOperationsInput | string | null
+    position?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    source_agency?: SourceAgencyUpdateOneRequiredWithoutBlock_rulesNestedInput
+  }
+
+  export type BlockRuleUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
+    signal?: EnumBlockSignalFieldUpdateOperationsInput | $Enums.BlockSignal
+    source?: EnumBlockRuleSourceFieldUpdateOperationsInput | $Enums.BlockRuleSource
+    pattern?: StringFieldUpdateOperationsInput | string
+    is_regex?: BoolFieldUpdateOperationsInput | boolean
+    regex_flags?: NullableStringFieldUpdateOperationsInput | string | null
+    position?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BlockRuleCreateManyInput = {
+    id?: string
+    source_agency_id: string
+    label?: string | null
+    signal: $Enums.BlockSignal
+    source: $Enums.BlockRuleSource
+    pattern: string
+    is_regex?: boolean
+    regex_flags?: string | null
+    position?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type BlockRuleUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
+    signal?: EnumBlockSignalFieldUpdateOperationsInput | $Enums.BlockSignal
+    source?: EnumBlockRuleSourceFieldUpdateOperationsInput | $Enums.BlockRuleSource
+    pattern?: StringFieldUpdateOperationsInput | string
+    is_regex?: BoolFieldUpdateOperationsInput | boolean
+    regex_flags?: NullableStringFieldUpdateOperationsInput | string | null
+    position?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BlockRuleUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source_agency_id?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
+    signal?: EnumBlockSignalFieldUpdateOperationsInput | $Enums.BlockSignal
+    source?: EnumBlockRuleSourceFieldUpdateOperationsInput | $Enums.BlockRuleSource
+    pattern?: StringFieldUpdateOperationsInput | string
+    is_regex?: BoolFieldUpdateOperationsInput | boolean
+    regex_flags?: NullableStringFieldUpdateOperationsInput | string | null
+    position?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -55942,6 +57600,17 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type ScraperListRelationFilter = {
     every?: ScraperWhereInput
     some?: ScraperWhereInput
@@ -55972,6 +57641,12 @@ export namespace Prisma {
     none?: NotificationWhereInput
   }
 
+  export type BlockRuleListRelationFilter = {
+    every?: BlockRuleWhereInput
+    some?: BlockRuleWhereInput
+    none?: BlockRuleWhereInput
+  }
+
   export type ScraperOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -55992,6 +57667,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type BlockRuleOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type SourceAgencyCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
@@ -56007,8 +57686,15 @@ export namespace Prisma {
     last_failure_at?: SortOrder
     last_error_message?: SortOrder
     metadata?: SortOrder
+    block_handling_wait_timeout_ms?: SortOrder
+    block_handling_min_ready_body_length?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+  }
+
+  export type SourceAgencyAvgOrderByAggregateInput = {
+    block_handling_wait_timeout_ms?: SortOrder
+    block_handling_min_ready_body_length?: SortOrder
   }
 
   export type SourceAgencyMaxOrderByAggregateInput = {
@@ -56025,6 +57711,8 @@ export namespace Prisma {
     last_success_at?: SortOrder
     last_failure_at?: SortOrder
     last_error_message?: SortOrder
+    block_handling_wait_timeout_ms?: SortOrder
+    block_handling_min_ready_body_length?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -56043,8 +57731,15 @@ export namespace Prisma {
     last_success_at?: SortOrder
     last_failure_at?: SortOrder
     last_error_message?: SortOrder
+    block_handling_wait_timeout_ms?: SortOrder
+    block_handling_min_ready_body_length?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
+  }
+
+  export type SourceAgencySumOrderByAggregateInput = {
+    block_handling_wait_timeout_ms?: SortOrder
+    block_handling_min_ready_body_length?: SortOrder
   }
 
   export type EnumContentLanguageWithAggregatesFilter<$PrismaModel = never> = {
@@ -56071,6 +57766,36 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type EnumBlockSignalFilter<$PrismaModel = never> = {
+    equals?: $Enums.BlockSignal | EnumBlockSignalFieldRefInput<$PrismaModel>
+    in?: $Enums.BlockSignal[] | ListEnumBlockSignalFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BlockSignal[] | ListEnumBlockSignalFieldRefInput<$PrismaModel>
+    not?: NestedEnumBlockSignalFilter<$PrismaModel> | $Enums.BlockSignal
+  }
+
+  export type EnumBlockRuleSourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.BlockRuleSource | EnumBlockRuleSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.BlockRuleSource[] | ListEnumBlockRuleSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BlockRuleSource[] | ListEnumBlockRuleSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumBlockRuleSourceFilter<$PrismaModel> | $Enums.BlockRuleSource
+  }
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -56082,15 +57807,95 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+  export type SourceAgencyScalarRelationFilter = {
+    is?: SourceAgencyWhereInput
+    isNot?: SourceAgencyWhereInput
+  }
+
+  export type BlockRuleCountOrderByAggregateInput = {
+    id?: SortOrder
+    source_agency_id?: SortOrder
+    label?: SortOrder
+    signal?: SortOrder
+    source?: SortOrder
+    pattern?: SortOrder
+    is_regex?: SortOrder
+    regex_flags?: SortOrder
+    position?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type BlockRuleAvgOrderByAggregateInput = {
+    position?: SortOrder
+  }
+
+  export type BlockRuleMaxOrderByAggregateInput = {
+    id?: SortOrder
+    source_agency_id?: SortOrder
+    label?: SortOrder
+    signal?: SortOrder
+    source?: SortOrder
+    pattern?: SortOrder
+    is_regex?: SortOrder
+    regex_flags?: SortOrder
+    position?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type BlockRuleMinOrderByAggregateInput = {
+    id?: SortOrder
+    source_agency_id?: SortOrder
+    label?: SortOrder
+    signal?: SortOrder
+    source?: SortOrder
+    pattern?: SortOrder
+    is_regex?: SortOrder
+    regex_flags?: SortOrder
+    position?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type BlockRuleSumOrderByAggregateInput = {
+    position?: SortOrder
+  }
+
+  export type EnumBlockSignalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BlockSignal | EnumBlockSignalFieldRefInput<$PrismaModel>
+    in?: $Enums.BlockSignal[] | ListEnumBlockSignalFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BlockSignal[] | ListEnumBlockSignalFieldRefInput<$PrismaModel>
+    not?: NestedEnumBlockSignalWithAggregatesFilter<$PrismaModel> | $Enums.BlockSignal
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBlockSignalFilter<$PrismaModel>
+    _max?: NestedEnumBlockSignalFilter<$PrismaModel>
+  }
+
+  export type EnumBlockRuleSourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BlockRuleSource | EnumBlockRuleSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.BlockRuleSource[] | ListEnumBlockRuleSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BlockRuleSource[] | ListEnumBlockRuleSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumBlockRuleSourceWithAggregatesFilter<$PrismaModel> | $Enums.BlockRuleSource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBlockRuleSourceFilter<$PrismaModel>
+    _max?: NestedEnumBlockRuleSourceFilter<$PrismaModel>
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
     lt?: number | IntFieldRefInput<$PrismaModel>
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type StringNullableListFilter<$PrismaModel = never> = {
@@ -56099,11 +57904,6 @@ export namespace Prisma {
     hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
     hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
     isEmpty?: boolean
-  }
-
-  export type SourceAgencyScalarRelationFilter = {
-    is?: SourceAgencyWhereInput
-    isNot?: SourceAgencyWhereInput
   }
 
   export type ContentPublishingConfigNullableScalarRelationFilter = {
@@ -56189,38 +57989,6 @@ export namespace Prisma {
     insertion_interval_seconds?: SortOrder
     max_properties?: SortOrder
     watermark_image_count?: SortOrder
-  }
-
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type UserTrackedAgencyScalarRelationFilter = {
@@ -59313,6 +61081,13 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type BlockRuleCreateNestedManyWithoutSource_agencyInput = {
+    create?: XOR<BlockRuleCreateWithoutSource_agencyInput, BlockRuleUncheckedCreateWithoutSource_agencyInput> | BlockRuleCreateWithoutSource_agencyInput[] | BlockRuleUncheckedCreateWithoutSource_agencyInput[]
+    connectOrCreate?: BlockRuleCreateOrConnectWithoutSource_agencyInput | BlockRuleCreateOrConnectWithoutSource_agencyInput[]
+    createMany?: BlockRuleCreateManySource_agencyInputEnvelope
+    connect?: BlockRuleWhereUniqueInput | BlockRuleWhereUniqueInput[]
+  }
+
   export type ScraperUncheckedCreateNestedManyWithoutSource_agencyInput = {
     create?: XOR<ScraperCreateWithoutSource_agencyInput, ScraperUncheckedCreateWithoutSource_agencyInput> | ScraperCreateWithoutSource_agencyInput[] | ScraperUncheckedCreateWithoutSource_agencyInput[]
     connectOrCreate?: ScraperCreateOrConnectWithoutSource_agencyInput | ScraperCreateOrConnectWithoutSource_agencyInput[]
@@ -59355,12 +61130,27 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type BlockRuleUncheckedCreateNestedManyWithoutSource_agencyInput = {
+    create?: XOR<BlockRuleCreateWithoutSource_agencyInput, BlockRuleUncheckedCreateWithoutSource_agencyInput> | BlockRuleCreateWithoutSource_agencyInput[] | BlockRuleUncheckedCreateWithoutSource_agencyInput[]
+    connectOrCreate?: BlockRuleCreateOrConnectWithoutSource_agencyInput | BlockRuleCreateOrConnectWithoutSource_agencyInput[]
+    createMany?: BlockRuleCreateManySource_agencyInputEnvelope
+    connect?: BlockRuleWhereUniqueInput | BlockRuleWhereUniqueInput[]
+  }
+
   export type EnumContentLanguageFieldUpdateOperationsInput = {
     set?: $Enums.ContentLanguage
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type ScraperUpdateManyWithoutSource_agencyNestedInput = {
@@ -59447,6 +61237,20 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type BlockRuleUpdateManyWithoutSource_agencyNestedInput = {
+    create?: XOR<BlockRuleCreateWithoutSource_agencyInput, BlockRuleUncheckedCreateWithoutSource_agencyInput> | BlockRuleCreateWithoutSource_agencyInput[] | BlockRuleUncheckedCreateWithoutSource_agencyInput[]
+    connectOrCreate?: BlockRuleCreateOrConnectWithoutSource_agencyInput | BlockRuleCreateOrConnectWithoutSource_agencyInput[]
+    upsert?: BlockRuleUpsertWithWhereUniqueWithoutSource_agencyInput | BlockRuleUpsertWithWhereUniqueWithoutSource_agencyInput[]
+    createMany?: BlockRuleCreateManySource_agencyInputEnvelope
+    set?: BlockRuleWhereUniqueInput | BlockRuleWhereUniqueInput[]
+    disconnect?: BlockRuleWhereUniqueInput | BlockRuleWhereUniqueInput[]
+    delete?: BlockRuleWhereUniqueInput | BlockRuleWhereUniqueInput[]
+    connect?: BlockRuleWhereUniqueInput | BlockRuleWhereUniqueInput[]
+    update?: BlockRuleUpdateWithWhereUniqueWithoutSource_agencyInput | BlockRuleUpdateWithWhereUniqueWithoutSource_agencyInput[]
+    updateMany?: BlockRuleUpdateManyWithWhereWithoutSource_agencyInput | BlockRuleUpdateManyWithWhereWithoutSource_agencyInput[]
+    deleteMany?: BlockRuleScalarWhereInput | BlockRuleScalarWhereInput[]
+  }
+
   export type ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput = {
     create?: XOR<ScraperCreateWithoutSource_agencyInput, ScraperUncheckedCreateWithoutSource_agencyInput> | ScraperCreateWithoutSource_agencyInput[] | ScraperUncheckedCreateWithoutSource_agencyInput[]
     connectOrCreate?: ScraperCreateOrConnectWithoutSource_agencyInput | ScraperCreateOrConnectWithoutSource_agencyInput[]
@@ -59531,6 +61335,50 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type BlockRuleUncheckedUpdateManyWithoutSource_agencyNestedInput = {
+    create?: XOR<BlockRuleCreateWithoutSource_agencyInput, BlockRuleUncheckedCreateWithoutSource_agencyInput> | BlockRuleCreateWithoutSource_agencyInput[] | BlockRuleUncheckedCreateWithoutSource_agencyInput[]
+    connectOrCreate?: BlockRuleCreateOrConnectWithoutSource_agencyInput | BlockRuleCreateOrConnectWithoutSource_agencyInput[]
+    upsert?: BlockRuleUpsertWithWhereUniqueWithoutSource_agencyInput | BlockRuleUpsertWithWhereUniqueWithoutSource_agencyInput[]
+    createMany?: BlockRuleCreateManySource_agencyInputEnvelope
+    set?: BlockRuleWhereUniqueInput | BlockRuleWhereUniqueInput[]
+    disconnect?: BlockRuleWhereUniqueInput | BlockRuleWhereUniqueInput[]
+    delete?: BlockRuleWhereUniqueInput | BlockRuleWhereUniqueInput[]
+    connect?: BlockRuleWhereUniqueInput | BlockRuleWhereUniqueInput[]
+    update?: BlockRuleUpdateWithWhereUniqueWithoutSource_agencyInput | BlockRuleUpdateWithWhereUniqueWithoutSource_agencyInput[]
+    updateMany?: BlockRuleUpdateManyWithWhereWithoutSource_agencyInput | BlockRuleUpdateManyWithWhereWithoutSource_agencyInput[]
+    deleteMany?: BlockRuleScalarWhereInput | BlockRuleScalarWhereInput[]
+  }
+
+  export type SourceAgencyCreateNestedOneWithoutBlock_rulesInput = {
+    create?: XOR<SourceAgencyCreateWithoutBlock_rulesInput, SourceAgencyUncheckedCreateWithoutBlock_rulesInput>
+    connectOrCreate?: SourceAgencyCreateOrConnectWithoutBlock_rulesInput
+    connect?: SourceAgencyWhereUniqueInput
+  }
+
+  export type EnumBlockSignalFieldUpdateOperationsInput = {
+    set?: $Enums.BlockSignal
+  }
+
+  export type EnumBlockRuleSourceFieldUpdateOperationsInput = {
+    set?: $Enums.BlockRuleSource
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type SourceAgencyUpdateOneRequiredWithoutBlock_rulesNestedInput = {
+    create?: XOR<SourceAgencyCreateWithoutBlock_rulesInput, SourceAgencyUncheckedCreateWithoutBlock_rulesInput>
+    connectOrCreate?: SourceAgencyCreateOrConnectWithoutBlock_rulesInput
+    upsert?: SourceAgencyUpsertWithoutBlock_rulesInput
+    connect?: SourceAgencyWhereUniqueInput
+    update?: XOR<XOR<SourceAgencyUpdateToOneWithWhereWithoutBlock_rulesInput, SourceAgencyUpdateWithoutBlock_rulesInput>, SourceAgencyUncheckedUpdateWithoutBlock_rulesInput>
+  }
+
   export type UserTrackedAgencyCreatetext_truncate_piecesInput = {
     set: string[]
   }
@@ -59597,22 +61445,6 @@ export namespace Prisma {
     connectOrCreate?: CostLogCreateOrConnectWithoutUser_tracked_agencyInput | CostLogCreateOrConnectWithoutUser_tracked_agencyInput[]
     createMany?: CostLogCreateManyUser_tracked_agencyInputEnvelope
     connect?: CostLogWhereUniqueInput | CostLogWhereUniqueInput[]
-  }
-
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type UserTrackedAgencyUpdatetext_truncate_piecesInput = {
@@ -62168,33 +64000,6 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
-  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type NestedFloatFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel>
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -62220,6 +64025,67 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedEnumBlockSignalFilter<$PrismaModel = never> = {
+    equals?: $Enums.BlockSignal | EnumBlockSignalFieldRefInput<$PrismaModel>
+    in?: $Enums.BlockSignal[] | ListEnumBlockSignalFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BlockSignal[] | ListEnumBlockSignalFieldRefInput<$PrismaModel>
+    not?: NestedEnumBlockSignalFilter<$PrismaModel> | $Enums.BlockSignal
+  }
+
+  export type NestedEnumBlockRuleSourceFilter<$PrismaModel = never> = {
+    equals?: $Enums.BlockRuleSource | EnumBlockRuleSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.BlockRuleSource[] | ListEnumBlockRuleSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BlockRuleSource[] | ListEnumBlockRuleSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumBlockRuleSourceFilter<$PrismaModel> | $Enums.BlockRuleSource
+  }
+
+  export type NestedEnumBlockSignalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BlockSignal | EnumBlockSignalFieldRefInput<$PrismaModel>
+    in?: $Enums.BlockSignal[] | ListEnumBlockSignalFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BlockSignal[] | ListEnumBlockSignalFieldRefInput<$PrismaModel>
+    not?: NestedEnumBlockSignalWithAggregatesFilter<$PrismaModel> | $Enums.BlockSignal
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBlockSignalFilter<$PrismaModel>
+    _max?: NestedEnumBlockSignalFilter<$PrismaModel>
+  }
+
+  export type NestedEnumBlockRuleSourceWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BlockRuleSource | EnumBlockRuleSourceFieldRefInput<$PrismaModel>
+    in?: $Enums.BlockRuleSource[] | ListEnumBlockRuleSourceFieldRefInput<$PrismaModel>
+    notIn?: $Enums.BlockRuleSource[] | ListEnumBlockRuleSourceFieldRefInput<$PrismaModel>
+    not?: NestedEnumBlockRuleSourceWithAggregatesFilter<$PrismaModel> | $Enums.BlockRuleSource
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBlockRuleSourceFilter<$PrismaModel>
+    _max?: NestedEnumBlockRuleSourceFilter<$PrismaModel>
+  }
+
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedEnumScraperStatusFilter<$PrismaModel = never> = {
@@ -64367,6 +66233,42 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type BlockRuleCreateWithoutSource_agencyInput = {
+    id?: string
+    label?: string | null
+    signal: $Enums.BlockSignal
+    source: $Enums.BlockRuleSource
+    pattern: string
+    is_regex?: boolean
+    regex_flags?: string | null
+    position?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type BlockRuleUncheckedCreateWithoutSource_agencyInput = {
+    id?: string
+    label?: string | null
+    signal: $Enums.BlockSignal
+    source: $Enums.BlockRuleSource
+    pattern: string
+    is_regex?: boolean
+    regex_flags?: string | null
+    position?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type BlockRuleCreateOrConnectWithoutSource_agencyInput = {
+    where: BlockRuleWhereUniqueInput
+    create: XOR<BlockRuleCreateWithoutSource_agencyInput, BlockRuleUncheckedCreateWithoutSource_agencyInput>
+  }
+
+  export type BlockRuleCreateManySource_agencyInputEnvelope = {
+    data: BlockRuleCreateManySource_agencyInput | BlockRuleCreateManySource_agencyInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ScraperUpsertWithWhereUniqueWithoutSource_agencyInput = {
     where: ScraperWhereUniqueInput
     update: XOR<ScraperUpdateWithoutSource_agencyInput, ScraperUncheckedUpdateWithoutSource_agencyInput>
@@ -64584,6 +66486,163 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"Notification"> | Date | string
   }
 
+  export type BlockRuleUpsertWithWhereUniqueWithoutSource_agencyInput = {
+    where: BlockRuleWhereUniqueInput
+    update: XOR<BlockRuleUpdateWithoutSource_agencyInput, BlockRuleUncheckedUpdateWithoutSource_agencyInput>
+    create: XOR<BlockRuleCreateWithoutSource_agencyInput, BlockRuleUncheckedCreateWithoutSource_agencyInput>
+  }
+
+  export type BlockRuleUpdateWithWhereUniqueWithoutSource_agencyInput = {
+    where: BlockRuleWhereUniqueInput
+    data: XOR<BlockRuleUpdateWithoutSource_agencyInput, BlockRuleUncheckedUpdateWithoutSource_agencyInput>
+  }
+
+  export type BlockRuleUpdateManyWithWhereWithoutSource_agencyInput = {
+    where: BlockRuleScalarWhereInput
+    data: XOR<BlockRuleUpdateManyMutationInput, BlockRuleUncheckedUpdateManyWithoutSource_agencyInput>
+  }
+
+  export type BlockRuleScalarWhereInput = {
+    AND?: BlockRuleScalarWhereInput | BlockRuleScalarWhereInput[]
+    OR?: BlockRuleScalarWhereInput[]
+    NOT?: BlockRuleScalarWhereInput | BlockRuleScalarWhereInput[]
+    id?: StringFilter<"BlockRule"> | string
+    source_agency_id?: StringFilter<"BlockRule"> | string
+    label?: StringNullableFilter<"BlockRule"> | string | null
+    signal?: EnumBlockSignalFilter<"BlockRule"> | $Enums.BlockSignal
+    source?: EnumBlockRuleSourceFilter<"BlockRule"> | $Enums.BlockRuleSource
+    pattern?: StringFilter<"BlockRule"> | string
+    is_regex?: BoolFilter<"BlockRule"> | boolean
+    regex_flags?: StringNullableFilter<"BlockRule"> | string | null
+    position?: IntFilter<"BlockRule"> | number
+    created_at?: DateTimeFilter<"BlockRule"> | Date | string
+    updated_at?: DateTimeFilter<"BlockRule"> | Date | string
+  }
+
+  export type SourceAgencyCreateWithoutBlock_rulesInput = {
+    id?: string
+    name: string
+    base_url: string
+    country?: string | null
+    city?: string | null
+    content_language?: $Enums.ContentLanguage
+    is_visible?: boolean
+    is_enabled?: boolean
+    crawl_interval?: string
+    notes?: string | null
+    last_success_at?: Date | string | null
+    last_failure_at?: Date | string | null
+    last_error_message?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
+    user_tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutSource_agencyInput
+    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutSource_agencyInput
+    crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
+    source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
+    notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
+  }
+
+  export type SourceAgencyUncheckedCreateWithoutBlock_rulesInput = {
+    id?: string
+    name: string
+    base_url: string
+    country?: string | null
+    city?: string | null
+    content_language?: $Enums.ContentLanguage
+    is_visible?: boolean
+    is_enabled?: boolean
+    crawl_interval?: string
+    notes?: string | null
+    last_success_at?: Date | string | null
+    last_failure_at?: Date | string | null
+    last_error_message?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
+    user_tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutSource_agencyInput
+    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutSource_agencyInput
+    crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
+    source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
+  }
+
+  export type SourceAgencyCreateOrConnectWithoutBlock_rulesInput = {
+    where: SourceAgencyWhereUniqueInput
+    create: XOR<SourceAgencyCreateWithoutBlock_rulesInput, SourceAgencyUncheckedCreateWithoutBlock_rulesInput>
+  }
+
+  export type SourceAgencyUpsertWithoutBlock_rulesInput = {
+    update: XOR<SourceAgencyUpdateWithoutBlock_rulesInput, SourceAgencyUncheckedUpdateWithoutBlock_rulesInput>
+    create: XOR<SourceAgencyCreateWithoutBlock_rulesInput, SourceAgencyUncheckedCreateWithoutBlock_rulesInput>
+    where?: SourceAgencyWhereInput
+  }
+
+  export type SourceAgencyUpdateToOneWithWhereWithoutBlock_rulesInput = {
+    where?: SourceAgencyWhereInput
+    data: XOR<SourceAgencyUpdateWithoutBlock_rulesInput, SourceAgencyUncheckedUpdateWithoutBlock_rulesInput>
+  }
+
+  export type SourceAgencyUpdateWithoutBlock_rulesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    base_url?: StringFieldUpdateOperationsInput | string
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    is_visible?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
+    user_tracked_agencies?: UserTrackedAgencyUpdateManyWithoutSource_agencyNestedInput
+    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutSource_agencyNestedInput
+    crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
+    source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
+    notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
+  }
+
+  export type SourceAgencyUncheckedUpdateWithoutBlock_rulesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    base_url?: StringFieldUpdateOperationsInput | string
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
+    is_visible?: BoolFieldUpdateOperationsInput | boolean
+    is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    crawl_interval?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
+    user_tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutSource_agencyNestedInput
+    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyNestedInput
+    crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
+    source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
+  }
+
   export type UserCreateWithoutTracked_agenciesInput = {
     id?: string
     email: string
@@ -64634,6 +66693,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
@@ -64641,6 +66702,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyUncheckedCreateWithoutUser_tracked_agenciesInput = {
@@ -64658,6 +66720,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -64665,6 +66729,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleUncheckedCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyCreateOrConnectWithoutUser_tracked_agenciesInput = {
@@ -64925,6 +66990,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
@@ -64932,6 +66999,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type SourceAgencyUncheckedUpdateWithoutUser_tracked_agenciesInput = {
@@ -64949,6 +67017,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -64956,6 +67026,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUncheckedUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type CrawlRunUpsertWithWhereUniqueWithoutUser_tracked_agencyInput = {
@@ -65269,6 +67340,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     user_tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutSource_agencyInput
@@ -65276,6 +67349,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyUncheckedCreateWithoutScrapersInput = {
@@ -65293,6 +67367,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     user_tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -65300,6 +67376,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleUncheckedCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyCreateOrConnectWithoutScrapersInput = {
@@ -65636,6 +67713,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_tracked_agencies?: UserTrackedAgencyUpdateManyWithoutSource_agencyNestedInput
@@ -65643,6 +67722,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type SourceAgencyUncheckedUpdateWithoutScrapersInput = {
@@ -65660,6 +67740,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -65667,6 +67749,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUncheckedUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type ScraperVersionUpsertWithoutActive_for_scraperInput = {
@@ -65865,6 +67948,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
@@ -65872,6 +67957,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyUncheckedCreateWithoutScraper_generation_runsInput = {
@@ -65889,6 +67975,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -65896,6 +67984,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleUncheckedCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyCreateOrConnectWithoutScraper_generation_runsInput = {
@@ -66045,6 +68134,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
@@ -66052,6 +68143,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type SourceAgencyUncheckedUpdateWithoutScraper_generation_runsInput = {
@@ -66069,6 +68161,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -66076,6 +68170,7 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUncheckedUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type ScraperUpsertWithoutScraper_generation_runsInput = {
@@ -67036,6 +69131,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
@@ -67043,6 +69140,7 @@ export namespace Prisma {
     scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyUncheckedCreateWithoutCrawl_runsInput = {
@@ -67060,6 +69158,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -67067,6 +69167,7 @@ export namespace Prisma {
     scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleUncheckedCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyCreateOrConnectWithoutCrawl_runsInput = {
@@ -67533,6 +69634,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
@@ -67540,6 +69643,7 @@ export namespace Prisma {
     scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type SourceAgencyUncheckedUpdateWithoutCrawl_runsInput = {
@@ -67557,6 +69661,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -67564,6 +69670,7 @@ export namespace Prisma {
     scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUncheckedUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type UserTrackedAgencyUpsertWithoutCrawl_runsInput = {
@@ -68510,6 +70617,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
@@ -68517,6 +70626,7 @@ export namespace Prisma {
     scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyUncheckedCreateWithoutNotificationsInput = {
@@ -68534,6 +70644,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -68541,6 +70653,7 @@ export namespace Prisma {
     scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleUncheckedCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyCreateOrConnectWithoutNotificationsInput = {
@@ -68708,6 +70821,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
@@ -68715,6 +70830,7 @@ export namespace Prisma {
     scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type SourceAgencyUncheckedUpdateWithoutNotificationsInput = {
@@ -68732,6 +70848,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -68739,6 +70857,7 @@ export namespace Prisma {
     scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUncheckedUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type ScraperUpsertWithoutNotificationsInput = {
@@ -69154,6 +71273,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
@@ -69161,6 +71282,7 @@ export namespace Prisma {
     scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyUncheckedCreateWithoutSource_propertiesInput = {
@@ -69178,6 +71300,8 @@ export namespace Prisma {
     last_failure_at?: Date | string | null
     last_error_message?: string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: number | null
+    block_handling_min_ready_body_length?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -69185,6 +71309,7 @@ export namespace Prisma {
     scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
+    block_rules?: BlockRuleUncheckedCreateNestedManyWithoutSource_agencyInput
   }
 
   export type SourceAgencyCreateOrConnectWithoutSource_propertiesInput = {
@@ -69248,6 +71373,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
@@ -69255,6 +71382,7 @@ export namespace Prisma {
     scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type SourceAgencyUncheckedUpdateWithoutSource_propertiesInput = {
@@ -69272,6 +71400,8 @@ export namespace Prisma {
     last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
+    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -69279,6 +71409,7 @@ export namespace Prisma {
     scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
+    block_rules?: BlockRuleUncheckedUpdateManyWithoutSource_agencyNestedInput
   }
 
   export type PropertySourceLinkUpsertWithWhereUniqueWithoutSource_propertyInput = {
@@ -73897,6 +76028,19 @@ export namespace Prisma {
     created_at?: Date | string
   }
 
+  export type BlockRuleCreateManySource_agencyInput = {
+    id?: string
+    label?: string | null
+    signal: $Enums.BlockSignal
+    source: $Enums.BlockRuleSource
+    pattern: string
+    is_regex?: boolean
+    regex_flags?: string | null
+    position?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
   export type ScraperUpdateWithoutSource_agencyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -74298,6 +76442,45 @@ export namespace Prisma {
     crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_read?: BoolFieldUpdateOperationsInput | boolean
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BlockRuleUpdateWithoutSource_agencyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
+    signal?: EnumBlockSignalFieldUpdateOperationsInput | $Enums.BlockSignal
+    source?: EnumBlockRuleSourceFieldUpdateOperationsInput | $Enums.BlockRuleSource
+    pattern?: StringFieldUpdateOperationsInput | string
+    is_regex?: BoolFieldUpdateOperationsInput | boolean
+    regex_flags?: NullableStringFieldUpdateOperationsInput | string | null
+    position?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BlockRuleUncheckedUpdateWithoutSource_agencyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
+    signal?: EnumBlockSignalFieldUpdateOperationsInput | $Enums.BlockSignal
+    source?: EnumBlockRuleSourceFieldUpdateOperationsInput | $Enums.BlockRuleSource
+    pattern?: StringFieldUpdateOperationsInput | string
+    is_regex?: BoolFieldUpdateOperationsInput | boolean
+    regex_flags?: NullableStringFieldUpdateOperationsInput | string | null
+    position?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BlockRuleUncheckedUpdateManyWithoutSource_agencyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    label?: NullableStringFieldUpdateOperationsInput | string | null
+    signal?: EnumBlockSignalFieldUpdateOperationsInput | $Enums.BlockSignal
+    source?: EnumBlockRuleSourceFieldUpdateOperationsInput | $Enums.BlockRuleSource
+    pattern?: StringFieldUpdateOperationsInput | string
+    is_regex?: BoolFieldUpdateOperationsInput | boolean
+    regex_flags?: NullableStringFieldUpdateOperationsInput | string | null
+    position?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CrawlRunCreateManyUser_tracked_agencyInput = {

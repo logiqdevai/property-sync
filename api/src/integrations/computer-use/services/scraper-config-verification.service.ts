@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BrowserContext, Page } from 'playwright';
+import { waitForBotChallengeClearance } from '@/integrations/crawler/block-handling/block-handling.utils';
+import { BlockHandlingConfig } from '@/integrations/crawler/block-handling/block-handling.interface';
 import { VERIFY_TIMEOUT_MS } from '../constants/generation.constants';
 
 interface FieldDef {
@@ -35,6 +37,7 @@ export class ScraperConfigVerificationService {
     context: BrowserContext,
     page: Page,
     config: ScraperDraftConfig,
+    blockHandlingConfig?: BlockHandlingConfig,
   ): Promise<string[]> {
     const errors: string[] = [];
 
@@ -44,7 +47,7 @@ export class ScraperConfigVerificationService {
           waitUntil: 'domcontentloaded',
           timeout: 20000,
         });
-        await page.waitForTimeout(1500);
+        await waitForBotChallengeClearance(page, blockHandlingConfig, 20000);
       } catch (e) {
         errors.push(
           `Could not navigate to start_url "${config.start_url}": ${(e as Error).message.slice(0, 80)}`,

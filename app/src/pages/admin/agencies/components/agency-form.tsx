@@ -10,6 +10,7 @@ import {
   DefaultAgencyCrawlInterval,
   type AgencyFormValues,
 } from "@/features/agencies/validation-schemas/agencies.schema";
+import { BlockRulesEditor } from "./block-rules-editor";
 
 interface AgencyFormProps {
   defaultValues?: Partial<AgencyFormValues>;
@@ -36,6 +37,11 @@ export function AgencyForm({ defaultValues, submitLabel, isPending, onSubmit, on
       content_language:
         defaultValues?.content_language ?? ContentLanguages.EL,
       crawl_interval: defaultValues?.crawl_interval ?? DefaultAgencyCrawlInterval,
+      block_handling_wait_timeout_ms:
+        defaultValues?.block_handling_wait_timeout_ms ?? undefined,
+      block_handling_min_ready_body_length:
+        defaultValues?.block_handling_min_ready_body_length ?? undefined,
+      block_rules: defaultValues?.block_rules ?? [],
     },
   });
 
@@ -124,6 +130,59 @@ export function AgencyForm({ defaultValues, submitLabel, isPending, onSubmit, on
           </div>
         )}
       />
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="agency-wait-timeout">Wait timeout (ms, optional)</Label>
+          <Input
+            id="agency-wait-timeout"
+            type="number"
+            min={0}
+            {...register("block_handling_wait_timeout_ms")}
+            placeholder="20000"
+            fullWidth
+          />
+          {errors.block_handling_wait_timeout_ms && (
+            <FieldError>{errors.block_handling_wait_timeout_ms.message}</FieldError>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="agency-min-body">Min ready body length (optional)</Label>
+          <Input
+            id="agency-min-body"
+            type="number"
+            min={0}
+            {...register("block_handling_min_ready_body_length")}
+            placeholder="80"
+            fullWidth
+          />
+          {errors.block_handling_min_ready_body_length && (
+            <FieldError>
+              {errors.block_handling_min_ready_body_length.message}
+            </FieldError>
+          )}
+        </div>
+      </div>
+
+      <Controller
+        name="block_rules"
+        control={control}
+        render={({ field }) => (
+          <BlockRulesEditor
+            rules={field.value}
+            onChange={field.onChange}
+            isDisabled={isPending}
+          />
+        )}
+      />
+      {errors.block_rules && (
+        <FieldError>
+          {errors.block_rules.message ??
+            errors.block_rules.root?.message ??
+            "Fix invalid block rules"}
+        </FieldError>
+      )}
 
       <div className="flex justify-end gap-2 mt-2">
         {onCancel && (

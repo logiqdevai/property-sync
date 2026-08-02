@@ -183,6 +183,22 @@ exports.Prisma.SourceAgencyScalarFieldEnum = {
   last_failure_at: 'last_failure_at',
   last_error_message: 'last_error_message',
   metadata: 'metadata',
+  block_handling_wait_timeout_ms: 'block_handling_wait_timeout_ms',
+  block_handling_min_ready_body_length: 'block_handling_min_ready_body_length',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.BlockRuleScalarFieldEnum = {
+  id: 'id',
+  source_agency_id: 'source_agency_id',
+  label: 'label',
+  signal: 'signal',
+  source: 'source',
+  pattern: 'pattern',
+  is_regex: 'is_regex',
+  regex_flags: 'regex_flags',
+  position: 'position',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };
@@ -743,6 +759,20 @@ exports.ContentLanguage = exports.$Enums.ContentLanguage = {
   RU: 'RU'
 };
 
+exports.BlockSignal = exports.$Enums.BlockSignal = {
+  BLOCKED: 'BLOCKED',
+  CHALLENGE: 'CHALLENGE'
+};
+
+exports.BlockRuleSource = exports.$Enums.BlockRuleSource = {
+  TITLE: 'TITLE',
+  TEXT: 'TEXT',
+  HTML: 'HTML',
+  PATH: 'PATH',
+  SCRIPT_CONTENT: 'SCRIPT_CONTENT',
+  SELECTOR: 'SELECTOR'
+};
+
 exports.ScraperStatus = exports.$Enums.ScraperStatus = {
   ACTIVE: 'ACTIVE',
   INACTIVE: 'INACTIVE',
@@ -978,6 +1008,7 @@ exports.Prisma.ModelName = {
   UserIntegrationSettings: 'UserIntegrationSettings',
   UserIntegration: 'UserIntegration',
   SourceAgency: 'SourceAgency',
+  BlockRule: 'BlockRule',
   UserTrackedAgency: 'UserTrackedAgency',
   UserTrackedAgencyIntegrationLink: 'UserTrackedAgencyIntegrationLink',
   Scraper: 'Scraper',

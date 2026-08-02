@@ -17,6 +17,7 @@ import {
   extractDenormalizedRawFields,
   extractSourcePropertyIds,
 } from '@/integrations/crawler/utils/crawler.utils';
+import { buildBlockHandlingConfig } from '@/integrations/crawler/block-handling/block-handling.utils';
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
@@ -96,6 +97,13 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       include: {
         scraper: {
           include: { active_version: true },
+        },
+        source_agency: {
+          select: {
+            block_rules: true,
+            block_handling_wait_timeout_ms: true,
+            block_handling_min_ready_body_length: true,
+          },
         },
       },
     });
@@ -199,10 +207,17 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         });
       };
 
+      const blockHandlingConfig = buildBlockHandlingConfig(
+        run.source_agency,
+      );
+
       const crawlResult = await this.withTimeout(
-        this.crawlerService.runCrawl(config, diagnosticsCtx, {
-          onPageComplete: heartbeat,
-        }),
+        this.crawlerService.runCrawl(
+          config,
+          diagnosticsCtx,
+          { onPageComplete: heartbeat },
+          blockHandlingConfig,
+        ),
         crawl_job_timeout_ms,
         `crawl timed out after ${crawl_job_timeout_ms}ms`,
       );
@@ -217,6 +232,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
               crawl_job_timeout_ms -
               DETAIL_ENRICHMENT_SOFT_STOP_BUFFER_MS,
             onBatchComplete: heartbeat,
+            blockHandlingConfig,
           },
         ),
         crawl_job_timeout_ms,

@@ -30,12 +30,28 @@ async function main() {
   console.log(`  Target: ${TARGET_URL}`);
   console.log(`  Output: ${OUTPUT_DIR}\n`);
 
-  const browser = await chromium.launch({ headless: false, slowMo: 80 });
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const browser = await chromium.launch({
+    headless: false,
+    slowMo: 80,
+    args: ['--disable-blink-features=AutomationControlled'],
+  });
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 800 },
+    userAgent:
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    extraHTTPHeaders: {
+      'Accept-Language': 'en-US,en;q=0.9',
+      Accept:
+        'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    },
+  });
+  await context.addInitScript(() => {
+    Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+  });
   let currentPage = await context.newPage();
 
   await currentPage.goto(TARGET_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await currentPage.waitForTimeout(2000);
+  await currentPage.waitForTimeout(3000);
 
   const messages = [];
   let finalConfig = null;

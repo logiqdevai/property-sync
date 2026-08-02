@@ -67,6 +67,9 @@ export class AgenciesService {
         _count: {
           select: { scrapers: true, crawl_runs: true, notifications: true },
         },
+        block_rules: {
+          orderBy: { position: 'asc' },
+        },
         user_tracked_agencies: {
           include: {
             user: {
@@ -100,15 +103,44 @@ export class AgenciesService {
       );
     }
 
-    return this.prisma.sourceAgency.create({ data: dto });
+    const { block_rules, ...rest } = dto;
+
+    return this.prisma.sourceAgency.create({
+      data: {
+        ...rest,
+        ...(block_rules?.length && {
+          block_rules: {
+            create: block_rules.map((rule, index) => ({
+              ...rule,
+              position: index,
+            })),
+          },
+        }),
+      },
+    });
   }
 
   async update(id: string, dto: UpdateAgencyDto) {
     await this.ensureExists(id);
 
+    const { block_rules, ...rest } = dto;
+
     return this.prisma.sourceAgency.update({
       where: { id },
-      data: dto,
+      data: {
+        ...rest,
+        // block_rules is a full replace: undefined means "not touched by this update",
+        // an (empty) array means "clear all rules".
+        ...(block_rules !== undefined && {
+          block_rules: {
+            deleteMany: {},
+            create: block_rules.map((rule, index) => ({
+              ...rule,
+              position: index,
+            })),
+          },
+        }),
+      },
     });
   }
 
