@@ -677,6 +677,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         canonical?.price_start,
         sales,
         userProperty.price,
+        forceRecalc,
       )
     ) {
       return;

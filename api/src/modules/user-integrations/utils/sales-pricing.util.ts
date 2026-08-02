@@ -122,6 +122,7 @@ export function shouldApplySalesPriceStart(
   sourcePriceStart: number | null | undefined | Prisma.Decimal,
   sales: SalesPricingSettings,
   price: number | null | undefined | Prisma.Decimal,
+  forceRecalc = false,
 ): boolean {
   if (!sales.enable_sales) {
     return false;
@@ -130,6 +131,10 @@ export function shouldApplySalesPriceStart(
   const priceNum = toFiniteNumber(price);
   if (priceNum == null || priceNum <= 0) {
     return false;
+  }
+
+  if (forceRecalc) {
+    return true;
   }
 
   if (sourcePriceStart == null) {
