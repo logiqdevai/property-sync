@@ -5,7 +5,6 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  Max,
   Min,
 } from 'class-validator';
 
@@ -32,16 +31,14 @@ export class CreateGenerationRunDto {
 
   @ApiProperty({
     required: false,
+    nullable: true,
     description:
-      'Hard cap on computer-use steps for this run (cost control). Defaults to 15, max 50.',
+      'Hard cap on computer-use steps for this run. Omit or null for no limit.',
     minimum: 1,
-    maximum: 50,
-    default: 15,
   })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(50)
   max_steps?: number;
 }

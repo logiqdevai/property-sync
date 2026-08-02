@@ -43,7 +43,7 @@ export function CreateGenerationRunForm({
       source_agency_id: defaultAgencyId ?? "",
       scraper_id: defaultScraperId,
       prompt: "",
-      max_steps: 15,
+      max_steps: undefined,
     },
   });
 
@@ -92,13 +92,13 @@ export function CreateGenerationRunForm({
       </div>
 
       <div className="flex flex-col gap-1">
-        <Label htmlFor="generation-max-steps">Max steps</Label>
+        <Label htmlFor="generation-max-steps">Max steps (optional)</Label>
         <Input
           id="generation-max-steps"
           type="number"
           min={1}
-          max={50}
           {...register("max_steps")}
+          placeholder="Unlimited"
           fullWidth
         />
         {errors.max_steps && <FieldError>{errors.max_steps.message}</FieldError>}

@@ -144,12 +144,14 @@ export default function GenerationRunDetailPage() {
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Steps</span>
           <span
             className={
-              steps.length > run.max_steps
+              run.max_steps != null && steps.length > run.max_steps
                 ? "text-sm text-danger"
                 : "text-sm text-foreground"
             }
           >
-            {steps.length} used / {run.max_steps} max
+            {run.max_steps == null
+              ? `${steps.length} used / unlimited`
+              : `${steps.length} used / ${run.max_steps} max`}
           </span>
         </div>
         {run.prompt && (

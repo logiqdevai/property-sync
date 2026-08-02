@@ -11,8 +11,6 @@ import { GENERATION_SYSTEM_PROMPT } from './constants/generation-prompt';
 import {
   ACCESS_BARRIER_VERIFY_PREFIX,
   DEFAULT_GENERATION_MODEL,
-  DEFAULT_MAX_GENERATION_STEPS,
-  ABSOLUTE_MAX_GENERATION_STEPS,
   MAX_IMAGE_TURNS_IN_CONTEXT,
 } from './constants/generation.constants';
 import { extractJSON } from './utils/extract-json.util';
@@ -89,10 +87,8 @@ export class ComputerUseOrchestratorService {
     const targetUrl = run.source_agency.base_url;
     const systemPrompt = this.buildSystemPrompt(run.prompt);
     const blockHandlingConfig = buildBlockHandlingConfig(run.source_agency);
-    const maxSteps = Math.min(
-      Math.max(run.max_steps ?? DEFAULT_MAX_GENERATION_STEPS, 1),
-      ABSOLUTE_MAX_GENERATION_STEPS,
-    );
+    const maxSteps =
+      run.max_steps == null ? null : Math.max(run.max_steps, 1);
 
     const driver = new PlaywrightDriverService();
     const messages: Anthropic.MessageParam[] = [];
@@ -149,10 +145,11 @@ export class ComputerUseOrchestratorService {
       }
 
       const startStepIndex = stepIndex;
-      const modelCallBudget = Math.max(0, maxSteps - startStepIndex);
+      const modelCallBudget =
+        maxSteps == null ? null : Math.max(0, maxSteps - startStepIndex);
       let modelCallsThisSession = 0;
 
-      if (modelCallBudget === 0) {
+      if (maxSteps != null && modelCallBudget === 0) {
         failureReason = `Reached max steps (${maxSteps}) without a verified config`;
       }
 
@@ -163,19 +160,23 @@ export class ComputerUseOrchestratorService {
         }
 
         if (
-          stepIndex >= maxSteps ||
-          modelCallsThisSession >= modelCallBudget
+          maxSteps != null &&
+          modelCallBudget != null &&
+          (stepIndex >= maxSteps ||
+            modelCallsThisSession >= modelCallBudget)
         ) {
           failureReason = `Reached max steps (${maxSteps}) without a verified config`;
           break;
         }
 
-        const persistedStepCount = await this.prisma.computerUseStep.count({
-          where: { scraper_generation_run_id: generationRunId },
-        });
-        if (persistedStepCount >= maxSteps) {
-          failureReason = `Reached max steps (${maxSteps}) without a verified config`;
-          break;
+        if (maxSteps != null) {
+          const persistedStepCount = await this.prisma.computerUseStep.count({
+            where: { scraper_generation_run_id: generationRunId },
+          });
+          if (persistedStepCount >= maxSteps) {
+            failureReason = `Reached max steps (${maxSteps}) without a verified config`;
+            break;
+          }
         }
 
         failureReason = await this.abortIfAccessBarrier(

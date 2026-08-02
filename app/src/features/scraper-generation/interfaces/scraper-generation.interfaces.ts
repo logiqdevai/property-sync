@@ -56,7 +56,7 @@ export interface GenerationRun {
   trigger: GenerationTrigger;
   status: GenerationRunStatus;
   prompt: string | null;
-  max_steps: number;
+  max_steps: number | null;
   staged_config: Record<string, unknown> | null;
   produced_version_id: string | null;
   error_message: string | null;

@@ -181,7 +181,7 @@ export default function GenerationRunsListPage() {
                       <Table.Cell>
                         <GenerationRunStatusChip status={run.status} />
                       </Table.Cell>
-                      <Table.Cell>{run.max_steps}</Table.Cell>
+                      <Table.Cell>{run.max_steps ?? "Unlimited"}</Table.Cell>
                       <Table.Cell>{formatDateTime(run.created_at)}</Table.Cell>
                       <Table.Cell>{formatDateTime(run.finished_at)}</Table.Cell>
                       <Table.Cell>{formatDuration(run.duration_ms)}</Table.Cell>

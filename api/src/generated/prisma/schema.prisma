@@ -587,7 +587,7 @@ model ScraperGenerationRun {
   trigger             GenerationTrigger   @default(MANUAL)
   status              GenerationRunStatus @default(QUEUED)
   prompt              String? // goal/instructions given to the model
-  max_steps           Int                 @default(15) // hard cap on computer-use loop iterations (cost control)
+  max_steps           Int? // null = no step limit; set value = hard cap on computer-use loop iterations
   staged_config       Json? // draft config produced by the model, pending review/promotion
   produced_version_id String?             @unique // set once staged_config is approved and copied into a ScraperVersion
   error_message       String?

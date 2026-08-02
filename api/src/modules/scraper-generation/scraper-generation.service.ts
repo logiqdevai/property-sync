@@ -133,7 +133,7 @@ export class ScraperGenerationService {
         trigger: GenerationTrigger.MANUAL,
         status: GenerationRunStatus.QUEUED,
         prompt: dto.prompt,
-        ...(dto.max_steps != null && { max_steps: dto.max_steps }),
+        max_steps: dto.max_steps ?? null,
       },
     });
 
@@ -156,7 +156,7 @@ export class ScraperGenerationService {
         trigger,
         status: GenerationRunStatus.QUEUED,
         prompt,
-        ...(maxSteps != null && { max_steps: maxSteps }),
+        max_steps: maxSteps ?? null,
       },
     });
 

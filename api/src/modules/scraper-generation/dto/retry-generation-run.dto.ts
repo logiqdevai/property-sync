@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class RetryGenerationRunDto {
   @ApiProperty({
@@ -23,15 +23,14 @@ export class RetryGenerationRunDto {
 
   @ApiProperty({
     required: false,
+    nullable: true,
     description:
-      'Optional override for max computer-use steps on retry. Defaults to the run value.',
+      'Optional override for max computer-use steps on retry. Omit to keep the run value; null clears the limit.',
     minimum: 1,
-    maximum: 50,
   })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Max(50)
   max_steps?: number;
 }

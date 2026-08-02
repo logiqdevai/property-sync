@@ -25,10 +25,12 @@ export class ScraperGenerationRun {
   prompt: string | null;
 
   @ApiProperty({
-    description: 'Hard cap on computer-use steps for this run',
+    nullable: true,
+    description:
+      'Hard cap on computer-use steps for this run. Null means no limit.',
     example: 15,
   })
-  max_steps: number;
+  max_steps: number | null;
 
   @ApiProperty({
     nullable: true,

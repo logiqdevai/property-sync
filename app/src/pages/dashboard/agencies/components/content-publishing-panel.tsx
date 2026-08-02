@@ -137,8 +137,9 @@ export function ContentPublishingPanel({
     setUseAiBatch(data.use_ai_batch);
     setIsEnabled(data.is_enabled);
 
-    const nextFamilies: DraftFamily[] = data.ai_title_families.length
-      ? data.ai_title_families.map((family) => ({
+    const titleFamilies = data.ai_title_families ?? [];
+    const nextFamilies: DraftFamily[] = titleFamilies.length
+      ? titleFamilies.map((family) => ({
           key: family.id,
           name: family.name,
           instructions: family.instructions ?? "",
@@ -156,13 +157,13 @@ export function ContentPublishingPanel({
     const fallbackFamilyKey = nextFamilies[0]?.key ?? nextFamilyKey();
 
     const enabledByLang = new Map(
-      data.outputs.map((output) => [output.language, output]),
+      (data.outputs ?? []).map((output) => [output.language, output]),
     );
     setOutputs(
       ContentLanguageFormOptions.map((lang) => {
         const existing = enabledByLang.get(lang.id);
         const familyName =
-          existing?.ai_title_family_name ?? data.ai_title_families[0]?.name;
+          existing?.ai_title_family_name ?? titleFamilies[0]?.name;
         return {
           language: lang.id,
           enabled: Boolean(existing),
@@ -232,7 +233,7 @@ export function ContentPublishingPanel({
     });
   };
 
-  const summaryLanguages = data?.outputs
+  const summaryLanguages = (data?.outputs ?? [])
     .map((output) => getContentLanguageLabel(output.language))
     .join(", ");
 
