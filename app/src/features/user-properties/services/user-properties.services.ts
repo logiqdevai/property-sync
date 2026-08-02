@@ -11,6 +11,8 @@ import type {
   SplitUserPropertiesResult,
   UpdateEstateWebSitesPayload,
   UpdateEstateWebSitesResult,
+  RenormalizeUserPropertiesPayload,
+  RenormalizeUserPropertiesResult,
   UpdateSalesPricesPayload,
   UpdateSalesPricesResult,
   UpdateUserPropertyPayload,
@@ -356,6 +358,22 @@ export const updateUserPropertySalesPrices = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to update sales prices on CRM.",
+    );
+  }
+};
+
+export const renormalizeUserProperties = async (
+  payload: RenormalizeUserPropertiesPayload,
+): Promise<RenormalizeUserPropertiesResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.renormalize,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to renormalize properties.",
     );
   }
 };

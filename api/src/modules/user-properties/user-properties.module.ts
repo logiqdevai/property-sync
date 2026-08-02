@@ -3,6 +3,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import {
   CONTENT_PRODUCTION_QUEUE,
+  RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
 } from '@/core/queues/queues.constants';
@@ -37,6 +38,7 @@ import { SalesPriceUpdateJobService } from './services/sales-price-update-job.se
       { name: WATERMARK_REMOVAL_QUEUE },
       { name: CONTENT_PRODUCTION_QUEUE },
       { name: SALES_PRICE_UPDATE_QUEUE },
+      { name: RENORMALIZATION_QUEUE },
     ),
   ],
   controllers: [UserPropertiesController, AdminUserPropertiesController],

@@ -10,6 +10,7 @@ import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
   CONTENT_PRODUCTION_QUEUE,
+  RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
 } from '@/core/queues/queues.constants';
@@ -62,6 +63,10 @@ import {
   SalesPriceUpdateJobData,
   SalesPriceUpdateJobResult,
 } from './interfaces/sales-price-update-job.interface';
+import {
+  RenormalizationJobData,
+  RenormalizationJobResult,
+} from './interfaces/renormalization-job.interface';
 import { WatermarkRemovalService } from './services/watermark-removal.service';
 import { resolveIntegrationImageProcessUrl } from './utils/integration-property-images.util';
 
@@ -98,6 +103,8 @@ export class UserPropertiesService {
     private readonly contentProductionQueue: Queue<ContentProductionJobData>,
     @InjectQueue(SALES_PRICE_UPDATE_QUEUE)
     private readonly salesPriceUpdateQueue: Queue<SalesPriceUpdateJobData>,
+    @InjectQueue(RENORMALIZATION_QUEUE)
+    private readonly renormalizationQueue: Queue<RenormalizationJobData>,
   ) {}
 
   private async resolveFilterSourceAgencyId(
@@ -888,6 +895,103 @@ export class UserPropertiesService {
       failed,
       message:
         'Sales price update started in the background. Track progress in Job queue.',
+    };
+  }
+
+  async renormalizeProperties(userId: string, ids: string[]) {
+    const idList = [...new Set(ids.filter(Boolean))];
+    if (idList.length === 0) {
+      throw new BadRequestException('No properties selected');
+    }
+
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: idList }, user_id: userId },
+      select: { id: true },
+    });
+
+    if (properties.length === 0) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const foundIds = new Set(properties.map((property) => property.id));
+    const enqueueIds: string[] = [];
+    const failed: Array<{ user_property_id: string; error: string }> = [];
+
+    for (const id of idList) {
+      if (!foundIds.has(id)) {
+        failed.push({ user_property_id: id, error: 'Property not found' });
+        continue;
+      }
+      enqueueIds.push(id);
+    }
+
+    if (enqueueIds.length === 0) {
+      throw new BadRequestException(
+        failed[0]?.error ?? 'No properties could be renormalized',
+      );
+    }
+
+    const initialResult: RenormalizationJobResult = {
+      total: enqueueIds.length,
+      processed: 0,
+      normalized: 0,
+      failed: failed.length,
+      items: failed.map((row) => ({
+        user_property_id: row.user_property_id,
+        status: 'failed' as const,
+        error: row.error,
+      })),
+      logs: [`enqueued user=${userId} properties=${enqueueIds.length}`],
+    };
+
+    const payload = {
+      user_id: userId,
+      user_property_ids: enqueueIds,
+      total: enqueueIds.length,
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: RENORMALIZATION_QUEUE,
+        job_name: 'renormalize-property',
+        status: JobStatus.WAITING,
+        payload: payload as object,
+        result: initialResult as object,
+      },
+    });
+
+    this.logger.log(
+      `[renormalizeProperties] queued job_log=${jobLog.id} user=${userId} ids=${enqueueIds.length}`,
+    );
+
+    await this.renormalizationQueue.addBulk(
+      enqueueIds.map((userPropertyId) => {
+        const jobData: RenormalizationJobData = {
+          job_log_id: jobLog.id,
+          user_id: userId,
+          user_property_id: userPropertyId,
+          total: enqueueIds.length,
+        };
+        return {
+          name: 'renormalize-property',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${userPropertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
+
+    return {
+      job_log_id: jobLog.id,
+      enqueued: enqueueIds.length,
+      failed,
+      message:
+        'Renormalization started in the background. Track progress in Job queue.',
     };
   }
 

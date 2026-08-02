@@ -27,6 +27,7 @@ import {
   removeUserPropertyWatermarkImages,
   removeUserPropertiesWatermarkImages,
   produceUserPropertyContent,
+  renormalizeUserProperties,
   splitAdminUserProperties,
   splitUserProperties,
   truncateAdminUserPropertyDescriptions,
@@ -45,6 +46,7 @@ import type {
   UpdateEstateWebSitesPayload,
   UpdateEstateWebSitesResult,
   UpdateSalesPricesPayload,
+  RenormalizeUserPropertiesPayload,
   SplitUserPropertiesPayload,
   TruncateUserPropertyDescriptionsPayload,
   UpdateIntegrationImagesPayload,
@@ -602,6 +604,35 @@ export const useUpdateUserPropertySalesPrices = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not update sales prices",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useRenormalizeUserProperties = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: RenormalizeUserPropertiesPayload) =>
+      renormalizeUserProperties(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+
+      toast({
+        title: "Renormalization started",
+        description:
+          result.failed.length > 0
+            ? `Enqueued ${result.enqueued}. ${result.failed.length} could not be enqueued.`
+            : `Renormalizing ${result.enqueued} ${result.enqueued === 1 ? "property" : "properties"} in the background.`,
+        duration: 2500,
+        variant: result.failed.length > 0 ? "warning" : "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not start renormalization",
         description: error.message,
         variant: "error",
       });

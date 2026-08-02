@@ -322,8 +322,126 @@ export class PropertyNormalizationService {
     return { reused, toNormalize, reusedRowsBySourceId };
   }
 
+  async normalizeForUserProperty(
+    userId: string,
+    userPropertyId: string,
+  ): Promise<{
+    user_property_id: string;
+    status: 'normalized' | 'failed';
+    error?: string;
+  }> {
+    try {
+      const userProperty = await this.prisma.userProperty.findFirst({
+        where: { id: userPropertyId, user_id: userId },
+        select: {
+          id: true,
+          canonical_property_id: true,
+        },
+      });
+
+      if (!userProperty) {
+        return {
+          user_property_id: userPropertyId,
+          status: 'failed',
+          error: 'Property not found',
+        };
+      }
+
+      const link = await this.prisma.propertySourceLink.findFirst({
+        where: { property_id: userProperty.canonical_property_id },
+        include: {
+          source_property: {
+            select: {
+              id: true,
+              source_agency_id: true,
+              source_url: true,
+              property_id: true,
+              internal_id: true,
+              raw_title: true,
+              raw_price: true,
+              raw_location: true,
+              raw_description: true,
+              raw_property_type: true,
+              raw_listing_type: true,
+              raw_sqm: true,
+              raw_bedrooms: true,
+              raw_bathrooms: true,
+              raw_data: true,
+              content_hash: true,
+            },
+          },
+        },
+        orderBy: [{ is_primary_source: 'desc' }, { created_at: 'asc' }],
+      });
+
+      if (!link?.source_property) {
+        return {
+          user_property_id: userPropertyId,
+          status: 'failed',
+          error: 'No source listing linked to this property',
+        };
+      }
+
+      const sourceProperty: SourcePropertyRow = link.source_property;
+      const aiProvider = AiDefaults.provider;
+      const model = AiDefaults.model;
+
+      let apiKey: string;
+      try {
+        const resolved = await this.userIntegrationsService.resolveActiveApiKey(
+          userId,
+          aiProvider,
+        );
+        apiKey = resolved.apiKey;
+      } catch {
+        return {
+          user_property_id: userPropertyId,
+          status: 'failed',
+          error: `No active ${aiProvider} API key`,
+        };
+      }
+
+      const syncResult = await this.normalizeSync(
+        [sourceProperty],
+        aiProvider,
+        model,
+        apiKey,
+      );
+
+      await this.applyNormalizedResults({
+        crawlRunId: null,
+        sourceAgencyId: link.source_property.source_agency_id,
+        crawlStartedAt: new Date(),
+        sourceProperties: [sourceProperty],
+        normalizedBySourceId: syncResult.normalizedBySourceId,
+        model,
+        provider: aiProvider,
+        anthropicUsage: syncResult.anthropicUsage,
+        openAiUsage: syncResult.openAiUsage,
+        costUserId: userId,
+        costUserPropertyId: userPropertyId,
+      });
+
+      return {
+        user_property_id: userPropertyId,
+        status: 'normalized',
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `[normalizeForUserProperty] user=${userId} property=${userPropertyId} failed: ${message}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      return {
+        user_property_id: userPropertyId,
+        status: 'failed',
+        error: message,
+      };
+    }
+  }
+
   async applyNormalizedResults(params: {
-    crawlRunId: string;
+    crawlRunId: string | null;
     sourceAgencyId: string;
     crawlStartedAt: Date;
     sourceProperties: SourcePropertyRow[];
@@ -334,6 +452,8 @@ export class PropertyNormalizationService {
     openAiUsage?: { inputTokens: number; outputTokens: number };
     userTrackedAgencyId?: string;
     isBatch?: boolean;
+    costUserId?: string | null;
+    costUserPropertyId?: string | null;
   }): Promise<SyncForPropertyResult[]> {
     let createdCount = 0;
     const affected: SyncForPropertyResult[] = [];
@@ -505,25 +625,29 @@ export class PropertyNormalizationService {
       anthropicUsage: params.anthropicUsage,
       openAiUsage: params.openAiUsage,
       isBatch: params.isBatch,
+      userId: params.costUserId,
+      userPropertyId: params.costUserPropertyId,
     });
 
-    const crawlRun = await this.prisma.crawlRun.findUnique({
-      where: { id: params.crawlRunId },
-    });
-    const metadata = (crawlRun?.metadata ?? {}) as Record<string, unknown>;
-    if (metadata.ai_batch_id) {
-      await this.prisma.crawlRun.update({
+    if (params.crawlRunId) {
+      const crawlRun = await this.prisma.crawlRun.findUnique({
         where: { id: params.crawlRunId },
-        data: {
-          metadata: {
-            ...metadata,
-            ai_batch_status: 'completed',
-          },
-        },
       });
-      await this.propertyAiBatchService.markBatchJobCompleted(
-        String(metadata.ai_batch_id),
-      );
+      const metadata = (crawlRun?.metadata ?? {}) as Record<string, unknown>;
+      if (metadata.ai_batch_id) {
+        await this.prisma.crawlRun.update({
+          where: { id: params.crawlRunId },
+          data: {
+            metadata: {
+              ...metadata,
+              ai_batch_status: 'completed',
+            },
+          },
+        });
+        await this.propertyAiBatchService.markBatchJobCompleted(
+          String(metadata.ai_batch_id),
+        );
+      }
     }
 
     return affected;
@@ -1052,13 +1176,15 @@ export class PropertyNormalizationService {
   }
 
   private async persistAiCosts(params: {
-    crawlRunId: string;
+    crawlRunId: string | null;
     model: string;
     provider: IntegrationType;
     createdCount: number;
     anthropicUsage?: NormalizationUsage;
     openAiUsage?: { inputTokens: number; outputTokens: number };
     isBatch?: boolean;
+    userId?: string | null;
+    userPropertyId?: string | null;
   }): Promise<void> {
     if (
       params.provider === IntegrationType.ANTHROPIC &&
@@ -1071,20 +1197,26 @@ export class PropertyNormalizationService {
           aiNormalizedCount: params.createdCount,
         },
       );
-      await this.prisma.crawlRun.update({
-        where: { id: params.crawlRunId },
-        data: {
-          ai_model: report.model,
-          ai_input_tokens: report.input_tokens,
-          ai_output_tokens: report.output_tokens,
-          ai_input_cost: report.input_cost,
-          ai_output_cost: report.output_cost,
-          ai_total_cost: report.total_cost,
-          ai_average_cost_per_property: report.average_cost_per_property,
-        },
-      });
+      if (params.crawlRunId) {
+        await this.prisma.crawlRun.update({
+          where: { id: params.crawlRunId },
+          data: {
+            ai_model: report.model,
+            ai_input_tokens: report.input_tokens,
+            ai_output_tokens: report.output_tokens,
+            ai_input_cost: report.input_cost,
+            ai_output_cost: report.output_cost,
+            ai_total_cost: report.total_cost,
+            ai_average_cost_per_property: report.average_cost_per_property,
+          },
+        });
+      }
 
-      const userId = await this.resolveUserIdForCrawlRun(params.crawlRunId);
+      const userId =
+        params.userId ??
+        (params.crawlRunId
+          ? await this.resolveUserIdForCrawlRun(params.crawlRunId)
+          : null);
       await this.costLogsService.record({
         userId,
         operationType: CostOperationType.NORMALIZATION,
@@ -1096,6 +1228,7 @@ export class PropertyNormalizationService {
         outputCost: report.output_cost,
         totalCost: report.total_cost,
         crawlRunId: params.crawlRunId,
+        userPropertyId: params.userPropertyId,
         metadata: { created_count: params.createdCount },
       });
       return;
@@ -1110,23 +1243,29 @@ export class PropertyNormalizationService {
         isBatch: params.isBatch,
       });
 
-      await this.prisma.crawlRun.update({
-        where: { id: params.crawlRunId },
-        data: {
-          ai_model: params.model,
-          ai_input_tokens: cost.inputTokens,
-          ai_output_tokens: cost.outputTokens,
-          ai_input_cost: cost.inputCost,
-          ai_output_cost: cost.outputCost,
-          ai_total_cost: cost.totalCost,
-          ai_average_cost_per_property:
-            params.createdCount > 0
-              ? cost.totalCost / params.createdCount
-              : null,
-        },
-      });
+      if (params.crawlRunId) {
+        await this.prisma.crawlRun.update({
+          where: { id: params.crawlRunId },
+          data: {
+            ai_model: params.model,
+            ai_input_tokens: cost.inputTokens,
+            ai_output_tokens: cost.outputTokens,
+            ai_input_cost: cost.inputCost,
+            ai_output_cost: cost.outputCost,
+            ai_total_cost: cost.totalCost,
+            ai_average_cost_per_property:
+              params.createdCount > 0
+                ? cost.totalCost / params.createdCount
+                : null,
+          },
+        });
+      }
 
-      const userId = await this.resolveUserIdForCrawlRun(params.crawlRunId);
+      const userId =
+        params.userId ??
+        (params.crawlRunId
+          ? await this.resolveUserIdForCrawlRun(params.crawlRunId)
+          : null);
       await this.costLogsService.record({
         userId,
         operationType: CostOperationType.NORMALIZATION,
@@ -1138,7 +1277,11 @@ export class PropertyNormalizationService {
         outputCost: cost.outputCost,
         totalCost: cost.totalCost,
         crawlRunId: params.crawlRunId,
-        metadata: { created_count: params.createdCount, is_batch: params.isBatch ?? false },
+        userPropertyId: params.userPropertyId,
+        metadata: {
+          created_count: params.createdCount,
+          is_batch: params.isBatch ?? false,
+        },
       });
     }
   }

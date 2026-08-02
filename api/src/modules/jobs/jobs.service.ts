@@ -11,6 +11,7 @@ import {
   GENERATION_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
   CMS_SYNC_QUEUE,
+  RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
 } from '@/core/queues/queues.constants';
@@ -42,6 +43,8 @@ export class JobsService {
     private readonly contentProductionQueue: Queue,
     @InjectQueue(SALES_PRICE_UPDATE_QUEUE)
     private readonly salesPriceUpdateQueue: Queue,
+    @InjectQueue(RENORMALIZATION_QUEUE)
+    private readonly renormalizationQueue: Queue,
     @InjectQueue(CMS_SYNC_QUEUE)
     private readonly cmsSyncQueue: Queue,
   ) {}
@@ -139,6 +142,7 @@ export class JobsService {
         : jobLog.queue_name === WATERMARK_REMOVAL_QUEUE ||
             jobLog.queue_name === CONTENT_PRODUCTION_QUEUE ||
             jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE ||
+            jobLog.queue_name === RENORMALIZATION_QUEUE ||
             jobLog.queue_name === CMS_SYNC_QUEUE
           ? {
               attempts: 3,
@@ -278,6 +282,38 @@ export class JobsService {
       return this.findOne(id);
     }
 
+    if (jobLog.queue_name === RENORMALIZATION_QUEUE) {
+      const payloadRecord = payload as {
+        user_id?: string;
+        user_property_ids?: string[];
+        total?: number;
+      };
+      const propertyIds = Array.isArray(payloadRecord.user_property_ids)
+        ? payloadRecord.user_property_ids
+        : [];
+      if (!payloadRecord.user_id || propertyIds.length === 0) {
+        throw new BadRequestException(
+          'Renormalization job payload is missing user or property ids',
+        );
+      }
+      await this.renormalizationQueue.addBulk(
+        propertyIds.map((userPropertyId) => ({
+          name: jobLog.job_name ?? 'renormalize-property',
+          data: {
+            job_log_id: jobLog.id,
+            user_id: payloadRecord.user_id,
+            user_property_id: userPropertyId,
+            total: payloadRecord.total ?? propertyIds.length,
+          },
+          opts: {
+            ...(jobOptions ?? {}),
+            jobId: `${jobLog.id}__${userPropertyId}`,
+          },
+        })),
+      );
+      return this.findOne(id);
+    }
+
     await queue.add(jobLog.job_name ?? 'retry', enrichedPayload, jobOptions);
 
     return this.findOne(id);
@@ -305,7 +341,8 @@ export class JobsService {
 
     if (
       jobLog.queue_name === CONTENT_PRODUCTION_QUEUE ||
-      jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE
+      jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE ||
+      jobLog.queue_name === RENORMALIZATION_QUEUE
     ) {
       const payload = (jobLog.payload ?? {}) as {
         user_property_ids?: string[];
@@ -316,7 +353,9 @@ export class JobsService {
       const queue =
         jobLog.queue_name === CONTENT_PRODUCTION_QUEUE
           ? this.contentProductionQueue
-          : this.salesPriceUpdateQueue;
+          : jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE
+            ? this.salesPriceUpdateQueue
+            : this.renormalizationQueue;
       for (const propertyId of propertyIds) {
         try {
           await queue.remove(`${jobLog.id}__${propertyId}`);
@@ -393,6 +432,9 @@ export class JobsService {
     }
     if (queueName === SALES_PRICE_UPDATE_QUEUE) {
       return this.salesPriceUpdateQueue;
+    }
+    if (queueName === RENORMALIZATION_QUEUE) {
+      return this.renormalizationQueue;
     }
     if (queueName === CMS_SYNC_QUEUE) {
       return this.cmsSyncQueue;

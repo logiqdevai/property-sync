@@ -3,7 +3,10 @@ import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import { AiIntegrationModule } from '@/integrations/ai/ai.module';
 import { UserIntegrationsModule } from '@/modules/user-integrations/user-integrations.module';
-import { AI_BATCH_COMPLETE_QUEUE } from '@/core/queues/queues.constants';
+import {
+  AI_BATCH_COMPLETE_QUEUE,
+  RENORMALIZATION_QUEUE,
+} from '@/core/queues/queues.constants';
 import { AiBatchModule } from '@/integrations/ai-batch/ai-batch.module';
 import { GcsIntegrationModule } from '@/integrations/storage/gcs/gcs.module';
 import { PlatformConfigModule } from '@/modules/platform-config/platform-config.module';
@@ -12,6 +15,7 @@ import { PropertiesService } from './properties.service';
 import { PropertyNormalizationService } from './services/property-normalization.service';
 import { AnthropicNormalizationService } from './services/anthropic-normalization.service';
 import { AiBatchCompleteProcessor } from '@/background/ai-batch-complete.processor';
+import { RenormalizationProcessor } from '@/background/renormalization.processor';
 import { UserPropertiesModule } from '@/modules/user-properties/user-properties.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { CmsSyncModule } from '@/modules/cms-sync/cms-sync.module';
@@ -31,7 +35,10 @@ import { ContentPublishingModule } from '@/modules/content-publishing/content-pu
     CmsSyncModule,
     CostLogsModule,
     ContentPublishingModule,
-    BullModule.registerQueue({ name: AI_BATCH_COMPLETE_QUEUE }),
+    BullModule.registerQueue(
+      { name: AI_BATCH_COMPLETE_QUEUE },
+      { name: RENORMALIZATION_QUEUE },
+    ),
   ],
   controllers: [PropertiesController],
   providers: [
@@ -39,6 +46,7 @@ import { ContentPublishingModule } from '@/modules/content-publishing/content-pu
     PropertyNormalizationService,
     AnthropicNormalizationService,
     AiBatchCompleteProcessor,
+    RenormalizationProcessor,
   ],
   exports: [PropertyNormalizationService],
 })

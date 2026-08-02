@@ -206,6 +206,17 @@ export interface UpdateSalesPricesResult {
   message: string;
 }
 
+export interface RenormalizeUserPropertiesPayload {
+  ids: string[];
+}
+
+export interface RenormalizeUserPropertiesResult {
+  job_log_id: string;
+  enqueued: number;
+  failed: Array<{ user_property_id: string; error: string }>;
+  message: string;
+}
+
 export interface DedupeUserPropertiesPayload {
   ids: string[];
 }

@@ -219,6 +219,7 @@ export const ApiRoutes = {
         updateEstateWebSites: "/properties/update-estateweb-sites",
         updateSalesPrices: "/properties/update-sales-prices",
         produceContent: "/properties/produce-content",
+        renormalize: "/properties/renormalize",
     },
     estateweb: {
         catalog: {

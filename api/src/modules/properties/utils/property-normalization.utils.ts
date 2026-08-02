@@ -603,7 +603,7 @@ function serializeHistoryValue(
 export function diffPropertyChanges(
   oldProperty: Property,
   newData: PropertyRecordInput,
-  crawlRunId: string,
+  crawlRunId: string | null,
 ): HistoryWriteInput[] {
   const events: HistoryWriteInput[] = [];
   const base = { property_id: oldProperty.id, crawl_run_id: crawlRunId };

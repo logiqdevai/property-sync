@@ -12,7 +12,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Globe, Languages, Layers, ListFilter, Percent, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { Globe, Languages, Layers, ListFilter, Percent, RefreshCw, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
@@ -48,6 +48,7 @@ import {
   usePushUserPropertiesToCrm,
   usePushUserPropertyToCrm,
   useRemoveUserPropertiesWatermarkImages,
+  useRenormalizeUserProperties,
   useSplitUserProperties,
   useTruncateUserPropertyDescriptions,
   useUpdateUserPropertySalesPrices,
@@ -99,6 +100,12 @@ const PROPERTY_PRODUCE_CONTENT_ACTION: TableRowAction = {
   icon: Languages,
 };
 
+const PROPERTY_RENORMALIZE_ACTION: TableRowAction = {
+  id: "renormalize",
+  label: "Renormalize",
+  icon: RefreshCw,
+};
+
 const PROPERTY_DELETE_ACTION: TableRowAction = {
   id: "delete",
   label: "Delete",
@@ -116,6 +123,7 @@ export default function DashboardPropertiesListPage() {
   const removeWatermarkModal = useOverlayState();
   const produceContentModal = useOverlayState();
   const updateSalesPricesConfirm = useOverlayState();
+  const renormalizeConfirm = useOverlayState();
   const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
   const [removeWatermarkPropertyIds, setRemoveWatermarkPropertyIds] = useState<
     string[]
@@ -124,6 +132,7 @@ export default function DashboardPropertiesListPage() {
     string[]
   >([]);
   const [salesPricesPropertyIds, setSalesPricesPropertyIds] = useState<string[]>([]);
+  const [renormalizePropertyIds, setRenormalizePropertyIds] = useState<string[]>([]);
   const role = useAuthStore((state) => state.role);
   const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
 
@@ -196,6 +205,7 @@ export default function DashboardPropertiesListPage() {
   const removeWatermarks = useRemoveUserPropertiesWatermarkImages();
   const produceContent = useProduceUserPropertyContent();
   const updateSalesPrices = useUpdateUserPropertySalesPrices();
+  const renormalize = useRenormalizeUserProperties();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
@@ -260,6 +270,11 @@ export default function DashboardPropertiesListPage() {
     updateSalesPricesConfirm.open();
   };
 
+  const openRenormalize = (ids: string[]) => {
+    setRenormalizePropertyIds(ids);
+    renormalizeConfirm.open();
+  };
+
   const bulkActions = useMemo<TableRowAction[]>(() => {
     const actions: TableRowAction[] = [
       {
@@ -273,6 +288,12 @@ export default function DashboardPropertiesListPage() {
         label: "Produce content",
         icon: Languages,
         isDisabled: selectedCount < 1 || produceContent.isPending,
+      },
+      {
+        id: "renormalize",
+        label: "Renormalize",
+        icon: RefreshCw,
+        isDisabled: selectedCount < 1 || renormalize.isPending,
       },
       {
         id: "manage-estateweb-sites",
@@ -336,6 +357,7 @@ export default function DashboardPropertiesListPage() {
     produceContent.isPending,
     pushSelectedToCrm.isPending,
     removeWatermarks.isPending,
+    renormalize.isPending,
     selectedCount,
     selectedGroupedCount,
     selectedLinkedCount,
@@ -438,6 +460,10 @@ export default function DashboardPropertiesListPage() {
       openProduceContent(Array.from(selectedIds));
       return;
     }
+    if (actionId === "renormalize") {
+      openRenormalize(Array.from(selectedIds));
+      return;
+    }
     if (actionId === "truncate") {
       truncateConfirm.open();
       return;
@@ -514,6 +540,13 @@ export default function DashboardPropertiesListPage() {
     if (salesPricesPropertyIds.length === 0) return;
     await updateSalesPrices.mutateAsync({ ids: salesPricesPropertyIds });
     setSalesPricesPropertyIds([]);
+    clearSelection();
+  };
+
+  const handleRenormalize = async () => {
+    if (renormalizePropertyIds.length === 0) return;
+    await renormalize.mutateAsync({ ids: renormalizePropertyIds });
+    setRenormalizePropertyIds([]);
     clearSelection();
   };
 
@@ -844,6 +877,10 @@ export default function DashboardPropertiesListPage() {
                   isDisabled: produceContent.isPending,
                 },
                 {
+                  ...PROPERTY_RENORMALIZE_ACTION,
+                  isDisabled: renormalize.isPending,
+                },
+                {
                   ...PROPERTY_MANAGE_SITES_ACTION,
                   isDisabled: !property.integration_property_id,
                 },
@@ -886,6 +923,10 @@ export default function DashboardPropertiesListPage() {
                     }
                     if (actionId === "produce-content") {
                       openProduceContent([property.id]);
+                      return;
+                    }
+                    if (actionId === "renormalize") {
+                      openRenormalize([property.id]);
                       return;
                     }
                     if (actionId === "manage-estateweb-sites") {
@@ -958,6 +999,10 @@ export default function DashboardPropertiesListPage() {
                         {
                           ...PROPERTY_PRODUCE_CONTENT_ACTION,
                           isDisabled: produceContent.isPending,
+                        },
+                        {
+                          ...PROPERTY_RENORMALIZE_ACTION,
+                          isDisabled: renormalize.isPending,
                         },
                         {
                           ...PROPERTY_MANAGE_SITES_ACTION,
@@ -1052,6 +1097,10 @@ export default function DashboardPropertiesListPage() {
                               }
                               if (actionId === "produce-content") {
                                 openProduceContent([property.id]);
+                                return;
+                              }
+                              if (actionId === "renormalize") {
+                                openRenormalize([property.id]);
                                 return;
                               }
                               if (actionId === "manage-estateweb-sites") {
@@ -1171,6 +1220,18 @@ export default function DashboardPropertiesListPage() {
         confirmLabel="Update prices"
         onConfirm={handleUpdateSalesPrices}
         isPending={updateSalesPrices.isPending}
+      />
+      <ConfirmationDialog
+        state={renormalizeConfirm}
+        title="Renormalize properties?"
+        description={
+          renormalizePropertyIds.length === 1
+            ? "Runs AI and code normalization again for this property using direct API calls. Progress shows in Job queue."
+            : `Runs AI and code normalization again for ${renormalizePropertyIds.length} properties using direct API calls. Progress shows in Job queue.`
+        }
+        confirmLabel="Renormalize"
+        onConfirm={handleRenormalize}
+        isPending={renormalize.isPending}
       />
       <RemoveWatermarkByCountModal
         state={removeWatermarkModal}

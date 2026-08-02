@@ -276,6 +276,22 @@ export class UserPropertiesController {
     return this.userPropertiesService.updateSalesPricesOnCrm(userId, dto.ids);
   }
 
+  @Post('renormalize')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ApiOperation({
+    summary:
+      'Enqueue AI + code renormalization for selected properties (direct API calls, no OpenAI Batch)',
+  })
+  @ApiResponse({ status: 202, description: 'Renormalization job enqueued' })
+  @ApiResponse({ status: 400, description: 'Cannot renormalize properties' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  renormalizeProperties(
+    @CurrentUser('id') userId: string,
+    @Body() dto: DeleteUserPropertiesDto,
+  ) {
+    return this.userPropertiesService.renormalizeProperties(userId, dto.ids);
+  }
+
   @Post('remove-watermark-images')
   @ApiOperation({
     summary:

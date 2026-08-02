@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Languages, Pencil, Percent, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
+import { Languages, Pencil, Percent, RefreshCw, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
 import { Button, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
@@ -32,6 +32,7 @@ import {
   useRemoveUserPropertiesWatermarkImages,
   useProduceUserPropertyContent,
   usePushUserPropertyToCrm,
+  useRenormalizeUserProperties,
   useTruncateUserPropertyDescriptions,
   useUpdateUserProperty,
   useUpdateUserPropertySalesPrices,
@@ -107,6 +108,7 @@ export default function DashboardPropertyDetailPage() {
   const truncateConfirm = useOverlayState();
   const unlinkConfirm = useOverlayState();
   const updateSalesPricesConfirm = useOverlayState();
+  const renormalizeConfirm = useOverlayState();
   const manageSitesModal = useOverlayState();
   const removeWatermarkModal = useOverlayState();
   const produceContentModal = useOverlayState();
@@ -122,6 +124,7 @@ export default function DashboardPropertyDetailPage() {
   const updateProperty = useUpdateUserProperty();
   const pushToCrm = usePushUserPropertyToCrm();
   const updateSalesPrices = useUpdateUserPropertySalesPrices();
+  const renormalize = useRenormalizeUserProperties();
   const migrateImages = useMigrateUserPropertyIntegrationImages();
   const deleteIntegrationImages = useDeleteUserPropertyIntegrationImages();
   const createIntegrationImages = useCreateUserPropertyIntegrationImages();
@@ -283,6 +286,13 @@ export default function DashboardPropertyDetailPage() {
         isDisabled: isEditing || produceContent.isPending,
       },
       {
+        id: "renormalize",
+        label: "Renormalize",
+        variant: "default" as const,
+        icon: RefreshCw,
+        isDisabled: isEditing || renormalize.isPending,
+      },
+      {
         id: "update-sales-prices",
         label: "Update sales prices on CRM",
         variant: "default" as const,
@@ -350,6 +360,7 @@ export default function DashboardPropertyDetailPage() {
     produceContent.isPending,
     pushToCrm.isPending,
     removeWatermarksByCount.isPending,
+    renormalize.isPending,
     updateProperty.isPending,
     updateSalesPrices.isPending,
   ]);
@@ -393,6 +404,10 @@ export default function DashboardPropertyDetailPage() {
     await updateSalesPrices.mutateAsync({ ids: [property.id] });
   };
 
+  const handleRenormalize = async () => {
+    await renormalize.mutateAsync({ ids: [property.id] });
+  };
+
   const handleHeaderAction = (actionId: string) => {
     if (actionId === "push-to-crm") {
       pushToCrm.mutate(property.id);
@@ -404,6 +419,10 @@ export default function DashboardPropertyDetailPage() {
     }
     if (actionId === "produce-content") {
       produceContentModal.open();
+      return;
+    }
+    if (actionId === "renormalize") {
+      renormalizeConfirm.open();
       return;
     }
     if (actionId === "update-sales-prices") {
@@ -524,7 +543,8 @@ export default function DashboardPropertyDetailPage() {
               updateIntegrationImages.isPending ||
               removeWatermarkImages.isPending ||
               removeWatermarksByCount.isPending ||
-              produceContent.isPending
+              produceContent.isPending ||
+              renormalize.isPending
             }
           />
         }
@@ -864,6 +884,14 @@ export default function DashboardPropertyDetailPage() {
               confirmLabel="Update prices"
               onConfirm={handleUpdateSalesPrices}
               isPending={updateSalesPrices.isPending}
+            />
+            <ConfirmationDialog
+              state={renormalizeConfirm}
+              title="Renormalize property?"
+              description="Runs AI and code normalization again using direct API calls. Progress shows in Job queue."
+              confirmLabel="Renormalize"
+              onConfirm={handleRenormalize}
+              isPending={renormalize.isPending}
             />
             <RemoveWatermarkByCountModal
               state={removeWatermarkModal}
