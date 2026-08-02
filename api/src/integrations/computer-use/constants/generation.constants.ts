@@ -3,3 +3,5 @@ export const DEFAULT_GENERATION_MODEL = 'claude-opus-4-8';
 export const MAX_IMAGE_TURNS_IN_CONTEXT = 6;
 export const API_SCREENSHOT_JPEG_QUALITY = 70;
 export const GENERATION_JOB_LOCK_DURATION_MS = 2 * 60 * 60 * 1000;
+export const MAX_GENERATION_STEPS = 50;
+export const MAX_CONSECUTIVE_ACCESS_ERRORS = 5;

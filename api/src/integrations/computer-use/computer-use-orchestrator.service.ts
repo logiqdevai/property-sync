@@ -10,6 +10,8 @@ import { ScreenshotStorageService } from './services/screenshot-storage.service'
 import { GENERATION_SYSTEM_PROMPT } from './constants/generation-prompt';
 import {
   DEFAULT_GENERATION_MODEL,
+  MAX_CONSECUTIVE_ACCESS_ERRORS,
+  MAX_GENERATION_STEPS,
   MAX_IMAGE_TURNS_IN_CONTEXT,
 } from './constants/generation.constants';
 import { extractJSON } from './utils/extract-json.util';
@@ -21,6 +23,7 @@ import {
   compactImageMessages,
   extractResumeUrl,
 } from './utils/generation-message.util';
+import { isAccessBlockedPage } from './utils/access-blocked.util';
 
 const INITIAL_STEP_HINT =
   'Initial page. Follow the mandatory workflow: find the listings page, inspect cards, visit a detail page, test pagination, then call done.';
@@ -52,10 +55,20 @@ export class ComputerUseOrchestratorService {
     });
 
     const startedAt = new Date();
-    await this.prisma.scraperGenerationRun.update({
-      where: { id: generationRunId },
+    const claimed = await this.prisma.scraperGenerationRun.updateMany({
+      where: {
+        id: generationRunId,
+        status: GenerationRunStatus.QUEUED,
+      },
       data: { status: GenerationRunStatus.RUNNING, started_at: startedAt },
     });
+
+    if (claimed.count === 0) {
+      this.logger.warn(
+        `generation run ${generationRunId}: not QUEUED at start — aborting`,
+      );
+      return;
+    }
 
     const model =
       this.configService.get<string>('SCRAPER_GENERATION_MODEL') ??
@@ -67,11 +80,18 @@ export class ComputerUseOrchestratorService {
     const messages: Anthropic.MessageParam[] = [];
     let finalConfig: Record<string, unknown> | null = null;
     let failureReason: string | null = null;
+    let wasCancelled = false;
+    let consecutiveAccessErrors = 0;
     let stepIndex = 0;
     const shouldResume = options.resume === true && run.steps.length > 0;
 
     try {
       await driver.launch(targetUrl);
+
+      if (await this.isCancelled(generationRunId)) {
+        wasCancelled = true;
+        return;
+      }
 
       if (shouldResume) {
         const resumeUrl = extractResumeUrl(run.steps, targetUrl);
@@ -95,17 +115,47 @@ export class ComputerUseOrchestratorService {
         stepIndex = run.steps.length;
       }
 
-      while (!finalConfig && !failureReason) {
+      while (!finalConfig && !failureReason && !wasCancelled) {
+        if (await this.isCancelled(generationRunId)) {
+          wasCancelled = true;
+          break;
+        }
+
+        if (stepIndex >= MAX_GENERATION_STEPS) {
+          failureReason = `Reached max steps (${MAX_GENERATION_STEPS}) without a verified config`;
+          break;
+        }
+
+        const accessBlocked = await isAccessBlockedPage(driver.currentPage);
+        if (accessBlocked) {
+          consecutiveAccessErrors += 1;
+          this.logger.warn(
+            `generation run ${generationRunId}: access blocked (${consecutiveAccessErrors}/${MAX_CONSECUTIVE_ACCESS_ERRORS}) url=${driver.currentPage.url()}`,
+          );
+          if (consecutiveAccessErrors >= MAX_CONSECUTIVE_ACCESS_ERRORS) {
+            failureReason = `Website blocked access ${MAX_CONSECUTIVE_ACCESS_ERRORS} times in a row (CloudFront/WAF 403 or similar). Stopping generation.`;
+            break;
+          }
+        } else {
+          consecutiveAccessErrors = 0;
+        }
+
         const screenshotBefore = await driver.screenshot(true);
         const screenshotBeforeId = await this.screenshotStorage.store(
           screenshotBefore,
           `generation-${generationRunId}-step-${stepIndex}-before.jpg`,
         );
 
-        const stepHint =
+        const stepHintParts = [
           stepIndex === 0 && !shouldResume
             ? INITIAL_STEP_HINT
-            : `Step ${stepIndex}. URL: ${driver.currentPage.url()}.`;
+            : `Step ${stepIndex}. URL: ${driver.currentPage.url()}.`,
+        ];
+        if (accessBlocked) {
+          stepHintParts.push(
+            `WARNING: page looks access-blocked (CloudFront/WAF 403). Consecutive blocks: ${consecutiveAccessErrors}/${MAX_CONSECUTIVE_ACCESS_ERRORS}. If the real site cannot load, do not invent selectors — try a short wait then reload once. After ${MAX_CONSECUTIVE_ACCESS_ERRORS} blocks the run will stop.`,
+          );
+        }
 
         messages.push({
           role: 'user',
@@ -118,9 +168,14 @@ export class ComputerUseOrchestratorService {
                 data: screenshotBefore.toString('base64'),
               },
             },
-            { type: 'text', text: stepHint },
+            { type: 'text', text: stepHintParts.join('\n') },
           ],
         });
+
+        if (await this.isCancelled(generationRunId)) {
+          wasCancelled = true;
+          break;
+        }
 
         const requestMessages = compactImageMessages(
           messages,
@@ -132,6 +187,11 @@ export class ComputerUseOrchestratorService {
           model,
         );
         messages.push({ role: 'assistant', content: rawText });
+
+        if (await this.isCancelled(generationRunId)) {
+          wasCancelled = true;
+          break;
+        }
 
         let action: GenerationAction;
         try {
@@ -164,6 +224,23 @@ export class ComputerUseOrchestratorService {
         });
 
         if (action.action === 'done') {
+          if (accessBlocked || (await isAccessBlockedPage(driver.currentPage))) {
+            await this.prisma.computerUseStep.update({
+              where: { id: step.id },
+              data: {
+                screenshot_after_id: screenshotBeforeId,
+                model_reasoning: `${step.model_reasoning ?? ''} [REJECTED: page is access-blocked]`,
+              },
+            });
+            messages.push({
+              role: 'user',
+              content:
+                'Rejected "done": the current page is still an access-blocked error page (CloudFront/WAF 403). Do not invent listing selectors from an error page. Wait/reload only if useful; otherwise the run will stop after repeated blocks.',
+            });
+            stepIndex += 1;
+            continue;
+          }
+
           const errors = await this.verificationService.verify(
             driver.activeContext,
             driver.currentPage,
@@ -209,6 +286,11 @@ export class ComputerUseOrchestratorService {
           });
         }
 
+        if (await this.isCancelled(generationRunId)) {
+          wasCancelled = true;
+          break;
+        }
+
         const screenshotAfter = await driver.screenshot();
         const screenshotAfterId = await this.screenshotStorage.store(
           screenshotAfter,
@@ -233,9 +315,28 @@ export class ComputerUseOrchestratorService {
       await driver.close();
     }
 
+    if (wasCancelled || (await this.isCancelled(generationRunId))) {
+      this.logger.log(`generation run ${generationRunId}: stopped by cancel`);
+      const finishedAt = new Date();
+      await this.prisma.scraperGenerationRun.updateMany({
+        where: {
+          id: generationRunId,
+          status: GenerationRunStatus.CANCELLED,
+        },
+        data: {
+          finished_at: finishedAt,
+          duration_ms: finishedAt.getTime() - startedAt.getTime(),
+        },
+      });
+      return;
+    }
+
     const finishedAt = new Date();
-    await this.prisma.scraperGenerationRun.update({
-      where: { id: generationRunId },
+    await this.prisma.scraperGenerationRun.updateMany({
+      where: {
+        id: generationRunId,
+        status: GenerationRunStatus.RUNNING,
+      },
       data: finalConfig
         ? {
             status: GenerationRunStatus.AWAITING_REVIEW,
@@ -250,6 +351,14 @@ export class ComputerUseOrchestratorService {
             duration_ms: finishedAt.getTime() - startedAt.getTime(),
           },
     });
+  }
+
+  private async isCancelled(generationRunId: string): Promise<boolean> {
+    const current = await this.prisma.scraperGenerationRun.findUnique({
+      where: { id: generationRunId },
+      select: { status: true },
+    });
+    return current?.status === GenerationRunStatus.CANCELLED;
   }
 
   private buildSystemPrompt(prompt: string | null): string {

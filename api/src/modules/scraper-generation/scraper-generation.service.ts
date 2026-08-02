@@ -136,9 +136,7 @@ export class ScraperGenerationService {
       },
     });
 
-    await this.generationQueue.add('generate', {
-      runId: run.id,
-    });
+    await this.enqueueGenerationJob(run.id, { runId: run.id });
 
     return run;
   }
@@ -159,9 +157,7 @@ export class ScraperGenerationService {
       },
     });
 
-    await this.generationQueue.add('generate', {
-      runId: run.id,
-    });
+    await this.enqueueGenerationJob(run.id, { runId: run.id });
 
     return run;
   }
@@ -268,26 +264,54 @@ export class ScraperGenerationService {
   async cancel(id: string) {
     const run = await this.ensureExists(id);
 
-    if (
-      run.status !== GenerationRunStatus.QUEUED &&
-      run.status !== GenerationRunStatus.RUNNING
-    ) {
+    if (!ACTIVE_STATUSES.includes(run.status)) {
       throw new BadRequestException(
         'Only QUEUED or RUNNING runs can be cancelled',
       );
     }
 
+    try {
+      const job = await this.generationQueue.getJob(id);
+      if (job) {
+        const state = await job.getState();
+        if (state === 'waiting' || state === 'delayed' || state === 'prioritized') {
+          await job.remove();
+        }
+      } else {
+        await this.generationQueue.remove(id).catch(() => undefined);
+      }
+    } catch (error) {
+      this.logger.warn(
+        `generation cancel ${id}: failed to remove queue job: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+
     const finishedAt = new Date();
-    // TODO(next task): signal the running BullMQ job/loop to stop
-    return this.prisma.scraperGenerationRun.update({
-      where: { id },
+    const cancelled = await this.prisma.scraperGenerationRun.updateMany({
+      where: {
+        id,
+        status: { in: ACTIVE_STATUSES },
+      },
       data: {
         status: GenerationRunStatus.CANCELLED,
         finished_at: finishedAt,
         duration_ms: run.started_at
           ? finishedAt.getTime() - run.started_at.getTime()
           : null,
+        error_message: 'Cancelled by admin',
       },
+    });
+
+    if (cancelled.count === 0) {
+      throw new BadRequestException(
+        'Only QUEUED or RUNNING runs can be cancelled',
+      );
+    }
+
+    return this.prisma.scraperGenerationRun.findUniqueOrThrow({
+      where: { id },
     });
   }
 
@@ -339,7 +363,7 @@ export class ScraperGenerationService {
       },
     });
 
-    await this.generationQueue.add('generate', {
+    await this.enqueueGenerationJob(id, {
       runId: id,
       resume: run.steps.length > 0,
       retryError,
@@ -444,6 +468,30 @@ export class ScraperGenerationService {
     }
 
     return [...ids];
+  }
+
+  private async enqueueGenerationJob(
+    jobId: string,
+    data: {
+      runId: string;
+      resume?: boolean;
+      retryError?: string;
+      retryPrompt?: string;
+    },
+  ): Promise<void> {
+    const existing = await this.generationQueue.getJob(jobId);
+    if (existing) {
+      const state = await existing.getState();
+      if (state !== 'active') {
+        await existing.remove().catch(() => undefined);
+      }
+    }
+
+    await this.generationQueue.add('generate', data, {
+      jobId,
+      removeOnComplete: true,
+      removeOnFail: true,
+    });
   }
 
   private async ensureExists(id: string) {
