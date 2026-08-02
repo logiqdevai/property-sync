@@ -18,6 +18,12 @@ export const useContentPublishingConfig = (
   });
 };
 
+export const useLoadContentPublishingConfig = () => {
+  return useMutation({
+    mutationFn: (agencyId: string) => getContentPublishingConfig(agencyId),
+  });
+};
+
 export const useUpsertContentPublishingConfig = (agencyId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -47,11 +53,6 @@ export const useDeleteContentPublishingConfig = (agencyId: string) => {
     mutationFn: () => deleteContentPublishingConfig(agencyId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["content-publishing"] });
-      toast({
-        title: "Content publishing removed",
-        duration: 2000,
-        variant: "success",
-      });
     },
     onError: (error: Error) => {
       toast({

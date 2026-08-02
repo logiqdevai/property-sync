@@ -23,6 +23,7 @@ import {
 import {
   useContentPublishingConfig,
   useDeleteContentPublishingConfig,
+  useLoadContentPublishingConfig,
   useUpsertContentPublishingConfig,
 } from "@/features/content-publishing/hooks/use-content-publishing";
 import {
@@ -30,12 +31,15 @@ import {
   DescriptionProductionStrategies,
   TitleProductionStrategies,
   type ContentLanguage,
+  type ContentPublishingConfig,
   type DescriptionProductionStrategy,
   type TitleProductionStrategy,
   type UpsertAiTitleFamilyPayload,
   type UpsertContentOutputPayload,
   type UpsertContentPublishingConfigPayload,
 } from "@/features/content-publishing/interfaces/content-publishing.interfaces";
+import { useTrackableAgencies } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
+import { toast } from "@/hooks/use-toast";
 
 interface ContentPublishingPanelProps {
   agencyId: string;
@@ -96,6 +100,57 @@ const createDefaultDraft = (sourceLanguage: ContentLanguage) => {
   };
 };
 
+const draftFromConfig = (
+  config: ContentPublishingConfig,
+  sourceLanguage: ContentLanguage,
+) => {
+  const titleFamilies = config.ai_title_families ?? [];
+  const nextFamilies: DraftFamily[] = titleFamilies.length
+    ? titleFamilies.map((family) => ({
+        key: family.id,
+        name: family.name,
+        instructions: family.instructions ?? "",
+        writing_language: family.writing_language ?? sourceLanguage,
+        use_batch: family.use_batch,
+        is_enabled: family.is_enabled,
+      }))
+    : emptyFamilies(sourceLanguage);
+
+  const familyKeyByName = new Map(
+    nextFamilies.map((family) => [family.name, family.key]),
+  );
+  const fallbackFamilyKey = nextFamilies[0]?.key ?? nextFamilyKey();
+  const enabledByLang = new Map(
+    (config.outputs ?? []).map((output) => [output.language, output]),
+  );
+
+  return {
+    aiTitlesEnabled: config.ai_titles_enabled,
+    useAiBatch: config.use_ai_batch,
+    isEnabled: config.is_enabled,
+    families: nextFamilies,
+    outputs: ContentLanguageFormOptions.map((lang) => {
+      const existing = enabledByLang.get(lang.id);
+      const familyName =
+        existing?.ai_title_family_name ?? titleFamilies[0]?.name;
+      return {
+        language: lang.id,
+        enabled: Boolean(existing),
+        title_strategy:
+          existing?.title_strategy ?? TitleProductionStrategies.ORIGINAL,
+        description_strategy:
+          existing?.description_strategy ??
+          DescriptionProductionStrategies.ORIGINAL,
+        description_content_language:
+          existing?.description_content_language ?? null,
+        ai_title_family_key: familyName
+          ? (familyKeyByName.get(familyName) ?? fallbackFamilyKey)
+          : fallbackFamilyKey,
+      };
+    }),
+  };
+};
+
 export function ContentPublishingPanel({
   agencyId,
   sourceLanguage,
@@ -107,10 +162,13 @@ export function ContentPublishingPanel({
   const { data, isPending } = useContentPublishingConfig(agencyId, true);
   const upsert = useUpsertContentPublishingConfig(agencyId);
   const remove = useDeleteContentPublishingConfig(agencyId);
+  const loadSourceConfig = useLoadContentPublishingConfig();
+  const { data: agenciesData } = useTrackableAgencies({ limit: 100 });
 
   const [aiTitlesEnabled, setAiTitlesEnabled] = useState(false);
   const [useAiBatch, setUseAiBatch] = useState(false);
   const [isEnabled, setIsEnabled] = useState(true);
+  const [copySourceId, setCopySourceId] = useState<string | null>(null);
   const draftSeed = useRef<ReturnType<typeof createDefaultDraft> | null>(null);
   if (!draftSeed.current) {
     draftSeed.current = createDefaultDraft(resolvedSource);
@@ -120,6 +178,10 @@ export function ContentPublishingPanel({
   );
   const [outputs, setOutputs] = useState<DraftOutput[]>(
     draftSeed.current.outputs,
+  );
+
+  const otherTrackedAgencies = (agenciesData?.data ?? []).filter(
+    (agency) => agency.is_tracked && agency.id !== agencyId,
   );
 
   useEffect(() => {
@@ -133,54 +195,48 @@ export function ContentPublishingPanel({
       return;
     }
 
-    setAiTitlesEnabled(data.ai_titles_enabled);
-    setUseAiBatch(data.use_ai_batch);
-    setIsEnabled(data.is_enabled);
-
-    const titleFamilies = data.ai_title_families ?? [];
-    const nextFamilies: DraftFamily[] = titleFamilies.length
-      ? titleFamilies.map((family) => ({
-          key: family.id,
-          name: family.name,
-          instructions: family.instructions ?? "",
-          writing_language:
-            family.writing_language ?? resolvedSource,
-          use_batch: family.use_batch,
-          is_enabled: family.is_enabled,
-        }))
-      : emptyFamilies(resolvedSource);
-    setFamilies(nextFamilies);
-
-    const familyKeyByName = new Map(
-      nextFamilies.map((family) => [family.name, family.key]),
-    );
-    const fallbackFamilyKey = nextFamilies[0]?.key ?? nextFamilyKey();
-
-    const enabledByLang = new Map(
-      (data.outputs ?? []).map((output) => [output.language, output]),
-    );
-    setOutputs(
-      ContentLanguageFormOptions.map((lang) => {
-        const existing = enabledByLang.get(lang.id);
-        const familyName =
-          existing?.ai_title_family_name ?? titleFamilies[0]?.name;
-        return {
-          language: lang.id,
-          enabled: Boolean(existing),
-          title_strategy:
-            existing?.title_strategy ?? TitleProductionStrategies.ORIGINAL,
-          description_strategy:
-            existing?.description_strategy ??
-            DescriptionProductionStrategies.ORIGINAL,
-          description_content_language:
-            existing?.description_content_language ?? null,
-          ai_title_family_key: familyName
-            ? (familyKeyByName.get(familyName) ?? fallbackFamilyKey)
-            : fallbackFamilyKey,
-        };
-      }),
-    );
+    const draft = draftFromConfig(data, resolvedSource);
+    setAiTitlesEnabled(draft.aiTitlesEnabled);
+    setUseAiBatch(draft.useAiBatch);
+    setIsEnabled(draft.isEnabled);
+    setFamilies(draft.families);
+    setOutputs(draft.outputs);
   }, [data, resolvedSource]);
+
+  const handleCopyFromAgency = () => {
+    if (!copySourceId || loadSourceConfig.isPending) return;
+    loadSourceConfig.mutate(copySourceId, {
+      onSuccess: (config) => {
+        if (!config) {
+          toast({
+            title: "No content publishing config",
+            description: "That agency has no saved config to copy.",
+            variant: "error",
+          });
+          return;
+        }
+        const draft = draftFromConfig(config, resolvedSource);
+        setAiTitlesEnabled(draft.aiTitlesEnabled);
+        setUseAiBatch(draft.useAiBatch);
+        setIsEnabled(draft.isEnabled);
+        setFamilies(draft.families);
+        setOutputs(draft.outputs);
+        toast({
+          title: "Config copied",
+          description: "Review settings, then save.",
+          duration: 2000,
+          variant: "success",
+        });
+      },
+      onError: (error: Error) => {
+        toast({
+          title: "Could not copy config",
+          description: error.message,
+          variant: "error",
+        });
+      },
+    });
+  };
 
   const familyNameByKey = new Map(
     families.map((family) => [family.key, family.name]),
@@ -262,7 +318,9 @@ export function ContentPublishingPanel({
 
       <Modal state={modal}>
         <Modal.Backdrop
-          isDismissable={!upsert.isPending && !remove.isPending}
+          isDismissable={
+            !upsert.isPending && !remove.isPending && !loadSourceConfig.isPending
+          }
         >
           <Modal.Container>
             <Modal.Dialog className="max-h-[90vh] w-full max-w-3xl">
@@ -286,6 +344,56 @@ export function ContentPublishingPanel({
                   </div>
                 ) : (
                   <>
+                    {otherTrackedAgencies.length > 0 ? (
+                      <div className="flex flex-col gap-2 rounded-lg border border-border p-3">
+                        <div className="flex min-w-0 flex-col gap-0.5">
+                          <span className="text-sm font-medium text-foreground">
+                            Copy from agency
+                          </span>
+                          <span className="text-xs text-muted">
+                            Load another tracked agency&apos;s config into this
+                            form. Save to keep.
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                          <Select
+                            className="min-w-0 flex-1"
+                            aria-label="Copy from tracked agency"
+                            selectedKey={copySourceId}
+                            onSelectionChange={(key) =>
+                              setCopySourceId(key ? String(key) : null)
+                            }
+                          >
+                            <Label>Tracked agency</Label>
+                            <Select.Trigger>
+                              <Select.Value />
+                            </Select.Trigger>
+                            <Select.Popover>
+                              <ListBox items={otherTrackedAgencies}>
+                                {(agency) => (
+                                  <ListBox.Item
+                                    id={agency.id}
+                                    textValue={agency.name}
+                                  >
+                                    {agency.name}
+                                  </ListBox.Item>
+                                )}
+                              </ListBox>
+                            </Select.Popover>
+                          </Select>
+                          <ActionButtonWithPending
+                            className="shrink-0"
+                            variant="secondary"
+                            isPending={loadSourceConfig.isPending}
+                            isDisabled={!copySourceId || upsert.isPending}
+                            onPress={handleCopyFromAgency}
+                          >
+                            Copy
+                          </ActionButtonWithPending>
+                        </div>
+                      </div>
+                    ) : null}
+
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                         <span className="text-sm text-foreground">Enabled</span>
@@ -705,12 +813,17 @@ export function ContentPublishingPanel({
                 <Button
                   variant="secondary"
                   onPress={modal.close}
-                  isDisabled={upsert.isPending || remove.isPending}
+                  isDisabled={
+                    upsert.isPending ||
+                    remove.isPending ||
+                    loadSourceConfig.isPending
+                  }
                 >
                   Cancel
                 </Button>
                 <ActionButtonWithPending
                   isPending={upsert.isPending}
+                  isDisabled={loadSourceConfig.isPending}
                   onPress={handleSave}
                 >
                   Save
