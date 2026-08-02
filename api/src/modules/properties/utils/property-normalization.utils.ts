@@ -156,28 +156,54 @@ export function extractLatLng(rawData: unknown): {
   };
 }
 
+const AREA_UNIT_RE =
+  /(?:τ\.?\s*μ\.?|τμ|m²|m2|sq\.?\s*m\.?|sqm)/i;
+const NUMBER_RE = /\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?/g;
+const NUMBER_WITH_AREA_RE =
+  /(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?)\s*(?:τ\.?\s*μ\.?|τμ|m²|m2|sq\.?\s*m\.?|sqm)/gi;
+
+function parseNumericToken(token: string): number | null {
+  const cleaned = token.replace(/\./g, '').replace(',', '.');
+  const value = parseFloat(cleaned);
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+function stripAreaAmounts(rawPrice: string): string {
+  return rawPrice.replace(NUMBER_WITH_AREA_RE, ' ');
+}
+
+function looksLikeDiscountPair(a: number, b: number): boolean {
+  const low = Math.min(a, b);
+  const high = Math.max(a, b);
+  if (low <= 0) return false;
+  return high / low <= 3;
+}
+
 export function parseFallbackPrice(
   rawPrice: string | null | undefined,
 ): number | null {
   const prices = parseAllPrices(rawPrice);
   if (prices.length === 0) return null;
-  return prices.length >= 2
-    ? Math.min(...prices)
-    : prices[0];
+  if (prices.length === 1) return prices[0];
+  const sorted = [...prices].sort((a, b) => a - b);
+  if (looksLikeDiscountPair(sorted[0], sorted[sorted.length - 1])) {
+    return sorted[0];
+  }
+  return sorted[sorted.length - 1];
 }
 
 export function parseAllPrices(
   rawPrice: string | null | undefined,
 ): number[] {
   if (!rawPrice) return [];
-  const matches = [
-    ...rawPrice.matchAll(/\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?/g),
-  ];
+  const priceOnly = stripAreaAmounts(rawPrice);
+  const hasArea = AREA_UNIT_RE.test(rawPrice);
+  const source = hasArea ? priceOnly : rawPrice;
+  const matches = [...source.matchAll(NUMBER_RE)];
   const values: number[] = [];
   for (const match of matches) {
-    const cleaned = match[0].replace(/\./g, '').replace(',', '.');
-    const value = parseFloat(cleaned);
-    if (Number.isFinite(value) && value > 0) values.push(value);
+    const value = parseNumericToken(match[0]);
+    if (value != null) values.push(value);
   }
   return [...new Set(values)];
 }
@@ -192,7 +218,10 @@ function extractListedPriceFromDescription(
 }
 
 export function resolveNormalizedPrices(
-  n: Pick<NormalizedAiRow, 'price' | 'price_start' | 'price_web'>,
+  n: Pick<
+    NormalizedAiRow,
+    'price' | 'price_start' | 'price_web' | 'square_meters'
+  >,
   context?: {
     rawPrice?: string | null;
     rawDescription?: string | null;
@@ -211,8 +240,28 @@ export function resolveNormalizedPrices(
 
   if (fromRaw.length >= 2) {
     const sorted = [...fromRaw].sort((a, b) => a - b);
-    price = sorted[0];
-    priceStart = sorted[sorted.length - 1];
+    const low = sorted[0];
+    const high = sorted[sorted.length - 1];
+    if (looksLikeDiscountPair(low, high)) {
+      price = low;
+      priceStart = high;
+    } else {
+      price = high;
+      if (priceStart == null) priceStart = high;
+    }
+  } else if (fromRaw.length === 1) {
+    const only = fromRaw[0];
+    const priceLooksLikeSqm =
+      n.square_meters != null && price === n.square_meters;
+    const priceLooksLikeAreaToken =
+      context?.rawPrice != null &&
+      AREA_UNIT_RE.test(context.rawPrice) &&
+      price != null &&
+      price < only / 3;
+    if (price == null || priceLooksLikeSqm || priceLooksLikeAreaToken) {
+      price = only;
+    }
+    if (priceStart == null) priceStart = only;
   } else if (price != null && priceStart != null && priceStart < price) {
     const tmp = price;
     price = priceStart;
@@ -221,10 +270,21 @@ export function resolveNormalizedPrices(
     price != null &&
     fromDesc != null &&
     fromDesc < price &&
+    looksLikeDiscountPair(fromDesc, price) &&
     (priceStart == null || priceStart === fromDesc)
   ) {
     priceStart = price;
     price = fromDesc;
+  }
+
+  if (
+    price != null &&
+    n.square_meters != null &&
+    price === n.square_meters &&
+    fromRaw.length >= 1
+  ) {
+    const monetary = fromRaw.find((value) => value !== n.square_meters);
+    if (monetary != null) price = monetary;
   }
 
   if (priceWeb == null && price != null) {
