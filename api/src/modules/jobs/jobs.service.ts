@@ -10,6 +10,7 @@ import {
   CRAWL_QUEUE,
   GENERATION_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
+  CMS_SYNC_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
 } from '@/core/queues/queues.constants';
@@ -17,7 +18,7 @@ import {
   DEFAULT_CRAWL_JOB_ATTEMPTS,
   DEFAULT_CRAWL_JOB_BACKOFF_MS,
 } from '@/integrations/crawler/constants/crawler.constants';
-import { JobStatus, Prisma } from 'generated/prisma';
+import { CmsSyncStatus, JobStatus, Prisma } from 'generated/prisma';
 import { JobLogQueryType } from './dto/job-log-query.schema';
 import { PaginatedResult } from './interfaces/job-log.interface';
 
@@ -41,6 +42,8 @@ export class JobsService {
     private readonly contentProductionQueue: Queue,
     @InjectQueue(SALES_PRICE_UPDATE_QUEUE)
     private readonly salesPriceUpdateQueue: Queue,
+    @InjectQueue(CMS_SYNC_QUEUE)
+    private readonly cmsSyncQueue: Queue,
   ) {}
 
   async findAll(query: JobLogQueryType): Promise<PaginatedResult<any>> {
@@ -135,7 +138,8 @@ export class JobsService {
           }
         : jobLog.queue_name === WATERMARK_REMOVAL_QUEUE ||
             jobLog.queue_name === CONTENT_PRODUCTION_QUEUE ||
-            jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE
+            jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE ||
+            jobLog.queue_name === CMS_SYNC_QUEUE
           ? {
               attempts: 3,
               backoff: { type: 'exponential' as const, delay: 5000 },
@@ -143,6 +147,62 @@ export class JobsService {
               removeOnFail: 200,
             }
           : undefined;
+
+    if (jobLog.queue_name === CMS_SYNC_QUEUE) {
+      const payloadRecord = payload as {
+        cms_sync_run_id?: string;
+        user_tracked_agency_id?: string;
+        user_integration_id?: string;
+        crawl_run_id?: string | null;
+      };
+      if (!payloadRecord.cms_sync_run_id) {
+        throw new BadRequestException(
+          'CMS sync job payload is missing cms_sync_run_id',
+        );
+      }
+
+      const syncRun = await this.prisma.cmsSyncRun.findUnique({
+        where: { id: payloadRecord.cms_sync_run_id },
+        select: { id: true },
+      });
+      if (!syncRun) {
+        throw new NotFoundException('CMS sync run not found');
+      }
+
+      await this.prisma.cmsSyncRun.update({
+        where: { id: syncRun.id },
+        data: {
+          status: CmsSyncStatus.RETRYING,
+          error_message: null,
+          started_at: new Date(),
+          finished_at: null,
+        },
+      });
+
+      await this.cmsSyncQueue.add(
+        jobLog.job_name ?? 'cms-sync',
+        {
+          cms_sync_run_id: payloadRecord.cms_sync_run_id,
+          user_tracked_agency_id: payloadRecord.user_tracked_agency_id ?? '',
+          user_integration_id: payloadRecord.user_integration_id ?? '',
+          crawl_run_id: payloadRecord.crawl_run_id ?? null,
+        },
+        jobOptions,
+      );
+
+      return this.prisma.jobLog.update({
+        where: { id },
+        data: {
+          status: JobStatus.COMPLETED,
+          finished_at: new Date(),
+          duration_ms: 0,
+          result: {
+            requeued: true,
+            cms_sync_run_id: payloadRecord.cms_sync_run_id,
+          },
+        },
+      });
+    }
 
     if (jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE) {
       const payloadRecord = payload as {
@@ -333,6 +393,9 @@ export class JobsService {
     }
     if (queueName === SALES_PRICE_UPDATE_QUEUE) {
       return this.salesPriceUpdateQueue;
+    }
+    if (queueName === CMS_SYNC_QUEUE) {
+      return this.cmsSyncQueue;
     }
     throw new BadRequestException(`Unsupported queue: ${queueName}`);
   }

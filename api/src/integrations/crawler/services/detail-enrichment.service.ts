@@ -155,6 +155,22 @@ export class DetailEnrichmentService {
 
       const extracted = await page.evaluate((cfg) => {
         const images: string[] = [];
+        const isJunkImageUrl = (src: string): boolean => {
+          const lower = src.toLowerCase();
+          if (!src || lower.endsWith('.svg')) return true;
+          if (
+            /logo|icon|favicon|sprite|sharethis|maps\d*\.a-cdn|\/tiles\/|googleusercontent\.com\/map/i.test(
+              lower,
+            )
+          ) {
+            return true;
+          }
+          return false;
+        };
+        const pushImage = (src: string | null | undefined): void => {
+          if (!src || isJunkImageUrl(src)) return;
+          images.push(src);
+        };
 
         if (cfg?.image_selector) {
           const type = cfg.image_type ?? 'src';
@@ -163,9 +179,9 @@ export class DetailEnrichmentService {
               const match = (el.getAttribute('style') || '').match(
                 /background-image:\s*url\(['"]?(.*?)['"]?\)/,
               );
-              if (match?.[1]) images.push(match[1]);
+              pushImage(match?.[1]);
             } else if (el instanceof HTMLImageElement && el.src) {
-              images.push(el.src);
+              pushImage(el.src);
             }
           });
         } else {
@@ -173,17 +189,10 @@ export class DetailEnrichmentService {
             const match = (el.getAttribute('style') || '').match(
               /background-image:\s*url\(['"]?(.*?)['"]?\)/,
             );
-            if (match?.[1] && !match[1].endsWith('.svg')) images.push(match[1]);
+            pushImage(match?.[1]);
           });
           document.querySelectorAll('img').forEach((el) => {
-            if (
-              el.src &&
-              !el.src.endsWith('.svg') &&
-              !el.src.includes('logo') &&
-              !el.src.includes('icon')
-            ) {
-              images.push(el.src);
-            }
+            pushImage(el.src);
           });
         }
 

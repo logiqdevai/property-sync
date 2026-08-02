@@ -5,6 +5,7 @@ import {
   CRAWL_QUEUE,
   GENERATION_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
+  CMS_SYNC_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
 } from '@/core/queues/queues.constants';
@@ -20,6 +21,7 @@ import { JobsService } from './jobs.service';
       { name: WATERMARK_REMOVAL_QUEUE },
       { name: CONTENT_PRODUCTION_QUEUE },
       { name: SALES_PRICE_UPDATE_QUEUE },
+      { name: CMS_SYNC_QUEUE },
     ),
   ],
   controllers: [JobsController],

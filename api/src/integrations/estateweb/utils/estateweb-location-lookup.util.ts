@@ -194,6 +194,17 @@ function expandCityLabels(city?: string | null): {
   return { labels, preferPeripheral };
 }
 
+function parseParentheticalParts(
+  value: string,
+): { outer: string; inner: string } | null {
+  const match = value.trim().match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+  if (!match) return null;
+  const outer = match[1].trim();
+  const inner = match[2].trim();
+  if (!outer || !inner) return null;
+  return { outer, inner };
+}
+
 function expandDistrictLabels(district?: string | null): string[] {
   if (!district) return [];
   const raw = normalizeEstateWebLabel(district);
@@ -214,6 +225,67 @@ function expandDistrictLabels(district?: string | null): string[] {
     push(parts[i]);
   }
   return labels;
+}
+
+function resolveRelatedToAnchor(
+  candidates: EstateWebLocation[],
+  anchors: EstateWebLocation[],
+): EstateWebLocation | undefined {
+  if (!candidates.length || !anchors.length) return undefined;
+
+  const related: EstateWebLocation[] = [];
+  for (const candidate of candidates) {
+    for (const anchor of anchors) {
+      const sameParent =
+        anchor.parent_id != null && candidate.parent_id === anchor.parent_id;
+      if (
+        sameParent ||
+        isDescendantOf(candidate, anchor.id) ||
+        matchesCity(candidate, normalizeEstateWebLabel(anchor.name))
+      ) {
+        related.push(candidate);
+        break;
+      }
+    }
+  }
+
+  return related.length > 0 ? pickMostSpecific(related) : undefined;
+}
+
+function resolveParentheticalDistrict(
+  district: string,
+  cityLabels: string[],
+  preferPeripheral: boolean,
+): EstateWebLocation | undefined {
+  const parsed = parseParentheticalParts(district);
+  if (!parsed) return undefined;
+
+  const outerNorm = normalizeEstateWebLabel(parsed.outer);
+  const innerNorm = normalizeEstateWebLabel(parsed.inner);
+  if (!outerNorm || !innerNorm) return undefined;
+
+  const outerMatches = LOCATION_BY_NORMALIZED_NAME.get(outerNorm) ?? [];
+  const innerMatches = LOCATION_BY_NORMALIZED_NAME.get(innerNorm) ?? [];
+
+  const related = resolveRelatedToAnchor(outerMatches, innerMatches);
+  if (related) return related;
+
+  const scopedOuter = resolveByDistrict(
+    outerNorm,
+    [innerNorm, ...cityLabels],
+    preferPeripheral,
+  );
+  if (scopedOuter) return scopedOuter;
+
+  if (innerMatches.length > 0) {
+    return pickCanonicalCity(innerMatches) ?? pickMostSpecific(innerMatches);
+  }
+
+  if (outerMatches.length > 0) {
+    return pickMostSpecific(outerMatches);
+  }
+
+  return undefined;
 }
 
 function excludeUnderCanonicalCity(
@@ -283,6 +355,15 @@ export function resolveEstateWebLocation(
       preferPeripheral,
     );
     if (byDistrict) return byDistrict;
+  }
+
+  if (district) {
+    const byParenthetical = resolveParentheticalDistrict(
+      district,
+      cityLabels,
+      preferPeripheral,
+    );
+    if (byParenthetical) return byParenthetical;
   }
 
   if (district) {
