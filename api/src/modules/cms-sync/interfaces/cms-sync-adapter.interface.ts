@@ -42,6 +42,7 @@ export interface CmsSyncPushOptions {
   propertyNote?: string;
   sitesOverride?: CmsSyncPushSiteOverride[];
   forceContentProduction?: boolean;
+  forceSalesPriceRecalc?: boolean;
 }
 
 export interface CmsSyncAdapter {

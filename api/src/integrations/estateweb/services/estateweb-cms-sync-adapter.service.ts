@@ -33,6 +33,7 @@ import { buildEstateWebImageUrl } from '../utils/estateweb-image-url.util';
 import { resolveEstateWebPushSitesForTracker } from '../utils/estateweb-integration-settings.util';
 import {
   computeSalePriceStart,
+  hasValidSalePriceStart,
   pickSalePercentage,
   resolveSalesPricingSettings,
   shouldApplySalesPriceStart,
@@ -97,7 +98,11 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         options?.forceContentProduction === true,
       ),
     ]);
-    await this.applySalesPriceStartIfNeeded(userIntegrationId, userProperty);
+    await this.applySalesPriceStartIfNeeded(
+      userIntegrationId,
+      userProperty,
+      options?.forceSalesPriceRecalc === true,
+    );
     const payload = this.buildPayload(
       pushSites,
       adLanguages,
@@ -152,7 +157,11 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         options?.forceContentProduction === true,
       ),
     ]);
-    await this.applySalesPriceStartIfNeeded(userIntegrationId, userProperty);
+    await this.applySalesPriceStartIfNeeded(
+      userIntegrationId,
+      userProperty,
+      options?.forceSalesPriceRecalc === true,
+    );
     const payload = this.buildPayload(
       pushSites,
       adLanguages,
@@ -649,6 +658,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   private async applySalesPriceStartIfNeeded(
     userIntegrationId: string,
     userProperty: UserProperty,
+    forceRecalc = false,
   ): Promise<void> {
     const [integration, canonical] = await Promise.all([
       this.prisma.userIntegration.findUnique({
@@ -672,10 +682,18 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       return;
     }
 
+    if (
+      !forceRecalc &&
+      hasValidSalePriceStart(userProperty.price_start, userProperty.price)
+    ) {
+      return;
+    }
+
     const price = Number(userProperty.price);
     const pct = pickSalePercentage(
       sales.sale_percentage_start,
       sales.sale_percentage_end,
+      userProperty.id,
     );
     const nextPriceStart = computeSalePriceStart(price, pct);
 

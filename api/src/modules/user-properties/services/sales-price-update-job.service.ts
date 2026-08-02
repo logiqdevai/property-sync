@@ -54,6 +54,7 @@ export class SalesPriceUpdateJobService {
         userIntegrationId,
         property.integration_property_id,
         property,
+        { forceSalesPriceRecalc: true },
       );
 
       return {

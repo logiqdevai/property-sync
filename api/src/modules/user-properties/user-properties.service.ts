@@ -35,6 +35,7 @@ import {
   resolveEstateWebScopeId,
 } from '@/integrations/estateweb/utils/estateweb-catalog.util';
 import { isEstateWebListingTypeAllowed } from '@/integrations/estateweb/utils/estateweb-integration-settings.util';
+import { resolveCanonicalOrCrmPriceStart } from '@/modules/user-integrations/utils/sales-pricing.util';
 import { serializePropertyForApi } from '@/modules/properties/utils/property-api-response.util';
 import { buildHistoryChangeFilter } from '@/modules/properties/utils/property-change-filter.util';
 import {
@@ -1606,6 +1607,7 @@ export class UserPropertiesService {
           ...this.mapFromCanonical(
             userProperty.canonical_property,
             tracker?.text_truncate_pieces,
+            userProperty,
           ),
           is_modified: false,
           last_synced_at: new Date(),
@@ -2130,6 +2132,7 @@ export class UserPropertiesService {
       const canonicalFields = this.mapFromCanonical(
         property,
         tracker.text_truncate_pieces,
+        existing ?? undefined,
       );
       const listingTypeAllowed = isEstateWebListingTypeAllowed(
         estateWebSettingsByUserId.get(tracker.user_id),
@@ -2315,7 +2318,11 @@ export class UserPropertiesService {
     return new Map(rows.map((row) => [row.user_id, row.settings]));
   }
 
-  private mapFromCanonical(property: Property, textTruncatePieces?: string[]) {
+  private mapFromCanonical(
+    property: Property,
+    textTruncatePieces?: string[],
+    existing?: Pick<UserProperty, 'price_start'> | null,
+  ) {
     return {
       property_id: property.property_id,
       internal_id: property.internal_id,
@@ -2352,7 +2359,10 @@ export class UserPropertiesService {
       distance_airport: property.distance_airport,
       distance_port: property.distance_port,
       distance_beach: property.distance_beach,
-      price_start: property.price_start,
+      price_start: resolveCanonicalOrCrmPriceStart(
+        property.price_start,
+        existing?.price_start,
+      ),
       price_web: property.price_web,
       features: property.features ?? undefined,
       images: property.images ?? undefined,

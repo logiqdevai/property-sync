@@ -62,22 +62,60 @@ export function resolveSalesPricingSettings(
 const SALE_PERCENTAGE_STEP = 0.01;
 const CLEAN_PRICE_STEP = 1000;
 
-export function pickSalePercentage(start: number, end: number): number {
+function toFiniteNumber(
+  value: number | null | undefined | Prisma.Decimal,
+): number | null {
+  if (value == null) {
+    return null;
+  }
+  const num = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(num) ? num : null;
+}
+
+function hashSeedToOffset(seed: string, range: number): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  return range > 0 ? hash % range : 0;
+}
+
+export function pickSalePercentage(
+  start: number,
+  end: number,
+  seed?: string,
+): number {
   if (end <= start) {
     return Math.round(start / SALE_PERCENTAGE_STEP) * SALE_PERCENTAGE_STEP;
   }
 
   const startSteps = Math.round(start / SALE_PERCENTAGE_STEP);
   const endSteps = Math.round(end / SALE_PERCENTAGE_STEP);
-  const randomStep =
-    startSteps + Math.floor(Math.random() * (endSteps - startSteps + 1));
+  const range = endSteps - startSteps + 1;
+  const offset =
+    seed != null && seed.length > 0
+      ? hashSeedToOffset(seed, range)
+      : Math.floor(Math.random() * range);
+  const step = startSteps + offset;
 
-  return Math.round(randomStep * SALE_PERCENTAGE_STEP * 100) / 100;
+  return Math.round(step * SALE_PERCENTAGE_STEP * 100) / 100;
 }
 
 export function computeSalePriceStart(price: number, pct: number): number {
   const rawPriceStart = price * (1 + pct);
   return Math.round(rawPriceStart / CLEAN_PRICE_STEP) * CLEAN_PRICE_STEP;
+}
+
+export function hasValidSalePriceStart(
+  priceStart: number | null | undefined | Prisma.Decimal,
+  price: number | null | undefined | Prisma.Decimal,
+): boolean {
+  const priceNum = toFiniteNumber(price);
+  const startNum = toFiniteNumber(priceStart);
+  if (priceNum == null || priceNum <= 0 || startNum == null || startNum <= 0) {
+    return false;
+  }
+  return startNum > priceNum;
 }
 
 export function shouldApplySalesPriceStart(
@@ -89,9 +127,8 @@ export function shouldApplySalesPriceStart(
     return false;
   }
 
-  const priceNum =
-    price == null ? 0 : typeof price === 'number' ? price : Number(price);
-  if (!Number.isFinite(priceNum) || priceNum <= 0) {
+  const priceNum = toFiniteNumber(price);
+  if (priceNum == null || priceNum <= 0) {
     return false;
   }
 
@@ -99,12 +136,19 @@ export function shouldApplySalesPriceStart(
     return true;
   }
 
-  const sourceNum =
-    typeof sourcePriceStart === 'number'
-      ? sourcePriceStart
-      : Number(sourcePriceStart);
+  const sourceNum = toFiniteNumber(sourcePriceStart);
+  return sourceNum == null || sourceNum <= 0;
+}
 
-  return !Number.isFinite(sourceNum) || sourceNum <= 0;
+export function resolveCanonicalOrCrmPriceStart(
+  canonicalPriceStart: number | null | undefined | Prisma.Decimal,
+  existingPriceStart: number | null | undefined | Prisma.Decimal,
+): number | null | undefined | Prisma.Decimal {
+  const canonicalNum = toFiniteNumber(canonicalPriceStart);
+  if (canonicalNum != null && canonicalNum > 0) {
+    return canonicalPriceStart;
+  }
+  return existingPriceStart;
 }
 
 export function normalizeSalesPricingForSave(
