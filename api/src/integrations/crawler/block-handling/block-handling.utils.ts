@@ -171,12 +171,19 @@ async function readPageSnapshot(page: Page): Promise<{
     } catch {
       path = '';
     }
+    const htmlSlice = html.slice(0, 8000);
+    const text = htmlSlice
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
     return {
       title,
-      text: '',
-      html: html.slice(0, 8000),
+      text,
+      html: htmlSlice,
       path,
-      scriptContent: html.slice(0, 8000),
+      scriptContent: htmlSlice,
       httpStatus,
     };
   }

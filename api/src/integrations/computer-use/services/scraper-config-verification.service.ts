@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { BrowserContext, Page } from 'playwright';
-import { waitForBotChallengeClearance } from '@/integrations/crawler/block-handling/block-handling.utils';
+import {
+  classifyPageAccess,
+  waitForBotChallengeClearance,
+} from '@/integrations/crawler/block-handling/block-handling.utils';
 import { BlockHandlingConfig } from '@/integrations/crawler/block-handling/block-handling.interface';
-import { VERIFY_TIMEOUT_MS } from '../constants/generation.constants';
+import {
+  ACCESS_BARRIER_VERIFY_PREFIX,
+  VERIFY_TIMEOUT_MS,
+} from '../constants/generation.constants';
 
 interface FieldDef {
   selector?: string;
@@ -41,6 +47,14 @@ export class ScraperConfigVerificationService {
   ): Promise<string[]> {
     const errors: string[] = [];
 
+    const barrierBefore = await this.accessBarrierError(
+      page,
+      blockHandlingConfig,
+    );
+    if (barrierBefore) {
+      return [barrierBefore];
+    }
+
     if (page.url() !== config.start_url) {
       try {
         await page.goto(config.start_url, {
@@ -54,6 +68,14 @@ export class ScraperConfigVerificationService {
         );
         return errors;
       }
+    }
+
+    const barrierAfterNav = await this.accessBarrierError(
+      page,
+      blockHandlingConfig,
+    );
+    if (barrierAfterNav) {
+      return [barrierAfterNav];
     }
 
     let cardCount = 0;
@@ -320,5 +342,19 @@ export class ScraperConfigVerificationService {
     }
 
     return errors;
+  }
+
+  private async accessBarrierError(
+    page: Page,
+    blockHandlingConfig?: BlockHandlingConfig,
+  ): Promise<string | null> {
+    const state = await classifyPageAccess(page, blockHandlingConfig);
+    if (state !== 'blocked' && state !== 'challenge') {
+      return null;
+    }
+    return (
+      `${ACCESS_BARRIER_VERIFY_PREFIX}page is ${state} at ${page.url()}. ` +
+      'Cannot verify listing selectors on a WAF/bot interstitial.'
+    );
   }
 }

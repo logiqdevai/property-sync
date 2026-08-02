@@ -9,10 +9,10 @@ import { ScraperConfigVerificationService } from './services/scraper-config-veri
 import { ScreenshotStorageService } from './services/screenshot-storage.service';
 import { GENERATION_SYSTEM_PROMPT } from './constants/generation-prompt';
 import {
+  ACCESS_BARRIER_VERIFY_PREFIX,
   DEFAULT_GENERATION_MODEL,
   DEFAULT_MAX_GENERATION_STEPS,
   ABSOLUTE_MAX_GENERATION_STEPS,
-  MAX_CONSECUTIVE_ACCESS_ERRORS,
   MAX_IMAGE_TURNS_IN_CONTEXT,
 } from './constants/generation.constants';
 import { extractJSON } from './utils/extract-json.util';
@@ -26,12 +26,18 @@ import {
 } from './utils/generation-message.util';
 import {
   classifyPageAccess,
+  ClassifyResult,
   isAccessBarrierPage,
   buildBlockHandlingConfig,
 } from '@/integrations/crawler/block-handling/block-handling.utils';
 
 const INITIAL_STEP_HINT =
   'Initial page. Follow the mandatory workflow: find the listings page, inspect cards, visit a detail page, test pagination, then call done.';
+
+const ACCESS_BARRIER_STATES = new Set<ClassifyResult>([
+  'blocked',
+  'challenge',
+]);
 
 @Injectable()
 export class ComputerUseOrchestratorService {
@@ -93,7 +99,6 @@ export class ComputerUseOrchestratorService {
     let finalConfig: Record<string, unknown> | null = null;
     let failureReason: string | null = null;
     let wasCancelled = false;
-    let consecutiveAccessErrors = 0;
     let stepIndex = 0;
     const shouldResume = options.resume === true && run.steps.length > 0;
 
@@ -102,29 +107,53 @@ export class ComputerUseOrchestratorService {
 
       if (await this.isCancelled(generationRunId)) {
         wasCancelled = true;
-        return;
       }
 
-      if (shouldResume) {
+      if (!wasCancelled) {
+        failureReason = await this.abortIfAccessBarrier(
+          generationRunId,
+          driver,
+          blockHandlingConfig,
+          'after initial launch',
+        );
+      }
+
+      if (!wasCancelled && !failureReason && shouldResume) {
         const resumeUrl = extractResumeUrl(run.steps, targetUrl);
         if (resumeUrl !== targetUrl) {
           await driver.executeAction({ action: 'navigate', url: resumeUrl });
+          failureReason = await this.abortIfAccessBarrier(
+            generationRunId,
+            driver,
+            blockHandlingConfig,
+            'after resume navigate',
+          );
         }
 
-        const resumeParts = [
-          buildStepsSummaryText(run.steps),
-          this.buildRetryContext(
-            options.retryError ?? run.error_message,
-            options.retryPrompt,
-          ),
-        ].filter(Boolean);
+        if (!failureReason) {
+          const resumeParts = [
+            buildStepsSummaryText(run.steps),
+            this.buildRetryContext(
+              options.retryError ?? run.error_message,
+              options.retryPrompt,
+            ),
+          ].filter(Boolean);
 
-        messages.push({
-          role: 'user',
-          content: resumeParts.join('\n\n'),
-        });
+          messages.push({
+            role: 'user',
+            content: resumeParts.join('\n\n'),
+          });
 
-        stepIndex = run.steps.length;
+          stepIndex = run.steps.length;
+        }
+      }
+
+      const startStepIndex = stepIndex;
+      const modelCallBudget = Math.max(0, maxSteps - startStepIndex);
+      let modelCallsThisSession = 0;
+
+      if (modelCallBudget === 0) {
+        failureReason = `Reached max steps (${maxSteps}) without a verified config`;
       }
 
       while (!finalConfig && !failureReason && !wasCancelled) {
@@ -133,32 +162,30 @@ export class ComputerUseOrchestratorService {
           break;
         }
 
-        if (stepIndex >= maxSteps) {
+        if (
+          stepIndex >= maxSteps ||
+          modelCallsThisSession >= modelCallBudget
+        ) {
           failureReason = `Reached max steps (${maxSteps}) without a verified config`;
           break;
         }
 
-        const accessState = await classifyPageAccess(
-          driver.currentPage,
+        const persistedStepCount = await this.prisma.computerUseStep.count({
+          where: { scraper_generation_run_id: generationRunId },
+        });
+        if (persistedStepCount >= maxSteps) {
+          failureReason = `Reached max steps (${maxSteps}) without a verified config`;
+          break;
+        }
+
+        failureReason = await this.abortIfAccessBarrier(
+          generationRunId,
+          driver,
           blockHandlingConfig,
+          `before step ${stepIndex}`,
         );
-        const accessBlocked =
-          accessState === 'blocked' || accessState === 'challenge';
-        if (accessBlocked) {
-          consecutiveAccessErrors += 1;
-          const stopAfter =
-            accessState === 'blocked'
-              ? Math.min(2, MAX_CONSECUTIVE_ACCESS_ERRORS)
-              : MAX_CONSECUTIVE_ACCESS_ERRORS;
-          this.logger.warn(
-            `generation run ${generationRunId}: access barrier state=${accessState} (${consecutiveAccessErrors}/${stopAfter}) url=${driver.currentPage.url()}`,
-          );
-          if (consecutiveAccessErrors >= stopAfter) {
-            failureReason = `Website blocked or challenged access ${stopAfter} times in a row (WAF/bot interstitial/captcha). Stopping generation.`;
-            break;
-          }
-        } else {
-          consecutiveAccessErrors = 0;
+        if (failureReason) {
+          break;
         }
 
         const screenshotBefore = await driver.screenshot(true);
@@ -172,11 +199,6 @@ export class ComputerUseOrchestratorService {
             ? INITIAL_STEP_HINT
             : `Step ${stepIndex}. URL: ${driver.currentPage.url()}.`,
         ];
-        if (accessBlocked) {
-          stepHintParts.push(
-            `WARNING: page looks access-blocked or bot-challenged (WAF/Imperva/CloudFront/captcha). Consecutive barriers: ${consecutiveAccessErrors}/${MAX_CONSECUTIVE_ACCESS_ERRORS}. Do not invent selectors from an interstitial. After ${MAX_CONSECUTIVE_ACCESS_ERRORS} barriers the run will stop.`,
-          );
-        }
 
         messages.push({
           role: 'user',
@@ -202,6 +224,7 @@ export class ComputerUseOrchestratorService {
           messages,
           MAX_IMAGE_TURNS_IN_CONTEXT,
         );
+        modelCallsThisSession += 1;
         const { rawText } = await this.computerUseClient.sendStep(
           requestMessages,
           systemPrompt,
@@ -246,8 +269,7 @@ export class ComputerUseOrchestratorService {
 
         if (action.action === 'done') {
           if (
-            accessBlocked ||
-            (await isAccessBarrierPage(driver.currentPage, blockHandlingConfig))
+            await isAccessBarrierPage(driver.currentPage, blockHandlingConfig)
           ) {
             await this.prisma.computerUseStep.update({
               where: { id: step.id },
@@ -256,13 +278,9 @@ export class ComputerUseOrchestratorService {
                 model_reasoning: `${step.model_reasoning ?? ''} [REJECTED: page is access-blocked]`,
               },
             });
-            messages.push({
-              role: 'user',
-              content:
-                'Rejected "done": the current page is still an access-blocked or bot-challenge interstitial (WAF/Imperva/CloudFront/captcha). Do not invent listing selectors from that page. Wait/reload only if useful; otherwise the run will stop after repeated barriers.',
-            });
-            stepIndex += 1;
-            continue;
+            failureReason =
+              'Model returned done while page is still access-blocked or bot-challenged. Stopping generation.';
+            break;
           }
 
           const errors = await this.verificationService.verify(
@@ -273,6 +291,14 @@ export class ComputerUseOrchestratorService {
           );
 
           if (errors.length > 0) {
+            const accessBarrierVerify = errors.some((e) =>
+              e.startsWith(ACCESS_BARRIER_VERIFY_PREFIX),
+            );
+            const stillBarrier = await isAccessBarrierPage(
+              driver.currentPage,
+              blockHandlingConfig,
+            );
+
             await this.prisma.computerUseStep.update({
               where: { id: step.id },
               data: {
@@ -280,6 +306,15 @@ export class ComputerUseOrchestratorService {
                 model_reasoning: `${step.model_reasoning ?? ''} [VERIFICATION FAILED]`,
               },
             });
+
+            if (accessBarrierVerify || stillBarrier) {
+              failureReason =
+                errors.find((e) =>
+                  e.startsWith(ACCESS_BARRIER_VERIFY_PREFIX),
+                ) ??
+                'Verification failed because the page is access-blocked or bot-challenged. Stopping generation.';
+              break;
+            }
 
             const feedback = [
               'Your proposed config was verified against the actual page and FAILED. Do NOT return "done" again with the same selectors.',
@@ -313,6 +348,30 @@ export class ComputerUseOrchestratorService {
 
         if (await this.isCancelled(generationRunId)) {
           wasCancelled = true;
+          break;
+        }
+
+        failureReason = await this.abortIfAccessBarrier(
+          generationRunId,
+          driver,
+          blockHandlingConfig,
+          `after action ${action.action}`,
+        );
+        if (failureReason) {
+          const screenshotAfter = await driver.screenshot().catch(() => null);
+          if (screenshotAfter) {
+            const screenshotAfterId = await this.screenshotStorage.store(
+              screenshotAfter,
+              `generation-${generationRunId}-step-${stepIndex}-after.png`,
+            );
+            await this.prisma.computerUseStep.update({
+              where: { id: step.id },
+              data: {
+                screenshot_after_id: screenshotAfterId,
+                model_reasoning: `${step.model_reasoning ?? ''} [STOPPED: access barrier]`,
+              },
+            });
+          }
           break;
         }
 
@@ -376,6 +435,26 @@ export class ComputerUseOrchestratorService {
             duration_ms: finishedAt.getTime() - startedAt.getTime(),
           },
     });
+  }
+
+  private async abortIfAccessBarrier(
+    generationRunId: string,
+    driver: PlaywrightDriverService,
+    blockHandlingConfig: ReturnType<typeof buildBlockHandlingConfig>,
+    when: string,
+  ): Promise<string | null> {
+    const accessState = await classifyPageAccess(
+      driver.currentPage,
+      blockHandlingConfig,
+    );
+    if (!ACCESS_BARRIER_STATES.has(accessState)) {
+      return null;
+    }
+
+    const url = driver.currentPage.url();
+    const reason = `Website access barrier (${accessState}) ${when} at ${url}. Stopping generation immediately to avoid wasted model spend.`;
+    this.logger.warn(`generation run ${generationRunId}: ${reason}`);
+    return reason;
   }
 
   private async isCancelled(generationRunId: string): Promise<boolean> {
