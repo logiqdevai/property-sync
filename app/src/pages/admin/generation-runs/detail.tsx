@@ -140,6 +140,12 @@ export default function GenerationRunDetailPage() {
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Duration</span>
           <span className="text-sm text-foreground">{formatDuration(run.duration_ms)}</span>
         </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Steps</span>
+          <span className="text-sm text-foreground">
+            {steps.length} / {run.max_steps}
+          </span>
+        </div>
         {run.prompt && (
           <div className="flex flex-col gap-1 sm:col-span-2">
             <span className="text-xs font-medium uppercase tracking-wide text-muted">Prompt</span>

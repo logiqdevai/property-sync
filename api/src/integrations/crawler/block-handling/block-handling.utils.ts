@@ -6,71 +6,180 @@ import {
   DEFAULT_WAIT_TIMEOUT_MS,
   PENDING_BODY_LENGTH_THRESHOLD,
 } from './block-handling.constants';
-import { BlockHandlingConfig, BlockRule } from './block-handling.interface';
+import {
+  BlockHandlingConfig,
+  BlockRule,
+  BlockRuleSource,
+} from './block-handling.interface';
 
-/// Shape needed from a SourceAgency to resolve its BlockHandlingConfig -- either the
-/// eagerly-loaded `block_rules` relation, or a select projecting the same fields.
 export interface AgencyBlockHandlingSource {
   block_rules: PersistedBlockRule[];
   block_handling_wait_timeout_ms: number | null;
   block_handling_min_ready_body_length: number | null;
 }
 
-type ClassifyResult = 'blocked' | 'challenge' | 'pending' | 'ok';
+export type ClassifyResult = 'blocked' | 'challenge' | 'pending' | 'ok';
+
+const HARD_BLOCK_STATUSES = new Set([401, 403, 429, 503]);
+const lastDocumentStatus = new WeakMap<Page, number>();
 
 function resolveRules(config?: BlockHandlingConfig): BlockRule[] {
   return [...DEFAULT_BLOCK_RULES, ...(config?.rules ?? [])];
 }
 
-function evaluateRules(args: {
-  rules: BlockRule[];
-  minReadyBodyLength: number;
-}): ClassifyResult {
-  const { rules, minReadyBodyLength } = args;
-  const testRule = (rule: BlockRule): boolean => {
-    if (rule.source === 'selector') {
-      return !!document.querySelector(rule.pattern);
-    }
+export function trackDocumentResponses(page: Page): void {
+  page.on('response', (response) => {
+    if (response.request().resourceType() !== 'document') return;
+    if (response.frame() !== page.mainFrame()) return;
+    lastDocumentStatus.set(page, response.status());
+  });
+}
 
-    let haystack: string;
-    switch (rule.source) {
-      case 'title':
-        haystack = document.title ?? '';
-        break;
-      case 'text':
-        haystack = document.body?.innerText ?? '';
-        break;
-      case 'html':
-        haystack = document.documentElement?.innerHTML?.slice(0, 4000) ?? '';
-        break;
-      case 'path':
-        haystack = location.pathname;
-        break;
-      case 'script_content':
-        haystack = Array.from(document.scripts)
-          .map((s) => `${s.src}\n${s.textContent ?? ''}`)
-          .join('\n');
-        break;
-      default:
-        return false;
-    }
+export function getLastDocumentStatus(page: Page): number | undefined {
+  return lastDocumentStatus.get(page);
+}
 
-    if (rule.regex) {
-      return new RegExp(rule.pattern, rule.flags ?? 'i').test(haystack);
-    }
-    return haystack.includes(rule.pattern);
-  };
+function testContentRule(
+  rule: BlockRule,
+  snapshot: {
+    title: string;
+    text: string;
+    html: string;
+    path: string;
+    scriptContent: string;
+  },
+): boolean {
+  let haystack: string;
+  switch (rule.source as BlockRuleSource) {
+    case 'title':
+      haystack = snapshot.title;
+      break;
+    case 'text':
+      haystack = snapshot.text;
+      break;
+    case 'html':
+      haystack = snapshot.html.slice(0, 8000);
+      break;
+    case 'path':
+      haystack = snapshot.path;
+      break;
+    case 'script_content':
+      haystack = snapshot.scriptContent;
+      break;
+    default:
+      return false;
+  }
 
-  if (rules.some((rule) => rule.signal === 'blocked' && testRule(rule))) {
+  if (rule.regex) {
+    return new RegExp(rule.pattern, rule.flags ?? 'i').test(haystack);
+  }
+  return haystack.includes(rule.pattern);
+}
+
+async function ruleMatches(
+  page: Page,
+  rule: BlockRule,
+  snapshot: {
+    title: string;
+    text: string;
+    html: string;
+    path: string;
+    scriptContent: string;
+  },
+): Promise<boolean> {
+  if (rule.source === 'selector') {
+    return page
+      .locator(rule.pattern)
+      .count()
+      .then((n) => n > 0)
+      .catch(() => false);
+  }
+  return testContentRule(rule, snapshot);
+}
+
+async function classifySnapshot(
+  page: Page,
+  snapshot: {
+    title: string;
+    text: string;
+    html: string;
+    path: string;
+    scriptContent: string;
+    httpStatus?: number;
+  },
+  rules: BlockRule[],
+  minReadyBodyLength: number,
+): Promise<ClassifyResult> {
+  if (
+    snapshot.httpStatus != null &&
+    HARD_BLOCK_STATUSES.has(snapshot.httpStatus)
+  ) {
     return 'blocked';
   }
-  if (rules.some((rule) => rule.signal === 'challenge' && testRule(rule))) {
-    return 'challenge';
+
+  for (const rule of rules) {
+    if (rule.signal === 'blocked' && (await ruleMatches(page, rule, snapshot))) {
+      return 'blocked';
+    }
   }
-  if ((document.body?.innerText?.trim().length ?? 0) < minReadyBodyLength) {
+  for (const rule of rules) {
+    if (
+      rule.signal === 'challenge' &&
+      (await ruleMatches(page, rule, snapshot))
+    ) {
+      return 'challenge';
+    }
+  }
+  if (snapshot.text.trim().length < minReadyBodyLength) {
     return 'pending';
   }
   return 'ok';
+}
+
+async function readPageSnapshot(page: Page): Promise<{
+  title: string;
+  text: string;
+  html: string;
+  path: string;
+  scriptContent: string;
+  httpStatus?: number;
+}> {
+  const httpStatus = lastDocumentStatus.get(page);
+  try {
+    const snapshot = await page.evaluate(() => {
+      const scripts = Array.from(document.scripts)
+        .map((s) => `${s.src}\n${s.textContent ?? ''}`)
+        .join('\n');
+      return {
+        title: document.title ?? '',
+        text: document.body?.innerText ?? '',
+        html: document.documentElement?.innerHTML?.slice(0, 8000) ?? '',
+        path: location.pathname,
+        scriptContent: scripts,
+      };
+    });
+    return { ...snapshot, httpStatus };
+  } catch {
+    const [title, html, url] = await Promise.all([
+      page.title().catch(() => ''),
+      page.content().catch(() => ''),
+      Promise.resolve(page.url()),
+    ]);
+    let path = '';
+    try {
+      path = new URL(url).pathname;
+    } catch {
+      path = '';
+    }
+    return {
+      title,
+      text: '',
+      html: html.slice(0, 8000),
+      path,
+      scriptContent: html.slice(0, 8000),
+      httpStatus,
+    };
+  }
 }
 
 async function classify(
@@ -78,9 +187,8 @@ async function classify(
   rules: BlockRule[],
   minReadyBodyLength: number,
 ): Promise<ClassifyResult> {
-  return page
-    .evaluate(evaluateRules, { rules, minReadyBodyLength })
-    .catch(() => 'pending' as const);
+  const snapshot = await readPageSnapshot(page);
+  return classifySnapshot(page, snapshot, rules, minReadyBodyLength);
 }
 
 export async function classifyPageAccess(
@@ -139,9 +247,6 @@ export async function waitForBotChallengeClearance(
   return state;
 }
 
-/// Builds the runtime BlockHandlingConfig (consumed by isBlockedPage/waitForBotChallengeClearance)
-/// from a SourceAgency's relational block-handling columns/rows. Returns undefined when the
-/// agency has no overrides at all, so callers fall back to the built-in defaults untouched.
 export function buildBlockHandlingConfig(
   agency: AgencyBlockHandlingSource | null | undefined,
 ): BlockHandlingConfig | undefined {

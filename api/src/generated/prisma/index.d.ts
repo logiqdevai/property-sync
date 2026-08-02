@@ -16601,10 +16601,12 @@ export namespace Prisma {
   }
 
   export type ScraperGenerationRunAvgAggregateOutputType = {
+    max_steps: number | null
     duration_ms: number | null
   }
 
   export type ScraperGenerationRunSumAggregateOutputType = {
+    max_steps: number | null
     duration_ms: number | null
   }
 
@@ -16615,6 +16617,7 @@ export namespace Prisma {
     trigger: $Enums.GenerationTrigger | null
     status: $Enums.GenerationRunStatus | null
     prompt: string | null
+    max_steps: number | null
     produced_version_id: string | null
     error_message: string | null
     started_at: Date | null
@@ -16631,6 +16634,7 @@ export namespace Prisma {
     trigger: $Enums.GenerationTrigger | null
     status: $Enums.GenerationRunStatus | null
     prompt: string | null
+    max_steps: number | null
     produced_version_id: string | null
     error_message: string | null
     started_at: Date | null
@@ -16647,6 +16651,7 @@ export namespace Prisma {
     trigger: number
     status: number
     prompt: number
+    max_steps: number
     staged_config: number
     produced_version_id: number
     error_message: number
@@ -16660,10 +16665,12 @@ export namespace Prisma {
 
 
   export type ScraperGenerationRunAvgAggregateInputType = {
+    max_steps?: true
     duration_ms?: true
   }
 
   export type ScraperGenerationRunSumAggregateInputType = {
+    max_steps?: true
     duration_ms?: true
   }
 
@@ -16674,6 +16681,7 @@ export namespace Prisma {
     trigger?: true
     status?: true
     prompt?: true
+    max_steps?: true
     produced_version_id?: true
     error_message?: true
     started_at?: true
@@ -16690,6 +16698,7 @@ export namespace Prisma {
     trigger?: true
     status?: true
     prompt?: true
+    max_steps?: true
     produced_version_id?: true
     error_message?: true
     started_at?: true
@@ -16706,6 +16715,7 @@ export namespace Prisma {
     trigger?: true
     status?: true
     prompt?: true
+    max_steps?: true
     staged_config?: true
     produced_version_id?: true
     error_message?: true
@@ -16810,6 +16820,7 @@ export namespace Prisma {
     trigger: $Enums.GenerationTrigger
     status: $Enums.GenerationRunStatus
     prompt: string | null
+    max_steps: number
     staged_config: JsonValue | null
     produced_version_id: string | null
     error_message: string | null
@@ -16846,6 +16857,7 @@ export namespace Prisma {
     trigger?: boolean
     status?: boolean
     prompt?: boolean
+    max_steps?: boolean
     staged_config?: boolean
     produced_version_id?: boolean
     error_message?: boolean
@@ -16868,6 +16880,7 @@ export namespace Prisma {
     trigger?: boolean
     status?: boolean
     prompt?: boolean
+    max_steps?: boolean
     staged_config?: boolean
     produced_version_id?: boolean
     error_message?: boolean
@@ -16888,6 +16901,7 @@ export namespace Prisma {
     trigger?: boolean
     status?: boolean
     prompt?: boolean
+    max_steps?: boolean
     staged_config?: boolean
     produced_version_id?: boolean
     error_message?: boolean
@@ -16908,6 +16922,7 @@ export namespace Prisma {
     trigger?: boolean
     status?: boolean
     prompt?: boolean
+    max_steps?: boolean
     staged_config?: boolean
     produced_version_id?: boolean
     error_message?: boolean
@@ -16918,7 +16933,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type ScraperGenerationRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "scraper_id" | "trigger" | "status" | "prompt" | "staged_config" | "produced_version_id" | "error_message" | "started_at" | "finished_at" | "duration_ms" | "created_at" | "updated_at", ExtArgs["result"]["scraperGenerationRun"]>
+  export type ScraperGenerationRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "scraper_id" | "trigger" | "status" | "prompt" | "max_steps" | "staged_config" | "produced_version_id" | "error_message" | "started_at" | "finished_at" | "duration_ms" | "created_at" | "updated_at", ExtArgs["result"]["scraperGenerationRun"]>
   export type ScraperGenerationRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     scraper?: boolean | ScraperGenerationRun$scraperArgs<ExtArgs>
@@ -16952,6 +16967,7 @@ export namespace Prisma {
       trigger: $Enums.GenerationTrigger
       status: $Enums.GenerationRunStatus
       prompt: string | null
+      max_steps: number
       staged_config: Prisma.JsonValue | null
       produced_version_id: string | null
       error_message: string | null
@@ -17393,6 +17409,7 @@ export namespace Prisma {
     readonly trigger: FieldRef<"ScraperGenerationRun", 'GenerationTrigger'>
     readonly status: FieldRef<"ScraperGenerationRun", 'GenerationRunStatus'>
     readonly prompt: FieldRef<"ScraperGenerationRun", 'String'>
+    readonly max_steps: FieldRef<"ScraperGenerationRun", 'Int'>
     readonly staged_config: FieldRef<"ScraperGenerationRun", 'Json'>
     readonly produced_version_id: FieldRef<"ScraperGenerationRun", 'String'>
     readonly error_message: FieldRef<"ScraperGenerationRun", 'String'>
@@ -48186,6 +48203,7 @@ export namespace Prisma {
     trigger: 'trigger',
     status: 'status',
     prompt: 'prompt',
+    max_steps: 'max_steps',
     staged_config: 'staged_config',
     produced_version_id: 'produced_version_id',
     error_message: 'error_message',
@@ -50195,6 +50213,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFilter<"ScraperGenerationRun"> | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFilter<"ScraperGenerationRun"> | $Enums.GenerationRunStatus
     prompt?: StringNullableFilter<"ScraperGenerationRun"> | string | null
+    max_steps?: IntFilter<"ScraperGenerationRun"> | number
     staged_config?: JsonNullableFilter<"ScraperGenerationRun">
     produced_version_id?: StringNullableFilter<"ScraperGenerationRun"> | string | null
     error_message?: StringNullableFilter<"ScraperGenerationRun"> | string | null
@@ -50216,6 +50235,7 @@ export namespace Prisma {
     trigger?: SortOrder
     status?: SortOrder
     prompt?: SortOrderInput | SortOrder
+    max_steps?: SortOrder
     staged_config?: SortOrderInput | SortOrder
     produced_version_id?: SortOrderInput | SortOrder
     error_message?: SortOrderInput | SortOrder
@@ -50241,6 +50261,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFilter<"ScraperGenerationRun"> | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFilter<"ScraperGenerationRun"> | $Enums.GenerationRunStatus
     prompt?: StringNullableFilter<"ScraperGenerationRun"> | string | null
+    max_steps?: IntFilter<"ScraperGenerationRun"> | number
     staged_config?: JsonNullableFilter<"ScraperGenerationRun">
     error_message?: StringNullableFilter<"ScraperGenerationRun"> | string | null
     started_at?: DateTimeNullableFilter<"ScraperGenerationRun"> | Date | string | null
@@ -50261,6 +50282,7 @@ export namespace Prisma {
     trigger?: SortOrder
     status?: SortOrder
     prompt?: SortOrderInput | SortOrder
+    max_steps?: SortOrder
     staged_config?: SortOrderInput | SortOrder
     produced_version_id?: SortOrderInput | SortOrder
     error_message?: SortOrderInput | SortOrder
@@ -50286,6 +50308,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerWithAggregatesFilter<"ScraperGenerationRun"> | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusWithAggregatesFilter<"ScraperGenerationRun"> | $Enums.GenerationRunStatus
     prompt?: StringNullableWithAggregatesFilter<"ScraperGenerationRun"> | string | null
+    max_steps?: IntWithAggregatesFilter<"ScraperGenerationRun"> | number
     staged_config?: JsonNullableWithAggregatesFilter<"ScraperGenerationRun">
     produced_version_id?: StringNullableWithAggregatesFilter<"ScraperGenerationRun"> | string | null
     error_message?: StringNullableWithAggregatesFilter<"ScraperGenerationRun"> | string | null
@@ -53985,6 +54008,7 @@ export namespace Prisma {
     trigger?: $Enums.GenerationTrigger
     status?: $Enums.GenerationRunStatus
     prompt?: string | null
+    max_steps?: number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
     started_at?: Date | string | null
@@ -54005,6 +54029,7 @@ export namespace Prisma {
     trigger?: $Enums.GenerationTrigger
     status?: $Enums.GenerationRunStatus
     prompt?: string | null
+    max_steps?: number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: string | null
     error_message?: string | null
@@ -54021,6 +54046,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54041,6 +54067,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -54059,6 +54086,7 @@ export namespace Prisma {
     trigger?: $Enums.GenerationTrigger
     status?: $Enums.GenerationRunStatus
     prompt?: string | null
+    max_steps?: number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: string | null
     error_message?: string | null
@@ -54074,6 +54102,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54090,6 +54119,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -58261,6 +58291,7 @@ export namespace Prisma {
     trigger?: SortOrder
     status?: SortOrder
     prompt?: SortOrder
+    max_steps?: SortOrder
     staged_config?: SortOrder
     produced_version_id?: SortOrder
     error_message?: SortOrder
@@ -58272,6 +58303,7 @@ export namespace Prisma {
   }
 
   export type ScraperGenerationRunAvgOrderByAggregateInput = {
+    max_steps?: SortOrder
     duration_ms?: SortOrder
   }
 
@@ -58282,6 +58314,7 @@ export namespace Prisma {
     trigger?: SortOrder
     status?: SortOrder
     prompt?: SortOrder
+    max_steps?: SortOrder
     produced_version_id?: SortOrder
     error_message?: SortOrder
     started_at?: SortOrder
@@ -58298,6 +58331,7 @@ export namespace Prisma {
     trigger?: SortOrder
     status?: SortOrder
     prompt?: SortOrder
+    max_steps?: SortOrder
     produced_version_id?: SortOrder
     error_message?: SortOrder
     started_at?: SortOrder
@@ -58308,6 +58342,7 @@ export namespace Prisma {
   }
 
   export type ScraperGenerationRunSumOrderByAggregateInput = {
+    max_steps?: SortOrder
     duration_ms?: SortOrder
   }
 
@@ -66014,6 +66049,7 @@ export namespace Prisma {
     trigger?: $Enums.GenerationTrigger
     status?: $Enums.GenerationRunStatus
     prompt?: string | null
+    max_steps?: number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
     started_at?: Date | string | null
@@ -66032,6 +66068,7 @@ export namespace Prisma {
     trigger?: $Enums.GenerationTrigger
     status?: $Enums.GenerationRunStatus
     prompt?: string | null
+    max_steps?: number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: string | null
     error_message?: string | null
@@ -66350,6 +66387,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFilter<"ScraperGenerationRun"> | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFilter<"ScraperGenerationRun"> | $Enums.GenerationRunStatus
     prompt?: StringNullableFilter<"ScraperGenerationRun"> | string | null
+    max_steps?: IntFilter<"ScraperGenerationRun"> | number
     staged_config?: JsonNullableFilter<"ScraperGenerationRun">
     produced_version_id?: StringNullableFilter<"ScraperGenerationRun"> | string | null
     error_message?: StringNullableFilter<"ScraperGenerationRun"> | string | null
@@ -67566,6 +67604,7 @@ export namespace Prisma {
     trigger?: $Enums.GenerationTrigger
     status?: $Enums.GenerationRunStatus
     prompt?: string | null
+    max_steps?: number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
     started_at?: Date | string | null
@@ -67584,6 +67623,7 @@ export namespace Prisma {
     trigger?: $Enums.GenerationTrigger
     status?: $Enums.GenerationRunStatus
     prompt?: string | null
+    max_steps?: number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: string | null
     error_message?: string | null
@@ -68305,6 +68345,7 @@ export namespace Prisma {
     trigger?: $Enums.GenerationTrigger
     status?: $Enums.GenerationRunStatus
     prompt?: string | null
+    max_steps?: number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
     started_at?: Date | string | null
@@ -68324,6 +68365,7 @@ export namespace Prisma {
     trigger?: $Enums.GenerationTrigger
     status?: $Enums.GenerationRunStatus
     prompt?: string | null
+    max_steps?: number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: string | null
     error_message?: string | null
@@ -68417,6 +68459,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68436,6 +68479,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -68635,6 +68679,7 @@ export namespace Prisma {
     trigger?: $Enums.GenerationTrigger
     status?: $Enums.GenerationRunStatus
     prompt?: string | null
+    max_steps?: number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
     started_at?: Date | string | null
@@ -68654,6 +68699,7 @@ export namespace Prisma {
     trigger?: $Enums.GenerationTrigger
     status?: $Enums.GenerationRunStatus
     prompt?: string | null
+    max_steps?: number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     error_message?: string | null
     started_at?: Date | string | null
@@ -68807,6 +68853,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68826,6 +68873,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -75952,6 +76000,7 @@ export namespace Prisma {
     trigger?: $Enums.GenerationTrigger
     status?: $Enums.GenerationRunStatus
     prompt?: string | null
+    max_steps?: number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: string | null
     error_message?: string | null
@@ -76183,6 +76232,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -76201,6 +76251,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76218,6 +76269,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76750,6 +76802,7 @@ export namespace Prisma {
     trigger?: $Enums.GenerationTrigger
     status?: $Enums.GenerationRunStatus
     prompt?: string | null
+    max_steps?: number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: string | null
     error_message?: string | null
@@ -76962,6 +77015,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -76980,6 +77034,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     error_message?: NullableStringFieldUpdateOperationsInput | string | null
@@ -76997,6 +77052,7 @@ export namespace Prisma {
     trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
     status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
     prompt?: NullableStringFieldUpdateOperationsInput | string | null
+    max_steps?: IntFieldUpdateOperationsInput | number
     staged_config?: NullableJsonNullValueInput | InputJsonValue
     produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     error_message?: NullableStringFieldUpdateOperationsInput | string | null

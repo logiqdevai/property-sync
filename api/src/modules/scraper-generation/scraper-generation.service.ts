@@ -133,6 +133,7 @@ export class ScraperGenerationService {
         trigger: GenerationTrigger.MANUAL,
         status: GenerationRunStatus.QUEUED,
         prompt: dto.prompt,
+        ...(dto.max_steps != null && { max_steps: dto.max_steps }),
       },
     });
 
@@ -146,6 +147,7 @@ export class ScraperGenerationService {
     scraperId: string | null,
     trigger: GenerationTrigger,
     prompt?: string,
+    maxSteps?: number,
   ) {
     const run = await this.prisma.scraperGenerationRun.create({
       data: {
@@ -154,6 +156,7 @@ export class ScraperGenerationService {
         trigger,
         status: GenerationRunStatus.QUEUED,
         prompt,
+        ...(maxSteps != null && { max_steps: maxSteps }),
       },
     });
 
@@ -360,6 +363,7 @@ export class ScraperGenerationService {
         duration_ms: null,
         staged_config: null,
         prompt: mergedPrompt,
+        ...(dto.max_steps != null && { max_steps: dto.max_steps }),
       },
     });
 

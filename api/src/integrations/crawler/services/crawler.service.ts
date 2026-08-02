@@ -12,7 +12,7 @@ import {
 } from '../interfaces/scraper-config.interface';
 import { crawlTimestamp } from '../utils/crawler.utils';
 import {
-  isBlockedPage,
+  classifyPageAccess,
   waitForBotChallengeClearance,
 } from '../block-handling/block-handling.utils';
 import { BlockHandlingConfig } from '../block-handling/block-handling.interface';
@@ -76,13 +76,17 @@ export class CrawlerService {
         Math.min(20_000, crawlerConfig.page_timeout_ms),
       );
 
-      const blocked = await isBlockedPage(page, blockHandlingConfig);
+      const accessState = await classifyPageAccess(page, blockHandlingConfig);
+      const blocked =
+        accessState === 'blocked' || accessState === 'challenge';
 
       if (blocked || (response && !response.ok())) {
         const status = blocked ? 403 : response!.status();
         networkError = true;
-        errorSummary = `HTTP ${status} on ${config.start_url}`;
-        log('network_error', { status, blocked });
+        errorSummary = `HTTP ${status} on ${config.start_url}${
+          accessState !== 'ok' ? ` (${accessState})` : ''
+        }`;
+        log('network_error', { status, blocked, accessState });
         return {
           items,
           steps,

@@ -6,7 +6,10 @@ import {
   STEALTH_LAUNCH_ARGS,
   applyStealthInitScript,
 } from '@/integrations/crawler/utils/stealth.utils';
-import { waitForBotChallengeClearance } from '@/integrations/crawler/block-handling/block-handling.utils';
+import {
+  trackDocumentResponses,
+  waitForBotChallengeClearance,
+} from '@/integrations/crawler/block-handling/block-handling.utils';
 import { BlockHandlingConfig } from '@/integrations/crawler/block-handling/block-handling.interface';
 
 export class PlaywrightDriverService {
@@ -30,6 +33,7 @@ export class PlaywrightDriverService {
     });
     await applyStealthInitScript(this.context);
     this.page = await this.context.newPage();
+    trackDocumentResponses(this.page);
     await this.page.goto(url, {
       waitUntil: 'domcontentloaded',
       timeout: 30000,
@@ -78,6 +82,7 @@ export class PlaywrightDriverService {
           .click({ timeout: 8000 });
         const newPage = await newPagePromise;
         if (newPage) {
+          trackDocumentResponses(newPage);
           await newPage
             .waitForLoadState('domcontentloaded', { timeout: 15000 })
             .catch(() => {});

@@ -260,6 +260,7 @@ exports.Prisma.ScraperGenerationRunScalarFieldEnum = {
   trigger: 'trigger',
   status: 'status',
   prompt: 'prompt',
+  max_steps: 'max_steps',
   staged_config: 'staged_config',
   produced_version_id: 'produced_version_id',
   error_message: 'error_message',

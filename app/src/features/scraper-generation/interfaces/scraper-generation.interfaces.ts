@@ -56,6 +56,7 @@ export interface GenerationRun {
   trigger: GenerationTrigger;
   status: GenerationRunStatus;
   prompt: string | null;
+  max_steps: number;
   staged_config: Record<string, unknown> | null;
   produced_version_id: string | null;
   error_message: string | null;
@@ -73,6 +74,7 @@ export interface CreateGenerationRunPayload {
   source_agency_id: string;
   scraper_id?: string;
   prompt?: string;
+  max_steps?: number;
 }
 
 export interface RejectGenerationRunPayload {
@@ -82,6 +84,7 @@ export interface RejectGenerationRunPayload {
 export interface RetryGenerationRunPayload {
   error?: string;
   prompt?: string;
+  max_steps?: number;
 }
 
 export interface GenerationRunListQuery {

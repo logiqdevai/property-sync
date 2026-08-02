@@ -156,6 +156,7 @@ export default function GenerationRunsListPage() {
                   <Table.Column>Scraper</Table.Column>
                   <Table.Column>Trigger</Table.Column>
                   <Table.Column>Status</Table.Column>
+                  <Table.Column>Max steps</Table.Column>
                   <Table.Column>Created</Table.Column>
                   <Table.Column>Finished</Table.Column>
                   <Table.Column>Duration</Table.Column>
@@ -180,6 +181,7 @@ export default function GenerationRunsListPage() {
                       <Table.Cell>
                         <GenerationRunStatusChip status={run.status} />
                       </Table.Cell>
+                      <Table.Cell>{run.max_steps}</Table.Cell>
                       <Table.Cell>{formatDateTime(run.created_at)}</Table.Cell>
                       <Table.Cell>{formatDateTime(run.finished_at)}</Table.Cell>
                       <Table.Cell>{formatDuration(run.duration_ms)}</Table.Cell>
@@ -237,6 +239,7 @@ export default function GenerationRunsListPage() {
                         source_agency_id: values.source_agency_id,
                         scraper_id: values.scraper_id || undefined,
                         prompt: values.prompt || undefined,
+                        max_steps: values.max_steps,
                       },
                       {
                         onSuccess: (run) => {

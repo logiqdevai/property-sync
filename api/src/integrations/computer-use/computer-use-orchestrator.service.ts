@@ -10,8 +10,9 @@ import { ScreenshotStorageService } from './services/screenshot-storage.service'
 import { GENERATION_SYSTEM_PROMPT } from './constants/generation-prompt';
 import {
   DEFAULT_GENERATION_MODEL,
+  DEFAULT_MAX_GENERATION_STEPS,
+  ABSOLUTE_MAX_GENERATION_STEPS,
   MAX_CONSECUTIVE_ACCESS_ERRORS,
-  MAX_GENERATION_STEPS,
   MAX_IMAGE_TURNS_IN_CONTEXT,
 } from './constants/generation.constants';
 import { extractJSON } from './utils/extract-json.util';
@@ -24,6 +25,7 @@ import {
   extractResumeUrl,
 } from './utils/generation-message.util';
 import {
+  classifyPageAccess,
   isAccessBarrierPage,
   buildBlockHandlingConfig,
 } from '@/integrations/crawler/block-handling/block-handling.utils';
@@ -81,6 +83,10 @@ export class ComputerUseOrchestratorService {
     const targetUrl = run.source_agency.base_url;
     const systemPrompt = this.buildSystemPrompt(run.prompt);
     const blockHandlingConfig = buildBlockHandlingConfig(run.source_agency);
+    const maxSteps = Math.min(
+      Math.max(run.max_steps ?? DEFAULT_MAX_GENERATION_STEPS, 1),
+      ABSOLUTE_MAX_GENERATION_STEPS,
+    );
 
     const driver = new PlaywrightDriverService();
     const messages: Anthropic.MessageParam[] = [];
@@ -127,22 +133,28 @@ export class ComputerUseOrchestratorService {
           break;
         }
 
-        if (stepIndex >= MAX_GENERATION_STEPS) {
-          failureReason = `Reached max steps (${MAX_GENERATION_STEPS}) without a verified config`;
+        if (stepIndex >= maxSteps) {
+          failureReason = `Reached max steps (${maxSteps}) without a verified config`;
           break;
         }
 
-        const accessBlocked = await isAccessBarrierPage(
+        const accessState = await classifyPageAccess(
           driver.currentPage,
           blockHandlingConfig,
         );
+        const accessBlocked =
+          accessState === 'blocked' || accessState === 'challenge';
         if (accessBlocked) {
           consecutiveAccessErrors += 1;
+          const stopAfter =
+            accessState === 'blocked'
+              ? Math.min(2, MAX_CONSECUTIVE_ACCESS_ERRORS)
+              : MAX_CONSECUTIVE_ACCESS_ERRORS;
           this.logger.warn(
-            `generation run ${generationRunId}: access barrier (${consecutiveAccessErrors}/${MAX_CONSECUTIVE_ACCESS_ERRORS}) url=${driver.currentPage.url()}`,
+            `generation run ${generationRunId}: access barrier state=${accessState} (${consecutiveAccessErrors}/${stopAfter}) url=${driver.currentPage.url()}`,
           );
-          if (consecutiveAccessErrors >= MAX_CONSECUTIVE_ACCESS_ERRORS) {
-            failureReason = `Website blocked or challenged access ${MAX_CONSECUTIVE_ACCESS_ERRORS} times in a row (WAF/bot interstitial/captcha). Stopping generation.`;
+          if (consecutiveAccessErrors >= stopAfter) {
+            failureReason = `Website blocked or challenged access ${stopAfter} times in a row (WAF/bot interstitial/captcha). Stopping generation.`;
             break;
           }
         } else {

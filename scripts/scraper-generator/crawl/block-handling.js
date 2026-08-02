@@ -49,8 +49,7 @@ export const DEFAULT_BLOCK_RULES = [
     id: 'imperva-resource-script',
     signal: 'challenge',
     source: 'script_content',
-    pattern: '_Incapsula_Resource|incapsula',
-    regex: true,
+    pattern: '_Incapsula_Resource',
   },
   {
     id: 'imperva-pardon-html',

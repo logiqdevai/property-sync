@@ -25,6 +25,12 @@ export class ScraperGenerationRun {
   prompt: string | null;
 
   @ApiProperty({
+    description: 'Hard cap on computer-use steps for this run',
+    example: 15,
+  })
+  max_steps: number;
+
+  @ApiProperty({
     nullable: true,
     description: 'Draft config produced by the model, pending review',
   })

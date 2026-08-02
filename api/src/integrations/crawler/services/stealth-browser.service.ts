@@ -17,6 +17,7 @@ import {
   STEALTH_LAUNCH_ARGS,
   applyStealthInitScript,
 } from '../utils/stealth.utils';
+import { trackDocumentResponses } from '../block-handling/block-handling.utils';
 
 export interface StealthPageSession {
   context: BrowserContext;
@@ -53,6 +54,7 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
     });
     await applyStealthInitScript(context);
     const page = await context.newPage();
+    trackDocumentResponses(page);
     return { context, page };
   }
 

@@ -1,6 +1,6 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, Label, TextArea, FieldError, Select, ListBox } from "@heroui/react";
+import { Form, Label, TextArea, Input, FieldError, Select, ListBox } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import {
@@ -29,9 +29,6 @@ export function CreateGenerationRunForm({
   onSubmit,
   onCancel,
 }: CreateGenerationRunFormProps) {
-  // Skip the agencies fetch entirely when locked — the caller already knows the agency
-  // (it's the scraper's own agency), and waiting on this list caused the disabled Select
-  // to briefly show its placeholder instead of the known name before data arrived.
   const { data: agenciesData } = useAgencies({ limit: 100 }, { enabled: !lockAgency });
   const agencies = agenciesData?.data ?? [];
 
@@ -46,6 +43,7 @@ export function CreateGenerationRunForm({
       source_agency_id: defaultAgencyId ?? "",
       scraper_id: defaultScraperId,
       prompt: "",
+      max_steps: 15,
     },
   });
 
@@ -91,6 +89,19 @@ export function CreateGenerationRunForm({
           />
         )}
         {errors.source_agency_id && <FieldError>{errors.source_agency_id.message}</FieldError>}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <Label htmlFor="generation-max-steps">Max steps</Label>
+        <Input
+          id="generation-max-steps"
+          type="number"
+          min={1}
+          max={50}
+          {...register("max_steps")}
+          fullWidth
+        />
+        {errors.max_steps && <FieldError>{errors.max_steps.message}</FieldError>}
       </div>
 
       <div className="flex flex-col gap-1">

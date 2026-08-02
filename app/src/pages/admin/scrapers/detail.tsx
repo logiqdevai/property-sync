@@ -498,6 +498,7 @@ export default function ScraperDetailPage() {
                         source_agency_id: values.source_agency_id,
                         scraper_id: values.scraper_id,
                         prompt: values.prompt || undefined,
+                        max_steps: values.max_steps,
                       },
                       {
                         onSuccess: (run) => {

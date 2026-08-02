@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsUUID } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class CreateGenerationRunDto {
   @ApiProperty({ description: 'Source agency to generate/fix a scraper for' })
@@ -21,4 +29,19 @@ export class CreateGenerationRunDto {
   @IsOptional()
   @IsString()
   prompt?: string;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Hard cap on computer-use steps for this run (cost control). Defaults to 15, max 50.',
+    minimum: 1,
+    maximum: 50,
+    default: 15,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  max_steps?: number;
 }
