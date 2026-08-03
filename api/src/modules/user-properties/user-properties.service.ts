@@ -2466,6 +2466,7 @@ export class UserPropertiesService {
       price_start: resolveCanonicalOrCrmPriceStart(
         property.price_start,
         existing?.price_start,
+        property.price,
       ),
       price_web: property.price_web,
       features: property.features ?? undefined,

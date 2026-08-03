@@ -190,18 +190,34 @@ export function shouldApplySalesPriceStart(
     return true;
   }
 
-  if (sourcePriceStart == null) {
-    return true;
+  if (hasValidSalePriceStart(sourcePriceStart, priceNum)) {
+    return false;
   }
 
-  const sourceNum = toFiniteNumber(sourcePriceStart);
-  return sourceNum == null || sourceNum <= 0;
+  return true;
 }
 
 export function resolveCanonicalOrCrmPriceStart(
   canonicalPriceStart: number | null | undefined | Prisma.Decimal,
   existingPriceStart: number | null | undefined | Prisma.Decimal,
+  price?: number | null | undefined | Prisma.Decimal,
 ): number | null | undefined | Prisma.Decimal {
+  const priceNum = toFiniteNumber(price);
+
+  if (
+    priceNum != null &&
+    hasValidSalePriceStart(canonicalPriceStart, priceNum)
+  ) {
+    return canonicalPriceStart;
+  }
+
+  if (
+    priceNum != null &&
+    hasValidSalePriceStart(existingPriceStart, priceNum)
+  ) {
+    return existingPriceStart;
+  }
+
   const canonicalNum = toFiniteNumber(canonicalPriceStart);
   if (canonicalNum != null && canonicalNum > 0) {
     return canonicalPriceStart;
