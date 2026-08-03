@@ -49,4 +49,23 @@ describe('resolveEstateWebLocation', () => {
       }),
     );
   });
+
+  it('resolves unique district even when city is an unknown marketing region', () => {
+    expect(resolveEstateWebLocationId('Νότια Κρήτη', 'Τριόπετρα')).toBe(
+      100442,
+    );
+    expect(
+      resolveEstateWebLocation('Νότια Κρήτη', 'Τριόπετρα'),
+    ).toEqual(
+      expect.objectContaining({
+        id: 100442,
+        name: 'Τριόπετρα',
+        path: 'Κρήτη » Ρέθυμνο » Δήμος Αγίου Βασιλείου » Τριόπετρα',
+      }),
+    );
+  });
+
+  it('resolves Τριόπετρα (Λάμπη) parenthetical from Περιοχή-style district', () => {
+    expect(resolveEstateWebLocationId(null, 'Τριόπετρα (Λάμπη)')).toBe(100442);
+  });
 });

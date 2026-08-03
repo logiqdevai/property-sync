@@ -455,8 +455,14 @@ export function buildPropertyRecord(
   );
   const city = n.city ?? null;
   const district = n.district ?? null;
+  const perioxi = structured.specs?.['Περιοχή']?.trim() || null;
   const estatewebLocationId =
-    n.estateweb_location_id ?? resolveEstateWebLocationId(city, district);
+    n.estateweb_location_id ??
+    resolveEstateWebLocationId(city, district) ??
+    (perioxi
+      ? resolveEstateWebLocationId(city, perioxi) ??
+        resolveEstateWebLocationId(null, perioxi)
+      : null);
   const internalId =
     sp.internal_id ??
     extractInternalIdFromText(

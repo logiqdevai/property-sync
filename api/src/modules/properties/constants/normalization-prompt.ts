@@ -84,7 +84,7 @@ ${buildEstateWebTypeCatalogJson()}
   - Never set price_start below price; if unsure which is current, prefer the value next to "Τιμή:" in raw_description / detail text over a lone higher raw_price
 - Do NOT return a description field. The listing description is stored separately from the scrape; use raw_description only as a signal for other fields (city, district, features, price, etc.)
 - title MUST come from raw_title (lightly cleaned). Never replace it with a generated "Διαμέρισμα 80 τ.μ." style summary, and never copy raw_description into title
-- city/district: prefer values from raw_description (Υποπεριοχή/Γειτονιά) over raw_location when available. When a place is written as "Locality (Municipality/Area)" (e.g. "Άγιος Κωνσταντίνος (Νικηφόρος Φωκάς)"), set district to the locality and city to the parenthetical municipality/area — never leave city null with the whole "X (Y)" string in district alone
+- city/district: prefer detail_specs "Περιοχή" when present, then raw_description (Υποπεριοχή/Γειτονιά), then raw_location. city must be a real place name (municipality/prefecture), never a marketing region like "Νότια Κρήτη" / "Βόρεια Ελλάδα". When a place is written as "Locality (Municipality/Area)" (e.g. "Άγιος Κωνσταντίνος (Νικηφόρος Φωκάς)" or "Τριόπετρα (Λάμπη)"), set district to the full "Locality (Municipality)" string OR district=locality and city=parenthetical — never invent a vague region as city
 - cms_metadata is mainly for rentals (guarantee, income terms, contract period, has_keys)
 - Only include cms_fields entries you are confident about; omit unknown custom fields
 - Return ONLY the JSON array, no prose

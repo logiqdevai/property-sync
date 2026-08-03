@@ -302,6 +302,10 @@ function excludeUnderCanonicalCity(
   return filtered.length > 0 ? filtered : candidates;
 }
 
+function isKnownCatalogLabel(normalizedLabel: string): boolean {
+  return (LOCATION_BY_NORMALIZED_NAME.get(normalizedLabel) ?? []).length > 0;
+}
+
 function resolveByDistrict(
   districtLabel: string,
   cityLabels: string[],
@@ -325,6 +329,11 @@ function resolveByDistrict(
     if (picked) return picked;
   }
 
+  const anyKnownCity = cityLabels.some(isKnownCatalogLabel);
+  if (!anyKnownCity || districtMatches.length === 1) {
+    return pickMostSpecific(districtMatches);
+  }
+
   return undefined;
 }
 
@@ -334,7 +343,9 @@ function resolveByDistrict(
  * Deterministic strategy:
  * 1. Prefer `district` (and comma/slash segments, deepest-first). When a `city`
  *    is also given, keep only district nodes whose ancestor path contains that
- *    city (after alias/genitive normalization).
+ *    city (after alias/genitive normalization). If the city label is not in the
+ *    catalog (e.g. marketing region "Νότια Κρήτη"), or the district name is
+ *    unique, fall back to the unscoped district match.
  * 2. For compound districts like `"Καλαμαριά, Αρετσού"`, also try the left
  *    segment as city and the right as district.
  * 3. Fall back to `city`, preferring the canonical city node (`is_city`, then
