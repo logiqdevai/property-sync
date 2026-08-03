@@ -3,6 +3,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import {
   CONTENT_PRODUCTION_QUEUE,
+  CRM_CLIENT_NOTES_SYNC_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
@@ -17,12 +18,14 @@ import { CostLogsModule } from '@/modules/cost-logs/cost-logs.module';
 import { ContentProductionProcessor } from '@/background/content-production.processor';
 import { WatermarkRemovalProcessor } from '@/background/watermark-removal.processor';
 import { SalesPriceUpdateProcessor } from '@/background/sales-price-update.processor';
+import { CrmClientNotesSyncProcessor } from '@/background/crm-client-notes-sync.processor';
 import { UserPropertiesController } from './user-properties.controller';
 import { AdminUserPropertiesController } from './admin-user-properties.controller';
 import { UserPropertiesService } from './user-properties.service';
 import { ContentProductionJobService } from './services/content-production-job.service';
 import { WatermarkRemovalService } from './services/watermark-removal.service';
 import { SalesPriceUpdateJobService } from './services/sales-price-update-job.service';
+import { CrmClientNotesSyncJobService } from './services/crm-client-notes-sync-job.service';
 
 @Module({
   imports: [
@@ -38,6 +41,7 @@ import { SalesPriceUpdateJobService } from './services/sales-price-update-job.se
       { name: WATERMARK_REMOVAL_QUEUE },
       { name: CONTENT_PRODUCTION_QUEUE },
       { name: SALES_PRICE_UPDATE_QUEUE },
+      { name: CRM_CLIENT_NOTES_SYNC_QUEUE },
       { name: RENORMALIZATION_QUEUE },
     ),
   ],
@@ -50,6 +54,8 @@ import { SalesPriceUpdateJobService } from './services/sales-price-update-job.se
     ContentProductionProcessor,
     SalesPriceUpdateJobService,
     SalesPriceUpdateProcessor,
+    CrmClientNotesSyncJobService,
+    CrmClientNotesSyncProcessor,
   ],
   exports: [UserPropertiesService],
 })

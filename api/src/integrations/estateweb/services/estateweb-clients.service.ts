@@ -46,6 +46,19 @@ export class EstateWebClientsService {
     return this.getClient(userIntegrationId, clientId);
   }
 
+  async resolvePropertyNoteFromClient(
+    userId: string | undefined,
+    integrationClientId: number | null | undefined,
+  ): Promise<string | undefined> {
+    if (!userId || !integrationClientId) {
+      return undefined;
+    }
+
+    const client = await this.getClientForUser(userId, integrationClientId);
+    const lastName = client.last_name?.trim();
+    return lastName || undefined;
+  }
+
   private assertValidClientId(
     clientId: number | string | undefined | null,
   ): asserts clientId is number | string {

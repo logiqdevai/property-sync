@@ -11,6 +11,7 @@ import {
   GENERATION_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
   CMS_SYNC_QUEUE,
+  CRM_CLIENT_NOTES_SYNC_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
@@ -43,6 +44,8 @@ export class JobsService {
     private readonly contentProductionQueue: Queue,
     @InjectQueue(SALES_PRICE_UPDATE_QUEUE)
     private readonly salesPriceUpdateQueue: Queue,
+    @InjectQueue(CRM_CLIENT_NOTES_SYNC_QUEUE)
+    private readonly crmClientNotesSyncQueue: Queue,
     @InjectQueue(RENORMALIZATION_QUEUE)
     private readonly renormalizationQueue: Queue,
     @InjectQueue(CMS_SYNC_QUEUE)
@@ -225,6 +228,38 @@ export class JobsService {
       await this.salesPriceUpdateQueue.addBulk(
         propertyIds.map((userPropertyId) => ({
           name: jobLog.job_name ?? 'update-sales-price',
+          data: {
+            job_log_id: jobLog.id,
+            user_id: payloadRecord.user_id,
+            user_property_id: userPropertyId,
+            total: payloadRecord.total ?? propertyIds.length,
+          },
+          opts: {
+            ...(jobOptions ?? {}),
+            jobId: `${jobLog.id}__${userPropertyId}`,
+          },
+        })),
+      );
+      return this.findOne(id);
+    }
+
+    if (jobLog.queue_name === CRM_CLIENT_NOTES_SYNC_QUEUE) {
+      const payloadRecord = payload as {
+        user_id?: string;
+        user_property_ids?: string[];
+        total?: number;
+      };
+      const propertyIds = Array.isArray(payloadRecord.user_property_ids)
+        ? payloadRecord.user_property_ids
+        : [];
+      if (!payloadRecord.user_id || propertyIds.length === 0) {
+        throw new BadRequestException(
+          'CRM client notes sync job payload is missing user or property ids',
+        );
+      }
+      await this.crmClientNotesSyncQueue.addBulk(
+        propertyIds.map((userPropertyId) => ({
+          name: jobLog.job_name ?? 'sync-crm-client-notes',
           data: {
             job_log_id: jobLog.id,
             user_id: payloadRecord.user_id,
@@ -432,6 +467,9 @@ export class JobsService {
     }
     if (queueName === SALES_PRICE_UPDATE_QUEUE) {
       return this.salesPriceUpdateQueue;
+    }
+    if (queueName === CRM_CLIENT_NOTES_SYNC_QUEUE) {
+      return this.crmClientNotesSyncQueue;
     }
     if (queueName === RENORMALIZATION_QUEUE) {
       return this.renormalizationQueue;

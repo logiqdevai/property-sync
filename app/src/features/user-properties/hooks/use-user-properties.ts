@@ -35,6 +35,7 @@ import {
   updateUserProperty,
   updateUserPropertyEstateWebSites,
   updateUserPropertySalesPrices,
+  syncUserPropertyCrmClientNotes,
 } from "../services/user-properties.services";
 import type {
   AdminUserPropertyCountQuery,
@@ -46,6 +47,7 @@ import type {
   UpdateEstateWebSitesPayload,
   UpdateEstateWebSitesResult,
   UpdateSalesPricesPayload,
+  SyncCrmClientNotesPayload,
   RenormalizeUserPropertiesPayload,
   SplitUserPropertiesPayload,
   TruncateUserPropertyDescriptionsPayload,
@@ -604,6 +606,35 @@ export const useUpdateUserPropertySalesPrices = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not update sales prices",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useSyncUserPropertyCrmClientNotes = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: SyncCrmClientNotesPayload) =>
+      syncUserPropertyCrmClientNotes(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+
+      toast({
+        title: "CRM client notes sync started",
+        description:
+          result.failed.length > 0
+            ? `Enqueued ${result.enqueued}. ${result.failed.length} could not be enqueued.`
+            : `Syncing notes for ${result.enqueued} ${result.enqueued === 1 ? "property" : "properties"} in the background. Track progress in Job queue.`,
+        duration: 2500,
+        variant: result.failed.length > 0 ? "warning" : "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not sync CRM client notes",
         description: error.message,
         variant: "error",
       });

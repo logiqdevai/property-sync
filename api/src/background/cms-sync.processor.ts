@@ -153,10 +153,19 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       include: { integration_link: true },
     });
 
-    const propertyNote = await this.resolveIntegrationClientPropertyNote(
-      tracker?.user_id,
-      tracker?.integration_link?.integration_client_id,
-    );
+    let propertyNote: string | undefined;
+    try {
+      propertyNote =
+        await this.estateWebClientsService.resolvePropertyNoteFromClient(
+          tracker?.user_id,
+          tracker?.integration_link?.integration_client_id,
+        );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `Failed to fetch CRM client last name for user=${tracker?.user_id ?? 'n/a'} client=${tracker?.integration_link?.integration_client_id ?? 'n/a'}: ${message}`,
+      );
+    }
 
     const result = await this.executeOperations(
       adapter,
@@ -737,30 +746,6 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       case 'REMOVE':
         result.removed++;
         break;
-    }
-  }
-
-  private async resolveIntegrationClientPropertyNote(
-    userId: string | undefined,
-    integrationClientId: number | null | undefined,
-  ): Promise<string | undefined> {
-    if (!userId || !integrationClientId) {
-      return undefined;
-    }
-
-    try {
-      const client = await this.estateWebClientsService.getClientForUser(
-        userId,
-        integrationClientId,
-      );
-      const lastName = client.last_name?.trim();
-      return lastName || undefined;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.warn(
-        `Failed to fetch CRM client last name for user=${userId} client=${integrationClientId}: ${message}`,
-      );
-      return undefined;
     }
   }
 

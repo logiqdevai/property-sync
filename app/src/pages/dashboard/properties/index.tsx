@@ -12,7 +12,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Globe, Languages, Layers, ListFilter, Percent, RefreshCw, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { Globe, Languages, Layers, ListFilter, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
@@ -52,6 +52,7 @@ import {
   useSplitUserProperties,
   useTruncateUserPropertyDescriptions,
   useUpdateUserPropertySalesPrices,
+  useSyncUserPropertyCrmClientNotes,
   useUserProperties,
   useUserPropertiesCount,
 } from "@/features/user-properties/hooks/use-user-properties";
@@ -86,6 +87,12 @@ const PROPERTY_UPDATE_SALES_PRICES_ACTION: TableRowAction = {
   id: "update-sales-prices",
   label: "Update sales prices on CRM",
   icon: Percent,
+};
+
+const PROPERTY_SYNC_CRM_CLIENT_NOTES_ACTION: TableRowAction = {
+  id: "sync-crm-client-notes",
+  label: "Sync CRM client notes",
+  icon: NotebookPen,
 };
 
 const PROPERTY_REMOVE_WATERMARK_ACTION: TableRowAction = {
@@ -123,6 +130,7 @@ export default function DashboardPropertiesListPage() {
   const removeWatermarkModal = useOverlayState();
   const produceContentModal = useOverlayState();
   const updateSalesPricesConfirm = useOverlayState();
+  const syncCrmClientNotesConfirm = useOverlayState();
   const renormalizeConfirm = useOverlayState();
   const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
   const [removeWatermarkPropertyIds, setRemoveWatermarkPropertyIds] = useState<
@@ -132,6 +140,9 @@ export default function DashboardPropertiesListPage() {
     string[]
   >([]);
   const [salesPricesPropertyIds, setSalesPricesPropertyIds] = useState<string[]>([]);
+  const [crmClientNotesPropertyIds, setCrmClientNotesPropertyIds] = useState<
+    string[]
+  >([]);
   const [renormalizePropertyIds, setRenormalizePropertyIds] = useState<string[]>([]);
   const role = useAuthStore((state) => state.role);
   const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
@@ -205,6 +216,7 @@ export default function DashboardPropertiesListPage() {
   const removeWatermarks = useRemoveUserPropertiesWatermarkImages();
   const produceContent = useProduceUserPropertyContent();
   const updateSalesPrices = useUpdateUserPropertySalesPrices();
+  const syncCrmClientNotes = useSyncUserPropertyCrmClientNotes();
   const renormalize = useRenormalizeUserProperties();
 
   const properties = data?.data ?? [];
@@ -270,6 +282,11 @@ export default function DashboardPropertiesListPage() {
     updateSalesPricesConfirm.open();
   };
 
+  const openSyncCrmClientNotes = (ids: string[]) => {
+    setCrmClientNotesPropertyIds(ids);
+    syncCrmClientNotesConfirm.open();
+  };
+
   const openRenormalize = (ids: string[]) => {
     setRenormalizePropertyIds(ids);
     renormalizeConfirm.open();
@@ -306,6 +323,12 @@ export default function DashboardPropertiesListPage() {
         label: "Update sales prices on CRM",
         icon: Percent,
         isDisabled: selectedLinkedCount < 1 || updateSalesPrices.isPending,
+      },
+      {
+        id: "sync-crm-client-notes",
+        label: "Sync CRM client notes",
+        icon: NotebookPen,
+        isDisabled: selectedLinkedCount < 1 || syncCrmClientNotes.isPending,
       },
       {
         id: "remove-watermarks",
@@ -361,6 +384,7 @@ export default function DashboardPropertiesListPage() {
     selectedCount,
     selectedGroupedCount,
     selectedLinkedCount,
+    syncCrmClientNotes.isPending,
     updateSalesPrices.isPending,
   ]);
 
@@ -452,6 +476,16 @@ export default function DashboardPropertiesListPage() {
       openUpdateSalesPrices(linkedIds);
       return;
     }
+    if (actionId === "sync-crm-client-notes") {
+      const linkedIds = properties
+        .filter(
+          (property) =>
+            selectedIds.has(property.id) && Boolean(property.integration_property_id),
+        )
+        .map((property) => property.id);
+      openSyncCrmClientNotes(linkedIds);
+      return;
+    }
     if (actionId === "remove-watermarks") {
       openRemoveWatermarks(Array.from(selectedIds));
       return;
@@ -540,6 +574,13 @@ export default function DashboardPropertiesListPage() {
     if (salesPricesPropertyIds.length === 0) return;
     await updateSalesPrices.mutateAsync({ ids: salesPricesPropertyIds });
     setSalesPricesPropertyIds([]);
+    clearSelection();
+  };
+
+  const handleSyncCrmClientNotes = async () => {
+    if (crmClientNotesPropertyIds.length === 0) return;
+    await syncCrmClientNotes.mutateAsync({ ids: crmClientNotesPropertyIds });
+    setCrmClientNotesPropertyIds([]);
     clearSelection();
   };
 
@@ -891,6 +932,12 @@ export default function DashboardPropertiesListPage() {
                     updateSalesPrices.isPending,
                 },
                 {
+                  ...PROPERTY_SYNC_CRM_CLIENT_NOTES_ACTION,
+                  isDisabled:
+                    !property.integration_property_id ||
+                    syncCrmClientNotes.isPending,
+                },
+                {
                   ...PROPERTY_REMOVE_WATERMARK_ACTION,
                   isDisabled:
                     !property.integration_property_id ||
@@ -935,6 +982,10 @@ export default function DashboardPropertiesListPage() {
                     }
                     if (actionId === "update-sales-prices") {
                       openUpdateSalesPrices([property.id]);
+                      return;
+                    }
+                    if (actionId === "sync-crm-client-notes") {
+                      openSyncCrmClientNotes([property.id]);
                       return;
                     }
                     if (actionId === "remove-watermarks") {
@@ -1013,6 +1064,12 @@ export default function DashboardPropertiesListPage() {
                           isDisabled:
                             !property.integration_property_id ||
                             updateSalesPrices.isPending,
+                        },
+                        {
+                          ...PROPERTY_SYNC_CRM_CLIENT_NOTES_ACTION,
+                          isDisabled:
+                            !property.integration_property_id ||
+                            syncCrmClientNotes.isPending,
                         },
                         {
                           ...PROPERTY_REMOVE_WATERMARK_ACTION,
@@ -1109,6 +1166,10 @@ export default function DashboardPropertiesListPage() {
                               }
                               if (actionId === "update-sales-prices") {
                                 openUpdateSalesPrices([property.id]);
+                                return;
+                              }
+                              if (actionId === "sync-crm-client-notes") {
+                                openSyncCrmClientNotes([property.id]);
                                 return;
                               }
                               if (actionId === "remove-watermarks") {
@@ -1220,6 +1281,18 @@ export default function DashboardPropertiesListPage() {
         confirmLabel="Update prices"
         onConfirm={handleUpdateSalesPrices}
         isPending={updateSalesPrices.isPending}
+      />
+      <ConfirmationDialog
+        state={syncCrmClientNotesConfirm}
+        title="Sync CRM client notes?"
+        description={
+          crmClientNotesPropertyIds.length === 1
+            ? "Fetches the tracked agency CRM client last name and pushes it as the EstateWeb property note in the background. Progress shows in Job queue."
+            : `Fetches each tracked agency CRM client last name and pushes it as the EstateWeb property note for ${crmClientNotesPropertyIds.length} properties in the background. Progress shows in Job queue.`
+        }
+        confirmLabel="Sync notes"
+        onConfirm={handleSyncCrmClientNotes}
+        isPending={syncCrmClientNotes.isPending}
       />
       <ConfirmationDialog
         state={renormalizeConfirm}

@@ -10,6 +10,7 @@ import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
   CONTENT_PRODUCTION_QUEUE,
+  CRM_CLIENT_NOTES_SYNC_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
@@ -64,6 +65,10 @@ import {
   SalesPriceUpdateJobResult,
 } from './interfaces/sales-price-update-job.interface';
 import {
+  CrmClientNotesSyncJobData,
+  CrmClientNotesSyncJobResult,
+} from './interfaces/crm-client-notes-sync-job.interface';
+import {
   RenormalizationJobData,
   RenormalizationJobResult,
 } from './interfaces/renormalization-job.interface';
@@ -103,6 +108,8 @@ export class UserPropertiesService {
     private readonly contentProductionQueue: Queue<ContentProductionJobData>,
     @InjectQueue(SALES_PRICE_UPDATE_QUEUE)
     private readonly salesPriceUpdateQueue: Queue<SalesPriceUpdateJobData>,
+    @InjectQueue(CRM_CLIENT_NOTES_SYNC_QUEUE)
+    private readonly crmClientNotesSyncQueue: Queue<CrmClientNotesSyncJobData>,
     @InjectQueue(RENORMALIZATION_QUEUE)
     private readonly renormalizationQueue: Queue<RenormalizationJobData>,
   ) {}
@@ -785,6 +792,116 @@ export class UserPropertiesService {
     return {
       updated: updated.length,
       failed,
+    };
+  }
+
+  async syncCrmClientNotes(userId: string, ids: string[]) {
+    const idList = [...new Set(ids.filter(Boolean))];
+    if (idList.length === 0) {
+      throw new BadRequestException('No properties selected');
+    }
+
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: idList }, user_id: userId },
+      select: { id: true, integration_property_id: true },
+    });
+
+    if (properties.length === 0) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const byId = new Map(properties.map((property) => [property.id, property]));
+    const enqueueIds: string[] = [];
+    const failed: Array<{ user_property_id: string; error: string }> = [];
+
+    for (const id of idList) {
+      const property = byId.get(id);
+      if (!property) {
+        failed.push({ user_property_id: id, error: 'Property not found' });
+        continue;
+      }
+
+      if (!property.integration_property_id) {
+        failed.push({
+          user_property_id: id,
+          error: 'Property is not linked to EstateWeb CMS',
+        });
+        continue;
+      }
+
+      enqueueIds.push(id);
+    }
+
+    if (enqueueIds.length === 0) {
+      const firstError = failed[0]?.error ?? 'No properties could be updated';
+      throw new BadRequestException(
+        failed.length === 1
+          ? firstError
+          : `None of the ${idList.length} properties could be updated. ${firstError}`,
+      );
+    }
+
+    const initialResult: CrmClientNotesSyncJobResult = {
+      total: enqueueIds.length,
+      processed: 0,
+      updated: 0,
+      failed: failed.length,
+      items: failed.map((row) => ({
+        user_property_id: row.user_property_id,
+        status: 'failed' as const,
+        error: row.error,
+      })),
+      logs: [`enqueued user=${userId} properties=${enqueueIds.length}`],
+    };
+
+    const payload = {
+      user_id: userId,
+      user_property_ids: enqueueIds,
+      total: enqueueIds.length,
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: CRM_CLIENT_NOTES_SYNC_QUEUE,
+        job_name: 'sync-crm-client-notes',
+        status: JobStatus.WAITING,
+        payload: payload as object,
+        result: initialResult as object,
+      },
+    });
+
+    this.logger.log(
+      `[syncCrmClientNotes] queued job_log=${jobLog.id} user=${userId} ids=${enqueueIds.length}`,
+    );
+
+    await this.crmClientNotesSyncQueue.addBulk(
+      enqueueIds.map((userPropertyId) => {
+        const jobData: CrmClientNotesSyncJobData = {
+          job_log_id: jobLog.id,
+          user_id: userId,
+          user_property_id: userPropertyId,
+          total: enqueueIds.length,
+        };
+        return {
+          name: 'sync-crm-client-notes',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${userPropertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
+
+    return {
+      job_log_id: jobLog.id,
+      enqueued: enqueueIds.length,
+      failed,
+      message:
+        'CRM client notes sync started in the background. Track progress in Job queue.',
     };
   }
 

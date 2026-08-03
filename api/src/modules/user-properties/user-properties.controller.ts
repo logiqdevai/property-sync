@@ -276,6 +276,21 @@ export class UserPropertiesController {
     return this.userPropertiesService.updateSalesPricesOnCrm(userId, dto.ids);
   }
 
+  @Post('sync-crm-client-notes')
+  @ApiOperation({
+    summary:
+      'Enqueue push of tracked-agency CRM client last name as EstateWeb property note (background)',
+  })
+  @ApiResponse({ status: 200, description: 'CRM client notes sync enqueued' })
+  @ApiResponse({ status: 400, description: 'Cannot sync CRM client notes' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  syncCrmClientNotes(
+    @CurrentUser('id') userId: string,
+    @Body() dto: DeleteUserPropertiesDto,
+  ) {
+    return this.userPropertiesService.syncCrmClientNotes(userId, dto.ids);
+  }
+
   @Post('renormalize')
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({

@@ -115,6 +115,23 @@ export class EstateWebIntegrationResolverService {
     return this.toResolvedIntegration(link.user_integration);
   }
 
+  async resolveIntegrationClientIdForTrackedAgency(
+    userId: string,
+    sourceAgencyId: string,
+  ): Promise<number | null> {
+    const link = await this.prisma.userTrackedAgencyIntegrationLink.findFirst({
+      where: {
+        user_tracked_agency: {
+          user_id: userId,
+          source_agency_id: sourceAgencyId,
+        },
+      },
+      select: { integration_client_id: true },
+    });
+
+    return link?.integration_client_id ?? null;
+  }
+
   async resolveForUserTrackedAgencyId(
     userTrackedAgencyId: string,
     userId?: string,

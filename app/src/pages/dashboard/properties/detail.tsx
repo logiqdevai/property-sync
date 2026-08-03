@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Languages, Pencil, Percent, RefreshCw, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
+import { Languages, NotebookPen, Pencil, Percent, RefreshCw, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
 import { Button, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
@@ -36,6 +36,7 @@ import {
   useTruncateUserPropertyDescriptions,
   useUpdateUserProperty,
   useUpdateUserPropertySalesPrices,
+  useSyncUserPropertyCrmClientNotes,
   useUserProperty,
 } from "@/features/user-properties/hooks/use-user-properties";
 import {
@@ -108,6 +109,7 @@ export default function DashboardPropertyDetailPage() {
   const truncateConfirm = useOverlayState();
   const unlinkConfirm = useOverlayState();
   const updateSalesPricesConfirm = useOverlayState();
+  const syncCrmClientNotesConfirm = useOverlayState();
   const renormalizeConfirm = useOverlayState();
   const manageSitesModal = useOverlayState();
   const removeWatermarkModal = useOverlayState();
@@ -124,6 +126,7 @@ export default function DashboardPropertyDetailPage() {
   const updateProperty = useUpdateUserProperty();
   const pushToCrm = usePushUserPropertyToCrm();
   const updateSalesPrices = useUpdateUserPropertySalesPrices();
+  const syncCrmClientNotes = useSyncUserPropertyCrmClientNotes();
   const renormalize = useRenormalizeUserProperties();
   const migrateImages = useMigrateUserPropertyIntegrationImages();
   const deleteIntegrationImages = useDeleteUserPropertyIntegrationImages();
@@ -303,6 +306,16 @@ export default function DashboardPropertyDetailPage() {
           updateSalesPrices.isPending,
       },
       {
+        id: "sync-crm-client-notes",
+        label: "Sync CRM client notes",
+        variant: "default" as const,
+        icon: NotebookPen,
+        isDisabled:
+          isEditing ||
+          !property.integration_property_id ||
+          syncCrmClientNotes.isPending,
+      },
+      {
         id: "remove-watermarks",
         label: "Remove watermarks",
         variant: "default" as const,
@@ -361,6 +374,7 @@ export default function DashboardPropertyDetailPage() {
     pushToCrm.isPending,
     removeWatermarksByCount.isPending,
     renormalize.isPending,
+    syncCrmClientNotes.isPending,
     updateProperty.isPending,
     updateSalesPrices.isPending,
   ]);
@@ -404,6 +418,10 @@ export default function DashboardPropertyDetailPage() {
     await updateSalesPrices.mutateAsync({ ids: [property.id] });
   };
 
+  const handleSyncCrmClientNotes = async () => {
+    await syncCrmClientNotes.mutateAsync({ ids: [property.id] });
+  };
+
   const handleRenormalize = async () => {
     await renormalize.mutateAsync({ ids: [property.id] });
   };
@@ -427,6 +445,10 @@ export default function DashboardPropertyDetailPage() {
     }
     if (actionId === "update-sales-prices") {
       updateSalesPricesConfirm.open();
+      return;
+    }
+    if (actionId === "sync-crm-client-notes") {
+      syncCrmClientNotesConfirm.open();
       return;
     }
     if (actionId === "remove-watermarks") {
@@ -884,6 +906,14 @@ export default function DashboardPropertyDetailPage() {
               confirmLabel="Update prices"
               onConfirm={handleUpdateSalesPrices}
               isPending={updateSalesPrices.isPending}
+            />
+            <ConfirmationDialog
+              state={syncCrmClientNotesConfirm}
+              title="Sync CRM client notes?"
+              description="Fetches the tracked agency CRM client last name and pushes it as the EstateWeb property note in the background. Progress shows in Job queue."
+              confirmLabel="Sync notes"
+              onConfirm={handleSyncCrmClientNotes}
+              isPending={syncCrmClientNotes.isPending}
             />
             <ConfirmationDialog
               state={renormalizeConfirm}

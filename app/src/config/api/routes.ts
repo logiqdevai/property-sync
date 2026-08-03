@@ -218,6 +218,7 @@ export const ApiRoutes = {
         truncateDescriptions: "/properties/truncate-descriptions",
         updateEstateWebSites: "/properties/update-estateweb-sites",
         updateSalesPrices: "/properties/update-sales-prices",
+        syncCrmClientNotes: "/properties/sync-crm-client-notes",
         produceContent: "/properties/produce-content",
         renormalize: "/properties/renormalize",
     },

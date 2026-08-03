@@ -15,6 +15,8 @@ import type {
   RenormalizeUserPropertiesResult,
   UpdateSalesPricesPayload,
   UpdateSalesPricesResult,
+  SyncCrmClientNotesPayload,
+  SyncCrmClientNotesResult,
   UpdateUserPropertyPayload,
   UserProperty,
   AdminUserPropertyCountQuery,
@@ -358,6 +360,22 @@ export const updateUserPropertySalesPrices = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to update sales prices on CRM.",
+    );
+  }
+};
+
+export const syncUserPropertyCrmClientNotes = async (
+  payload: SyncCrmClientNotesPayload,
+): Promise<SyncCrmClientNotesResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.syncCrmClientNotes,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to sync CRM client notes.",
     );
   }
 };
