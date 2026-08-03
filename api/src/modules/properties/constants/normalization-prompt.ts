@@ -53,9 +53,9 @@ ${buildEstateWebTypeCatalogJson()}
   "road": string | null (road access type exactly as shown, e.g. "Άσφαλτος", "Χωματόδρομος", "Πλακόστρωτο", "Όχι"),
   "heating": string | null (heating description as shown, e.g. "Ατομική - Φυσικό αέριο"),
   "video_url": string | null,
-  "distance_airport": string | null,
-  "distance_port": string | null,
-  "distance_beach": string | null,
+  "distance_airport": string | null (SHORT distance only, e.g. "70 χλμ" or "12 km" — never full sentences like "70 χλμ από το αεροδρόμιο"),
+  "distance_port": string | null (SHORT distance only, e.g. "5 χλμ" — never prose),
+  "distance_beach": string | null (SHORT distance only, e.g. "14 χλμ" or "200 μ" — never prose like "14 χλμ από τις παραλίες"),
   "estateweb_type_id": number | null (leaf type id from the EstateWeb catalog above),
   "estateweb_location_id": number | null (leave null unless an EstateWeb numeric location id is explicitly present in raw data — the backend resolves it deterministically from city/district, so never guess),
   "cms_fields": [{ "id": number, "value": string | number }] | null (EstateWeb custom fields; booleans as "1", select fields as numeric option id),
@@ -100,7 +100,10 @@ ${buildEstateWebTypeCatalogJson()}
   - "Ενεργειακή κλάση" → energy_class
   - "Δρόμος" → road
   - "Θέρμανση" → heating
-- If a spec label and the prose disagree, use the spec value.
+  - "Απόσταση από αεροδρόμιο" / airport distance → distance_airport as SHORT "N χλμ" / "N km" only
+  - "Απόσταση από λιμάνι" / port distance → distance_port as SHORT form only
+  - "Απόσταση από θάλασσα/παραλία" / beach distance → distance_beach as SHORT "N χλμ" / "N μ" only
+- Distance fields MUST be compact (number + unit). Strip location names and "από …" clauses. EstateWeb rejects long prose.
 - Populate features from detail_features plus notable amenities in the spec table/prose; keep them concise (e.g. "parking", "elevator", "storage", "fireplace", "security door", "air conditioning").
 - Fall back to raw_property_type, raw_listing_type, raw_sqm, raw_bedrooms, raw_bathrooms only when the structured data is absent.`;
 

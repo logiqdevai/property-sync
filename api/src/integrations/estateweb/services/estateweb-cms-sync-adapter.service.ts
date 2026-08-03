@@ -11,6 +11,7 @@ import {
 } from '@/modules/cms-sync/interfaces/cms-sync-adapter.interface';
 import { CmsPropertyFieldEntry } from '@/modules/properties/interfaces/cms-property.interface';
 import { coerceCmsFieldValueForEstateWeb } from '@/modules/properties/utils/property-cms-field-mapper.util';
+import { sanitizeEstateWebDistance } from '@/modules/properties/utils/property-normalization.utils';
 import {
   EstateWebPropertyAd,
   EstateWebPropertyFieldValue,
@@ -772,9 +773,11 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       sqm: userProperty?.square_meters
         ? Number(userProperty.square_meters)
         : 0,
-      distance_airport: userProperty?.distance_airport ?? '',
-      distance_port: userProperty?.distance_port ?? '',
-      distance_beach: userProperty?.distance_beach ?? '',
+      distance_airport:
+        sanitizeEstateWebDistance(userProperty?.distance_airport) ?? '',
+      distance_port: sanitizeEstateWebDistance(userProperty?.distance_port) ?? '',
+      distance_beach:
+        sanitizeEstateWebDistance(userProperty?.distance_beach) ?? '',
       description,
       status_id: 0,
       is_offer: 0,

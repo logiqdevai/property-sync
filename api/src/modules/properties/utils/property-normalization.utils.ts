@@ -27,6 +27,40 @@ function sanitizeEstateWebTypeId(typeId: number | null | undefined): number | nu
   return typeId;
 }
 
+const ESTATEWEB_DISTANCE_RE =
+  /(\d+(?:[.,]\d+)?)\s*(χλμ\.?|km\.?|μ\.?|m\.?)/i;
+
+export function sanitizeEstateWebDistance(
+  value: string | null | undefined,
+): string | null {
+  if (value == null) return null;
+  const trimmed = value.trim().replace(/\s+/g, ' ');
+  if (!trimmed) return null;
+
+  const match = trimmed.match(ESTATEWEB_DISTANCE_RE);
+  if (match) {
+    const amount = match[1];
+    const rawUnit = match[2].toLowerCase().replace(/\.$/, '');
+    const unit =
+      rawUnit === 'km' || rawUnit === 'χλμ'
+        ? 'χλμ'
+        : rawUnit === 'm' || rawUnit === 'μ'
+          ? 'μ'
+          : rawUnit;
+    return `${amount} ${unit}`;
+  }
+
+  if (/^\d+(?:[.,]\d+)?$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (trimmed.length <= 20) {
+    return trimmed;
+  }
+
+  return null;
+}
+
 export interface NormalizedAiRow {
   index?: number;
   title?: string | null;
@@ -481,21 +515,24 @@ export function buildPropertyRecord(
     video_url:
       n.video_url ??
       (rawData ? readRawString(rawData, ['video_url', '_video_url']) : null),
-    distance_airport:
+    distance_airport: sanitizeEstateWebDistance(
       n.distance_airport ??
-      (rawData
-        ? readRawString(rawData, ['distance_airport', '_distance_airport'])
-        : null),
-    distance_port:
+        (rawData
+          ? readRawString(rawData, ['distance_airport', '_distance_airport'])
+          : null),
+    ),
+    distance_port: sanitizeEstateWebDistance(
       n.distance_port ??
-      (rawData
-        ? readRawString(rawData, ['distance_port', '_distance_port'])
-        : null),
-    distance_beach:
+        (rawData
+          ? readRawString(rawData, ['distance_port', '_distance_port'])
+          : null),
+    ),
+    distance_beach: sanitizeEstateWebDistance(
       n.distance_beach ??
-      (rawData
-        ? readRawString(rawData, ['distance_beach', '_distance_beach'])
-        : null),
+        (rawData
+          ? readRawString(rawData, ['distance_beach', '_distance_beach'])
+          : null),
+    ),
     estateweb_type_id: sanitizeEstateWebTypeId(n.estateweb_type_id),
     estateweb_location_id: estatewebLocationId,
     cms_fields:
