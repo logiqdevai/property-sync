@@ -142,139 +142,218 @@ export class AiTitleBatchService {
     }
     if (run.status === AiBatchRunStatus.COMPLETED) return;
 
-    const client = this.aiBatchClient.createClient(apiKey);
-    const batch = await this.aiBatchClient.retrieveBatch(client, batchId);
-    if (batch.status !== 'completed' || !batch.output_file_id) {
+    const claimed = await this.prisma.aiBatchRun.updateMany({
+      where: {
+        id: run.id,
+        status: AiBatchRunStatus.SUBMITTED,
+      },
+      data: { status: AiBatchRunStatus.IN_PROGRESS },
+    });
+    if (claimed.count === 0) {
+      const fresh = await this.prisma.aiBatchRun.findUnique({
+        where: { id: run.id },
+        select: { status: true },
+      });
+      if (
+        !fresh ||
+        fresh.status === AiBatchRunStatus.COMPLETED ||
+        fresh.status === AiBatchRunStatus.IN_PROGRESS
+      ) {
+        return;
+      }
+    }
+
+    try {
+      const client = this.aiBatchClient.createClient(apiKey);
+      const batch = await this.aiBatchClient.retrieveBatch(client, batchId);
+      if (batch.status !== 'completed' || !batch.output_file_id) {
+        await this.prisma.aiBatchRun.update({
+          where: { id: run.id },
+          data: {
+            status: AiBatchRunStatus.FAILED,
+            error_message: `Batch status ${batch.status}`,
+          },
+        });
+        return;
+      }
+
+      const output = await this.aiBatchClient.downloadOutputFile(
+        client,
+        batch.output_file_id,
+      );
+      const meta = (run.metadata ?? {}) as {
+        target_languages?: ContentLanguage[];
+        writing_language?: ContentLanguage;
+        model?: string;
+        user_id?: string | null;
+      };
+      const targetLanguages = meta.target_languages ?? [];
+      const writingLanguage = meta.writing_language ?? ContentLanguage.EN;
+      const model = meta.model || AiDefaults.model;
+
+      const propertyIds = Array.isArray(run.user_property_ids)
+        ? (run.user_property_ids as string[])
+        : [];
+      const properties = propertyIds.length
+        ? await this.prisma.userProperty.findMany({
+            where: { id: { in: propertyIds } },
+            select: { id: true, square_meters: true },
+          })
+        : [];
+      const factsByPropertyId = new Map(
+        properties.map((property) => [
+          property.id,
+          { square_meters: property.square_meters?.toString() ?? null },
+        ]),
+      );
+
+      let lineErrors = 0;
+      for (const line of output.split('\n')) {
+        if (!line.trim()) continue;
+        try {
+          await this.applyCompletedBatchLine({
+            line,
+            runId: run.id,
+            targetLanguages,
+            writingLanguage,
+            model,
+            userId: meta.user_id,
+            factsByPropertyId,
+          });
+        } catch (error) {
+          lineErrors += 1;
+          const message =
+            error instanceof Error ? error.message : String(error);
+          this.logger.error(
+            `Title batch ${batchId}: failed applying one output line: ${message}`,
+            error instanceof Error ? error.stack : undefined,
+          );
+        }
+      }
+
       await this.prisma.aiBatchRun.update({
         where: { id: run.id },
         data: {
-          status: AiBatchRunStatus.FAILED,
-          error_message: `Batch status ${batch.status}`,
+          status: AiBatchRunStatus.COMPLETED,
+          error_message:
+            lineErrors > 0
+              ? `Completed with ${lineErrors} line error(s)`
+              : null,
         },
       });
-      return;
+
+      await this.prisma.jobLog.updateMany({
+        where: { queue_name: OPENAI_BATCH_QUEUE, job_id: batchId },
+        data: { status: JobStatus.COMPLETED },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Title batch ${batchId}: completeBatch failed after claim; marking COMPLETED to unblock CMS gate: ${message}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      await this.prisma.aiBatchRun.update({
+        where: { id: run.id },
+        data: {
+          status: AiBatchRunStatus.COMPLETED,
+          error_message: `Completed with errors: ${message}`.slice(0, 1000),
+        },
+      });
+      await this.prisma.jobLog.updateMany({
+        where: { queue_name: OPENAI_BATCH_QUEUE, job_id: batchId },
+        data: {
+          status: JobStatus.COMPLETED,
+          error_message: message.slice(0, 1000),
+        },
+      });
     }
+  }
 
-    const output = await this.aiBatchClient.downloadOutputFile(
-      client,
-      batch.output_file_id,
-    );
-    const meta = (run.metadata ?? {}) as {
-      target_languages?: ContentLanguage[];
-      writing_language?: ContentLanguage;
-      model?: string;
-      user_id?: string | null;
-    };
-    const targetLanguages = meta.target_languages ?? [];
-    const writingLanguage =
-      meta.writing_language ?? ContentLanguage.EN;
-    const model = meta.model || AiDefaults.model;
-
-    const propertyIds = Array.isArray(run.user_property_ids)
-      ? (run.user_property_ids as string[])
-      : [];
-    const properties = propertyIds.length
-      ? await this.prisma.userProperty.findMany({
-          where: { id: { in: propertyIds } },
-          select: { id: true, square_meters: true },
-        })
-      : [];
-    const factsByPropertyId = new Map(
-      properties.map((property) => [
-        property.id,
-        { square_meters: property.square_meters?.toString() ?? null },
-      ]),
-    );
-
-    for (const line of output.split('\n')) {
-      if (!line.trim()) continue;
-      let parsed: {
-        custom_id?: string;
-        response?: {
-          body?: {
-            choices?: Array<{ message?: { content?: string } }>;
-            usage?: { prompt_tokens?: number; completion_tokens?: number };
-          };
+  private async applyCompletedBatchLine(params: {
+    line: string;
+    runId: string;
+    targetLanguages: ContentLanguage[];
+    writingLanguage: ContentLanguage;
+    model: string;
+    userId?: string | null;
+    factsByPropertyId: Map<string, { square_meters: string | null }>;
+  }): Promise<void> {
+    let parsed: {
+      custom_id?: string;
+      response?: {
+        body?: {
+          choices?: Array<{ message?: { content?: string } }>;
+          usage?: { prompt_tokens?: number; completion_tokens?: number };
         };
       };
-      try {
-        parsed = JSON.parse(line);
-      } catch {
-        continue;
-      }
-      const userPropertyId = parsed.custom_id;
-      const content =
-        parsed.response?.body?.choices?.[0]?.message?.content ?? '';
-      if (!userPropertyId || !content) continue;
+    };
+    try {
+      parsed = JSON.parse(params.line);
+    } catch {
+      return;
+    }
+    const userPropertyId = parsed.custom_id;
+    const content =
+      parsed.response?.body?.choices?.[0]?.message?.content ?? '';
+    if (!userPropertyId || !content) return;
 
-      const usage = parsed.response?.body?.usage;
-      if (usage) {
-        const cost = calculateAiCost({
-          provider: AiProviders.openai,
-          model,
-          inputTokens: usage.prompt_tokens ?? 0,
-          outputTokens: usage.completion_tokens ?? 0,
-          isBatch: true,
-        });
-        await this.costLogsService.record({
-          userId: meta.user_id,
-          operationType: CostOperationType.TITLE_GENERATION,
-          provider: IntegrationType.OPENAI,
-          model,
-          inputQuantity: cost.inputTokens,
-          outputQuantity: cost.outputTokens,
-          inputCost: cost.inputCost,
-          outputCost: cost.outputCost,
-          totalCost: cost.totalCost,
-          userPropertyId,
-          aiBatchRunId: run.id,
-        });
-      }
+    const usage = parsed.response?.body?.usage;
+    if (usage) {
+      const cost = calculateAiCost({
+        provider: AiProviders.openai,
+        model: params.model,
+        inputTokens: usage.prompt_tokens ?? 0,
+        outputTokens: usage.completion_tokens ?? 0,
+        isBatch: true,
+      });
+      await this.costLogsService.record({
+        userId: params.userId,
+        operationType: CostOperationType.TITLE_GENERATION,
+        provider: IntegrationType.OPENAI,
+        model: params.model,
+        inputQuantity: cost.inputTokens,
+        outputQuantity: cost.outputTokens,
+        inputCost: cost.inputCost,
+        outputCost: cost.outputCost,
+        totalCost: cost.totalCost,
+        userPropertyId,
+        aiBatchRunId: params.runId,
+      });
+    }
 
-      const titles = this.aiTitleFamilyService.applySquareMetersGuard(
-        this.aiTitleFamilyService.parseTitlesResponse(
-          content,
-          targetLanguages,
-        ),
-        factsByPropertyId.get(userPropertyId) ?? {},
-        writingLanguage,
-      );
-      for (const [language, text] of Object.entries(titles)) {
-        if (!text) continue;
-        await this.prisma.propertyLocalizedContent.upsert({
-          where: {
-            user_property_id_content_type_language: {
-              user_property_id: userPropertyId,
-              content_type: ContentType.TITLE,
-              language: language as ContentLanguage,
-            },
-          },
-          create: {
+    const titles = this.aiTitleFamilyService.applySquareMetersGuard(
+      this.aiTitleFamilyService.parseTitlesResponse(
+        content,
+        params.targetLanguages,
+      ),
+      params.factsByPropertyId.get(userPropertyId) ?? {},
+      params.writingLanguage,
+    );
+    for (const [language, text] of Object.entries(titles)) {
+      if (!text) continue;
+      await this.prisma.propertyLocalizedContent.upsert({
+        where: {
+          user_property_id_content_type_language: {
             user_property_id: userPropertyId,
             content_type: ContentType.TITLE,
             language: language as ContentLanguage,
-            production: 'AI',
-            text,
-            is_stale: false,
           },
-          update: {
-            production: 'AI',
-            text,
-            is_stale: false,
-          },
-        });
-      }
+        },
+        create: {
+          user_property_id: userPropertyId,
+          content_type: ContentType.TITLE,
+          language: language as ContentLanguage,
+          production: 'AI',
+          text,
+          is_stale: false,
+        },
+        update: {
+          production: 'AI',
+          text,
+          is_stale: false,
+        },
+      });
     }
-
-    await this.prisma.aiBatchRun.update({
-      where: { id: run.id },
-      data: { status: AiBatchRunStatus.COMPLETED },
-    });
-
-    await this.prisma.jobLog.updateMany({
-      where: { queue_name: OPENAI_BATCH_QUEUE, job_id: batchId },
-      data: { status: JobStatus.COMPLETED },
-    });
   }
 
   async markFailed(batchId: string, message: string): Promise<void> {

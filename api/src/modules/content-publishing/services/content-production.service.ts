@@ -7,6 +7,7 @@ import {
   CostOperationType,
   DescriptionProductionStrategy,
   IntegrationType,
+  JobStatus,
   ListingType,
   PropertyType,
   TitleProductionStrategy,
@@ -524,6 +525,11 @@ export class ContentProductionService {
       };
     }
 
+    await this.healStuckTitleBatchesForProperties(
+      propertyIds,
+      run.crawl_run_id,
+    );
+
     const openRuns = await this.prisma.aiBatchRun.findMany({
       where: {
         kind: AiBatchRunKind.TITLE_FAMILY,
@@ -534,8 +540,10 @@ export class ContentProductionService {
         ...(run.crawl_run_id ? { crawl_run_id: run.crawl_run_id } : {}),
       },
       select: {
+        id: true,
         user_property_ids: true,
         crawl_run_id: true,
+        metadata: true,
       },
     });
 
@@ -545,8 +553,39 @@ export class ContentProductionService {
       const ids = Array.isArray(open.user_property_ids)
         ? (open.user_property_ids as string[])
         : [];
-      for (const id of ids) {
-        if (propertyIds.includes(id)) blocked.add(id);
+      const overlap = ids.filter((id) => propertyIds.includes(id));
+      if (!overlap.length) continue;
+
+      const openMeta = (open.metadata ?? {}) as {
+        target_languages?: ContentLanguage[];
+      };
+      const targetLanguages = openMeta.target_languages ?? [];
+      if (!targetLanguages.length) {
+        for (const id of overlap) blocked.add(id);
+        continue;
+      }
+
+      const titles = await this.prisma.propertyLocalizedContent.findMany({
+        where: {
+          user_property_id: { in: overlap },
+          content_type: ContentType.TITLE,
+          language: { in: targetLanguages },
+          is_stale: false,
+        },
+        select: { user_property_id: true, language: true },
+      });
+      const byProperty = new Map<string, Set<string>>();
+      for (const row of titles) {
+        const set = byProperty.get(row.user_property_id) ?? new Set();
+        set.add(row.language);
+        byProperty.set(row.user_property_id, set);
+      }
+
+      for (const id of overlap) {
+        const langs = byProperty.get(id);
+        const covered =
+          !!langs && targetLanguages.every((lang) => langs.has(lang));
+        if (!covered) blocked.add(id);
       }
     }
 
@@ -557,6 +596,89 @@ export class ContentProductionService {
       readyIds,
       changeTypesByPropertyId,
     };
+  }
+
+  private async healStuckTitleBatchesForProperties(
+    propertyIds: string[],
+    crawlRunId: string | null,
+  ): Promise<void> {
+    if (!propertyIds.length) return;
+
+    const openRuns = await this.prisma.aiBatchRun.findMany({
+      where: {
+        kind: AiBatchRunKind.TITLE_FAMILY,
+        status: {
+          in: [AiBatchRunStatus.SUBMITTED, AiBatchRunStatus.IN_PROGRESS],
+        },
+        ...(crawlRunId ? { crawl_run_id: crawlRunId } : {}),
+      },
+      select: {
+        id: true,
+        openai_batch_id: true,
+        user_property_ids: true,
+        metadata: true,
+        crawl_run_id: true,
+      },
+    });
+
+    for (const open of openRuns) {
+      if (!crawlRunId && open.crawl_run_id) continue;
+      const ids = Array.isArray(open.user_property_ids)
+        ? (open.user_property_ids as string[])
+        : [];
+      if (!ids.some((id) => propertyIds.includes(id))) continue;
+
+      const meta = (open.metadata ?? {}) as {
+        target_languages?: ContentLanguage[];
+      };
+      const targetLanguages = meta.target_languages ?? [];
+      if (!targetLanguages.length || !ids.length) continue;
+
+      const titles = await this.prisma.propertyLocalizedContent.findMany({
+        where: {
+          user_property_id: { in: ids },
+          content_type: ContentType.TITLE,
+          language: { in: targetLanguages },
+          is_stale: false,
+        },
+        select: { user_property_id: true, language: true },
+      });
+
+      const byProperty = new Map<string, Set<string>>();
+      for (const row of titles) {
+        const set = byProperty.get(row.user_property_id) ?? new Set();
+        set.add(row.language);
+        byProperty.set(row.user_property_id, set);
+      }
+
+      const allCovered = ids.every((id) => {
+        const langs = byProperty.get(id);
+        return (
+          !!langs && targetLanguages.every((lang) => langs.has(lang))
+        );
+      });
+      if (!allCovered) continue;
+
+      await this.prisma.aiBatchRun.update({
+        where: { id: open.id },
+        data: {
+          status: AiBatchRunStatus.COMPLETED,
+          error_message: 'Auto-healed: target titles already present',
+        },
+      });
+      if (open.openai_batch_id) {
+        await this.prisma.jobLog.updateMany({
+          where: {
+            queue_name: 'openai-batch',
+            job_id: open.openai_batch_id,
+          },
+          data: { status: JobStatus.COMPLETED },
+        });
+      }
+      this.logger.warn(
+        `[healStuckTitleBatches] marked AiBatchRun ${open.id} COMPLETED (titles present)`,
+      );
+    }
   }
 
   private async groupByTrackerConfig(properties: PropertyContentRow[]) {
