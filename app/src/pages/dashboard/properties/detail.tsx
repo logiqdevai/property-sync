@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Languages, NotebookPen, Pencil, Percent, RefreshCw, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
@@ -50,6 +50,7 @@ import { EstateWebPropertyTypePickerModal } from "./components/estateweb-propert
 import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-modal";
 import { ProduceContentModal } from "./components/produce-content-modal";
 import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
+import { resolvePropertiesListReturnTo } from "./hooks/use-properties-list-filters";
 
 const fieldClassName =
   "w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2 placeholder:text-muted";
@@ -105,6 +106,8 @@ function CatalogField({
 
 export default function DashboardPropertyDetailPage() {
   const { id = "" } = useParams();
+  const location = useLocation();
+  const backHref = resolvePropertiesListReturnTo(location.state);
   const [isEditing, setIsEditing] = useState(false);
   const truncateConfirm = useOverlayState();
   const unlinkConfirm = useOverlayState();
@@ -504,7 +507,7 @@ export default function DashboardPropertyDetailPage() {
 
       <PropertyDetailView
         property={property}
-        backHref={Routes.dashboard.properties.list}
+        backHref={backHref}
         backLabel="← Back to my properties"
         showFieldDiff
         onDeleteIntegrationImages={async (imageIds) => {

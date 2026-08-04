@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Button,
   Checkbox,
@@ -27,15 +27,9 @@ import {
 import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-modal";
 import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
 import { ProduceContentModal } from "./components/produce-content-modal";
-import {
-  PropertyStatuses,
-  type PropertyStatus,
-} from "@/features/properties/interfaces/properties.interfaces";
+import { PropertyStatuses } from "@/features/properties/interfaces/properties.interfaces";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/properties/property-status-filter.options";
-import {
-  PropertyChangeFilterOptions,
-  type PropertyChangeFilter,
-} from "@/config/constants/dropdowns/properties/property-change-filter.options";
+import { PropertyChangeFilterOptions } from "@/config/constants/dropdowns/properties/property-change-filter.options";
 import { PropertyDuplicateGroupFilterOptions } from "@/config/constants/dropdowns/properties/property-duplicate-group-filter.options";
 import { PropertyCrmPushFilterOptions } from "@/config/constants/dropdowns/properties/property-crm-push-filter.options";
 import { PropertyPendingCrmUpdateFilterOptions } from "@/config/constants/dropdowns/properties/property-pending-crm-update-filter.options";
@@ -70,6 +64,11 @@ import { getDuplicateGroupRowClasses } from "@/lib/duplicate-group-color.utils";
 import { getDuplicateGroupDedupePlan } from "@/lib/duplicate-group-dedupe.utils";
 import { cn } from "@/lib/utils";
 import { PropertyListCard } from "./components/property-list-card";
+import {
+  usePropertiesListFilters,
+  type PropertiesListBoolFilter,
+  type PropertiesListLocationState,
+} from "./hooks/use-properties-list-filters";
 
 const PROPERTY_PUSH_ACTION: TableRowAction = {
   id: "push-to-crm",
@@ -147,18 +146,30 @@ export default function DashboardPropertiesListPage() {
   const role = useAuthStore((state) => state.role);
   const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
 
-  const [status, setStatus] = useState<PropertyStatus | "all">("all");
-  const [change, setChange] = useState<PropertyChangeFilter | "all">("all");
-  const [search, setSearch] = useState("");
-  const [trackedAgencyId, setTrackedAgencyId] = useState<string | "all">("all");
-  const [duplicateGroup, setDuplicateGroup] = useState<"all" | "true" | "false">("all");
-  const [pushedToCrm, setPushedToCrm] = useState<"all" | "true" | "false">("all");
-  const [pendingCrmUpdate, setPendingCrmUpdate] = useState<"all" | "true" | "false">("all");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [limit, setLimit] = useState(20);
-  const [page, setPage] = useState(1);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const location = useLocation();
+  const {
+    status,
+    change,
+    search,
+    trackedAgencyId,
+    duplicateGroup,
+    pushedToCrm,
+    pendingCrmUpdate,
+    dateFrom,
+    dateTo,
+    limit,
+    page,
+    activeFilterCount,
+    setFilters,
+    clearFilters,
+  } = usePropertiesListFilters();
+  const detailLinkState = useMemo<PropertiesListLocationState>(
+    () => ({
+      returnTo: `${Routes.dashboard.properties.list}${location.search}`,
+    }),
+    [location.search],
+  );
+  const [filtersOpen, setFiltersOpen] = useState(() => activeFilterCount > 0);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [selectCount, setSelectCount] = useState(10);
   const [deletePropertyId, setDeletePropertyId] = useState<string | null>(null);
@@ -390,29 +401,6 @@ export default function DashboardPropertiesListPage() {
 
   const clearSelection = () => setSelectedKeys(new Set());
 
-  const activeFilterCount = [
-    status !== "all",
-    change !== "all",
-    trackedAgencyId !== "all",
-    duplicateGroup !== "all",
-    pushedToCrm !== "all",
-    pendingCrmUpdate !== "all",
-    Boolean(dateFrom),
-    Boolean(dateTo),
-  ].filter(Boolean).length;
-
-  const clearFilters = () => {
-    setPage(1);
-    setStatus("all");
-    setChange("all");
-    setTrackedAgencyId("all");
-    setDuplicateGroup("all");
-    setPushedToCrm("all");
-    setPendingCrmUpdate("all");
-    setDateFrom("");
-    setDateTo("");
-  };
-
   const allPageSelected =
     properties.length > 0 && properties.every((property) => selectedIds.has(property.id));
   const somePageSelected =
@@ -619,8 +607,7 @@ export default function DashboardPropertiesListPage() {
             placeholder="Search property id, internal id, CRM id, title, or city…"
             value={search}
             onChange={(e) => {
-              setPage(1);
-              setSearch(e.target.value);
+              setFilters({ search: e.target.value });
             }}
             className="w-full min-w-0 sm:flex-1 sm:max-w-md"
           />
@@ -657,8 +644,7 @@ export default function DashboardPropertiesListPage() {
               aria-label="Filter by status"
               selectedKey={status}
               onSelectionChange={(key) => {
-                setPage(1);
-                setStatus(key as PropertyStatus | "all");
+                setFilters({ status: key as typeof status });
               }}
               className="w-full sm:w-44"
             >
@@ -680,8 +666,7 @@ export default function DashboardPropertiesListPage() {
               aria-label="Filter by change"
               selectedKey={change}
               onSelectionChange={(key) => {
-                setPage(1);
-                setChange(key as PropertyChangeFilter | "all");
+                setFilters({ change: key as typeof change });
               }}
               className="w-full sm:w-44"
             >
@@ -703,8 +688,7 @@ export default function DashboardPropertiesListPage() {
               aria-label="Filter by tracked agency"
               selectedKey={trackedAgencyId}
               onSelectionChange={(key) => {
-                setPage(1);
-                setTrackedAgencyId(key as string | "all");
+                setFilters({ trackedAgencyId: key as string | "all" });
               }}
               className="w-full sm:w-56"
             >
@@ -732,8 +716,9 @@ export default function DashboardPropertiesListPage() {
               aria-label="Filter by duplicate group"
               selectedKey={duplicateGroup}
               onSelectionChange={(key) => {
-                setPage(1);
-                setDuplicateGroup(key as "all" | "true" | "false");
+                setFilters({
+                  duplicateGroup: key as PropertiesListBoolFilter,
+                });
               }}
               className="w-full sm:w-44"
             >
@@ -755,8 +740,9 @@ export default function DashboardPropertiesListPage() {
               aria-label="Filter by CRM push"
               selectedKey={pushedToCrm}
               onSelectionChange={(key) => {
-                setPage(1);
-                setPushedToCrm(key as "all" | "true" | "false");
+                setFilters({
+                  pushedToCrm: key as PropertiesListBoolFilter,
+                });
               }}
               className="w-full sm:w-44"
             >
@@ -778,8 +764,9 @@ export default function DashboardPropertiesListPage() {
               aria-label="Filter by pending CRM update"
               selectedKey={pendingCrmUpdate}
               onSelectionChange={(key) => {
-                setPage(1);
-                setPendingCrmUpdate(key as "all" | "true" | "false");
+                setFilters({
+                  pendingCrmUpdate: key as PropertiesListBoolFilter,
+                });
               }}
               className="w-full sm:w-48"
             >
@@ -801,8 +788,7 @@ export default function DashboardPropertiesListPage() {
               aria-label="From date"
               value={dateFrom}
               onChange={(next) => {
-                setPage(1);
-                setDateFrom(next);
+                setFilters({ dateFrom: next });
               }}
               className="w-full sm:w-52"
             />
@@ -810,8 +796,7 @@ export default function DashboardPropertiesListPage() {
               aria-label="To date"
               value={dateTo}
               onChange={(next) => {
-                setPage(1);
-                setDateTo(next);
+                setFilters({ dateTo: next });
               }}
               className="w-full sm:w-52"
             />
@@ -822,11 +807,10 @@ export default function DashboardPropertiesListPage() {
                 String(limit)
               }
               onSelectionChange={(key) => {
-                setPage(1);
                 const option = TablePageSizeOptions.find(
                   (item) => item.id === String(key),
                 );
-                setLimit(option?.value ?? 20);
+                setFilters({ limit: option?.value ?? 20 });
               }}
               className="w-full sm:w-44"
             >
@@ -962,6 +946,7 @@ export default function DashboardPropertiesListPage() {
                   onSelectionChange={(selected) =>
                     togglePropertySelection(property.id, selected)
                   }
+                  detailLinkState={detailLinkState}
                   rowActions={rowActions}
                   onAction={(actionId) => {
                     if (actionId === "push-to-crm") {
@@ -1101,6 +1086,7 @@ export default function DashboardPropertiesListPage() {
                         <Table.Cell className={groupCellClass}>
                           <Link
                             to={Routes.dashboard.properties.detail(property.id)}
+                            state={detailLinkState}
                             className={cn(
                               "font-medium text-foreground hover:text-accent transition-colors",
                               isRemoved && "line-through",
@@ -1200,7 +1186,7 @@ export default function DashboardPropertiesListPage() {
             <Pagination.Item>
               <Pagination.Previous
                 isDisabled={!pagination.has_prev}
-                onPress={() => setPage((p) => Math.max(1, p - 1))}
+                onPress={() => setFilters({ page: Math.max(1, page - 1) })}
               >
                 Previous
               </Pagination.Previous>
@@ -1213,7 +1199,7 @@ export default function DashboardPropertiesListPage() {
             <Pagination.Item>
               <Pagination.Next
                 isDisabled={!pagination.has_next}
-                onPress={() => setPage((p) => p + 1)}
+                onPress={() => setFilters({ page: page + 1 })}
               >
                 Next
               </Pagination.Next>

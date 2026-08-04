@@ -13,6 +13,7 @@ import {
 import { formatPrice } from "@/lib/price";
 import { getDuplicateGroupRowClasses } from "@/lib/duplicate-group-color.utils";
 import { cn } from "@/lib/utils";
+import type { PropertiesListLocationState } from "../hooks/use-properties-list-filters";
 
 type PropertyListCardProps = {
   id: string;
@@ -30,6 +31,7 @@ type PropertyListCardProps = {
   onAction: (actionId: string) => void;
   isPushPending: boolean;
   onPushToCrm: () => void;
+  detailLinkState?: PropertiesListLocationState;
 };
 
 export function PropertyListCard({
@@ -48,6 +50,7 @@ export function PropertyListCard({
   onAction,
   isPushPending,
   onPushToCrm,
+  detailLinkState,
 }: PropertyListCardProps) {
   const isRemoved = status === PropertyStatuses.REMOVED;
   const groupClass = duplicateGroupId
@@ -78,6 +81,7 @@ export function PropertyListCard({
         <div className="min-w-0 flex-1">
           <Link
             to={Routes.dashboard.properties.detail(id)}
+            state={detailLinkState}
             className={cn(
               "text-base font-semibold text-foreground break-words hover:text-accent transition-colors",
               isRemoved && "line-through",
