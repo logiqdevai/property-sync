@@ -68,6 +68,7 @@ async function enrichOneDetailPage(browser, item, detailConfig, blockHandlingCon
       let longitude = null;
       const MAX_SCRIPT_CHARS = 50_000;
       const parseCoord = (value) => {
+        if (value == null || value === '') return null;
         const n = parseFloat(value);
         return Number.isFinite(n) ? n : null;
       };
@@ -80,58 +81,122 @@ async function enrichOneDetailPage(browser, item, detailConfig, blockHandlingCon
         return true;
       };
 
-      for (const script of Array.from(document.querySelectorAll('script'))) {
-        if (script.src) continue;
-        const text = script.textContent || '';
-        if (!text || text.length > MAX_SCRIPT_CHARS) continue;
-        if (!/lat|long|lng|setView|LatLng/i.test(text)) continue;
-
-        const realStatusLat = text.match(/\bvar\s+lat\s*=\s*(-?\d+(?:\.\d+)?)/i);
-        const realStatusLng = text.match(/\bvar\s+long\s*=\s*(-?\d+(?:\.\d+)?)/i);
-        if (
-          acceptCoords(
-            realStatusLat ? parseCoord(realStatusLat[1]) : null,
-            realStatusLng ? parseCoord(realStatusLng[1]) : null,
-          )
-        ) {
-          break;
-        }
-
-        const latMatch = text.match(
-          /\b(?:let|const)\s+lat(?:itude)?\s*=\s*(-?\d+(?:\.\d+)?)/i,
+      const readDataCoords = (el) => {
+        if (!el) return false;
+        const lat = parseCoord(
+          el.getAttribute('data-lat') ||
+            el.getAttribute('data-latitude') ||
+            el.dataset?.lat ||
+            el.dataset?.latitude,
         );
-        const lngMatch =
-          text.match(
-            /\b(?:let|const)\s+long(?:itude)?\s*=\s*(-?\d+(?:\.\d+)?)/i,
-          ) ||
-          text.match(/\b(?:var|let|const)\s+lng\s*=\s*(-?\d+(?:\.\d+)?)/i);
-        if (
-          acceptCoords(
-            latMatch ? parseCoord(latMatch[1]) : null,
-            lngMatch ? parseCoord(lngMatch[1]) : null,
-          )
-        ) {
-          break;
-        }
-
-        const setViewMatch = text.match(
-          /\.setView\(\s*\[\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\]/,
+        const lng = parseCoord(
+          el.getAttribute('data-lng') ||
+            el.getAttribute('data-lon') ||
+            el.getAttribute('data-longitude') ||
+            el.dataset?.lng ||
+            el.dataset?.lon ||
+            el.dataset?.longitude,
         );
-        if (
-          setViewMatch &&
-          acceptCoords(parseCoord(setViewMatch[1]), parseCoord(setViewMatch[2]))
-        ) {
-          break;
-        }
+        return acceptCoords(lat, lng);
+      };
 
-        const latLngMatch = text.match(
-          /(?:LatLng|latLng)\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)/,
-        );
-        if (
-          latLngMatch &&
-          acceptCoords(parseCoord(latLngMatch[1]), parseCoord(latLngMatch[2]))
-        ) {
-          break;
+      const dataCoordSelectors = [
+        '.marker[data-lat][data-lng]',
+        '.marker[data-lat][data-lon]',
+        '[data-type="exact"][data-lat]',
+        '[data-lat][data-lng]',
+        '[data-lat][data-lon]',
+        '[data-latitude][data-longitude]',
+      ];
+      for (const sel of dataCoordSelectors) {
+        if (readDataCoords(document.querySelector(sel))) break;
+      }
+
+      if (latitude == null || longitude == null) {
+        for (const el of Array.from(
+          document.querySelectorAll(
+            'a[href*="maps"], a[href*="google.com/maps"], iframe[src*="maps"]',
+          ),
+        )) {
+          const href = el.getAttribute('href') || el.getAttribute('src') || '';
+          const atMatch = href.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+          if (
+            atMatch &&
+            acceptCoords(parseCoord(atMatch[1]), parseCoord(atMatch[2]))
+          ) {
+            break;
+          }
+          const qMatch = href.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+          if (
+            qMatch &&
+            acceptCoords(parseCoord(qMatch[1]), parseCoord(qMatch[2]))
+          ) {
+            break;
+          }
+          const llMatch = href.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+          if (
+            llMatch &&
+            acceptCoords(parseCoord(llMatch[1]), parseCoord(llMatch[2]))
+          ) {
+            break;
+          }
+        }
+      }
+
+      if (latitude == null || longitude == null) {
+        for (const script of Array.from(document.querySelectorAll('script'))) {
+          if (script.src) continue;
+          const text = script.textContent || '';
+          if (!text || text.length > MAX_SCRIPT_CHARS) continue;
+          if (!/lat|long|lng|setView|LatLng/i.test(text)) continue;
+
+          const realStatusLat = text.match(/\bvar\s+lat\s*=\s*(-?\d+(?:\.\d+)?)/i);
+          const realStatusLng = text.match(/\bvar\s+long\s*=\s*(-?\d+(?:\.\d+)?)/i);
+          if (
+            acceptCoords(
+              realStatusLat ? parseCoord(realStatusLat[1]) : null,
+              realStatusLng ? parseCoord(realStatusLng[1]) : null,
+            )
+          ) {
+            break;
+          }
+
+          const latMatch = text.match(
+            /\b(?:let|const)\s+lat(?:itude)?\s*=\s*(-?\d+(?:\.\d+)?)/i,
+          );
+          const lngMatch =
+            text.match(
+              /\b(?:let|const)\s+long(?:itude)?\s*=\s*(-?\d+(?:\.\d+)?)/i,
+            ) ||
+            text.match(/\b(?:var|let|const)\s+lng\s*=\s*(-?\d+(?:\.\d+)?)/i);
+          if (
+            acceptCoords(
+              latMatch ? parseCoord(latMatch[1]) : null,
+              lngMatch ? parseCoord(lngMatch[1]) : null,
+            )
+          ) {
+            break;
+          }
+
+          const setViewMatch = text.match(
+            /\.setView\(\s*\[\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\]/,
+          );
+          if (
+            setViewMatch &&
+            acceptCoords(parseCoord(setViewMatch[1]), parseCoord(setViewMatch[2]))
+          ) {
+            break;
+          }
+
+          const latLngMatch = text.match(
+            /(?:LatLng|latLng)\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)/,
+          );
+          if (
+            latLngMatch &&
+            acceptCoords(parseCoord(latLngMatch[1]), parseCoord(latLngMatch[2]))
+          ) {
+            break;
+          }
         }
       }
 
