@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
 import { EstateWebClientsService } from '@/integrations/estateweb/services/estateweb-clients.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
+import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
 import { IntegrationType } from 'generated/prisma';
 import {
   CrmClientNotesSyncItemResult,
@@ -15,7 +15,7 @@ export class CrmClientNotesSyncJobService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly estateWebCmsSyncAdapter: EstateWebCmsSyncAdapter,
+    private readonly estateWebPropertyService: EstateWebPropertyService,
     private readonly estateWebClientsService: EstateWebClientsService,
     private readonly estateWebIntegrationResolver: EstateWebIntegrationResolverService,
   ) {}
@@ -91,14 +91,13 @@ export class CrmClientNotesSyncJobService {
       }
 
       this.logger.log(
-        `[processProperty] pushUpdate property=${data.user_property_id} integration=${userIntegrationId} client=${integrationClientId}`,
+        `[processProperty] createPropertyNote property=${data.user_property_id} integration=${userIntegrationId} client=${integrationClientId} cmsProperty=${property.integration_property_id}`,
       );
 
-      await this.estateWebCmsSyncAdapter.pushUpdate(
+      await this.estateWebPropertyService.createPropertyNote(
         userIntegrationId,
         property.integration_property_id,
-        property,
-        { propertyNote },
+        { note: propertyNote },
       );
 
       return {

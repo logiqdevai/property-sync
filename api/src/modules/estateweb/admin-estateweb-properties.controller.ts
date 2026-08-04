@@ -33,6 +33,7 @@ import {
 } from '@/integrations/estateweb/interfaces/estateweb-property.interface';
 import { AdminEstateWebPropertiesService } from './admin-estateweb-properties.service';
 import { AdminEstateWebPropertyImageDto } from './dto/admin-estateweb-property-image.dto';
+import { AdminEstateWebPropertyNoteDto } from './dto/admin-estateweb-property-note.dto';
 import {
   AdminEstateWebPropertyListQuerySchema,
   AdminEstateWebPropertyListQueryType,
@@ -232,6 +233,23 @@ export class AdminEstateWebPropertiesController {
       userIntegrationId,
       propertyId,
       payload,
+    );
+  }
+
+  @Post('integrations/:userIntegrationId/properties/:propertyId/notes')
+  @ApiOperation({
+    summary: 'Add a note to a property in EstateWeb CMS (POST /propertynote)',
+  })
+  @ApiResponse({ status: 200, description: 'Created property note' })
+  createPropertyNote(
+    @Param('userIntegrationId') userIntegrationId: string,
+    @Param('propertyId') propertyId: string,
+    @Body() dto: AdminEstateWebPropertyNoteDto,
+  ) {
+    return this.adminEstateWebPropertiesService.createPropertyNote(
+      userIntegrationId,
+      propertyId,
+      dto.note,
     );
   }
 

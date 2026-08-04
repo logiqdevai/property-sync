@@ -181,6 +181,54 @@
       }
     },
     {
+      "name": "Create property note",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "{{acceptLanguage}}"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bearerToken}}"
+          },
+          {
+            "key": "Cookie",
+            "value": "estate_session={{estateSession}}"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "payload",
+              "value": "{\"note\":\"test note\"}",
+              "type": "text",
+              "description": "JSON payload with note text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/property/{{propertyId}}/propertynote",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "property",
+            "{{propertyId}}",
+            "propertynote"
+          ]
+        },
+        "description": "Adds a note to a property using multipart/form-data. Single form field `payload` contains JSON `{ \"note\": \"...\" }`. Response: `{ id, property_id, created_by, notes }`."
+      }
+    },
+    {
       "name": "Upload property image",
       "request": {
         "method": "POST",

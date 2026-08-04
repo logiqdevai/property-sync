@@ -83,6 +83,17 @@ export interface EstateWebPropertyNote {
   created_by?: number;
 }
 
+export interface EstateWebCreatePropertyNotePayload {
+  note: string;
+}
+
+export interface EstateWebCreatePropertyNoteResponse {
+  id: number;
+  property_id: number;
+  created_by: number;
+  notes: string;
+}
+
 export interface EstateWebPropertyImage {
   id: number;
   path: string;

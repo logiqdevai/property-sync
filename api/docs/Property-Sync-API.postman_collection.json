@@ -11458,6 +11458,141 @@
           }
         },
         {
+          "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "name": "Add a note to a property in EstateWeb CMS",
+          "request": {
+            "name": "Add a note to a property in EstateWeb CMS",
+            "description": "Proxies to EstateWeb POST /api/property/{id}/propertynote with multipart payload `{ \"note\": \"...\" }`.",
+            "url": {
+              "path": [
+                "admin",
+                "estateweb",
+                "integrations",
+                ":userIntegrationId",
+                "properties",
+                ":propertyId",
+                "notes"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{userIntegrationId}}",
+                  "key": "userIntegrationId",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "{{propertyId}}",
+                  "key": "propertyId",
+                  "description": "(Required) "
+                }
+              ],
+              "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/properties/:propertyId/notes"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"test note\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+              "name": "OK",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "admin",
+                    "estateweb",
+                    "integrations",
+                    ":userIntegrationId",
+                    "properties",
+                    ":propertyId",
+                    "notes"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{userIntegrationId}}",
+                      "key": "userIntegrationId",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "{{propertyId}}",
+                      "key": "propertyId",
+                      "description": "(Required) "
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/admin/estateweb/integrations/:userIntegrationId/properties/:propertyId/notes"
+                },
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"note\": \"test note\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ]
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 115575,\n  \"property_id\": 52521,\n  \"created_by\": 1022,\n  \"notes\": \"test note\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
           "id": "ea2ed952-4b5c-4752-bccb-c97bf709dd4c",
           "name": "Upload a property image to EstateWeb CRM",
           "request": {

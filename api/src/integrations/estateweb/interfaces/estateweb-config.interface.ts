@@ -4,6 +4,7 @@ export interface EstateWebApiPaths {
   init: string;
   properties: string;
   propertyById: (propertyId: number | string) => string;
+  propertyNote: (propertyId: number | string) => string;
   propertyImage: (propertyId: number | string) => string;
   imageById: (imageId: number | string) => string;
   clients: string;

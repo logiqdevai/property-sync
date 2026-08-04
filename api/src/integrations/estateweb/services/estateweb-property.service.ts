@@ -17,6 +17,8 @@ import {
 import { EstateWebConfig } from '../config/estateweb.config';
 import { EstateWebException } from '../exceptions/estateweb.exception';
 import {
+  EstateWebCreatePropertyNotePayload,
+  EstateWebCreatePropertyNoteResponse,
   EstateWebCreatePropertyPayload,
   EstateWebCreatePropertyResponse,
   EstateWebPropertyListItem,
@@ -52,6 +54,7 @@ import {
   assertValidImageUpload,
   assertValidListQuery,
   assertValidPropertyId,
+  assertValidPropertyNote,
   assertValidUpdatePayload,
 } from '../utils/estateweb-property-validation.util';
 import { EstateWebClientService } from './estateweb-client.service';
@@ -297,6 +300,38 @@ export class EstateWebPropertyService {
             operation: 'update-property',
             propertyId,
             body: payload,
+          },
+        );
+      },
+    );
+  }
+
+  createPropertyNote(
+    userIntegrationId: string,
+    propertyId: number | string,
+    payload: EstateWebCreatePropertyNotePayload,
+  ): Promise<EstateWebCreatePropertyNoteResponse> {
+    return this.runValidatedOperation(
+      userIntegrationId,
+      'create-property-note',
+      () => {
+        assertValidPropertyId(propertyId);
+        assertValidPropertyNote(payload.note);
+
+        const formData = this.estateWebClientService.createMultipartPayload({
+          note: payload.note.trim(),
+        });
+
+        return this.estateWebClientService.request<EstateWebCreatePropertyNoteResponse>(
+          userIntegrationId,
+          {
+            method: 'POST',
+            path: this.estateWebConfig
+              .getConfig()
+              .apiPaths.propertyNote(propertyId),
+            operation: 'create-property-note',
+            propertyId,
+            formData,
           },
         );
       },

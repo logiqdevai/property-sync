@@ -204,6 +204,18 @@ export class AdminEstateWebPropertiesService {
     );
   }
 
+  createPropertyNote(
+    userIntegrationId: string,
+    propertyId: string,
+    note: string,
+  ) {
+    return this.estateWebPropertyService.createPropertyNote(
+      userIntegrationId,
+      propertyId,
+      { note },
+    );
+  }
+
   uploadPropertyImage(
     userIntegrationId: string,
     propertyId: string,

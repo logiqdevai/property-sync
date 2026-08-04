@@ -16,6 +16,8 @@ export const DEFAULT_ESTATEWEB_CONFIG: EstateWebConfigOptions = {
     properties: '/api/property',
     propertyById: (propertyId: number | string) =>
       `/api/property/${propertyId}`,
+    propertyNote: (propertyId: number | string) =>
+      `/api/property/${propertyId}/propertynote`,
     propertyImage: (propertyId: number | string) =>
       `/api/property/${propertyId}/img`,
     imageById: (imageId: number | string) => `/api/img/${imageId}`,

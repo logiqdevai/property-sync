@@ -110,7 +110,6 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       adLanguages,
       userProperty,
       undefined,
-      options?.propertyNote,
       options?.sitesOverride !== undefined,
       adMaps,
     );
@@ -122,6 +121,15 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       userIntegrationId,
       payload,
     );
+
+    const propertyNote = options?.propertyNote?.trim();
+    if (propertyNote) {
+      await this.estateWebPropertyService.createPropertyNote(
+        userIntegrationId,
+        result.id,
+        { note: propertyNote },
+      );
+    }
 
     await this.persistIntegrationPropertySites({
       userIntegrationId,
@@ -169,7 +177,6 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       adLanguages,
       userProperty,
       Number(integrationPropertyId),
-      options?.propertyNote,
       options?.sitesOverride !== undefined,
       adMaps,
     ) as EstateWebUpdatePropertyPayload;
@@ -724,7 +731,6 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     adLanguages: EstateWebLanguageId[],
     userProperty?: UserProperty,
     integrationPropertyId?: number,
-    propertyNote?: string,
     useSitesAsProvided = false,
     adMaps?: EstateWebAdLanguageMaps,
   ): EstateWebPropertyPayload {
@@ -810,7 +816,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       history: [],
       notes: [],
       price_negotiable: 0,
-      note: propertyNote?.trim() ?? '',
+      note: '',
     };
   }
 

@@ -46,6 +46,19 @@ export function assertValidPropertyId(
   }
 }
 
+export function assertValidPropertyNote(
+  note: string | undefined | null,
+): asserts note is string {
+  if (typeof note !== 'string' || !note.trim()) {
+    throw new EstateWebException(
+      'EstateWeb property note is required',
+      NotificationType.ESTATEWEB_VALIDATION_FAILED,
+      HttpStatus.BAD_REQUEST,
+      { note },
+    );
+  }
+}
+
 function assertValidPropertyTypeId(typeId: number): void {
   const type = getEstateWebInitPropertyType(typeId);
   if (!type) {
