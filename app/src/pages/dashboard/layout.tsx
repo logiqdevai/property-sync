@@ -16,8 +16,10 @@ export default function DashboardLayout() {
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden mx-3 lg:mr-3 lg:ml-0">
         <DashboardNavbar onMenuClick={drawerState.open} />
-        <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
-          <Outlet />
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
+          <div className="mx-auto w-full min-w-0 max-w-full">
+            <Outlet />
+          </div>
         </main>
       </div>
 

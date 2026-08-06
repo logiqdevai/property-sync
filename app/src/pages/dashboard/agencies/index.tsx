@@ -67,7 +67,7 @@ function AgencyCard({
   };
 
   return (
-    <article className="flex min-w-0 flex-col gap-4 overflow-hidden rounded-xl border border-border bg-surface p-4 sm:p-5">
+    <article className="flex h-full w-full min-w-0 max-w-full flex-col gap-4 overflow-hidden rounded-xl border border-border bg-surface p-4 sm:p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <h2 className="text-base font-semibold text-foreground break-words sm:truncate sm:text-lg">
@@ -238,7 +238,7 @@ function AgencyCard({
 
           {prefs.remove_watermark ? (
             <Tabs
-              className="w-full"
+              className="w-full min-w-0 max-w-full"
               variant="secondary"
               selectedKey={
                 prefs.watermark_manual_selection
@@ -254,7 +254,7 @@ function AgencyCard({
                 savePrefs({ watermark_manual_selection: nextManual });
               }}
             >
-              <Tabs.ListContainer>
+              <Tabs.ListContainer className="min-w-0 max-w-full overflow-x-auto">
                 <Tabs.List aria-label="Watermark removal mode">
                   <Tabs.Tab id={WatermarkModes.AUTOMATIC} isDisabled={isControlsDisabled}>
                     Automatic
@@ -279,7 +279,7 @@ function AgencyCard({
                     <input
                       type="number"
                       min={1}
-                      className="rounded-lg border border-border bg-background px-3 py-2"
+                      className="w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2"
                       defaultValue={prefs.watermark_image_count ?? 10}
                       key={`watermark-count-${agency.id}-${prefs.watermark_image_count ?? 10}`}
                       disabled={isControlsDisabled}
@@ -380,7 +380,7 @@ export default function DashboardAgenciesPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex w-full min-w-0 max-w-full flex-col gap-6">
       <div>
         <p className="text-2xl font-semibold tracking-tight text-foreground">Agencies</p>
         <p className="text-sm text-muted">
@@ -408,7 +408,7 @@ export default function DashboardAgenciesPage() {
           No agencies found.
         </div>
       ) : (
-        <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid w-full min-w-0 gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(100%,22rem),1fr))]">
           {agencies.map((agency) => (
             <AgencyCard
               key={agency.id}

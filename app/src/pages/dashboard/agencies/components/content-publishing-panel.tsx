@@ -295,7 +295,7 @@ export function ContentPublishingPanel({
 
   return (
     <>
-      <div className="flex items-start justify-between gap-3 border-t border-border pt-4">
+      <div className="flex min-w-0 items-start justify-between gap-3 border-t border-border pt-4">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="text-sm font-medium text-foreground">
             Content publishing
@@ -303,7 +303,7 @@ export function ContentPublishingPanel({
           {isPending ? (
             <Skeleton className="h-4 w-48 rounded-md" />
           ) : (
-            <span className="text-xs text-muted">
+            <span className="break-words text-xs text-muted">
               Source: {getContentLanguageLabel(resolvedSource)}
               {data
                 ? ` · ${summaryLanguages}${data.ai_titles_enabled ? " · AI titles" : ""}`
@@ -311,7 +311,7 @@ export function ContentPublishingPanel({
             </span>
           )}
         </div>
-        <Button size="sm" variant="secondary" onPress={modal.open}>
+        <Button size="sm" variant="secondary" className="shrink-0" onPress={modal.open}>
           Configure
         </Button>
       </div>

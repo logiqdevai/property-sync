@@ -127,7 +127,7 @@ export function TrackedAgencyIntegrationLink({
       <input
         type="number"
         min={1}
-        className="rounded-lg border border-border bg-background px-3 py-2"
+        className="w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2"
         value={clientIdInput}
         disabled={disabled || isPending}
         placeholder="e.g. 45831"
