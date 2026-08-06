@@ -11,7 +11,6 @@ export interface AgencyTrackedUser {
   track_removed_listings: boolean;
   track_updated_listings: boolean;
   auto_update_to_crm: boolean;
-  use_ai_batching: boolean;
   created_at: string;
   updated_at: string;
   user: {
@@ -51,6 +50,7 @@ export interface SourceAgency {
   content_language?: string | null;
   is_visible: boolean;
   is_enabled: boolean;
+  use_ai_batching: boolean;
   crawl_interval: string;
   notes: string | null;
   last_success_at: string | null;
@@ -78,6 +78,7 @@ export interface CreateAgencyPayload {
   crawl_interval?: string;
   is_visible?: boolean;
   is_enabled?: boolean;
+  use_ai_batching?: boolean;
   content_language?: string;
   block_handling_wait_timeout_ms?: number | null;
   block_handling_min_ready_body_length?: number | null;
@@ -95,7 +96,6 @@ export interface UpdateTrackerAdminSettingsPayload {
   concurrent_insertions?: number;
   insertion_interval_seconds?: number;
   max_properties?: number | null;
-  use_ai_batching?: boolean;
   text_truncate_pieces?: string[];
 }
 

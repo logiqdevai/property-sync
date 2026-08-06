@@ -434,6 +434,7 @@ model SourceAgency {
   content_language   ContentLanguage  @default(EL)
   is_visible         Boolean          @default(false) // not displayed to the user, only to the admin
   is_enabled         Boolean          @default(false) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin
+  use_ai_batching    Boolean          @default(false)
   crawl_interval     String           @default("0 */6 * * *")
   notes              String?
   last_success_at    DateTime?
@@ -501,7 +502,6 @@ model UserTrackedAgency {
   track_removed_listings     Boolean  @default(true)
   track_updated_listings     Boolean  @default(true)
   auto_update_to_crm         Boolean  @default(true) // when false, CRM updates are pushed manually from Properties
-  use_ai_batching            Boolean  @default(false)
   remove_watermark             Boolean  @default(false)
   watermark_image_count        Int      @default(10)
   watermark_manual_selection   Boolean  @default(false)

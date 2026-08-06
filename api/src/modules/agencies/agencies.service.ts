@@ -200,9 +200,6 @@ export class AgenciesService {
         ...(dto.max_properties !== undefined && {
           max_properties: dto.max_properties,
         }),
-        ...(dto.use_ai_batching !== undefined && {
-          use_ai_batching: dto.use_ai_batching,
-        }),
         ...(dto.text_truncate_pieces !== undefined && {
           text_truncate_pieces: normalizeTextTruncatePieces(
             dto.text_truncate_pieces,

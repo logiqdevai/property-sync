@@ -196,6 +196,7 @@ export class UsersService {
                 base_url: true,
                 is_visible: true,
                 is_enabled: true,
+                use_ai_batching: true,
               },
             },
           },

@@ -1,10 +1,8 @@
-import { Accordion, Button, Switch, useOverlayState } from "@heroui/react";
+import { Accordion, Button, useOverlayState } from "@heroui/react";
 import { TruncateRulesModal } from "@/components/ui/truncate-rules-modal";
 import type { UpdateTrackerAdminSettingsPayload } from "@/features/agencies/interfaces/agencies.interfaces";
-import type { TrackAgencyPayload } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
 
 export interface TrackerAdminOptionsValues {
-  use_ai_batching: boolean;
   concurrent_insertions: number;
   insertion_interval_seconds: number;
   max_properties: number | null;
@@ -15,8 +13,6 @@ interface TrackerAdminOptionsPanelProps {
   values: TrackerAdminOptionsValues;
   disabled?: boolean;
   accordionId?: string;
-  showIntegrationsHint?: boolean;
-  onPrefsChange: (payload: TrackAgencyPayload) => void;
   onAdminSettingsChange: (payload: UpdateTrackerAdminSettingsPayload) => void;
 }
 
@@ -24,7 +20,6 @@ export function TrackerAdminOptionsPanel({
   values,
   disabled = false,
   accordionId = "admin-options",
-  onPrefsChange,
   onAdminSettingsChange,
 }: TrackerAdminOptionsPanelProps) {
   const pieces = values.text_truncate_pieces ?? [];
@@ -46,25 +41,6 @@ export function TrackerAdminOptionsPanel({
               className="flex flex-col gap-3 pt-1"
               key={`${accordionId}-${values.concurrent_insertions}-${values.insertion_interval_seconds}-${values.max_properties ?? "unlimited"}-${pieces.join("\0")}`}
             >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 flex-col gap-0.5">
-                  <span className="text-sm text-foreground">Use AI batching</span>
-                  <span className="text-xs text-muted">
-                    Lower cost, slower updates on scheduled crawls.
-                  </span>
-                </div>
-                <Switch
-                  isSelected={values.use_ai_batching}
-                  isDisabled={disabled}
-                  onChange={(isSelected) => onPrefsChange({ use_ai_batching: isSelected })}
-                  aria-label="Use AI batching"
-                >
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
-                </Switch>
-              </div>
-
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-muted">Maximum properties</span>
                 <span className="text-xs text-muted">

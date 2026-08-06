@@ -174,7 +174,7 @@ export default function AdminUserDetailPage() {
                         <Table.Cell>{tracking.track_new_listings ? "Yes" : "No"}</Table.Cell>
                         <Table.Cell>{tracking.track_updated_listings ? "Yes" : "No"}</Table.Cell>
                         <Table.Cell>{tracking.track_removed_listings ? "Yes" : "No"}</Table.Cell>
-                        <Table.Cell>{tracking.use_ai_batching ? "Yes" : "No"}</Table.Cell>
+                        <Table.Cell>{tracking.source_agency.use_ai_batching ? "Yes" : "No"}</Table.Cell>
                         {showAdminTrackerSettings && (
                           <>
                             <Table.Cell>{tracking.concurrent_insertions}</Table.Cell>

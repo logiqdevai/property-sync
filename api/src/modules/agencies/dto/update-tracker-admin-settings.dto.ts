@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   ArrayMaxSize,
   IsArray,
-  IsBoolean,
   IsInt,
   IsOptional,
   IsString,
@@ -37,11 +36,6 @@ export class UpdateTrackerAdminSettingsDto {
   @IsInt()
   @Min(1)
   max_properties?: number | null;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsBoolean()
-  use_ai_batching?: boolean;
 
   @ApiProperty({
     required: false,

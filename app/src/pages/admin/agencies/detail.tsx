@@ -169,6 +169,22 @@ export default function AgencyDetailPage() {
             </Switch.Control>
             <Switch.Content>Trackable by users</Switch.Content>
           </Switch>
+
+          <Switch
+            isSelected={agency.use_ai_batching}
+            isDisabled={updateAgency.isPending}
+            onChange={(isSelected) =>
+              updateAgency.mutate({
+                id: agency.id,
+                payload: { use_ai_batching: isSelected },
+              })
+            }
+          >
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
+            <Switch.Content>Use AI batching</Switch.Content>
+          </Switch>
         </div>
       </div>
 
@@ -210,19 +226,12 @@ export default function AgencyDetailPage() {
                     <TrackerAdminOptionsPanel
                       accordionId={`${tracker.id}-admin-options`}
                       values={{
-                        use_ai_batching: tracker.use_ai_batching,
                         concurrent_insertions: tracker.concurrent_insertions,
                         insertion_interval_seconds: tracker.insertion_interval_seconds,
                         max_properties: tracker.max_properties ?? null,
                         text_truncate_pieces: tracker.text_truncate_pieces ?? [],
                       }}
                       disabled={updateTrackerAdminSettings.isPending}
-                      showIntegrationsHint={false}
-                      onPrefsChange={(payload) =>
-                        saveTrackerSettings(tracker.user_id, {
-                          use_ai_batching: payload.use_ai_batching,
-                        })
-                      }
                       onAdminSettingsChange={(payload) =>
                         saveTrackerSettings(tracker.user_id, payload)
                       }

@@ -37,11 +37,6 @@ export class TrackAgencyDto {
   @IsBoolean()
   auto_update_to_crm?: boolean;
 
-  @ApiProperty({ required: false, default: false })
-  @IsOptional()
-  @IsBoolean()
-  use_ai_batching?: boolean;
-
   @ApiProperty({ required: false, description: 'PATCH only' })
   @IsOptional()
   @IsBoolean()

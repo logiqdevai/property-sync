@@ -10053,6 +10053,7 @@ export namespace Prisma {
     content_language: $Enums.ContentLanguage | null
     is_visible: boolean | null
     is_enabled: boolean | null
+    use_ai_batching: boolean | null
     crawl_interval: string | null
     notes: string | null
     last_success_at: Date | null
@@ -10073,6 +10074,7 @@ export namespace Prisma {
     content_language: $Enums.ContentLanguage | null
     is_visible: boolean | null
     is_enabled: boolean | null
+    use_ai_batching: boolean | null
     crawl_interval: string | null
     notes: string | null
     last_success_at: Date | null
@@ -10093,6 +10095,7 @@ export namespace Prisma {
     content_language: number
     is_visible: number
     is_enabled: number
+    use_ai_batching: number
     crawl_interval: number
     notes: number
     last_success_at: number
@@ -10126,6 +10129,7 @@ export namespace Prisma {
     content_language?: true
     is_visible?: true
     is_enabled?: true
+    use_ai_batching?: true
     crawl_interval?: true
     notes?: true
     last_success_at?: true
@@ -10146,6 +10150,7 @@ export namespace Prisma {
     content_language?: true
     is_visible?: true
     is_enabled?: true
+    use_ai_batching?: true
     crawl_interval?: true
     notes?: true
     last_success_at?: true
@@ -10166,6 +10171,7 @@ export namespace Prisma {
     content_language?: true
     is_visible?: true
     is_enabled?: true
+    use_ai_batching?: true
     crawl_interval?: true
     notes?: true
     last_success_at?: true
@@ -10274,6 +10280,7 @@ export namespace Prisma {
     content_language: $Enums.ContentLanguage
     is_visible: boolean
     is_enabled: boolean
+    use_ai_batching: boolean
     crawl_interval: string
     notes: string | null
     last_success_at: Date | null
@@ -10314,6 +10321,7 @@ export namespace Prisma {
     content_language?: boolean
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: boolean
     notes?: boolean
     last_success_at?: boolean
@@ -10343,6 +10351,7 @@ export namespace Prisma {
     content_language?: boolean
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: boolean
     notes?: boolean
     last_success_at?: boolean
@@ -10364,6 +10373,7 @@ export namespace Prisma {
     content_language?: boolean
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: boolean
     notes?: boolean
     last_success_at?: boolean
@@ -10385,6 +10395,7 @@ export namespace Prisma {
     content_language?: boolean
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: boolean
     notes?: boolean
     last_success_at?: boolean
@@ -10397,7 +10408,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type SourceAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "base_url" | "country" | "city" | "content_language" | "is_visible" | "is_enabled" | "crawl_interval" | "notes" | "last_success_at" | "last_failure_at" | "last_error_message" | "metadata" | "block_handling_wait_timeout_ms" | "block_handling_min_ready_body_length" | "created_at" | "updated_at", ExtArgs["result"]["sourceAgency"]>
+  export type SourceAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "base_url" | "country" | "city" | "content_language" | "is_visible" | "is_enabled" | "use_ai_batching" | "crawl_interval" | "notes" | "last_success_at" | "last_failure_at" | "last_error_message" | "metadata" | "block_handling_wait_timeout_ms" | "block_handling_min_ready_body_length" | "created_at" | "updated_at", ExtArgs["result"]["sourceAgency"]>
   export type SourceAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     scrapers?: boolean | SourceAgency$scrapersArgs<ExtArgs>
     user_tracked_agencies?: boolean | SourceAgency$user_tracked_agenciesArgs<ExtArgs>
@@ -10431,6 +10442,7 @@ export namespace Prisma {
       content_language: $Enums.ContentLanguage
       is_visible: boolean
       is_enabled: boolean
+      use_ai_batching: boolean
       crawl_interval: string
       notes: string | null
       last_success_at: Date | null
@@ -10879,6 +10891,7 @@ export namespace Prisma {
     readonly content_language: FieldRef<"SourceAgency", 'ContentLanguage'>
     readonly is_visible: FieldRef<"SourceAgency", 'Boolean'>
     readonly is_enabled: FieldRef<"SourceAgency", 'Boolean'>
+    readonly use_ai_batching: FieldRef<"SourceAgency", 'Boolean'>
     readonly crawl_interval: FieldRef<"SourceAgency", 'String'>
     readonly notes: FieldRef<"SourceAgency", 'String'>
     readonly last_success_at: FieldRef<"SourceAgency", 'DateTime'>
@@ -12671,7 +12684,6 @@ export namespace Prisma {
     track_removed_listings: boolean | null
     track_updated_listings: boolean | null
     auto_update_to_crm: boolean | null
-    use_ai_batching: boolean | null
     remove_watermark: boolean | null
     watermark_image_count: number | null
     watermark_manual_selection: boolean | null
@@ -12691,7 +12703,6 @@ export namespace Prisma {
     track_removed_listings: boolean | null
     track_updated_listings: boolean | null
     auto_update_to_crm: boolean | null
-    use_ai_batching: boolean | null
     remove_watermark: boolean | null
     watermark_image_count: number | null
     watermark_manual_selection: boolean | null
@@ -12712,7 +12723,6 @@ export namespace Prisma {
     track_removed_listings: number
     track_updated_listings: number
     auto_update_to_crm: number
-    use_ai_batching: number
     remove_watermark: number
     watermark_image_count: number
     watermark_manual_selection: number
@@ -12748,7 +12758,6 @@ export namespace Prisma {
     track_removed_listings?: true
     track_updated_listings?: true
     auto_update_to_crm?: true
-    use_ai_batching?: true
     remove_watermark?: true
     watermark_image_count?: true
     watermark_manual_selection?: true
@@ -12768,7 +12777,6 @@ export namespace Prisma {
     track_removed_listings?: true
     track_updated_listings?: true
     auto_update_to_crm?: true
-    use_ai_batching?: true
     remove_watermark?: true
     watermark_image_count?: true
     watermark_manual_selection?: true
@@ -12789,7 +12797,6 @@ export namespace Prisma {
     track_removed_listings?: true
     track_updated_listings?: true
     auto_update_to_crm?: true
-    use_ai_batching?: true
     remove_watermark?: true
     watermark_image_count?: true
     watermark_manual_selection?: true
@@ -12897,7 +12904,6 @@ export namespace Prisma {
     track_removed_listings: boolean
     track_updated_listings: boolean
     auto_update_to_crm: boolean
-    use_ai_batching: boolean
     remove_watermark: boolean
     watermark_image_count: number
     watermark_manual_selection: boolean
@@ -12937,7 +12943,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: boolean
     watermark_manual_selection?: boolean
@@ -12965,7 +12970,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: boolean
     watermark_manual_selection?: boolean
@@ -12988,7 +12992,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: boolean
     watermark_manual_selection?: boolean
@@ -13011,7 +13014,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: boolean
     watermark_manual_selection?: boolean
@@ -13019,7 +13021,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "concurrent_insertions" | "insertion_interval_seconds" | "max_properties" | "text_truncate_pieces" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "auto_update_to_crm" | "use_ai_batching" | "remove_watermark" | "watermark_image_count" | "watermark_manual_selection" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
+  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "concurrent_insertions" | "insertion_interval_seconds" | "max_properties" | "text_truncate_pieces" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "auto_update_to_crm" | "remove_watermark" | "watermark_image_count" | "watermark_manual_selection" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
   export type UserTrackedAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
@@ -13061,7 +13063,6 @@ export namespace Prisma {
       track_removed_listings: boolean
       track_updated_listings: boolean
       auto_update_to_crm: boolean
-      use_ai_batching: boolean
       remove_watermark: boolean
       watermark_image_count: number
       watermark_manual_selection: boolean
@@ -13508,7 +13509,6 @@ export namespace Prisma {
     readonly track_removed_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly track_updated_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly auto_update_to_crm: FieldRef<"UserTrackedAgency", 'Boolean'>
-    readonly use_ai_batching: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly remove_watermark: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly watermark_image_count: FieldRef<"UserTrackedAgency", 'Int'>
     readonly watermark_manual_selection: FieldRef<"UserTrackedAgency", 'Boolean'>
@@ -48105,6 +48105,7 @@ export namespace Prisma {
     content_language: 'content_language',
     is_visible: 'is_visible',
     is_enabled: 'is_enabled',
+    use_ai_batching: 'use_ai_batching',
     crawl_interval: 'crawl_interval',
     notes: 'notes',
     last_success_at: 'last_success_at',
@@ -48150,7 +48151,6 @@ export namespace Prisma {
     track_removed_listings: 'track_removed_listings',
     track_updated_listings: 'track_updated_listings',
     auto_update_to_crm: 'auto_update_to_crm',
-    use_ai_batching: 'use_ai_batching',
     remove_watermark: 'remove_watermark',
     watermark_image_count: 'watermark_image_count',
     watermark_manual_selection: 'watermark_manual_selection',
@@ -49647,6 +49647,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFilter<"SourceAgency"> | $Enums.ContentLanguage
     is_visible?: BoolFilter<"SourceAgency"> | boolean
     is_enabled?: BoolFilter<"SourceAgency"> | boolean
+    use_ai_batching?: BoolFilter<"SourceAgency"> | boolean
     crawl_interval?: StringFilter<"SourceAgency"> | string
     notes?: StringNullableFilter<"SourceAgency"> | string | null
     last_success_at?: DateTimeNullableFilter<"SourceAgency"> | Date | string | null
@@ -49675,6 +49676,7 @@ export namespace Prisma {
     content_language?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
+    use_ai_batching?: SortOrder
     crawl_interval?: SortOrder
     notes?: SortOrderInput | SortOrder
     last_success_at?: SortOrderInput | SortOrder
@@ -49706,6 +49708,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFilter<"SourceAgency"> | $Enums.ContentLanguage
     is_visible?: BoolFilter<"SourceAgency"> | boolean
     is_enabled?: BoolFilter<"SourceAgency"> | boolean
+    use_ai_batching?: BoolFilter<"SourceAgency"> | boolean
     crawl_interval?: StringFilter<"SourceAgency"> | string
     notes?: StringNullableFilter<"SourceAgency"> | string | null
     last_success_at?: DateTimeNullableFilter<"SourceAgency"> | Date | string | null
@@ -49734,6 +49737,7 @@ export namespace Prisma {
     content_language?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
+    use_ai_batching?: SortOrder
     crawl_interval?: SortOrder
     notes?: SortOrderInput | SortOrder
     last_success_at?: SortOrderInput | SortOrder
@@ -49763,6 +49767,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageWithAggregatesFilter<"SourceAgency"> | $Enums.ContentLanguage
     is_visible?: BoolWithAggregatesFilter<"SourceAgency"> | boolean
     is_enabled?: BoolWithAggregatesFilter<"SourceAgency"> | boolean
+    use_ai_batching?: BoolWithAggregatesFilter<"SourceAgency"> | boolean
     crawl_interval?: StringWithAggregatesFilter<"SourceAgency"> | string
     notes?: StringNullableWithAggregatesFilter<"SourceAgency"> | string | null
     last_success_at?: DateTimeNullableWithAggregatesFilter<"SourceAgency"> | Date | string | null
@@ -49878,7 +49883,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     auto_update_to_crm?: BoolFilter<"UserTrackedAgency"> | boolean
-    use_ai_batching?: BoolFilter<"UserTrackedAgency"> | boolean
     remove_watermark?: BoolFilter<"UserTrackedAgency"> | boolean
     watermark_image_count?: IntFilter<"UserTrackedAgency"> | number
     watermark_manual_selection?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -49905,7 +49909,6 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
-    use_ai_batching?: SortOrder
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
@@ -49936,7 +49939,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     auto_update_to_crm?: BoolFilter<"UserTrackedAgency"> | boolean
-    use_ai_batching?: BoolFilter<"UserTrackedAgency"> | boolean
     remove_watermark?: BoolFilter<"UserTrackedAgency"> | boolean
     watermark_image_count?: IntFilter<"UserTrackedAgency"> | number
     watermark_manual_selection?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -49963,7 +49965,6 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
-    use_ai_batching?: SortOrder
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
@@ -49992,7 +49993,6 @@ export namespace Prisma {
     track_removed_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     auto_update_to_crm?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
-    use_ai_batching?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     remove_watermark?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     watermark_image_count?: IntWithAggregatesFilter<"UserTrackedAgency"> | number
     watermark_manual_selection?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
@@ -53356,6 +53356,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -53384,6 +53385,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -53412,6 +53414,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53440,6 +53443,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53468,6 +53472,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -53489,6 +53494,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53510,6 +53516,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53630,7 +53637,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -53657,7 +53663,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -53680,7 +53685,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -53707,7 +53711,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -53732,7 +53735,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -53751,7 +53753,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -53772,7 +53773,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -57710,6 +57710,7 @@ export namespace Prisma {
     content_language?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
+    use_ai_batching?: SortOrder
     crawl_interval?: SortOrder
     notes?: SortOrder
     last_success_at?: SortOrder
@@ -57736,6 +57737,7 @@ export namespace Prisma {
     content_language?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
+    use_ai_batching?: SortOrder
     crawl_interval?: SortOrder
     notes?: SortOrder
     last_success_at?: SortOrder
@@ -57756,6 +57758,7 @@ export namespace Prisma {
     content_language?: SortOrder
     is_visible?: SortOrder
     is_enabled?: SortOrder
+    use_ai_batching?: SortOrder
     crawl_interval?: SortOrder
     notes?: SortOrder
     last_success_at?: SortOrder
@@ -57959,7 +57962,6 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
-    use_ai_batching?: SortOrder
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
@@ -57986,7 +57988,6 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
-    use_ai_batching?: SortOrder
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
@@ -58006,7 +58007,6 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
-    use_ai_batching?: SortOrder
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
@@ -64666,7 +64666,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -64691,7 +64690,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -65015,7 +65013,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     auto_update_to_crm?: BoolFilter<"UserTrackedAgency"> | boolean
-    use_ai_batching?: BoolFilter<"UserTrackedAgency"> | boolean
     remove_watermark?: BoolFilter<"UserTrackedAgency"> | boolean
     watermark_image_count?: IntFilter<"UserTrackedAgency"> | number
     watermark_manual_selection?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -65997,7 +65994,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -66022,7 +66018,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -66566,6 +66561,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -66593,6 +66589,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -66636,6 +66633,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -66663,6 +66661,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -66725,6 +66724,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -66752,6 +66752,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -67022,6 +67023,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -67049,6 +67051,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -67174,7 +67177,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -67200,7 +67202,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -67279,7 +67280,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -67305,7 +67305,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -67372,6 +67371,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -67399,6 +67399,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -67747,6 +67748,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -67774,6 +67776,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -67982,6 +67985,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -68009,6 +68013,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -68168,6 +68173,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68195,6 +68201,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -69173,6 +69180,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -69200,6 +69208,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -69234,7 +69243,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -69260,7 +69268,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -69676,6 +69683,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -69703,6 +69711,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -69743,7 +69752,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -69769,7 +69777,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -70659,6 +70666,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -70686,6 +70694,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -70863,6 +70872,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -70890,6 +70900,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -71315,6 +71326,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -71342,6 +71354,7 @@ export namespace Prisma {
     content_language?: $Enums.ContentLanguage
     is_visible?: boolean
     is_enabled?: boolean
+    use_ai_batching?: boolean
     crawl_interval?: string
     notes?: string | null
     last_success_at?: Date | string | null
@@ -71415,6 +71428,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -71442,6 +71456,7 @@ export namespace Prisma {
     content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
     is_visible?: BoolFieldUpdateOperationsInput | boolean
     is_enabled?: BoolFieldUpdateOperationsInput | boolean
+    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     crawl_interval?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -72846,7 +72861,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -72872,7 +72886,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -73022,7 +73035,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -73048,7 +73060,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -74281,7 +74292,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -74307,7 +74317,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -74619,7 +74628,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -74645,7 +74653,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -75157,7 +75164,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -75279,7 +75285,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -75304,7 +75309,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -75328,7 +75332,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -75986,7 +75989,6 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
-    use_ai_batching?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -76170,7 +76172,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -76195,7 +76196,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -76219,7 +76219,6 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean

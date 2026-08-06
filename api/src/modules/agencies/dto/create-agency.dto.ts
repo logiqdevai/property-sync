@@ -81,6 +81,16 @@ export class CreateAgencyDto {
 
   @ApiProperty({
     required: false,
+    default: false,
+    description:
+      'When true, scheduled crawl normalization uses the OpenAI Batch API',
+  })
+  @IsOptional()
+  @IsBoolean()
+  use_ai_batching?: boolean;
+
+  @ApiProperty({
+    required: false,
     enum: ContentLanguage,
     default: ContentLanguage.EL,
     description: 'Authored language of scraped titles/descriptions',

@@ -106,7 +106,11 @@ export class PropertyNormalizationService {
   ): Promise<void> {
     const crawlRun = await this.prisma.crawlRun.findUnique({
       where: { id: crawlRunId },
-      include: { user_tracked_agency: true, scraper: true },
+      include: {
+        user_tracked_agency: true,
+        scraper: true,
+        source_agency: true,
+      },
     });
 
     if (!crawlRun?.started_at) {
@@ -232,7 +236,8 @@ export class PropertyNormalizationService {
     }
 
     const useBatch =
-      tracker.use_ai_batching && aiProvider === IntegrationType.OPENAI;
+      crawlRun.source_agency.use_ai_batching &&
+      aiProvider === IntegrationType.OPENAI;
 
     if (useBatch) {
       await this.propertyAiBatchService.submitForCrawlRun({

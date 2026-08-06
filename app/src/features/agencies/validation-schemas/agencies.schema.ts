@@ -51,7 +51,7 @@ export const agencyFormSchema = z.object({
 
 export type AgencyFormValues = z.infer<typeof agencyFormSchema>;
 
-export const DefaultAgencyCrawlInterval = "0 */6 * * *";
+export const DefaultAgencyCrawlInterval = "0 6 * * *";
 
 export const EmptyBlockRule = {
   label: "",

@@ -78,7 +78,6 @@ export class UserTrackedAgenciesService {
                 track_removed_listings: tracker.track_removed_listings,
                 track_updated_listings: tracker.track_updated_listings,
                 auto_update_to_crm: tracker.auto_update_to_crm,
-                use_ai_batching: tracker.use_ai_batching,
                 enabled: tracker.enabled,
                 user_integration_id:
                   tracker.integration_link?.user_integration_id ?? null,
@@ -125,7 +124,6 @@ export class UserTrackedAgenciesService {
         track_removed_listings: dto.track_removed_listings ?? true,
         track_updated_listings: dto.track_updated_listings ?? true,
         auto_update_to_crm: dto.auto_update_to_crm ?? true,
-        use_ai_batching: dto.use_ai_batching ?? false,
         remove_watermark: dto.remove_watermark ?? false,
         watermark_image_count: dto.watermark_image_count ?? 10,
         watermark_manual_selection: dto.watermark_manual_selection ?? false,
@@ -143,9 +141,6 @@ export class UserTrackedAgenciesService {
         }),
         ...(dto.auto_update_to_crm !== undefined && {
           auto_update_to_crm: dto.auto_update_to_crm,
-        }),
-        ...(dto.use_ai_batching !== undefined && {
-          use_ai_batching: dto.use_ai_batching,
         }),
         ...(dto.remove_watermark !== undefined && {
           remove_watermark: dto.remove_watermark,
@@ -188,9 +183,6 @@ export class UserTrackedAgenciesService {
         }),
         ...(dto.auto_update_to_crm !== undefined && {
           auto_update_to_crm: dto.auto_update_to_crm,
-        }),
-        ...(dto.use_ai_batching !== undefined && {
-          use_ai_batching: dto.use_ai_batching,
         }),
         ...(dto.enabled !== undefined && { enabled: dto.enabled }),
         ...(dto.concurrent_insertions !== undefined && {

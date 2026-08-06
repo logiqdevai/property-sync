@@ -3,7 +3,6 @@ export interface TrackingPrefs {
   track_removed_listings: boolean;
   track_updated_listings: boolean;
   auto_update_to_crm: boolean;
-  use_ai_batching: boolean;
   enabled: boolean;
   user_integration_id?: string | null;
   integration_client_id?: number | null;
@@ -26,6 +25,7 @@ export interface TrackableAgency {
   status: string;
   is_visible: boolean;
   is_enabled: boolean;
+  use_ai_batching: boolean;
   is_tracked: boolean;
   user_tracked_agency_id: string | null;
   tracking_prefs?: TrackingPrefs;
@@ -36,7 +36,6 @@ export interface TrackAgencyPayload {
   track_removed_listings?: boolean;
   track_updated_listings?: boolean;
   auto_update_to_crm?: boolean;
-  use_ai_batching?: boolean;
   enabled?: boolean;
   concurrent_insertions?: number;
   insertion_interval_seconds?: number;
@@ -78,7 +77,6 @@ export interface UserTrackedAgency {
   track_removed_listings: boolean;
   track_updated_listings: boolean;
   auto_update_to_crm: boolean;
-  use_ai_batching: boolean;
   remove_watermark: boolean;
   watermark_image_count: number;
   watermark_manual_selection: boolean;

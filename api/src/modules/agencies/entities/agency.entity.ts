@@ -25,6 +25,9 @@ export class Agency {
   @ApiProperty()
   is_enabled: boolean;
 
+  @ApiProperty()
+  use_ai_batching: boolean;
+
   @ApiProperty({ example: '0 */6 * * *' })
   crawl_interval: string;
 
@@ -97,7 +100,6 @@ export class Agency {
     track_removed_listings: boolean;
     track_updated_listings: boolean;
     auto_update_to_crm: boolean;
-    use_ai_batching: boolean;
     created_at: Date;
     updated_at: Date;
     user: {
