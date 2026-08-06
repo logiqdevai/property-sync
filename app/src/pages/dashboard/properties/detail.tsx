@@ -4,7 +4,6 @@ import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Languages, NotebookPen, Pencil, Percent, RefreshCw, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
 import { Button, useOverlayState } from "@heroui/react";
-import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
