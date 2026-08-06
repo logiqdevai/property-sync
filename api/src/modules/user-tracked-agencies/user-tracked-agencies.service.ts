@@ -43,7 +43,7 @@ export class UserTrackedAgenciesService {
         where,
         skip: (query.page - 1) * query.limit,
         take: query.limit,
-        orderBy: { name: 'asc' },
+        orderBy: { created_at: 'asc' },
       }),
       this.prisma.sourceAgency.count({ where }),
       this.prisma.userTrackedAgency.findMany({
