@@ -31,6 +31,10 @@ export interface DetailPageConfig {
   features_selector?: string;
   external_id_source?: 'url_path' | 'selector';
   external_id_selector?: string;
+  // When set, overrides raw.title / raw.price with the (usually more complete/clean)
+  // text found on the detail page, since listing cards often have shorter/dirtier text.
+  title_selector?: string;
+  price_selector?: string;
 }
 
 export interface ScraperConfig {

@@ -21,6 +21,8 @@ interface DetailEnrichmentResult {
   detail_specs: Record<string, string>;
   detail_features: string[];
   external_id: string | null;
+  title: string | null;
+  price: string | null;
   latitude: number | null;
   longitude: number | null;
   raw_html_path: string | null;
@@ -97,6 +99,12 @@ export class DetailEnrichmentService {
         if (detail.external_id) {
           item.raw._external_id = detail.external_id;
         }
+        if (detail.title) {
+          item.raw.title = detail.title;
+        }
+        if (detail.price) {
+          item.raw.price = detail.price;
+        }
         if (detail.latitude != null && detail.longitude != null) {
           item.raw.latitude = detail.latitude;
           item.raw.longitude = detail.longitude;
@@ -130,6 +138,8 @@ export class DetailEnrichmentService {
       detail_specs: {},
       detail_features: [],
       external_id: null,
+      title: null,
+      price: null,
       latitude: null,
       longitude: null,
       raw_html_path: null,
@@ -235,17 +245,34 @@ export class DetailEnrichmentService {
           }
         }
 
+        const cleanText = (value: string | null | undefined): string =>
+          (value || '').replace(/\s+/g, ' ').trim();
+
         let externalId: string | null = null;
         if (
           cfg?.external_id_source === 'selector' &&
           cfg.external_id_selector
         ) {
           const el = document.querySelector(cfg.external_id_selector);
-          externalId = el?.textContent?.trim() ?? null;
+          const text = cleanText(el?.textContent);
+          const stripped = text.replace(
+            /^(?:Κωδ(?:ικός)?|Code|Ref(?:erence)?)\.?\s*[:：\-]?\s*/i,
+            '',
+          );
+          externalId = stripped || null;
         }
 
-        const cleanText = (value: string | null | undefined): string =>
-          (value || '').replace(/\s+/g, ' ').trim();
+        let titleText: string | null = null;
+        if (cfg?.title_selector) {
+          const el = document.querySelector(cfg.title_selector);
+          titleText = cleanText(el?.textContent) || null;
+        }
+
+        let priceText: string | null = null;
+        if (cfg?.price_selector) {
+          const el = document.querySelector(cfg.price_selector);
+          priceText = cleanText(el?.textContent) || null;
+        }
 
         const detailSpecs: Record<string, string> = {};
         const featureSet = new Set<string>();
@@ -469,6 +496,8 @@ export class DetailEnrichmentService {
           detail_specs: detailSpecs,
           detail_features: [...featureSet],
           external_id: externalId,
+          title: titleText,
+          price: priceText,
           latitude,
           longitude,
         };
