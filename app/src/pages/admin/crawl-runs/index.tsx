@@ -140,7 +140,7 @@ export default function CrawlRunsListPage() {
 
       <div className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-2 w-fit">
         <p className="text-xs font-medium uppercase tracking-wide text-muted">
-          Total AI cost (filtered)
+          Total cost
         </p>
         <p className="font-mono text-3xl font-bold text-foreground">
           {isPending ? "—" : formatUsd(data?.total_cost ?? null)}

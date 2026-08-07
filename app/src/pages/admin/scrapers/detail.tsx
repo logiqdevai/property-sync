@@ -122,119 +122,77 @@ export default function ScraperDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 rounded-xl border border-border bg-surface p-6">
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted">Agency</span>
-          <button
-            className="text-sm text-accent hover:underline text-left"
-            onClick={() => navigate(Routes.admin.agencies.detail(scraper.source_agency_id))}
-          >
-            {scraper.source_agency?.name ?? scraper.source_agency_id}
-          </button>
+      <div className="rounded-xl border border-border bg-surface p-6">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Agency</span>
+            <button
+              className="text-sm text-accent hover:underline text-left truncate"
+              onClick={() => navigate(Routes.admin.agencies.detail(scraper.source_agency_id))}
+            >
+              {scraper.source_agency?.name ?? scraper.source_agency_id}
+            </button>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Active version</span>
+            <span className="text-sm text-foreground">v{scraper.active_version?.version ?? "—"}</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Success rate</span>
+            <span className="text-sm text-foreground">
+              {scraper.success_rate !== null ? `${scraper.success_rate}%` : "—"}
+            </span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Avg runtime</span>
+            <span className="text-sm text-foreground">{formatDuration(scraper.avg_runtime_ms)}</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">
+              Consecutive failures
+            </span>
+            <span className="text-sm text-foreground">{scraper.consecutive_failures}</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Last success</span>
+            <span className="text-sm text-foreground">{formatDateTime(scraper.last_success_at)}</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Last failure</span>
+            <span className="text-sm text-foreground">{formatDateTime(scraper.last_failure_at)}</span>
+          </div>
         </div>
-        <Select
-          selectedKey={scraper.status}
-          isDisabled={updateScraper.isPending}
-          onSelectionChange={(key) => {
-            if (!key || key === scraper.status) return;
-            updateScraper.mutate({
-              id: scraper.id,
-              payload: { status: key as ScraperStatus },
-            });
-          }}
-          className="w-full"
-        >
-          <Label>Status</Label>
-          <Select.Trigger>
-            <Select.Value />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              {ScraperStatusFormOptions.map((option) => (
-                <ListBox.Item key={option.id} id={option.id}>
-                  {option.label}
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted">Active version</span>
-          <span className="text-sm text-foreground">v{scraper.active_version?.version ?? "—"}</span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted">Success rate</span>
-          <span className="text-sm text-foreground">
-            {scraper.success_rate !== null ? `${scraper.success_rate}%` : "—"}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted">Avg runtime</span>
-          <span className="text-sm text-foreground">
-            {formatDuration(scraper.avg_runtime_ms)}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted">Consecutive failures</span>
-          <span className="text-sm text-foreground">{scraper.consecutive_failures}</span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="scraper-normalize-limit">Normalize limit</Label>
-          <Input
-            id="scraper-normalize-limit"
-            type="number"
-            min={1}
-            step={1}
-            value={
-              normalizeLimitDraft ??
-              (scraper.normalize_limit !== null ? String(scraper.normalize_limit) : "")
-            }
-            onChange={(e) => setNormalizeLimitDraft(e.target.value)}
-            onBlur={() => {
-              if (normalizeLimitDraft === null) return;
-              const raw = normalizeLimitDraft.trim();
-              const next = raw === "" ? null : Number(raw);
-              setNormalizeLimitDraft(null);
-              if (raw !== "" && (!Number.isInteger(next) || (next as number) < 1)) {
-                return;
-              }
-              if (next === scraper.normalize_limit) return;
+
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 border-t border-border pt-5">
+          <Select
+            selectedKey={scraper.status}
+            isDisabled={updateScraper.isPending}
+            onSelectionChange={(key) => {
+              if (!key || key === scraper.status) return;
               updateScraper.mutate({
                 id: scraper.id,
-                payload: { normalize_limit: next },
+                payload: { status: key as ScraperStatus },
               });
             }}
-            placeholder="Unlimited"
-            disabled={updateScraper.isPending}
-            fullWidth
-          />
-          <span className="text-xs text-muted">
-            Max listings AI-normalized per crawl. Empty = unlimited.
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted">Last success / failure</span>
-          <span className="text-sm text-foreground">
-            {formatDateTime(scraper.last_success_at)} / {formatDateTime(scraper.last_failure_at)}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-6 sm:col-span-2 pt-2 border-t border-border flex-wrap">
-          <Switch
-            isSelected={scraper.self_healing_enabled}
-            onChange={(isSelected) =>
-              updateScraper.mutate({ id: scraper.id, payload: { self_healing_enabled: isSelected } })
-            }
+            className="w-full"
           >
-            <Switch.Control>
-              <Switch.Thumb />
-            </Switch.Control>
-            <Switch.Content>Self-healing enabled</Switch.Content>
-          </Switch>
+            <Label>Status</Label>
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {ScraperStatusFormOptions.map((option) => (
+                  <ListBox.Item key={option.id} id={option.id}>
+                    {option.label}
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
 
           <Select
-            aria-label="Diagnostics mode"
             selectedKey={scraper.diagnostics_mode}
             isDisabled={updateScraper.isPending}
             onSelectionChange={(key) => {
@@ -244,7 +202,7 @@ export default function ScraperDetailPage() {
                 payload: { diagnostics_mode: key as DiagnosticsMode },
               });
             }}
-            className="w-72"
+            className="w-full"
           >
             <Label>Diagnostics mode</Label>
             <Select.Trigger>
@@ -261,6 +219,60 @@ export default function ScraperDetailPage() {
               </ListBox>
             </Select.Popover>
           </Select>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="scraper-normalize-limit">Normalize limit</Label>
+            <Input
+              id="scraper-normalize-limit"
+              type="number"
+              min={1}
+              step={1}
+              value={
+                normalizeLimitDraft ??
+                (scraper.normalize_limit !== null ? String(scraper.normalize_limit) : "")
+              }
+              onChange={(e) => setNormalizeLimitDraft(e.target.value)}
+              onBlur={() => {
+                if (normalizeLimitDraft === null) return;
+                const raw = normalizeLimitDraft.trim();
+                const next = raw === "" ? null : Number(raw);
+                setNormalizeLimitDraft(null);
+                if (raw !== "" && (!Number.isInteger(next) || (next as number) < 1)) {
+                  return;
+                }
+                if (next === scraper.normalize_limit) return;
+                updateScraper.mutate({
+                  id: scraper.id,
+                  payload: { normalize_limit: next },
+                });
+              }}
+              placeholder="Unlimited"
+              disabled={updateScraper.isPending}
+              fullWidth
+            />
+            <span className="text-xs text-muted">
+              Max listings AI-normalized per crawl. Empty = unlimited.
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-1.5 justify-center">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">Self-healing</span>
+            <Switch
+              isSelected={scraper.self_healing_enabled}
+              isDisabled={updateScraper.isPending}
+              onChange={(isSelected) =>
+                updateScraper.mutate({
+                  id: scraper.id,
+                  payload: { self_healing_enabled: isSelected },
+                })
+              }
+            >
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+              <Switch.Content>Enabled</Switch.Content>
+            </Switch>
+          </div>
         </div>
       </div>
 

@@ -133,7 +133,7 @@ export class UserTrackedAgenciesService {
         track_updated_listings: dto.track_updated_listings ?? true,
         auto_update_to_crm: dto.auto_update_to_crm ?? true,
         remove_watermark: dto.remove_watermark ?? false,
-        watermark_image_count: dto.watermark_image_count ?? 10,
+        watermark_image_count: dto.watermark_image_count ?? 1,
         watermark_manual_selection: dto.watermark_manual_selection ?? false,
       },
       update: {

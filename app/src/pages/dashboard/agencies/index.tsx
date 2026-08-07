@@ -401,7 +401,7 @@ export default function DashboardAgenciesPage() {
             false
           }
           watermarkImageCount={
-            activeSettingsAgency.tracking_prefs.watermark_image_count ?? 10
+            activeSettingsAgency.tracking_prefs.watermark_image_count ?? 1
           }
           onSave={saveSettingsPrefs}
         />

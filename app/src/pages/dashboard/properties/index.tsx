@@ -828,6 +828,40 @@ export default function DashboardPropertiesListPage() {
                 </ListBox>
               </Select.Popover>
             </Select>
+            <div className="flex min-w-0 flex-wrap items-center gap-2 sm:w-auto">
+              <span className="text-sm text-muted">First</span>
+              <Input
+                type="number"
+                min={1}
+                max={Math.max(1, properties.length)}
+                aria-label="Number of properties from start of page"
+                className="w-20"
+                value={String(selectCount)}
+                onChange={(e) => {
+                  const parsed = Number.parseInt(e.target.value, 10);
+                  setSelectCount(
+                    Number.isFinite(parsed) && parsed >= 1 ? parsed : 1,
+                  );
+                }}
+              />
+              <span className="text-sm text-muted">on page</span>
+              <Button
+                size="sm"
+                variant="secondary"
+                onPress={() => applyFirstNSelection(true)}
+                isDisabled={properties.length === 0}
+              >
+                Select
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onPress={() => applyFirstNSelection(false)}
+                isDisabled={properties.length === 0}
+              >
+                Deselect
+              </Button>
+            </div>
           </div>
         ) : null}
       </div>
@@ -840,40 +874,6 @@ export default function DashboardPropertiesListPage() {
         </div>
       ) : (
         <>
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <span className="text-sm text-muted">First</span>
-            <Input
-              type="number"
-              min={1}
-              max={properties.length}
-              aria-label="Number of properties from start of page"
-              className="w-20"
-              value={String(selectCount)}
-              onChange={(e) => {
-                const parsed = Number.parseInt(e.target.value, 10);
-                setSelectCount(
-                  Number.isFinite(parsed) && parsed >= 1 ? parsed : 1,
-                );
-              }}
-            />
-            <span className="text-sm text-muted">on page</span>
-            <Button
-              size="sm"
-              variant="secondary"
-              onPress={() => applyFirstNSelection(true)}
-              isDisabled={properties.length === 0}
-            >
-              Select
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onPress={() => applyFirstNSelection(false)}
-              isDisabled={properties.length === 0}
-            >
-              Deselect
-            </Button>
-          </div>
           <div className="flex min-w-0 flex-col gap-3 md:hidden">
             <div className="flex items-center gap-2 px-1">
               <Checkbox

@@ -87,11 +87,11 @@ export class TrackAgencyDto {
 
   @ApiProperty({
     required: false,
-    default: 10,
+    default: 1,
     minimum: 1,
     description:
       'How many leading images per listing to remove watermarks from (automatic mode)',
-    example: 10,
+    example: 1,
   })
   @IsOptional()
   @IsInt()

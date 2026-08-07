@@ -101,7 +101,7 @@ export function WatermarkSettingsModal({
                           const value =
                             Number.isFinite(parsed) && parsed >= 1
                               ? parsed
-                              : 10;
+                              : 1;
                           if (value !== watermarkImageCount) {
                             onSave({ watermark_image_count: value });
                           }

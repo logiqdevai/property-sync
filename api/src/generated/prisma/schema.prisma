@@ -503,7 +503,7 @@ model UserTrackedAgency {
   track_updated_listings     Boolean  @default(true)
   auto_update_to_crm         Boolean  @default(true) // when false, CRM updates are pushed manually from Properties
   remove_watermark           Boolean  @default(false)
-  watermark_image_count      Int      @default(10)
+  watermark_image_count      Int      @default(1)
   watermark_manual_selection Boolean  @default(false)
   created_at                 DateTime @default(now())
   updated_at                 DateTime @updatedAt
