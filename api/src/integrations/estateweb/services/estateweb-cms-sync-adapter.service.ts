@@ -186,6 +186,15 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       payload,
     );
 
+    const propertyNote = options?.propertyNote?.trim();
+    if (propertyNote) {
+      await this.estateWebPropertyService.createPropertyNote(
+        userIntegrationId,
+        integrationPropertyId,
+        { note: propertyNote },
+      );
+    }
+
     await this.persistIntegrationPropertySites({
       userIntegrationId,
       userPropertyId: userProperty.id,
