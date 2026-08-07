@@ -10,6 +10,7 @@ import {
   useAvailableIntegrationTargets,
   useConnectIntegration,
   useDisconnectIntegration,
+  useRevealUserIntegrationSecrets,
   useUpdateUserIntegrationConnection,
   useUpdateUserIntegrationConnectionDefault,
   useUpdateUserIntegrationConnectionStatus,
@@ -192,6 +193,7 @@ export default function DashboardIntegrationsPage() {
   const updateStatus = useUpdateUserIntegrationConnectionStatus();
   const updateDefault = useUpdateUserIntegrationConnectionDefault();
   const disconnectIntegration = useDisconnectIntegration();
+  const revealSecrets = useRevealUserIntegrationSecrets();
 
   const connectForm = useForm<ConnectCredentialsFormValues>();
   const webhookSetupForm = useForm<WebhookSetupFormValues>();
@@ -530,14 +532,22 @@ export default function DashboardIntegrationsPage() {
                       username={editingConnection.username}
                     />
                     <IntegrationCredentialFields
+                      key={editingConnection.id}
                       authType={editingConnection.integration_target.auth_type}
                       integrationType={editingConnection.integration_target.integration_type}
                       connectionId={editingConnection.id}
                       register={editForm.register}
                       watch={editForm.watch}
+                      setValue={editForm.setValue}
                       errors={editForm.formState.errors}
                       mode="edit"
                       isDisabled={isEditReadOnly}
+                      canRevealPassword={isAdmin}
+                      hasPassword={editingConnection.has_password}
+                      onRevealPassword={async () => {
+                        const secrets = await revealSecrets.mutateAsync(editingConnection.id);
+                        return secrets.password;
+                      }}
                       maskedCredentials={{
                         email: editingConnection.email,
                         username: editingConnection.username,

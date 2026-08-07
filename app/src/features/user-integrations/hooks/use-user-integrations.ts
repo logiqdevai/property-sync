@@ -6,6 +6,7 @@ import {
   getIntegrationTargetsForUser,
   getUserIntegrationConnections,
   getUserIntegrationSettings,
+  revealUserIntegrationSecrets,
   updateUserIntegrationConnection,
   updateUserIntegrationConnectionDefault,
   updateUserIntegrationConnectionStatus,
@@ -153,6 +154,19 @@ export const useDisconnectIntegration = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not disconnect integration",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useRevealUserIntegrationSecrets = () => {
+  return useMutation({
+    mutationFn: (id: string) => revealUserIntegrationSecrets(id),
+    onError: (error: Error) => {
+      toast({
+        title: "Could not reveal secrets",
         description: error.message,
         variant: "error",
       });

@@ -174,6 +174,7 @@ export const ApiRoutes = {
         connection: (id: string) => `/integrations/connections/${id}`,
         connectionStatus: (id: string) => `/integrations/connections/${id}/status`,
         connectionDefault: (id: string) => `/integrations/connections/${id}/default`,
+        connectionSecrets: (id: string) => `/integrations/connections/${id}/secrets`,
         settings: (targetId: string) => `/integrations/targets/${targetId}/settings`,
     },
     agencies: {

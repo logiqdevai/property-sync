@@ -87,3 +87,9 @@ export interface UpdateConnectionPayload {
 export interface UpdateSettingsPayload {
   settings?: UserIntegrationSettingsData;
 }
+
+export interface UserIntegrationSecrets {
+  password: string | null;
+  api_key_secret: string | null;
+  webhook_key: string | null;
+}

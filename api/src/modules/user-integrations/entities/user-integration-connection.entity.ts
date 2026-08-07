@@ -71,6 +71,17 @@ export class UserIntegrationSettingsEntity {
   updated_at: Date | null;
 }
 
+export class UserIntegrationSecretsEntity {
+  @ApiProperty({ nullable: true })
+  password: string | null;
+
+  @ApiProperty({ nullable: true })
+  api_key_secret: string | null;
+
+  @ApiProperty({ nullable: true })
+  webhook_key: string | null;
+}
+
 export class UserIntegrationConnectionEntity {
   @ApiProperty()
   id: string;

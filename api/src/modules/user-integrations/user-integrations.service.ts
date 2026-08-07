@@ -514,6 +514,26 @@ export class UserIntegrationsService {
     return this.toConnectionResponse(updated);
   }
 
+  async revealConnectionSecrets(
+    userId: string,
+    userRole: AuthRole,
+    connectionId: string,
+  ) {
+    if (!isAdminRole(userRole)) {
+      throw new ForbiddenException(
+        'Only admins can reveal integration secrets',
+      );
+    }
+
+    const connection = await this.findOwnedConnection(userId, connectionId);
+
+    return {
+      password: connection.password,
+      api_key_secret: connection.api_key_secret,
+      webhook_key: connection.webhook_key,
+    };
+  }
+
   async deleteConnection(
     userId: string,
     userRole: AuthRole,

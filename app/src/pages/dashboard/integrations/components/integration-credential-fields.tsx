@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, Input, InputGroup, Label, FieldError } from "@heroui/react";
 import { Check, Copy } from "lucide-react";
-import type { UseFormRegister, UseFormWatch } from "react-hook-form";
+import type { UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form";
 import {
   AuthTypes,
   IntegrationTypes,
@@ -11,6 +11,7 @@ import {
 } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import type { MaskedCredentialValues } from "@/features/user-integrations/validation-schemas/user-integrations.schema";
 import { PasswordInput } from "@/components/ui/password-input";
+import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import {
   getIntegrationWebhookUrl,
   integrationSupportsWebhookUrl,
@@ -31,11 +32,15 @@ interface IntegrationCredentialFieldsProps {
   connectionId?: string;
   register: UseFormRegister<any>;
   watch?: UseFormWatch<any>;
+  setValue?: UseFormSetValue<any>;
   errors?: CredentialFieldErrors;
   mode?: "create" | "edit";
   isDisabled?: boolean;
   maskedCredentials?: MaskedCredentialValues;
   webhookOnly?: boolean;
+  canRevealPassword?: boolean;
+  hasPassword?: boolean;
+  onRevealPassword?: () => Promise<string | null>;
 }
 
 export function IntegrationCredentialFields({
@@ -44,13 +49,19 @@ export function IntegrationCredentialFields({
   connectionId,
   register,
   watch,
+  setValue,
   errors = {},
   mode = "create",
   isDisabled = false,
   maskedCredentials,
   webhookOnly = false,
+  canRevealPassword = false,
+  hasPassword = false,
+  onRevealPassword,
 }: IntegrationCredentialFieldsProps) {
   const [webhookUrlCopied, setWebhookUrlCopied] = useState(false);
+  const [revealingPassword, setRevealingPassword] = useState(false);
+  const [passwordRevealed, setPasswordRevealed] = useState(false);
   const optionalHint =
     mode === "edit" ? "Leave blank to keep the current value" : undefined;
   const showAiFields = integrationType ? isAiIntegrationType(integrationType) : false;
@@ -64,6 +75,13 @@ export function IntegrationCredentialFields({
   const webhookUrl = connectionId
     ? getIntegrationWebhookUrl(integrationType ?? "", connectionId)
     : null;
+  const showRevealPasswordButton =
+    mode === "edit" &&
+    canRevealPassword &&
+    hasPassword &&
+    !!onRevealPassword &&
+    !!setValue &&
+    (authType === AuthTypes.EMAIL_PASSWORD || authType === AuthTypes.USERNAME_PASSWORD);
 
   const copyWebhookUrl = async () => {
     if (!webhookUrl) {
@@ -79,6 +97,23 @@ export function IntegrationCredentialFields({
     }
   };
 
+  const handleRevealPassword = async () => {
+    if (!onRevealPassword || !setValue) {
+      return;
+    }
+
+    setRevealingPassword(true);
+    try {
+      const password = await onRevealPassword();
+      if (password) {
+        setValue("password", password, { shouldDirty: true });
+        setPasswordRevealed(true);
+      }
+    } finally {
+      setRevealingPassword(false);
+    }
+  };
+
   const renderSecretInput = (
     fieldName: "password" | "api_key_secret" | "webhook_key",
     id: string,
@@ -86,13 +121,28 @@ export function IntegrationCredentialFields({
     placeholder?: string,
   ) => {
     const registration = register(fieldName);
+    const isPasswordField = fieldName === "password";
 
     if (mode === "edit" && watch) {
       const fieldValue = watch(fieldName) ?? "";
 
       return (
         <div className="flex flex-col gap-1">
-          <Label htmlFor={id}>{label}</Label>
+          <div className="flex items-center justify-between gap-2">
+            <Label htmlFor={id}>{label}</Label>
+            {isPasswordField && showRevealPasswordButton ? (
+              <ActionButtonWithPending
+                type="button"
+                size="sm"
+                variant="secondary"
+                onPress={handleRevealPassword}
+                isPending={revealingPassword}
+                isDisabled={isDisabled || passwordRevealed}
+              >
+                {passwordRevealed ? "Password revealed" : "Reveal password"}
+              </ActionButtonWithPending>
+            ) : null}
+          </div>
           <PasswordInput
             id={id}
             name={registration.name}
@@ -101,6 +151,7 @@ export function IntegrationCredentialFields({
             onChange={registration.onChange}
             value={fieldValue}
             maskedPreview={maskedCredentials?.[fieldName]}
+            forceShow={isPasswordField && passwordRevealed}
             placeholder={placeholder ?? optionalHint ?? label}
             disabled={isDisabled}
           />

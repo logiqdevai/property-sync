@@ -1,21 +1,29 @@
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@heroui/react";
 import { cn } from "@/lib/utils";
 
 type PasswordInputProps = Omit<React.ComponentProps<typeof Input>, "type"> & {
   maskedPreview?: string | null;
+  forceShow?: boolean;
 };
 
 export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   function PasswordInput(
-    { className, maskedPreview, value, onChange, onFocus, ...props },
+    { className, maskedPreview, forceShow = false, value, onChange, onFocus, ...props },
     ref,
   ) {
     const [show, setShow] = useState(false);
     const [previewDismissed, setPreviewDismissed] = useState(false);
     const isControlled = value !== undefined;
     const controlledValue = value ?? "";
+
+    useEffect(() => {
+      if (forceShow) {
+        setShow(true);
+        setPreviewDismissed(true);
+      }
+    }, [forceShow]);
 
     const showMaskedPreview =
       isControlled &&

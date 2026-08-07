@@ -6,6 +6,7 @@ import type {
   MaskedUserIntegrationConnection,
   UpdateConnectionPayload,
   UpdateSettingsPayload,
+  UserIntegrationSecrets,
   UserIntegrationSettings,
 } from "../interfaces/user-integrations.interfaces";
 
@@ -92,6 +93,19 @@ export const deleteUserIntegrationConnection = async (id: string): Promise<void>
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to disconnect integration. Please try again.",
+    );
+  }
+};
+
+export const revealUserIntegrationSecrets = async (
+  id: string,
+): Promise<UserIntegrationSecrets> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.integrations.connectionSecrets(id));
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to reveal integration secrets. Please try again.",
     );
   }
 };

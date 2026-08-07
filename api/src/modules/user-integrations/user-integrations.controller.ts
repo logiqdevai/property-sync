@@ -31,6 +31,7 @@ import { UpdateUserIntegrationSettingsDto } from './dto/user-integration-setting
 import {
   AvailableIntegrationTargetEntity,
   UserIntegrationConnectionEntity,
+  UserIntegrationSecretsEntity,
   UserIntegrationSettingsEntity,
 } from './entities/user-integration-connection.entity';
 
@@ -151,6 +152,27 @@ export class UserIntegrationsController {
     @Body() dto: UpdateUserIntegrationSettingsDto,
   ) {
     return this.userIntegrationsService.updateSettings(userId, targetId, dto);
+  }
+
+  @Get('connections/:id/secrets')
+  @UseGuards(RolesGuard)
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary: 'Reveal plaintext secrets for an integration connection (admin)',
+  })
+  @ApiResponse({ status: 200, type: UserIntegrationSecretsEntity })
+  @ApiResponse({ status: 403, description: 'Admin only' })
+  @ApiResponse({ status: 404, description: 'Connection not found' })
+  revealConnectionSecrets(
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: AuthRole,
+    @Param('id') id: string,
+  ) {
+    return this.userIntegrationsService.revealConnectionSecrets(
+      userId,
+      role,
+      id,
+    );
   }
 
   @Delete('connections/:id')
