@@ -47,6 +47,7 @@ import {
 } from '@/modules/properties/utils/property-cms-field-mapper.util';
 import {
   applyTextTruncatePieces,
+  buildLocalizedTruncateUpdates,
   normalizeTextTruncatePieces,
 } from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
 import {
@@ -1923,6 +1924,11 @@ export class UserPropertiesService {
       throw new NotFoundException('One or more properties not found');
     }
 
+    const localizedRows = await this.prisma.propertyLocalizedContent.findMany({
+      where: { user_property_id: { in: uniqueIds } },
+      select: { id: true, user_property_id: true, text: true },
+    });
+
     const propertyUpdates = properties.flatMap((property) => {
       const nextTitle =
         applyTextTruncatePieces(property.title, pieces, replaceWith) ??
@@ -1949,6 +1955,12 @@ export class UserPropertiesService {
       ];
     });
 
+    const localizedUpdates = buildLocalizedTruncateUpdates(
+      localizedRows,
+      pieces,
+      replaceWith,
+    );
+
     const canonicalPropertyIds = [
       ...new Set(properties.map((property) => property.canonical_property_id)),
     ];
@@ -1964,6 +1976,17 @@ export class UserPropertiesService {
                   title: update.title,
                   description: update.description,
                 },
+              }),
+            ),
+          );
+        }
+
+        if (localizedUpdates.length > 0) {
+          await Promise.all(
+            localizedUpdates.map((update) =>
+              tx.propertyLocalizedContent.update({
+                where: { id: update.id },
+                data: { text: update.text, is_stale: false },
               }),
             ),
           );
@@ -2027,21 +2050,41 @@ export class UserPropertiesService {
       { timeout: 30_000 },
     );
 
-    const changedIds = propertyUpdates.map((update) => update.id);
+    const propertyChangedIds = propertyUpdates.map((update) => update.id);
+    const localizedChangedIds = [
+      ...new Set(localizedUpdates.map((update) => update.user_property_id)),
+    ];
+    const pushOnlyIds = localizedChangedIds.filter(
+      (id) => !propertyChangedIds.includes(id),
+    );
+
     let jobLogId: string | null = null;
-    if (changedIds.length > 0) {
-      const job = await this.enqueueContentProductionJobs(userId, changedIds, {
-        runTranslations: true,
-        runAiTitles: true,
+    if (propertyChangedIds.length > 0) {
+      const job = await this.enqueueContentProductionJobs(
+        userId,
+        propertyChangedIds,
+        {
+          runTranslations: true,
+          runAiTitles: true,
+          useAiBatch: false,
+          regenerate: true,
+          pushToCrm: true,
+        },
+      );
+      jobLogId = job.job_log_id;
+    } else if (pushOnlyIds.length > 0) {
+      const job = await this.enqueueContentProductionJobs(userId, pushOnlyIds, {
+        runTranslations: false,
+        runAiTitles: false,
         useAiBatch: false,
-        regenerate: true,
+        regenerate: false,
         pushToCrm: true,
       });
       jobLogId = job.job_log_id;
     }
 
     return {
-      updated: propertyUpdates.length,
+      updated: new Set([...propertyChangedIds, ...localizedChangedIds]).size,
       total: uniqueIds.length,
       job_log_id: jobLogId,
     };
@@ -2934,6 +2977,11 @@ export class UserPropertiesService {
       throw new NotFoundException('One or more user properties not found');
     }
 
+    const localizedRows = await this.prisma.propertyLocalizedContent.findMany({
+      where: { user_property_id: { in: uniqueIds } },
+      select: { id: true, user_property_id: true, text: true },
+    });
+
     const propertyUpdates = properties.flatMap((property) => {
       const nextTitle =
         applyTextTruncatePieces(property.title, pieces, replaceWith) ??
@@ -2960,6 +3008,12 @@ export class UserPropertiesService {
       ];
     });
 
+    const localizedUpdates = buildLocalizedTruncateUpdates(
+      localizedRows,
+      pieces,
+      replaceWith,
+    );
+
     const canonicalPropertyIds = [
       ...new Set(properties.map((property) => property.canonical_property_id)),
     ];
@@ -2976,6 +3030,17 @@ export class UserPropertiesService {
                   title: update.title,
                   description: update.description,
                 },
+              }),
+            ),
+          );
+        }
+
+        if (localizedUpdates.length > 0) {
+          await Promise.all(
+            localizedUpdates.map((update) =>
+              tx.propertyLocalizedContent.update({
+                where: { id: update.id },
+                data: { text: update.text, is_stale: false },
               }),
             ),
           );
@@ -3039,19 +3104,26 @@ export class UserPropertiesService {
       { timeout: 30_000 },
     );
 
-    const changedIds = propertyUpdates.map((update) => update.id);
-    if (changedIds.length > 0) {
+    const propertyChangedIds = propertyUpdates.map((update) => update.id);
+    const localizedChangedIds = [
+      ...new Set(localizedUpdates.map((update) => update.user_property_id)),
+    ];
+    const changedIds = [
+      ...new Set([...propertyChangedIds, ...localizedChangedIds]),
+    ];
+
+    if (propertyChangedIds.length > 0) {
       setImmediate(async () => {
         try {
           await this.contentProductionService.produceForUserProperties(
-            changedIds,
+            propertyChangedIds,
             { markStaleFirst: true, forceSyncAi: true },
           );
         } catch {}
       });
     }
 
-    return { updated: propertyUpdates.length, total: uniqueIds.length };
+    return { updated: changedIds.length, total: uniqueIds.length };
   }
 
   async adminSplitMany(ids: string[]) {

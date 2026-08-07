@@ -10,6 +10,7 @@ import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
 import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
 import {
   applyTextTruncatePieces,
+  buildLocalizedTruncateUpdates,
   normalizeTextTruncatePieces,
 } from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
 import { PropertyQueryType } from './dto/property-query.schema';
@@ -378,25 +379,27 @@ export class PropertiesService {
           replaceWith,
         );
 
-        if (
-          nextTitle === property.title &&
-          nextDescription === property.description
-        ) {
-          continue;
-        }
+        const propertyChanged =
+          nextTitle !== property.title ||
+          nextDescription !== property.description;
 
-        await tx.property.update({
-          where: { id: property.id },
-          data: {
-            title: nextTitle,
-            description: nextDescription,
-          },
-        });
+        if (propertyChanged) {
+          await tx.property.update({
+            where: { id: property.id },
+            data: {
+              title: nextTitle,
+              description: nextDescription,
+            },
+          });
+        }
 
         const linked = await tx.userProperty.findMany({
           where: { canonical_property_id: property.id },
           select: { id: true, title: true, description: true },
         });
+
+        const linkedIds = linked.map((row) => row.id);
+        let linkedChanged = false;
 
         for (const userProperty of linked) {
           const linkedTitle =
@@ -426,9 +429,43 @@ export class PropertiesService {
             },
           });
           changedUserPropertyIds.push(userProperty.id);
+          linkedChanged = true;
         }
 
-        updated += 1;
+        const localizedRows =
+          linkedIds.length > 0
+            ? await tx.propertyLocalizedContent.findMany({
+                where: { user_property_id: { in: linkedIds } },
+                select: { id: true, user_property_id: true, text: true },
+              })
+            : [];
+
+        const localizedUpdates = buildLocalizedTruncateUpdates(
+          localizedRows,
+          pieces,
+          replaceWith,
+        );
+
+        if (localizedUpdates.length > 0) {
+          await Promise.all(
+            localizedUpdates.map((update) =>
+              tx.propertyLocalizedContent.update({
+                where: { id: update.id },
+                data: { text: update.text, is_stale: false },
+              }),
+            ),
+          );
+          for (const update of localizedUpdates) {
+            if (!changedUserPropertyIds.includes(update.user_property_id)) {
+              changedUserPropertyIds.push(update.user_property_id);
+            }
+          }
+          linkedChanged = true;
+        }
+
+        if (propertyChanged || linkedChanged) {
+          updated += 1;
+        }
       }
     });
 
@@ -436,7 +473,7 @@ export class PropertiesService {
       setImmediate(async () => {
         try {
           await this.contentProductionService.produceForUserProperties(
-            changedUserPropertyIds,
+            [...new Set(changedUserPropertyIds)],
             { markStaleFirst: true, forceSyncAi: true },
           );
         } catch {}

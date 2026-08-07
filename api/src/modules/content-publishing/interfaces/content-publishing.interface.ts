@@ -21,6 +21,7 @@ export interface ResolvedTrackerContentContext {
   trackerId: string;
   sourceAgencyId: string;
   contentLanguage: ContentLanguage;
+  textTruncatePieces: string[];
   config: ContentPublishingConfigWithRelations | null;
 }
 

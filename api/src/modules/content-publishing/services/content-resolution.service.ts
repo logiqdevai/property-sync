@@ -15,6 +15,7 @@ import {
   EstateWebAdLanguageMaps,
   ResolvedTrackerContentContext,
 } from '../interfaces/content-publishing.interface';
+import { applyTextTruncatePieces } from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
 import { ContentPublishingConfigService } from './content-publishing-config.service';
 
 @Injectable()
@@ -67,6 +68,7 @@ export class ContentResolutionService {
       trackerId: tracker.id,
       sourceAgencyId,
       contentLanguage: tracker.source_agency.content_language,
+      textTruncatePieces: tracker.text_truncate_pieces ?? [],
       config,
     };
   }
@@ -77,12 +79,17 @@ export class ContentResolutionService {
   ): Promise<EstateWebAdLanguageMaps> {
     const context = await this.resolveContextForUserProperty(userProperty);
     const config = context?.config;
+    const truncatePieces = context?.textTruncatePieces ?? [];
 
     if (!config || !config.is_enabled) {
       this.logger.warn(
         `[resolveAdMaps] property=${userProperty.id} using legacy broadcast (no enabled content publishing config)`,
       );
-      return this.legacyBroadcast(userProperty, fallbackLanguages);
+      return this.legacyBroadcast(
+        userProperty,
+        fallbackLanguages,
+        truncatePieces,
+      );
     }
 
     const localized = await this.prisma.propertyLocalizedContent.findMany({
@@ -114,17 +121,23 @@ export class ContentResolutionService {
         `${ContentType.DESCRIPTION}:${descriptionLanguage}`,
       )?.text;
 
-      titles[estatewebId] = this.resolveField({
-        strategy: output.title_strategy,
-        original: userProperty.title,
-        localized: titleLocalized,
-      });
+      titles[estatewebId] = this.applyTruncate(
+        this.resolveField({
+          strategy: output.title_strategy,
+          original: userProperty.title,
+          localized: titleLocalized,
+        }),
+        truncatePieces,
+      );
 
-      descriptions[estatewebId] = this.resolveField({
-        strategy: output.description_strategy,
-        original: userProperty.description ?? '',
-        localized: descriptionLocalized,
-      });
+      descriptions[estatewebId] = this.applyTruncate(
+        this.resolveField({
+          strategy: output.description_strategy,
+          original: userProperty.description ?? '',
+          localized: descriptionLocalized,
+        }),
+        truncatePieces,
+      );
     }
 
     return {
@@ -148,9 +161,15 @@ export class ContentResolutionService {
     return '';
   }
 
+  private applyTruncate(text: string, pieces: string[]): string {
+    if (!pieces.length) return text;
+    return applyTextTruncatePieces(text, pieces) ?? '';
+  }
+
   private legacyBroadcast(
     userProperty: UserProperty,
     fallbackLanguages: EstateWebLanguageId[],
+    truncatePieces: string[] = [],
   ): EstateWebAdLanguageMaps {
     const titles: Partial<Record<EstateWebLanguageId, string>> = {};
     const descriptions: Partial<Record<EstateWebLanguageId, string>> = {};
@@ -158,8 +177,14 @@ export class ContentResolutionService {
 
     for (const lang of ESTATEWEB_INIT_LANGUAGES) {
       if (selected.has(lang.id)) {
-        titles[lang.id] = userProperty.title ?? '';
-        descriptions[lang.id] = userProperty.description ?? '';
+        titles[lang.id] = this.applyTruncate(
+          userProperty.title ?? '',
+          truncatePieces,
+        );
+        descriptions[lang.id] = this.applyTruncate(
+          userProperty.description ?? '',
+          truncatePieces,
+        );
       } else {
         titles[lang.id] = '';
         descriptions[lang.id] = '';

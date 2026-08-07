@@ -109,3 +109,21 @@ export function normalizeTextTruncatePieces(
 
   return normalized;
 }
+
+export function buildLocalizedTruncateUpdates(
+  rows: Array<{ id: string; user_property_id: string; text: string }>,
+  pieces: string[],
+  replacement = '',
+): Array<{ id: string; user_property_id: string; text: string }> {
+  return rows.flatMap((row) => {
+    const nextText = applyTextTruncatePieces(row.text, pieces, replacement) ?? '';
+    if (nextText === row.text) return [];
+    return [
+      {
+        id: row.id,
+        user_property_id: row.user_property_id,
+        text: nextText,
+      },
+    ];
+  });
+}
