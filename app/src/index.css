@@ -4,15 +4,18 @@
 html,
 body {
   height: 100%;
-}
-
-body {
+  width: 100%;
+  max-width: 100%;
   overflow: hidden;
 }
 
 #root {
   height: 100%;
+  width: 100%;
+  max-width: 100%;
   min-height: 0;
+  min-width: 0;
+  overflow: hidden;
 }
 
 :root {

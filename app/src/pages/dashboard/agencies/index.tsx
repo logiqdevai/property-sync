@@ -67,7 +67,7 @@ function AgencyCard({
   };
 
   return (
-    <article className="flex h-full w-full min-w-0 max-w-full flex-col gap-4 overflow-hidden rounded-xl border border-border bg-surface p-4 sm:p-5">
+    <article className="flex w-full min-w-0 max-w-full flex-col gap-4 overflow-hidden rounded-xl border border-border bg-surface p-4 sm:p-5 [contain:inline-size]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <h2 className="text-base font-semibold text-foreground break-words sm:truncate sm:text-lg">
@@ -206,7 +206,7 @@ function AgencyCard({
                   </button>
                   <span
                     role="tooltip"
-                    className="pointer-events-none absolute right-0 top-full z-20 mt-1.5 w-[min(16rem,calc(100vw-3rem))] rounded-lg border border-border bg-background px-3 py-2 text-left text-xs text-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 sm:left-1/2 sm:right-auto sm:-translate-x-1/2"
+                    className="pointer-events-none absolute right-0 top-full z-20 mt-1.5 w-64 max-w-[calc(100%-0.5rem)] rounded-lg border border-border bg-background px-3 py-2 text-left text-xs text-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 sm:left-1/2 sm:right-auto sm:-translate-x-1/2"
                   >
                     When off, listings publish with your EstateWeb default sites and
                     no watermark removal. When on, choose automatic removal for the
@@ -254,8 +254,11 @@ function AgencyCard({
                 savePrefs({ watermark_manual_selection: nextManual });
               }}
             >
-              <Tabs.ListContainer className="min-w-0 max-w-full overflow-x-auto">
-                <Tabs.List aria-label="Watermark removal mode">
+              <Tabs.ListContainer className="min-w-0 max-w-full">
+                <Tabs.List
+                  aria-label="Watermark removal mode"
+                  className="max-w-full min-w-0 [&_[data-slot=tabs-tab]]:!w-auto [&_[data-slot=tabs-tab]]:min-w-0 [&_[data-slot=tabs-tab]]:flex-1"
+                >
                   <Tabs.Tab id={WatermarkModes.AUTOMATIC} isDisabled={isControlsDisabled}>
                     Automatic
                     <Tabs.Indicator />
@@ -381,14 +384,14 @@ export default function DashboardAgenciesPage() {
 
   return (
     <div className="flex w-full min-w-0 max-w-full flex-col gap-6">
-      <div>
+      <div className="min-w-0">
         <p className="text-2xl font-semibold tracking-tight text-foreground">Agencies</p>
         <p className="text-sm text-muted">
           Browse agencies and choose what changes you want to follow.
         </p>
       </div>
 
-      <div className="relative max-w-sm w-full">
+      <div className="relative w-full max-w-sm min-w-0">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
         <Input
           value={search}
@@ -408,7 +411,7 @@ export default function DashboardAgenciesPage() {
           No agencies found.
         </div>
       ) : (
-        <div className="grid w-full min-w-0 gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(100%,22rem),1fr))]">
+        <div className="grid w-full min-w-0 max-w-full grid-cols-1 gap-4 lg:grid-cols-2">
           {agencies.map((agency) => (
             <AgencyCard
               key={agency.id}

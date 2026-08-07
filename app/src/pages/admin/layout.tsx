@@ -29,7 +29,7 @@ export default function AdminLayout() {
   }, [collapsed]);
 
   return (
-    <div className="flex h-full min-h-0 overflow-hidden bg-background">
+    <div className="flex h-full w-full min-h-0 min-w-0 max-w-full overflow-x-clip bg-background">
       <aside
         className={cn(
           'hidden lg:flex flex-col shrink-0',
@@ -99,10 +99,12 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden mr-3">
+      <div className="mr-3 flex min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-x-clip">
         <AdminDashboardNavbar onMenuClick={drawerState.open} />
-        <main className="min-h-0 flex-1 overflow-y-auto p-6">
-          <Outlet />
+        <main className="min-h-0 min-w-0 max-w-full flex-1 overflow-y-auto overflow-x-clip p-6">
+          <div className="w-full min-w-0 max-w-full">
+            <Outlet />
+          </div>
         </main>
       </div>
 

@@ -9,8 +9,8 @@ function App() {
     <BrowserRouter>
       <ThemeProvider>
         <QueryProvider>
-          <div className="flex h-full min-h-0 min-w-0 flex-col">
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <div className="flex h-full w-full min-h-0 min-w-0 max-w-full flex-col overflow-x-clip">
+            <div className="flex min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-x-clip">
               <AppRoutes />
             </div>
             <Toast.Provider placement="bottom end" />
