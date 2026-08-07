@@ -35,6 +35,8 @@ type TrackedAgencyIntegrationLinkProps = {
   linkedIntegrationId: string | null | undefined;
   linkedClientId?: number | null;
   disabled?: boolean;
+  className?: string;
+  hideHeading?: boolean;
 };
 
 export function TrackedAgencyIntegrationLink({
@@ -42,6 +44,8 @@ export function TrackedAgencyIntegrationLink({
   linkedIntegrationId,
   linkedClientId = null,
   disabled = false,
+  className = "flex flex-col gap-3 border-t border-border pt-4",
+  hideHeading = false,
 }: TrackedAgencyIntegrationLinkProps) {
   const unlinkConfirm = useOverlayState();
   const { data: connections = [], isPending: connectionsPending } =
@@ -137,8 +141,8 @@ export function TrackedAgencyIntegrationLink({
   );
 
   return (
-    <div className="flex flex-col gap-3 border-t border-border pt-4">
-      <CmsIntegrationDescription context="agency" />
+    <div className={className}>
+      <CmsIntegrationDescription context="agency" hideTitle={hideHeading} />
 
       {connectionsPending ? (
         <Skeleton className="h-10 w-full rounded-lg" />

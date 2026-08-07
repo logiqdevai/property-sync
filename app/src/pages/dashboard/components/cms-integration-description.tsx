@@ -3,10 +3,12 @@ import { getIntegrationTypeLabel } from "@/config/constants/dropdowns/integratio
 
 type CmsIntegrationDescriptionProps = {
   context?: "agency" | "connection";
+  hideTitle?: boolean;
 };
 
 export function CmsIntegrationDescription({
   context = "agency",
+  hideTitle = false,
 }: CmsIntegrationDescriptionProps) {
   const label = getIntegrationTypeLabel(IntegrationTypes.ESTATEWEB);
   const description =
@@ -16,7 +18,9 @@ export function CmsIntegrationDescription({
 
   return (
     <div>
-      <p className="text-sm font-medium text-foreground">CMS integration</p>
+      {hideTitle ? null : (
+        <p className="text-sm font-medium text-foreground">CMS integration</p>
+      )}
       <p className="text-xs text-muted">{description}</p>
     </div>
   );

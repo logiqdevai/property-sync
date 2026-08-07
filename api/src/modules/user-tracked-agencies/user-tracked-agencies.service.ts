@@ -38,11 +38,17 @@ export class UserTrackedAgenciesService {
       }),
     };
 
+    const unlimited = query.limit === 0;
+
     const [agencies, total, trackers] = await Promise.all([
       this.prisma.sourceAgency.findMany({
         where,
-        skip: (query.page - 1) * query.limit,
-        take: query.limit,
+        ...(unlimited
+          ? {}
+          : {
+              skip: (query.page - 1) * query.limit,
+              take: query.limit,
+            }),
         orderBy: { created_at: 'asc' },
       }),
       this.prisma.sourceAgency.count({ where }),
@@ -64,6 +70,8 @@ export class UserTrackedAgenciesService {
     const trackerByAgencyId = new Map(
       trackers.map((tracker) => [tracker.source_agency_id, tracker]),
     );
+
+    const totalPages = unlimited ? 1 : Math.ceil(total / query.limit);
 
     return {
       data: agencies.map((agency) => {
@@ -95,12 +103,12 @@ export class UserTrackedAgenciesService {
         };
       }),
       pagination: {
-        page: query.page,
+        page: unlimited ? 1 : query.page,
         limit: query.limit,
         total,
-        total_pages: Math.ceil(total / query.limit),
-        has_next: query.page < Math.ceil(total / query.limit),
-        has_prev: query.page > 1,
+        total_pages: totalPages,
+        has_next: unlimited ? false : query.page < totalPages,
+        has_prev: unlimited ? false : query.page > 1,
       },
     };
   }

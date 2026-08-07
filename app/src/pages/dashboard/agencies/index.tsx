@@ -3,80 +3,62 @@ import type {
   TrackAgencyPayload,
   TrackableAgency,
 } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
-import { AppConfig } from "@/config/constants/app-config";
-import { RoleTypes } from "@/features/user/interfaces/user.interface";
-import { RoleGate } from "@/components/providers/role-gate";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
-import { TrackerAdminOptionsPanel } from "@/components/ui/tracker-admin-options-panel";
+import { TablePageSizeOptions } from "@/config/constants/dropdowns/shared/table-page-size.options";
 import {
   useTrackableAgencies,
-  useTrackAgency,
   useUntrackAgency,
   useUpdateAgencyTracking,
 } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
-import { TrackedAgencyIntegrationLink } from "@/pages/dashboard/components/tracked-agency-integration-link";
-import { ContentPublishingPanel } from "./components/content-publishing-panel";
+import {
+  AgencyListCard,
+  PrefSwitch,
+  useAgencyTrackingControls,
+} from "./components/agency-list-card";
+import { AgencyPublishingSettingsModal } from "./components/agency-publishing-settings-modal";
+import { WatermarkSettingsModal } from "./components/watermark-settings-modal";
 import { useMemo, useState } from "react";
 import {
-  EmptyState,
+  Button,
   Input,
+  ListBox,
   Pagination,
-  Switch,
-  Tabs,
+  Select,
+  Table,
   useOverlayState,
 } from "@heroui/react";
-import { BellOff, ExternalLink, Info, Search } from "lucide-react";
+import { ExternalLink, Search, Settings } from "lucide-react";
 
-const WatermarkModes = {
-  AUTOMATIC: "automatic",
-  MANUAL: "manual",
-} as const;
-
-type WatermarkMode = (typeof WatermarkModes)[keyof typeof WatermarkModes];
-
-function AgencyCard({
+function AgencyRow({
   agency,
   onUntrackRequest,
+  onOpenWatermarkSettings,
+  onOpenPublishingSettings,
 }: {
   agency: TrackableAgency;
   onUntrackRequest: (agency: TrackableAgency) => void;
+  onOpenWatermarkSettings: (agency: TrackableAgency) => void;
+  onOpenPublishingSettings: (agency: TrackableAgency) => void;
 }) {
-  const trackAgency = useTrackAgency();
-  const updateTracking = useUpdateAgencyTracking();
-  const prefs = agency.tracking_prefs;
-  const isAgencyDisabled = !agency.is_enabled;
-  const isPending = trackAgency.isPending || updateTracking.isPending;
-  const isControlsDisabled = isAgencyDisabled || isPending;
-
-  const savePrefs = (payload: TrackAgencyPayload) => {
-    if (!agency.is_tracked || isAgencyDisabled) return;
-    updateTracking.mutate({ agencyId: agency.id, payload });
-  };
-
-  const handleTrackToggle = (next: boolean) => {
-    if (isAgencyDisabled) return;
-    if (next) {
-      trackAgency.mutate({
-        agencyId: agency.id,
-        payload: {},
-      });
-      return;
-    }
-    onUntrackRequest(agency);
-  };
+  const {
+    prefs,
+    location,
+    isAgencyDisabled,
+    isControlsDisabled,
+    prefsDisabled,
+    savePrefs,
+    handleTrackToggle,
+  } = useAgencyTrackingControls(agency, onUntrackRequest);
 
   return (
-    <article className="flex w-full min-w-0 max-w-full flex-col gap-4 overflow-hidden rounded-xl border border-border bg-surface p-4 sm:p-5 [contain:inline-size]">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1">
-          <h2 className="text-base font-semibold text-foreground break-words sm:truncate sm:text-lg">
-            {agency.name}
-          </h2>
+    <Table.Row id={agency.id}>
+      <Table.Cell>
+        <div className="flex min-w-0 flex-col gap-0.5">
           <div className="flex min-w-0 items-center gap-1.5">
-            <p className="min-w-0 truncate text-sm text-muted">
-              {[agency.city, agency.country].filter(Boolean).join(", ") || agency.base_url}
-            </p>
+            <span className="truncate font-medium text-foreground">
+              {agency.name}
+            </span>
             <a
               href={agency.base_url}
               target="_blank"
@@ -84,297 +66,140 @@ function AgencyCard({
               className="shrink-0 text-muted hover:text-accent"
               aria-label={`Open ${agency.name} website`}
             >
-              <ExternalLink className="size-4" />
+              <ExternalLink className="size-3.5" />
             </a>
           </div>
+          <span className="truncate text-xs text-muted">{location}</span>
+          {isAgencyDisabled ? (
+            <span className="text-xs text-muted">Unavailable</span>
+          ) : null}
         </div>
-        <Switch
+      </Table.Cell>
+      <Table.Cell>
+        <PrefSwitch
           isSelected={agency.is_tracked}
           isDisabled={isControlsDisabled}
           onChange={handleTrackToggle}
-          className="shrink-0 self-start"
-        >
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
-          <Switch.Content>{agency.is_tracked ? "Tracking" : "Track"}</Switch.Content>
-        </Switch>
-      </div>
-
-      {isAgencyDisabled ? (
-        <p className="text-sm text-muted">
-          This agency is not currently available for connecting
-        </p>
-      ) : null}
-
-      {!isAgencyDisabled && !agency.is_tracked ? (
-        <div className="border-t border-border pt-4">
-          <EmptyState>
-            <BellOff className="h-5 w-5 text-muted" />
-            <p className="text-sm text-muted mt-2">
-              Turn on Track to choose which listing changes you want to follow.
-            </p>
-          </EmptyState>
-        </div>
-      ) : null}
-
-      {agency.is_tracked && prefs ? (
-        <div className="flex flex-col gap-3 border-t border-border pt-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="text-sm text-foreground">New listings</span>
-              <span className="text-xs text-muted">Properties newly published by this agency.</span>
-            </div>
-            <Switch
-              isSelected={prefs.track_new_listings}
-              isDisabled={isControlsDisabled}
-              onChange={(isSelected) => savePrefs({ track_new_listings: isSelected })}
-              aria-label="New listings"
-              className="shrink-0"
-            >
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-            </Switch>
-          </div>
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="text-sm text-foreground">Updated listings</span>
-              <span className="text-xs text-muted">Changes to price, status, or listing details.</span>
-            </div>
-            <Switch
-              isSelected={prefs.track_updated_listings}
-              isDisabled={isControlsDisabled}
-              onChange={(isSelected) => savePrefs({ track_updated_listings: isSelected })}
-              aria-label="Updated listings"
-              className="shrink-0"
-            >
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-            </Switch>
-          </div>
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="text-sm text-foreground">Removed listings</span>
-              <span className="text-xs text-muted">Listings taken off the market or no longer available.</span>
-            </div>
-            <Switch
-              isSelected={prefs.track_removed_listings}
-              isDisabled={isControlsDisabled}
-              onChange={(isSelected) => savePrefs({ track_removed_listings: isSelected })}
-              aria-label="Removed listings"
-              className="shrink-0"
-            >
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-            </Switch>
-          </div>
-
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="text-sm text-foreground">Auto-update CRM</span>
-              <span className="text-xs text-muted">
-                Push listing changes to your CRM automatically. When off, update from the Properties page.
-              </span>
-            </div>
-            <Switch
-              isSelected={prefs.auto_update_to_crm ?? true}
-              isDisabled={isControlsDisabled}
-              onChange={(isSelected) => savePrefs({ auto_update_to_crm: isSelected })}
-              aria-label="Auto-update CRM"
-              className="shrink-0"
-            >
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-            </Switch>
-          </div>
-
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm text-foreground">Remove watermark</span>
-                <span className="group relative inline-flex shrink-0">
-                  <button
-                    type="button"
-                    className="rounded-full text-muted outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-focus"
-                    aria-label="About remove watermark"
-                  >
-                    <Info className="size-3.5" aria-hidden />
-                  </button>
-                  <span
-                    role="tooltip"
-                    className="pointer-events-none absolute right-0 top-full z-20 mt-1.5 w-64 max-w-[calc(100%-0.5rem)] rounded-lg border border-border bg-background px-3 py-2 text-left text-xs text-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 sm:left-1/2 sm:right-auto sm:-translate-x-1/2"
-                  >
-                    When off, listings publish with your EstateWeb default sites and
-                    no watermark removal. When on, choose automatic removal for the
-                    first N images, or manual selection to create the listing without
-                    publishing to any site.
-                  </span>
-                </span>
-              </div>
-            </div>
-            <Switch
-              isSelected={prefs.remove_watermark ?? false}
-              isDisabled={isControlsDisabled}
-              onChange={(isSelected) =>
-                savePrefs({
-                  remove_watermark: isSelected,
-                  ...(isSelected
-                    ? {}
-                    : { watermark_manual_selection: false }),
-                })
-              }
-              aria-label="Remove watermark"
-              className="shrink-0"
-            >
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-            </Switch>
-          </div>
-
-          {prefs.remove_watermark ? (
-            <Tabs
-              className="w-full min-w-0 max-w-full"
+          aria-label={agency.is_tracked ? "Tracking" : "Track"}
+        />
+      </Table.Cell>
+      <Table.Cell>
+        <PrefSwitch
+          isSelected={prefs?.track_new_listings ?? false}
+          isDisabled={prefsDisabled}
+          onChange={(isSelected) =>
+            savePrefs({ track_new_listings: isSelected })
+          }
+          aria-label="New listings"
+        />
+      </Table.Cell>
+      <Table.Cell>
+        <PrefSwitch
+          isSelected={prefs?.track_updated_listings ?? false}
+          isDisabled={prefsDisabled}
+          onChange={(isSelected) =>
+            savePrefs({ track_updated_listings: isSelected })
+          }
+          aria-label="Updated listings"
+        />
+      </Table.Cell>
+      <Table.Cell>
+        <PrefSwitch
+          isSelected={prefs?.track_removed_listings ?? false}
+          isDisabled={prefsDisabled}
+          onChange={(isSelected) =>
+            savePrefs({ track_removed_listings: isSelected })
+          }
+          aria-label="Removed listings"
+        />
+      </Table.Cell>
+      <Table.Cell>
+        <PrefSwitch
+          isSelected={prefs?.auto_update_to_crm ?? true}
+          isDisabled={prefsDisabled}
+          onChange={(isSelected) =>
+            savePrefs({ auto_update_to_crm: isSelected })
+          }
+          aria-label="Auto-update CRM"
+        />
+      </Table.Cell>
+      <Table.Cell>
+        <div className="flex items-center gap-1.5">
+          <PrefSwitch
+            isSelected={prefs?.remove_watermark ?? false}
+            isDisabled={prefsDisabled}
+            onChange={(isSelected) =>
+              savePrefs({
+                remove_watermark: isSelected,
+                ...(isSelected
+                  ? {}
+                  : { watermark_manual_selection: false }),
+              })
+            }
+            aria-label="Remove watermark"
+          />
+          {prefs?.remove_watermark ? (
+            <Button
+              size="sm"
               variant="secondary"
-              selectedKey={
-                prefs.watermark_manual_selection
-                  ? WatermarkModes.MANUAL
-                  : WatermarkModes.AUTOMATIC
-              }
-              onSelectionChange={(key) => {
-                const nextMode = key as WatermarkMode;
-                const nextManual = nextMode === WatermarkModes.MANUAL;
-                if (nextManual === (prefs.watermark_manual_selection ?? false)) {
-                  return;
-                }
-                savePrefs({ watermark_manual_selection: nextManual });
-              }}
+              isIconOnly
+              isDisabled={prefsDisabled}
+              aria-label="Watermark settings"
+              onPress={() => onOpenWatermarkSettings(agency)}
             >
-              <Tabs.ListContainer className="min-w-0 max-w-full">
-                <Tabs.List
-                  aria-label="Watermark removal mode"
-                  className="max-w-full min-w-0 [&_[data-slot=tabs-tab]]:!w-auto [&_[data-slot=tabs-tab]]:min-w-0 [&_[data-slot=tabs-tab]]:flex-1"
-                >
-                  <Tabs.Tab id={WatermarkModes.AUTOMATIC} isDisabled={isControlsDisabled}>
-                    Automatic
-                    <Tabs.Indicator />
-                  </Tabs.Tab>
-                  <Tabs.Tab id={WatermarkModes.MANUAL} isDisabled={isControlsDisabled}>
-                    Manual selection
-                    <Tabs.Indicator />
-                  </Tabs.Tab>
-                </Tabs.List>
-              </Tabs.ListContainer>
-
-              <Tabs.Panel id={WatermarkModes.AUTOMATIC} className="pt-3">
-                <div className="flex flex-col gap-2">
-                  <p className="text-xs text-muted">
-                    Remove watermarks from the first N images after crawl and
-                    normalization. Only cleaned versions upload to EstateWeb. Remaining
-                    images stay as-is. Listing publishes to your EstateWeb default sites.
-                  </p>
-                  <label className="flex flex-col gap-1 text-sm">
-                    <span className="text-foreground">Images to dewatermark</span>
-                    <input
-                      type="number"
-                      min={1}
-                      className="w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2"
-                      defaultValue={prefs.watermark_image_count ?? 10}
-                      key={`watermark-count-${agency.id}-${prefs.watermark_image_count ?? 10}`}
-                      disabled={isControlsDisabled}
-                      onBlur={(e) => {
-                        const parsed = Number.parseInt(e.target.value, 10);
-                        const value =
-                          Number.isFinite(parsed) && parsed >= 1 ? parsed : 10;
-                        if (value !== (prefs.watermark_image_count ?? 10)) {
-                          savePrefs({ watermark_image_count: value });
-                        }
-                      }}
-                    />
-                  </label>
-                </div>
-              </Tabs.Panel>
-
-              <Tabs.Panel id={WatermarkModes.MANUAL} className="pt-3">
-                <p className="text-xs text-muted">
-                  No automatic watermark removal. Listing is created in EstateWeb CRM
-                  with no sites selected, so it is not published. Handle images
-                  manually, then publish when ready.
-                </p>
-              </Tabs.Panel>
-            </Tabs>
+              <Settings className="size-3.5" />
+            </Button>
           ) : null}
-
-          {AppConfig.tracked_agency_admin_options_visible ? (
-            <TrackerAdminOptionsPanel
-              accordionId={`${agency.id}-admin-options`}
-              values={{
-                concurrent_insertions: prefs.concurrent_insertions ?? 1,
-                insertion_interval_seconds: prefs.insertion_interval_seconds ?? 300,
-                max_properties: prefs.max_properties ?? null,
-                text_truncate_pieces: prefs.text_truncate_pieces ?? [],
-              }}
-              disabled={isControlsDisabled}
-              onAdminSettingsChange={savePrefs}
-            />
-          ) : (
-            <RoleGate roles={[RoleTypes.ADMIN]}>
-              <TrackerAdminOptionsPanel
-                accordionId={`${agency.id}-admin-options`}
-                values={{
-                  concurrent_insertions: prefs.concurrent_insertions ?? 1,
-                  insertion_interval_seconds: prefs.insertion_interval_seconds ?? 300,
-                  max_properties: prefs.max_properties ?? null,
-                  text_truncate_pieces: prefs.text_truncate_pieces ?? [],
-                }}
-                disabled={isControlsDisabled}
-                onAdminSettingsChange={savePrefs}
-              />
-            </RoleGate>
-          )}
-
-          <TrackedAgencyIntegrationLink
-            agencyId={agency.id}
-            linkedIntegrationId={prefs.user_integration_id}
-            linkedClientId={prefs.integration_client_id}
-            disabled={isControlsDisabled}
-          />
-
-          <ContentPublishingPanel
-            agencyId={agency.id}
-            sourceLanguage={agency.content_language}
-          />
         </div>
-      ) : null}
-    </article>
+      </Table.Cell>
+      <Table.Cell>
+        <Button
+          size="sm"
+          variant="secondary"
+          isDisabled={prefsDisabled}
+          onPress={() => onOpenPublishingSettings(agency)}
+        >
+          Settings
+        </Button>
+      </Table.Cell>
+    </Table.Row>
   );
 }
 
 export default function DashboardAgenciesPage() {
   const untrackConfirm = useOverlayState();
+  const watermarkModal = useOverlayState();
+  const publishingModal = useOverlayState();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [pendingUntrack, setPendingUntrack] = useState<TrackableAgency | null>(null);
+  const [limit, setLimit] = useState(20);
+  const [pendingUntrack, setPendingUntrack] = useState<TrackableAgency | null>(
+    null,
+  );
+  const [settingsAgency, setSettingsAgency] = useState<TrackableAgency | null>(
+    null,
+  );
   const debouncedSearch = useMemo(() => search, [search]);
 
   const query = useMemo<AgencyListQuery>(
     () => ({
-      page,
-      limit: 12,
+      page: limit === 0 ? 1 : page,
+      limit,
       ...(debouncedSearch.trim() && { search: debouncedSearch.trim() }),
     }),
-    [page, debouncedSearch],
+    [page, limit, debouncedSearch],
   );
 
   const { data, isPending } = useTrackableAgencies(query);
   const untrackAgency = useUntrackAgency();
+  const updateTracking = useUpdateAgencyTracking();
 
   const agencies = data?.data ?? [];
   const pagination = data?.pagination;
+
+  const activeSettingsAgency =
+    agencies.find((agency) => agency.id === settingsAgency?.id) ??
+    settingsAgency;
 
   const handleUntrack = async () => {
     if (!pendingUntrack) return;
@@ -382,48 +207,149 @@ export default function DashboardAgenciesPage() {
     setPendingUntrack(null);
   };
 
+  const saveSettingsPrefs = (payload: TrackAgencyPayload) => {
+    if (!activeSettingsAgency?.is_tracked || !activeSettingsAgency.is_enabled) {
+      return;
+    }
+    updateTracking.mutate({
+      agencyId: activeSettingsAgency.id,
+      payload,
+    });
+  };
+
+  const openWatermarkSettings = (item: TrackableAgency) => {
+    setSettingsAgency(item);
+    watermarkModal.open();
+  };
+
+  const openPublishingSettings = (item: TrackableAgency) => {
+    setSettingsAgency(item);
+    publishingModal.open();
+  };
+
+  const requestUntrack = (item: TrackableAgency) => {
+    setPendingUntrack(item);
+    untrackConfirm.open();
+  };
+
   return (
     <div className="flex w-full min-w-0 max-w-full flex-col gap-6">
       <div className="min-w-0">
-        <p className="text-2xl font-semibold tracking-tight text-foreground">Agencies</p>
+        <p className="text-2xl font-semibold tracking-tight text-foreground">
+          Agencies
+        </p>
         <p className="text-sm text-muted">
           Browse agencies and choose what changes you want to follow.
         </p>
       </div>
 
-      <div className="relative w-full max-w-sm min-w-0">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
-        <Input
-          value={search}
-          onChange={(e) => {
+      <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative w-full min-w-0 sm:max-w-sm">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+          <Input
+            value={search}
+            onChange={(e) => {
+              setPage(1);
+              setSearch(e.target.value);
+            }}
+            placeholder="Search agencies…"
+            className="pl-9"
+            fullWidth
+          />
+        </div>
+        <Select
+          aria-label="Rows per page"
+          selectedKey={
+            TablePageSizeOptions.find((option) => option.value === limit)?.id ??
+            String(limit)
+          }
+          onSelectionChange={(key) => {
             setPage(1);
-            setSearch(e.target.value);
+            const option = TablePageSizeOptions.find(
+              (item) => item.id === String(key),
+            );
+            setLimit(option?.value ?? 20);
           }}
-          placeholder="Search agencies…"
-          className="pl-9"
-        />
+          className="w-full shrink-0 sm:w-44"
+        >
+          <Select.Trigger className="w-full">
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {TablePageSizeOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={6} columns={1} />
-      ) : agencies.length === 0 ? (
-        <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
+        <TableSkeleton rows={6} columns={4} className="md:hidden" />
+      ) : null}
+      {isPending ? (
+        <TableSkeleton
+          rows={8}
+          columns={8}
+          className="hidden md:flex"
+        />
+      ) : null}
+
+      {!isPending && agencies.length === 0 ? (
+        <div className="rounded-xl border border-border bg-surface p-6 text-center text-sm text-muted sm:p-10">
           No agencies found.
         </div>
-      ) : (
-        <div className="grid w-full min-w-0 max-w-full grid-cols-1 gap-4 lg:grid-cols-2">
-          {agencies.map((agency) => (
-            <AgencyCard
-              key={agency.id}
-              agency={agency}
-              onUntrackRequest={(item) => {
-                setPendingUntrack(item);
-                untrackConfirm.open();
-              }}
-            />
-          ))}
-        </div>
-      )}
+      ) : null}
+
+      {!isPending && agencies.length > 0 ? (
+        <>
+          <div className="flex min-w-0 flex-col gap-3 md:hidden">
+            {agencies.map((agency) => (
+              <AgencyListCard
+                key={agency.id}
+                agency={agency}
+                onUntrackRequest={requestUntrack}
+                onOpenWatermarkSettings={openWatermarkSettings}
+                onOpenPublishingSettings={openPublishingSettings}
+              />
+            ))}
+          </div>
+
+          <div className="hidden min-w-0 overflow-hidden rounded-xl border border-border bg-surface md:block">
+            <Table>
+              <Table.ScrollContainer>
+                <Table.Content aria-label="Agencies">
+                  <Table.Header>
+                    <Table.Column isRowHeader>Agency</Table.Column>
+                    <Table.Column>Track</Table.Column>
+                    <Table.Column>New</Table.Column>
+                    <Table.Column>Updated</Table.Column>
+                    <Table.Column>Removed</Table.Column>
+                    <Table.Column>Auto CRM</Table.Column>
+                    <Table.Column>Watermark</Table.Column>
+                    <Table.Column>Publishing</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    {agencies.map((agency) => (
+                      <AgencyRow
+                        key={agency.id}
+                        agency={agency}
+                        onUntrackRequest={requestUntrack}
+                        onOpenWatermarkSettings={openWatermarkSettings}
+                        onOpenPublishingSettings={openPublishingSettings}
+                      />
+                    ))}
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
+            </Table>
+          </div>
+        </>
+      ) : null}
 
       {pagination && pagination.total_pages > 1 && (
         <Pagination className="min-w-0 overflow-x-auto">
@@ -460,6 +386,37 @@ export default function DashboardAgenciesPage() {
         confirmLabel="Untrack"
         onConfirm={handleUntrack}
         isPending={untrackAgency.isPending}
+      />
+
+      {activeSettingsAgency?.tracking_prefs ? (
+        <WatermarkSettingsModal
+          state={watermarkModal}
+          agencyId={activeSettingsAgency.id}
+          agencyName={activeSettingsAgency.name}
+          disabled={
+            !activeSettingsAgency.is_enabled || updateTracking.isPending
+          }
+          watermarkManualSelection={
+            activeSettingsAgency.tracking_prefs.watermark_manual_selection ??
+            false
+          }
+          watermarkImageCount={
+            activeSettingsAgency.tracking_prefs.watermark_image_count ?? 10
+          }
+          onSave={saveSettingsPrefs}
+        />
+      ) : null}
+
+      <AgencyPublishingSettingsModal
+        state={publishingModal}
+        agency={
+          activeSettingsAgency?.is_tracked ? activeSettingsAgency : null
+        }
+        prefs={activeSettingsAgency?.tracking_prefs}
+        disabled={
+          !activeSettingsAgency?.is_enabled || updateTracking.isPending
+        }
+        onAdminSettingsChange={saveSettingsPrefs}
       />
     </div>
   );

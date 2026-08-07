@@ -8,7 +8,13 @@ export const BrowseAgencyQuerySchema = z.object({
   limit: z
     .string()
     .optional()
-    .transform((v) => (v ? Math.min(parseInt(v, 10), 100) : 20)),
+    .transform((v) => {
+      if (v === undefined || v === '') return 20;
+      const parsed = parseInt(v, 10);
+      if (!Number.isFinite(parsed) || parsed < 0) return 20;
+      if (parsed === 0) return 0;
+      return Math.min(parsed, 100);
+    }),
   search: z.string().optional(),
 });
 
