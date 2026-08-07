@@ -475,7 +475,8 @@ export function buildPropertyRecord(
             'description',
           ])
         : null,
-    );
+    ) ??
+    sp.property_id;
   const rawPrice =
     sp.raw_price ??
     (rawData != null

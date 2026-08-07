@@ -144,7 +144,8 @@ export function extractSourcePropertyIds(
         'description',
       ]),
       readRawString(raw, ['location', '_location', 'raw_location']),
-    );
+    ) ??
+    property_id;
 
   return { property_id, internal_id };
 }
