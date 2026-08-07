@@ -21,6 +21,11 @@ interface DetailPageDef {
   description_selector?: string;
   external_id_source?: 'url_path' | 'selector';
   external_id_selector?: string;
+  coordinates?: {
+    source?: string;
+    latitude?: number;
+    longitude?: number;
+  };
 }
 
 interface PaginationDef {

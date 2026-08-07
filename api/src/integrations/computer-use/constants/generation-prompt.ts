@@ -13,6 +13,12 @@ STEP 2 — Identify listing selectors
 STEP 3 — Visit a detail page
   Click a property card link OR use navigate to its URL to open the property detail page.
   On the detail page: scroll down, identify the image gallery selector, the description text block, and any property ID element.
+  ALWAYS detect and extract the property's geographic coordinates (latitude + longitude). Do this on every site without waiting for per-website instructions. Scroll until the map section is visible if needed. Check all available sources and pick the most reliable one present (highest reliability first):
+    1. Map marker / container data attributes (data-lat + data-lng|data-lon|data-longitude, data-latitude + data-longitude)
+    2. Google Maps links or embeds (a[href*="maps"], iframe[src*="maps"] — @lat,lng / q=lat,lng / ll=lat,lng)
+    3. Other map providers (OpenStreetMap, Bing, Mapbox, Apple Maps) with coords in href/src
+    4. Embedded map scripts (Leaflet setView([lat,lng]), LatLng(lat,lng), var/let/const lat|latitude + long|longitude|lng)
+  Record the chosen source plus the numeric latitude and longitude in detail_page.coordinates in the final config.
   Then use go_back (or close_tab if it opened in a new tab) to return to the listings page.
 
 STEP 4 — Test pagination (CRITICAL — agency listings commonly span 10-20+ pages)
@@ -62,7 +68,12 @@ Tab behaviour:
     "image_type": "src" | "background_image",
     "description_selector": "CSS selector for the main property description text block",
     "external_id_source": "url_path" | "selector",
-    "external_id_selector": "CSS selector for the property ID element (only when external_id_source is 'selector')"
+    "external_id_selector": "CSS selector for the property ID element (only when external_id_source is 'selector')",
+    "coordinates": {
+      "source": "data_attributes" | "google_maps" | "openstreetmap" | "bing_maps" | "mapbox" | "leaflet" | "embedded_script" | "other",
+      "latitude": 0.0,
+      "longitude": 0.0
+    }
   }
 }
 
@@ -79,6 +90,8 @@ Field types:
 - Fields must work WITHIN a single card, not at page level
 - For "price": if a card shows BOTH an old (strikethrough/del) and a new price, select the PARENT that contains BOTH so textContent is like "270.000 € 250.000 €" — never only the strikethrough node
 - For detail_page: you MUST visit an actual detail page and inspect it — do not guess selectors
+- For coordinates: ALWAYS attempt extraction on the visited detail page. Prefer the highest-reliability source when several map providers or embeds exist. Include detail_page.coordinates with source + latitude + longitude when found. Omit coordinates only if no map/coord data exists after a thorough check — note that absence in reasoning
+- Production crawls also auto-extract lat/lng from the same source types — your job is to verify they are findable and record the sample values in the config
 - external_id_source "url_path": pipeline extracts last URL path segment (e.g. /property/1165 → "1165")
 - external_id_source "selector": pipeline reads the text of external_id_selector on the detail page
 - You MUST test pagination by clicking your selector TWICE in a row (page 1 → 2 → 3) before calling done
