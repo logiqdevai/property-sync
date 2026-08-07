@@ -3388,7 +3388,7 @@
             "method": "PATCH",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"concurrent_insertions\": 1,\n  \"insertion_interval_seconds\": 300,\n  \"use_ai_batching\": true\n}",
+              "raw": "{\n  \"concurrent_insertions\": 1,\n  \"insertion_interval_seconds\": 1,\n  \"use_ai_batching\": true\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3433,7 +3433,7 @@
                 "method": "PATCH",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"concurrent_insertions\": 1,\n  \"insertion_interval_seconds\": 300,\n  \"use_ai_batching\": true\n}",
+                  "raw": "{\n  \"concurrent_insertions\": 1,\n  \"insertion_interval_seconds\": 1,\n  \"use_ai_batching\": true\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -3489,7 +3489,7 @@
                 "method": "PATCH",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"concurrent_insertions\": 1,\n  \"insertion_interval_seconds\": 300,\n  \"use_ai_batching\": true\n}",
+                  "raw": "{\n  \"concurrent_insertions\": 1,\n  \"insertion_interval_seconds\": 1,\n  \"use_ai_batching\": true\n}",
                   "options": {
                     "raw": {
                       "language": "json"

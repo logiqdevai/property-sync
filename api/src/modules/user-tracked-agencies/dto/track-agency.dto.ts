@@ -48,7 +48,7 @@ export class TrackAgencyDto {
   @Min(1)
   concurrent_insertions?: number;
 
-  @ApiProperty({ required: false, minimum: 0, example: 300 })
+  @ApiProperty({ required: false, minimum: 0, example: 1 })
   @IsOptional()
   @IsInt()
   @Min(0)

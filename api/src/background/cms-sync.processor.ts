@@ -173,7 +173,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       operations,
       userProperties,
       tracker?.concurrent_insertions ?? 1,
-      tracker?.insertion_interval_seconds ?? 300,
+      tracker?.insertion_interval_seconds ?? 1,
       crawl_run_id,
       (tracker?.remove_watermark ?? false) &&
         (tracker?.watermark_manual_selection ?? false),

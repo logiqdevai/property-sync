@@ -495,7 +495,7 @@ model UserTrackedAgency {
   source_agency_id           String
   enabled                    Boolean  @default(true)
   concurrent_insertions      Int      @default(1) // the number of properties to insert concurrently to the EstateWeb integration
-  insertion_interval_seconds Int      @default(300) // delay between concurrent insertion chunks to the CMS integration
+  insertion_interval_seconds Int      @default(1) // delay between concurrent insertion chunks to the CMS integration
   max_properties             Int? // max listings allowed in the linked CRM; null = unlimited
   text_truncate_pieces       String[] @default([])
   track_new_listings         Boolean  @default(true)

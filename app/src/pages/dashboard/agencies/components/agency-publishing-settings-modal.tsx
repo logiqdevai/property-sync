@@ -35,7 +35,7 @@ export function AgencyPublishingSettingsModal({
       accordionId={`${agency.id}-admin-options`}
       values={{
         concurrent_insertions: prefs.concurrent_insertions ?? 1,
-        insertion_interval_seconds: prefs.insertion_interval_seconds ?? 300,
+        insertion_interval_seconds: prefs.insertion_interval_seconds ?? 1,
         max_properties: prefs.max_properties ?? null,
         text_truncate_pieces: prefs.text_truncate_pieces ?? [],
       }}
