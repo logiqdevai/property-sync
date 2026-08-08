@@ -69,6 +69,10 @@ sequenceDiagram
     API-->>Client: image record
     Client->>API: DELETE /api/img/{imageId} (delete photo)
     API-->>Client: imageId
+    Client->>API: POST /api/property/{id}/propertynote (add note)
+    API-->>Client: note record
+    Client->>API: DELETE /api/propertynote/{noteId} (delete note)
+    API-->>Client: noteId
 ```
 
 | Step | Method | Endpoint | Purpose |
@@ -78,6 +82,8 @@ sequenceDiagram
 | 3 | `PATCH` | `/api/property/{id}` | Update property details, ads, coordinates |
 | 4 | `POST` | `/api/property/{id}/img` | Upload property image |
 | 5 | `DELETE` | `/api/img/{imageId}` | Delete property image |
+| 6 | `POST` | `/api/property/{id}/propertynote` | Create property note |
+| 7 | `DELETE` | `/api/propertynote/{noteId}` | Delete property note |
 
 ---
 
@@ -373,6 +379,37 @@ Cookie: estate_session=<session_value>
 ```
 
 Response body is the deleted image id.
+
+---
+
+### 6. Delete property note
+
+```http
+DELETE /api/propertynote/{noteId}
+```
+
+#### Path parameter
+
+| Parameter | Example | Description |
+|-----------|---------|-------------|
+| `noteId` | `115714` | Property note ID |
+
+#### Example request
+
+```http
+DELETE /api/propertynote/115714
+Accept: application/json
+Authorization: Bearer <token>
+Cookie: estate_session=<session_value>
+```
+
+#### Response
+
+```text
+115714
+```
+
+Response body is the deleted note id.
 
 ---
 

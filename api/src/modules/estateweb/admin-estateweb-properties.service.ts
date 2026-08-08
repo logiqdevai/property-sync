@@ -216,6 +216,13 @@ export class AdminEstateWebPropertiesService {
     );
   }
 
+  deletePropertyNote(userIntegrationId: string, noteId: string) {
+    return this.estateWebPropertyService.deletePropertyNote(
+      userIntegrationId,
+      noteId,
+    );
+  }
+
   uploadPropertyImage(
     userIntegrationId: string,
     propertyId: string,

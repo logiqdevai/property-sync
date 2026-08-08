@@ -338,6 +338,30 @@ export class EstateWebPropertyService {
     );
   }
 
+  deletePropertyNote(
+    userIntegrationId: string,
+    noteId: number | string,
+  ): Promise<number | string> {
+    return this.runValidatedOperation(
+      userIntegrationId,
+      'delete-property-note',
+      () => {
+        assertValidPropertyId(noteId);
+
+        return this.estateWebClientService.request<number | string>(
+          userIntegrationId,
+          {
+            method: 'DELETE',
+            path: this.estateWebConfig
+              .getConfig()
+              .apiPaths.propertyNoteById(noteId),
+            operation: 'delete-property-note',
+          },
+        );
+      },
+    );
+  }
+
   uploadPropertyImage(
     userIntegrationId: string,
     propertyId: number | string,

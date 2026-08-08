@@ -253,6 +253,22 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Delete('integrations/:userIntegrationId/notes/:noteId')
+  @ApiOperation({
+    summary:
+      'Delete a property note from EstateWeb CMS (DELETE /propertynote/{id})',
+  })
+  @ApiResponse({ status: 200, description: 'Deleted note id' })
+  deletePropertyNote(
+    @Param('userIntegrationId') userIntegrationId: string,
+    @Param('noteId') noteId: string,
+  ) {
+    return this.adminEstateWebPropertiesService.deletePropertyNote(
+      userIntegrationId,
+      noteId,
+    );
+  }
+
   @Post('integrations/:userIntegrationId/properties/:propertyId/images')
   @ApiOperation({ summary: 'Upload a property image to EstateWeb CMS' })
   @ApiConsumes('multipart/form-data')

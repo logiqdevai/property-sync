@@ -229,6 +229,42 @@
       }
     },
     {
+      "name": "Delete property note",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept-Language",
+            "value": "{{acceptLanguage}}"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bearerToken}}"
+          },
+          {
+            "key": "Cookie",
+            "value": "estate_session={{estateSession}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/propertynote/{{noteId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "propertynote",
+            "{{noteId}}"
+          ]
+        },
+        "description": "Deletes a property note by id. Response body is the deleted note id (e.g. 115714)."
+      }
+    },
+    {
       "name": "Upload property image",
       "request": {
         "method": "POST",
