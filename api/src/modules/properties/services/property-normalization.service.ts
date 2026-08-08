@@ -169,122 +169,131 @@ export class PropertyNormalizationService {
           user_integration_id: resolvedKey.userIntegrationId,
           ai_provider: aiProvider,
           ai_model: model,
+          normalization_status: 'running',
           ...(normalizeLimit !== null && { normalize_limit: normalizeLimit }),
         },
       },
     });
 
-    if (sourceProperties.length === 0) {
-      await this.finalizeCrawlNormalizationSync({
-        crawlRunId,
-        sourceAgencyId: crawlRun.source_agency_id,
-        crawlStartedAt: crawlRun.started_at,
-        userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
-        scraperId: crawlRun.scraper_id ?? undefined,
-        affected: [],
-        onSync,
-      });
-      return;
-    }
+    try {
+      if (sourceProperties.length === 0) {
+        await this.finalizeCrawlNormalizationSync({
+          crawlRunId,
+          sourceAgencyId: crawlRun.source_agency_id,
+          crawlStartedAt: crawlRun.started_at,
+          userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
+          scraperId: crawlRun.scraper_id ?? undefined,
+          affected: [],
+          onSync,
+        });
+        await this.setNormalizationStatus(crawlRunId, 'completed');
+        return;
+      }
 
-    const { reused, toNormalize, reusedRowsBySourceId } =
-      await this.splitUnchangedSourceProperties(sourceProperties);
+      const { reused, toNormalize, reusedRowsBySourceId } =
+        await this.splitUnchangedSourceProperties(sourceProperties);
 
-    const pendingAffected: SyncForPropertyResult[] = [];
+      const pendingAffected: SyncForPropertyResult[] = [];
 
-    if (reused.length > 0) {
-      this.logger.log(
-        `Crawl run ${crawlRunId}: skipping AI normalization for ${reused.length} unchanged listing(s)`,
+      if (reused.length > 0) {
+        this.logger.log(
+          `Crawl run ${crawlRunId}: skipping AI normalization for ${reused.length} unchanged listing(s)`,
+        );
+        const reusedAffected = await this.applyNormalizedResults({
+          crawlRunId,
+          sourceAgencyId: crawlRun.source_agency_id,
+          crawlStartedAt: crawlRun.started_at,
+          sourceProperties: reused,
+          normalizedBySourceId: reusedRowsBySourceId,
+          model,
+          provider: aiProvider,
+          userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
+          contentHashChanged: false,
+        });
+        pendingAffected.push(...reusedAffected);
+      }
+
+      if (toNormalize.length === 0) {
+        await this.finalizeCrawlNormalizationSync({
+          crawlRunId,
+          sourceAgencyId: crawlRun.source_agency_id,
+          crawlStartedAt: crawlRun.started_at,
+          userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
+          scraperId: crawlRun.scraper_id ?? undefined,
+          affected: pendingAffected,
+          onSync,
+        });
+        await this.setNormalizationStatus(crawlRunId, 'completed');
+        return;
+      }
+
+      const limited =
+        normalizeLimit !== null &&
+        normalizeLimit > 0 &&
+        toNormalize.length > normalizeLimit
+          ? toNormalize.slice(0, normalizeLimit)
+          : toNormalize;
+
+      if (limited.length < toNormalize.length) {
+        this.logger.log(
+          `Crawl run ${crawlRunId}: normalize limit ${normalizeLimit} — normalizing ${limited.length} of ${toNormalize.length} changed listing(s)`,
+        );
+      }
+
+      const useBatch =
+        crawlRun.source_agency.use_ai_batching &&
+        aiProvider === IntegrationType.OPENAI;
+
+      if (useBatch) {
+        await this.propertyAiBatchService.submitForCrawlRun({
+          crawlRunId,
+          sourceAgencyId: crawlRun.source_agency_id,
+          sourceProperties: limited,
+          apiKey: resolvedKey.apiKey,
+          userIntegrationId: resolvedKey.userIntegrationId,
+          model,
+        });
+        if (pendingAffected.length > 0) {
+          await this.persistPendingCmsSyncAffected(crawlRunId, pendingAffected);
+        }
+        return;
+      }
+
+      const syncResult = await this.normalizeSync(
+        limited,
+        aiProvider,
+        model,
+        resolvedKey.apiKey,
       );
-      const reusedAffected = await this.applyNormalizedResults({
+
+      const normalizedAffected = await this.applyNormalizedResults({
         crawlRunId,
         sourceAgencyId: crawlRun.source_agency_id,
         crawlStartedAt: crawlRun.started_at,
-        sourceProperties: reused,
-        normalizedBySourceId: reusedRowsBySourceId,
+        sourceProperties: limited,
+        normalizedBySourceId: syncResult.normalizedBySourceId,
         model,
         provider: aiProvider,
+        anthropicUsage: syncResult.anthropicUsage,
+        openAiUsage: syncResult.openAiUsage,
         userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
-        contentHashChanged: false,
+        contentHashChanged: true,
       });
-      pendingAffected.push(...reusedAffected);
-    }
 
-    if (toNormalize.length === 0) {
       await this.finalizeCrawlNormalizationSync({
         crawlRunId,
         sourceAgencyId: crawlRun.source_agency_id,
         crawlStartedAt: crawlRun.started_at,
         userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
         scraperId: crawlRun.scraper_id ?? undefined,
-        affected: pendingAffected,
+        affected: [...pendingAffected, ...normalizedAffected],
         onSync,
       });
-      return;
+      await this.setNormalizationStatus(crawlRunId, 'completed');
+    } catch (error) {
+      await this.setNormalizationStatus(crawlRunId, 'failed');
+      throw error;
     }
-
-    const limited =
-      normalizeLimit !== null &&
-      normalizeLimit > 0 &&
-      toNormalize.length > normalizeLimit
-        ? toNormalize.slice(0, normalizeLimit)
-        : toNormalize;
-
-    if (limited.length < toNormalize.length) {
-      this.logger.log(
-        `Crawl run ${crawlRunId}: normalize limit ${normalizeLimit} — normalizing ${limited.length} of ${toNormalize.length} changed listing(s)`,
-      );
-    }
-
-    const useBatch =
-      crawlRun.source_agency.use_ai_batching &&
-      aiProvider === IntegrationType.OPENAI;
-
-    if (useBatch) {
-      await this.propertyAiBatchService.submitForCrawlRun({
-        crawlRunId,
-        sourceAgencyId: crawlRun.source_agency_id,
-        sourceProperties: limited,
-        apiKey: resolvedKey.apiKey,
-        userIntegrationId: resolvedKey.userIntegrationId,
-        model,
-      });
-      if (pendingAffected.length > 0) {
-        await this.persistPendingCmsSyncAffected(crawlRunId, pendingAffected);
-      }
-      return;
-    }
-
-    const syncResult = await this.normalizeSync(
-      limited,
-      aiProvider,
-      model,
-      resolvedKey.apiKey,
-    );
-
-    const normalizedAffected = await this.applyNormalizedResults({
-      crawlRunId,
-      sourceAgencyId: crawlRun.source_agency_id,
-      crawlStartedAt: crawlRun.started_at,
-      sourceProperties: limited,
-      normalizedBySourceId: syncResult.normalizedBySourceId,
-      model,
-      provider: aiProvider,
-      anthropicUsage: syncResult.anthropicUsage,
-      openAiUsage: syncResult.openAiUsage,
-      userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
-      contentHashChanged: true,
-    });
-
-    await this.finalizeCrawlNormalizationSync({
-      crawlRunId,
-      sourceAgencyId: crawlRun.source_agency_id,
-      crawlStartedAt: crawlRun.started_at,
-      userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
-      scraperId: crawlRun.scraper_id ?? undefined,
-      affected: [...pendingAffected, ...normalizedAffected],
-      onSync,
-    });
   }
 
   private async splitUnchangedSourceProperties(
@@ -491,8 +500,22 @@ export class PropertyNormalizationService {
       },
     });
 
-    for (const sp of params.sourceProperties) {
+    for (const loadedSp of params.sourceProperties) {
+      // AI sync can take minutes; source rows may be deleted/recreated by a
+      // concurrent crawl or admin cleanup before we write property links.
+      const sp = await this.resolveLiveSourceProperty(
+        loadedSp,
+        params.sourceAgencyId,
+      );
+      if (!sp) {
+        this.logger.warn(
+          `Skipping normalization for missing source_property ${loadedSp.id} (${loadedSp.source_url})`,
+        );
+        continue;
+      }
+
       const aiRow =
+        params.normalizedBySourceId.get(loadedSp.id) ??
         params.normalizedBySourceId.get(sp.id) ??
         buildFallbackNormalizedRow(sp);
       const record = buildPropertyRecord(aiRow, sp);
@@ -580,26 +603,40 @@ export class PropertyNormalizationService {
         record,
         existingProperties,
       );
-      const created = await this.prisma.property.create({
-        data: {
-          ...record,
-          duplicate_group_id: duplicateGroupId,
-          source_links: {
-            create: {
-              source_property_id: sp.id,
-              is_primary_source: true,
-              confidence_score: new Prisma.Decimal(1),
-              last_normalized_hash: sp.content_hash ?? null,
+      let created;
+      try {
+        created = await this.prisma.property.create({
+          data: {
+            ...record,
+            duplicate_group_id: duplicateGroupId,
+            source_links: {
+              create: {
+                source_property_id: sp.id,
+                is_primary_source: true,
+                confidence_score: new Prisma.Decimal(1),
+                last_normalized_hash: sp.content_hash ?? null,
+              },
+            },
+            history: {
+              create: {
+                event_type: PropertyHistoryEventType.CREATED,
+                crawl_run_id: params.crawlRunId,
+              },
             },
           },
-          history: {
-            create: {
-              event_type: PropertyHistoryEventType.CREATED,
-              crawl_run_id: params.crawlRunId,
-            },
-          },
-        },
-      });
+        });
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2003'
+        ) {
+          this.logger.warn(
+            `FK failure creating property for source_property ${sp.id} (${sp.source_url}) — row likely deleted mid-normalization`,
+          );
+          continue;
+        }
+        throw error;
+      }
 
       createdCount++;
       batchProperties.push(created);
@@ -779,6 +816,7 @@ export class PropertyNormalizationService {
     });
 
     await this.clearPendingCmsSyncAffected(crawlRunId);
+    await this.setNormalizationStatus(crawlRunId, 'completed');
   }
 
   async markBatchFailed(
@@ -798,6 +836,7 @@ export class PropertyNormalizationService {
         metadata: {
           ...metadata,
           ai_batch_status: status,
+          normalization_status: 'failed',
         },
       },
     });
@@ -941,6 +980,87 @@ export class PropertyNormalizationService {
         last_seen_at: { gte: crawlStartedAt },
       },
       orderBy: { last_seen_at: 'asc' },
+    });
+  }
+
+  private toSourcePropertyRow(row: {
+    id: string;
+    source_url: string;
+    property_id: string;
+    internal_id: string | null;
+    raw_title: string | null;
+    raw_price: string | null;
+    raw_location: string | null;
+    raw_description: string | null;
+    raw_property_type: string | null;
+    raw_listing_type: string | null;
+    raw_sqm: string | null;
+    raw_bedrooms: string | null;
+    raw_bathrooms: string | null;
+    raw_data: unknown;
+    content_hash: string | null;
+  }): SourcePropertyRow {
+    return {
+      id: row.id,
+      source_url: row.source_url,
+      property_id: row.property_id,
+      internal_id: row.internal_id,
+      raw_title: row.raw_title,
+      raw_price: row.raw_price,
+      raw_location: row.raw_location,
+      raw_description: row.raw_description,
+      raw_property_type: row.raw_property_type,
+      raw_listing_type: row.raw_listing_type,
+      raw_sqm: row.raw_sqm,
+      raw_bedrooms: row.raw_bedrooms,
+      raw_bathrooms: row.raw_bathrooms,
+      raw_data: row.raw_data,
+      content_hash: row.content_hash,
+    };
+  }
+
+  private async resolveLiveSourceProperty(
+    sp: SourcePropertyRow,
+    sourceAgencyId: string,
+  ): Promise<SourcePropertyRow | null> {
+    const byId = await this.prisma.sourceProperty.findUnique({
+      where: { id: sp.id },
+    });
+    if (byId) return this.toSourcePropertyRow(byId);
+
+    const byUrl = await this.prisma.sourceProperty.findUnique({
+      where: {
+        source_agency_id_source_url: {
+          source_agency_id: sourceAgencyId,
+          source_url: sp.source_url,
+        },
+      },
+    });
+    if (byUrl) {
+      this.logger.warn(
+        `source_property ${sp.id} missing; remapped to ${byUrl.id} via URL ${sp.source_url}`,
+      );
+      return this.toSourcePropertyRow(byUrl);
+    }
+
+    return null;
+  }
+
+  private async setNormalizationStatus(
+    crawlRunId: string,
+    status: 'running' | 'completed' | 'failed',
+  ): Promise<void> {
+    const crawlRun = await this.prisma.crawlRun.findUnique({
+      where: { id: crawlRunId },
+      select: { metadata: true },
+    });
+    const metadata = {
+      ...((crawlRun?.metadata ?? {}) as Record<string, unknown>),
+      normalization_status: status,
+    };
+    await this.prisma.crawlRun.update({
+      where: { id: crawlRunId },
+      data: { metadata: metadata as Prisma.InputJsonValue },
     });
   }
 

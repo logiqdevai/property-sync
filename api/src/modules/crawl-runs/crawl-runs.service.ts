@@ -43,6 +43,36 @@ export class CrawlRunsService {
     scraperId?: string,
     userTrackedAgencyId?: string,
   ) {
+    const activeRun = await this.prisma.crawlRun.findFirst({
+      where: {
+        source_agency_id: sourceAgencyId,
+        status: { in: ACTIVE_CRAWL_RUN_STATUSES },
+      },
+      select: { id: true, status: true },
+    });
+    if (activeRun) {
+      throw new BadRequestException(
+        `Agency already has a ${activeRun.status.toLowerCase()} crawl (${activeRun.id})`,
+      );
+    }
+
+    const normalizingRun = await this.prisma.crawlRun.findFirst({
+      where: {
+        source_agency_id: sourceAgencyId,
+        metadata: {
+          path: ['normalization_status'],
+          equals: 'running',
+        },
+      },
+      select: { id: true },
+      orderBy: { created_at: 'desc' },
+    });
+    if (normalizingRun) {
+      throw new BadRequestException(
+        `Agency still normalizing crawl ${normalizingRun.id} — wait until it finishes before starting another`,
+      );
+    }
+
     const run = await this.prisma.crawlRun.create({
       data: {
         source_agency_id: sourceAgencyId,
