@@ -12,6 +12,7 @@ import {
   CONTENT_PRODUCTION_QUEUE,
   CMS_SYNC_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
+  DELETE_INTEGRATION_IMAGES_QUEUE,
   ESTATEWEB_SITES_UPDATE_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
@@ -51,6 +52,8 @@ export class JobsService {
     private readonly estateWebSitesUpdateQueue: Queue,
     @InjectQueue(RENORMALIZATION_QUEUE)
     private readonly renormalizationQueue: Queue,
+    @InjectQueue(DELETE_INTEGRATION_IMAGES_QUEUE)
+    private readonly deleteIntegrationImagesQueue: Queue,
     @InjectQueue(CMS_SYNC_QUEUE)
     private readonly cmsSyncQueue: Queue,
   ) {}
@@ -151,6 +154,7 @@ export class JobsService {
             jobLog.queue_name === CRM_CLIENT_NOTES_SYNC_QUEUE ||
             jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE ||
             jobLog.queue_name === RENORMALIZATION_QUEUE ||
+            jobLog.queue_name === DELETE_INTEGRATION_IMAGES_QUEUE ||
             jobLog.queue_name === CMS_SYNC_QUEUE
           ? {
               attempts: 3,
@@ -265,6 +269,38 @@ export class JobsService {
       await this.crmClientNotesSyncQueue.addBulk(
         propertyIds.map((userPropertyId) => ({
           name: jobLog.job_name ?? 'sync-crm-client-notes',
+          data: {
+            job_log_id: jobLog.id,
+            user_id: payloadRecord.user_id,
+            user_property_id: userPropertyId,
+            total: payloadRecord.total ?? propertyIds.length,
+          },
+          opts: {
+            ...(jobOptions ?? {}),
+            jobId: `${jobLog.id}__${userPropertyId}`,
+          },
+        })),
+      );
+      return this.findOne(id);
+    }
+
+    if (jobLog.queue_name === DELETE_INTEGRATION_IMAGES_QUEUE) {
+      const payloadRecord = payload as {
+        user_id?: string;
+        user_property_ids?: string[];
+        total?: number;
+      };
+      const propertyIds = Array.isArray(payloadRecord.user_property_ids)
+        ? payloadRecord.user_property_ids
+        : [];
+      if (!payloadRecord.user_id || propertyIds.length === 0) {
+        throw new BadRequestException(
+          'Delete integration images job payload is missing user or property ids',
+        );
+      }
+      await this.deleteIntegrationImagesQueue.addBulk(
+        propertyIds.map((userPropertyId) => ({
+          name: jobLog.job_name ?? 'delete-integration-images',
           data: {
             job_log_id: jobLog.id,
             user_id: payloadRecord.user_id,
@@ -421,7 +457,8 @@ export class JobsService {
       jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE ||
       jobLog.queue_name === CRM_CLIENT_NOTES_SYNC_QUEUE ||
       jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE ||
-      jobLog.queue_name === RENORMALIZATION_QUEUE
+      jobLog.queue_name === RENORMALIZATION_QUEUE ||
+      jobLog.queue_name === DELETE_INTEGRATION_IMAGES_QUEUE
     ) {
       const payload = (jobLog.payload ?? {}) as {
         user_property_ids?: string[];
@@ -438,7 +475,9 @@ export class JobsService {
               ? this.crmClientNotesSyncQueue
               : jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE
                 ? this.estateWebSitesUpdateQueue
-                : this.renormalizationQueue;
+                : jobLog.queue_name === DELETE_INTEGRATION_IMAGES_QUEUE
+                  ? this.deleteIntegrationImagesQueue
+                  : this.renormalizationQueue;
       for (const propertyId of propertyIds) {
         try {
           await queue.remove(`${jobLog.id}__${propertyId}`);
@@ -524,6 +563,9 @@ export class JobsService {
     }
     if (queueName === RENORMALIZATION_QUEUE) {
       return this.renormalizationQueue;
+    }
+    if (queueName === DELETE_INTEGRATION_IMAGES_QUEUE) {
+      return this.deleteIntegrationImagesQueue;
     }
     if (queueName === CMS_SYNC_QUEUE) {
       return this.cmsSyncQueue;

@@ -307,6 +307,25 @@ export class UserPropertiesController {
     return this.userPropertiesService.renormalizeProperties(userId, dto.ids);
   }
 
+  @Post('bulk-delete-integration-images')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ApiOperation({
+    summary:
+      'Enqueue deletion of all CMS images for selected properties (background)',
+  })
+  @ApiResponse({ status: 202, description: 'CMS image delete job enqueued' })
+  @ApiResponse({ status: 400, description: 'Cannot delete CMS images' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  bulkDeleteIntegrationImages(
+    @CurrentUser('id') userId: string,
+    @Body() dto: DeleteUserPropertiesDto,
+  ) {
+    return this.userPropertiesService.bulkDeleteIntegrationImages(
+      userId,
+      dto.ids,
+    );
+  }
+
   @Post('remove-watermark-images')
   @ApiOperation({
     summary:

@@ -53,6 +53,19 @@ export function parseIntegrationPropertyImages(
   }
 }
 
+export function extractIntegrationImageIds(
+  imagesJson: unknown,
+  integrationType: IntegrationType,
+): number[] {
+  return [
+    ...new Set(
+      parseIntegrationPropertyImages(imagesJson, integrationType)
+        .map((image) => image.id)
+        .filter((id): id is number => Number.isFinite(id) && id > 0),
+    ),
+  ];
+}
+
 export function resolveIntegrationImageProcessUrl(
   image: Pick<IntegrationPropertyImageBase, 'source_image' | 'url'>,
 ): string | undefined {

@@ -11,6 +11,7 @@ import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
   CONTENT_PRODUCTION_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
+  DELETE_INTEGRATION_IMAGES_QUEUE,
   ESTATEWEB_SITES_UPDATE_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
@@ -76,11 +77,18 @@ import {
   EstateWebSitesUpdateSite,
 } from './interfaces/estateweb-sites-update-job.interface';
 import {
+  DeleteIntegrationImagesJobData,
+  DeleteIntegrationImagesJobResult,
+} from './interfaces/delete-integration-images-job.interface';
+import {
   RenormalizationJobData,
   RenormalizationJobResult,
 } from './interfaces/renormalization-job.interface';
 import { WatermarkRemovalService } from './services/watermark-removal.service';
-import { resolveIntegrationImageProcessUrl } from './utils/integration-property-images.util';
+import {
+  extractIntegrationImageIds,
+  resolveIntegrationImageProcessUrl,
+} from './utils/integration-property-images.util';
 import { buildUserPropertySearchOr } from './utils/user-property-search.util';
 
 export type PropertySyncChangeType = 'created' | 'updated' | 'removed';
@@ -123,6 +131,8 @@ export class UserPropertiesService {
     private readonly estateWebSitesUpdateQueue: Queue<EstateWebSitesUpdateJobData>,
     @InjectQueue(RENORMALIZATION_QUEUE)
     private readonly renormalizationQueue: Queue<RenormalizationJobData>,
+    @InjectQueue(DELETE_INTEGRATION_IMAGES_QUEUE)
+    private readonly deleteIntegrationImagesQueue: Queue<DeleteIntegrationImagesJobData>,
   ) {}
 
   private async resolveFilterSourceAgencyId(
@@ -1167,6 +1177,160 @@ export class UserPropertiesService {
     };
   }
 
+  async bulkDeleteIntegrationImages(userId: string, ids: string[]) {
+    const idList = [...new Set(ids.filter(Boolean))];
+    if (idList.length === 0) {
+      throw new BadRequestException('No properties selected');
+    }
+
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: idList }, user_id: userId },
+      select: { id: true, integration_property_id: true },
+    });
+
+    if (properties.length === 0) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const byId = new Map(properties.map((property) => [property.id, property]));
+    const enqueueIds: string[] = [];
+    const failed: Array<{ user_property_id: string; error: string }> = [];
+
+    for (const id of idList) {
+      const property = byId.get(id);
+      if (!property) {
+        failed.push({ user_property_id: id, error: 'Property not found' });
+        continue;
+      }
+
+      if (!property.integration_property_id) {
+        failed.push({
+          user_property_id: id,
+          error: 'Property is not linked to a CMS',
+        });
+        continue;
+      }
+
+      enqueueIds.push(id);
+    }
+
+    if (enqueueIds.length === 0) {
+      const firstError = failed[0]?.error ?? 'No properties could be updated';
+      throw new BadRequestException(
+        failed.length === 1
+          ? firstError
+          : `None of the ${idList.length} properties could be updated. ${firstError}`,
+      );
+    }
+
+    const initialResult: DeleteIntegrationImagesJobResult = {
+      total: enqueueIds.length,
+      processed: 0,
+      deleted: 0,
+      skipped: 0,
+      failed: failed.length,
+      items: failed.map((row) => ({
+        user_property_id: row.user_property_id,
+        status: 'failed' as const,
+        error: row.error,
+      })),
+      logs: [`enqueued user=${userId} properties=${enqueueIds.length}`],
+    };
+
+    const payload = {
+      user_id: userId,
+      user_property_ids: enqueueIds,
+      total: enqueueIds.length,
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: DELETE_INTEGRATION_IMAGES_QUEUE,
+        job_name: 'delete-integration-images',
+        status: JobStatus.WAITING,
+        payload: payload as object,
+        result: initialResult as object,
+      },
+    });
+
+    this.logger.log(
+      `[bulkDeleteIntegrationImages] queued job_log=${jobLog.id} user=${userId} ids=${enqueueIds.length}`,
+    );
+
+    await this.deleteIntegrationImagesQueue.addBulk(
+      enqueueIds.map((userPropertyId) => {
+        const jobData: DeleteIntegrationImagesJobData = {
+          job_log_id: jobLog.id,
+          user_id: userId,
+          user_property_id: userPropertyId,
+          total: enqueueIds.length,
+        };
+        return {
+          name: 'delete-integration-images',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${userPropertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
+
+    return {
+      job_log_id: jobLog.id,
+      enqueued: enqueueIds.length,
+      failed,
+      message:
+        'CMS image delete started in the background. Track progress in Job queue.',
+    };
+  }
+
+  async deleteAllIntegrationImagesForUserProperty(
+    userId: string,
+    userPropertyId: string,
+  ): Promise<{ deleted_count: number }> {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id: userPropertyId, user_id: userId },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+        integration_properties: {
+          where: { user_id: userId },
+          select: { images: true },
+          take: 1,
+        },
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    if (!userProperty.integration_property_id) {
+      throw new BadRequestException('Property is not linked to a CMS');
+    }
+
+    const { integrationType } =
+      await this.resolveCmsIntegrationForProperty(userProperty);
+
+    const imageIds = extractIntegrationImageIds(
+      userProperty.integration_properties[0]?.images,
+      integrationType,
+    );
+
+    if (imageIds.length === 0) {
+      return { deleted_count: 0 };
+    }
+
+    await this.runDeleteIntegrationImages(userProperty, imageIds);
+    return { deleted_count: imageIds.length };
+  }
+
   async migrateIntegrationImages(
     userId: string,
     id: string,
@@ -1768,7 +1932,7 @@ export class UserPropertiesService {
 
     if (!sourceAgencyId) {
       throw new BadRequestException(
-        'Property has no source agency; cannot resolve linked EstateWeb CMS',
+        'Property has no source agency; cannot resolve linked CMS',
       );
     }
 
@@ -1784,7 +1948,7 @@ export class UserPropertiesService {
       const message = error instanceof Error ? error.message : String(error);
       throw new BadRequestException(
         message ||
-          'No EstateWeb CMS linked to this tracked agency. Connect and link an integration first.',
+          'No CMS linked to this tracked agency. Connect and link an integration first.',
       );
     }
 

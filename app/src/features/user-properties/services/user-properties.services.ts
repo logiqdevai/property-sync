@@ -13,6 +13,8 @@ import type {
   UpdateEstateWebSitesResult,
   RenormalizeUserPropertiesPayload,
   RenormalizeUserPropertiesResult,
+  BulkDeleteIntegrationImagesPayload,
+  BulkDeleteIntegrationImagesResult,
   UpdateSalesPricesPayload,
   UpdateSalesPricesResult,
   SyncCrmClientNotesPayload,
@@ -397,6 +399,22 @@ export const renormalizeUserProperties = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to renormalize properties.",
+    );
+  }
+};
+
+export const bulkDeleteUserPropertyIntegrationImages = async (
+  payload: BulkDeleteIntegrationImagesPayload,
+): Promise<BulkDeleteIntegrationImagesResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.bulkDeleteIntegrationImages,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to delete CMS images.",
     );
   }
 };

@@ -222,6 +222,7 @@ export const ApiRoutes = {
         syncCrmClientNotes: "/properties/sync-crm-client-notes",
         produceContent: "/properties/produce-content",
         renormalize: "/properties/renormalize",
+        bulkDeleteIntegrationImages: "/properties/bulk-delete-integration-images",
     },
     estateweb: {
         catalog: {

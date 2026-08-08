@@ -231,6 +231,17 @@ export interface RenormalizeUserPropertiesResult {
   message: string;
 }
 
+export interface BulkDeleteIntegrationImagesPayload {
+  ids: string[];
+}
+
+export interface BulkDeleteIntegrationImagesResult {
+  job_log_id: string;
+  enqueued: number;
+  failed: Array<{ user_property_id: string; error: string }>;
+  message: string;
+}
+
 export interface DedupeUserPropertiesPayload {
   ids: string[];
 }

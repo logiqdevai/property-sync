@@ -28,6 +28,7 @@ import {
   removeUserPropertiesWatermarkImages,
   produceUserPropertyContent,
   renormalizeUserProperties,
+  bulkDeleteUserPropertyIntegrationImages,
   splitAdminUserProperties,
   splitUserProperties,
   truncateAdminUserPropertyDescriptions,
@@ -48,6 +49,7 @@ import type {
   UpdateSalesPricesPayload,
   SyncCrmClientNotesPayload,
   RenormalizeUserPropertiesPayload,
+  BulkDeleteIntegrationImagesPayload,
   SplitUserPropertiesPayload,
   TruncateUserPropertyDescriptionsPayload,
   UpdateIntegrationImagesPayload,
@@ -652,6 +654,35 @@ export const useRenormalizeUserProperties = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not start renormalization",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useBulkDeleteUserPropertyIntegrationImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: BulkDeleteIntegrationImagesPayload) =>
+      bulkDeleteUserPropertyIntegrationImages(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+
+      toast({
+        title: "CMS image delete started",
+        description:
+          result.failed.length > 0
+            ? `Enqueued ${result.enqueued}. ${result.failed.length} could not be enqueued.`
+            : `Deleting CMS images for ${result.enqueued} ${result.enqueued === 1 ? "property" : "properties"} in the background. Track progress in Job queue.`,
+        duration: 2500,
+        variant: result.failed.length > 0 ? "warning" : "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not delete CMS images",
         description: error.message,
         variant: "error",
       });

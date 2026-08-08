@@ -4,6 +4,7 @@ import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import {
   CONTENT_PRODUCTION_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
+  DELETE_INTEGRATION_IMAGES_QUEUE,
   ESTATEWEB_SITES_UPDATE_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
@@ -21,6 +22,7 @@ import { WatermarkRemovalProcessor } from '@/background/watermark-removal.proces
 import { SalesPriceUpdateProcessor } from '@/background/sales-price-update.processor';
 import { CrmClientNotesSyncProcessor } from '@/background/crm-client-notes-sync.processor';
 import { EstateWebSitesUpdateProcessor } from '@/background/estateweb-sites-update.processor';
+import { DeleteIntegrationImagesProcessor } from '@/background/delete-integration-images.processor';
 import { UserPropertiesController } from './user-properties.controller';
 import { AdminUserPropertiesController } from './admin-user-properties.controller';
 import { UserPropertiesService } from './user-properties.service';
@@ -29,6 +31,7 @@ import { WatermarkRemovalService } from './services/watermark-removal.service';
 import { SalesPriceUpdateJobService } from './services/sales-price-update-job.service';
 import { CrmClientNotesSyncJobService } from './services/crm-client-notes-sync-job.service';
 import { EstateWebSitesUpdateJobService } from './services/estateweb-sites-update-job.service';
+import { DeleteIntegrationImagesJobService } from './services/delete-integration-images-job.service';
 
 @Module({
   imports: [
@@ -47,6 +50,7 @@ import { EstateWebSitesUpdateJobService } from './services/estateweb-sites-updat
       { name: CRM_CLIENT_NOTES_SYNC_QUEUE },
       { name: ESTATEWEB_SITES_UPDATE_QUEUE },
       { name: RENORMALIZATION_QUEUE },
+      { name: DELETE_INTEGRATION_IMAGES_QUEUE },
     ),
   ],
   controllers: [UserPropertiesController, AdminUserPropertiesController],
@@ -62,6 +66,8 @@ import { EstateWebSitesUpdateJobService } from './services/estateweb-sites-updat
     CrmClientNotesSyncProcessor,
     EstateWebSitesUpdateJobService,
     EstateWebSitesUpdateProcessor,
+    DeleteIntegrationImagesJobService,
+    DeleteIntegrationImagesProcessor,
   ],
   exports: [UserPropertiesService],
 })

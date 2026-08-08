@@ -12,7 +12,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Globe, Languages, Layers, ListFilter, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { Globe, ImageOff, Languages, Layers, ListFilter, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
@@ -45,6 +45,7 @@ import {
   usePushUserPropertyToCrm,
   useRemoveUserPropertiesWatermarkImages,
   useRenormalizeUserProperties,
+  useBulkDeleteUserPropertyIntegrationImages,
   useSplitUserProperties,
   useTruncateUserPropertyDescriptions,
   useUpdateUserPropertySalesPrices,
@@ -96,6 +97,13 @@ const PROPERTY_SYNC_CRM_CLIENT_NOTES_ACTION: TableRowAction = {
   icon: NotebookPen,
 };
 
+const PROPERTY_DELETE_CMS_IMAGES_ACTION: TableRowAction = {
+  id: "delete-cms-images",
+  label: "Delete CMS images",
+  variant: "danger",
+  icon: ImageOff,
+};
+
 const PROPERTY_REMOVE_WATERMARK_ACTION: TableRowAction = {
   id: "remove-watermarks",
   label: "Remove watermarks",
@@ -134,6 +142,7 @@ export default function DashboardPropertiesListPage() {
   const updateSalesPricesConfirm = useOverlayState();
   const syncCrmClientNotesConfirm = useOverlayState();
   const renormalizeConfirm = useOverlayState();
+  const deleteCmsImagesConfirm = useOverlayState();
   const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
   const [removeWatermarkPropertyIds, setRemoveWatermarkPropertyIds] = useState<
     string[]
@@ -146,6 +155,9 @@ export default function DashboardPropertiesListPage() {
     string[]
   >([]);
   const [renormalizePropertyIds, setRenormalizePropertyIds] = useState<string[]>([]);
+  const [deleteCmsImagesPropertyIds, setDeleteCmsImagesPropertyIds] = useState<
+    string[]
+  >([]);
   const role = useAuthStore((state) => state.role);
   const canDelete = role === RoleTypes.SUPER_ADMIN || role === RoleTypes.ADMIN;
 
@@ -232,6 +244,7 @@ export default function DashboardPropertiesListPage() {
   const updateSalesPrices = useUpdateUserPropertySalesPrices();
   const syncCrmClientNotes = useSyncUserPropertyCrmClientNotes();
   const renormalize = useRenormalizeUserProperties();
+  const bulkDeleteCmsImages = useBulkDeleteUserPropertyIntegrationImages();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
@@ -306,6 +319,11 @@ export default function DashboardPropertiesListPage() {
     renormalizeConfirm.open();
   };
 
+  const openDeleteCmsImages = (ids: string[]) => {
+    setDeleteCmsImagesPropertyIds(ids);
+    deleteCmsImagesConfirm.open();
+  };
+
   const bulkActions = useMemo<TableRowAction[]>(() => {
     const actions: TableRowAction[] = [
       {
@@ -343,6 +361,13 @@ export default function DashboardPropertiesListPage() {
         label: "Sync CRM client notes",
         icon: NotebookPen,
         isDisabled: selectedLinkedCount < 1 || syncCrmClientNotes.isPending,
+      },
+      {
+        id: "delete-cms-images",
+        label: "Delete CMS images",
+        variant: "danger",
+        icon: ImageOff,
+        isDisabled: selectedLinkedCount < 1 || bulkDeleteCmsImages.isPending,
       },
       {
         id: "remove-watermarks",
@@ -395,6 +420,7 @@ export default function DashboardPropertiesListPage() {
     pushSelectedToCrm.isPending,
     removeWatermarks.isPending,
     renormalize.isPending,
+    bulkDeleteCmsImages.isPending,
     selectedCount,
     selectedGroupedCount,
     selectedLinkedCount,
@@ -475,6 +501,16 @@ export default function DashboardPropertiesListPage() {
         )
         .map((property) => property.id);
       openSyncCrmClientNotes(linkedIds);
+      return;
+    }
+    if (actionId === "delete-cms-images") {
+      const linkedIds = properties
+        .filter(
+          (property) =>
+            selectedIds.has(property.id) && Boolean(property.integration_property_id),
+        )
+        .map((property) => property.id);
+      openDeleteCmsImages(linkedIds);
       return;
     }
     if (actionId === "remove-watermarks") {
@@ -579,6 +615,13 @@ export default function DashboardPropertiesListPage() {
     if (renormalizePropertyIds.length === 0) return;
     await renormalize.mutateAsync({ ids: renormalizePropertyIds });
     setRenormalizePropertyIds([]);
+    clearSelection();
+  };
+
+  const handleDeleteCmsImages = async () => {
+    if (deleteCmsImagesPropertyIds.length === 0) return;
+    await bulkDeleteCmsImages.mutateAsync({ ids: deleteCmsImagesPropertyIds });
+    setDeleteCmsImagesPropertyIds([]);
     clearSelection();
   };
 
@@ -926,6 +969,12 @@ export default function DashboardPropertiesListPage() {
                     syncCrmClientNotes.isPending,
                 },
                 {
+                  ...PROPERTY_DELETE_CMS_IMAGES_ACTION,
+                  isDisabled:
+                    !property.integration_property_id ||
+                    bulkDeleteCmsImages.isPending,
+                },
+                {
                   ...PROPERTY_REMOVE_WATERMARK_ACTION,
                   isDisabled:
                     !property.integration_property_id ||
@@ -975,6 +1024,10 @@ export default function DashboardPropertiesListPage() {
                     }
                     if (actionId === "sync-crm-client-notes") {
                       openSyncCrmClientNotes([property.id]);
+                      return;
+                    }
+                    if (actionId === "delete-cms-images") {
+                      openDeleteCmsImages([property.id]);
                       return;
                     }
                     if (actionId === "remove-watermarks") {
@@ -1059,6 +1112,12 @@ export default function DashboardPropertiesListPage() {
                           isDisabled:
                             !property.integration_property_id ||
                             syncCrmClientNotes.isPending,
+                        },
+                        {
+                          ...PROPERTY_DELETE_CMS_IMAGES_ACTION,
+                          isDisabled:
+                            !property.integration_property_id ||
+                            bulkDeleteCmsImages.isPending,
                         },
                         {
                           ...PROPERTY_REMOVE_WATERMARK_ACTION,
@@ -1160,6 +1219,10 @@ export default function DashboardPropertiesListPage() {
                               }
                               if (actionId === "sync-crm-client-notes") {
                                 openSyncCrmClientNotes([property.id]);
+                                return;
+                              }
+                              if (actionId === "delete-cms-images") {
+                                openDeleteCmsImages([property.id]);
                                 return;
                               }
                               if (actionId === "remove-watermarks") {
@@ -1296,6 +1359,18 @@ export default function DashboardPropertiesListPage() {
         confirmLabel="Renormalize"
         onConfirm={handleRenormalize}
         isPending={renormalize.isPending}
+      />
+      <ConfirmationDialog
+        state={deleteCmsImagesConfirm}
+        title="Delete CMS images?"
+        description={
+          deleteCmsImagesPropertyIds.length === 1
+            ? "Deletes all stored CMS/integration images for this linked property via its CRM adapter. Local listing images stay. Progress shows in Job queue."
+            : `Deletes all stored CMS/integration images for ${deleteCmsImagesPropertyIds.length} linked properties via each CRM adapter. Local listing images stay. Progress shows in Job queue.`
+        }
+        confirmLabel="Delete CMS images"
+        onConfirm={handleDeleteCmsImages}
+        isPending={bulkDeleteCmsImages.isPending}
       />
       <RemoveWatermarkByCountModal
         state={removeWatermarkModal}

@@ -10,3 +10,4 @@ export const SALES_PRICE_UPDATE_QUEUE = 'sales-price-update';
 export const CRM_CLIENT_NOTES_SYNC_QUEUE = 'crm-client-notes-sync';
 export const ESTATEWEB_SITES_UPDATE_QUEUE = 'estateweb-sites-update';
 export const RENORMALIZATION_QUEUE = 'renormalization';
+export const DELETE_INTEGRATION_IMAGES_QUEUE = 'delete-integration-images';
