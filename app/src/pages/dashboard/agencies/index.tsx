@@ -17,6 +17,7 @@ import {
   useAgencyTrackingControls,
 } from "./components/agency-list-card";
 import { AgencyPublishingSettingsModal } from "./components/agency-publishing-settings-modal";
+import { AgencyTrackingColumnHeader } from "./components/agency-tracking-column-header";
 import { WatermarkSettingsModal } from "./components/watermark-settings-modal";
 import { useMemo, useState } from "react";
 import {
@@ -130,7 +131,7 @@ function AgencyRow({
           onChange={(isSelected) =>
             savePrefs({ cms_update_on_hash_only: isSelected })
           }
-          aria-label="Hash-only CRM updates"
+          aria-label="Push CRM updates only when listing content changes"
         />
       </Table.Cell>
       <Table.Cell>
@@ -334,15 +335,33 @@ export default function DashboardAgenciesPage() {
               <Table.ScrollContainer>
                 <Table.Content aria-label="Agencies">
                   <Table.Header>
-                    <Table.Column isRowHeader>Agency</Table.Column>
-                    <Table.Column>Track</Table.Column>
-                    <Table.Column>New</Table.Column>
-                    <Table.Column>Updated</Table.Column>
-                    <Table.Column>Removed</Table.Column>
-                    <Table.Column>Auto CRM</Table.Column>
-                    <Table.Column>Hash-only CRM</Table.Column>
-                    <Table.Column>Watermark</Table.Column>
-                    <Table.Column>Publishing</Table.Column>
+                    <Table.Column isRowHeader>
+                      <AgencyTrackingColumnHeader columnId="agency" />
+                    </Table.Column>
+                    <Table.Column>
+                      <AgencyTrackingColumnHeader columnId="track" />
+                    </Table.Column>
+                    <Table.Column>
+                      <AgencyTrackingColumnHeader columnId="new" />
+                    </Table.Column>
+                    <Table.Column>
+                      <AgencyTrackingColumnHeader columnId="updated" />
+                    </Table.Column>
+                    <Table.Column>
+                      <AgencyTrackingColumnHeader columnId="removed" />
+                    </Table.Column>
+                    <Table.Column>
+                      <AgencyTrackingColumnHeader columnId="auto_crm" />
+                    </Table.Column>
+                    <Table.Column>
+                      <AgencyTrackingColumnHeader columnId="content_changes_only" />
+                    </Table.Column>
+                    <Table.Column>
+                      <AgencyTrackingColumnHeader columnId="watermark" />
+                    </Table.Column>
+                    <Table.Column>
+                      <AgencyTrackingColumnHeader columnId="publishing" />
+                    </Table.Column>
                   </Table.Header>
                   <Table.Body>
                     {agencies.map((agency) => (

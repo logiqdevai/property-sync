@@ -196,7 +196,7 @@ export function AgencyListCard({
             }
           />
           <PrefRow
-            label="Hash-only CRM"
+            label="Content changes only"
             isSelected={prefs.cms_update_on_hash_only ?? false}
             isDisabled={prefsDisabled}
             onChange={(isSelected) =>

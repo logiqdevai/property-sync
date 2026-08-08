@@ -147,7 +147,7 @@ export default function AdminUserDetailPage() {
                     <Table.Column>New</Table.Column>
                     <Table.Column>Updated</Table.Column>
                     <Table.Column>Removed</Table.Column>
-                    <Table.Column>Hash-only CRM</Table.Column>
+                    <Table.Column>Content changes only</Table.Column>
                     <Table.Column>AI batch</Table.Column>
                     {showAdminTrackerSettings && (
                       <>
