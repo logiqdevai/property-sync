@@ -19,6 +19,7 @@ import {
 import { AgencyPublishingSettingsModal } from "./components/agency-publishing-settings-modal";
 import { AgencyTrackingColumnHeader } from "./components/agency-tracking-column-header";
 import { WatermarkSettingsModal } from "./components/watermark-settings-modal";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useMemo, useState } from "react";
 import {
   Button,
@@ -178,6 +179,7 @@ function AgencyRow({
 }
 
 export default function DashboardAgenciesPage() {
+  const isMobile = useIsMobile();
   const untrackConfirm = useOverlayState();
   const watermarkModal = useOverlayState();
   const publishingModal = useOverlayState();
@@ -300,13 +302,9 @@ export default function DashboardAgenciesPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={6} columns={4} className="md:hidden" />
-      ) : null}
-      {isPending ? (
         <TableSkeleton
-          rows={8}
-          columns={9}
-          className="hidden md:flex"
+          rows={isMobile ? 6 : 8}
+          columns={isMobile ? 4 : 9}
         />
       ) : null}
 
@@ -317,8 +315,8 @@ export default function DashboardAgenciesPage() {
       ) : null}
 
       {!isPending && agencies.length > 0 ? (
-        <>
-          <div className="flex min-w-0 flex-col gap-3 md:hidden">
+        isMobile ? (
+          <div className="flex min-w-0 flex-col gap-3">
             {agencies.map((agency) => (
               <AgencyListCard
                 key={agency.id}
@@ -329,8 +327,8 @@ export default function DashboardAgenciesPage() {
               />
             ))}
           </div>
-
-          <div className="hidden min-w-0 overflow-hidden rounded-xl border border-border bg-surface md:block">
+        ) : (
+          <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface">
             <Table>
               <Table.ScrollContainer>
                 <Table.Content aria-label="Agencies">
@@ -378,7 +376,7 @@ export default function DashboardAgenciesPage() {
               </Table.ScrollContainer>
             </Table>
           </div>
-        </>
+        )
       ) : null}
 
       {pagination && pagination.total_pages > 1 && (

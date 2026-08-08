@@ -25,6 +25,7 @@ import {
   TableRowActionsMenu,
   type TableRowAction,
 } from "@/components/ui/table-row-actions-menu";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-modal";
 import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
 import { ProduceContentModal } from "./components/produce-content-modal";
@@ -121,6 +122,7 @@ const PROPERTY_DELETE_ACTION: TableRowAction = {
 };
 
 export default function DashboardPropertiesListPage() {
+  const isMobile = useIsMobile();
   const deleteConfirm = useOverlayState();
   const bulkDeleteConfirm = useOverlayState();
   const dedupeConfirm = useOverlayState();
@@ -875,7 +877,8 @@ export default function DashboardPropertiesListPage() {
         </div>
       ) : (
         <>
-          <div className="flex min-w-0 flex-col gap-3 md:hidden">
+          {isMobile ? (
+          <div className="flex min-w-0 flex-col gap-3">
             <div className="flex items-center gap-2 px-1">
               <Checkbox
                 aria-label="Select all properties on this page"
@@ -990,8 +993,8 @@ export default function DashboardPropertiesListPage() {
               );
             })}
           </div>
-
-          <div className="hidden min-w-0 overflow-hidden rounded-xl border border-border bg-surface md:block">
+          ) : (
+          <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface">
             <Table>
               <Table.ScrollContainer>
                 <Table.Content
@@ -1178,6 +1181,7 @@ export default function DashboardPropertiesListPage() {
               </Table.ScrollContainer>
             </Table>
           </div>
+          )}
         </>
       )}
 

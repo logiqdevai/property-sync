@@ -31,7 +31,7 @@ export function BulkActionsMenu({
         {label}
         <ChevronDown className="h-4 w-4" />
       </Button>
-      <Dropdown.Popover>
+      <Dropdown.Popover className="max-h-[min(24rem,70dvh)] overflow-y-auto">
         <Dropdown.Menu onAction={(key) => onAction(String(key))}>
           {actions.map((action) => {
             const Icon = action.icon;
