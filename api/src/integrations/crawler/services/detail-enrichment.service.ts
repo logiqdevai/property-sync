@@ -272,7 +272,7 @@ export class DetailEnrichmentService {
           const el = document.querySelector(cfg.external_id_selector);
           const text = cleanText(el?.textContent);
           const stripped = text.replace(
-            /^(?:Κωδ(?:ικός)?|Code|Ref(?:erence)?)\.?\s*[:：\-]?\s*/i,
+            /^(?:Property\s*ID|Κωδ(?:ικός)?(?:\s+ακινήτου)?|Code|Ref(?:erence)?)\.?\s*[:：\-]?\s*/i,
             '',
           );
           externalId = stripped || null;

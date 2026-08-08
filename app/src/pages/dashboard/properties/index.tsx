@@ -604,7 +604,7 @@ export default function DashboardPropertiesListPage() {
       <div className="flex min-w-0 flex-col gap-3">
         <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
           <Input
-            placeholder="Search property id, internal id, CRM id, title, or city…"
+            placeholder="Search id, property/internal/CRM id, title, city — or comma-separated ids…"
             value={search}
             onChange={(e) => {
               setFilters({ search: e.target.value });

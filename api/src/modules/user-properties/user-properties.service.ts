@@ -81,6 +81,7 @@ import {
 } from './interfaces/renormalization-job.interface';
 import { WatermarkRemovalService } from './services/watermark-removal.service';
 import { resolveIntegrationImageProcessUrl } from './utils/integration-property-images.util';
+import { buildUserPropertySearchOr } from './utils/user-property-search.util';
 
 export type PropertySyncChangeType = 'created' | 'updated' | 'removed';
 
@@ -168,20 +169,7 @@ export class UserPropertiesService {
       user_id: userId,
       ...(query.status && { status: query.status }),
       ...(query.search && {
-        OR: [
-          { id: { equals: query.search } },
-          { property_id: { contains: query.search, mode: 'insensitive' } },
-          { internal_id: { contains: query.search, mode: 'insensitive' } },
-          {
-            integration_property_id: {
-              contains: query.search,
-              mode: 'insensitive',
-            },
-          },
-          { title: { contains: query.search, mode: 'insensitive' } },
-          { city: { contains: query.search, mode: 'insensitive' } },
-          { district: { contains: query.search, mode: 'insensitive' } },
-        ],
+        OR: buildUserPropertySearchOr(query.search),
       }),
       ...(query.city && {
         city: { contains: query.city, mode: 'insensitive' },
@@ -2738,25 +2726,9 @@ export class UserPropertiesService {
       ...(query.listing_type && { listing_type: query.listing_type }),
       ...(query.property_type && { property_type: query.property_type }),
       ...(query.search && {
-        OR: [
-          { id: { equals: query.search } },
-          { property_id: { contains: query.search, mode: 'insensitive' } },
-          { internal_id: { contains: query.search, mode: 'insensitive' } },
-          {
-            integration_property_id: {
-              contains: query.search,
-              mode: 'insensitive',
-            },
-          },
-          { title: { contains: query.search, mode: 'insensitive' } },
-          { city: { contains: query.search, mode: 'insensitive' } },
-          { district: { contains: query.search, mode: 'insensitive' } },
-          {
-            user: {
-              email: { contains: query.search, mode: 'insensitive' },
-            },
-          },
-        ],
+        OR: buildUserPropertySearchOr(query.search, {
+          includeUserEmail: true,
+        }),
       }),
       ...(hasCanonicalFilter && {
         canonical_property: {

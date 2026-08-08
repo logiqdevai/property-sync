@@ -27,6 +27,7 @@ function readRawString(
 const INTERNAL_ID_PATTERNS: RegExp[] = [
   /Κωδικός\s+ακινήτου\s*[:：]?\s*([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/iu,
   /Κωδικός\s*[:：]\s*([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/iu,
+  /Property\s*ID\s*[:：]\s*([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/i,
   /(?:Property\s+)?(?:Code|Ref(?:erence)?)\s*[:：]\s*([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/i,
 ];
 
@@ -109,6 +110,23 @@ export function extractSourcePropertyIds(
   sourceUrl: string,
   raw: Record<string, unknown>,
 ): { property_id: string; internal_id: string | null } {
+  const fromPage =
+    readRawString(raw, [
+      '_internal_id',
+      '_external_id',
+      'internal_id',
+      'listing_code',
+    ]) ??
+    extractInternalIdFromText(
+      readRawString(raw, [
+        '_detail_text',
+        'detail_text',
+        '_description',
+        'description',
+      ]),
+      readRawString(raw, ['location', '_location', 'raw_location']),
+    );
+
   const segments = sourceUrl.split('/').filter(Boolean).map((segment) => {
     try {
       return decodeURIComponent(segment);
@@ -129,23 +147,16 @@ export function extractSourcePropertyIds(
       }
     }
   }
-  const internal_id =
-    readRawString(raw, [
-      '_internal_id',
-      '_external_id',
-      'internal_id',
-      'listing_code',
-    ]) ??
-    extractInternalIdFromText(
-      readRawString(raw, [
-        '_detail_text',
-        'detail_text',
-        '_description',
-        'description',
-      ]),
-      readRawString(raw, ['location', '_location', 'raw_location']),
-    ) ??
-    property_id;
 
-  return { property_id, internal_id };
+  // WordPress/JetEngine sites often use a slug in the URL and the real agency
+  // code only on the detail page ("Property ID: 4308"). Prefer that page code
+  // over a non-numeric slug for both property_id and internal_id.
+  if (fromPage && !/^\d+$/.test(property_id)) {
+    return { property_id: fromPage, internal_id: fromPage };
+  }
+
+  return {
+    property_id,
+    internal_id: fromPage ?? property_id,
+  };
 }
