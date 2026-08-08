@@ -44,8 +44,11 @@ export const getSourceProperty = async (
       ApiRoutes.admin.sourceProperties.detail(id),
     );
     return response.data;
-  } catch {
-    throw new Error("Failed to fetch source property. Please try again.");
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to fetch source property. Please try again.",
+    );
   }
 };
 

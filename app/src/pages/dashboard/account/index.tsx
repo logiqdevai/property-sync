@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Skeleton, Tabs } from "@heroui/react";
 import { formatDateTime } from "@/lib/date";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import {
   useChangeCurrentUserPassword,
   useCurrentUser,
@@ -28,14 +29,27 @@ const ACCOUNT_TABS = {
 type AccountTab = (typeof ACCOUNT_TABS)[keyof typeof ACCOUNT_TABS];
 
 export default function AccountPage() {
-  const { data: user, isPending } = useCurrentUser();
+  const { data: user, isPending, isError, error } = useCurrentUser();
   const updateProfile = useUpdateCurrentUser();
   const changePassword = useChangeCurrentUserPassword();
   const [passwordFormKey, setPasswordFormKey] = useState(0);
   const [selectedTab, setSelectedTab] = useState<AccountTab>(ACCOUNT_TABS.profile);
 
-  if (isPending || !user) {
+  if (isPending) {
     return <AccountSkeleton />;
+  }
+
+  if (isError || !user) {
+    return (
+      <DetailErrorState
+        title="Account unavailable"
+        description={
+          error instanceof Error
+            ? error.message
+            : "Your account could not be loaded."
+        }
+      />
+    );
   }
 
   return (

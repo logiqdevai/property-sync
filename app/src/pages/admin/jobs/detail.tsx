@@ -3,6 +3,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { JobStatusChip } from "./components/job-status-chip";
@@ -29,13 +30,28 @@ export default function JobDetailPage() {
   const stopConfirm = useOverlayState();
   const deleteConfirm = useOverlayState();
 
-  const { data: job, isPending } = useJob(id!);
+  const { data: job, isPending, isError, error } = useJob(id!);
   const retryJob = useRetryJob();
   const stopJob = useStopJob();
   const deleteJob = useDeleteJob();
 
-  if (isPending || !job) {
+  if (isPending) {
     return <DetailSkeleton fieldCount={5} showSubTable subTableRows={2} />;
+  }
+
+  if (isError || !job) {
+    return (
+      <DetailErrorState
+        title="Job not found"
+        description={
+          error instanceof Error
+            ? error.message
+            : "This job could not be found."
+        }
+        backHref={Routes.admin.jobs.list}
+        backLabel="← Back to jobs"
+      />
+    );
   }
 
   const isActive =

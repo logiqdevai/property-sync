@@ -4,6 +4,7 @@ import { Modal, Switch, EmptyState, Select, ListBox, Label, Input, useOverlaySta
 import { ArrowLeft, Bot, Activity, History, Sparkles } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { ScraperStatusChip } from "./components/scraper-status-chip";
@@ -49,7 +50,7 @@ export default function ScraperDetailPage() {
   const [compareB, setCompareB] = useState<string | null>(null);
   const [normalizeLimitDraft, setNormalizeLimitDraft] = useState<string | null>(null);
 
-  const { data: scraper, isPending } = useScraper(id!);
+  const { data: scraper, isPending, isError, error } = useScraper(id!);
   const { data: versions } = useScraperVersions(id!);
   const { data: generationRunsData } = useGenerationRuns({ scraper_id: id!, limit: 5 });
   const { data: crawlRunsData } = useCrawlRuns({ scraper_id: id!, limit: 5 });
@@ -72,8 +73,23 @@ export default function ScraperDetailPage() {
     [versions, compareB],
   );
 
-  if (isPending || !scraper) {
+  if (isPending) {
     return <DetailSkeleton fieldCount={6} showSubTable />;
+  }
+
+  if (isError || !scraper) {
+    return (
+      <DetailErrorState
+        title="Scraper not found"
+        description={
+          error instanceof Error
+            ? error.message
+            : "This scraper could not be found."
+        }
+        backHref={Routes.admin.scrapers.list}
+        backLabel="← Back to scrapers"
+      />
+    );
   }
 
   return (

@@ -26,8 +26,11 @@ export const getGenerationRun = async (id: string): Promise<GenerationRun> => {
   try {
     const response = await axiosInstance.get(ApiRoutes.admin.generationRuns.detail(id));
     return response.data;
-  } catch (error) {
-    throw new Error("Failed to fetch generation run. Please try again.");
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to fetch generation run. Please try again.",
+    );
   }
 };
 

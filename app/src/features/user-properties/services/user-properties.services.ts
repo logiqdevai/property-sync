@@ -93,8 +93,10 @@ export const getUserProperty = async (id: string): Promise<UserPropertyDetail> =
   try {
     const response = await axiosInstance.get(ApiRoutes.userProperties.detail(id));
     return response.data;
-  } catch {
-    throw new Error("Failed to fetch property. Please try again.");
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to fetch property. Please try again.",
+    );
   }
 };
 
@@ -106,8 +108,11 @@ export const getAdminUserProperty = async (
       ApiRoutes.admin.userProperties.detail(id),
     );
     return response.data;
-  } catch {
-    throw new Error("Failed to fetch user property. Please try again.");
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to fetch user property. Please try again.",
+    );
   }
 };
 

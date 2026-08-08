@@ -4,6 +4,7 @@ import { Modal, Label, TextArea, EmptyState, useOverlayState } from "@heroui/rea
 import { ArrowLeft, Loader2, ImageOff, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { GenerationRunStatusChip } from "./components/generation-run-status-chip";
@@ -41,15 +42,30 @@ export default function GenerationRunDetailPage() {
   const [retryPrompt, setRetryPrompt] = useState("");
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
-  const { data: run, isPending } = useGenerationRun(id!);
+  const { data: run, isPending, isError, error } = useGenerationRun(id!);
   const approveRun = useApproveGenerationRun();
   const rejectRun = useRejectGenerationRun();
   const cancelRun = useCancelGenerationRun();
   const deleteRun = useDeleteGenerationRun();
   const retryRun = useRetryGenerationRun();
 
-  if (isPending || !run) {
+  if (isPending) {
     return <DetailSkeleton fieldCount={4} showSubTable subTableRows={3} />;
+  }
+
+  if (isError || !run) {
+    return (
+      <DetailErrorState
+        title="Generation run not found"
+        description={
+          error instanceof Error
+            ? error.message
+            : "This generation run could not be found."
+        }
+        backHref={Routes.admin.generationRuns.list}
+        backLabel="← Back to generation runs"
+      />
+    );
   }
 
   const isActive = ACTIVE_STATUSES.includes(run.status);

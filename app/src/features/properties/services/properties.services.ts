@@ -47,8 +47,10 @@ export const getProperty = async (id: string): Promise<PropertyDetail> => {
   try {
     const response = await axiosInstance.get(ApiRoutes.admin.properties.detail(id));
     return response.data;
-  } catch {
-    throw new Error("Failed to fetch property. Please try again.");
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to fetch property. Please try again.",
+    );
   }
 };
 

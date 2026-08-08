@@ -31,8 +31,11 @@ export const getIntegrationTarget = async (id: string): Promise<IntegrationTarge
   try {
     const response = await axiosInstance.get(ApiRoutes.admin.integrationTargets.detail(id));
     return response.data;
-  } catch {
-    throw new Error("Failed to fetch integration target. Please try again.");
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to fetch integration target. Please try again.",
+    );
   }
 };
 

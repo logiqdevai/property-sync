@@ -3,6 +3,7 @@ import { Button, Chip, useOverlayState } from "@heroui/react";
 import { ExternalLink } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import {
@@ -49,11 +50,27 @@ export default function SourcePropertyDetailPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const deleteConfirm = useOverlayState();
-  const { data: sourceProperty, isPending } = useSourceProperty(id);
+  const { data: sourceProperty, isPending, isError, error } =
+    useSourceProperty(id);
   const deleteSourceProperty = useDeleteSourceProperty();
 
-  if (isPending || !sourceProperty) {
+  if (isPending) {
     return <DetailSkeleton />;
+  }
+
+  if (isError || !sourceProperty) {
+    return (
+      <DetailErrorState
+        title="Source property not found"
+        description={
+          error instanceof Error
+            ? error.message
+            : "This source property could not be found."
+        }
+        backHref={Routes.admin.properties.sourceList}
+        backLabel="← Back to source properties"
+      />
+    );
   }
 
   const rawFields = [

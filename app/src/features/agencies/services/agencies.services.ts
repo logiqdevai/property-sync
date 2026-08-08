@@ -25,8 +25,10 @@ export const getAgency = async (id: string): Promise<SourceAgency> => {
   try {
     const response = await axiosInstance.get(ApiRoutes.admin.agencies.detail(id));
     return response.data;
-  } catch (error) {
-    throw new Error("Failed to fetch agency. Please try again.");
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to fetch agency. Please try again.",
+    );
   }
 };
 

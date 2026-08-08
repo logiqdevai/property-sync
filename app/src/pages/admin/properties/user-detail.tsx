@@ -4,6 +4,7 @@ import { Chip, useOverlayState } from "@heroui/react";
 import { ExternalLink, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
@@ -23,7 +24,7 @@ export default function UserPropertyDetailPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const deleteConfirm = useOverlayState();
-  const { data: property, isPending } = useAdminUserProperty(id);
+  const { data: property, isPending, isError, error } = useAdminUserProperty(id);
   const deleteUserProperty = useDeleteAdminUserProperty();
   const migrateImages = useMigrateAdminUserPropertyIntegrationImages();
   const deleteIntegrationImages = useDeleteAdminUserPropertyIntegrationImages();
@@ -59,8 +60,23 @@ export default function UserPropertyDetailPage() {
     ];
   }, [deleteUserProperty.isPending, property]);
 
-  if (isPending || !property) {
+  if (isPending) {
     return <DetailSkeleton />;
+  }
+
+  if (isError || !property) {
+    return (
+      <DetailErrorState
+        title="Property not found"
+        description={
+          error instanceof Error
+            ? error.message
+            : "This property could not be found."
+        }
+        backHref={Routes.admin.properties.userList}
+        backLabel="← Back to user properties"
+      />
+    );
   }
 
   const handleDelete = async () => {

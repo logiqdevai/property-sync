@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Download, ExternalLink, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { useDiagnosticsPackage } from "@/features/diagnostics/hooks/use-diagnostics";
 import {
   DiagnosticsArtifactKinds,
@@ -28,10 +29,25 @@ export default function DiagnosticsDetailPage() {
   const navigate = useNavigate();
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
-  const { data: pkg, isPending } = useDiagnosticsPackage(id!);
+  const { data: pkg, isPending, isError, error } = useDiagnosticsPackage(id!);
 
-  if (isPending || !pkg) {
+  if (isPending) {
     return <DetailSkeleton fieldCount={6} showSubTable={false} />;
+  }
+
+  if (isError || !pkg) {
+    return (
+      <DetailErrorState
+        title="Diagnostics package not found"
+        description={
+          error instanceof Error
+            ? error.message
+            : "This diagnostics package could not be found."
+        }
+        backHref={Routes.admin.diagnostics.list}
+        backLabel="← Back to diagnostics"
+      />
+    );
   }
 
   const artifacts = pkg.artifacts ?? [];

@@ -24,8 +24,10 @@ export const getUserCmsSyncRun = async (id: string): Promise<CmsSyncRun> => {
   try {
     const response = await axiosInstance.get(ApiRoutes.cmsSyncRuns.detail(id));
     return response.data;
-  } catch (error) {
-    throw new Error("Failed to fetch sync run. Please try again.");
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to fetch sync run. Please try again.",
+    );
   }
 };
 
@@ -44,8 +46,10 @@ export const getAdminCmsSyncRun = async (id: string): Promise<CmsSyncRun> => {
   try {
     const response = await axiosInstance.get(ApiRoutes.admin.cmsSyncRuns.detail(id));
     return response.data;
-  } catch (error) {
-    throw new Error("Failed to fetch sync run. Please try again.");
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to fetch sync run. Please try again.",
+    );
   }
 };
 

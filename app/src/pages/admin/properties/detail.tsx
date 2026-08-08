@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { Button, Chip, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { PropertyDetailView } from "@/components/ui/property-detail-view";
@@ -15,12 +16,27 @@ export default function PropertyDetailPage() {
   const { id = "" } = useParams();
   const splitConfirm = useOverlayState();
   const truncateConfirm = useOverlayState();
-  const { data: property, isPending } = useProperty(id);
+  const { data: property, isPending, isError, error } = useProperty(id);
   const splitProperty = useSplitProperty();
   const truncateDescriptions = useTruncatePropertyDescriptions();
 
-  if (isPending || !property) {
+  if (isPending) {
     return <DetailSkeleton />;
+  }
+
+  if (isError || !property) {
+    return (
+      <DetailErrorState
+        title="Property not found"
+        description={
+          error instanceof Error
+            ? error.message
+            : "This property could not be found."
+        }
+        backHref={Routes.admin.properties.list}
+        backLabel="← Back to properties"
+      />
+    );
   }
 
   const handleSplit = async () => {

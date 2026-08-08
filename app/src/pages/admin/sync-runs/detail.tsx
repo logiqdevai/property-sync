@@ -3,6 +3,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { Table } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import {
   useAdminCmsSyncRun,
@@ -55,12 +56,27 @@ export default function AdminSyncRunDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const { data: run, isPending } = useAdminCmsSyncRun(id!);
+  const { data: run, isPending, isError, error } = useAdminCmsSyncRun(id!);
   const retry = useRetryAdminCmsSyncRun();
   const rerun = useRerunAdminCmsSyncRun();
 
-  if (isPending || !run) {
+  if (isPending) {
     return <DetailSkeleton fieldCount={8} showSubTable subTableRows={2} />;
+  }
+
+  if (isError || !run) {
+    return (
+      <DetailErrorState
+        title="Sync run not found"
+        description={
+          error instanceof Error
+            ? error.message
+            : "This sync run could not be found."
+        }
+        backHref={Routes.admin.syncRuns.list}
+        backLabel="← Back to sync runs"
+      />
+    );
   }
 
   const isActive =

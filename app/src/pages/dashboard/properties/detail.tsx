@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Languages, NotebookPen, Pencil, Percent, RefreshCw, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
 import { Button, useOverlayState } from "@heroui/react";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
@@ -124,7 +125,7 @@ export default function DashboardPropertyDetailPage() {
   const propertyTypePicker = useOverlayState();
   const featuresPicker = useOverlayState();
   const role = useAuthStore((state) => state.role);
-  const { data: property, isPending } = useUserProperty(id);
+  const { data: property, isPending, isError, error } = useUserProperty(id);
   const updateProperty = useUpdateUserProperty();
   const pushToCrm = usePushUserPropertyToCrm();
   const updateSalesPrices = useUpdateUserPropertySalesPrices();
@@ -381,8 +382,23 @@ export default function DashboardPropertyDetailPage() {
     updateSalesPrices.isPending,
   ]);
 
-  if (isPending || !property) {
+  if (isPending) {
     return <DetailSkeleton />;
+  }
+
+  if (isError || !property) {
+    return (
+      <DetailErrorState
+        title="Property not found"
+        description={
+          error instanceof Error
+            ? error.message
+            : "This property could not be found."
+        }
+        backHref={backHref}
+        backLabel="← Back to properties"
+      />
+    );
   }
 
   const onSubmit = handleSubmit(async (values) => {

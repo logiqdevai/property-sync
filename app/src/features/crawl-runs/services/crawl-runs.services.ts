@@ -23,8 +23,10 @@ export const getCrawlRun = async (id: string): Promise<CrawlRunDetail> => {
   try {
     const response = await axiosInstance.get(ApiRoutes.admin.crawlRuns.detail(id));
     return response.data;
-  } catch (error) {
-    throw new Error("Failed to fetch crawl run. Please try again.");
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to fetch crawl run. Please try again.",
+    );
   }
 };
 

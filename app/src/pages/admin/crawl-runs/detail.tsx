@@ -3,6 +3,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { Accordion, Table, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { PropertyHistorySummary } from "@/components/ui/property-history-summary";
@@ -79,13 +80,28 @@ export default function CrawlRunDetailPage() {
   const stopConfirm = useOverlayState();
   const deleteConfirm = useOverlayState();
 
-  const { data: run, isPending } = useCrawlRun(id!);
+  const { data: run, isPending, isError, error } = useCrawlRun(id!);
   const rerun = useRerunCrawlRun();
   const cancelRun = useCancelCrawlRun();
   const deleteRun = useDeleteCrawlRun();
 
-  if (isPending || !run) {
+  if (isPending) {
     return <DetailSkeleton fieldCount={6} showSubTable subTableRows={3} />;
+  }
+
+  if (isError || !run) {
+    return (
+      <DetailErrorState
+        title="Crawl run not found"
+        description={
+          error instanceof Error
+            ? error.message
+            : "This crawl run could not be found."
+        }
+        backHref={Routes.admin.crawlRuns.list}
+        backLabel="← Back to crawl runs"
+      />
+    );
   }
 
   const isActive = ACTIVE_STATUSES.includes(run.status);

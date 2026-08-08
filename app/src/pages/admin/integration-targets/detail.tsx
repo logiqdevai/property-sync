@@ -5,6 +5,7 @@ import { Form, Input, Label, Modal, Switch, Table, useOverlayState } from "@hero
 import { useForm } from "react-hook-form";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TableRowActionsMenu } from "@/components/ui/table-row-actions-menu";
@@ -50,7 +51,7 @@ export default function IntegrationTargetDetailPage() {
     null,
   );
 
-  const { data: target, isPending } = useIntegrationTarget(id);
+  const { data: target, isPending, isError, error } = useIntegrationTarget(id);
   const updateTarget = useUpdateIntegrationTarget();
   const deleteTarget = useDeleteIntegrationTarget();
   const createAccount = useCreateIntegrationTargetAccount();
@@ -86,8 +87,23 @@ export default function IntegrationTargetDetailPage() {
     );
   }, [target, editingAccount, editAccountForm]);
 
-  if (isPending || !target) {
+  if (isPending) {
     return <DetailSkeleton fieldCount={6} showSubTable subTableRows={5} />;
+  }
+
+  if (isError || !target) {
+    return (
+      <DetailErrorState
+        title="Integration target not found"
+        description={
+          error instanceof Error
+            ? error.message
+            : "This integration target could not be found."
+        }
+        backHref={Routes.admin.integrationTargets.list}
+        backLabel="← Back to integration targets"
+      />
+    );
   }
 
   const openEditAccount = (account: MaskedUserIntegration) => {

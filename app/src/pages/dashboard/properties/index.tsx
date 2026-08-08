@@ -15,6 +15,7 @@ import {
 import { Globe, Languages, Layers, ListFilter, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
+import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
@@ -603,11 +604,11 @@ export default function DashboardPropertiesListPage() {
 
       <div className="flex min-w-0 flex-col gap-3">
         <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-          <Input
+          <ClearableSearchInput
             placeholder="Search id, property/internal/CRM id, title, city — or comma-separated ids…"
             value={search}
-            onChange={(e) => {
-              setFilters({ search: e.target.value });
+            onValueChange={(next) => {
+              setFilters({ search: next });
             }}
             className="w-full min-w-0 sm:flex-1 sm:max-w-md"
           />

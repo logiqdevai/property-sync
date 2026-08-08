@@ -3,6 +3,7 @@ import { Chip, Modal, Switch, EmptyState, useOverlayState } from "@heroui/react"
 import { ArrowLeft, Users, Wrench, Activity } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TrackerAdminOptionsPanel } from "@/components/ui/tracker-admin-options-panel";
@@ -38,7 +39,7 @@ export default function AgencyDetailPage() {
   const canEditTrackerSettings =
     role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN;
 
-  const { data: agency, isPending } = useAgency(id!);
+  const { data: agency, isPending, isError, error } = useAgency(id!);
   const { data: crawlRunsData } = useCrawlRuns({ agency_id: id!, limit: 5 });
   const { data: scrapersData } = useScrapers({ source_agency_id: id!, limit: 5 });
   const updateAgency = useUpdateAgency();
@@ -48,11 +49,27 @@ export default function AgencyDetailPage() {
 
   const crawlRuns = crawlRunsData?.data ?? [];
   const scrapers = scrapersData?.data ?? [];
-  const trackedUsers = agency?.user_tracked_agencies ?? [];
 
-  if (isPending || !agency) {
+  if (isPending) {
     return <DetailSkeleton fieldCount={6} showSubTable />;
   }
+
+  if (isError || !agency) {
+    return (
+      <DetailErrorState
+        title="Agency not found"
+        description={
+          error instanceof Error
+            ? error.message
+            : "This agency could not be found."
+        }
+        backHref={Routes.admin.agencies.list}
+        backLabel="← Back to agencies"
+      />
+    );
+  }
+
+  const trackedUsers = agency.user_tracked_agencies ?? [];
 
   const dependentCount = (agency._count?.scrapers ?? 0) + (agency._count?.crawl_runs ?? 0);
   const canDelete = dependentCount === 0;

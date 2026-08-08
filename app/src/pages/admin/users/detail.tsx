@@ -2,6 +2,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Chip, Modal, Switch, Table, useOverlayState } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
+import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { RoleGate } from "@/components/providers/role-gate";
@@ -48,7 +49,7 @@ export default function AdminUserDetailPage() {
   const navigate = useNavigate();
   const editModal = useOverlayState();
   const deleteConfirm = useOverlayState();
-  const { data: user, isPending, refetch } = useAdminUser(id);
+  const { data: user, isPending, isError, error, refetch } = useAdminUser(id);
   const updateUser = useUpdateAdminUser();
   const deleteUser = useDeleteAdminUser();
   const updateIntegrationAccount = useUpdateIntegrationTargetAccount();
@@ -59,8 +60,23 @@ export default function AdminUserDetailPage() {
   const showAdminTrackerSettings =
     role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN;
 
-  if (isPending || !user) {
+  if (isPending) {
     return <DetailSkeleton fieldCount={6} showSubTable subTableRows={5} />;
+  }
+
+  if (isError || !user) {
+    return (
+      <DetailErrorState
+        title="User not found"
+        description={
+          error instanceof Error
+            ? error.message
+            : "This user could not be found."
+        }
+        backHref={Routes.admin.users.list}
+        backLabel="← Back to users"
+      />
+    );
   }
 
   const isSuperAdmin = user.role === RoleTypes.SUPER_ADMIN;

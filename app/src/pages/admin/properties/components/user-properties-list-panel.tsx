@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import {
   Checkbox,
   Chip,
-  Input,
   Pagination,
   Select,
   ListBox,
@@ -14,6 +13,7 @@ import {
 import { Layers, Scissors, Trash2, Ungroup } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
+import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
@@ -307,12 +307,12 @@ export function UserPropertiesListPanel() {
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
-        <Input
+        <ClearableSearchInput
           placeholder="Search property id, internal id, CRM id, title, city, or email…"
           value={search}
-          onChange={(e) => {
+          onValueChange={(next) => {
             setPage(1);
-            setSearch(e.target.value);
+            setSearch(next);
           }}
           className="w-80"
         />

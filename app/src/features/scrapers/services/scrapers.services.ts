@@ -27,8 +27,10 @@ export const getScraper = async (id: string): Promise<Scraper> => {
   try {
     const response = await axiosInstance.get(ApiRoutes.admin.scrapers.detail(id));
     return response.data;
-  } catch (error) {
-    throw new Error("Failed to fetch scraper. Please try again.");
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to fetch scraper. Please try again.",
+    );
   }
 };
 

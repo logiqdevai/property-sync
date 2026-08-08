@@ -25,8 +25,10 @@ export const getAdminUser = async (id: string): Promise<AdminUserDetail> => {
   try {
     const response = await axiosInstance.get(ApiRoutes.admin.users.detail(id));
     return response.data;
-  } catch {
-    throw new Error("Failed to fetch user. Please try again.");
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to fetch user. Please try again.",
+    );
   }
 };
 

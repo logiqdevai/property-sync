@@ -26,7 +26,10 @@ export const getDiagnosticsPackage = async (
   try {
     const response = await axiosInstance.get(ApiRoutes.admin.diagnostics.detail(id));
     return response.data;
-  } catch (error) {
-    throw new Error("Failed to fetch diagnostics package. Please try again.");
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to fetch diagnostics package. Please try again.",
+    );
   }
 };
