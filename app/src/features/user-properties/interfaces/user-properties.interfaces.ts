@@ -70,6 +70,7 @@ export interface UserPropertyDetail extends UserProperty {
   integration_property?: IntegrationProperty | null;
   localized_contents?: PropertyLocalizedContent[];
   text_truncate_pieces?: string[];
+  integration_email?: string | null;
 }
 
 export interface UpdateUserPropertyPayload {

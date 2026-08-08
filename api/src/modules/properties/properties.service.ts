@@ -159,6 +159,9 @@ export class PropertiesService {
                 status: true,
                 created_at: true,
                 updated_at: true,
+                source_agency: {
+                  select: { id: true, name: true },
+                },
               },
             },
           },

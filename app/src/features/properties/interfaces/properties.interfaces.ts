@@ -101,6 +101,10 @@ export interface SourcePropertySummary {
   first_seen_at?: string | null;
   created_at?: string;
   updated_at?: string;
+  source_agency?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 export interface PropertySourceLink {

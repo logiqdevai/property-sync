@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Eye,
   Images,
+  Mail,
   MapPin,
   Maximize2,
   Ruler,
@@ -93,6 +94,7 @@ export interface PropertyDetailViewData extends Partial<PropertyCmsFields> {
   duplicate_group_id?: string | null;
   source_links?: PropertySourceLink[];
   history: PropertyHistoryEntry[];
+  integration_email?: string | null;
 }
 
 function formatCmsMetadata(metadata: CmsPropertyMetadata | null | undefined): string[] {
@@ -715,6 +717,8 @@ export function PropertyDetailView({
       fallbackImages.length > 0);
   const primaryLink =
     sourceLinks.find((link) => link.is_primary_source) ?? sourceLinks[0] ?? null;
+  const agencyName = primaryLink?.source_property.source_agency?.name ?? null;
+  const integrationEmail = property.integration_email?.trim() || null;
   const hasPrice = property.price != null && property.price !== "";
   const crmPropertyAppUrl = property.integration_property_id
     ? getCrmPropertyAppUrl(property.integration_property_id)
@@ -872,6 +876,20 @@ export function PropertyDetailView({
                     <span className="min-w-0 break-words">{location}</span>
                   </p>
                 )}
+
+                {agencyName ? (
+                  <p className="flex min-w-0 items-start gap-2 text-sm text-muted">
+                    <Building2 className="mt-0.5 size-4 shrink-0 text-tertiary" />
+                    <span className="min-w-0 break-words">{agencyName}</span>
+                  </p>
+                ) : null}
+
+                {integrationEmail ? (
+                  <p className="flex min-w-0 items-start gap-2 text-sm text-muted">
+                    <Mail className="mt-0.5 size-4 shrink-0 text-tertiary" />
+                    <span className="min-w-0 break-words">{integrationEmail}</span>
+                  </p>
+                ) : null}
               </div>
 
               {specs.length > 0 && (
@@ -947,7 +965,6 @@ export function PropertyDetailView({
           )}
         </section>
       )}
-
       {selectedLocalizedContent && (
         <section className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:p-5">
           <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">

@@ -337,6 +337,9 @@ export class UserPropertiesService {
                     last_seen_at: true,
                     status: true,
                     source_agency_id: true,
+                    source_agency: {
+                      select: { id: true, name: true },
+                    },
                   },
                 },
               },
@@ -362,6 +365,8 @@ export class UserPropertiesService {
     const integrationProperty = integration_properties[0] ?? null;
 
     const sourceAgencyId =
+      canonical_property.source_links.find((link) => link.is_primary_source)
+        ?.source_property.source_agency_id ??
       canonical_property.source_links[0]?.source_property.source_agency_id ??
       null;
     const tracker = sourceAgencyId
@@ -372,7 +377,16 @@ export class UserPropertiesService {
               source_agency_id: sourceAgencyId,
             },
           },
-          select: { text_truncate_pieces: true },
+          select: {
+            text_truncate_pieces: true,
+            integration_link: {
+              select: {
+                user_integration: {
+                  select: { email: true },
+                },
+              },
+            },
+          },
         })
       : null;
 
@@ -383,6 +397,8 @@ export class UserPropertiesService {
       history: canonical_property.history,
       localized_contents,
       text_truncate_pieces: tracker?.text_truncate_pieces ?? [],
+      integration_email:
+        tracker?.integration_link?.user_integration?.email ?? null,
       integration_property: integrationProperty
         ? {
             id: integrationProperty.id,
@@ -2858,6 +2874,10 @@ export class UserPropertiesService {
                     raw_bathrooms: true,
                     last_seen_at: true,
                     status: true,
+                    source_agency_id: true,
+                    source_agency: {
+                      select: { id: true, name: true },
+                    },
                   },
                 },
               },
@@ -2885,6 +2905,31 @@ export class UserPropertiesService {
       integration_properties.find((row) => row.user_id === userProperty.user_id) ??
       null;
 
+    const sourceAgencyId =
+      canonical_property.source_links.find((link) => link.is_primary_source)
+        ?.source_property.source_agency_id ??
+      canonical_property.source_links[0]?.source_property.source_agency_id ??
+      null;
+    const tracker = sourceAgencyId
+      ? await this.prisma.userTrackedAgency.findUnique({
+          where: {
+            user_id_source_agency_id: {
+              user_id: userProperty.user_id,
+              source_agency_id: sourceAgencyId,
+            },
+          },
+          select: {
+            integration_link: {
+              select: {
+                user_integration: {
+                  select: { email: true },
+                },
+              },
+            },
+          },
+        })
+      : null;
+
     return serializePropertyForApi({
       ...rest,
       user,
@@ -2892,6 +2937,8 @@ export class UserPropertiesService {
       source_links: canonical_property.source_links,
       history: canonical_property.history,
       localized_contents,
+      integration_email:
+        tracker?.integration_link?.user_integration?.email ?? null,
       integration_property: integrationProperty
         ? {
             id: integrationProperty.id,
