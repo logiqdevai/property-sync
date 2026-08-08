@@ -6,6 +6,7 @@ import {
   CRM_CLIENT_NOTES_SYNC_QUEUE,
   DELETE_INTEGRATION_IMAGES_QUEUE,
   ESTATEWEB_SITES_UPDATE_QUEUE,
+  MIGRATE_INTEGRATION_IMAGES_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
@@ -23,6 +24,7 @@ import { SalesPriceUpdateProcessor } from '@/background/sales-price-update.proce
 import { CrmClientNotesSyncProcessor } from '@/background/crm-client-notes-sync.processor';
 import { EstateWebSitesUpdateProcessor } from '@/background/estateweb-sites-update.processor';
 import { DeleteIntegrationImagesProcessor } from '@/background/delete-integration-images.processor';
+import { MigrateIntegrationImagesProcessor } from '@/background/migrate-integration-images.processor';
 import { UserPropertiesController } from './user-properties.controller';
 import { AdminUserPropertiesController } from './admin-user-properties.controller';
 import { UserPropertiesService } from './user-properties.service';
@@ -32,6 +34,7 @@ import { SalesPriceUpdateJobService } from './services/sales-price-update-job.se
 import { CrmClientNotesSyncJobService } from './services/crm-client-notes-sync-job.service';
 import { EstateWebSitesUpdateJobService } from './services/estateweb-sites-update-job.service';
 import { DeleteIntegrationImagesJobService } from './services/delete-integration-images-job.service';
+import { MigrateIntegrationImagesJobService } from './services/migrate-integration-images-job.service';
 
 @Module({
   imports: [
@@ -51,6 +54,7 @@ import { DeleteIntegrationImagesJobService } from './services/delete-integration
       { name: ESTATEWEB_SITES_UPDATE_QUEUE },
       { name: RENORMALIZATION_QUEUE },
       { name: DELETE_INTEGRATION_IMAGES_QUEUE },
+      { name: MIGRATE_INTEGRATION_IMAGES_QUEUE },
     ),
   ],
   controllers: [UserPropertiesController, AdminUserPropertiesController],
@@ -68,6 +72,8 @@ import { DeleteIntegrationImagesJobService } from './services/delete-integration
     EstateWebSitesUpdateProcessor,
     DeleteIntegrationImagesJobService,
     DeleteIntegrationImagesProcessor,
+    MigrateIntegrationImagesJobService,
+    MigrateIntegrationImagesProcessor,
   ],
   exports: [UserPropertiesService],
 })

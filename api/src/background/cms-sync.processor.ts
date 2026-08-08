@@ -438,6 +438,13 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
               };
             }
 
+            await this.backfillImagesCache(
+              adapter,
+              userIntegrationId,
+              integrationPropertyId,
+              operation.user_property_id,
+            );
+
             this.logger.log(
               `CMS sync op success: property=${operation.user_property_id} operation=CREATE reconciled=LINK integration_property_id=${integrationPropertyId}`,
             );
@@ -663,6 +670,25 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       where: { id: userPropertyId },
       data: { integration_property_id: null },
     });
+  }
+
+  private async backfillImagesCache(
+    adapter: CmsSyncAdapter,
+    userIntegrationId: string,
+    integrationPropertyId: string,
+    userPropertyId: string,
+  ): Promise<void> {
+    try {
+      await adapter.ensureImagesCached?.({
+        userIntegrationId,
+        crmPropertyId: integrationPropertyId,
+        userPropertyId,
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Failed to backfill cached images: property=${userPropertyId} integration_property_id=${integrationPropertyId} error=${this.extractErrorMessage(error)}`,
+      );
+    }
   }
 
   private async stampIntegrationPropertyId(

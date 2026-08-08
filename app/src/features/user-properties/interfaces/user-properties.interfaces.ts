@@ -296,6 +296,18 @@ export interface MigrateIntegrationImagesPayload {
   mode: MigrateIntegrationImagesMode;
 }
 
+export interface BulkMigrateIntegrationImagesPayload {
+  ids: string[];
+  mode: MigrateIntegrationImagesMode;
+}
+
+export interface BulkMigrateIntegrationImagesResult {
+  job_log_id: string;
+  enqueued: number;
+  failed: Array<{ user_property_id: string; error: string }>;
+  message: string;
+}
+
 export interface RemoveWatermarkImagesResponse {
   job_log_id: string;
   message: string;

@@ -223,6 +223,7 @@ export const ApiRoutes = {
         produceContent: "/properties/produce-content",
         renormalize: "/properties/renormalize",
         bulkDeleteIntegrationImages: "/properties/bulk-delete-integration-images",
+        bulkMigrateIntegrationImages: "/properties/bulk-migrate-integration-images",
     },
     estateweb: {
         catalog: {

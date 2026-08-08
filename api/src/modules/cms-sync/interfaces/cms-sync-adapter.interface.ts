@@ -45,6 +45,12 @@ export interface CmsSyncPushOptions {
   forceSalesPriceRecalc?: boolean;
 }
 
+export interface CmsSyncBackfillImagesParams {
+  userIntegrationId: string;
+  crmPropertyId: string;
+  userPropertyId: string;
+}
+
 export interface CmsSyncAdapter {
   pushCreate(
     userIntegrationId: string,
@@ -66,4 +72,12 @@ export interface CmsSyncAdapter {
   deleteImages(params: CmsSyncDeleteImagesParams): Promise<void>;
   createImages(params: CmsSyncCreateImagesParams): Promise<void>;
   updateImages(params: CmsSyncUpdateImagesParams): Promise<void>;
+  /**
+   * Best-effort: fetch and cache the CMS's own image ids locally when the local
+   * cache was never populated (e.g. the property was linked/reconciled to an
+   * already-existing CMS listing instead of created by us, so the upload+cache
+   * step in pushCreate never ran for it). Must not throw; implementations should
+   * swallow and log failures instead of failing the caller's operation.
+   */
+  ensureImagesCached?(params: CmsSyncBackfillImagesParams): Promise<void>;
 }

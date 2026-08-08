@@ -29,6 +29,7 @@ import {
   produceUserPropertyContent,
   renormalizeUserProperties,
   bulkDeleteUserPropertyIntegrationImages,
+  bulkMigrateUserPropertyIntegrationImages,
   splitAdminUserProperties,
   splitUserProperties,
   truncateAdminUserPropertyDescriptions,
@@ -50,6 +51,7 @@ import type {
   SyncCrmClientNotesPayload,
   RenormalizeUserPropertiesPayload,
   BulkDeleteIntegrationImagesPayload,
+  BulkMigrateIntegrationImagesPayload,
   SplitUserPropertiesPayload,
   TruncateUserPropertyDescriptionsPayload,
   UpdateIntegrationImagesPayload,
@@ -683,6 +685,35 @@ export const useBulkDeleteUserPropertyIntegrationImages = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not delete CMS images",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useBulkMigrateUserPropertyIntegrationImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: BulkMigrateIntegrationImagesPayload) =>
+      bulkMigrateUserPropertyIntegrationImages(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+
+      toast({
+        title: "CMS image migrate started",
+        description:
+          result.failed.length > 0
+            ? `Enqueued ${result.enqueued}. ${result.failed.length} could not be enqueued.`
+            : `Migrating CMS images for ${result.enqueued} ${result.enqueued === 1 ? "property" : "properties"} in the background. Track progress in Job queue.`,
+        duration: 2500,
+        variant: result.failed.length > 0 ? "warning" : "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not migrate CMS images",
         description: error.message,
         variant: "error",
       });

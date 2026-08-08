@@ -14,6 +14,7 @@ import {
   CRM_CLIENT_NOTES_SYNC_QUEUE,
   DELETE_INTEGRATION_IMAGES_QUEUE,
   ESTATEWEB_SITES_UPDATE_QUEUE,
+  MIGRATE_INTEGRATION_IMAGES_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
@@ -54,6 +55,8 @@ export class JobsService {
     private readonly renormalizationQueue: Queue,
     @InjectQueue(DELETE_INTEGRATION_IMAGES_QUEUE)
     private readonly deleteIntegrationImagesQueue: Queue,
+    @InjectQueue(MIGRATE_INTEGRATION_IMAGES_QUEUE)
+    private readonly migrateIntegrationImagesQueue: Queue,
     @InjectQueue(CMS_SYNC_QUEUE)
     private readonly cmsSyncQueue: Queue,
   ) {}
@@ -155,6 +158,7 @@ export class JobsService {
             jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE ||
             jobLog.queue_name === RENORMALIZATION_QUEUE ||
             jobLog.queue_name === DELETE_INTEGRATION_IMAGES_QUEUE ||
+            jobLog.queue_name === MIGRATE_INTEGRATION_IMAGES_QUEUE ||
             jobLog.queue_name === CMS_SYNC_QUEUE
           ? {
               attempts: 3,
@@ -316,6 +320,45 @@ export class JobsService {
       return this.findOne(id);
     }
 
+    if (jobLog.queue_name === MIGRATE_INTEGRATION_IMAGES_QUEUE) {
+      const payloadRecord = payload as {
+        user_id?: string;
+        user_property_ids?: string[];
+        mode?: string;
+        total?: number;
+      };
+      const propertyIds = Array.isArray(payloadRecord.user_property_ids)
+        ? payloadRecord.user_property_ids
+        : [];
+      if (!payloadRecord.user_id || propertyIds.length === 0) {
+        throw new BadRequestException(
+          'Migrate integration images job payload is missing user or property ids',
+        );
+      }
+      if (!payloadRecord.mode) {
+        throw new BadRequestException(
+          'Migrate integration images job payload is missing mode',
+        );
+      }
+      await this.migrateIntegrationImagesQueue.addBulk(
+        propertyIds.map((userPropertyId) => ({
+          name: jobLog.job_name ?? 'migrate-integration-images',
+          data: {
+            job_log_id: jobLog.id,
+            user_id: payloadRecord.user_id,
+            user_property_id: userPropertyId,
+            mode: payloadRecord.mode,
+            total: payloadRecord.total ?? propertyIds.length,
+          },
+          opts: {
+            ...(jobOptions ?? {}),
+            jobId: `${jobLog.id}__${userPropertyId}`,
+          },
+        })),
+      );
+      return this.findOne(id);
+    }
+
     if (jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE) {
       const payloadRecord = payload as {
         user_id?: string;
@@ -458,7 +501,8 @@ export class JobsService {
       jobLog.queue_name === CRM_CLIENT_NOTES_SYNC_QUEUE ||
       jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE ||
       jobLog.queue_name === RENORMALIZATION_QUEUE ||
-      jobLog.queue_name === DELETE_INTEGRATION_IMAGES_QUEUE
+      jobLog.queue_name === DELETE_INTEGRATION_IMAGES_QUEUE ||
+      jobLog.queue_name === MIGRATE_INTEGRATION_IMAGES_QUEUE
     ) {
       const payload = (jobLog.payload ?? {}) as {
         user_property_ids?: string[];
@@ -477,7 +521,9 @@ export class JobsService {
                 ? this.estateWebSitesUpdateQueue
                 : jobLog.queue_name === DELETE_INTEGRATION_IMAGES_QUEUE
                   ? this.deleteIntegrationImagesQueue
-                  : this.renormalizationQueue;
+                  : jobLog.queue_name === MIGRATE_INTEGRATION_IMAGES_QUEUE
+                    ? this.migrateIntegrationImagesQueue
+                    : this.renormalizationQueue;
       for (const propertyId of propertyIds) {
         try {
           await queue.remove(`${jobLog.id}__${propertyId}`);
@@ -566,6 +612,9 @@ export class JobsService {
     }
     if (queueName === DELETE_INTEGRATION_IMAGES_QUEUE) {
       return this.deleteIntegrationImagesQueue;
+    }
+    if (queueName === MIGRATE_INTEGRATION_IMAGES_QUEUE) {
+      return this.migrateIntegrationImagesQueue;
     }
     if (queueName === CMS_SYNC_QUEUE) {
       return this.cmsSyncQueue;

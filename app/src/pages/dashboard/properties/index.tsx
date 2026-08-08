@@ -12,7 +12,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Globe, ImageOff, Languages, Layers, ListFilter, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { Globe, ImageOff, Images, Languages, Layers, ListFilter, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
@@ -21,6 +21,7 @@ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
+import { MigrateIntegrationImagesModal } from "@/components/ui/migrate-integration-images-modal";
 import {
   TableRowActionsMenu,
   type TableRowAction,
@@ -46,6 +47,7 @@ import {
   useRemoveUserPropertiesWatermarkImages,
   useRenormalizeUserProperties,
   useBulkDeleteUserPropertyIntegrationImages,
+  useBulkMigrateUserPropertyIntegrationImages,
   useSplitUserProperties,
   useTruncateUserPropertyDescriptions,
   useUpdateUserPropertySalesPrices,
@@ -104,6 +106,12 @@ const PROPERTY_DELETE_CMS_IMAGES_ACTION: TableRowAction = {
   icon: ImageOff,
 };
 
+const PROPERTY_MIGRATE_CMS_IMAGES_ACTION: TableRowAction = {
+  id: "migrate-cms-images",
+  label: "Migrate CMS images",
+  icon: Images,
+};
+
 const PROPERTY_REMOVE_WATERMARK_ACTION: TableRowAction = {
   id: "remove-watermarks",
   label: "Remove watermarks",
@@ -143,6 +151,7 @@ export default function DashboardPropertiesListPage() {
   const syncCrmClientNotesConfirm = useOverlayState();
   const renormalizeConfirm = useOverlayState();
   const deleteCmsImagesConfirm = useOverlayState();
+  const migrateCmsImagesModal = useOverlayState();
   const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
   const [removeWatermarkPropertyIds, setRemoveWatermarkPropertyIds] = useState<
     string[]
@@ -156,6 +165,9 @@ export default function DashboardPropertiesListPage() {
   >([]);
   const [renormalizePropertyIds, setRenormalizePropertyIds] = useState<string[]>([]);
   const [deleteCmsImagesPropertyIds, setDeleteCmsImagesPropertyIds] = useState<
+    string[]
+  >([]);
+  const [migrateCmsImagesPropertyIds, setMigrateCmsImagesPropertyIds] = useState<
     string[]
   >([]);
   const role = useAuthStore((state) => state.role);
@@ -245,6 +257,7 @@ export default function DashboardPropertiesListPage() {
   const syncCrmClientNotes = useSyncUserPropertyCrmClientNotes();
   const renormalize = useRenormalizeUserProperties();
   const bulkDeleteCmsImages = useBulkDeleteUserPropertyIntegrationImages();
+  const bulkMigrateCmsImages = useBulkMigrateUserPropertyIntegrationImages();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
@@ -324,6 +337,11 @@ export default function DashboardPropertiesListPage() {
     deleteCmsImagesConfirm.open();
   };
 
+  const openMigrateCmsImages = (ids: string[]) => {
+    setMigrateCmsImagesPropertyIds(ids);
+    migrateCmsImagesModal.open();
+  };
+
   const bulkActions = useMemo<TableRowAction[]>(() => {
     const actions: TableRowAction[] = [
       {
@@ -369,6 +387,18 @@ export default function DashboardPropertiesListPage() {
         icon: ImageOff,
         isDisabled: selectedLinkedCount < 1 || bulkDeleteCmsImages.isPending,
       },
+    ];
+
+    if (canManageBulk) {
+      actions.push({
+        id: "migrate-cms-images",
+        label: "Migrate CMS images",
+        icon: Images,
+        isDisabled: selectedLinkedCount < 1 || bulkMigrateCmsImages.isPending,
+      });
+    }
+
+    actions.push(
       {
         id: "remove-watermarks",
         label: "Remove watermarks",
@@ -381,7 +411,7 @@ export default function DashboardPropertiesListPage() {
         icon: Scissors,
         isDisabled: selectedCount < 1,
       },
-    ];
+    );
 
     if (canManageBulk) {
       actions.push({
@@ -421,6 +451,7 @@ export default function DashboardPropertiesListPage() {
     removeWatermarks.isPending,
     renormalize.isPending,
     bulkDeleteCmsImages.isPending,
+    bulkMigrateCmsImages.isPending,
     selectedCount,
     selectedGroupedCount,
     selectedLinkedCount,
@@ -511,6 +542,16 @@ export default function DashboardPropertiesListPage() {
         )
         .map((property) => property.id);
       openDeleteCmsImages(linkedIds);
+      return;
+    }
+    if (actionId === "migrate-cms-images") {
+      const linkedIds = properties
+        .filter(
+          (property) =>
+            selectedIds.has(property.id) && Boolean(property.integration_property_id),
+        )
+        .map((property) => property.id);
+      openMigrateCmsImages(linkedIds);
       return;
     }
     if (actionId === "remove-watermarks") {
@@ -622,6 +663,16 @@ export default function DashboardPropertiesListPage() {
     if (deleteCmsImagesPropertyIds.length === 0) return;
     await bulkDeleteCmsImages.mutateAsync({ ids: deleteCmsImagesPropertyIds });
     setDeleteCmsImagesPropertyIds([]);
+    clearSelection();
+  };
+
+  const handleMigrateCmsImages = async (mode: "from_crm" | "remap_sources") => {
+    if (migrateCmsImagesPropertyIds.length === 0) return;
+    await bulkMigrateCmsImages.mutateAsync({
+      ids: migrateCmsImagesPropertyIds,
+      mode,
+    });
+    setMigrateCmsImagesPropertyIds([]);
     clearSelection();
   };
 
@@ -974,6 +1025,16 @@ export default function DashboardPropertiesListPage() {
                     !property.integration_property_id ||
                     bulkDeleteCmsImages.isPending,
                 },
+                ...(canManageBulk
+                  ? [
+                      {
+                        ...PROPERTY_MIGRATE_CMS_IMAGES_ACTION,
+                        isDisabled:
+                          !property.integration_property_id ||
+                          bulkMigrateCmsImages.isPending,
+                      },
+                    ]
+                  : []),
                 {
                   ...PROPERTY_REMOVE_WATERMARK_ACTION,
                   isDisabled:
@@ -1028,6 +1089,10 @@ export default function DashboardPropertiesListPage() {
                     }
                     if (actionId === "delete-cms-images") {
                       openDeleteCmsImages([property.id]);
+                      return;
+                    }
+                    if (actionId === "migrate-cms-images") {
+                      openMigrateCmsImages([property.id]);
                       return;
                     }
                     if (actionId === "remove-watermarks") {
@@ -1119,6 +1184,16 @@ export default function DashboardPropertiesListPage() {
                             !property.integration_property_id ||
                             bulkDeleteCmsImages.isPending,
                         },
+                        ...(canManageBulk
+                          ? [
+                              {
+                                ...PROPERTY_MIGRATE_CMS_IMAGES_ACTION,
+                                isDisabled:
+                                  !property.integration_property_id ||
+                                  bulkMigrateCmsImages.isPending,
+                              },
+                            ]
+                          : []),
                         {
                           ...PROPERTY_REMOVE_WATERMARK_ACTION,
                           isDisabled:
@@ -1223,6 +1298,10 @@ export default function DashboardPropertiesListPage() {
                               }
                               if (actionId === "delete-cms-images") {
                                 openDeleteCmsImages([property.id]);
+                                return;
+                              }
+                              if (actionId === "migrate-cms-images") {
+                                openMigrateCmsImages([property.id]);
                                 return;
                               }
                               if (actionId === "remove-watermarks") {
@@ -1371,6 +1450,12 @@ export default function DashboardPropertiesListPage() {
         confirmLabel="Delete CMS images"
         onConfirm={handleDeleteCmsImages}
         isPending={bulkDeleteCmsImages.isPending}
+      />
+      <MigrateIntegrationImagesModal
+        state={migrateCmsImagesModal}
+        propertyCount={migrateCmsImagesPropertyIds.length}
+        onConfirm={handleMigrateCmsImages}
+        isPending={bulkMigrateCmsImages.isPending}
       />
       <RemoveWatermarkByCountModal
         state={removeWatermarkModal}

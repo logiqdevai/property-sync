@@ -44,6 +44,7 @@ import {
 } from './dto/user-property-query.schema';
 import { UserPropertyEntity } from './entities/user-property.entity';
 import { MigrateIntegrationImagesDto } from './dto/migrate-integration-images.dto';
+import { BulkMigrateIntegrationImagesDto } from './dto/bulk-migrate-integration-images.dto';
 import { ProduceUserPropertyContentDto } from './dto/produce-user-property-content.dto';
 import { ProduceUserPropertyContentResponseEntity } from './entities/produce-user-property-content-response.entity';
 
@@ -323,6 +324,29 @@ export class UserPropertiesController {
     return this.userPropertiesService.bulkDeleteIntegrationImages(
       userId,
       dto.ids,
+    );
+  }
+
+  @Post('bulk-migrate-integration-images')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Enqueue CMS image migrate/sync for selected properties (admin, background)',
+  })
+  @ApiResponse({ status: 202, description: 'CMS image migrate job enqueued' })
+  @ApiResponse({ status: 400, description: 'Cannot migrate CMS images' })
+  @ApiResponse({ status: 403, description: 'Admin only' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  bulkMigrateIntegrationImages(
+    @CurrentUser('id') userId: string,
+    @Body() dto: BulkMigrateIntegrationImagesDto,
+  ) {
+    return this.userPropertiesService.bulkMigrateIntegrationImages(
+      userId,
+      dto.ids,
+      dto.mode,
     );
   }
 

@@ -15,6 +15,8 @@ import type {
   RenormalizeUserPropertiesResult,
   BulkDeleteIntegrationImagesPayload,
   BulkDeleteIntegrationImagesResult,
+  BulkMigrateIntegrationImagesPayload,
+  BulkMigrateIntegrationImagesResult,
   UpdateSalesPricesPayload,
   UpdateSalesPricesResult,
   SyncCrmClientNotesPayload,
@@ -415,6 +417,22 @@ export const bulkDeleteUserPropertyIntegrationImages = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to delete CMS images.",
+    );
+  }
+};
+
+export const bulkMigrateUserPropertyIntegrationImages = async (
+  payload: BulkMigrateIntegrationImagesPayload,
+): Promise<BulkMigrateIntegrationImagesResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.bulkMigrateIntegrationImages,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to migrate CMS images.",
     );
   }
 };

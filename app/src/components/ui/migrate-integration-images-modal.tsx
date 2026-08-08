@@ -12,6 +12,7 @@ type MigrateIntegrationImagesModalProps = {
   state: MigrateIntegrationImagesModalState;
   onConfirm: (mode: MigrateIntegrationImagesMode) => void | Promise<void>;
   isPending?: boolean;
+  propertyCount?: number;
 };
 
 const MODE_OPTIONS: {
@@ -35,7 +36,7 @@ const MODE_OPTIONS: {
 
 export const MigrateIntegrationImagesModal: FC<
   MigrateIntegrationImagesModalProps
-> = ({ state, onConfirm, isPending = false }) => {
+> = ({ state, onConfirm, isPending = false, propertyCount }) => {
   const [mode, setMode] = useState<MigrateIntegrationImagesMode>("from_crm");
 
   useEffect(() => {
@@ -52,6 +53,11 @@ export const MigrateIntegrationImagesModal: FC<
     }
   };
 
+  const intro =
+    propertyCount != null && propertyCount > 1
+      ? `Choose how EstateWeb images should be written into IntegrationProperty for ${propertyCount} linked properties.`
+      : "Choose how EstateWeb images should be written into IntegrationProperty.";
+
   return (
     <Modal state={state}>
       <Modal.Backdrop isDismissable={!isPending}>
@@ -61,10 +67,7 @@ export const MigrateIntegrationImagesModal: FC<
               <Modal.Heading>Migrate CRM images</Modal.Heading>
             </Modal.Header>
             <Modal.Body className="flex flex-col gap-3">
-              <p className="text-sm text-muted">
-                Choose how EstateWeb images should be written into
-                IntegrationProperty.
-              </p>
+              <p className="text-sm text-muted">{intro}</p>
               <div className="flex flex-col gap-2">
                 {MODE_OPTIONS.map((option) => {
                   const selected = mode === option.value;

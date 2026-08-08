@@ -4,6 +4,7 @@ import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
   CmsPushCreateResult,
   CmsSyncAdapter,
+  CmsSyncBackfillImagesParams,
   CmsSyncCreateImagesParams,
   CmsSyncDeleteImagesParams,
   CmsSyncPushOptions,
@@ -201,6 +202,60 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       sites: payload.sites,
       ads: payload.ads ?? [],
     });
+
+    await this.ensureImagesCached({
+      userIntegrationId,
+      crmPropertyId: integrationPropertyId,
+      userPropertyId: userProperty.id,
+    });
+  }
+
+  async ensureImagesCached(
+    params: CmsSyncBackfillImagesParams,
+  ): Promise<void> {
+    const alreadyCached = await this.hasCachedIntegrationPropertyImages(
+      params.userIntegrationId,
+      params.userPropertyId,
+    );
+    if (alreadyCached) return;
+
+    try {
+      await this.syncIntegrationPropertyImages({
+        userIntegrationId: params.userIntegrationId,
+        userPropertyId: params.userPropertyId,
+        estateWebPropertyId: params.crmPropertyId,
+        preserveExistingSourceImages: false,
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Failed to backfill cached images for user_property=${params.userPropertyId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  private async hasCachedIntegrationPropertyImages(
+    userIntegrationId: string,
+    userPropertyId: string,
+  ): Promise<boolean> {
+    const integration = await this.prisma.userIntegration.findUnique({
+      where: { id: userIntegrationId },
+      select: { user_id: true, user_integration_settings_id: true },
+    });
+    if (!integration) return true;
+
+    const row = await this.prisma.integrationProperty.findUnique({
+      where: {
+        user_id_user_integration_settings_id_user_property_id: {
+          user_id: integration.user_id,
+          user_integration_settings_id:
+            integration.user_integration_settings_id,
+          user_property_id: userPropertyId,
+        },
+      },
+      select: { images: true },
+    });
+
+    return row?.images != null;
   }
 
   async pushRemove(
