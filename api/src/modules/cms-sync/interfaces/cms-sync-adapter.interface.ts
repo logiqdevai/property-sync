@@ -49,6 +49,7 @@ export interface CmsSyncBackfillImagesParams {
   userIntegrationId: string;
   crmPropertyId: string;
   userPropertyId: string;
+  sourceImages?: unknown;
 }
 
 export interface CmsSyncAdapter {
@@ -73,11 +74,10 @@ export interface CmsSyncAdapter {
   createImages(params: CmsSyncCreateImagesParams): Promise<void>;
   updateImages(params: CmsSyncUpdateImagesParams): Promise<void>;
   /**
-   * Best-effort: fetch and cache the CMS's own image ids locally when the local
-   * cache was never populated (e.g. the property was linked/reconciled to an
-   * already-existing CMS listing instead of created by us, so the upload+cache
-   * step in pushCreate never ran for it). Must not throw; implementations should
-   * swallow and log failures instead of failing the caller's operation.
+   * Best-effort image repair for already-linked CMS listings:
+   * - If CMS has no images and local source urls exist, upload them and cache ids
+   * - Else if local integration_property.images is missing/empty, fetch CRM images and cache
+   * Must not throw; implementations should swallow and log failures.
    */
   ensureImagesCached?(params: CmsSyncBackfillImagesParams): Promise<void>;
 }

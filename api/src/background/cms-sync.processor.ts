@@ -442,7 +442,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
               adapter,
               userIntegrationId,
               integrationPropertyId,
-              operation.user_property_id,
+              userProperty,
             );
 
             this.logger.log(
@@ -676,17 +676,18 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     adapter: CmsSyncAdapter,
     userIntegrationId: string,
     integrationPropertyId: string,
-    userPropertyId: string,
+    userProperty: { id: string; images: unknown },
   ): Promise<void> {
     try {
       await adapter.ensureImagesCached?.({
         userIntegrationId,
         crmPropertyId: integrationPropertyId,
-        userPropertyId,
+        userPropertyId: userProperty.id,
+        sourceImages: userProperty.images,
       });
     } catch (error) {
       this.logger.warn(
-        `Failed to backfill cached images: property=${userPropertyId} integration_property_id=${integrationPropertyId} error=${this.extractErrorMessage(error)}`,
+        `Failed to backfill cached images: property=${userProperty.id} integration_property_id=${integrationPropertyId} error=${this.extractErrorMessage(error)}`,
       );
     }
   }

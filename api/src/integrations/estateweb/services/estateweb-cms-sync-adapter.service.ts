@@ -139,7 +139,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       ads: payload.ads ?? [],
     });
 
-    await this.uploadImages(userIntegrationId, result.id, userProperty);
+    await this.uploadImages(userIntegrationId, result.id, userProperty.id, userProperty.images);
 
     return { integration_property_id: String(result.id) };
   }
@@ -207,41 +207,81 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       userIntegrationId,
       crmPropertyId: integrationPropertyId,
       userPropertyId: userProperty.id,
+      sourceImages: userProperty.images,
     });
   }
 
   async ensureImagesCached(
     params: CmsSyncBackfillImagesParams,
   ): Promise<void> {
-    const alreadyCached = await this.hasCachedIntegrationPropertyImages(
-      params.userIntegrationId,
-      params.userPropertyId,
-    );
-    if (alreadyCached) return;
-
     try {
+      const propertyId = Number(params.crmPropertyId);
+      if (!Number.isFinite(propertyId)) return;
+
+      const remote = await this.estateWebPropertyService.getProperty(
+        params.userIntegrationId,
+        params.crmPropertyId,
+      );
+      const remoteHasImages =
+        Array.isArray(remote.images) &&
+        remote.images.some(
+          (image) => image != null && typeof image.id === 'number',
+        );
+
+      if (!remoteHasImages) {
+        const sourceImages =
+          params.sourceImages ??
+          (await this.loadUserPropertySourceImages(params.userPropertyId));
+        if (this.parseImages(sourceImages, propertyId).length > 0) {
+          await this.uploadImages(
+            params.userIntegrationId,
+            propertyId,
+            params.userPropertyId,
+            sourceImages,
+          );
+          return;
+        }
+      }
+
+      const cachedImages = await this.loadCachedIntegrationPropertyImages(
+        params.userIntegrationId,
+        params.userPropertyId,
+      );
+      if (this.hasUsableCachedImageIds(cachedImages)) return;
+
       await this.syncIntegrationPropertyImages({
         userIntegrationId: params.userIntegrationId,
         userPropertyId: params.userPropertyId,
         estateWebPropertyId: params.crmPropertyId,
+        sourceImageUrls: this.parseSourceImageUrls(params.sourceImages),
         preserveExistingSourceImages: false,
       });
     } catch (error) {
       this.logger.warn(
-        `Failed to backfill cached images for user_property=${params.userPropertyId}: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to ensure CMS images for user_property=${params.userPropertyId}: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
 
-  private async hasCachedIntegrationPropertyImages(
+  private async loadUserPropertySourceImages(
+    userPropertyId: string,
+  ): Promise<unknown> {
+    const row = await this.prisma.userProperty.findUnique({
+      where: { id: userPropertyId },
+      select: { images: true },
+    });
+    return row?.images ?? [];
+  }
+
+  private async loadCachedIntegrationPropertyImages(
     userIntegrationId: string,
     userPropertyId: string,
-  ): Promise<boolean> {
+  ): Promise<unknown> {
     const integration = await this.prisma.userIntegration.findUnique({
       where: { id: userIntegrationId },
       select: { user_id: true, user_integration_settings_id: true },
     });
-    if (!integration) return true;
+    if (!integration) return null;
 
     const row = await this.prisma.integrationProperty.findUnique({
       where: {
@@ -255,7 +295,17 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       select: { images: true },
     });
 
-    return row?.images != null;
+    return row?.images ?? null;
+  }
+
+  private hasUsableCachedImageIds(images: unknown): boolean {
+    if (!Array.isArray(images) || images.length === 0) return false;
+    return images.some(
+      (item) =>
+        item != null &&
+        typeof item === 'object' &&
+        typeof (item as { id?: unknown }).id === 'number',
+    );
   }
 
   async pushRemove(
@@ -1054,9 +1104,10 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   private async uploadImages(
     userIntegrationId: string,
     propertyId: number,
-    userProperty: UserProperty,
+    userPropertyId: string,
+    imagesJson: unknown,
   ): Promise<void> {
-    const images = this.parseImages(userProperty.images, propertyId);
+    const images = this.parseImages(imagesJson, propertyId);
     if (images.length === 0) return;
 
     const sourceByFilename = new Map<string, string>();
@@ -1093,14 +1144,14 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     try {
       await this.syncIntegrationPropertyImages({
         userIntegrationId,
-        userPropertyId: userProperty.id,
+        userPropertyId,
         estateWebPropertyId: propertyId,
         sourceByFilename,
         sourceImageUrls: images.map((image) => image.url),
       });
     } catch (error) {
       this.logger.warn(
-        `Failed to persist IntegrationProperty images for user_property=${userProperty.id}: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to persist IntegrationProperty images for user_property=${userPropertyId}: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
