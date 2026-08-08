@@ -123,12 +123,16 @@ export class OpenAiWebhooksService {
             this.logger.error(
               `Failed to enqueue CMS sync after title batch ${batchId}: ${message}`,
             );
+            const agency = await this.resolveAgencyForCrawlRun(
+              ready.crawlRunId,
+            );
             this.notificationsService.create({
               type: NotificationType.CMS_SYNC_FAILURE,
               severity: NotificationSeverity.CRITICAL,
-              title: 'CMS sync enqueue failed after title batch',
-              message: `Title batch ${batchId} completed but CMS enqueue failed. ${message}`,
+              title: `CMS sync enqueue failed after title batch — ${agency.name}`,
+              message: `Title batch ${batchId} for ${agency.name} completed but CMS enqueue failed. ${message}`,
               crawl_run_id: ready.crawlRunId,
+              source_agency_id: agency.id,
             });
           }
         }
@@ -144,12 +148,16 @@ export class OpenAiWebhooksService {
           batchId,
           `OpenAI batch ${event.type}`,
         );
+        const agency = await this.resolveAgencyForCrawlRun(
+          titleBatch.crawl_run_id,
+        );
         this.notificationsService.create({
           type: NotificationType.CMS_SYNC_FAILURE,
           severity: NotificationSeverity.CRITICAL,
-          title: 'Content title AI batch failed',
-          message: `OpenAI title batch ${batchId} ${event.type}. CMS push held for affected properties.`,
+          title: `Content title AI batch failed — ${agency.name}`,
+          message: `OpenAI title batch ${batchId} for ${agency.name} ${event.type}. CMS push held for affected properties.`,
           crawl_run_id: titleBatch.crawl_run_id,
+          source_agency_id: agency.id,
         });
       }
       return;
@@ -209,6 +217,27 @@ export class OpenAiWebhooksService {
     }
 
     return integration.webhook_key;
+  }
+
+  private async resolveAgencyForCrawlRun(
+    crawlRunId: string | null | undefined,
+  ): Promise<{ id?: string; name: string }> {
+    if (!crawlRunId) {
+      return { name: 'Unknown agency' };
+    }
+
+    const crawlRun = await this.prisma.crawlRun.findUnique({
+      where: { id: crawlRunId },
+      select: {
+        source_agency_id: true,
+        source_agency: { select: { name: true } },
+      },
+    });
+
+    return {
+      id: crawlRun?.source_agency_id,
+      name: crawlRun?.source_agency?.name ?? 'Unknown agency',
+    };
   }
 
   private async findCrawlRunForBatch(

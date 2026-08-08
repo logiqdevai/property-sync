@@ -20,6 +20,7 @@ export interface TelegramNotificationPayload {
   title: string;
   message: string;
   source_agency_id?: string | null;
+  source_agency_name?: string | null;
   scraper_id?: string | null;
   crawl_run_id?: string | null;
 }

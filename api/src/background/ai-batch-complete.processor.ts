@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
+import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { AI_BATCH_COMPLETE_QUEUE } from '@/core/queues/queues.constants';
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
@@ -21,6 +22,7 @@ export class AiBatchCompleteProcessor extends WorkerHost {
   private readonly logger = new Logger(AiBatchCompleteProcessor.name);
 
   constructor(
+    private readonly prisma: PrismaService,
     private readonly propertyNormalizationService: PropertyNormalizationService,
     private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
     private readonly notificationsService: NotificationsService,
@@ -56,12 +58,22 @@ export class AiBatchCompleteProcessor extends WorkerHost {
             this.logger.error(
               `Crawl ${crawlRunId}: CMS sync enqueue failed after AI batch normalization: ${message}`,
             );
+            const crawlRun = await this.prisma.crawlRun.findUnique({
+              where: { id: crawlRunId },
+              select: {
+                source_agency_id: true,
+                source_agency: { select: { name: true } },
+              },
+            });
+            const agencyName =
+              crawlRun?.source_agency?.name ?? 'Unknown agency';
             this.notificationsService.create({
               type: NotificationType.CMS_SYNC_FAILURE,
               severity: NotificationSeverity.CRITICAL,
-              title: 'CMS sync enqueue failed',
-              message: `Crawl ${crawlRunId}: CMS sync enqueue failed after AI batch. ${message}`,
+              title: `CMS sync enqueue failed — ${agencyName}`,
+              message: `Crawl ${crawlRunId} for ${agencyName}: CMS sync enqueue failed after AI batch. ${message}`,
               crawl_run_id: crawlRunId,
+              source_agency_id: crawlRun?.source_agency_id,
             });
           }
         },

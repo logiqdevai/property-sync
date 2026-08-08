@@ -96,6 +96,12 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     const payload = (syncRun.payload ?? {}) as unknown as StoredPayload;
     const previousResponse = (syncRun.response ??
       {}) as unknown as StoredResponse;
+    const sourceAgencyId =
+      syncRun.crawl_run?.source_agency_id ?? payload.source_agency_id;
+    const agencyName = await this.resolveAgencyName(
+      sourceAgencyId,
+      syncRun.crawl_run?.source_agency?.name,
+    );
 
     const attempt = Math.max(syncRun.attempt, job.attemptsMade + 1);
     await this.cmsSyncRunsService.markAttemptStarted(cms_sync_run_id, attempt);
@@ -126,7 +132,8 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       this.notifySyncCompleted({
         cmsSyncRunId: cms_sync_run_id,
         crawlRunId: crawl_run_id,
-        sourceAgencyId: syncRun.crawl_run?.source_agency_id ?? payload.source_agency_id,
+        sourceAgencyId,
+        agencyName,
         created: syncRun.total_created,
         updated: syncRun.total_updated,
         removed: syncRun.total_removed,
@@ -221,11 +228,10 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         this.notificationsService.create({
           type: NotificationType.CMS_SYNC_FAILURE,
           severity: NotificationSeverity.CRITICAL,
-          title: 'CMS sync batch failed',
-          message: `CmsSyncRun ${cms_sync_run_id} exhausted all retries. ${failureSummary}`,
+          title: `CMS sync batch failed — ${agencyName}`,
+          message: `CmsSyncRun ${cms_sync_run_id} for ${agencyName} exhausted all retries. ${failureSummary}`,
           crawl_run_id: crawl_run_id,
-          source_agency_id:
-            syncRun.crawl_run?.source_agency_id ?? payload.source_agency_id,
+          source_agency_id: sourceAgencyId,
         });
       } else {
         throw new Error(
@@ -238,8 +244,8 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     this.notifySyncCompleted({
       cmsSyncRunId: cms_sync_run_id,
       crawlRunId: crawl_run_id,
-      sourceAgencyId:
-        syncRun.crawl_run?.source_agency_id ?? payload.source_agency_id,
+      sourceAgencyId,
+      agencyName,
       created: mergedResult.created,
       updated: mergedResult.updated,
       removed: mergedResult.removed,
@@ -247,10 +253,25 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     });
   }
 
+  private async resolveAgencyName(
+    sourceAgencyId: string | undefined,
+    knownName?: string | null,
+  ): Promise<string> {
+    if (knownName) return knownName;
+    if (!sourceAgencyId) return 'Unknown agency';
+
+    const agency = await this.prisma.sourceAgency.findUnique({
+      where: { id: sourceAgencyId },
+      select: { name: true },
+    });
+    return agency?.name ?? 'Unknown agency';
+  }
+
   private notifySyncCompleted(params: {
     cmsSyncRunId: string;
     crawlRunId: string | null;
     sourceAgencyId?: string;
+    agencyName: string;
     created: number;
     updated: number;
     removed: number;
@@ -260,6 +281,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       cmsSyncRunId,
       crawlRunId,
       sourceAgencyId,
+      agencyName,
       created,
       updated,
       removed,
@@ -268,8 +290,8 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     this.notificationsService.create({
       type: NotificationType.CMS_SYNC_SUCCESS,
       severity: NotificationSeverity.INFO,
-      title: 'CMS sync completed',
-      message: `CmsSyncRun ${cmsSyncRunId} completed. Created ${created}, updated ${updated}, linked ${linked}, removed ${removed}.`,
+      title: `CMS sync completed — ${agencyName}`,
+      message: `CmsSyncRun ${cmsSyncRunId} for ${agencyName} completed. Created ${created}, updated ${updated}, linked ${linked}, removed ${removed}.`,
       crawl_run_id: crawlRunId,
       source_agency_id: sourceAgencyId,
     });

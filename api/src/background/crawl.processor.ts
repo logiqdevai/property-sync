@@ -100,6 +100,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         },
         source_agency: {
           select: {
+            name: true,
             block_rules: true,
             block_handling_wait_timeout_ms: true,
             block_handling_min_ready_body_length: true,
@@ -436,11 +437,12 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
                 this.logger.error(
                   `Crawl ${crawlRunId}: CMS sync enqueue failed after normalization: ${message}`,
                 );
+                const agencyName = run.source_agency?.name ?? 'Unknown agency';
                 this.notificationsService.create({
                   type: NotificationType.CMS_SYNC_FAILURE,
                   severity: NotificationSeverity.CRITICAL,
-                  title: 'CMS sync enqueue failed',
-                  message: `Crawl ${crawlRunId} normalized successfully but CMS sync enqueue failed: ${message}`,
+                  title: `CMS sync enqueue failed — ${agencyName}`,
+                  message: `Crawl ${crawlRunId} for ${agencyName} normalized successfully but CMS sync enqueue failed: ${message}`,
                   source_agency_id: run.source_agency_id,
                   scraper_id: scraper.id,
                   crawl_run_id: crawlRunId,

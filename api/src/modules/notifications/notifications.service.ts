@@ -33,7 +33,19 @@ export class NotificationsService {
           );
 
           if (shouldSend) {
-            await this.telegramService.sendNotification(notification);
+            let sourceAgencyName: string | null = null;
+            if (notification.source_agency_id) {
+              const agency = await this.prisma.sourceAgency.findUnique({
+                where: { id: notification.source_agency_id },
+                select: { name: true },
+              });
+              sourceAgencyName = agency?.name ?? null;
+            }
+
+            await this.telegramService.sendNotification({
+              ...notification,
+              source_agency_name: sourceAgencyName,
+            });
           }
         } catch (error) {
           const message =

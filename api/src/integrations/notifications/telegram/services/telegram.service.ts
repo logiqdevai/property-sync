@@ -78,7 +78,11 @@ export class TelegramService {
       this.escapeHtml(notification.message),
     ];
 
-    if (notification.source_agency_id) {
+    if (notification.source_agency_name) {
+      lines.push(
+        `Agency: ${this.escapeHtml(notification.source_agency_name)}`,
+      );
+    } else if (notification.source_agency_id) {
       lines.push(
         `Agency: <code>${this.escapeHtml(notification.source_agency_id)}</code>`,
       );
