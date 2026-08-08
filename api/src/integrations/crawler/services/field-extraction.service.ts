@@ -31,9 +31,24 @@ export class FieldExtractionService {
         );
       }
       if (type === 'src') {
-        return (
-          (await el.getAttribute('src', { timeout: FIELD_TIMEOUT })) ?? null
-        );
+        const src =
+          (await el.getAttribute('src', { timeout: FIELD_TIMEOUT })) ?? null;
+        // Lazy-loaded images keep a tiny base64 placeholder in `src` and stash
+        // the real URL in a data-* attribute until scrolled into view.
+        if (src && src.toLowerCase().startsWith('data:')) {
+          const lazySrc =
+            (await el
+              .getAttribute('data-src', { timeout: FIELD_TIMEOUT })
+              .catch(() => null)) ??
+            (await el
+              .getAttribute('data-lazy-src', { timeout: FIELD_TIMEOUT })
+              .catch(() => null)) ??
+            (await el
+              .getAttribute('data-original', { timeout: FIELD_TIMEOUT })
+              .catch(() => null));
+          return lazySrc ?? null;
+        }
+        return src;
       }
       if (type === 'background_image') {
         const style =

@@ -12,6 +12,10 @@ import {
 } from '../interfaces/scraper-config.interface';
 import { crawlTimestamp } from '../utils/crawler.utils';
 import {
+  INFINITE_SCROLL_MAX_WAIT_MS,
+  INFINITE_SCROLL_POLL_INTERVAL_MS,
+} from '../constants/crawler.constants';
+import {
   classifyPageAccess,
   waitForBotChallengeClearance,
 } from '../block-handling/block-handling.utils';
@@ -97,9 +101,21 @@ export class CrawlerService {
         };
       }
 
+      // infinite_scroll / load_more pagination appends new cards to the same DOM
+      // list rather than replacing it, so listing_selector keeps matching every
+      // card seen so far, not just the newly loaded ones -- track how many we've
+      // already extracted so each pass only processes the new tail instead of
+      // re-scraping (and re-pushing duplicate items for) the whole list every time.
+      const isAccumulatingPagination =
+        config.pagination?.type === 'infinite_scroll' ||
+        config.pagination?.type === 'INFINITE_SCROLL' ||
+        config.pagination?.type === 'load_more' ||
+        config.pagination?.type === 'LOAD_MORE';
+
       let pageNum = 0;
       let prevUrl: string | null = null;
       let prevItemCount = -1;
+      let processedCardCount = 0;
 
       while (pageNum < crawlerConfig.max_pages) {
         const currentUrl = page.url();
@@ -141,7 +157,8 @@ export class CrawlerService {
           break;
         }
 
-        for (let i = 0; i < cardCount; i++) {
+        const startIndex = isAccumulatingPagination ? processedCardCount : 0;
+        for (let i = startIndex; i < cardCount; i++) {
           const liveCount = await page
             .locator(config.listing_selector)
             .count()
@@ -177,9 +194,25 @@ export class CrawlerService {
                   if (match?.[1]) imgs.push(match[1]);
                 });
                 el.querySelectorAll('img').forEach((node) => {
-                  if (node.src) imgs.push(node.src);
+                  // Lazy-loaded images often keep a tiny base64 placeholder in
+                  // `src` and stash the real URL in a data-* attribute until
+                  // the image scrolls into view -- prefer that real URL when
+                  // `src` is a data: URI instead of capturing the placeholder.
+                  const src = node.getAttribute('src') || '';
+                  if (src.startsWith('data:')) {
+                    const lazySrc =
+                      node.getAttribute('data-src') ||
+                      node.getAttribute('data-lazy-src') ||
+                      node.getAttribute('data-original') ||
+                      '';
+                    if (lazySrc) imgs.push(lazySrc);
+                  } else if (src) {
+                    imgs.push(src);
+                  }
                 });
-                return [...new Set(imgs)];
+                return [...new Set(imgs)].filter(
+                  (src) => !src.startsWith('data:'),
+                );
               })
               .catch(() => []);
 
@@ -200,6 +233,8 @@ export class CrawlerService {
             log('card_extract_failed', { index: i, message });
           }
         }
+
+        processedCardCount = cardCount;
 
         if (options?.onPageComplete) {
           await options.onPageComplete();
@@ -340,8 +375,20 @@ export class CrawlerService {
         log('pagination_end', { reason: 'load_more_not_visible' });
         return false;
       }
+      const prevCount = listingSelector
+        ? await page.locator(listingSelector).count().catch(() => 0)
+        : 0;
       await btn.click({ timeout: 8000 });
-      await page.waitForTimeout(crawlerConfig.scroll_pause_ms);
+      const grew = await this.waitForCardCountIncrease(
+        page,
+        listingSelector,
+        prevCount,
+      );
+      if (!grew) {
+        // Give the fixed pause a chance too -- some "load more" buttons swap
+        // content in place (same count, different cards) rather than appending.
+        await page.waitForTimeout(crawlerConfig.scroll_pause_ms);
+      }
       return true;
     }
 
@@ -350,10 +397,41 @@ export class CrawlerService {
       pagination.type === 'INFINITE_SCROLL'
     ) {
       const prevHeight = await page.evaluate(() => document.body.scrollHeight);
+      const prevCount = listingSelector
+        ? await page.locator(listingSelector).count().catch(() => 0)
+        : 0;
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-      await page.waitForTimeout(crawlerConfig.scroll_pause_ms);
-      const newHeight = await page.evaluate(() => document.body.scrollHeight);
-      if (newHeight === prevHeight) {
+
+      // Some infinite-scroll sites (e.g. JetEngine/WordPress AJAX grids) take
+      // a couple seconds to fetch and render the next batch after the scroll
+      // event fires. Poll for either new cards or a taller page instead of a
+      // single fixed wait, so fast sites finish quickly while slow ones get
+      // the time they actually need.
+      const deadline = Date.now() + INFINITE_SCROLL_MAX_WAIT_MS;
+      let newHeight = prevHeight;
+      let grew = false;
+      while (Date.now() < deadline) {
+        await page.waitForTimeout(INFINITE_SCROLL_POLL_INTERVAL_MS);
+        newHeight = await page
+          .evaluate(() => document.body.scrollHeight)
+          .catch(() => prevHeight);
+        if (newHeight !== prevHeight) {
+          grew = true;
+          break;
+        }
+        if (listingSelector) {
+          const currentCount = await page
+            .locator(listingSelector)
+            .count()
+            .catch(() => prevCount);
+          if (currentCount > prevCount) {
+            grew = true;
+            break;
+          }
+        }
+      }
+
+      if (!grew) {
         log('pagination_end', { reason: 'scroll_height_unchanged' });
         return false;
       }
@@ -380,6 +458,24 @@ export class CrawlerService {
       return true;
     }
 
+    return false;
+  }
+
+  private async waitForCardCountIncrease(
+    page: Page,
+    listingSelector: string | undefined,
+    prevCount: number,
+  ): Promise<boolean> {
+    if (!listingSelector) return false;
+    const deadline = Date.now() + INFINITE_SCROLL_MAX_WAIT_MS;
+    while (Date.now() < deadline) {
+      await page.waitForTimeout(INFINITE_SCROLL_POLL_INTERVAL_MS);
+      const currentCount = await page
+        .locator(listingSelector)
+        .count()
+        .catch(() => prevCount);
+      if (currentCount > prevCount) return true;
+    }
     return false;
   }
 

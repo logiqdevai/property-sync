@@ -153,7 +153,10 @@ export function extractImages(rawData: unknown): string[] {
   const fromPlain = data.all_images;
   const images = fromUnderscore ?? fromPlain;
   if (!Array.isArray(images)) return [];
-  return images.filter((item): item is string => typeof item === 'string');
+  return images.filter(
+    (item): item is string =>
+      typeof item === 'string' && !item.toLowerCase().startsWith('data:'),
+  );
 }
 
 export function extractLatLng(rawData: unknown): {

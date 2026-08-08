@@ -2,6 +2,12 @@ export const DEFAULT_MAX_PAGES = 50;
 export const DEFAULT_PAGE_TIMEOUT_MS = 30_000;
 export const DEFAULT_SELECTOR_TIMEOUT_MS = 15_000;
 export const DEFAULT_SCROLL_PAUSE_MS = 1_500;
+// Some infinite-scroll sites take a couple seconds to fetch/render the next
+// batch after the scroll event fires -- polling repeatedly (instead of a single
+// fixed wait) lets fast sites finish early while still giving slow ones enough
+// time to actually load more cards before we give up on pagination.
+export const INFINITE_SCROLL_MAX_WAIT_MS = 8_000;
+export const INFINITE_SCROLL_POLL_INTERVAL_MS = 400;
 export const DEFAULT_DETAIL_CONCURRENCY = 3;
 export const DEFAULT_DETAIL_DELAY_MS = 500;
 export const DEFAULT_CRAWL_WORKER_CONCURRENCY = 5;

@@ -167,7 +167,9 @@ export class DetailEnrichmentService {
         const images: string[] = [];
         const isJunkImageUrl = (src: string): boolean => {
           const lower = src.toLowerCase();
-          if (!src || lower.endsWith('.svg')) return true;
+          if (!src || lower.startsWith('data:') || lower.endsWith('.svg')) {
+            return true;
+          }
           if (
             /logo|icon|favicon|sprite|sharethis|maps\d*\.a-cdn|\/tiles\/|googleusercontent\.com\/map/i.test(
               lower,
@@ -181,6 +183,20 @@ export class DetailEnrichmentService {
           if (!src || isJunkImageUrl(src)) return;
           images.push(src);
         };
+        // Lazy-loaded <img> tags often keep a tiny base64 placeholder in `src`
+        // and stash the real URL in a data-* attribute until scrolled into
+        // view -- resolve that instead of dropping the image entirely.
+        const resolveImgSrc = (el: HTMLImageElement): string | null => {
+          if (el.src && !el.src.toLowerCase().startsWith('data:')) {
+            return el.src;
+          }
+          return (
+            el.getAttribute('data-src') ||
+            el.getAttribute('data-lazy-src') ||
+            el.getAttribute('data-original') ||
+            null
+          );
+        };
 
         if (cfg?.image_selector) {
           const type = cfg.image_type ?? 'src';
@@ -190,8 +206,8 @@ export class DetailEnrichmentService {
                 /background-image:\s*url\(['"]?(.*?)['"]?\)/,
               );
               pushImage(match?.[1]);
-            } else if (el instanceof HTMLImageElement && el.src) {
-              pushImage(el.src);
+            } else if (el instanceof HTMLImageElement) {
+              pushImage(resolveImgSrc(el));
             }
           });
         } else {
@@ -202,7 +218,7 @@ export class DetailEnrichmentService {
             pushImage(match?.[1]);
           });
           document.querySelectorAll('img').forEach((el) => {
-            pushImage(el.src);
+            pushImage(resolveImgSrc(el as HTMLImageElement));
           });
         }
 
@@ -390,26 +406,41 @@ export class DetailEnrichmentService {
         if (latitude == null || longitude == null) {
           for (const el of Array.from(
             document.querySelectorAll(
-              'a[href*="maps"], a[href*="google.com/maps"], iframe[src*="maps"]',
+              'a[href*="maps"], a[href*="google.com/maps"], iframe[src*="maps"], iframe[data-src*="maps"]',
             ),
           )) {
-            const href =
-              el.getAttribute('href') || el.getAttribute('src') || '';
-            const atMatch = href.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+            // Map embeds are often lazy-loaded (e.g. lazysizes), so the real
+            // URL with coordinates sits in data-src until the iframe scrolls
+            // into view and `src` never gets a chance to be set.
+            const rawHref =
+              el.getAttribute('href') ||
+              el.getAttribute('src') ||
+              el.getAttribute('data-src') ||
+              '';
+            // Query params are URL-encoded (e.g. "%2C" for the comma between
+            // lat/lng, occasionally with an encoded space too), so decode
+            // before matching or the plain-comma regexes below never fire.
+            let href = rawHref;
+            try {
+              href = decodeURIComponent(rawHref);
+            } catch {
+              /* keep raw if malformed */
+            }
+            const atMatch = href.match(/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
             if (
               atMatch &&
               acceptCoords(parseCoord(atMatch[1]), parseCoord(atMatch[2]))
             ) {
               break;
             }
-            const qMatch = href.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+            const qMatch = href.match(/[?&]q=(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
             if (
               qMatch &&
               acceptCoords(parseCoord(qMatch[1]), parseCoord(qMatch[2]))
             ) {
               break;
             }
-            const llMatch = href.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+            const llMatch = href.match(/[?&]ll=(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
             if (
               llMatch &&
               acceptCoords(parseCoord(llMatch[1]), parseCoord(llMatch[2]))
