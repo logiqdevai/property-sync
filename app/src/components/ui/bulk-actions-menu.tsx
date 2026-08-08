@@ -1,13 +1,13 @@
 import { ChevronDown } from "lucide-react";
-import { Button, Dropdown, Label } from "@heroui/react";
-import { cn } from "@/lib/utils";
+import { Button, Dropdown } from "@heroui/react";
 import {
-  getActionTone,
-  type TableRowAction,
+  ActionMenuEntries,
+  countTableRowActionEntries,
+  type TableRowActionEntry,
 } from "@/components/ui/table-row-actions-menu";
 
 export type BulkActionsMenuProps = {
-  actions: TableRowAction[];
+  actions: TableRowActionEntry[];
   onAction: (actionId: string) => void;
   label?: string;
   isDisabled?: boolean;
@@ -21,7 +21,7 @@ export function BulkActionsMenu({
   isDisabled = false,
   isPending = false,
 }: BulkActionsMenuProps) {
-  if (actions.length === 0) {
+  if (countTableRowActionEntries(actions) === 0) {
     return null;
   }
 
@@ -33,27 +33,7 @@ export function BulkActionsMenu({
       </Button>
       <Dropdown.Popover className="max-h-[min(24rem,70dvh)] overflow-y-auto">
         <Dropdown.Menu onAction={(key) => onAction(String(key))}>
-          {actions.map((action) => {
-            const Icon = action.icon;
-            const tone = getActionTone(action.variant);
-
-            return (
-              <Dropdown.Item
-                key={action.id}
-                id={action.id}
-                textValue={action.label}
-                variant={action.variant === "danger" ? "danger" : undefined}
-                isDisabled={action.isDisabled}
-              >
-                <div className="flex w-full items-center gap-2">
-                  {Icon ? (
-                    <Icon className={cn("h-3.5 w-3.5 shrink-0", tone.icon)} />
-                  ) : null}
-                  <Label className={tone.label}>{action.label}</Label>
-                </div>
-              </Dropdown.Item>
-            );
-          })}
+          <ActionMenuEntries entries={actions} onAction={onAction} />
         </Dropdown.Menu>
       </Dropdown.Popover>
     </Dropdown>

@@ -4,7 +4,7 @@ import { Routes } from "@/routes/routes";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import {
   TableRowActionsMenu,
-  type TableRowAction,
+  type TableRowActionEntry,
 } from "@/components/ui/table-row-actions-menu";
 import {
   PropertyStatuses,
@@ -27,7 +27,7 @@ type PropertyListCardProps = {
   duplicateGroupId: string | null;
   isSelected: boolean;
   onSelectionChange: (selected: boolean) => void;
-  rowActions: TableRowAction[];
+  rowActions: TableRowActionEntry[];
   onAction: (actionId: string) => void;
   isPushPending: boolean;
   onPushToCrm: () => void;

@@ -25,6 +25,7 @@ import { MigrateIntegrationImagesModal } from "@/components/ui/migrate-integrati
 import {
   TableRowActionsMenu,
   type TableRowAction,
+  type TableRowActionEntry,
 } from "@/components/ui/table-row-actions-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-modal";
@@ -136,6 +137,106 @@ const PROPERTY_DELETE_ACTION: TableRowAction = {
   variant: "danger",
   icon: Trash2,
 };
+
+function buildPropertyRowActions(options: {
+  canManageBulk: boolean;
+  canDelete: boolean;
+  hasIntegration: boolean;
+  pushPending: boolean;
+  producePending: boolean;
+  renormalizePending: boolean;
+  updateSalesPricesPending: boolean;
+  syncCrmClientNotesPending: boolean;
+  deleteCmsImagesPending: boolean;
+  migrateCmsImagesPending: boolean;
+  removeWatermarksPending: boolean;
+}): TableRowActionEntry[] {
+  const {
+    canManageBulk,
+    canDelete,
+    hasIntegration,
+    pushPending,
+    producePending,
+    renormalizePending,
+    updateSalesPricesPending,
+    syncCrmClientNotesPending,
+    deleteCmsImagesPending,
+    migrateCmsImagesPending,
+    removeWatermarksPending,
+  } = options;
+
+  const imageItems: TableRowAction[] = [
+    {
+      ...PROPERTY_REMOVE_WATERMARK_ACTION,
+      isDisabled: !hasIntegration || removeWatermarksPending,
+    },
+  ];
+
+  if (canManageBulk) {
+    imageItems.push({
+      ...PROPERTY_MIGRATE_CMS_IMAGES_ACTION,
+      isDisabled: !hasIntegration || migrateCmsImagesPending,
+    });
+  }
+
+  imageItems.push({
+    ...PROPERTY_DELETE_CMS_IMAGES_ACTION,
+    isDisabled: !hasIntegration || deleteCmsImagesPending,
+  });
+
+  const entries: TableRowActionEntry[] = [
+    {
+      id: "crm",
+      label: "CRM",
+      icon: Upload,
+      items: [
+        {
+          ...PROPERTY_PUSH_ACTION,
+          isDisabled: pushPending,
+        },
+        {
+          ...PROPERTY_MANAGE_SITES_ACTION,
+          isDisabled: !hasIntegration,
+        },
+        {
+          ...PROPERTY_UPDATE_SALES_PRICES_ACTION,
+          isDisabled: !hasIntegration || updateSalesPricesPending,
+        },
+        {
+          ...PROPERTY_SYNC_CRM_CLIENT_NOTES_ACTION,
+          isDisabled: !hasIntegration || syncCrmClientNotesPending,
+        },
+      ],
+    },
+    {
+      id: "content",
+      label: "Content",
+      icon: Languages,
+      items: [
+        {
+          ...PROPERTY_PRODUCE_CONTENT_ACTION,
+          isDisabled: producePending,
+        },
+        {
+          ...PROPERTY_RENORMALIZE_ACTION,
+          isDisabled: renormalizePending,
+        },
+      ],
+    },
+    {
+      id: "images",
+      label: "Images",
+      icon: Images,
+      items: imageItems,
+    },
+  ];
+
+  if (canDelete) {
+    entries.push(PROPERTY_DELETE_ACTION);
+  }
+
+  return entries;
+}
 
 export default function DashboardPropertiesListPage() {
   const isMobile = useIsMobile();
@@ -342,55 +443,18 @@ export default function DashboardPropertiesListPage() {
     migrateCmsImagesModal.open();
   };
 
-  const bulkActions = useMemo<TableRowAction[]>(() => {
-    const actions: TableRowAction[] = [
+  const bulkActions = useMemo<TableRowActionEntry[]>(() => {
+    const imageItems: TableRowAction[] = [
       {
-        id: "push-to-crm",
-        label: "Push to CRM",
-        icon: Upload,
-        isDisabled: selectedCount < 1 || pushSelectedToCrm.isPending,
-      },
-      {
-        id: "produce-content",
-        label: "Produce content",
-        icon: Languages,
-        isDisabled: selectedCount < 1 || produceContent.isPending,
-      },
-      {
-        id: "renormalize",
-        label: "Renormalize",
-        icon: RefreshCw,
-        isDisabled: selectedCount < 1 || renormalize.isPending,
-      },
-      {
-        id: "manage-estateweb-sites",
-        label: "Manage EstateWeb Sites",
-        icon: Globe,
-        isDisabled: selectedLinkedCount < 1,
-      },
-      {
-        id: "update-sales-prices",
-        label: "Update sales prices on CRM",
-        icon: Percent,
-        isDisabled: selectedLinkedCount < 1 || updateSalesPrices.isPending,
-      },
-      {
-        id: "sync-crm-client-notes",
-        label: "Sync CRM client notes",
-        icon: NotebookPen,
-        isDisabled: selectedLinkedCount < 1 || syncCrmClientNotes.isPending,
-      },
-      {
-        id: "delete-cms-images",
-        label: "Delete CMS images",
-        variant: "danger",
-        icon: ImageOff,
-        isDisabled: selectedLinkedCount < 1 || bulkDeleteCmsImages.isPending,
+        id: "remove-watermarks",
+        label: "Remove watermarks",
+        icon: Sparkles,
+        isDisabled: selectedLinkedCount < 1 || removeWatermarks.isPending,
       },
     ];
 
     if (canManageBulk) {
-      actions.push({
+      imageItems.push({
         id: "migrate-cms-images",
         label: "Migrate CMS images",
         icon: Images,
@@ -398,41 +462,106 @@ export default function DashboardPropertiesListPage() {
       });
     }
 
-    actions.push(
+    imageItems.push({
+      id: "delete-cms-images",
+      label: "Delete CMS images",
+      variant: "danger",
+      icon: ImageOff,
+      isDisabled: selectedLinkedCount < 1 || bulkDeleteCmsImages.isPending,
+    });
+
+    const entries: TableRowActionEntry[] = [
       {
-        id: "remove-watermarks",
-        label: "Remove watermarks",
-        icon: Sparkles,
-        isDisabled: selectedLinkedCount < 1 || removeWatermarks.isPending,
+        id: "crm",
+        label: "CRM",
+        icon: Upload,
+        items: [
+          {
+            id: "push-to-crm",
+            label: "Push to CRM",
+            icon: Upload,
+            isDisabled: selectedCount < 1 || pushSelectedToCrm.isPending,
+          },
+          {
+            id: "manage-estateweb-sites",
+            label: "Manage EstateWeb Sites",
+            icon: Globe,
+            isDisabled: selectedLinkedCount < 1,
+          },
+          {
+            id: "update-sales-prices",
+            label: "Update sales prices on CRM",
+            icon: Percent,
+            isDisabled: selectedLinkedCount < 1 || updateSalesPrices.isPending,
+          },
+          {
+            id: "sync-crm-client-notes",
+            label: "Sync CRM client notes",
+            icon: NotebookPen,
+            isDisabled: selectedLinkedCount < 1 || syncCrmClientNotes.isPending,
+          },
+        ],
       },
       {
-        id: "truncate",
-        label: "Truncate text",
-        icon: Scissors,
-        isDisabled: selectedCount < 1,
+        id: "content",
+        label: "Content",
+        icon: Languages,
+        items: [
+          {
+            id: "produce-content",
+            label: "Produce content",
+            icon: Languages,
+            isDisabled: selectedCount < 1 || produceContent.isPending,
+          },
+          {
+            id: "renormalize",
+            label: "Renormalize",
+            icon: RefreshCw,
+            isDisabled: selectedCount < 1 || renormalize.isPending,
+          },
+          {
+            id: "truncate",
+            label: "Truncate text",
+            icon: Scissors,
+            isDisabled: selectedCount < 1,
+          },
+        ],
       },
-    );
+      {
+        id: "images",
+        label: "Images",
+        icon: Images,
+        items: imageItems,
+      },
+    ];
 
     if (canManageBulk) {
-      actions.push({
-        id: "split",
-        label: "Split from group",
-        icon: Ungroup,
-        isDisabled: selectedGroupedCount < 1,
-      });
-    }
+      const duplicateItems: TableRowAction[] = [
+        {
+          id: "split",
+          label: "Split from group",
+          icon: Ungroup,
+          isDisabled: selectedGroupedCount < 1,
+        },
+      ];
 
-    if (canManageBulk && duplicateGroup === "true") {
-      actions.push({
-        id: "dedupe",
-        label: "Keep one per group",
+      if (duplicateGroup === "true") {
+        duplicateItems.push({
+          id: "dedupe",
+          label: "Keep one per group",
+          icon: Layers,
+          isDisabled: dedupeDeleteCount < 1,
+        });
+      }
+
+      entries.push({
+        id: "duplicates",
+        label: "Duplicates",
         icon: Layers,
-        isDisabled: dedupeDeleteCount < 1,
+        items: duplicateItems,
       });
-    }
 
-    if (canManageBulk) {
-      actions.push({
+      entries.push({
         id: "delete",
         label: "Delete selected",
         variant: "danger",
@@ -441,7 +570,7 @@ export default function DashboardPropertiesListPage() {
       });
     }
 
-    return actions;
+    return entries;
   }, [
     canManageBulk,
     dedupeDeleteCount,
@@ -989,60 +1118,20 @@ export default function DashboardPropertiesListPage() {
               <span className="text-sm text-muted">Select all on page</span>
             </div>
             {properties.map((property) => {
-              const rowActions: TableRowAction[] = [
-                {
-                  ...PROPERTY_PUSH_ACTION,
-                  isDisabled:
-                    pushToCrm.isPending && pushToCrm.variables === property.id,
-                },
-                {
-                  ...PROPERTY_PRODUCE_CONTENT_ACTION,
-                  isDisabled: produceContent.isPending,
-                },
-                {
-                  ...PROPERTY_RENORMALIZE_ACTION,
-                  isDisabled: renormalize.isPending,
-                },
-                {
-                  ...PROPERTY_MANAGE_SITES_ACTION,
-                  isDisabled: !property.integration_property_id,
-                },
-                {
-                  ...PROPERTY_UPDATE_SALES_PRICES_ACTION,
-                  isDisabled:
-                    !property.integration_property_id ||
-                    updateSalesPrices.isPending,
-                },
-                {
-                  ...PROPERTY_SYNC_CRM_CLIENT_NOTES_ACTION,
-                  isDisabled:
-                    !property.integration_property_id ||
-                    syncCrmClientNotes.isPending,
-                },
-                {
-                  ...PROPERTY_DELETE_CMS_IMAGES_ACTION,
-                  isDisabled:
-                    !property.integration_property_id ||
-                    bulkDeleteCmsImages.isPending,
-                },
-                ...(canManageBulk
-                  ? [
-                      {
-                        ...PROPERTY_MIGRATE_CMS_IMAGES_ACTION,
-                        isDisabled:
-                          !property.integration_property_id ||
-                          bulkMigrateCmsImages.isPending,
-                      },
-                    ]
-                  : []),
-                {
-                  ...PROPERTY_REMOVE_WATERMARK_ACTION,
-                  isDisabled:
-                    !property.integration_property_id ||
-                    removeWatermarks.isPending,
-                },
-                ...(canDelete ? [PROPERTY_DELETE_ACTION] : []),
-              ];
+              const rowActions = buildPropertyRowActions({
+                canManageBulk,
+                canDelete,
+                hasIntegration: Boolean(property.integration_property_id),
+                pushPending:
+                  pushToCrm.isPending && pushToCrm.variables === property.id,
+                producePending: produceContent.isPending,
+                renormalizePending: renormalize.isPending,
+                updateSalesPricesPending: updateSalesPrices.isPending,
+                syncCrmClientNotesPending: syncCrmClientNotes.isPending,
+                deleteCmsImagesPending: bulkDeleteCmsImages.isPending,
+                migrateCmsImagesPending: bulkMigrateCmsImages.isPending,
+                removeWatermarksPending: removeWatermarks.isPending,
+              });
 
               return (
                 <PropertyListCard
@@ -1148,60 +1237,21 @@ export default function DashboardPropertiesListPage() {
                           : undefined,
                         isRemoved && "opacity-60",
                       );
-                      const rowActions: TableRowAction[] = [
-                        {
-                          ...PROPERTY_PUSH_ACTION,
-                          isDisabled:
-                            pushToCrm.isPending && pushToCrm.variables === property.id,
-                        },
-                        {
-                          ...PROPERTY_PRODUCE_CONTENT_ACTION,
-                          isDisabled: produceContent.isPending,
-                        },
-                        {
-                          ...PROPERTY_RENORMALIZE_ACTION,
-                          isDisabled: renormalize.isPending,
-                        },
-                        {
-                          ...PROPERTY_MANAGE_SITES_ACTION,
-                          isDisabled: !property.integration_property_id,
-                        },
-                        {
-                          ...PROPERTY_UPDATE_SALES_PRICES_ACTION,
-                          isDisabled:
-                            !property.integration_property_id ||
-                            updateSalesPrices.isPending,
-                        },
-                        {
-                          ...PROPERTY_SYNC_CRM_CLIENT_NOTES_ACTION,
-                          isDisabled:
-                            !property.integration_property_id ||
-                            syncCrmClientNotes.isPending,
-                        },
-                        {
-                          ...PROPERTY_DELETE_CMS_IMAGES_ACTION,
-                          isDisabled:
-                            !property.integration_property_id ||
-                            bulkDeleteCmsImages.isPending,
-                        },
-                        ...(canManageBulk
-                          ? [
-                              {
-                                ...PROPERTY_MIGRATE_CMS_IMAGES_ACTION,
-                                isDisabled:
-                                  !property.integration_property_id ||
-                                  bulkMigrateCmsImages.isPending,
-                              },
-                            ]
-                          : []),
-                        {
-                          ...PROPERTY_REMOVE_WATERMARK_ACTION,
-                          isDisabled:
-                            !property.integration_property_id ||
-                            removeWatermarks.isPending,
-                        },
-                        ...(canDelete ? [PROPERTY_DELETE_ACTION] : []),
-                      ];
+                      const rowActions = buildPropertyRowActions({
+                        canManageBulk,
+                        canDelete,
+                        hasIntegration: Boolean(property.integration_property_id),
+                        pushPending:
+                          pushToCrm.isPending &&
+                          pushToCrm.variables === property.id,
+                        producePending: produceContent.isPending,
+                        renormalizePending: renormalize.isPending,
+                        updateSalesPricesPending: updateSalesPrices.isPending,
+                        syncCrmClientNotesPending: syncCrmClientNotes.isPending,
+                        deleteCmsImagesPending: bulkDeleteCmsImages.isPending,
+                        migrateCmsImagesPending: bulkMigrateCmsImages.isPending,
+                        removeWatermarksPending: removeWatermarks.isPending,
+                      });
 
                       return (
                       <Table.Row
