@@ -245,9 +245,9 @@ export class UserPropertiesController {
   @Post('update-estateweb-sites')
   @ApiOperation({
     summary:
-      'Update EstateWeb publish sites for one or more linked properties',
+      'Enqueue EstateWeb publish-site updates for one or more linked properties (BullMQ)',
   })
-  @ApiResponse({ status: 200, description: 'EstateWeb sites updated' })
+  @ApiResponse({ status: 200, description: 'EstateWeb sites update enqueued' })
   @ApiResponse({ status: 400, description: 'Cannot update EstateWeb sites' })
   @ApiResponse({ status: 404, description: 'Saved property not found' })
   updateEstateWebSites(

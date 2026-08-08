@@ -11,6 +11,7 @@ import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
   CONTENT_PRODUCTION_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
+  ESTATEWEB_SITES_UPDATE_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
@@ -70,6 +71,11 @@ import {
   CrmClientNotesSyncJobResult,
 } from './interfaces/crm-client-notes-sync-job.interface';
 import {
+  EstateWebSitesUpdateJobData,
+  EstateWebSitesUpdateJobResult,
+  EstateWebSitesUpdateSite,
+} from './interfaces/estateweb-sites-update-job.interface';
+import {
   RenormalizationJobData,
   RenormalizationJobResult,
 } from './interfaces/renormalization-job.interface';
@@ -112,6 +118,8 @@ export class UserPropertiesService {
     private readonly salesPriceUpdateQueue: Queue<SalesPriceUpdateJobData>,
     @InjectQueue(CRM_CLIENT_NOTES_SYNC_QUEUE)
     private readonly crmClientNotesSyncQueue: Queue<CrmClientNotesSyncJobData>,
+    @InjectQueue(ESTATEWEB_SITES_UPDATE_QUEUE)
+    private readonly estateWebSitesUpdateQueue: Queue<EstateWebSitesUpdateJobData>,
     @InjectQueue(RENORMALIZATION_QUEUE)
     private readonly renormalizationQueue: Queue<RenormalizationJobData>,
   ) {}
@@ -714,12 +722,12 @@ export class UserPropertiesService {
       show_on_relative_pages: 0 | 1;
     }>,
   ) {
-    const idList = [...new Set(ids)];
+    const idList = [...new Set(ids.filter(Boolean))];
     if (idList.length === 0) {
       throw new BadRequestException('No properties selected');
     }
 
-    const selectedSites = sites
+    const selectedSites: EstateWebSitesUpdateSite[] = sites
       .filter((site) => site.selected)
       .map((site) => ({
         selected: true as const,
@@ -732,6 +740,7 @@ export class UserPropertiesService {
 
     const properties = await this.prisma.userProperty.findMany({
       where: { id: { in: idList }, user_id: userId },
+      select: { id: true, integration_property_id: true },
     });
 
     if (properties.length === 0) {
@@ -739,7 +748,7 @@ export class UserPropertiesService {
     }
 
     const byId = new Map(properties.map((property) => [property.id, property]));
-    const updated: string[] = [];
+    const enqueueIds: string[] = [];
     const failed: Array<{ user_property_id: string; error: string }> = [];
 
     for (const id of idList) {
@@ -757,24 +766,10 @@ export class UserPropertiesService {
         continue;
       }
 
-      try {
-        const { userIntegrationId } =
-          await this.resolveCmsIntegrationForProperty(property);
-
-        await this.estateWebCmsSyncAdapter.pushUpdate(
-          userIntegrationId,
-          property.integration_property_id,
-          property,
-          { sitesOverride: selectedSites },
-        );
-        updated.push(id);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        failed.push({ user_property_id: id, error: message });
-      }
+      enqueueIds.push(id);
     }
 
-    if (updated.length === 0) {
+    if (enqueueIds.length === 0) {
       const firstError = failed[0]?.error ?? 'No properties could be updated';
       throw new BadRequestException(
         failed.length === 1
@@ -783,17 +778,71 @@ export class UserPropertiesService {
       );
     }
 
-    if (idList.length === 1 && updated.length === 1) {
-      return serializePropertyForApi(
-        await this.prisma.userProperty.findFirstOrThrow({
-          where: { id: idList[0], user_id: userId },
-        }),
-      );
-    }
+    const initialResult: EstateWebSitesUpdateJobResult = {
+      total: enqueueIds.length,
+      processed: 0,
+      updated: 0,
+      failed: failed.length,
+      items: failed.map((row) => ({
+        user_property_id: row.user_property_id,
+        status: 'failed' as const,
+        error: row.error,
+      })),
+      logs: [
+        `enqueued user=${userId} properties=${enqueueIds.length} sites=${selectedSites.length}`,
+      ],
+    };
+
+    const payload = {
+      user_id: userId,
+      user_property_ids: enqueueIds,
+      total: enqueueIds.length,
+      sites: selectedSites,
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: ESTATEWEB_SITES_UPDATE_QUEUE,
+        job_name: 'update-estateweb-sites',
+        status: JobStatus.WAITING,
+        payload: payload as object,
+        result: initialResult as object,
+      },
+    });
+
+    this.logger.log(
+      `[updateEstateWebSites] queued job_log=${jobLog.id} user=${userId} ids=${enqueueIds.length}`,
+    );
+
+    await this.estateWebSitesUpdateQueue.addBulk(
+      enqueueIds.map((userPropertyId) => {
+        const jobData: EstateWebSitesUpdateJobData = {
+          job_log_id: jobLog.id,
+          user_id: userId,
+          user_property_id: userPropertyId,
+          total: enqueueIds.length,
+          sites: selectedSites,
+        };
+        return {
+          name: 'update-estateweb-sites',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${userPropertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
 
     return {
-      updated: updated.length,
+      job_log_id: jobLog.id,
+      enqueued: enqueueIds.length,
       failed,
+      message:
+        'EstateWeb sites update started in the background. Track progress in Job queue.',
     };
   }
 

@@ -8,4 +8,5 @@ export const WATERMARK_REMOVAL_QUEUE = 'watermark-removal';
 export const CONTENT_PRODUCTION_QUEUE = 'content-production';
 export const SALES_PRICE_UPDATE_QUEUE = 'sales-price-update';
 export const CRM_CLIENT_NOTES_SYNC_QUEUE = 'crm-client-notes-sync';
+export const ESTATEWEB_SITES_UPDATE_QUEUE = 'estateweb-sites-update';
 export const RENORMALIZATION_QUEUE = 'renormalization';

@@ -334,7 +334,7 @@ export const pushUserPropertiesToCrm = async (
 
 export const updateUserPropertyEstateWebSites = async (
   payload: UpdateEstateWebSitesPayload,
-): Promise<UserProperty | UpdateEstateWebSitesResult> => {
+): Promise<UpdateEstateWebSitesResult> => {
   try {
     const response = await axiosInstance.post(
       ApiRoutes.userProperties.updateEstateWebSites,

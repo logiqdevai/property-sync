@@ -191,8 +191,10 @@ export interface UpdateEstateWebSitesPayload {
 }
 
 export interface UpdateEstateWebSitesResult {
-  updated: number;
+  job_log_id: string;
+  enqueued: number;
   failed: Array<{ user_property_id: string; error: string }>;
+  message: string;
 }
 
 export interface UpdateSalesPricesPayload {

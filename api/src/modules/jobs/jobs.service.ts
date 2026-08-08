@@ -12,6 +12,7 @@ import {
   CONTENT_PRODUCTION_QUEUE,
   CMS_SYNC_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
+  ESTATEWEB_SITES_UPDATE_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
@@ -46,6 +47,8 @@ export class JobsService {
     private readonly salesPriceUpdateQueue: Queue,
     @InjectQueue(CRM_CLIENT_NOTES_SYNC_QUEUE)
     private readonly crmClientNotesSyncQueue: Queue,
+    @InjectQueue(ESTATEWEB_SITES_UPDATE_QUEUE)
+    private readonly estateWebSitesUpdateQueue: Queue,
     @InjectQueue(RENORMALIZATION_QUEUE)
     private readonly renormalizationQueue: Queue,
     @InjectQueue(CMS_SYNC_QUEUE)
@@ -145,6 +148,8 @@ export class JobsService {
         : jobLog.queue_name === WATERMARK_REMOVAL_QUEUE ||
             jobLog.queue_name === CONTENT_PRODUCTION_QUEUE ||
             jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE ||
+            jobLog.queue_name === CRM_CLIENT_NOTES_SYNC_QUEUE ||
+            jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE ||
             jobLog.queue_name === RENORMALIZATION_QUEUE ||
             jobLog.queue_name === CMS_SYNC_QUEUE
           ? {
@@ -275,6 +280,43 @@ export class JobsService {
       return this.findOne(id);
     }
 
+    if (jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE) {
+      const payloadRecord = payload as {
+        user_id?: string;
+        user_property_ids?: string[];
+        total?: number;
+        sites?: unknown[];
+      };
+      const propertyIds = Array.isArray(payloadRecord.user_property_ids)
+        ? payloadRecord.user_property_ids
+        : [];
+      if (!payloadRecord.user_id || propertyIds.length === 0) {
+        throw new BadRequestException(
+          'EstateWeb sites update job payload is missing user or property ids',
+        );
+      }
+      const sites = Array.isArray(payloadRecord.sites)
+        ? payloadRecord.sites
+        : [];
+      await this.estateWebSitesUpdateQueue.addBulk(
+        propertyIds.map((userPropertyId) => ({
+          name: jobLog.job_name ?? 'update-estateweb-sites',
+          data: {
+            job_log_id: jobLog.id,
+            user_id: payloadRecord.user_id,
+            user_property_id: userPropertyId,
+            total: payloadRecord.total ?? propertyIds.length,
+            sites,
+          },
+          opts: {
+            ...(jobOptions ?? {}),
+            jobId: `${jobLog.id}__${userPropertyId}`,
+          },
+        })),
+      );
+      return this.findOne(id);
+    }
+
     if (jobLog.queue_name === CONTENT_PRODUCTION_QUEUE) {
       const payloadRecord = payload as {
         user_id?: string;
@@ -377,6 +419,8 @@ export class JobsService {
     if (
       jobLog.queue_name === CONTENT_PRODUCTION_QUEUE ||
       jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE ||
+      jobLog.queue_name === CRM_CLIENT_NOTES_SYNC_QUEUE ||
+      jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE ||
       jobLog.queue_name === RENORMALIZATION_QUEUE
     ) {
       const payload = (jobLog.payload ?? {}) as {
@@ -390,7 +434,11 @@ export class JobsService {
           ? this.contentProductionQueue
           : jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE
             ? this.salesPriceUpdateQueue
-            : this.renormalizationQueue;
+            : jobLog.queue_name === CRM_CLIENT_NOTES_SYNC_QUEUE
+              ? this.crmClientNotesSyncQueue
+              : jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE
+                ? this.estateWebSitesUpdateQueue
+                : this.renormalizationQueue;
       for (const propertyId of propertyIds) {
         try {
           await queue.remove(`${jobLog.id}__${propertyId}`);
@@ -470,6 +518,9 @@ export class JobsService {
     }
     if (queueName === CRM_CLIENT_NOTES_SYNC_QUEUE) {
       return this.crmClientNotesSyncQueue;
+    }
+    if (queueName === ESTATEWEB_SITES_UPDATE_QUEUE) {
+      return this.estateWebSitesUpdateQueue;
     }
     if (queueName === RENORMALIZATION_QUEUE) {
       return this.renormalizationQueue;
