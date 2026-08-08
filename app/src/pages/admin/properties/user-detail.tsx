@@ -13,8 +13,6 @@ import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
 import {
   useAdminUserProperty,
   useDeleteAdminUserProperty,
-  useDeleteAdminUserPropertyIntegrationImages,
-  useCreateAdminUserPropertyIntegrationImages,
   useUpdateAdminUserPropertyIntegrationImages,
   useMigrateAdminUserPropertyIntegrationImages,
   useRemoveAdminUserPropertyWatermarkImages,
@@ -27,8 +25,6 @@ export default function UserPropertyDetailPage() {
   const { data: property, isPending, isError, error } = useAdminUserProperty(id);
   const deleteUserProperty = useDeleteAdminUserProperty();
   const migrateImages = useMigrateAdminUserPropertyIntegrationImages();
-  const deleteIntegrationImages = useDeleteAdminUserPropertyIntegrationImages();
-  const createIntegrationImages = useCreateAdminUserPropertyIntegrationImages();
   const updateIntegrationImages = useUpdateAdminUserPropertyIntegrationImages();
   const removeWatermarkImages = useRemoveAdminUserPropertyWatermarkImages();
 
@@ -104,13 +100,6 @@ export default function UserPropertyDetailPage() {
       property={property}
       backHref={Routes.admin.properties.userList}
       backLabel="← Back to user properties"
-      onDeleteIntegrationImages={async (imageIds) => {
-        await deleteIntegrationImages.mutateAsync({
-          id: property.id,
-          imageIds,
-        });
-      }}
-      isDeletingIntegrationImages={deleteIntegrationImages.isPending}
       canUpdateEstateWebImageOptions={Boolean(
         property.integration_property_id,
       )}
@@ -122,14 +111,6 @@ export default function UserPropertyDetailPage() {
         });
       }}
       isUpdatingEstateWebImageOptions={updateIntegrationImages.isPending}
-      canCreateIntegrationImages
-      onCreateIntegrationImages={async (imageIndexes) => {
-        await createIntegrationImages.mutateAsync({
-          id: property.id,
-          imageIndexes,
-        });
-      }}
-      isCreatingIntegrationImages={createIntegrationImages.isPending}
       canRemoveWatermark={Boolean(property.integration_property_id)}
       onRemoveWatermark={async (imageIds, replaceCrmImages) => {
         await removeWatermarkImages.mutateAsync({
@@ -160,8 +141,6 @@ export default function UserPropertyDetailPage() {
             isPending={
               migrateImages.isPending ||
               deleteUserProperty.isPending ||
-              deleteIntegrationImages.isPending ||
-              createIntegrationImages.isPending ||
               updateIntegrationImages.isPending ||
               removeWatermarkImages.isPending
             }

@@ -14,7 +14,6 @@ import {
   Maximize2,
   Ruler,
   Sparkles,
-  Trash2,
 } from "lucide-react";
 import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
 import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/properties/listing-type-filter.options";
@@ -22,7 +21,6 @@ import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/properti
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import {
   EstateWebImageOptionsModal,
   type EstateWebImageOptions,
@@ -253,17 +251,12 @@ function PropertyImagesGrid({
   fallbackImages,
   title,
   selectable = false,
-  canCreateFromPropertyImages = false,
   canUpdateEstateWebImageOptions = false,
   canRemoveWatermark = false,
   canMigrateIntegrationImages = false,
-  onDeleteSelected,
-  onCreateSelected,
   onUpdateEstateWebImageOptions,
   onRemoveWatermark,
   onMigrateIntegrationImages,
-  isDeletePending = false,
-  isCreatePending = false,
   isUpdateEstateWebImageOptionsPending = false,
   isRemoveWatermarkPending = false,
   isMigrateIntegrationImagesPending = false,
@@ -272,12 +265,9 @@ function PropertyImagesGrid({
   fallbackImages: string[];
   title: string;
   selectable?: boolean;
-  canCreateFromPropertyImages?: boolean;
   canUpdateEstateWebImageOptions?: boolean;
   canRemoveWatermark?: boolean;
   canMigrateIntegrationImages?: boolean;
-  onDeleteSelected?: (imageIds: number[]) => Promise<void> | void;
-  onCreateSelected?: (imageIndexes: number[]) => Promise<void> | void;
   onUpdateEstateWebImageOptions?: (
     imageIds: number[],
     options: EstateWebImageOptions,
@@ -289,8 +279,6 @@ function PropertyImagesGrid({
   onMigrateIntegrationImages?: (
     mode: MigrateIntegrationImagesMode,
   ) => Promise<void> | void;
-  isDeletePending?: boolean;
-  isCreatePending?: boolean;
   isUpdateEstateWebImageOptionsPending?: boolean;
   isRemoveWatermarkPending?: boolean;
   isMigrateIntegrationImagesPending?: boolean;
@@ -299,25 +287,19 @@ function PropertyImagesGrid({
   const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(
     new Set(),
   );
-  const deleteConfirm = useOverlayState();
-  const createConfirm = useOverlayState();
   const estateWebOptionsModal = useOverlayState();
   const removeWatermarkModal = useOverlayState();
   const migrateIntegrationImagesModal = useOverlayState();
   const canExpand = images.length > 2;
   const isPending =
-    isDeletePending ||
-    isCreatePending ||
     isUpdateEstateWebImageOptionsPending ||
     isRemoveWatermarkPending ||
     isMigrateIntegrationImagesPending;
   const canSelect =
     selectable &&
     images.length > 0 &&
-    (Boolean(onDeleteSelected) ||
-      (canCreateFromPropertyImages && Boolean(onCreateSelected)) ||
-      (canUpdateEstateWebImageOptions &&
-        Boolean(onUpdateEstateWebImageOptions)) ||
+    ((canUpdateEstateWebImageOptions &&
+      Boolean(onUpdateEstateWebImageOptions)) ||
       (canRemoveWatermark && Boolean(onRemoveWatermark)));
   const canMigrate =
     canMigrateIntegrationImages && Boolean(onMigrateIntegrationImages);
@@ -354,13 +336,6 @@ function PropertyImagesGrid({
             (image) => image.show_on_foreign_agents,
           ),
         };
-  const selectedPropertyIndexes = [
-    ...new Set(
-      [...selectedIndexes]
-        .map((index) => images[index]?.propertyImageIndex)
-        .filter((index): index is number => index != null),
-    ),
-  ].sort((a, b) => a - b);
 
   const selectAll = () => {
     setSelectedIndexes(new Set(images.map((_, index) => index)));
@@ -371,7 +346,7 @@ function PropertyImagesGrid({
   };
 
   const bulkActions: TableRowAction[] = [
-    ...(canMigrate
+    ...(canMigrate && images.length === 0
       ? [
           {
             id: "migrate-crm-images",
@@ -393,17 +368,6 @@ function PropertyImagesGrid({
           },
         ]
       : []),
-    ...(canCreateFromPropertyImages && onCreateSelected
-      ? [
-          {
-            id: "create-from-property",
-            label: `Upload to CRM${selectedPropertyIndexes.length > 0 ? ` (${selectedPropertyIndexes.length})` : ""}`,
-            variant: "accent" as const,
-            icon: Images,
-            isDisabled: isPending || selectedPropertyIndexes.length === 0,
-          },
-        ]
-      : []),
     ...(canRemoveWatermark && onRemoveWatermark
       ? [
           {
@@ -415,33 +379,9 @@ function PropertyImagesGrid({
           },
         ]
       : []),
-    ...(onDeleteSelected
-      ? [
-          {
-            id: "delete",
-            label: `Delete${selectedCrmIds.length > 0 ? ` (${selectedCrmIds.length})` : ""}`,
-            variant: "danger" as const,
-            icon: Trash2,
-            isDisabled: isPending || selectedCrmIds.length === 0,
-          },
-        ]
-      : []),
   ];
 
-  const showActionsMenu =
-    bulkActions.length > 0 && (canMigrate || selectedCount > 0);
-
-  const handleDeleteConfirm = async () => {
-    if (!onDeleteSelected || selectedCrmIds.length === 0) return;
-    await onDeleteSelected(selectedCrmIds);
-    setSelectedIndexes(new Set());
-  };
-
-  const handleCreateConfirm = async () => {
-    if (!onCreateSelected || selectedPropertyIndexes.length === 0) return;
-    await onCreateSelected(selectedPropertyIndexes);
-    setSelectedIndexes(new Set());
-  };
+  const showActionsMenu = bulkActions.length > 0;
 
   const handleEstateWebOptionsConfirm = async (
     options: EstateWebImageOptions,
@@ -483,8 +423,6 @@ function PropertyImagesGrid({
               onAction={(actionId) => {
                 if (actionId === "migrate-crm-images")
                   migrateIntegrationImagesModal.open();
-                if (actionId === "delete") deleteConfirm.open();
-                if (actionId === "create-from-property") createConfirm.open();
                 if (actionId === "estateweb-options")
                   estateWebOptionsModal.open();
                 if (actionId === "remove-watermark")
@@ -577,26 +515,6 @@ function PropertyImagesGrid({
           {expanded ? "Show less" : "Show more"}
         </Button>
       ) : null}
-      {onDeleteSelected ? (
-        <ConfirmationDialog
-          state={deleteConfirm}
-          title={`Delete ${selectedCrmIds.length} CRM ${selectedCrmIds.length === 1 ? "image" : "images"}?`}
-          description="Selected images will be removed from the linked CRM and refreshed locally."
-          confirmLabel="Delete"
-          onConfirm={handleDeleteConfirm}
-          isPending={isDeletePending}
-        />
-      ) : null}
-      {canCreateFromPropertyImages && onCreateSelected ? (
-        <ConfirmationDialog
-          state={createConfirm}
-          title={`Upload ${selectedPropertyIndexes.length} ${selectedPropertyIndexes.length === 1 ? "photo" : "photos"} to CRM?`}
-          description="Selected scraped photos will be uploaded to the linked CRM."
-          confirmLabel="Upload"
-          onConfirm={handleCreateConfirm}
-          isPending={isCreatePending}
-        />
-      ) : null}
       {canUpdateEstateWebImageOptions && onUpdateEstateWebImageOptions ? (
         <EstateWebImageOptionsModal
           state={estateWebOptionsModal}
@@ -635,19 +553,12 @@ interface PropertyDetailViewProps {
   details?: ReactNode;
   showFieldDiff?: boolean;
   footer?: ReactNode;
-  onDeleteIntegrationImages?: (imageIds: number[]) => Promise<void> | void;
-  onCreateIntegrationImages?: (
-    imageIndexes: number[],
-  ) => Promise<void> | void;
   onUpdateEstateWebImageOptions?: (
     imageIds: number[],
     options: EstateWebImageOptions,
   ) => Promise<void> | void;
-  isDeletingIntegrationImages?: boolean;
-  isCreatingIntegrationImages?: boolean;
   isUpdatingEstateWebImageOptions?: boolean;
   isRemovingWatermark?: boolean;
-  canCreateIntegrationImages?: boolean;
   canUpdateEstateWebImageOptions?: boolean;
   canRemoveWatermark?: boolean;
   canMigrateIntegrationImages?: boolean;
@@ -671,13 +582,8 @@ export function PropertyDetailView({
   details,
   showFieldDiff = false,
   footer,
-  onDeleteIntegrationImages,
-  onCreateIntegrationImages,
   onUpdateEstateWebImageOptions,
-  isDeletingIntegrationImages = false,
-  isCreatingIntegrationImages = false,
   isUpdatingEstateWebImageOptions = false,
-  canCreateIntegrationImages = false,
   canUpdateEstateWebImageOptions = false,
   canRemoveWatermark = false,
   canMigrateIntegrationImages = false,
@@ -699,22 +605,11 @@ export function PropertyDetailView({
   );
   const heroImage = displayImages[0] ?? null;
   const heroFallback = fallbackImages[0] ?? null;
-  const canManageIntegrationImages =
-    (Boolean(onDeleteIntegrationImages) &&
-      displayImages.some((image) => image.crmImageId != null)) ||
-    (canUpdateEstateWebImageOptions &&
-      Boolean(onUpdateEstateWebImageOptions) &&
-      displayImages.some((image) => image.crmImageId != null)) ||
-    (canRemoveWatermark &&
-      Boolean(onRemoveWatermark) &&
-      displayImages.some((image) => image.crmImageId != null)) ||
-    (canMigrateIntegrationImages &&
-      Boolean(onMigrateIntegrationImages) &&
-      Boolean(property.integration_property_id)) ||
-    (canCreateIntegrationImages &&
-      Boolean(onCreateIntegrationImages) &&
-      Boolean(property.integration_property_id) &&
-      fallbackImages.length > 0);
+  const canSelectImages =
+    ((canUpdateEstateWebImageOptions &&
+      Boolean(onUpdateEstateWebImageOptions)) ||
+      (canRemoveWatermark && Boolean(onRemoveWatermark))) &&
+    displayImages.some((image) => image.crmImageId != null);
   const primaryLink =
     sourceLinks.find((link) => link.is_primary_source) ?? sourceLinks[0] ?? null;
   const agencyName = primaryLink?.source_property.source_agency?.name ?? null;
@@ -1125,12 +1020,7 @@ export function PropertyDetailView({
             images={displayImages}
             fallbackImages={fallbackImages}
             title={property.title}
-            selectable={canManageIntegrationImages}
-            canCreateFromPropertyImages={
-              canCreateIntegrationImages &&
-              Boolean(onCreateIntegrationImages) &&
-              Boolean(property.integration_property_id)
-            }
+            selectable={canSelectImages}
             canUpdateEstateWebImageOptions={
               canUpdateEstateWebImageOptions &&
               Boolean(onUpdateEstateWebImageOptions)
@@ -1142,13 +1032,9 @@ export function PropertyDetailView({
               canMigrateIntegrationImages &&
               Boolean(onMigrateIntegrationImages)
             }
-            onDeleteSelected={onDeleteIntegrationImages}
-            onCreateSelected={onCreateIntegrationImages}
             onUpdateEstateWebImageOptions={onUpdateEstateWebImageOptions}
             onRemoveWatermark={onRemoveWatermark}
             onMigrateIntegrationImages={onMigrateIntegrationImages}
-            isDeletePending={isDeletingIntegrationImages}
-            isCreatePending={isCreatingIntegrationImages}
             isUpdateEstateWebImageOptionsPending={
               isUpdatingEstateWebImageOptions
             }

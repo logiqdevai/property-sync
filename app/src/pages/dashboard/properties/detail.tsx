@@ -25,8 +25,6 @@ import {
 } from "@/features/estateweb/hooks/use-estateweb";
 import {
   useMigrateUserPropertyIntegrationImages,
-  useDeleteUserPropertyIntegrationImages,
-  useCreateUserPropertyIntegrationImages,
   useUpdateUserPropertyIntegrationImages,
   useRemoveUserPropertyWatermarkImages,
   useRemoveUserPropertiesWatermarkImages,
@@ -132,8 +130,6 @@ export default function DashboardPropertyDetailPage() {
   const syncCrmClientNotes = useSyncUserPropertyCrmClientNotes();
   const renormalize = useRenormalizeUserProperties();
   const migrateImages = useMigrateUserPropertyIntegrationImages();
-  const deleteIntegrationImages = useDeleteUserPropertyIntegrationImages();
-  const createIntegrationImages = useCreateUserPropertyIntegrationImages();
   const updateIntegrationImages = useUpdateUserPropertyIntegrationImages();
   const removeWatermarkImages = useRemoveUserPropertyWatermarkImages();
   const removeWatermarksByCount = useRemoveUserPropertiesWatermarkImages();
@@ -525,13 +521,6 @@ export default function DashboardPropertyDetailPage() {
         backHref={backHref}
         backLabel="← Back to my properties"
         showFieldDiff
-        onDeleteIntegrationImages={async (imageIds) => {
-          await deleteIntegrationImages.mutateAsync({
-            id: property.id,
-            imageIds,
-          });
-        }}
-        isDeletingIntegrationImages={deleteIntegrationImages.isPending}
         canUpdateEstateWebImageOptions={Boolean(
           property.integration_property_id,
         )}
@@ -543,16 +532,6 @@ export default function DashboardPropertyDetailPage() {
           });
         }}
         isUpdatingEstateWebImageOptions={updateIntegrationImages.isPending}
-        canCreateIntegrationImages={
-          role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN
-        }
-        onCreateIntegrationImages={async (imageIndexes) => {
-          await createIntegrationImages.mutateAsync({
-            id: property.id,
-            imageIndexes,
-          });
-        }}
-        isCreatingIntegrationImages={createIntegrationImages.isPending}
         canRemoveWatermark={Boolean(property.integration_property_id)}
         onRemoveWatermark={async (imageIds, replaceCrmImages) => {
           await removeWatermarkImages.mutateAsync({
@@ -578,8 +557,6 @@ export default function DashboardPropertyDetailPage() {
               pushToCrm.isPending ||
               updateSalesPrices.isPending ||
               migrateImages.isPending ||
-              deleteIntegrationImages.isPending ||
-              createIntegrationImages.isPending ||
               updateIntegrationImages.isPending ||
               removeWatermarkImages.isPending ||
               removeWatermarksByCount.isPending ||
