@@ -147,6 +147,7 @@ export default function AdminUserDetailPage() {
                     <Table.Column>New</Table.Column>
                     <Table.Column>Updated</Table.Column>
                     <Table.Column>Removed</Table.Column>
+                    <Table.Column>Hash-only CRM</Table.Column>
                     <Table.Column>AI batch</Table.Column>
                     {showAdminTrackerSettings && (
                       <>
@@ -174,6 +175,7 @@ export default function AdminUserDetailPage() {
                         <Table.Cell>{tracking.track_new_listings ? "Yes" : "No"}</Table.Cell>
                         <Table.Cell>{tracking.track_updated_listings ? "Yes" : "No"}</Table.Cell>
                         <Table.Cell>{tracking.track_removed_listings ? "Yes" : "No"}</Table.Cell>
+                        <Table.Cell>{tracking.cms_update_on_hash_only ? "Yes" : "No"}</Table.Cell>
                         <Table.Cell>{tracking.source_agency.use_ai_batching ? "Yes" : "No"}</Table.Cell>
                         {showAdminTrackerSettings && (
                           <>

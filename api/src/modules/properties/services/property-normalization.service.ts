@@ -205,6 +205,7 @@ export class PropertyNormalizationService {
         model,
         provider: aiProvider,
         userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
+        contentHashChanged: false,
       });
       pendingAffected.push(...reusedAffected);
     }
@@ -272,6 +273,7 @@ export class PropertyNormalizationService {
       anthropicUsage: syncResult.anthropicUsage,
       openAiUsage: syncResult.openAiUsage,
       userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
+      contentHashChanged: true,
     });
 
     await this.finalizeCrawlNormalizationSync({
@@ -425,6 +427,7 @@ export class PropertyNormalizationService {
         openAiUsage: syncResult.openAiUsage,
         costUserId: userId,
         costUserPropertyId: userPropertyId,
+        contentHashChanged: true,
       });
 
       return {
@@ -459,6 +462,7 @@ export class PropertyNormalizationService {
     isBatch?: boolean;
     costUserId?: string | null;
     costUserPropertyId?: string | null;
+    contentHashChanged?: boolean;
   }): Promise<SyncForPropertyResult[]> {
     let createdCount = 0;
     const affected: SyncForPropertyResult[] = [];
@@ -565,6 +569,7 @@ export class PropertyNormalizationService {
             userTrackedAgencyId: params.userTrackedAgencyId,
             sourceAgencyId: params.sourceAgencyId,
             changeType: 'updated',
+            contentHashChanged: params.contentHashChanged,
           },
         );
         affected.push(...updatedResults);
@@ -758,6 +763,7 @@ export class PropertyNormalizationService {
       openAiUsage: { inputTokens, outputTokens },
       userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
       isBatch: true,
+      contentHashChanged: true,
     });
 
     const pendingAffected = this.loadPendingCmsSyncAffected(metadata);

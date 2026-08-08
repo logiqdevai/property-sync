@@ -502,6 +502,7 @@ model UserTrackedAgency {
   track_removed_listings     Boolean  @default(true)
   track_updated_listings     Boolean  @default(true)
   auto_update_to_crm         Boolean  @default(true) // when false, CRM updates are pushed manually from Properties
+  cms_update_on_hash_only    Boolean  @default(false) // when true, CRM updates only if source content_hash changed
   remove_watermark             Boolean  @default(false)
   watermark_image_count        Int      @default(1)
   watermark_manual_selection   Boolean  @default(false)

@@ -86,6 +86,7 @@ export class UserTrackedAgenciesService {
                 track_removed_listings: tracker.track_removed_listings,
                 track_updated_listings: tracker.track_updated_listings,
                 auto_update_to_crm: tracker.auto_update_to_crm,
+                cms_update_on_hash_only: tracker.cms_update_on_hash_only,
                 enabled: tracker.enabled,
                 user_integration_id:
                   tracker.integration_link?.user_integration_id ?? null,
@@ -132,6 +133,7 @@ export class UserTrackedAgenciesService {
         track_removed_listings: dto.track_removed_listings ?? true,
         track_updated_listings: dto.track_updated_listings ?? true,
         auto_update_to_crm: dto.auto_update_to_crm ?? true,
+        cms_update_on_hash_only: dto.cms_update_on_hash_only ?? false,
         remove_watermark: dto.remove_watermark ?? false,
         watermark_image_count: dto.watermark_image_count ?? 1,
         watermark_manual_selection: dto.watermark_manual_selection ?? false,
@@ -149,6 +151,9 @@ export class UserTrackedAgenciesService {
         }),
         ...(dto.auto_update_to_crm !== undefined && {
           auto_update_to_crm: dto.auto_update_to_crm,
+        }),
+        ...(dto.cms_update_on_hash_only !== undefined && {
+          cms_update_on_hash_only: dto.cms_update_on_hash_only,
         }),
         ...(dto.remove_watermark !== undefined && {
           remove_watermark: dto.remove_watermark,
@@ -191,6 +196,9 @@ export class UserTrackedAgenciesService {
         }),
         ...(dto.auto_update_to_crm !== undefined && {
           auto_update_to_crm: dto.auto_update_to_crm,
+        }),
+        ...(dto.cms_update_on_hash_only !== undefined && {
+          cms_update_on_hash_only: dto.cms_update_on_hash_only,
         }),
         ...(dto.enabled !== undefined && { enabled: dto.enabled }),
         ...(dto.concurrent_insertions !== undefined && {

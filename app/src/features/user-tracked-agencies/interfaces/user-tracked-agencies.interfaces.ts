@@ -3,6 +3,7 @@ export interface TrackingPrefs {
   track_removed_listings: boolean;
   track_updated_listings: boolean;
   auto_update_to_crm: boolean;
+  cms_update_on_hash_only: boolean;
   enabled: boolean;
   user_integration_id?: string | null;
   integration_client_id?: number | null;
@@ -36,6 +37,7 @@ export interface TrackAgencyPayload {
   track_removed_listings?: boolean;
   track_updated_listings?: boolean;
   auto_update_to_crm?: boolean;
+  cms_update_on_hash_only?: boolean;
   enabled?: boolean;
   concurrent_insertions?: number;
   insertion_interval_seconds?: number;
@@ -77,6 +79,7 @@ export interface UserTrackedAgency {
   track_removed_listings: boolean;
   track_updated_listings: boolean;
   auto_update_to_crm: boolean;
+  cms_update_on_hash_only: boolean;
   remove_watermark: boolean;
   watermark_image_count: number;
   watermark_manual_selection: boolean;

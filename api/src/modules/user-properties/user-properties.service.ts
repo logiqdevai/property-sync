@@ -82,6 +82,7 @@ export interface SyncForPropertyOptions {
   userTrackedAgencyId?: string;
   sourceAgencyId?: string;
   changeType: PropertySyncChangeType;
+  contentHashChanged?: boolean;
 }
 
 export interface SyncForPropertyResult {
@@ -2489,6 +2490,13 @@ export class UserPropertiesService {
           watermarkManualSelection: tracker.watermark_manual_selection,
           watermarkImageCount: tracker.watermark_image_count,
         });
+      }
+
+      if (
+        tracker.cms_update_on_hash_only &&
+        options.contentHashChanged === false
+      ) {
+        continue;
       }
 
       results.push({

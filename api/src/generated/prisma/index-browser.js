@@ -217,6 +217,7 @@ exports.Prisma.UserTrackedAgencyScalarFieldEnum = {
   track_removed_listings: 'track_removed_listings',
   track_updated_listings: 'track_updated_listings',
   auto_update_to_crm: 'auto_update_to_crm',
+  cms_update_on_hash_only: 'cms_update_on_hash_only',
   remove_watermark: 'remove_watermark',
   watermark_image_count: 'watermark_image_count',
   watermark_manual_selection: 'watermark_manual_selection',

@@ -37,6 +37,16 @@ export class TrackAgencyDto {
   @IsBoolean()
   auto_update_to_crm?: boolean;
 
+  @ApiProperty({
+    required: false,
+    default: false,
+    description:
+      'When true, CRM updates are pushed only if the source listing content_hash changed (stricter mode).',
+  })
+  @IsOptional()
+  @IsBoolean()
+  cms_update_on_hash_only?: boolean;
+
   @ApiProperty({ required: false, description: 'PATCH only' })
   @IsOptional()
   @IsBoolean()

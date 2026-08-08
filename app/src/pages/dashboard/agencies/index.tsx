@@ -124,6 +124,16 @@ function AgencyRow({
         />
       </Table.Cell>
       <Table.Cell>
+        <PrefSwitch
+          isSelected={prefs?.cms_update_on_hash_only ?? false}
+          isDisabled={prefsDisabled}
+          onChange={(isSelected) =>
+            savePrefs({ cms_update_on_hash_only: isSelected })
+          }
+          aria-label="Hash-only CRM updates"
+        />
+      </Table.Cell>
+      <Table.Cell>
         <div className="flex items-center gap-1.5">
           <PrefSwitch
             isSelected={prefs?.remove_watermark ?? false}
@@ -294,7 +304,7 @@ export default function DashboardAgenciesPage() {
       {isPending ? (
         <TableSkeleton
           rows={8}
-          columns={8}
+          columns={9}
           className="hidden md:flex"
         />
       ) : null}
@@ -330,6 +340,7 @@ export default function DashboardAgenciesPage() {
                     <Table.Column>Updated</Table.Column>
                     <Table.Column>Removed</Table.Column>
                     <Table.Column>Auto CRM</Table.Column>
+                    <Table.Column>Hash-only CRM</Table.Column>
                     <Table.Column>Watermark</Table.Column>
                     <Table.Column>Publishing</Table.Column>
                   </Table.Header>

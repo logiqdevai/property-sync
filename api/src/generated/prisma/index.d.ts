@@ -12684,6 +12684,7 @@ export namespace Prisma {
     track_removed_listings: boolean | null
     track_updated_listings: boolean | null
     auto_update_to_crm: boolean | null
+    cms_update_on_hash_only: boolean | null
     remove_watermark: boolean | null
     watermark_image_count: number | null
     watermark_manual_selection: boolean | null
@@ -12703,6 +12704,7 @@ export namespace Prisma {
     track_removed_listings: boolean | null
     track_updated_listings: boolean | null
     auto_update_to_crm: boolean | null
+    cms_update_on_hash_only: boolean | null
     remove_watermark: boolean | null
     watermark_image_count: number | null
     watermark_manual_selection: boolean | null
@@ -12723,6 +12725,7 @@ export namespace Prisma {
     track_removed_listings: number
     track_updated_listings: number
     auto_update_to_crm: number
+    cms_update_on_hash_only: number
     remove_watermark: number
     watermark_image_count: number
     watermark_manual_selection: number
@@ -12758,6 +12761,7 @@ export namespace Prisma {
     track_removed_listings?: true
     track_updated_listings?: true
     auto_update_to_crm?: true
+    cms_update_on_hash_only?: true
     remove_watermark?: true
     watermark_image_count?: true
     watermark_manual_selection?: true
@@ -12777,6 +12781,7 @@ export namespace Prisma {
     track_removed_listings?: true
     track_updated_listings?: true
     auto_update_to_crm?: true
+    cms_update_on_hash_only?: true
     remove_watermark?: true
     watermark_image_count?: true
     watermark_manual_selection?: true
@@ -12797,6 +12802,7 @@ export namespace Prisma {
     track_removed_listings?: true
     track_updated_listings?: true
     auto_update_to_crm?: true
+    cms_update_on_hash_only?: true
     remove_watermark?: true
     watermark_image_count?: true
     watermark_manual_selection?: true
@@ -12904,6 +12910,7 @@ export namespace Prisma {
     track_removed_listings: boolean
     track_updated_listings: boolean
     auto_update_to_crm: boolean
+    cms_update_on_hash_only: boolean
     remove_watermark: boolean
     watermark_image_count: number
     watermark_manual_selection: boolean
@@ -12943,6 +12950,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: boolean
     watermark_manual_selection?: boolean
@@ -12970,6 +12978,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: boolean
     watermark_manual_selection?: boolean
@@ -12992,6 +13001,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: boolean
     watermark_manual_selection?: boolean
@@ -13014,6 +13024,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: boolean
     watermark_manual_selection?: boolean
@@ -13021,7 +13032,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "concurrent_insertions" | "insertion_interval_seconds" | "max_properties" | "text_truncate_pieces" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "auto_update_to_crm" | "remove_watermark" | "watermark_image_count" | "watermark_manual_selection" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
+  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "concurrent_insertions" | "insertion_interval_seconds" | "max_properties" | "text_truncate_pieces" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "auto_update_to_crm" | "cms_update_on_hash_only" | "remove_watermark" | "watermark_image_count" | "watermark_manual_selection" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
   export type UserTrackedAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
@@ -13063,6 +13074,7 @@ export namespace Prisma {
       track_removed_listings: boolean
       track_updated_listings: boolean
       auto_update_to_crm: boolean
+      cms_update_on_hash_only: boolean
       remove_watermark: boolean
       watermark_image_count: number
       watermark_manual_selection: boolean
@@ -13509,6 +13521,7 @@ export namespace Prisma {
     readonly track_removed_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly track_updated_listings: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly auto_update_to_crm: FieldRef<"UserTrackedAgency", 'Boolean'>
+    readonly cms_update_on_hash_only: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly remove_watermark: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly watermark_image_count: FieldRef<"UserTrackedAgency", 'Int'>
     readonly watermark_manual_selection: FieldRef<"UserTrackedAgency", 'Boolean'>
@@ -48151,6 +48164,7 @@ export namespace Prisma {
     track_removed_listings: 'track_removed_listings',
     track_updated_listings: 'track_updated_listings',
     auto_update_to_crm: 'auto_update_to_crm',
+    cms_update_on_hash_only: 'cms_update_on_hash_only',
     remove_watermark: 'remove_watermark',
     watermark_image_count: 'watermark_image_count',
     watermark_manual_selection: 'watermark_manual_selection',
@@ -49883,6 +49897,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     auto_update_to_crm?: BoolFilter<"UserTrackedAgency"> | boolean
+    cms_update_on_hash_only?: BoolFilter<"UserTrackedAgency"> | boolean
     remove_watermark?: BoolFilter<"UserTrackedAgency"> | boolean
     watermark_image_count?: IntFilter<"UserTrackedAgency"> | number
     watermark_manual_selection?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -49909,6 +49924,7 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
+    cms_update_on_hash_only?: SortOrder
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
@@ -49939,6 +49955,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     auto_update_to_crm?: BoolFilter<"UserTrackedAgency"> | boolean
+    cms_update_on_hash_only?: BoolFilter<"UserTrackedAgency"> | boolean
     remove_watermark?: BoolFilter<"UserTrackedAgency"> | boolean
     watermark_image_count?: IntFilter<"UserTrackedAgency"> | number
     watermark_manual_selection?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -49965,6 +49982,7 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
+    cms_update_on_hash_only?: SortOrder
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
@@ -49993,6 +50011,7 @@ export namespace Prisma {
     track_removed_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     auto_update_to_crm?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
+    cms_update_on_hash_only?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     remove_watermark?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     watermark_image_count?: IntWithAggregatesFilter<"UserTrackedAgency"> | number
     watermark_manual_selection?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
@@ -53637,6 +53656,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -53663,6 +53683,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -53685,6 +53706,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -53711,6 +53733,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -53735,6 +53758,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -53753,6 +53777,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -53773,6 +53798,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -57962,6 +57988,7 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
+    cms_update_on_hash_only?: SortOrder
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
@@ -57988,6 +58015,7 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
+    cms_update_on_hash_only?: SortOrder
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
@@ -58007,6 +58035,7 @@ export namespace Prisma {
     track_removed_listings?: SortOrder
     track_updated_listings?: SortOrder
     auto_update_to_crm?: SortOrder
+    cms_update_on_hash_only?: SortOrder
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
@@ -64666,6 +64695,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -64690,6 +64720,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -65013,6 +65044,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     track_updated_listings?: BoolFilter<"UserTrackedAgency"> | boolean
     auto_update_to_crm?: BoolFilter<"UserTrackedAgency"> | boolean
+    cms_update_on_hash_only?: BoolFilter<"UserTrackedAgency"> | boolean
     remove_watermark?: BoolFilter<"UserTrackedAgency"> | boolean
     watermark_image_count?: IntFilter<"UserTrackedAgency"> | number
     watermark_manual_selection?: BoolFilter<"UserTrackedAgency"> | boolean
@@ -65994,6 +66026,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -66018,6 +66051,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -67177,6 +67211,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -67202,6 +67237,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -67280,6 +67316,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -67305,6 +67342,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -69243,6 +69281,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -69268,6 +69307,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -69752,6 +69792,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -69777,6 +69818,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -72861,6 +72903,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -72886,6 +72929,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -73035,6 +73079,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -73060,6 +73105,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -74292,6 +74338,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -74317,6 +74364,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -74628,6 +74676,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -74653,6 +74702,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -75164,6 +75214,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -75285,6 +75336,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -75309,6 +75361,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -75332,6 +75385,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -75989,6 +76043,7 @@ export namespace Prisma {
     track_removed_listings?: boolean
     track_updated_listings?: boolean
     auto_update_to_crm?: boolean
+    cms_update_on_hash_only?: boolean
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
@@ -76172,6 +76227,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -76196,6 +76252,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
@@ -76219,6 +76276,7 @@ export namespace Prisma {
     track_removed_listings?: BoolFieldUpdateOperationsInput | boolean
     track_updated_listings?: BoolFieldUpdateOperationsInput | boolean
     auto_update_to_crm?: BoolFieldUpdateOperationsInput | boolean
+    cms_update_on_hash_only?: BoolFieldUpdateOperationsInput | boolean
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean

@@ -100,6 +100,7 @@ export class Agency {
     track_removed_listings: boolean;
     track_updated_listings: boolean;
     auto_update_to_crm: boolean;
+    cms_update_on_hash_only: boolean;
     created_at: Date;
     updated_at: Date;
     user: {
