@@ -19,6 +19,7 @@ import { sanitizeRawDescription } from '../constants/normalization-prompt';
 import { mergeCmsFieldsFromNormalizedRow } from './property-cms-field-mapper.util';
 import { getEstateWebInitPropertyType } from '@/integrations/estateweb/utils/estateweb-init-lookup.util';
 import { resolveEstateWebLocationId } from '@/integrations/estateweb/utils/estateweb-location-lookup.util';
+import { resolveEstateWebTypeIdFromPropertyType } from '@/integrations/estateweb/utils/estateweb-type-lookup.util';
 
 function sanitizeEstateWebTypeId(typeId: number | null | undefined): number | null {
   if (typeId == null || !Number.isFinite(typeId)) return null;
@@ -543,7 +544,12 @@ export function buildPropertyRecord(
           ? readRawString(rawData, ['distance_beach', '_distance_beach'])
           : null),
     ),
-    estateweb_type_id: sanitizeEstateWebTypeId(n.estateweb_type_id),
+    estateweb_type_id:
+      sanitizeEstateWebTypeId(n.estateweb_type_id) ??
+      resolveEstateWebTypeIdFromPropertyType(
+        (n.property_type as PropertyType | null | undefined) ?? null,
+        n.bedrooms ?? null,
+      ),
     estateweb_location_id: estatewebLocationId,
     cms_fields:
       mergedCmsFields.length > 0

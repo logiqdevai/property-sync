@@ -56,7 +56,7 @@ ${buildEstateWebTypeCatalogJson()}
   "distance_airport": string | null (SHORT distance only, e.g. "70 χλμ" or "12 km" — never full sentences like "70 χλμ από το αεροδρόμιο"),
   "distance_port": string | null (SHORT distance only, e.g. "5 χλμ" — never prose),
   "distance_beach": string | null (SHORT distance only, e.g. "14 χλμ" or "200 μ" — never prose like "14 χλμ από τις παραλίες"),
-  "estateweb_type_id": number | null (leaf type id from the EstateWeb catalog above),
+  "estateweb_type_id": number | null (REQUIRED whenever property_type is known — pick the matching leaf id from the EstateWeb catalog above; common defaults: LAND→2 Αγροτεμάχιο or 3 Οικόπεδο, HOUSE/VILLA→27 Μονοκατοικία, MAISONETTE→26 Μεζονέτα, STUDIO→21 Γκαρσονιέρα, APARTMENT→22/23/24/25 by bedroom count, COMMERCIAL→14 Κατάστημα, OFFICE→13 Γραφείο, WAREHOUSE→11 Αποθήκη, PARKING→902. Only leave null when property_type is UNKNOWN),
   "estateweb_location_id": number | null (leave null unless an EstateWeb numeric location id is explicitly present in raw data — the backend resolves it deterministically from city/district, so never guess),
   "cms_fields": [{ "id": number, "value": string | number }] | null (EstateWeb custom fields; booleans as "1", select fields as numeric option id),
   "cms_metadata": {
