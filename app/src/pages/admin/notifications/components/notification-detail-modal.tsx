@@ -2,8 +2,11 @@ import { Button, Modal, useOverlayState } from "@heroui/react";
 import { Copy } from "lucide-react";
 import { NotificationSeverityChip } from "./notification-severity-chip";
 import { NotificationTypeChip } from "./notification-type-chip";
+import { getNotificationTypeLabel } from "@/config/constants/dropdowns/notifications/notification-type-filter.options";
+import { NotificationSeverityFilterOptions } from "@/config/constants/dropdowns/notifications/notification-severity-filter.options";
 import type { Notification } from "@/features/notifications/interfaces/notifications.interfaces";
 import { toast } from "@/hooks/use-toast";
+import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 
 export type NotificationDetailModalState = ReturnType<typeof useOverlayState>;
 
@@ -12,12 +15,29 @@ interface NotificationDetailModalProps {
   notification: Notification | null;
 }
 
-async function copyNotificationMessage(message: string) {
+function formatNotificationClipboardText(notification: Notification): string {
+  const typeLabel = getNotificationTypeLabel(notification.type);
+  const severityLabel = getDropdownOptionLabel(
+    NotificationSeverityFilterOptions,
+    notification.severity,
+  );
+
+  return [
+    `Title: ${notification.title}`,
+    `Type: ${typeLabel}`,
+    `Severity: ${severityLabel}`,
+    `Created: ${new Date(notification.created_at).toLocaleString()}`,
+    "",
+    notification.message,
+  ].join("\n");
+}
+
+async function copyNotificationMessage(notification: Notification) {
   try {
-    await navigator.clipboard.writeText(message);
-    toast({ title: "Message copied", duration: 2000, variant: "success" });
+    await navigator.clipboard.writeText(formatNotificationClipboardText(notification));
+    toast({ title: "Notification copied", duration: 2000, variant: "success" });
   } catch {
-    toast({ title: "Could not copy message", duration: 2000, variant: "error" });
+    toast({ title: "Could not copy notification", duration: 2000, variant: "error" });
   }
 }
 
@@ -49,10 +69,10 @@ export function NotificationDetailModal({ state, notification }: NotificationDet
             <Modal.Footer>
               <Button
                 variant="secondary"
-                onPress={() => copyNotificationMessage(notification.message)}
+                onPress={() => copyNotificationMessage(notification)}
               >
                 <Copy className="h-4 w-4" />
-                Copy message
+                Copy
               </Button>
               <Button variant="secondary" onPress={state.close}>
                 Close

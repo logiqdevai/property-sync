@@ -341,8 +341,8 @@ export default function NotificationsListPage() {
                                   size="sm"
                                   variant="tertiary"
                                   isIconOnly
-                                  aria-label={`Copy message for ${notification.title}`}
-                                  onPress={() => copyNotificationMessage(notification.message)}
+                                  aria-label={`Copy notification ${notification.title}`}
+                                  onPress={() => copyNotificationMessage(notification)}
                                   className="shrink-0"
                                 >
                                   <Copy className="h-3.5 w-3.5" />
