@@ -3,11 +3,8 @@ import { PropertyStatus } from 'generated/prisma';
 
 export class UpdateUserPropertyStatusResponseEntity {
   @ApiProperty()
-  accepted: number;
+  updated: number;
 
   @ApiProperty({ enum: PropertyStatus })
   status: PropertyStatus;
-
-  @ApiProperty()
-  message: string;
 }

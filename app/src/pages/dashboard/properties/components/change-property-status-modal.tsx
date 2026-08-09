@@ -52,8 +52,7 @@ export const ChangePropertyStatusModal: FC<ChangePropertyStatusModalProps> = ({
             <Modal.Body className="flex flex-col gap-4">
               <p className="text-sm text-muted">
                 Set a new status for the selected
-                {propertyCount > 1 ? " properties" : " property"}. Update runs in
-                the background.
+                {propertyCount > 1 ? " properties" : " property"}.
               </p>
               <Select
                 aria-label="Property status"

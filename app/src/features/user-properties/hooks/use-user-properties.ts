@@ -674,13 +674,12 @@ export const useUpdateUserPropertyStatus = () => {
       updateUserPropertyStatus(payload),
     onSuccess: (result: UpdateUserPropertyStatusResult) => {
       void queryClient.invalidateQueries({ queryKey: ["userProperties"] });
-      window.setTimeout(() => {
-        void queryClient.invalidateQueries({ queryKey: ["userProperties"] });
-      }, 1500);
       toast({
-        title: "Status update started",
-        description: result.message,
-        duration: 2500,
+        title: "Status updated",
+        description: `Updated ${result.updated} ${
+          result.updated === 1 ? "property" : "properties"
+        }.`,
+        duration: 2000,
         variant: "success",
       });
     },

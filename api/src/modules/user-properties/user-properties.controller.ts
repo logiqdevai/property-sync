@@ -205,14 +205,10 @@ export class UserPropertiesController {
   }
 
   @Post('update-status')
-  @HttpCode(HttpStatus.ACCEPTED)
-  @ApiOperation({
-    summary:
-      'Set status on selected saved properties in the background (fire-and-forget, no queue)',
-  })
+  @ApiOperation({ summary: 'Set status on selected saved properties' })
   @ApiResponse({
-    status: 202,
-    description: 'Status update accepted',
+    status: 200,
+    description: 'Status updated',
     type: UpdateUserPropertyStatusResponseEntity,
   })
   @ApiResponse({ status: 400, description: 'Invalid status update payload' })

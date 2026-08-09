@@ -271,9 +271,8 @@ export interface UpdateUserPropertyStatusPayload {
 }
 
 export interface UpdateUserPropertyStatusResult {
-  accepted: number;
+  updated: number;
   status: PropertyStatus;
-  message: string;
 }
 
 export interface TruncateUserPropertyDescriptionsResult {

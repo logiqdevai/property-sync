@@ -539,105 +539,92 @@ export class UserPropertiesService {
       throw new NotFoundException('One or more properties not found');
     }
 
-    setImmediate(async () => {
-      try {
-        const agencyIds = [
-          ...new Set(
-            owned
-              .map(
-                (property) =>
-                  property.canonical_property.source_links[0]?.source_property
-                    .source_agency_id,
-              )
-              .filter((agencyId): agencyId is string => !!agencyId),
-          ),
-        ];
+    const agencyIds = [
+      ...new Set(
+        owned
+          .map(
+            (property) =>
+              property.canonical_property.source_links[0]?.source_property
+                .source_agency_id,
+          )
+          .filter((agencyId): agencyId is string => !!agencyId),
+      ),
+    ];
 
-        const trackers =
-          agencyIds.length > 0
-            ? await this.prisma.userTrackedAgency.findMany({
-                where: {
-                  user_id: userId,
-                  source_agency_id: { in: agencyIds },
-                },
-                select: {
-                  source_agency_id: true,
-                  auto_update_to_crm: true,
-                  enabled: true,
-                },
-              })
-            : [];
+    const trackers =
+      agencyIds.length > 0
+        ? await this.prisma.userTrackedAgency.findMany({
+            where: {
+              user_id: userId,
+              source_agency_id: { in: agencyIds },
+            },
+            select: {
+              source_agency_id: true,
+              auto_update_to_crm: true,
+              enabled: true,
+            },
+          })
+        : [];
 
-        const trackerByAgency = new Map(
-          trackers.map((tracker) => [tracker.source_agency_id, tracker]),
-        );
+    const trackerByAgency = new Map(
+      trackers.map((tracker) => [tracker.source_agency_id, tracker]),
+    );
 
-        const withPendingCrmUpdate: string[] = [];
-        const withoutPendingCrmUpdate: string[] = [];
+    const withPendingCrmUpdate: string[] = [];
+    const withoutPendingCrmUpdate: string[] = [];
 
-        for (const property of owned) {
-          let pendingCrmUpdate = property.pending_crm_update;
-          const sourceAgencyId =
-            property.canonical_property.source_links[0]?.source_property
-              .source_agency_id;
+    for (const property of owned) {
+      let pendingCrmUpdate = property.pending_crm_update;
+      const sourceAgencyId =
+        property.canonical_property.source_links[0]?.source_property
+          .source_agency_id;
 
-          if (
-            property.integration_property_id &&
-            sourceAgencyId &&
-            !pendingCrmUpdate
-          ) {
-            const tracker = trackerByAgency.get(sourceAgencyId);
-            if (tracker?.enabled && !tracker.auto_update_to_crm) {
-              pendingCrmUpdate = true;
-            }
-          }
-
-          if (pendingCrmUpdate && !property.pending_crm_update) {
-            withPendingCrmUpdate.push(property.id);
-          } else {
-            withoutPendingCrmUpdate.push(property.id);
-          }
+      if (
+        property.integration_property_id &&
+        sourceAgencyId &&
+        !pendingCrmUpdate
+      ) {
+        const tracker = trackerByAgency.get(sourceAgencyId);
+        if (tracker?.enabled && !tracker.auto_update_to_crm) {
+          pendingCrmUpdate = true;
         }
-
-        await Promise.all([
-          withPendingCrmUpdate.length > 0
-            ? this.prisma.userProperty.updateMany({
-                where: { user_id: userId, id: { in: withPendingCrmUpdate } },
-                data: {
-                  status,
-                  is_modified: true,
-                  pending_crm_update: true,
-                },
-              })
-            : Promise.resolve(),
-          withoutPendingCrmUpdate.length > 0
-            ? this.prisma.userProperty.updateMany({
-                where: {
-                  user_id: userId,
-                  id: { in: withoutPendingCrmUpdate },
-                },
-                data: {
-                  status,
-                  is_modified: true,
-                },
-              })
-            : Promise.resolve(),
-        ]);
-      } catch (error) {
-        this.logger.error(
-          `updateStatusMany failed user=${userId} count=${uniqueIds.length}: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        );
       }
-    });
+
+      if (pendingCrmUpdate && !property.pending_crm_update) {
+        withPendingCrmUpdate.push(property.id);
+      } else {
+        withoutPendingCrmUpdate.push(property.id);
+      }
+    }
+
+    await Promise.all([
+      withPendingCrmUpdate.length > 0
+        ? this.prisma.userProperty.updateMany({
+            where: { user_id: userId, id: { in: withPendingCrmUpdate } },
+            data: {
+              status,
+              is_modified: true,
+              pending_crm_update: true,
+            },
+          })
+        : Promise.resolve(),
+      withoutPendingCrmUpdate.length > 0
+        ? this.prisma.userProperty.updateMany({
+            where: {
+              user_id: userId,
+              id: { in: withoutPendingCrmUpdate },
+            },
+            data: {
+              status,
+              is_modified: true,
+            },
+          })
+        : Promise.resolve(),
+    ]);
 
     return {
-      accepted: uniqueIds.length,
+      updated: uniqueIds.length,
       status,
-      message: `Status update started for ${uniqueIds.length} ${
-        uniqueIds.length === 1 ? 'property' : 'properties'
-      }`,
     };
   }
 
