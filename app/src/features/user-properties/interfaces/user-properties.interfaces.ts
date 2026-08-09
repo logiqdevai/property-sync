@@ -265,6 +265,17 @@ export interface TruncateUserPropertyDescriptionsPayload {
   replacement?: string;
 }
 
+export interface UpdateUserPropertyStatusPayload {
+  ids: string[];
+  status: PropertyStatus;
+}
+
+export interface UpdateUserPropertyStatusResult {
+  accepted: number;
+  status: PropertyStatus;
+  message: string;
+}
+
 export interface TruncateUserPropertyDescriptionsResult {
   updated: number;
   total: number;

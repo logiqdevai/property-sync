@@ -14,7 +14,7 @@ function buildEstateWebTypeCatalogJson(): string {
   return JSON.stringify(leafTypes);
 }
 
-export const NORMALIZATION_STATIC_INSTRUCTIONS = `You are normalizing raw property listings scraped from a Greek real estate website into a structured database schema aligned with EstateWeb CMS payloads.
+export const NORMALIZATION_STATIC_INSTRUCTIONS = `You are normalizing raw property listings scraped from Greek real estate websites (raw content may be in Greek, English, or another language) into a structured database schema aligned with EstateWeb CMS payloads.
 
 Return a JSON array with one object per input listing (same order, same length).
 
@@ -74,9 +74,10 @@ ${buildEstateWebTypeCatalogJson()}
 }
 
 ## Notes:
-- The site is Greek. Infer listing_type from labels like "ΠΩΛΕΙΤΑΙ" (SALE), "ΕΝΟΙΚΙΑΖΕΤΑΙ" (RENT), "Αγγελία Προς Πώληση" (SALE), "Αγγελία Ενοικίασης" (RENT)
+- Most sites are Greek. Infer listing_type from labels like "ΠΩΛΕΙΤΑΙ" (SALE), "ΕΝΟΙΚΙΑΖΕΤΑΙ" (RENT), "Αγγελία Προς Πώληση" (SALE), "Αγγελία Ενοικίασης" (RENT) — or their English equivalents ("For Sale", "For Rent"/"To Let") when the raw content is in English
 - raw_location may contain "Κωδικός <code>  <city>" — extract just the city name. raw_description has Υποπεριοχή (sub-region=city) and Γειτονιά (neighborhood=district) for more precise location
-- Prices use Greek thousand separators: "100.000" = 100000, not 100
+- Prices use Greek thousand separators when the site is Greek: "100.000" = 100000, not 100. English-language sites typically use commas instead: "100,000" = 100000
+- city/district MUST always be the standard Greek spelling of the place name, even when the raw listing is in English or another language (e.g. "Thessaloniki" → "Θεσσαλονίκη", "Malia" → "Μάλια", "Chania" → "Χανιά", "Heraklion" → "Ηράκλειο", "Lasithi"/"Lassithi" → "Λασίθι"). This is required because estateweb_location_id is resolved deterministically on the backend by matching city/district against a Greek-only EstateWeb location catalog — a Latin-script place name will never match and the property will fail to sync to the CMS. Only keep the original (non-Greek) spelling if you genuinely do not know the standard Greek name for an obscure locality
 - Discounted listings often show TWO prices (strikethrough old + current), e.g. "270.000 € 250.000 €", or "Τιμή: 250.000 €" in the description while raw_price still has the old figure. Rules:
   - price = the LOWER / current asking price (what the buyer pays now)
   - price_start = the HIGHER / original list price
@@ -84,7 +85,7 @@ ${buildEstateWebTypeCatalogJson()}
   - Never set price_start below price; if unsure which is current, prefer the value next to "Τιμή:" in raw_description / detail text over a lone higher raw_price
 - Do NOT return a description field. The listing description is stored separately from the scrape; use raw_description only as a signal for other fields (city, district, features, price, etc.)
 - title MUST come from raw_title (lightly cleaned). Never replace it with a generated "Διαμέρισμα 80 τ.μ." style summary, and never copy raw_description into title
-- city/district: prefer detail_specs "Περιοχή" when present, then raw_description (Υποπεριοχή/Γειτονιά), then raw_location. city must be a real place name (municipality/prefecture), never a marketing region like "Νότια Κρήτη" / "Βόρεια Ελλάδα". When a place is written as "Locality (Municipality/Area)" (e.g. "Άγιος Κωνσταντίνος (Νικηφόρος Φωκάς)" or "Τριόπετρα (Λάμπη)"), set district to the full "Locality (Municipality)" string OR district=locality and city=parenthetical — never invent a vague region as city
+- city/district: prefer detail_specs "Περιοχή" when present, then raw_description (Υποπεριοχή/Γειτονιά), then raw_location. city must be a real place name (municipality/prefecture), never a marketing region like "Νότια Κρήτη" / "Βόρεια Ελλάδα". When a place is written as "Locality (Municipality/Area)" (e.g. "Άγιος Κωνσταντίνος (Νικηφόρος Φωκάς)" or "Τριόπετρα (Λάμπη)"), set district to the full "Locality (Municipality)" string OR district=locality and city=parenthetical — never invent a vague region as city. Remember: convert to Greek spelling per the rule above even when the source text is in English
 - cms_metadata is mainly for rentals (guarantee, income terms, contract period, has_keys)
 - Only include cms_fields entries you are confident about; omit unknown custom fields
 - Return ONLY the JSON array, no prose

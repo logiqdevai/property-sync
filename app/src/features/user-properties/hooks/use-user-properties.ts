@@ -37,6 +37,7 @@ import {
   updateUserProperty,
   updateUserPropertyEstateWebSites,
   updateUserPropertySalesPrices,
+  updateUserPropertyStatus,
   syncUserPropertyCrmClientNotes,
 } from "../services/user-properties.services";
 import type {
@@ -62,6 +63,8 @@ import type {
   ProduceUserPropertyContentPayload,
   ProduceUserPropertyContentResponse,
   UpdateUserPropertyPayload,
+  UpdateUserPropertyStatusPayload,
+  UpdateUserPropertyStatusResult,
   UserPropertyCountQuery,
   UserPropertyListQuery,
 } from "../interfaces/user-properties.interfaces";
@@ -656,6 +659,34 @@ export const useRenormalizeUserProperties = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not start renormalization",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useUpdateUserPropertyStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: UpdateUserPropertyStatusPayload) =>
+      updateUserPropertyStatus(payload),
+    onSuccess: (result: UpdateUserPropertyStatusResult) => {
+      void queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      window.setTimeout(() => {
+        void queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      }, 1500);
+      toast({
+        title: "Status update started",
+        description: result.message,
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not update status",
         description: error.message,
         variant: "error",
       });

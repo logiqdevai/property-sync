@@ -1282,11 +1282,17 @@ export class PropertyNormalizationService {
 
     if (!isSpike) return;
 
+    const agency = await this.prisma.sourceAgency.findUnique({
+      where: { id: params.sourceAgencyId },
+      select: { name: true },
+    });
+    const agencyName = agency?.name ?? 'Unknown agency';
+
     this.notificationsService.create({
       type: NotificationType.PROPERTY_REMOVAL_SPIKE,
       severity: NotificationSeverity.WARNING,
-      title: 'Property removal spike detected',
-      message: `${params.removedCount} of ${params.totalTracked} tracked properties were removed in crawl run ${params.crawlRunId}`,
+      title: `Property removal spike detected — ${agencyName}`,
+      message: `${params.removedCount} of ${params.totalTracked} tracked properties were removed for ${agencyName} in crawl run ${params.crawlRunId}`,
       source_agency_id: params.sourceAgencyId,
       scraper_id: params.scraperId,
       crawl_run_id: params.crawlRunId,

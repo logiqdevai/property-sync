@@ -39,6 +39,8 @@ import type {
   BulkRemoveWatermarkImagesResponse,
   ProduceUserPropertyContentPayload,
   ProduceUserPropertyContentResponse,
+  UpdateUserPropertyStatusPayload,
+  UpdateUserPropertyStatusResult,
 } from "../interfaces/user-properties.interfaces";
 
 export const getUserProperties = async (
@@ -401,6 +403,22 @@ export const renormalizeUserProperties = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to renormalize properties.",
+    );
+  }
+};
+
+export const updateUserPropertyStatus = async (
+  payload: UpdateUserPropertyStatusPayload,
+): Promise<UpdateUserPropertyStatusResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.updateStatus,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to update property status.",
     );
   }
 };

@@ -47,6 +47,8 @@ import { MigrateIntegrationImagesDto } from './dto/migrate-integration-images.dt
 import { BulkMigrateIntegrationImagesDto } from './dto/bulk-migrate-integration-images.dto';
 import { ProduceUserPropertyContentDto } from './dto/produce-user-property-content.dto';
 import { ProduceUserPropertyContentResponseEntity } from './entities/produce-user-property-content-response.entity';
+import { UpdateUserPropertyStatusDto } from './dto/update-user-property-status.dto';
+import { UpdateUserPropertyStatusResponseEntity } from './entities/update-user-property-status-response.entity';
 
 @ApiTags('User Properties')
 @ApiBearerAuth()
@@ -199,6 +201,30 @@ export class UserPropertiesController {
       dto.ids,
       dto.texts,
       dto.replacement,
+    );
+  }
+
+  @Post('update-status')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ApiOperation({
+    summary:
+      'Set status on selected saved properties in the background (fire-and-forget, no queue)',
+  })
+  @ApiResponse({
+    status: 202,
+    description: 'Status update accepted',
+    type: UpdateUserPropertyStatusResponseEntity,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid status update payload' })
+  @ApiResponse({ status: 404, description: 'One or more properties not found' })
+  updateStatus(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateUserPropertyStatusDto,
+  ) {
+    return this.userPropertiesService.updateStatusMany(
+      userId,
+      dto.ids,
+      dto.status,
     );
   }
 

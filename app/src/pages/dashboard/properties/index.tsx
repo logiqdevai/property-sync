@@ -12,7 +12,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Globe, ImageOff, Images, Languages, Layers, ListFilter, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { CircleDot, Globe, ImageOff, Images, Languages, Layers, ListFilter, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
@@ -31,7 +31,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-modal";
 import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
 import { ProduceContentModal } from "./components/produce-content-modal";
-import { PropertyStatuses } from "@/features/properties/interfaces/properties.interfaces";
+import { ChangePropertyStatusModal } from "./components/change-property-status-modal";
+import {
+  PropertyStatuses,
+  type PropertyStatus,
+} from "@/features/properties/interfaces/properties.interfaces";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/properties/property-status-filter.options";
 import { PropertyChangeFilterOptions } from "@/config/constants/dropdowns/properties/property-change-filter.options";
 import { PropertyDuplicateGroupFilterOptions } from "@/config/constants/dropdowns/properties/property-duplicate-group-filter.options";
@@ -52,6 +56,7 @@ import {
   useSplitUserProperties,
   useTruncateUserPropertyDescriptions,
   useUpdateUserPropertySalesPrices,
+  useUpdateUserPropertyStatus,
   useSyncUserPropertyCrmClientNotes,
   useUserProperties,
   useUserPropertiesCount,
@@ -248,6 +253,7 @@ export default function DashboardPropertiesListPage() {
   const manageSitesModal = useOverlayState();
   const removeWatermarkModal = useOverlayState();
   const produceContentModal = useOverlayState();
+  const changeStatusModal = useOverlayState();
   const updateSalesPricesConfirm = useOverlayState();
   const syncCrmClientNotesConfirm = useOverlayState();
   const renormalizeConfirm = useOverlayState();
@@ -260,6 +266,9 @@ export default function DashboardPropertiesListPage() {
   const [produceContentPropertyIds, setProduceContentPropertyIds] = useState<
     string[]
   >([]);
+  const [changeStatusPropertyIds, setChangeStatusPropertyIds] = useState<string[]>(
+    [],
+  );
   const [salesPricesPropertyIds, setSalesPricesPropertyIds] = useState<string[]>([]);
   const [crmClientNotesPropertyIds, setCrmClientNotesPropertyIds] = useState<
     string[]
@@ -354,6 +363,7 @@ export default function DashboardPropertiesListPage() {
   const pushSelectedToCrm = usePushUserPropertiesToCrm();
   const removeWatermarks = useRemoveUserPropertiesWatermarkImages();
   const produceContent = useProduceUserPropertyContent();
+  const updateStatus = useUpdateUserPropertyStatus();
   const updateSalesPrices = useUpdateUserPropertySalesPrices();
   const syncCrmClientNotes = useSyncUserPropertyCrmClientNotes();
   const renormalize = useRenormalizeUserProperties();
@@ -418,6 +428,11 @@ export default function DashboardPropertiesListPage() {
     produceContentModal.open();
   };
 
+  const openChangeStatus = (ids: string[]) => {
+    setChangeStatusPropertyIds(ids);
+    changeStatusModal.open();
+  };
+
   const openUpdateSalesPrices = (ids: string[]) => {
     setSalesPricesPropertyIds(ids);
     updateSalesPricesConfirm.open();
@@ -471,6 +486,12 @@ export default function DashboardPropertiesListPage() {
     });
 
     const entries: TableRowActionEntry[] = [
+      {
+        id: "change-status",
+        label: "Change status",
+        icon: CircleDot,
+        isDisabled: selectedCount < 1 || updateStatus.isPending,
+      },
       {
         id: "crm",
         label: "CRM",
@@ -586,6 +607,7 @@ export default function DashboardPropertiesListPage() {
     selectedLinkedCount,
     syncCrmClientNotes.isPending,
     updateSalesPrices.isPending,
+    updateStatus.isPending,
   ]);
 
   const clearSelection = () => setSelectedKeys(new Set());
@@ -635,6 +657,10 @@ export default function DashboardPropertiesListPage() {
   };
 
   const handleBulkAction = (actionId: string) => {
+    if (actionId === "change-status") {
+      openChangeStatus(Array.from(selectedIds));
+      return;
+    }
     if (actionId === "push-to-crm") {
       void handleBulkPushToCrm();
       return;
@@ -785,6 +811,13 @@ export default function DashboardPropertiesListPage() {
     if (renormalizePropertyIds.length === 0) return;
     await renormalize.mutateAsync({ ids: renormalizePropertyIds });
     setRenormalizePropertyIds([]);
+    clearSelection();
+  };
+
+  const handleChangeStatus = async (status: PropertyStatus) => {
+    if (changeStatusPropertyIds.length === 0) return;
+    await updateStatus.mutateAsync({ ids: changeStatusPropertyIds, status });
+    setChangeStatusPropertyIds([]);
     clearSelection();
   };
 
@@ -1540,6 +1573,12 @@ export default function DashboardPropertiesListPage() {
           clearSelection();
         }}
         isPending={produceContent.isPending}
+      />
+      <ChangePropertyStatusModal
+        state={changeStatusModal}
+        propertyCount={changeStatusPropertyIds.length}
+        onConfirm={handleChangeStatus}
+        isPending={updateStatus.isPending}
       />
     </div>
   );

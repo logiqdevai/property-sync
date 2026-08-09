@@ -217,6 +217,7 @@ export const ApiRoutes = {
         dedupeGroups: "/properties/dedupe-groups",
         bulkSplit: "/properties/bulk-split",
         truncateDescriptions: "/properties/truncate-descriptions",
+        updateStatus: "/properties/update-status",
         updateEstateWebSites: "/properties/update-estateweb-sites",
         updateSalesPrices: "/properties/update-sales-prices",
         syncCrmClientNotes: "/properties/sync-crm-client-notes",
