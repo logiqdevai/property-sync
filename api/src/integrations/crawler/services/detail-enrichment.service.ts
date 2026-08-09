@@ -23,6 +23,7 @@ interface DetailEnrichmentResult {
   external_id: string | null;
   title: string | null;
   price: string | null;
+  location: string | null;
   latitude: number | null;
   longitude: number | null;
   raw_html_path: string | null;
@@ -105,6 +106,9 @@ export class DetailEnrichmentService {
         if (detail.price) {
           item.raw.price = detail.price;
         }
+        if (detail.location) {
+          item.raw.location = detail.location;
+        }
         if (detail.latitude != null && detail.longitude != null) {
           item.raw.latitude = detail.latitude;
           item.raw.longitude = detail.longitude;
@@ -140,6 +144,7 @@ export class DetailEnrichmentService {
       external_id: null,
       title: null,
       price: null,
+      location: null,
       latitude: null,
       longitude: null,
       raw_html_path: null,
@@ -288,6 +293,12 @@ export class DetailEnrichmentService {
         if (cfg?.price_selector) {
           const el = document.querySelector(cfg.price_selector);
           priceText = cleanText(el?.textContent) || null;
+        }
+
+        let locationText: string | null = null;
+        if (cfg?.location_selector) {
+          const el = document.querySelector(cfg.location_selector);
+          locationText = cleanText(el?.textContent) || null;
         }
 
         const detailSpecs: Record<string, string> = {};
@@ -529,6 +540,7 @@ export class DetailEnrichmentService {
           external_id: externalId,
           title: titleText,
           price: priceText,
+          location: locationText,
           latitude,
           longitude,
         };

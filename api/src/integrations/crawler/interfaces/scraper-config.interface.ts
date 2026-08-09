@@ -35,6 +35,7 @@ export interface DetailPageConfig {
   // text found on the detail page, since listing cards often have shorter/dirtier text.
   title_selector?: string;
   price_selector?: string;
+  location_selector?: string;
 }
 
 export interface ScraperConfig {
