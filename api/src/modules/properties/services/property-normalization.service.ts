@@ -18,6 +18,8 @@ import { NotificationsService } from '@/modules/notifications/notifications.serv
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import { CostLogsService } from '@/modules/cost-logs/cost-logs.service';
 import {
+  CRAWL_REMOVAL_COVERAGE_MIN_BASELINE,
+  CRAWL_REMOVAL_COVERAGE_RATIO_THRESHOLD,
   PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD,
   PROPERTY_REMOVAL_SPIKE_RATIO_THRESHOLD,
 } from '@/modules/notifications/constants/notification.constants';
@@ -45,6 +47,7 @@ import {
 import { PropertySyncChangeType } from '@/modules/cms-sync/interfaces/cms-sync-batch.interface';
 import {
   CostOperationType,
+  CrawlRunStatus,
   IntegrationType,
   NotificationSeverity,
   NotificationType,
@@ -858,18 +861,12 @@ export class PropertyNormalizationService {
     affected: SyncForPropertyResult[];
     onSync?: CmsSyncCallback;
   }): Promise<void> {
-    const removalStats = await this.detectRemovalsAndReappearances(
-      params.crawlRunId,
-      params.sourceAgencyId,
-      params.crawlStartedAt,
-      params.userTrackedAgencyId,
-    );
-
-    await this.persistRemovalStats({
+    const removalStats = await this.detectRemovalsAndReappearances({
       crawlRunId: params.crawlRunId,
       sourceAgencyId: params.sourceAgencyId,
+      crawlStartedAt: params.crawlStartedAt,
+      userTrackedAgencyId: params.userTrackedAgencyId,
       scraperId: params.scraperId,
-      ...removalStats,
     });
 
     const allAffected = this.dedupeAffected([
@@ -1202,101 +1199,156 @@ export class PropertyNormalizationService {
     return { rows: [], usage };
   }
 
-  private async detectRemovalsAndReappearances(
-    crawlRunId: string,
-    sourceAgencyId: string,
-    crawlStartedAt: Date,
-    userTrackedAgencyId?: string,
-  ): Promise<{
+  private async detectRemovalsAndReappearances(params: {
+    crawlRunId: string;
+    sourceAgencyId: string;
+    crawlStartedAt: Date;
+    userTrackedAgencyId?: string;
+    scraperId?: string;
+  }): Promise<{
     removedCount: number;
     totalTracked: number;
     affected: SyncForPropertyResult[];
   }> {
-    const agencyProperties = await this.prisma.property.findMany({
-      where: {
-        source_links: {
-          some: {
-            source_property: { source_agency_id: sourceAgencyId },
+    const {
+      crawlRunId,
+      sourceAgencyId,
+      crawlStartedAt,
+      userTrackedAgencyId,
+      scraperId,
+    } = params;
+
+    const coverageLookbackStart = new Date(
+      crawlStartedAt.getTime() - 30 * 24 * 60 * 60 * 1000,
+    );
+
+    const [agencyProperties, crawlRun, recentCoverage] = await Promise.all([
+      this.prisma.property.findMany({
+        where: {
+          source_links: {
+            some: {
+              source_property: { source_agency_id: sourceAgencyId },
+            },
           },
         },
-      },
-      include: {
-        source_links: {
-          include: { source_property: { select: { last_seen_at: true } } },
+        include: {
+          source_links: {
+            include: {
+              source_property: { select: { last_seen_at: true } },
+            },
+          },
         },
-      },
-    });
+      }),
+      this.prisma.crawlRun.findUnique({
+        where: { id: crawlRunId },
+        select: { total_found: true },
+      }),
+      this.prisma.crawlRun.aggregate({
+        where: {
+          source_agency_id: sourceAgencyId,
+          status: CrawlRunStatus.SUCCESS,
+          id: { not: crawlRunId },
+          total_found: { gt: 0 },
+          started_at: {
+            gte: coverageLookbackStart,
+            lt: crawlStartedAt,
+          },
+        },
+        _max: { total_found: true },
+      }),
+    ]);
 
-    let removedCount = 0;
-    const affected: SyncForPropertyResult[] = [];
-
-    for (const property of agencyProperties) {
-      const anySeenThisCrawl = property.source_links.some(
+    const totalTracked = agencyProperties.length;
+    const candidates = agencyProperties.filter((property) => {
+      if (property.status === PropertyStatus.REMOVED) return false;
+      return !property.source_links.some(
         (link) =>
           link.source_property.last_seen_at &&
           link.source_property.last_seen_at >= crawlStartedAt,
       );
+    });
 
-      if (!anySeenThisCrawl && property.status !== PropertyStatus.REMOVED) {
-        removedCount++;
-        await this.prisma.property.update({
-          where: { id: property.id },
-          data: { status: PropertyStatus.REMOVED },
-        });
-        await this.prisma.propertyHistory.create({
-          data: {
-            property_id: property.id,
-            event_type: PropertyHistoryEventType.REMOVED,
-            crawl_run_id: crawlRunId,
-          },
-        });
-        const removalResults = await this.userPropertiesService.syncForProperty(
-          property.id,
-          {
-            userTrackedAgencyId,
-            sourceAgencyId,
-            changeType: 'removed',
-          },
-        );
-        affected.push(...removalResults);
-      }
+    if (candidates.length === 0) {
+      return { removedCount: 0, totalTracked, affected: [] };
     }
 
-    return { removedCount, totalTracked: agencyProperties.length, affected };
-  }
+    const foundThisCrawl = crawlRun?.total_found ?? 0;
+    const baseline = recentCoverage._max.total_found ?? totalTracked;
+    const coverageRatio = baseline > 0 ? foundThisCrawl / baseline : 1;
+    const incompleteCoverage =
+      baseline >= CRAWL_REMOVAL_COVERAGE_MIN_BASELINE &&
+      coverageRatio < CRAWL_REMOVAL_COVERAGE_RATIO_THRESHOLD;
 
-  private async persistRemovalStats(params: {
-    crawlRunId: string;
-    sourceAgencyId: string;
-    scraperId?: string;
-    removedCount: number;
-    totalTracked: number;
-  }): Promise<void> {
-    // CrawlRun.total_removed is now rolled up from cms_sync_runs, not set here --
-    // removedCount only drives the spike-detection notification below.
-    const ratio =
-      params.totalTracked > 0 ? params.removedCount / params.totalTracked : 0;
+    if (incompleteCoverage) {
+      this.logger.warn(
+        `Crawl ${crawlRunId}: skipping removal detection — incomplete coverage (${foundThisCrawl}/${baseline}, ratio ${coverageRatio.toFixed(2)})`,
+      );
+      const agency = await this.prisma.sourceAgency.findUnique({
+        where: { id: sourceAgencyId },
+        select: { name: true },
+      });
+      const agencyName = agency?.name ?? 'Unknown agency';
+      this.notificationsService.create({
+        type: NotificationType.PROPERTY_REMOVAL_SPIKE,
+        severity: NotificationSeverity.WARNING,
+        title: `Property removal spike detected — ${agencyName} (incomplete crawl)`,
+        message: `Crawl found only ${foundThisCrawl} of ~${baseline} listings (30-day high-water mark); skipped marking ${candidates.length} missing properties as removed.`,
+        source_agency_id: sourceAgencyId,
+        scraper_id: scraperId,
+        crawl_run_id: crawlRunId,
+      });
+      return { removedCount: 0, totalTracked, affected: [] };
+    }
+
+    const affected: SyncForPropertyResult[] = [];
+
+    for (const property of candidates) {
+      await this.prisma.property.update({
+        where: { id: property.id },
+        data: { status: PropertyStatus.REMOVED },
+      });
+      await this.prisma.propertyHistory.create({
+        data: {
+          property_id: property.id,
+          event_type: PropertyHistoryEventType.REMOVED,
+          crawl_run_id: crawlRunId,
+        },
+      });
+      const removalResults = await this.userPropertiesService.syncForProperty(
+        property.id,
+        {
+          userTrackedAgencyId,
+          sourceAgencyId,
+          changeType: 'removed',
+        },
+      );
+      affected.push(...removalResults);
+    }
+
+    const removedCount = candidates.length;
+    const removalRatio = totalTracked > 0 ? removedCount / totalTracked : 0;
     const isSpike =
-      params.removedCount > PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD ||
-      ratio > PROPERTY_REMOVAL_SPIKE_RATIO_THRESHOLD;
+      removedCount > PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD ||
+      removalRatio > PROPERTY_REMOVAL_SPIKE_RATIO_THRESHOLD;
 
-    if (!isSpike) return;
+    if (isSpike) {
+      const agency = await this.prisma.sourceAgency.findUnique({
+        where: { id: sourceAgencyId },
+        select: { name: true },
+      });
+      const agencyName = agency?.name ?? 'Unknown agency';
+      this.notificationsService.create({
+        type: NotificationType.PROPERTY_REMOVAL_SPIKE,
+        severity: NotificationSeverity.WARNING,
+        title: `Property removal spike detected — ${agencyName}`,
+        message: `${removedCount} of ${totalTracked} tracked properties were removed for ${agencyName} in crawl run ${crawlRunId}`,
+        source_agency_id: sourceAgencyId,
+        scraper_id: scraperId,
+        crawl_run_id: crawlRunId,
+      });
+    }
 
-    const agency = await this.prisma.sourceAgency.findUnique({
-      where: { id: params.sourceAgencyId },
-      select: { name: true },
-    });
-    const agencyName = agency?.name ?? 'Unknown agency';
-
-    this.notificationsService.create({
-      type: NotificationType.PROPERTY_REMOVAL_SPIKE,
-      severity: NotificationSeverity.WARNING,
-      title: `Property removal spike detected — ${agencyName}`,
-      message: `${params.removedCount} of ${params.totalTracked} tracked properties were removed for ${agencyName} in crawl run ${params.crawlRunId}`,
-      source_agency_id: params.sourceAgencyId,
-      scraper_id: params.scraperId,
-      crawl_run_id: params.crawlRunId,
-    });
+    return { removedCount, totalTracked, affected };
   }
 
   private async resolveUserIdForCrawlRun(

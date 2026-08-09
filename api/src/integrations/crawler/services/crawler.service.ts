@@ -14,6 +14,7 @@ import { crawlTimestamp } from '../utils/crawler.utils';
 import {
   INFINITE_SCROLL_MAX_WAIT_MS,
   INFINITE_SCROLL_POLL_INTERVAL_MS,
+  INFINITE_SCROLL_STEP_VIEWPORT_RATIO,
 } from '../constants/crawler.constants';
 import {
   classifyPageAccess,
@@ -79,6 +80,8 @@ export class CrawlerService {
         blockHandlingConfig,
         Math.min(20_000, crawlerConfig.page_timeout_ms),
       );
+
+      await this.dismissCookieConsent(page);
 
       const accessState = await classifyPageAccess(page, blockHandlingConfig);
       const blocked =
@@ -400,36 +403,13 @@ export class CrawlerService {
       const prevCount = listingSelector
         ? await page.locator(listingSelector).count().catch(() => 0)
         : 0;
-      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
 
-      // Some infinite-scroll sites (e.g. JetEngine/WordPress AJAX grids) take
-      // a couple seconds to fetch and render the next batch after the scroll
-      // event fires. Poll for either new cards or a taller page instead of a
-      // single fixed wait, so fast sites finish quickly while slow ones get
-      // the time they actually need.
-      const deadline = Date.now() + INFINITE_SCROLL_MAX_WAIT_MS;
-      let newHeight = prevHeight;
-      let grew = false;
-      while (Date.now() < deadline) {
-        await page.waitForTimeout(INFINITE_SCROLL_POLL_INTERVAL_MS);
-        newHeight = await page
-          .evaluate(() => document.body.scrollHeight)
-          .catch(() => prevHeight);
-        if (newHeight !== prevHeight) {
-          grew = true;
-          break;
-        }
-        if (listingSelector) {
-          const currentCount = await page
-            .locator(listingSelector)
-            .count()
-            .catch(() => prevCount);
-          if (currentCount > prevCount) {
-            grew = true;
-            break;
-          }
-        }
-      }
+      const grew = await this.waitForInfiniteScrollGrowth(
+        page,
+        listingSelector,
+        prevHeight,
+        prevCount,
+      );
 
       if (!grew) {
         log('pagination_end', { reason: 'scroll_height_unchanged' });
@@ -459,6 +439,86 @@ export class CrawlerService {
     }
 
     return false;
+  }
+
+  private async waitForInfiniteScrollGrowth(
+    page: Page,
+    listingSelector: string | undefined,
+    prevHeight: number,
+    prevCount: number,
+  ): Promise<boolean> {
+    const deadline = Date.now() + INFINITE_SCROLL_MAX_WAIT_MS;
+    while (Date.now() < deadline) {
+      const scrolled = await page
+        .evaluate((stepRatio) => {
+          const step = Math.max(window.innerHeight * stepRatio, 200);
+          const nextY = Math.min(
+            window.scrollY + step,
+            document.body.scrollHeight,
+          );
+          window.scrollTo(0, nextY);
+          return nextY;
+        }, INFINITE_SCROLL_STEP_VIEWPORT_RATIO)
+        .catch(() => null);
+
+      if (listingSelector) {
+        await page
+          .locator(listingSelector)
+          .last()
+          .scrollIntoViewIfNeeded({ timeout: 1000 })
+          .catch(() => undefined);
+      }
+
+      await page.waitForTimeout(INFINITE_SCROLL_POLL_INTERVAL_MS);
+
+      const newHeight = await page
+        .evaluate(() => document.body.scrollHeight)
+        .catch(() => prevHeight);
+      if (newHeight !== prevHeight) {
+        return true;
+      }
+
+      if (listingSelector) {
+        const currentCount = await page
+          .locator(listingSelector)
+          .count()
+          .catch(() => prevCount);
+        if (currentCount > prevCount) {
+          return true;
+        }
+      }
+
+      if (scrolled === null) {
+        return false;
+      }
+    }
+
+    return false;
+  }
+
+  private async dismissCookieConsent(page: Page): Promise<void> {
+    await page
+      .evaluate(() => {
+        const labels = [
+          'agree',
+          'accept',
+          'accept all',
+          'allow all',
+          'i agree',
+          'ok',
+          'got it',
+        ];
+        for (const button of document.querySelectorAll('button')) {
+          const text = (button.textContent ?? '').trim().toLowerCase();
+          if (labels.some((label) => text === label || text.startsWith(label))) {
+            button.click();
+            return true;
+          }
+        }
+        return false;
+      })
+      .catch(() => undefined);
+    await page.waitForTimeout(300);
   }
 
   private async waitForCardCountIncrease(

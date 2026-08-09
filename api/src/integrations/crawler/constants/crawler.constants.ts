@@ -8,6 +8,7 @@ export const DEFAULT_SCROLL_PAUSE_MS = 1_500;
 // time to actually load more cards before we give up on pagination.
 export const INFINITE_SCROLL_MAX_WAIT_MS = 8_000;
 export const INFINITE_SCROLL_POLL_INTERVAL_MS = 400;
+export const INFINITE_SCROLL_STEP_VIEWPORT_RATIO = 0.75;
 export const DEFAULT_DETAIL_CONCURRENCY = 3;
 export const DEFAULT_DETAIL_DELAY_MS = 500;
 export const DEFAULT_CRAWL_WORKER_CONCURRENCY = 5;
