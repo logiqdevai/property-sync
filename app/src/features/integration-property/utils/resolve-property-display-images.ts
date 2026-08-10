@@ -89,8 +89,15 @@ export function resolvePropertyDisplayImages(params: {
     params.integrationProperty,
     propertyImages,
   );
-  if (integrationItems.length > 0) return integrationItems;
-  if (!propertyImages.length) return [];
+  if (
+    integrationItems.length > 0 &&
+    !(propertyImages.length > integrationItems.length)
+  ) {
+    return integrationItems;
+  }
+  if (!propertyImages.length) {
+    return integrationItems;
+  }
   return propertyImages.map((url, index) => ({
     key: `fallback-${index}`,
     crmImageId: null,
