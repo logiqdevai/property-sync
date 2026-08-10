@@ -130,14 +130,22 @@ export function sanitizeRawDescription(
   text: string | null | undefined,
 ): string | null {
   if (!text) return null;
-  const cleaned = text
-    .replace(/\r\n?/g, '\n')
-    .split('')
+  const cleaned = [...text.replace(/\r\n?/g, '\n')]
     .filter((c) => {
-      const code = c.charCodeAt(0);
-      return (code >= 32 && code !== 127) || code === 10 || code === 9;
+      if (c === '\n' || c === '\t') return true;
+      const code = c.codePointAt(0)!;
+      if (code < 32 || code === 127) return false;
+      if (code >= 0xe000 && code <= 0xf8ff) return false;
+      if (code >= 0xf0000 && code <= 0xffffd) return false;
+      if (code >= 0x100000 && code <= 0x10fffd) return false;
+      return true;
     })
     .join('')
+    .replace(/\p{Extended_Pictographic}/gu, '')
+    .replace(/\p{Emoji_Presentation}/gu, '')
+    .replace(/[\uFE0E\uFE0F]/g, '')
+    .replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u206F\uFEFF\u00AD]/g, '')
+    .replace(/[\u2190-\u21FF\u2300-\u23FF\u2460-\u24FF\u2500-\u257F\u25A0-\u25FF\u2600-\u27BF\u2B00-\u2BFF]/g, '')
     .replace(/\t/g, ' ')
     .replace(/[^\S\n]+/g, ' ')
     .replace(/ *\n */g, '\n')
