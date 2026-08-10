@@ -9,8 +9,8 @@ export const DEFAULT_SCROLL_PAUSE_MS = 1_500;
 export const INFINITE_SCROLL_MAX_WAIT_MS = 8_000;
 export const INFINITE_SCROLL_POLL_INTERVAL_MS = 400;
 export const INFINITE_SCROLL_STEP_VIEWPORT_RATIO = 0.75;
-export const DEFAULT_DETAIL_CONCURRENCY = 3;
-export const DEFAULT_DETAIL_DELAY_MS = 500;
+export const DEFAULT_DETAIL_CONCURRENCY = 2;
+export const DEFAULT_DETAIL_DELAY_MS = 1_500;
 export const DEFAULT_CRAWL_WORKER_CONCURRENCY = 5;
 export const DEFAULT_CRAWL_JOB_TIMEOUT_MS = 30 * 60_000;
 // A crashed worker (OOM kill, restart) leaves its job's BullMQ lock unrenewed, so

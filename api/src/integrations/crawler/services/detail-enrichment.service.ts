@@ -11,8 +11,8 @@ import {
   CrawlItem,
   DetailPageConfig,
 } from '../interfaces/scraper-config.interface';
-import { waitForBotChallengeClearance } from '../block-handling/block-handling.utils';
 import { BlockHandlingConfig } from '../block-handling/block-handling.interface';
+import { waitForBotChallengeClearance } from '../block-handling/block-handling.utils';
 import { StealthBrowserService } from './stealth-browser.service';
 
 interface DetailEnrichmentResult {
@@ -85,6 +85,13 @@ export class DetailEnrichmentService {
       for (let j = 0; j < batch.length; j++) {
         const item = batch[j];
         const detail = results[j];
+        if (detail.error) {
+          item.raw._detail_enrichment_error = detail.error;
+          this.logger.warn(
+            `Detail enrichment skipped for ${item.source_url}: ${detail.error}`,
+          );
+          continue;
+        }
         const listingImages =
           (item.raw._all_images as string[] | undefined) ?? [];
         item.raw._all_images = [
@@ -153,16 +160,40 @@ export class DetailEnrichmentService {
     const { context, page } = await this.stealthBrowserService.newStealthPage();
 
     try {
-      const response = await page.goto(item.source_url, {
+      let response = await page.goto(item.source_url, {
         waitUntil: 'domcontentloaded',
         timeout: pageTimeoutMs,
       });
 
-      await waitForBotChallengeClearance(
+      let accessState = await waitForBotChallengeClearance(
         page,
         blockHandlingConfig,
         Math.min(15_000, pageTimeoutMs),
       );
+
+      if (accessState === 'challenge' || accessState === 'blocked') {
+        await page.waitForTimeout(2_500);
+        response = await page.goto(item.source_url, {
+          waitUntil: 'domcontentloaded',
+          timeout: pageTimeoutMs,
+        });
+        accessState = await waitForBotChallengeClearance(
+          page,
+          blockHandlingConfig,
+          Math.min(15_000, pageTimeoutMs),
+        );
+      }
+
+      if (
+        accessState === 'challenge' ||
+        accessState === 'blocked' ||
+        accessState === 'pending'
+      ) {
+        return {
+          ...empty,
+          error: `access barrier: ${accessState}`,
+        };
+      }
 
       if (response && !response.ok()) {
         return { ...empty, error: `HTTP ${response.status()}` };

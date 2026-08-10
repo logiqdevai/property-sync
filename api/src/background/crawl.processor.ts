@@ -17,7 +17,10 @@ import {
   extractDenormalizedRawFields,
   extractSourcePropertyIds,
 } from '@/integrations/crawler/utils/crawler.utils';
-import { buildBlockHandlingConfig } from '@/integrations/crawler/block-handling/block-handling.utils';
+import {
+  buildBlockHandlingConfig,
+  isAccessBarrierTitle,
+} from '@/integrations/crawler/block-handling/block-handling.utils';
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
@@ -271,6 +274,29 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
           select: { id: true },
         });
 
+        const detailFailed =
+          typeof raw._detail_enrichment_error === 'string' &&
+          raw._detail_enrichment_error.length > 0;
+        const barrierTitle = isAccessBarrierTitle(
+          typeof raw.title === 'string' ? raw.title : null,
+        );
+
+        if (existing && (detailFailed || barrierTitle)) {
+          await this.prisma.sourceProperty.update({
+            where: { id: existing.id },
+            data: {
+              last_seen_at: now,
+              status: PropertyStatus.ACTIVE,
+            },
+          });
+          totalUpdated++;
+          continue;
+        }
+
+        const safeTitle = barrierTitle
+          ? null
+          : ((raw.title as string | undefined) ?? null);
+
         await this.prisma.sourceProperty.upsert({
           where: {
             source_agency_id_source_url: {
@@ -283,7 +309,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
             property_id: propertyId,
             internal_id: internalId,
             source_url: item.source_url,
-            raw_title: (raw.title as string | undefined) ?? null,
+            raw_title: safeTitle,
             raw_description: (raw._detail_text as string | undefined) ?? null,
             raw_price: (raw.price as string | undefined) ?? null,
             raw_location: (raw.location as string | undefined) ?? null,
@@ -298,7 +324,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
           update: {
             property_id: propertyId,
             internal_id: internalId,
-            raw_title: (raw.title as string | undefined) ?? null,
+            raw_title: safeTitle,
             raw_description: (raw._detail_text as string | undefined) ?? null,
             raw_price: (raw.price as string | undefined) ?? null,
             raw_location: (raw.location as string | undefined) ?? null,

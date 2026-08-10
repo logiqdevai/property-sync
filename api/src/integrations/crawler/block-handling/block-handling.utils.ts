@@ -223,6 +223,23 @@ export async function isAccessBarrierPage(
   return state === 'blocked' || state === 'challenge';
 }
 
+export function isAccessBarrierTitle(title: string | null | undefined): boolean {
+  if (!title) return false;
+  const trimmed = title.trim();
+  if (!trimmed) return false;
+  for (const rule of DEFAULT_BLOCK_RULES) {
+    if (rule.source !== 'title') continue;
+    if (rule.regex) {
+      if (new RegExp(rule.pattern, rule.flags ?? 'i').test(trimmed)) {
+        return true;
+      }
+    } else if (trimmed.includes(rule.pattern)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export async function waitForBotChallengeClearance(
   page: Page,
   config?: BlockHandlingConfig,
