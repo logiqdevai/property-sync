@@ -79,7 +79,7 @@ export interface NormalizedAiRow {
   square_meters?: number | null;
   bedrooms?: number | null;
   bathrooms?: number | null;
-  floor?: string | null;
+  floor?: string | number | null;
   construction_year?: number | null;
   renovation_year?: number | null;
   energy_class?: string | null;
@@ -520,7 +520,9 @@ export function buildPropertyRecord(
     square_meters: toDecimal(n.square_meters),
     bedrooms: n.bedrooms ?? null,
     bathrooms: n.bathrooms ?? null,
-    floor: n.floor ?? null,
+    floor: n.floor != null && String(n.floor).trim() !== ''
+      ? String(n.floor).trim()
+      : null,
     construction_year: n.construction_year ?? null,
     renovation_year: n.renovation_year ?? null,
     video_url:

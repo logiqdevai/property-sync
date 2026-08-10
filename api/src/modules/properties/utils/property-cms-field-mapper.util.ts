@@ -54,8 +54,8 @@ function upsertField(
   fields.set(id, { id, value });
 }
 
-function resolveFloorValue(floor: string): number | null {
-  const trimmed = floor.trim();
+function resolveFloorValue(floor: string | number): number | null {
+  const trimmed = String(floor).trim();
   if (!trimmed) return null;
 
   const normalized = normalizeEstateWebLabel(trimmed);
@@ -396,17 +396,17 @@ export function mergeCmsFieldsFromNormalizedRow(
     );
   }
 
-  if (row.floor) {
+  if (row.floor != null && String(row.floor).trim() !== '') {
     const floorValue = resolveFloorValue(row.floor);
     if (floorValue != null) {
       upsertField(fields, ESTATEWEB_FIELD_FLOOR, floorValue, propertyTypeId);
     }
   }
 
-  if (row.energy_class) {
+  if (row.energy_class != null && String(row.energy_class).trim() !== '') {
     const option = resolveEstateWebFieldOptionByName(
       ESTATEWEB_FIELD_ENERGY_CLASS,
-      row.energy_class,
+      String(row.energy_class),
     );
     if (option) {
       upsertField(
@@ -418,18 +418,18 @@ export function mergeCmsFieldsFromNormalizedRow(
     }
   }
 
-  if (row.road) {
+  if (row.road != null && String(row.road).trim() !== '') {
     const option = resolveEstateWebFieldOptionByName(
       ESTATEWEB_FIELD_ROAD_TYPE,
-      row.road,
+      String(row.road),
     );
     if (option) {
       upsertField(fields, ESTATEWEB_FIELD_ROAD_TYPE, option.id, propertyTypeId);
     }
   }
 
-  if (row.heating) {
-    for (const token of splitValueTokens(row.heating)) {
+  if (row.heating != null && String(row.heating).trim() !== '') {
+    for (const token of splitValueTokens(String(row.heating))) {
       applyBooleanFieldByName(fields, token, propertyTypeId);
     }
   }

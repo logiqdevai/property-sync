@@ -46,7 +46,7 @@ ${buildEstateWebTypeCatalogJson()}
   "square_meters": number | null,
   "bedrooms": number | null,
   "bathrooms": number | null,
-  "floor": string | null,
+  "floor": string | null (always a string label as shown, e.g. "Ισόγειο", "1", "2ος" — never a bare JSON number),
   "construction_year": number | null,
   "renovation_year": number | null,
   "energy_class": string | null (energy performance rating exactly as shown, e.g. "Α+", "Β", "Δεν απαιτείται"),
