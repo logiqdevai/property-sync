@@ -123,7 +123,11 @@ export class CrawlerService {
       while (pageNum < crawlerConfig.max_pages) {
         const currentUrl = page.url();
 
-        if (currentUrl === prevUrl && items.length === prevItemCount) {
+        if (
+          !isAccumulatingPagination &&
+          currentUrl === prevUrl &&
+          items.length === prevItemCount
+        ) {
           log('pagination_end', { reason: 'no_change_detected' });
           break;
         }
@@ -237,7 +241,7 @@ export class CrawlerService {
           }
         }
 
-        processedCardCount = cardCount;
+        processedCardCount = Math.max(processedCardCount, cardCount);
 
         if (options?.onPageComplete) {
           await options.onPageComplete();
@@ -261,7 +265,22 @@ export class CrawlerService {
           config.listing_selector,
           blockHandlingConfig,
         );
-        if (!advanced) break;
+        if (!advanced) {
+          if (isAccumulatingPagination) {
+            const trailingCount = await page
+              .locator(config.listing_selector)
+              .count()
+              .catch(() => processedCardCount);
+            if (trailingCount > processedCardCount) {
+              log('trailing_cards_after_scroll_end', {
+                processed: processedCardCount,
+                domCount: trailingCount,
+              });
+              continue;
+            }
+          }
+          break;
+        }
         pageNum++;
       }
 
@@ -399,7 +418,6 @@ export class CrawlerService {
       pagination.type === 'infinite_scroll' ||
       pagination.type === 'INFINITE_SCROLL'
     ) {
-      const prevHeight = await page.evaluate(() => document.body.scrollHeight);
       const prevCount = listingSelector
         ? await page.locator(listingSelector).count().catch(() => 0)
         : 0;
@@ -407,14 +425,22 @@ export class CrawlerService {
       const grew = await this.waitForInfiniteScrollGrowth(
         page,
         listingSelector,
-        prevHeight,
         prevCount,
       );
 
       if (!grew) {
-        log('pagination_end', { reason: 'scroll_height_unchanged' });
+        log('pagination_end', {
+          reason: 'scroll_no_new_cards',
+          prevCount,
+        });
         return false;
       }
+      log('infinite_scroll_grew', {
+        prevCount,
+        count: listingSelector
+          ? await page.locator(listingSelector).count().catch(() => prevCount)
+          : prevCount,
+      });
       return true;
     }
 
@@ -444,52 +470,52 @@ export class CrawlerService {
   private async waitForInfiniteScrollGrowth(
     page: Page,
     listingSelector: string | undefined,
-    prevHeight: number,
     prevCount: number,
   ): Promise<boolean> {
+    if (!listingSelector) return false;
+
     const deadline = Date.now() + INFINITE_SCROLL_MAX_WAIT_MS;
     while (Date.now() < deadline) {
       const scrolled = await page
         .evaluate((stepRatio) => {
-          const step = Math.max(window.innerHeight * stepRatio, 200);
-          const nextY = Math.min(
-            window.scrollY + step,
+          const maxY = Math.max(
             document.body.scrollHeight,
+            document.documentElement.scrollHeight,
           );
+          const step = Math.max(window.innerHeight * stepRatio, 200);
+          const nextY = Math.min(window.scrollY + step, maxY);
           window.scrollTo(0, nextY);
           return nextY;
         }, INFINITE_SCROLL_STEP_VIEWPORT_RATIO)
         .catch(() => null);
 
-      if (listingSelector) {
-        await page
-          .locator(listingSelector)
-          .last()
-          .scrollIntoViewIfNeeded({ timeout: 1000 })
-          .catch(() => undefined);
+      if (scrolled === null) {
+        return false;
       }
+
+      await page
+        .locator(listingSelector)
+        .last()
+        .scrollIntoViewIfNeeded({ timeout: 1000 })
+        .catch(() => undefined);
+
+      await page
+        .locator(
+          '.jet-listing-grid__loader, .jet-listing-grid__loader-spinner, [class*="listing-grid__loader"]',
+        )
+        .last()
+        .scrollIntoViewIfNeeded({ timeout: 500 })
+        .catch(() => undefined);
 
       await page.waitForTimeout(INFINITE_SCROLL_POLL_INTERVAL_MS);
 
-      const newHeight = await page
-        .evaluate(() => document.body.scrollHeight)
-        .catch(() => prevHeight);
-      if (newHeight !== prevHeight) {
+      const currentCount = await page
+        .locator(listingSelector)
+        .count()
+        .catch(() => prevCount);
+      if (currentCount > prevCount) {
+        await page.waitForTimeout(INFINITE_SCROLL_POLL_INTERVAL_MS);
         return true;
-      }
-
-      if (listingSelector) {
-        const currentCount = await page
-          .locator(listingSelector)
-          .count()
-          .catch(() => prevCount);
-        if (currentCount > prevCount) {
-          return true;
-        }
-      }
-
-      if (scrolled === null) {
-        return false;
       }
     }
 
