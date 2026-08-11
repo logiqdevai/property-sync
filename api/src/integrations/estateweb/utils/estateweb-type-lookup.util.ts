@@ -13,7 +13,10 @@ const PROPERTY_TYPE_TO_ESTATEWEB_LEAF: Record<PropertyType, number | null> = {
   [PropertyType.WAREHOUSE]: 11,
   [PropertyType.PARKING]: 902,
   [PropertyType.OTHER]: 901,
-  [PropertyType.UNKNOWN]: null,
+  // A confident classification failure (AI genuinely could not tell) must not permanently
+  // block CMS sync -- EstateWeb requires a type_id on every property. "Άλλο" (Other) is
+  // EstateWeb's own catch-all leaf, same as PropertyType.OTHER.
+  [PropertyType.UNKNOWN]: 901,
 };
 
 function apartmentLeafFromBedrooms(bedrooms: number | null | undefined): number {
@@ -39,7 +42,7 @@ export function resolveEstateWebTypeIdFromPropertyType(
   bedrooms?: number | null,
 ): number | null {
   const resolved = asPropertyType(propertyType);
-  if (!resolved || resolved === PropertyType.UNKNOWN) return null;
+  if (!resolved) return null;
 
   const typeId =
     resolved === PropertyType.APARTMENT

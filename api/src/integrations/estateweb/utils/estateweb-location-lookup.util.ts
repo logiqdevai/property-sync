@@ -600,6 +600,26 @@ export function resolveEstateWebLocationFromSources(input: {
     }
   }
 
+  // Last resort: the specific city/village couldn't be pinned down -- e.g. a small village
+  // that either isn't in the catalog at all, or is spelled differently there. Rather than
+  // leaving estateweb_location_id permanently null (which blocks CMS sync entirely), fall
+  // back to the broader region we're already confident about from `preferredPathSegments`.
+  // Only ever resolves to an unambiguous node: a real `is_city` anchor for a named prefecture
+  // (Χανιά/Ρέθυμνο/Ηράκλειο/Λασίθι all have one), or -- if we only know it's Crete generally
+  // -- the single, unique island-level "Κρήτη" node. Never guesses a specific village, and
+  // never picks a same-named-but-wrong-region homonym (there are unrelated "Χανιά" villages
+  // elsewhere in Greece; requiring `is_city` here excludes those).
+  if (preferredPathSegments.length > 0) {
+    for (const segment of preferredPathSegments) {
+      const cityNode = (LOCATION_BY_NORMALIZED_NAME.get(segment) ?? []).find(
+        (loc) => loc.is_city,
+      );
+      if (cityNode) return cityNode;
+    }
+    const islandMatches = LOCATION_BY_NORMALIZED_NAME.get('κρητη') ?? [];
+    if (islandMatches.length === 1) return islandMatches[0];
+  }
+
   return undefined;
 }
 
