@@ -60,6 +60,69 @@ const CITY_ALIASES: Record<string, string> = {
   'ν. χαλκιδικης': 'χαλκιδικη',
   'ν χαλκιδικης': 'χαλκιδικη',
   χαλκιδικης: 'χαλκιδικη',
+  malia: 'μαλια',
+  stalis: 'σταλιδα',
+  mesampelies: 'μεσαμπελιες',
+  'agia varvara': 'αγια βαρβαρα',
+  'epano sissi': 'επανω σισι',
+  'epano sisi': 'επανω σισι',
+  sissi: 'σισι',
+  sisi: 'σισι',
+  pyrgos: 'πυργος',
+  plaka: 'πλακα',
+  milatos: 'μιλατος',
+  anogeia: 'ανωγεια',
+  anogia: 'ανωγεια',
+  elounda: 'ελουντα',
+  skalani: 'σκαλανι',
+  heraklion: 'ηρακλειο',
+  heraklio: 'ηρακλειο',
+  iraklio: 'ηρακλειο',
+  lassithi: 'λασιθι',
+  lasithi: 'λασιθι',
+  chania: 'χανια',
+  rethymno: 'ρεθυμνο',
+  rethymnon: 'ρεθυμνο',
+  neapoli: 'νεαπολη',
+  kounali: 'κουναλι',
+  gialia: 'γιαλια',
+  ligaria: 'λυγαρια',
+  'kokkini hani': 'κοκκινη χανι',
+};
+
+const REGION_PATH_HINTS: Array<{ re: RegExp; segment: string }> = [
+  { re: /\bcrete\b|\bκρητη\b/i, segment: 'κρητη' },
+  { re: /\blassithi\b|\blasithi\b|\bλασιθι\b/i, segment: 'λασιθι' },
+  { re: /\bheraklion\b|\bheraklio\b|\biraklio\b|\bηρακλειο\b/i, segment: 'ηρακλειο' },
+  { re: /\bchania\b|\bχανια\b/i, segment: 'χανια' },
+  { re: /\brethymno\b|\brethymnon\b|\bρεθυμνο\b/i, segment: 'ρεθυμνο' },
+  { re: /\bspinalonga\b/i, segment: 'αγιου νικολαου' },
+  { re: /\bsissi\b|\bsisi\b|\bσισι\b|\bσίσσι\b/i, segment: 'λασιθι' },
+  { re: /\bmilatos\b|\bμιλατος\b|\bμίλατος\b/i, segment: 'λασιθι' },
+];
+
+const TITLE_PLACE_PATTERNS: Array<{ re: RegExp; label: string }> = [
+  { re: /\bmilatos\b/i, label: 'μιλατος' },
+  { re: /\bsissi\b|\bsisi\b/i, label: 'σισι' },
+  { re: /\bskalani\b/i, label: 'σκαλανι' },
+  { re: /\banogeia\b|\banogia\b/i, label: 'ανωγεια' },
+  { re: /\bmalia\b/i, label: 'μαλια' },
+  { re: /\belounda\b/i, label: 'ελουντα' },
+  { re: /\bagia\s+varvara\b/i, label: 'αγια βαρβαρα' },
+  { re: /\bstalis\b/i, label: 'σταλιδα' },
+  { re: /\bepano\s+sissi\b|\bepano\s+sisi\b/i, label: 'επανω σισι' },
+  { re: /\bpyrgos\b/i, label: 'πυργος' },
+  { re: /\bplaka\b/i, label: 'πλακα' },
+  { re: /\bmesampelies\b/i, label: 'μεσαμπελιες' },
+  { re: /\bneapoli\b/i, label: 'νεαπολη' },
+];
+
+const DISTRICT_EXPANSIONS: Record<string, string[]> = {
+  πυργος: ['πυργος (βραχασι)', 'πυργος (αγιος νικολαος)'],
+};
+
+export type EstateWebLocationResolveHints = {
+  preferredPathSegments?: string[];
 };
 
 const PERIPHERAL_CITY_LABELS = new Set([
@@ -221,10 +284,50 @@ function expandDistrictLabels(district?: string | null): string[] {
   };
 
   push(raw);
+  const aliased = CITY_ALIASES[raw];
+  const expansionSource = aliased ?? raw;
+  const expansions = DISTRICT_EXPANSIONS[expansionSource];
+  if (expansions) {
+    for (const expansion of expansions) push(expansion);
+  }
+  if (aliased) push(aliased);
   for (let i = parts.length - 1; i >= 0; i--) {
     push(parts[i]);
+    const partAlias = CITY_ALIASES[parts[i]];
+    if (partAlias) push(partAlias);
   }
   return labels;
+}
+
+function filterByPreferredPath(
+  candidates: EstateWebLocation[],
+  preferredPathSegments?: string[],
+): EstateWebLocation[] {
+  if (!preferredPathSegments?.length || candidates.length <= 1) {
+    return candidates;
+  }
+  let filtered = candidates;
+  for (const segment of preferredPathSegments) {
+    const next = filtered.filter((loc) =>
+      (LOCATION_NORMALIZED_SEGMENTS.get(loc.id) ?? []).includes(segment),
+    );
+    if (next.length > 0) filtered = next;
+  }
+  return filtered;
+}
+
+export function inferPreferredPathSegments(
+  ...texts: Array<string | null | undefined>
+): string[] {
+  const blob = texts.filter(Boolean).join(' ');
+  if (!blob) return [];
+  const segments: string[] = [];
+  for (const hint of REGION_PATH_HINTS) {
+    if (hint.re.test(blob) && !segments.includes(hint.segment)) {
+      segments.push(hint.segment);
+    }
+  }
+  return segments;
 }
 
 function resolveRelatedToAnchor(
@@ -310,9 +413,12 @@ function resolveByDistrict(
   districtLabel: string,
   cityLabels: string[],
   preferPeripheral: boolean,
+  preferredPathSegments?: string[],
 ): EstateWebLocation | undefined {
-  const districtMatches =
-    LOCATION_BY_NORMALIZED_NAME.get(districtLabel) ?? [];
+  const districtMatches = filterByPreferredPath(
+    LOCATION_BY_NORMALIZED_NAME.get(districtLabel) ?? [],
+    preferredPathSegments,
+  );
   if (districtMatches.length === 0) return undefined;
 
   if (cityLabels.length === 0) {
@@ -325,6 +431,7 @@ function resolveByDistrict(
     if (preferPeripheral) {
       scoped = excludeUnderCanonicalCity(scoped, cityLabel);
     }
+    scoped = filterByPreferredPath(scoped, preferredPathSegments);
     const picked = pickMostSpecific(scoped);
     if (picked) return picked;
   }
@@ -355,7 +462,9 @@ function resolveByDistrict(
 export function resolveEstateWebLocation(
   city?: string | null,
   district?: string | null,
+  hints?: EstateWebLocationResolveHints,
 ): EstateWebLocation | undefined {
+  const preferredPathSegments = hints?.preferredPathSegments;
   const { labels: cityLabels, preferPeripheral } = expandCityLabels(city);
   const districtLabels = expandDistrictLabels(district);
 
@@ -364,6 +473,7 @@ export function resolveEstateWebLocation(
       districtLabel,
       cityLabels,
       preferPeripheral,
+      preferredPathSegments,
     );
     if (byDistrict) return byDistrict;
   }
@@ -374,7 +484,13 @@ export function resolveEstateWebLocation(
       cityLabels,
       preferPeripheral,
     );
-    if (byParenthetical) return byParenthetical;
+    if (byParenthetical) {
+      const filtered = filterByPreferredPath(
+        [byParenthetical],
+        preferredPathSegments,
+      );
+      if (filtered[0]) return filtered[0];
+    }
   }
 
   if (district) {
@@ -385,15 +501,28 @@ export function resolveEstateWebLocation(
     if (compoundParts.length >= 2) {
       const left = compoundParts[0];
       const right = compoundParts[compoundParts.length - 1];
-      const byCompound = resolveByDistrict(right, [left, ...cityLabels], false);
+      const byCompound = resolveByDistrict(
+        right,
+        [left, ...cityLabels],
+        false,
+        preferredPathSegments,
+      );
       if (byCompound) return byCompound;
-      const leftAsDistrict = resolveByDistrict(left, cityLabels, preferPeripheral);
+      const leftAsDistrict = resolveByDistrict(
+        left,
+        cityLabels,
+        preferPeripheral,
+        preferredPathSegments,
+      );
       if (leftAsDistrict) return leftAsDistrict;
     }
   }
 
   for (const cityLabel of cityLabels) {
-    const cityMatches = LOCATION_BY_NORMALIZED_NAME.get(cityLabel) ?? [];
+    const cityMatches = filterByPreferredPath(
+      LOCATION_BY_NORMALIZED_NAME.get(cityLabel) ?? [],
+      preferredPathSegments,
+    );
     if (cityMatches.length > 0) {
       return pickCanonicalCity(cityMatches);
     }
@@ -406,6 +535,87 @@ export function resolveEstateWebLocation(
 export function resolveEstateWebLocationId(
   city?: string | null,
   district?: string | null,
+  hints?: EstateWebLocationResolveHints,
 ): number | null {
-  return resolveEstateWebLocation(city, district)?.id ?? null;
+  return resolveEstateWebLocation(city, district, hints)?.id ?? null;
+}
+
+export function resolveEstateWebLocationFromSources(input: {
+  city?: string | null;
+  district?: string | null;
+  rawLocation?: string | null;
+  title?: string | null;
+  description?: string | null;
+}): EstateWebLocation | undefined {
+  const preferredPathSegments = inferPreferredPathSegments(
+    input.title,
+    input.description,
+    input.rawLocation,
+    input.city,
+    input.district,
+  );
+  const latinRaw =
+    !!input.rawLocation && isMostlyLatinLabel(input.rawLocation);
+  if (latinRaw && !preferredPathSegments.includes('κρητη')) {
+    preferredPathSegments.unshift('κρητη');
+  }
+  if (
+    latinRaw &&
+    !preferredPathSegments.some((segment) =>
+      ['λασιθι', 'ηρακλειο', 'χανια', 'ρεθυμνο'].includes(segment),
+    )
+  ) {
+    preferredPathSegments.push('λασιθι');
+  }
+  const hints: EstateWebLocationResolveHints = { preferredPathSegments };
+
+  const primary = resolveEstateWebLocation(input.city, input.district, hints);
+  if (primary) return primary;
+
+  if (input.rawLocation) {
+    const fromRawAsDistrict = resolveEstateWebLocation(
+      null,
+      input.rawLocation,
+      hints,
+    );
+    if (fromRawAsDistrict) return fromRawAsDistrict;
+    const fromRawAsCity = resolveEstateWebLocation(
+      input.rawLocation,
+      null,
+      hints,
+    );
+    if (fromRawAsCity) return fromRawAsCity;
+  }
+
+  const placeText = [input.title, input.description]
+    .filter(Boolean)
+    .join('\n');
+  if (placeText) {
+    for (const pattern of TITLE_PLACE_PATTERNS) {
+      if (!pattern.re.test(placeText)) continue;
+      const fromText =
+        resolveEstateWebLocation(null, pattern.label, hints) ??
+        resolveEstateWebLocation(pattern.label, null, hints);
+      if (fromText) return fromText;
+    }
+  }
+
+  return undefined;
+}
+
+function isMostlyLatinLabel(value: string): boolean {
+  const letters = value.replace(/[^\p{L}]/gu, '');
+  if (!letters) return false;
+  const latinCount = (letters.match(/[A-Za-z]/g) ?? []).length;
+  return latinCount / letters.length >= 0.8;
+}
+
+export function resolveEstateWebLocationIdFromSources(input: {
+  city?: string | null;
+  district?: string | null;
+  rawLocation?: string | null;
+  title?: string | null;
+  description?: string | null;
+}): number | null {
+  return resolveEstateWebLocationFromSources(input)?.id ?? null;
 }

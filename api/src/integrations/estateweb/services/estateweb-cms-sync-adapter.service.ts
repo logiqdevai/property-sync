@@ -28,7 +28,7 @@ import {
   EstateWebLanguageId,
   EstateWebScope,
 } from '../constants/estateweb-enums.constants';
-import { resolveEstateWebLocationId } from '../utils/estateweb-location-lookup.util';
+import { resolveEstateWebLocationFromSources } from '../utils/estateweb-location-lookup.util';
 import { resolveEstateWebScopeId } from '../utils/estateweb-catalog.util';
 import { getEstateWebInitFieldsForType } from '../utils/estateweb-init-lookup.util';
 import { buildEstateWebImageUrl } from '../utils/estateweb-image-url.util';
@@ -1026,9 +1026,13 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     if (userProperty?.estateweb_location_id) {
       return userProperty.estateweb_location_id;
     }
-    return resolveEstateWebLocationId(
-      userProperty?.city,
-      userProperty?.district,
+    return (
+      resolveEstateWebLocationFromSources({
+        city: userProperty?.city,
+        district: userProperty?.district,
+        title: userProperty?.title,
+        description: userProperty?.description,
+      })?.id ?? null
     );
   }
 

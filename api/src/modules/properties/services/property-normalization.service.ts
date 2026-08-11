@@ -549,6 +549,14 @@ export class PropertyNormalizationService {
           where: { id: existingLink.property.id },
           data: {
             ...record,
+            city: record.city ?? existingLink.property.city,
+            district: record.district ?? existingLink.property.district,
+            estateweb_location_id:
+              record.estateweb_location_id ??
+              existingLink.property.estateweb_location_id,
+            estateweb_type_id:
+              record.estateweb_type_id ??
+              existingLink.property.estateweb_type_id,
             status: PropertyStatus.ACTIVE,
             duplicate_group_id: existingLink.property.duplicate_group_id,
           },

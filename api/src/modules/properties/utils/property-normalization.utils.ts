@@ -18,7 +18,7 @@ import {
 import { sanitizeRawDescription } from '../constants/normalization-prompt';
 import { mergeCmsFieldsFromNormalizedRow } from './property-cms-field-mapper.util';
 import { getEstateWebInitPropertyType } from '@/integrations/estateweb/utils/estateweb-init-lookup.util';
-import { resolveEstateWebLocationId } from '@/integrations/estateweb/utils/estateweb-location-lookup.util';
+import { resolveEstateWebLocationFromSources } from '@/integrations/estateweb/utils/estateweb-location-lookup.util';
 import { resolveEstateWebTypeIdFromPropertyType } from '@/integrations/estateweb/utils/estateweb-type-lookup.util';
 
 function sanitizeEstateWebTypeId(typeId: number | null | undefined): number | null {
@@ -439,6 +439,7 @@ export function buildPropertyRecord(
     source_url: string;
     raw_title: string | null;
     raw_description: string | null;
+    raw_location?: string | null;
     raw_price?: string | null;
     raw_data: unknown;
     property_id: string;
@@ -457,16 +458,36 @@ export function buildPropertyRecord(
     n,
     structured,
   );
-  const city = n.city ?? null;
-  const district = n.district ?? null;
+  let city = n.city ?? null;
+  let district = n.district ?? null;
   const perioxi = structured.specs?.['Περιοχή']?.trim() || null;
-  const estatewebLocationId =
-    n.estateweb_location_id ??
-    resolveEstateWebLocationId(city, district) ??
-    (perioxi
-      ? resolveEstateWebLocationId(city, perioxi) ??
-        resolveEstateWebLocationId(null, perioxi)
+  const rawLocation =
+    sp.raw_location ??
+    (rawData
+      ? readRawString(rawData, ['location', '_location', 'raw_location'])
       : null);
+  const resolvedLocation =
+    resolveEstateWebLocationFromSources({
+      city,
+      district,
+      rawLocation,
+      title: n.title ?? sp.raw_title,
+      description: sp.raw_description,
+    }) ??
+    (perioxi
+      ? resolveEstateWebLocationFromSources({
+          city,
+          district: perioxi,
+          rawLocation,
+          title: n.title ?? sp.raw_title,
+          description: sp.raw_description,
+        })
+      : undefined);
+  const estatewebLocationId =
+    n.estateweb_location_id ?? resolvedLocation?.id ?? null;
+  if (!city && resolvedLocation) {
+    city = resolvedLocation.name;
+  }
   const internalId =
     sp.internal_id ??
     extractInternalIdFromText(

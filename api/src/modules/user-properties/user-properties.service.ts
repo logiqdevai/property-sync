@@ -2948,7 +2948,16 @@ export class UserPropertiesService {
 
       await this.prisma.userProperty.update({
         where: { id: existing.id },
-        data: canonicalFields,
+        data: {
+          ...canonicalFields,
+          city: canonicalFields.city ?? existing.city,
+          district: canonicalFields.district ?? existing.district,
+          estateweb_location_id:
+            canonicalFields.estateweb_location_id ??
+            existing.estateweb_location_id,
+          estateweb_type_id:
+            canonicalFields.estateweb_type_id ?? existing.estateweb_type_id,
+        },
       });
 
       if (imagesChanged) {

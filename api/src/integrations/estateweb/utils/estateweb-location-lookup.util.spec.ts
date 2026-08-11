@@ -1,6 +1,7 @@
 import {
   resolveEstateWebLocation,
   resolveEstateWebLocationId,
+  resolveEstateWebLocationIdFromSources,
 } from './estateweb-location-lookup.util';
 
 describe('resolveEstateWebLocation', () => {
@@ -65,7 +66,28 @@ describe('resolveEstateWebLocation', () => {
     );
   });
 
-  it('resolves Τριόπετρα (Λάμπη) parenthetical from Περιοχή-style district', () => {
-    expect(resolveEstateWebLocationId(null, 'Τριόπετρα (Λάμπη)')).toBe(100442);
+  it('resolves Latin raw_location aliases used by English Crete listings', () => {
+    expect(
+      resolveEstateWebLocationIdFromSources({
+        rawLocation: 'Malia',
+        title: 'Buildable land',
+      }),
+    ).toBe(113312);
+    expect(
+      resolveEstateWebLocationIdFromSources({
+        rawLocation: 'Stalis',
+      }),
+    ).toBe(113314);
+    expect(
+      resolveEstateWebLocationIdFromSources({
+        rawLocation: 'Plaka',
+        title: 'Luxury villa Spinalonga',
+      }),
+    ).toBe(100055);
+    expect(
+      resolveEstateWebLocationIdFromSources({
+        rawLocation: 'Epano Sissi',
+      }),
+    ).toBe(100185);
   });
 });
