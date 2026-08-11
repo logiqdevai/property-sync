@@ -56,7 +56,7 @@ ${buildEstateWebTypeCatalogJson()}
   "distance_airport": string | null (SHORT distance only, e.g. "70 χλμ" or "12 km" — never full sentences like "70 χλμ από το αεροδρόμιο"),
   "distance_port": string | null (SHORT distance only, e.g. "5 χλμ" — never prose),
   "distance_beach": string | null (SHORT distance only, e.g. "14 χλμ" or "200 μ" — never prose like "14 χλμ από τις παραλίες"),
-  "estateweb_type_id": number | null (REQUIRED whenever property_type is known — pick the matching leaf id from the EstateWeb catalog above; common defaults: LAND→2 Αγροτεμάχιο or 3 Οικόπεδο, HOUSE/VILLA→27 Μονοκατοικία, MAISONETTE→26 Μεζονέτα, STUDIO→21 Γκαρσονιέρα, APARTMENT→22/23/24/25 by bedroom count, COMMERCIAL→14 Κατάστημα, OFFICE→13 Γραφείο, WAREHOUSE→11 Αποθήκη, PARKING→902. Only leave null when property_type is UNKNOWN),
+  "estateweb_type_id": number | null (REQUIRED whenever property_type is known — pick the matching leaf id from the EstateWeb catalog above; common defaults: LAND→2 Αγροτεμάχιο or 3 Οικόπεδο, HOUSE/VILLA→27 Μονοκατοικία, MAISONETTE→26 Μεζονέτα, STUDIO→21 Γκαρσονιέρα, APARTMENT→22/23/24/25 by bedroom count, COMMERCIAL→14 Κατάστημα, OFFICE→13 Γραφείο, WAREHOUSE→11 Αποθήκη, PARKING→902, multi-unit project/complex/Συγκρότημα→28. Only leave null when property_type is UNKNOWN),
   "estateweb_location_id": number | null (leave null unless an EstateWeb numeric location id is explicitly present in raw data — the backend resolves it deterministically from city/district, so never guess),
   "cms_fields": [{ "id": number, "value": string | number }] | null (EstateWeb custom fields; booleans as "1", select fields as numeric option id),
   "cms_metadata": {
@@ -74,6 +74,7 @@ ${buildEstateWebTypeCatalogJson()}
 }
 
 ## Notes:
+- property_type MUST be one of the Accepted enum values above. Never invent values like PROJECTS/COMPLEX/BUILDING. Map site categories such as "Projects", "Συγκρότημα", multi-house developments, and residential complexes to HOUSE (or VILLA when clearly luxury villas) and set estateweb_type_id to 28 (Συγκρότημα - πολυκατοικία) when it is a multi-unit project/complex; otherwise use 27 for a single house/villa
 - Most sites are Greek. Infer listing_type from labels like "ΠΩΛΕΙΤΑΙ" (SALE), "ΕΝΟΙΚΙΑΖΕΤΑΙ" (RENT), "Αγγελία Προς Πώληση" (SALE), "Αγγελία Ενοικίασης" (RENT) — or their English equivalents ("For Sale", "For Rent"/"To Let") when the raw content is in English
 - raw_location may contain "Κωδικός <code>  <city>" — extract just the city name. raw_description has Υποπεριοχή (sub-region=city) and Γειτονιά (neighborhood=district) for more precise location
 - Prices use Greek thousand separators when the site is Greek: "100.000" = 100000, not 100. English-language sites typically use commas instead: "100,000" = 100000

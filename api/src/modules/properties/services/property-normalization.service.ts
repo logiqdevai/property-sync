@@ -646,6 +646,16 @@ export class PropertyNormalizationService {
           );
           continue;
         }
+        if (
+          error instanceof Prisma.PrismaClientValidationError ||
+          (error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === 'P2007')
+        ) {
+          this.logger.error(
+            `Validation failure creating property for source_property ${sp.id} (${sp.source_url}): ${error.message}`,
+          );
+          continue;
+        }
         throw error;
       }
 

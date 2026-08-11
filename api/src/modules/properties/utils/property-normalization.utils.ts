@@ -28,6 +28,70 @@ function sanitizeEstateWebTypeId(typeId: number | null | undefined): number | nu
   return typeId;
 }
 
+const PROPERTY_TYPE_ALIASES: Record<string, PropertyType> = {
+  PROJECT: PropertyType.HOUSE,
+  PROJECTS: PropertyType.HOUSE,
+  COMPLEX: PropertyType.HOUSE,
+  COMPLEXES: PropertyType.HOUSE,
+  BUILDING: PropertyType.HOUSE,
+  BUILDINGS: PropertyType.HOUSE,
+  RESIDENCE: PropertyType.HOUSE,
+  RESIDENCES: PropertyType.HOUSE,
+  HOME: PropertyType.HOUSE,
+  HOMES: PropertyType.HOUSE,
+  HOUSES: PropertyType.HOUSE,
+  DETACHED: PropertyType.HOUSE,
+  BUNGALOW: PropertyType.HOUSE,
+  RENOVATION: PropertyType.HOUSE,
+  PENTHOUSE: PropertyType.APARTMENT,
+  FLAT: PropertyType.APARTMENT,
+  FLATS: PropertyType.APARTMENT,
+  APARTMENTS: PropertyType.APARTMENT,
+  VILLAS: PropertyType.VILLA,
+  LUXURY_VILLA: PropertyType.VILLA,
+  LUXURY_VILLAS: PropertyType.VILLA,
+  DUPLEX: PropertyType.MAISONETTE,
+  TOWNHOUSE: PropertyType.MAISONETTE,
+  PLOT: PropertyType.LAND,
+  PLOTS: PropertyType.LAND,
+  FIELD: PropertyType.LAND,
+  FIELDS: PropertyType.LAND,
+  FARM: PropertyType.LAND,
+  STORE: PropertyType.COMMERCIAL,
+  SHOP: PropertyType.COMMERCIAL,
+  SHOPS: PropertyType.COMMERCIAL,
+  BUSINESS: PropertyType.COMMERCIAL,
+  COMMERCIAL_REAL_ESTATE: PropertyType.COMMERCIAL,
+  BUSINESS_WITH_EOT_LICENSE: PropertyType.COMMERCIAL,
+  GARAGE: PropertyType.PARKING,
+  STORAGE: PropertyType.WAREHOUSE,
+};
+
+function coerceListingType(
+  value: string | ListingType | null | undefined,
+): ListingType {
+  if (value == null) return ListingType.UNKNOWN;
+  const normalized = String(value).trim().toUpperCase().replace(/[\s-]+/g, '_');
+  if (!normalized) return ListingType.UNKNOWN;
+  return (
+    Object.values(ListingType).find((entry) => entry === normalized) ??
+    ListingType.UNKNOWN
+  );
+}
+
+function coercePropertyType(
+  value: string | PropertyType | null | undefined,
+): PropertyType {
+  if (value == null) return PropertyType.UNKNOWN;
+  const normalized = String(value).trim().toUpperCase().replace(/[\s-]+/g, '_');
+  if (!normalized) return PropertyType.UNKNOWN;
+  const exact = Object.values(PropertyType).find(
+    (entry) => entry === normalized,
+  );
+  if (exact) return exact;
+  return PROPERTY_TYPE_ALIASES[normalized] ?? PropertyType.OTHER;
+}
+
 const ESTATEWEB_DISTANCE_RE =
   /(\d+(?:[.,]\d+)?)\s*(χλμ\.?|km\.?|μ\.?|m\.?)/i;
 
@@ -514,14 +578,16 @@ export function buildPropertyRecord(
     rawPrice,
     rawDescription: sp.raw_description ?? detailText,
   });
+  const listingType = coerceListingType(n.listing_type);
+  const propertyType = coercePropertyType(n.property_type);
 
   return {
     title: (sp.raw_title?.trim() || n.title?.trim() || sp.source_url),
     description: sanitizeRawDescription(sp.raw_description),
     property_id: sp.property_id,
     internal_id: internalId,
-    listing_type: (n.listing_type as ListingType) ?? ListingType.UNKNOWN,
-    property_type: (n.property_type as PropertyType) ?? PropertyType.UNKNOWN,
+    listing_type: listingType,
+    property_type: propertyType,
     status: PropertyStatus.ACTIVE,
     price: toDecimal(prices.price),
     price_start: toDecimal(prices.price_start),
@@ -569,10 +635,7 @@ export function buildPropertyRecord(
     ),
     estateweb_type_id:
       sanitizeEstateWebTypeId(n.estateweb_type_id) ??
-      resolveEstateWebTypeIdFromPropertyType(
-        (n.property_type as PropertyType | null | undefined) ?? null,
-        n.bedrooms ?? null,
-      ),
+      resolveEstateWebTypeIdFromPropertyType(propertyType, n.bedrooms ?? null),
     estateweb_location_id: estatewebLocationId,
     cms_fields:
       mergedCmsFields.length > 0
