@@ -106,9 +106,14 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     const attempt = Math.max(syncRun.attempt, job.attemptsMade + 1);
     await this.cmsSyncRunsService.markAttemptStarted(cms_sync_run_id, attempt);
 
-    const isRetry =
-      attempt > 1 &&
-      (previousResponse.failed_property_ids?.length ?? 0) > 0;
+    // Whether this run should only reprocess previously-failed operations must not depend
+    // on `attempt`/`job.attemptsMade` -- a manually re-queued job (JobsService.retry()) is a
+    // brand-new BullMQ job with attemptsMade reset to 0, so comparing against those counters
+    // can miscompute "not a retry" for a run that already has real failures on record, and
+    // silently resend every previously-successful operation (duplicate CREATEs on the CMS).
+    // A previously-persisted `failed_property_ids` list is sufficient proof this run has
+    // already executed at least once -- it can only be populated by a completed attempt.
+    const isRetry = (previousResponse.failed_property_ids?.length ?? 0) > 0;
     const operations = isRetry
       ? this.filterFailedOperations(payload.operations, previousResponse)
       : payload.operations;
