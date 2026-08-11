@@ -109,6 +109,7 @@ export function useAgencyTrackingControls(
 
 type AgencyListCardProps = {
   agency: TrackableAgency;
+  rowNumber: number;
   onUntrackRequest: (agency: TrackableAgency) => void;
   onOpenWatermarkSettings: (agency: TrackableAgency) => void;
   onOpenPublishingSettings: (agency: TrackableAgency) => void;
@@ -116,6 +117,7 @@ type AgencyListCardProps = {
 
 export function AgencyListCard({
   agency,
+  rowNumber,
   onUntrackRequest,
   onOpenWatermarkSettings,
   onOpenPublishingSettings,
@@ -133,25 +135,30 @@ export function AgencyListCard({
   return (
     <article className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-surface p-4">
       <div className="flex min-w-0 items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 items-center gap-1.5">
-            <h2 className="truncate text-base font-semibold text-foreground">
-              {agency.name}
-            </h2>
-            <a
-              href={agency.base_url}
-              target="_blank"
-              rel="noreferrer"
-              className="shrink-0 text-muted hover:text-accent"
-              aria-label={`Open ${agency.name} website`}
-            >
-              <ExternalLink className="size-3.5" />
-            </a>
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <span className="mt-0.5 w-6 shrink-0 text-sm tabular-nums text-muted">
+            {rowNumber}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <h2 className="truncate text-base font-semibold text-foreground">
+                {agency.name}
+              </h2>
+              <a
+                href={agency.base_url}
+                target="_blank"
+                rel="noreferrer"
+                className="shrink-0 text-muted hover:text-accent"
+                aria-label={`Open ${agency.name} website`}
+              >
+                <ExternalLink className="size-3.5" />
+              </a>
+            </div>
+            <p className="truncate text-xs text-muted">{location}</p>
+            {isAgencyDisabled ? (
+              <p className="mt-1 text-xs text-muted">Unavailable</p>
+            ) : null}
           </div>
-          <p className="truncate text-xs text-muted">{location}</p>
-          {isAgencyDisabled ? (
-            <p className="mt-1 text-xs text-muted">Unavailable</p>
-          ) : null}
         </div>
         <PrefSwitch
           isSelected={agency.is_tracked}

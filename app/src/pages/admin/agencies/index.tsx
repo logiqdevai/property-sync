@@ -186,7 +186,7 @@ export default function AgenciesListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={6} />
+        <TableSkeleton rows={8} columns={7} />
       ) : agencies.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No agencies found.
@@ -197,6 +197,7 @@ export default function AgenciesListPage() {
             <Table.ScrollContainer>
               <Table.Content aria-label="Agencies">
                 <Table.Header>
+                  <Table.Column>#</Table.Column>
                   <Table.Column isRowHeader>Name</Table.Column>
                   <Table.Column>Visibility</Table.Column>
                   <Table.Column>Location</Table.Column>
@@ -205,13 +206,18 @@ export default function AgenciesListPage() {
                   <Table.Column>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
-                  {agencies.map((agency) => (
+                  {agencies.map((agency, index) => (
                     <Table.Row
                       key={agency.id}
                       id={agency.id}
                       onAction={() => navigate(Routes.admin.agencies.detail(agency.id))}
                       className="cursor-pointer"
                     >
+                      <Table.Cell>
+                        <span className="tabular-nums text-muted">
+                          {(page - 1) * 20 + index + 1}
+                        </span>
+                      </Table.Cell>
                       <Table.Cell>
                         <div className="flex flex-col">
                           <span className="font-medium text-foreground">{agency.name}</span>

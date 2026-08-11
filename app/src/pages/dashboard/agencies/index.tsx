@@ -34,11 +34,13 @@ import { ExternalLink, Search, Settings } from "lucide-react";
 
 function AgencyRow({
   agency,
+  rowNumber,
   onUntrackRequest,
   onOpenWatermarkSettings,
   onOpenPublishingSettings,
 }: {
   agency: TrackableAgency;
+  rowNumber: number;
   onUntrackRequest: (agency: TrackableAgency) => void;
   onOpenWatermarkSettings: (agency: TrackableAgency) => void;
   onOpenPublishingSettings: (agency: TrackableAgency) => void;
@@ -55,6 +57,9 @@ function AgencyRow({
 
   return (
     <Table.Row id={agency.id}>
+      <Table.Cell>
+        <span className="tabular-nums text-muted">{rowNumber}</span>
+      </Table.Cell>
       <Table.Cell>
         <div className="flex min-w-0 flex-col gap-0.5">
           <div className="flex min-w-0 items-center gap-1.5">
@@ -304,7 +309,7 @@ export default function DashboardAgenciesPage() {
       {isPending ? (
         <TableSkeleton
           rows={isMobile ? 6 : 8}
-          columns={isMobile ? 4 : 9}
+          columns={isMobile ? 4 : 10}
         />
       ) : null}
 
@@ -317,10 +322,11 @@ export default function DashboardAgenciesPage() {
       {!isPending && agencies.length > 0 ? (
         isMobile ? (
           <div className="flex min-w-0 flex-col gap-3">
-            {agencies.map((agency) => (
+            {agencies.map((agency, index) => (
               <AgencyListCard
                 key={agency.id}
                 agency={agency}
+                rowNumber={limit === 0 ? index + 1 : (page - 1) * limit + index + 1}
                 onUntrackRequest={requestUntrack}
                 onOpenWatermarkSettings={openWatermarkSettings}
                 onOpenPublishingSettings={openPublishingSettings}
@@ -333,6 +339,7 @@ export default function DashboardAgenciesPage() {
               <Table.ScrollContainer>
                 <Table.Content aria-label="Agencies">
                   <Table.Header>
+                    <Table.Column>#</Table.Column>
                     <Table.Column isRowHeader>
                       <AgencyTrackingColumnHeader columnId="agency" />
                     </Table.Column>
@@ -362,10 +369,13 @@ export default function DashboardAgenciesPage() {
                     </Table.Column>
                   </Table.Header>
                   <Table.Body>
-                    {agencies.map((agency) => (
+                    {agencies.map((agency, index) => (
                       <AgencyRow
                         key={agency.id}
                         agency={agency}
+                        rowNumber={
+                          limit === 0 ? index + 1 : (page - 1) * limit + index + 1
+                        }
                         onUntrackRequest={requestUntrack}
                         onOpenWatermarkSettings={openWatermarkSettings}
                         onOpenPublishingSettings={openPublishingSettings}
