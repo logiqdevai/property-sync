@@ -795,7 +795,11 @@ export class CmsSyncOrchestratorService {
     userIntegrationId: string;
     crawlRunId: string | null;
   }): Promise<boolean> {
-    const jobId = `cms-sync:${params.cmsSyncRunId}`;
+    // BullMQ rejects a custom jobId containing a colon unless it splits into
+    // exactly 3 parts (its own internal repeatable-job format) — a plain
+    // `cms-sync:${uuid}` has exactly one colon and is always rejected with
+    // "Custom Id cannot contain :". Use a dash instead.
+    const jobId = `cms-sync-${params.cmsSyncRunId}`;
     const existing = await this.cmsSyncQueue.getJob(jobId);
     if (existing) {
       const state = await existing.getState();
