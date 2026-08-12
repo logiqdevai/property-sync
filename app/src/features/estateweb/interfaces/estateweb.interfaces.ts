@@ -21,3 +21,26 @@ export type EstateWebPropertyTypeCatalogItem = {
   has_children: boolean;
   is_leaf: boolean;
 };
+
+export type EstateWebDuplicatePropertyListing = {
+  id: number;
+  address: string | null;
+  price: number | null;
+  created_at: string | null;
+};
+
+export type EstateWebDuplicatePropertyGroup = {
+  code: string;
+  count: number;
+  listings: EstateWebDuplicatePropertyListing[];
+};
+
+export type EstateWebAdminIntegration = {
+  id: string;
+  userId: string;
+  userEmail: string;
+  email: string | null;
+  isActive: boolean;
+  isDefault: boolean;
+  baseUrl: string;
+};

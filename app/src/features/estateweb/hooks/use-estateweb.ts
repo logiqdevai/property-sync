@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
+  getEstateWebAdminIntegrations,
+  getEstateWebDuplicateProperties,
   getEstateWebEnergyClassCatalog,
   getEstateWebFeaturesCatalog,
   getEstateWebFloorCatalog,
@@ -74,5 +76,24 @@ export const useEstateWebFeaturesCatalog = (enabled = true) => {
     queryFn: getEstateWebFeaturesCatalog,
     enabled,
     ...catalogQueryOptions,
+  });
+};
+
+export const useEstateWebAdminIntegrations = (enabled = true) => {
+  return useQuery({
+    queryKey: ["estateweb", "admin", "integrations"],
+    queryFn: getEstateWebAdminIntegrations,
+    enabled,
+  });
+};
+
+export const useEstateWebDuplicateProperties = (
+  userIntegrationId: string | null,
+  enabled = true,
+) => {
+  return useQuery({
+    queryKey: ["estateweb", "admin", "duplicates", userIntegrationId],
+    queryFn: () => getEstateWebDuplicateProperties(userIntegrationId as string),
+    enabled: enabled && !!userIntegrationId,
   });
 };

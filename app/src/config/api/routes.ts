@@ -166,6 +166,12 @@ export const ApiRoutes = {
             list: "/admin/users",
             detail: (id: string) => `/admin/users/${id}`,
         },
+        estateweb: {
+            prefix: "/admin/estateweb",
+            integrations: "/admin/estateweb/integrations",
+            duplicates: (userIntegrationId: string) =>
+                `/admin/estateweb/integrations/${userIntegrationId}/duplicates`,
+        },
     },
     integrations: {
         prefix: "/integrations",

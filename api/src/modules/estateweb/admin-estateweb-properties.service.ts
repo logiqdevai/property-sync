@@ -4,6 +4,7 @@ import { IntegrationType } from 'generated/prisma';
 import { EstateWebConfig } from '@/integrations/estateweb/config/estateweb.config';
 import {
   EstateWebCreatePropertyPayload,
+  EstateWebPropertyListItem,
   EstateWebPropertyListQuery,
   EstateWebUpdatePropertyPayload,
   EstateWebUploadImagePayload,
@@ -19,6 +20,7 @@ import {
 } from '@/integrations/estateweb/utils/estateweb-session-config.util';
 import { SetEstateWebSessionDto } from './dto/admin-estateweb-session.dto';
 import { AdminEstateWebPropertyListQueryType } from './dto/admin-estateweb-property-list-query.schema';
+import { EstateWebDuplicatePropertyGroup } from './interfaces/estateweb-duplicate-property.interface';
 
 @Injectable()
 export class AdminEstateWebPropertiesService {
@@ -166,6 +168,45 @@ export class AdminEstateWebPropertiesService {
       userIntegrationId,
       query as EstateWebPropertyListQuery,
     );
+  }
+
+  // Finds EstateWeb listings sharing the same `code` -- the same field the reconciliation
+  // service (EstateWebPropertyReconciliationService.normalizeCode) matches on. Multiple
+  // listings with an identical code are the same underlying property pushed to EstateWeb more
+  // than once (e.g. via the CMS sync duplicate-enqueue race), not a legitimate EstateWeb state.
+  async findDuplicateProperties(
+    userIntegrationId: string,
+  ): Promise<EstateWebDuplicatePropertyGroup[]> {
+    const { list } =
+      await this.estateWebPropertyService.listAllPropertiesForIntegration(
+        userIntegrationId,
+      );
+
+    const byCode = new Map<string, EstateWebPropertyListItem[]>();
+    for (const listing of list) {
+      const code = listing.code?.trim().toLowerCase();
+      if (!code) continue;
+      const group = byCode.get(code) ?? [];
+      group.push(listing);
+      byCode.set(code, group);
+    }
+
+    return [...byCode.values()]
+      .filter((listings) => listings.length > 1)
+      .map((listings) => {
+        const sorted = [...listings].sort((a, b) => a.id - b.id);
+        return {
+          code: sorted[0].code ?? '',
+          count: sorted.length,
+          listings: sorted.map((listing) => ({
+            id: listing.id,
+            address: listing.address ?? null,
+            price: listing.price ?? null,
+            created_at: listing.created_at ?? null,
+          })),
+        };
+      })
+      .sort((a, b) => b.count - a.count);
   }
 
   getProperty(userIntegrationId: string, propertyId: string) {

@@ -12,7 +12,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { CircleDot, Globe, ImageOff, Images, Languages, Layers, ListFilter, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { CircleDot, CopyCheck, Globe, ImageOff, Images, Languages, Layers, ListFilter, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/table-row-actions-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-modal";
+import { EstateWebDuplicatePropertiesModal } from "./components/estateweb-duplicate-properties-modal";
 import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
 import { ProduceContentModal } from "./components/produce-content-modal";
 import { ChangePropertyStatusModal } from "./components/change-property-status-modal";
@@ -264,6 +265,7 @@ export default function DashboardPropertiesListPage() {
   const renormalizeConfirm = useOverlayState();
   const deleteCmsImagesConfirm = useOverlayState();
   const migrateCmsImagesModal = useOverlayState();
+  const checkCrmDuplicatesModal = useOverlayState();
   const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
   const [removeWatermarkPropertyIds, setRemoveWatermarkPropertyIds] = useState<
     string[]
@@ -565,6 +567,12 @@ export default function DashboardPropertiesListPage() {
     ];
 
     if (canManageBulk) {
+      entries.push({
+        id: "check-crm-duplicates",
+        label: "Check CRM duplicates",
+        icon: CopyCheck,
+      });
+
       const duplicateItems: TableRowAction[] = [
         {
           id: "split",
@@ -739,6 +747,10 @@ export default function DashboardPropertiesListPage() {
     }
     if (actionId === "dedupe") {
       dedupeConfirm.open();
+      return;
+    }
+    if (actionId === "check-crm-duplicates") {
+      checkCrmDuplicatesModal.open();
       return;
     }
     if (actionId === "delete") {
@@ -1516,6 +1528,9 @@ export default function DashboardPropertiesListPage() {
         state={manageSitesModal}
         propertyIds={manageSitesPropertyIds}
       />
+      {canManageBulk ? (
+        <EstateWebDuplicatePropertiesModal state={checkCrmDuplicatesModal} />
+      ) : null}
       <ConfirmationDialog
         state={updateSalesPricesConfirm}
         title="Update sales prices on CRM?"

@@ -186,6 +186,19 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Get('integrations/:userIntegrationId/duplicates')
+  @ApiOperation({
+    summary:
+      'Find EstateWeb listings that share the same code (duplicate pushes)',
+  })
+  findDuplicateProperties(
+    @Param('userIntegrationId') userIntegrationId: string,
+  ) {
+    return this.adminEstateWebPropertiesService.findDuplicateProperties(
+      userIntegrationId,
+    );
+  }
+
   @Get('integrations/:userIntegrationId/properties/:propertyId')
   @ApiOperation({ summary: 'Get a property from EstateWeb CMS' })
   getProperty(

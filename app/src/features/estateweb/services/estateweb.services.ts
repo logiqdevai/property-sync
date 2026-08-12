@@ -1,6 +1,8 @@
 import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
 import type {
+  EstateWebAdminIntegration,
+  EstateWebDuplicatePropertyGroup,
   EstateWebFlatCatalogItem,
   EstateWebLocationCatalogItem,
   EstateWebPropertyTypeCatalogItem,
@@ -92,5 +94,35 @@ export const getEstateWebFeaturesCatalog = async (): Promise<
     return response.data;
   } catch {
     throw new Error("Failed to fetch features. Please try again.");
+  }
+};
+
+export const getEstateWebAdminIntegrations = async (): Promise<
+  EstateWebAdminIntegration[]
+> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.estateweb.integrations);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to fetch EstateWeb integrations. Please try again.",
+    );
+  }
+};
+
+export const getEstateWebDuplicateProperties = async (
+  userIntegrationId: string,
+): Promise<EstateWebDuplicatePropertyGroup[]> => {
+  try {
+    const response = await axiosInstance.get(
+      ApiRoutes.admin.estateweb.duplicates(userIntegrationId),
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to check EstateWeb for duplicate properties. Please try again.",
+    );
   }
 };
