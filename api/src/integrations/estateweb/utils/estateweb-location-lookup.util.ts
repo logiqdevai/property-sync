@@ -88,6 +88,34 @@ const CITY_ALIASES: Record<string, string> = {
   gialia: 'γιαλια',
   ligaria: 'λυγαρια',
   'kokkini hani': 'κοκκινη χανι',
+  // creta-invest.gr's "Area" field ships "Village (Municipality)" in Latin script (e.g.
+  // "Kissamos (Kissamos)") -- these translate the Latin village/municipality names to the
+  // exact normalized Greek catalog spelling so resolveParentheticalDistrict can match both
+  // halves and disambiguate homonyms elsewhere in Greece via resolveRelatedToAnchor.
+  akrotiri: 'ακρωτηρι',
+  chersonisos: 'χερσονησος',
+  episkopi: 'επισκοπη',
+  gouves: 'γουβες',
+  krousonas: 'κρουσωνας',
+  georgioupoli: 'γεωργιουπολη',
+  lampi: 'λαμπη',
+  tzermiado: 'τζερμιαδο',
+  'oropedio lasithiou': 'οροπεδιο λασιθιου',
+  'makrys gialos': 'μακρυγιαλος',
+  kissamos: 'κισσαμος',
+  ierapetra: 'ιεραπετρα',
+  // no plain "Αρχάνες" node exists in the catalog (only "Επάνω Αρχάνες" / "Κάτω Αρχάνες") --
+  // map to the municipality instead of guessing upper vs. lower.
+  archanes: 'δημος αρχανων αστερουσιων',
+  // major towns that the AI usually already gets right from context, but whose Latin
+  // spelling needs to resolve too now that the "Area" field can be tried as a fallback
+  // when the AI's own city guess is a small village that isn't in the catalog at all.
+  // Both have many same-named homonyms nationwide -- safe to add because callers always
+  // filter candidate lists by preferredPathSegments (which forces 'κρητη' for Latin input)
+  // before picking a match.
+  'agios nikolaos': 'αγιος νικολαος',
+  siteia: 'σητεια',
+  irakleio: 'ηρακλειο',
 };
 
 const REGION_PATH_HINTS: Array<{ re: RegExp; segment: string }> = [
@@ -355,10 +383,32 @@ function resolveRelatedToAnchor(
   return related.length > 0 ? pickMostSpecific(related) : undefined;
 }
 
+/**
+ * Catalog + alias lookup for a single free-text label (e.g. a "Village (Municipality)"
+ * half). Tries the raw normalized label first, then any CITY_ALIASES translation (this is
+ * how a Latin name like "kissamos" reaches the Greek catalog entry "Κίσσαμος") --
+ * generically applicable to any place label, not just city-shaped ones.
+ */
+function matchesForLabel(raw: string): EstateWebLocation[] {
+  const { labels } = expandCityLabels(raw);
+  const seen = new Set<number>();
+  const out: EstateWebLocation[] = [];
+  for (const label of labels) {
+    for (const loc of LOCATION_BY_NORMALIZED_NAME.get(label) ?? []) {
+      if (!seen.has(loc.id)) {
+        seen.add(loc.id);
+        out.push(loc);
+      }
+    }
+  }
+  return out;
+}
+
 function resolveParentheticalDistrict(
   district: string,
   cityLabels: string[],
   preferPeripheral: boolean,
+  preferredPathSegments?: string[],
 ): EstateWebLocation | undefined {
   const parsed = parseParentheticalParts(district);
   if (!parsed) return undefined;
@@ -367,8 +417,20 @@ function resolveParentheticalDistrict(
   const innerNorm = normalizeEstateWebLabel(parsed.inner);
   if (!outerNorm || !innerNorm) return undefined;
 
-  const outerMatches = LOCATION_BY_NORMALIZED_NAME.get(outerNorm) ?? [];
-  const innerMatches = LOCATION_BY_NORMALIZED_NAME.get(innerNorm) ?? [];
+  // Filter the CANDIDATE LISTS (not just the final pick) by the known region --
+  // when outer and inner are the same word (e.g. "Chania (Chania)", the town is also
+  // its own municipality seat), resolveRelatedToAnchor treats every same-named node as
+  // "related to itself", so an unrelated same-named village elsewhere in Greece at the
+  // same catalog depth (e.g. "Χάνια" near Volos vs. Crete's "Χανιά") can otherwise win
+  // a same-level id tie-break purely by having a smaller id.
+  const outerMatches = filterByPreferredPath(
+    matchesForLabel(parsed.outer),
+    preferredPathSegments,
+  );
+  const innerMatches = filterByPreferredPath(
+    matchesForLabel(parsed.inner),
+    preferredPathSegments,
+  );
 
   const related = resolveRelatedToAnchor(outerMatches, innerMatches);
   if (related) return related;
@@ -483,14 +545,9 @@ export function resolveEstateWebLocation(
       district,
       cityLabels,
       preferPeripheral,
+      preferredPathSegments,
     );
-    if (byParenthetical) {
-      const filtered = filterByPreferredPath(
-        [byParenthetical],
-        preferredPathSegments,
-      );
-      if (filtered[0]) return filtered[0];
-    }
+    if (byParenthetical) return byParenthetical;
   }
 
   if (district) {
@@ -570,22 +627,21 @@ export function resolveEstateWebLocationFromSources(input: {
   const hints: EstateWebLocationResolveHints = { preferredPathSegments };
 
   const primary = resolveEstateWebLocation(input.city, input.district, hints);
-  if (primary) return primary;
 
-  if (input.rawLocation) {
-    const fromRawAsDistrict = resolveEstateWebLocation(
-      null,
-      input.rawLocation,
-      hints,
-    );
-    if (fromRawAsDistrict) return fromRawAsDistrict;
-    const fromRawAsCity = resolveEstateWebLocation(
-      input.rawLocation,
-      null,
-      hints,
-    );
-    if (fromRawAsCity) return fromRawAsCity;
+  const fromRaw = input.rawLocation
+    ? (resolveEstateWebLocation(null, input.rawLocation, hints) ??
+      resolveEstateWebLocation(input.rawLocation, null, hints))
+    : undefined;
+
+  // `rawLocation` (e.g. a scraped "Village (Municipality)" field) is agency-authored
+  // structured data -- when it resolves to a deeper catalog node than the free-text
+  // city/district match (which can bottom out as broad as the whole island "Κρήτη"),
+  // trust the more specific one instead of always favoring city/district.
+  if (primary && fromRaw) {
+    return fromRaw.level > primary.level ? fromRaw : primary;
   }
+  if (primary) return primary;
+  if (fromRaw) return fromRaw;
 
   const placeText = [input.title, input.description]
     .filter(Boolean)
