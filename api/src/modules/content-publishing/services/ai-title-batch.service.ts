@@ -356,6 +356,36 @@ export class AiTitleBatchService {
     }
   }
 
+  /**
+   * Fallback for missed/undelivered OpenAI webhooks (completeBatch above is normally
+   * only reached via openai-webhooks.service.ts). Polls the batch directly and only
+   * acts on a terminal OpenAI status -- unlike completeBatch, it leaves the run alone
+   * if OpenAI still reports validating/in_progress/finalizing, so it's safe to call
+   * on a batch that simply hasn't finished yet.
+   */
+  async reconcileStaleBatch(batchId: string, apiKey: string): Promise<void> {
+    const run = await this.prisma.aiBatchRun.findUnique({
+      where: { openai_batch_id: batchId },
+    });
+    if (!run || run.status !== AiBatchRunStatus.SUBMITTED) return;
+
+    const client = this.aiBatchClient.createClient(apiKey);
+    const batch = await this.aiBatchClient.retrieveBatch(client, batchId);
+
+    if (batch.status === 'completed') {
+      await this.completeBatch(batchId, apiKey);
+      return;
+    }
+
+    if (
+      batch.status === 'failed' ||
+      batch.status === 'expired' ||
+      batch.status === 'cancelled'
+    ) {
+      await this.markFailed(batchId, `OpenAI batch ${batch.status}`);
+    }
+  }
+
   async markFailed(batchId: string, message: string): Promise<void> {
     await this.prisma.aiBatchRun.updateMany({
       where: { openai_batch_id: batchId },

@@ -6,6 +6,7 @@ import { AiIntegrationModule } from '@/integrations/ai/ai.module';
 import { AiBatchModule } from '@/integrations/ai-batch/ai-batch.module';
 import { CostLogsModule } from '@/modules/cost-logs/cost-logs.module';
 import { PlatformConfigModule } from '@/modules/platform-config/platform-config.module';
+import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { ContentPublishingController } from './content-publishing.controller';
 import { ContentPublishingConfigService } from './services/content-publishing-config.service';
 import { ContentProductionService } from './services/content-production.service';
@@ -14,6 +15,7 @@ import { GoogleTranslationService } from './services/google-translation.service'
 import { AzureTranslationService } from './services/azure-translation.service';
 import { AiTitleFamilyService } from './services/ai-title-family.service';
 import { AiTitleBatchService } from './services/ai-title-batch.service';
+import { AiBatchWatchdogCron } from '@/background/ai-batch-watchdog.cron';
 
 @Module({
   imports: [
@@ -24,6 +26,7 @@ import { AiTitleBatchService } from './services/ai-title-batch.service';
     forwardRef(() => AiBatchModule),
     CostLogsModule,
     PlatformConfigModule,
+    NotificationsModule,
   ],
   controllers: [ContentPublishingController],
   providers: [
@@ -34,6 +37,7 @@ import { AiTitleBatchService } from './services/ai-title-batch.service';
     AzureTranslationService,
     AiTitleFamilyService,
     AiTitleBatchService,
+    AiBatchWatchdogCron,
   ],
   exports: [
     ContentPublishingConfigService,
