@@ -754,17 +754,58 @@ export class CmsSyncOrchestratorService {
       payload: this.serializeBatchPayload(batch),
     });
 
-    await this.cmsSyncQueue.add('cms-sync', {
-      cms_sync_run_id: cmsSyncRun.id,
-      user_tracked_agency_id: tracker.id,
-      user_integration_id: integration.userIntegrationId,
-      crawl_run_id: crawlRunId,
+    const jobEnqueued = await this.enqueueCmsSyncJob({
+      cmsSyncRunId: cmsSyncRun.id,
+      userTrackedAgencyId: tracker.id,
+      userIntegrationId: integration.userIntegrationId,
+      crawlRunId,
     });
 
-    this.logger.log(
-      `${logLabel}: enqueued CMS sync run ${cmsSyncRun.id} for tracker ${tracker.id} with ${batch.operations.length} operation(s)`,
-    );
+    if (jobEnqueued) {
+      this.logger.log(
+        `${logLabel}: enqueued CMS sync run ${cmsSyncRun.id} for tracker ${tracker.id} with ${batch.operations.length} operation(s)`,
+      );
+    } else {
+      this.logger.log(
+        `${logLabel}: CMS sync run ${cmsSyncRun.id} for tracker ${tracker.id} already queued/active; skipped duplicate enqueue`,
+      );
+    }
 
+    return true;
+  }
+
+  // `createBatch` upserts the same CmsSyncRun row for repeated calls with the same
+  // (crawl_run_id, user_integration_id) -- e.g. content becoming CMS-ready in multiple waves for
+  // one crawl -- so without this guard each wave would add its own BullMQ job and the worker
+  // would reprocess the same operations more than once, double-pushing CREATEs to the CMS (each
+  // execution re-reads the row fresh, so a job that's still waiting/active will pick up the
+  // latest payload on its own -- adding another job for it only duplicates the work).
+  private async enqueueCmsSyncJob(params: {
+    cmsSyncRunId: string;
+    userTrackedAgencyId: string;
+    userIntegrationId: string;
+    crawlRunId: string | null;
+  }): Promise<boolean> {
+    const jobId = `cms-sync:${params.cmsSyncRunId}`;
+    const existing = await this.cmsSyncQueue.getJob(jobId);
+    if (existing) {
+      const state = await existing.getState();
+      if (state === 'active' || state === 'waiting' || state === 'delayed') {
+        return false;
+      }
+      await existing.remove().catch(() => undefined);
+    }
+
+    await this.cmsSyncQueue.add(
+      'cms-sync',
+      {
+        cms_sync_run_id: params.cmsSyncRunId,
+        user_tracked_agency_id: params.userTrackedAgencyId,
+        user_integration_id: params.userIntegrationId,
+        crawl_run_id: params.crawlRunId,
+      },
+      { jobId, removeOnComplete: true, removeOnFail: true },
+    );
     return true;
   }
 

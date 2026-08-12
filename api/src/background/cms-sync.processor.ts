@@ -32,6 +32,13 @@ import { EstateWebClientsService } from '@/integrations/estateweb/services/estat
 import { CmsSyncPushOptions } from '@/modules/cms-sync/interfaces/cms-sync-adapter.interface';
 
 const CMS_SYNC_WORKER_CONCURRENCY = 1;
+// BullMQ's default 30s lock can expire mid-batch on large syncs (many properties, each with a
+// real HTTP push plus the configured insertion_interval_seconds delay between chunks), which
+// makes BullMQ treat the job as stalled and hand it back to the queue while the original
+// execution is still running -- the re-entrant execution then reprocesses the same operations
+// and double-pushes CREATEs to the CMS. Match the pattern used by the other long-running
+// processors (generation.processor.ts, renormalization.processor.ts).
+const CMS_SYNC_JOB_LOCK_DURATION_MS = 30 * 60 * 1000;
 
 interface StoredPayload {
   user_tracked_agency_id: string;
@@ -49,7 +56,10 @@ interface StoredResponse {
   operation_results?: CmsSyncOperationResult[];
 }
 
-@Processor(CMS_SYNC_QUEUE, { concurrency: CMS_SYNC_WORKER_CONCURRENCY })
+@Processor(CMS_SYNC_QUEUE, {
+  concurrency: CMS_SYNC_WORKER_CONCURRENCY,
+  lockDuration: CMS_SYNC_JOB_LOCK_DURATION_MS,
+})
 export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
   private readonly logger = new Logger(CmsSyncProcessor.name);
 

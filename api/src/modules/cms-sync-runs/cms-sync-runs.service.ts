@@ -283,15 +283,29 @@ export class CmsSyncRunsService {
         ? (run.payload as Record<string, unknown>)
         : {};
 
-    await this.cmsSyncQueue.add('cms-sync', {
-      cms_sync_run_id: run.id,
-      user_tracked_agency_id:
-        typeof payload.user_tracked_agency_id === 'string'
-          ? payload.user_tracked_agency_id
-          : '',
-      user_integration_id: run.user_integration_id,
-      crawl_run_id: run.crawl_run_id,
-    });
+    const jobId = `cms-sync:${run.id}`;
+    const existing = await this.cmsSyncQueue.getJob(jobId);
+    if (existing) {
+      const state = await existing.getState();
+      if (state === 'active' || state === 'waiting' || state === 'delayed') {
+        return;
+      }
+      await existing.remove().catch(() => undefined);
+    }
+
+    await this.cmsSyncQueue.add(
+      'cms-sync',
+      {
+        cms_sync_run_id: run.id,
+        user_tracked_agency_id:
+          typeof payload.user_tracked_agency_id === 'string'
+            ? payload.user_tracked_agency_id
+            : '',
+        user_integration_id: run.user_integration_id,
+        crawl_run_id: run.crawl_run_id,
+      },
+      { jobId, removeOnComplete: true, removeOnFail: true },
+    );
   }
 
   async createBatch(params: {
