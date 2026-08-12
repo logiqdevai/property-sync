@@ -145,6 +145,13 @@ export function isUnauthorizedEstateWebError(error: unknown): boolean {
   return false;
 }
 
+export function isNotFoundEstateWebError(error: unknown): boolean {
+  return (
+    error instanceof EstateWebException &&
+    error.code === NotificationType.ESTATEWEB_NOT_FOUND
+  );
+}
+
 function truncateBody(body: string, maxLength = 500): string {
   if (body.length <= maxLength) {
     return body;

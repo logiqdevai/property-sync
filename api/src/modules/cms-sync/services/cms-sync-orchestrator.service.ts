@@ -6,6 +6,7 @@ import { CMS_SYNC_QUEUE } from '@/core/queues/queues.constants';
 import { CmsSyncRunsService } from '@/modules/cms-sync-runs/cms-sync-runs.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
+import { isNotFoundEstateWebError } from '@/integrations/estateweb/utils/estateweb-error.util';
 import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
 import {
   AffectedUserProperty,
@@ -553,12 +554,20 @@ export class CmsSyncOrchestratorService {
         userProperty.integration_property_id &&
         link
       ) {
-        const belongsToLinkedAccount =
-          await this.listingBelongsToLinkedIntegration(
+        let belongsToLinkedAccount: boolean;
+        try {
+          belongsToLinkedAccount = await this.listingBelongsToLinkedIntegration(
             link.user_integration_id,
             userProperty.integration_property_id,
             userProperty.internal_id,
           );
+        } catch (error) {
+          failed.push({
+            user_property_id: userProperty.id,
+            error: `Failed to verify EstateWeb listing ownership: ${error instanceof Error ? error.message : String(error)}`,
+          });
+          continue;
+        }
 
         if (!belongsToLinkedAccount) {
           await this.prisma.userProperty.update({
@@ -863,8 +872,11 @@ export class CmsSyncOrchestratorService {
       }
       const listingCode = listing.code?.trim().toLowerCase() ?? '';
       return listingCode === internalId.trim().toLowerCase();
-    } catch {
-      return false;
+    } catch (error) {
+      if (isNotFoundEstateWebError(error)) {
+        return false;
+      }
+      throw error;
     }
   }
 

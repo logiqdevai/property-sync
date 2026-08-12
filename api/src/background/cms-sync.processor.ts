@@ -22,6 +22,7 @@ import {
 } from 'generated/prisma';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { EstateWebException } from '@/integrations/estateweb/exceptions/estateweb.exception';
+import { isNotFoundEstateWebError } from '@/integrations/estateweb/utils/estateweb-error.util';
 import {
   EstateWebPropertyCatalog,
   EstateWebPropertyReconciliationService,
@@ -675,8 +676,11 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       }
       const listingCode = listing.code?.trim().toLowerCase() ?? '';
       return listingCode === internalId.trim().toLowerCase();
-    } catch {
-      return false;
+    } catch (error) {
+      if (isNotFoundEstateWebError(error)) {
+        return false;
+      }
+      throw error;
     }
   }
 
