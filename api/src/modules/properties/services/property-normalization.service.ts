@@ -1019,6 +1019,7 @@ export class PropertyNormalizationService {
             user_property_id: a.user_property_id,
             change_type: toCmsSyncOperationType(a.change_type),
             user_property: undefined,
+            content_changed: a.content_changed,
           }),
         ),
       );

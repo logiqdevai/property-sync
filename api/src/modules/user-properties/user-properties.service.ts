@@ -109,6 +109,7 @@ export interface SyncForPropertyResult {
   user_property_id: string;
   change_type: PropertySyncChangeType;
   user_tracked_agency_id: string;
+  content_changed?: boolean;
 }
 
 @Injectable()
@@ -2945,6 +2946,11 @@ export class UserPropertiesService {
       const imagesChanged =
         this.normalizeComparableValue(existing.images) !==
         this.normalizeComparableValue(canonicalFields.images);
+      const contentChanged =
+        this.normalizeComparableValue(existing.title) !==
+          this.normalizeComparableValue(canonicalFields.title) ||
+        this.normalizeComparableValue(existing.description) !==
+          this.normalizeComparableValue(canonicalFields.description);
 
       await this.prisma.userProperty.update({
         where: { id: existing.id },
@@ -2981,6 +2987,7 @@ export class UserPropertiesService {
         user_property_id: existing.id,
         change_type: 'updated',
         user_tracked_agency_id: tracker.id,
+        content_changed: contentChanged,
       });
     }
 

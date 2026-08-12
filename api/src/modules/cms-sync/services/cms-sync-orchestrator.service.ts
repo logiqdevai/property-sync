@@ -919,6 +919,20 @@ export class CmsSyncOrchestratorService {
       contentAffected.map((item) => [item.user_property_id, item.change_type]),
     );
 
+    // A crawl can fix title/description without any of the cached AI/translated
+    // PropertyLocalizedContent rows being regenerated (they're only produced once and
+    // reused via TRANSLATE/AI strategies) -- mark them stale so this batch regenerates
+    // them from the corrected source instead of silently keeping a translation of the
+    // old text forever.
+    const contentChangedIds = contentAffected
+      .filter((item) => item.content_changed)
+      .map((item) => item.user_property_id);
+    if (contentChangedIds.length) {
+      await this.contentProductionService.markStaleForUserProperties(
+        contentChangedIds,
+      );
+    }
+
     const produced =
       await this.contentProductionService.produceForUserProperties(
         contentAffected.map((item) => item.user_property_id),

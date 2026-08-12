@@ -23,6 +23,7 @@ export interface AffectedUserProperty {
   user_property_id: string;
   change_type: CmsSyncOperationType;
   user_property?: UserProperty;
+  content_changed?: boolean;
 }
 
 export interface CmsSyncBatchOperation {

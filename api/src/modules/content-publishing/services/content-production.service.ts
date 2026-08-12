@@ -82,6 +82,14 @@ export class ContentProductionService {
     });
   }
 
+  async markStaleForUserProperties(userPropertyIds: string[]): Promise<void> {
+    if (!userPropertyIds.length) return;
+    await this.prisma.propertyLocalizedContent.updateMany({
+      where: { user_property_id: { in: userPropertyIds } },
+      data: { is_stale: true },
+    });
+  }
+
   async ensureReady(userPropertyId: string): Promise<void> {
     await this.produceForProperty(userPropertyId, { forceSyncAi: true });
   }
