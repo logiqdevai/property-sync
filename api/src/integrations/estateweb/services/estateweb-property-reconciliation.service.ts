@@ -94,13 +94,6 @@ export class EstateWebPropertyReconciliationService {
       return { matched: false, shouldUpdate: false };
     }
 
-    if (!this.hasPositiveCorroboration(userProperty, listing)) {
-      this.logger.warn(
-        `Refusing EstateWeb reconciliation for user property ${userProperty.id}: internal_id "${internalId}" matches listing ${listing.id} but identity is not corroborated (code-only match)`,
-      );
-      return { matched: false, shouldUpdate: false };
-    }
-
     const integrationPropertyId = String(listing.id);
     const shouldUpdate = await this.shouldPushUpdate(
       userProperty,
@@ -151,38 +144,6 @@ export class EstateWebPropertyReconciliationService {
     }
 
     return false;
-  }
-
-  private hasPositiveCorroboration(
-    userProperty: UserProperty,
-    listing: EstateWebPropertyListItem,
-  ): boolean {
-    let corroborated = false;
-
-    const userAddress = (userProperty.address ?? '').trim();
-    const listingAddress = (listing.address ?? '').trim();
-    if (userAddress.length > 0 && listingAddress.length > 0) {
-      if (!this.stringsEqual(userAddress, listingAddress)) {
-        return false;
-      }
-      corroborated = true;
-    }
-
-    if (userProperty.price != null && listing.price != null) {
-      if (!this.pricesEqual(userProperty.price, listing.price)) {
-        return false;
-      }
-      corroborated = true;
-    }
-
-    if (userProperty.square_meters != null && listing.sqm != null) {
-      if (!this.numbersEqual(userProperty.square_meters, listing.sqm)) {
-        return false;
-      }
-      corroborated = true;
-    }
-
-    return corroborated;
   }
 
   private buildCodeIndex(
