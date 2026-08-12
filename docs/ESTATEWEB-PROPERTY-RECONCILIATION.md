@@ -25,13 +25,7 @@ Same code, but identity fields **conflict** → **do not** link to that listing 
 
 Example: code `1-728` exists on listing `51853`, but scope `1` vs `2`, price `2.5M` vs `150k`, sqm `2800` vs `500` → collision → create new listing instead of updating the old one.
 
-## Step 3: Require corroboration (not code-only)
-
-Same code and **no** collision still is not enough. At least one of address, price, or sqm must **match** on both sides (when both have values).
-
-Code-only match with empty/missing corroborating fields → **reject → create**.
-
-## Step 4: If matched, link or update
+## Step 3: If matched, link or update
 
 If we accept the match:
 
@@ -49,4 +43,4 @@ If the property already has `integration_property_id`:
 
 ## Summary
 
-Existence is **code first**, then **scope + address / price / sqm** to avoid linking the wrong listing when codes are reused.
+Existence is **code first**, then a collision check on **scope + address / price / sqm** (only for fields present on both sides) to avoid linking the wrong listing when codes are reused. A clean code match with no collision is trusted as-is — it is not rejected just because address/price/sqm happen to be blank on one side. See `docs/INCIDENT-ESTATEWEB-DUPLICATE-PROPERTIES.md` for why the old "require corroboration" step was removed.
