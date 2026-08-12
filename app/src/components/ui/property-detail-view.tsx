@@ -95,6 +95,8 @@ export interface PropertyDetailViewData extends Partial<PropertyCmsFields> {
   source_links?: PropertySourceLink[];
   history: PropertyHistoryEntry[];
   integration_email?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 function formatCmsMetadata(metadata: CmsPropertyMetadata | null | undefined): string[] {
@@ -928,6 +930,14 @@ export function PropertyDetailView({
                     </span>
                   )}
                 </div>
+                <MetaItem
+                  label="Created"
+                  value={property.created_at ? formatDateTime(property.created_at) : "—"}
+                />
+                <MetaItem
+                  label="Updated"
+                  value={property.updated_at ? formatDateTime(property.updated_at) : "—"}
+                />
               </div>
 
               {(property.price_start || property.price_web) && (

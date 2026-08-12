@@ -304,7 +304,7 @@ export function PropertiesListPanel() {
 
       <div className="flex items-center gap-3 flex-wrap">
         <ClearableSearchInput
-          placeholder="Search property id, internal id, title, or city…"
+          placeholder="Search property id, internal id, CRM id, title, or city…"
           value={search}
           onValueChange={(next) => {
             setPage(1);

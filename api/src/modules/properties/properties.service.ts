@@ -58,6 +58,16 @@ export class PropertiesService {
           { title: { contains: query.search, mode: 'insensitive' } },
           { city: { contains: query.search, mode: 'insensitive' } },
           { district: { contains: query.search, mode: 'insensitive' } },
+          {
+            user_property_copies: {
+              some: {
+                integration_property_id: {
+                  contains: query.search,
+                  mode: 'insensitive',
+                },
+              },
+            },
+          },
         ],
       }),
       ...(query.price_min != null || query.price_max != null
