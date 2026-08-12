@@ -4,6 +4,7 @@ import {
   PropertyStatus,
   PropertyType,
 } from 'generated/prisma';
+import { queryOrderSchemaFields } from '@/shared/utils/query-order.util';
 
 const booleanQueryParam = z
   .enum(['true', 'false'])
@@ -45,6 +46,7 @@ export const AdminUserPropertyQuerySchema = z.object({
     .datetime()
     .optional()
     .transform((v) => (v ? new Date(v) : undefined)),
+  ...queryOrderSchemaFields,
 });
 
 export type AdminUserPropertyQueryType = z.infer<

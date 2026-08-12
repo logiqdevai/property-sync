@@ -102,8 +102,11 @@ export class PropertiesService {
             }),
         orderBy:
           query.has_duplicate_group === true
-            ? [{ duplicate_group_id: 'asc' }, { updated_at: 'desc' }]
-            : { updated_at: 'desc' },
+            ? [
+                { duplicate_group_id: 'asc' },
+                { [query.order_by]: query.order_direction },
+              ]
+            : { [query.order_by]: query.order_direction },
       }),
       this.prisma.property.count({ where }),
     ]);

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { PropertyStatus } from 'generated/prisma';
+import { queryOrderSchemaFields } from '@/shared/utils/query-order.util';
 
 export const SourcePropertyQuerySchema = z.object({
   page: z
@@ -29,6 +30,7 @@ export const SourcePropertyQuerySchema = z.object({
     .datetime()
     .optional()
     .transform((v) => (v ? new Date(v) : undefined)),
+  ...queryOrderSchemaFields,
 });
 
 export type SourcePropertyQueryType = z.infer<typeof SourcePropertyQuerySchema>;

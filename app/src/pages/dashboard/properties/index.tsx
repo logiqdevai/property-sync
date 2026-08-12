@@ -37,11 +37,16 @@ import {
   type PropertyStatus,
 } from "@/features/properties/interfaces/properties.interfaces";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/properties/property-status-filter.options";
-import { PropertyChangeFilterOptions } from "@/config/constants/dropdowns/properties/property-change-filter.options";
+import { PropertySortByOptions } from "@/config/constants/dropdowns/properties/property-sort-by.options";
 import { PropertyDuplicateGroupFilterOptions } from "@/config/constants/dropdowns/properties/property-duplicate-group-filter.options";
 import { PropertyCrmPushFilterOptions } from "@/config/constants/dropdowns/properties/property-crm-push-filter.options";
 import { PropertyPendingCrmUpdateFilterOptions } from "@/config/constants/dropdowns/properties/property-pending-crm-update-filter.options";
+import { OrderDirectionOptions } from "@/config/constants/dropdowns/shared/order-direction.options";
 import { TablePageSizeOptions } from "@/config/constants/dropdowns/shared/table-page-size.options";
+import {
+  type OrderBy as OrderByType,
+  type OrderDirection as OrderDirectionType,
+} from "@/interfaces/filters/filters.interface";
 import {
   useDeleteUserProperties,
   useDeleteUserProperty,
@@ -286,7 +291,6 @@ export default function DashboardPropertiesListPage() {
   const location = useLocation();
   const {
     status,
-    change,
     search,
     trackedAgencyId,
     duplicateGroup,
@@ -294,6 +298,8 @@ export default function DashboardPropertiesListPage() {
     pendingCrmUpdate,
     dateFrom,
     dateTo,
+    orderBy,
+    orderDirection,
     limit,
     page,
     activeFilterCount,
@@ -316,7 +322,6 @@ export default function DashboardPropertiesListPage() {
       page,
       limit,
       ...(status !== "all" && { status }),
-      ...(change !== "all" && { change }),
       ...(search.trim() && { search: search.trim() }),
       ...(trackedAgencyId !== "all" && { user_tracked_agency_id: trackedAgencyId }),
       ...(duplicateGroup !== "all" && {
@@ -330,12 +335,13 @@ export default function DashboardPropertiesListPage() {
       }),
       ...(dateFrom && { date_from: toStartOfDayIso(dateFrom) }),
       ...(dateTo && { date_to: toEndOfDayIso(dateTo) }),
+      order_by: orderBy,
+      order_direction: orderDirection,
     }),
     [
       page,
       limit,
       status,
-      change,
       search,
       trackedAgencyId,
       duplicateGroup,
@@ -343,6 +349,8 @@ export default function DashboardPropertiesListPage() {
       pendingCrmUpdate,
       dateFrom,
       dateTo,
+      orderBy,
+      orderDirection,
     ],
   );
 
@@ -922,10 +930,10 @@ export default function DashboardPropertiesListPage() {
               </Select.Popover>
             </Select>
             <Select
-              aria-label="Filter by change"
-              selectedKey={change}
+              aria-label="Sort by"
+              selectedKey={orderBy}
               onSelectionChange={(key) => {
-                setFilters({ change: key as typeof change });
+                setFilters({ orderBy: key as OrderByType });
               }}
               className="w-full sm:w-44"
             >
@@ -935,7 +943,29 @@ export default function DashboardPropertiesListPage() {
               </Select.Trigger>
               <Select.Popover>
                 <ListBox>
-                  {PropertyChangeFilterOptions.map((option) => (
+                  {PropertySortByOptions.map((option) => (
+                    <ListBox.Item key={option.id} id={option.id}>
+                      {option.label}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+            <Select
+              aria-label="Sort order"
+              selectedKey={orderDirection}
+              onSelectionChange={(key) => {
+                setFilters({ orderDirection: key as OrderDirectionType });
+              }}
+              className="w-full sm:w-44"
+            >
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {OrderDirectionOptions.map((option) => (
                     <ListBox.Item key={option.id} id={option.id}>
                       {option.label}
                     </ListBox.Item>

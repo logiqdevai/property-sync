@@ -81,7 +81,10 @@ export class SourcePropertiesService {
               skip: (query.page - 1) * query.limit,
               take: query.limit,
             }),
-        orderBy: { updated_at: 'desc' },
+        orderBy: {
+          [query.order_by === 'price' ? 'raw_price' : query.order_by]:
+            query.order_direction,
+        },
       }),
       this.prisma.sourceProperty.count({ where }),
     ]);

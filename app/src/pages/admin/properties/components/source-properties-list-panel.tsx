@@ -34,7 +34,15 @@ import type {
 } from "@/features/source-properties/interfaces/source-properties.interfaces";
 import type { PropertyStatus } from "@/features/properties/interfaces/properties.interfaces";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/properties/property-status-filter.options";
+import { PropertySortByOptions } from "@/config/constants/dropdowns/properties/property-sort-by.options";
+import { OrderDirectionOptions } from "@/config/constants/dropdowns/shared/order-direction.options";
 import { TablePageSizeOptions } from "@/config/constants/dropdowns/shared/table-page-size.options";
+import {
+  OrderBy,
+  OrderDirection,
+  type OrderBy as OrderByType,
+  type OrderDirection as OrderDirectionType,
+} from "@/interfaces/filters/filters.interface";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { formatDateTime, toEndOfDayIso, toStartOfDayIso } from "@/lib/date";
 
@@ -52,6 +60,10 @@ export function SourcePropertiesListPanel() {
   const [agencyId, setAgencyId] = useState<string | "all">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [orderBy, setOrderBy] = useState<OrderByType>(OrderBy.UPDATED_AT);
+  const [orderDirection, setOrderDirection] = useState<OrderDirectionType>(
+    OrderDirection.DESC,
+  );
   const [limit, setLimit] = useState(20);
   const [page, setPage] = useState(1);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
@@ -68,8 +80,10 @@ export function SourcePropertiesListPanel() {
       ...(agencyId !== "all" && { agency_id: agencyId }),
       ...(dateFrom && { date_from: toStartOfDayIso(dateFrom) }),
       ...(dateTo && { date_to: toEndOfDayIso(dateTo) }),
+      order_by: orderBy,
+      order_direction: orderDirection,
     }),
-    [page, limit, status, search, agencyId, dateFrom, dateTo],
+    [page, limit, status, search, agencyId, dateFrom, dateTo, orderBy, orderDirection],
   );
 
   const countQuery = useMemo<SourcePropertyCountQuery>(() => {
@@ -192,6 +206,52 @@ export function SourcePropertiesListPanel() {
           <Select.Popover>
             <ListBox>
               {PropertyStatusFilterOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+        <Select
+          aria-label="Sort by"
+          selectedKey={orderBy}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setOrderBy(key as OrderByType);
+          }}
+          className="w-44"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {PropertySortByOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+        <Select
+          aria-label="Sort order"
+          selectedKey={orderDirection}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setOrderDirection(key as OrderDirectionType);
+          }}
+          className="w-44"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {OrderDirectionOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

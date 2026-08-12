@@ -273,9 +273,9 @@ export class UserPropertiesService {
           query.has_duplicate_group === true
             ? [
                 { canonical_property: { duplicate_group_id: 'asc' } },
-                { updated_at: 'desc' },
+                { [query.order_by]: query.order_direction },
               ]
-            : { updated_at: 'desc' },
+            : { [query.order_by]: query.order_direction },
         include: {
           canonical_property: {
             select: { duplicate_group_id: true },
@@ -3226,9 +3226,9 @@ export class UserPropertiesService {
           query.has_duplicate_group === true
             ? [
                 { canonical_property: { duplicate_group_id: 'asc' } },
-                { updated_at: 'desc' },
+                { [query.order_by]: query.order_direction },
               ]
-            : { updated_at: 'desc' },
+            : { [query.order_by]: query.order_direction },
         include: {
           user: { select: { id: true, email: true } },
           canonical_property: {

@@ -43,14 +43,18 @@ import {
   type PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/properties/property-status-filter.options";
-import {
-  PropertyChangeFilterOptions,
-  type PropertyChangeFilter,
-} from "@/config/constants/dropdowns/properties/property-change-filter.options";
+import { PropertySortByOptions } from "@/config/constants/dropdowns/properties/property-sort-by.options";
 import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/properties/listing-type-filter.options";
 import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/properties/property-type-filter.options";
 import { PropertyDuplicateGroupFilterOptions } from "@/config/constants/dropdowns/properties/property-duplicate-group-filter.options";
+import { OrderDirectionOptions } from "@/config/constants/dropdowns/shared/order-direction.options";
 import { TablePageSizeOptions } from "@/config/constants/dropdowns/shared/table-page-size.options";
+import {
+  OrderBy,
+  OrderDirection,
+  type OrderBy as OrderByType,
+  type OrderDirection as OrderDirectionType,
+} from "@/interfaces/filters/filters.interface";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { formatPrice } from "@/lib/price";
 import { toEndOfDayIso, toStartOfDayIso } from "@/lib/date";
@@ -71,7 +75,6 @@ export function PropertiesListPanel() {
   const splitConfirm = useOverlayState();
 
   const [status, setStatus] = useState<PropertyStatus | "all">("all");
-  const [change, setChange] = useState<PropertyChangeFilter | "all">("all");
   const [listingType, setListingType] = useState<ListingType | "all">("all");
   const [propertyType, setPropertyType] = useState<PropertyType | "all">("all");
   const [search, setSearch] = useState("");
@@ -79,6 +82,10 @@ export function PropertiesListPanel() {
   const [duplicateGroup, setDuplicateGroup] = useState<"all" | "true" | "false">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [orderBy, setOrderBy] = useState<OrderByType>(OrderBy.UPDATED_AT);
+  const [orderDirection, setOrderDirection] = useState<OrderDirectionType>(
+    OrderDirection.DESC,
+  );
   const [limit, setLimit] = useState(20);
   const [page, setPage] = useState(1);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
@@ -89,7 +96,6 @@ export function PropertiesListPanel() {
       page,
       limit,
       ...(status !== "all" && { status }),
-      ...(change !== "all" && { change }),
       ...(listingType !== "all" && { listing_type: listingType }),
       ...(propertyType !== "all" && { property_type: propertyType }),
       ...(search.trim() && { search: search.trim() }),
@@ -99,8 +105,23 @@ export function PropertiesListPanel() {
       }),
       ...(dateFrom && { date_from: toStartOfDayIso(dateFrom) }),
       ...(dateTo && { date_to: toEndOfDayIso(dateTo) }),
+      order_by: orderBy,
+      order_direction: orderDirection,
     }),
-    [page, limit, status, change, listingType, propertyType, search, agencyId, duplicateGroup, dateFrom, dateTo],
+    [
+      page,
+      limit,
+      status,
+      listingType,
+      propertyType,
+      search,
+      agencyId,
+      duplicateGroup,
+      dateFrom,
+      dateTo,
+      orderBy,
+      orderDirection,
+    ],
   );
 
   const countQuery = useMemo<PropertyCountQuery>(() => {
@@ -315,11 +336,11 @@ export function PropertiesListPanel() {
           </Select.Popover>
         </Select>
         <Select
-          aria-label="Filter by change"
-          selectedKey={change}
+          aria-label="Sort by"
+          selectedKey={orderBy}
           onSelectionChange={(key) => {
             setPage(1);
-            setChange(key as PropertyChangeFilter | "all");
+            setOrderBy(key as OrderByType);
           }}
           className="w-44"
         >
@@ -329,7 +350,30 @@ export function PropertiesListPanel() {
           </Select.Trigger>
           <Select.Popover>
             <ListBox>
-              {PropertyChangeFilterOptions.map((option) => (
+              {PropertySortByOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+        <Select
+          aria-label="Sort order"
+          selectedKey={orderDirection}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setOrderDirection(key as OrderDirectionType);
+          }}
+          className="w-44"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {OrderDirectionOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

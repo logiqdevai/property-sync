@@ -6,16 +6,21 @@ import {
   type PropertyStatus,
 } from "@/features/properties/interfaces/properties.interfaces";
 import {
-  PropertyChangeFilters,
-  type PropertyChangeFilter,
-} from "@/config/constants/dropdowns/properties/property-change-filter.options";
+  OrderBy,
+  OrderDirection,
+  type OrderBy as OrderByType,
+  type OrderDirection as OrderDirectionType,
+} from "@/interfaces/filters/filters.interface";
 import { TablePageSizeOptions } from "@/config/constants/dropdowns/shared/table-page-size.options";
 
 const DEFAULT_LIMIT = 20;
 const DEFAULT_PAGE = 1;
+const DEFAULT_ORDER_BY = OrderBy.UPDATED_AT;
+const DEFAULT_ORDER_DIRECTION = OrderDirection.DESC;
 
 const STATUS_VALUES = new Set<string>(Object.values(PropertyStatuses));
-const CHANGE_VALUES = new Set<string>(Object.values(PropertyChangeFilters));
+const ORDER_BY_VALUES = new Set<string>(Object.values(OrderBy));
+const ORDER_DIRECTION_VALUES = new Set<string>(Object.values(OrderDirection));
 const BOOL_FILTER_VALUES = new Set(["true", "false"]);
 const LIMIT_VALUES = new Set(TablePageSizeOptions.map((option) => option.value));
 
@@ -43,7 +48,6 @@ export function resolvePropertiesListReturnTo(state: unknown): string {
 
 export type PropertiesListFilters = {
   status: PropertyStatus | "all";
-  change: PropertyChangeFilter | "all";
   search: string;
   trackedAgencyId: string | "all";
   duplicateGroup: PropertiesListBoolFilter;
@@ -51,6 +55,8 @@ export type PropertiesListFilters = {
   pendingCrmUpdate: PropertiesListBoolFilter;
   dateFrom: string;
   dateTo: string;
+  orderBy: OrderByType;
+  orderDirection: OrderDirectionType;
   limit: number;
   page: number;
 };
@@ -62,16 +68,23 @@ function parseStatus(value: string | null): PropertyStatus | "all" {
   return "all";
 }
 
-function parseChange(value: string | null): PropertyChangeFilter | "all" {
-  if (value && CHANGE_VALUES.has(value)) return value as PropertyChangeFilter;
-  return "all";
-}
-
 function parseBoolFilter(value: string | null): PropertiesListBoolFilter {
   if (value && BOOL_FILTER_VALUES.has(value)) {
     return value as PropertiesListBoolFilter;
   }
   return "all";
+}
+
+function parseOrderBy(value: string | null): OrderByType {
+  if (value && ORDER_BY_VALUES.has(value)) return value as OrderByType;
+  return DEFAULT_ORDER_BY;
+}
+
+function parseOrderDirection(value: string | null): OrderDirectionType {
+  if (value && ORDER_DIRECTION_VALUES.has(value)) {
+    return value as OrderDirectionType;
+  }
+  return DEFAULT_ORDER_DIRECTION;
 }
 
 function parseLimit(value: string | null): number {
@@ -91,7 +104,6 @@ function parsePage(value: string | null): number {
 function parseFilters(searchParams: URLSearchParams): PropertiesListFilters {
   return {
     status: parseStatus(searchParams.get("status")),
-    change: parseChange(searchParams.get("change")),
     search: searchParams.get("search") ?? "",
     trackedAgencyId: searchParams.get("agency") ?? "all",
     duplicateGroup: parseBoolFilter(searchParams.get("duplicate_group")),
@@ -99,6 +111,8 @@ function parseFilters(searchParams: URLSearchParams): PropertiesListFilters {
     pendingCrmUpdate: parseBoolFilter(searchParams.get("pending_crm_update")),
     dateFrom: searchParams.get("date_from") ?? "",
     dateTo: searchParams.get("date_to") ?? "",
+    orderBy: parseOrderBy(searchParams.get("order_by")),
+    orderDirection: parseOrderDirection(searchParams.get("order_direction")),
     limit: parseLimit(searchParams.get("limit")),
     page: parsePage(searchParams.get("page")),
   };
@@ -108,7 +122,6 @@ function buildSearchParams(filters: PropertiesListFilters): URLSearchParams {
   const params = new URLSearchParams();
 
   if (filters.status !== "all") params.set("status", filters.status);
-  if (filters.change !== "all") params.set("change", filters.change);
   if (filters.search) params.set("search", filters.search);
   if (filters.trackedAgencyId !== "all") {
     params.set("agency", filters.trackedAgencyId);
@@ -124,6 +137,12 @@ function buildSearchParams(filters: PropertiesListFilters): URLSearchParams {
   }
   if (filters.dateFrom) params.set("date_from", filters.dateFrom);
   if (filters.dateTo) params.set("date_to", filters.dateTo);
+  if (filters.orderBy !== DEFAULT_ORDER_BY) {
+    params.set("order_by", filters.orderBy);
+  }
+  if (filters.orderDirection !== DEFAULT_ORDER_DIRECTION) {
+    params.set("order_direction", filters.orderDirection);
+  }
   if (filters.limit !== DEFAULT_LIMIT) params.set("limit", String(filters.limit));
   if (filters.page !== DEFAULT_PAGE) params.set("page", String(filters.page));
 
@@ -133,7 +152,6 @@ function buildSearchParams(filters: PropertiesListFilters): URLSearchParams {
 function countActiveFilters(filters: PropertiesListFilters): number {
   return [
     filters.status !== "all",
-    filters.change !== "all",
     filters.trackedAgencyId !== "all",
     filters.duplicateGroup !== "all",
     filters.pushedToCrm !== "all",
@@ -174,13 +192,14 @@ export function usePropertiesListFilters() {
   const clearFilters = useCallback(() => {
     setFilters({
       status: "all",
-      change: "all",
       trackedAgencyId: "all",
       duplicateGroup: "all",
       pushedToCrm: "all",
       pendingCrmUpdate: "all",
       dateFrom: "",
       dateTo: "",
+      orderBy: DEFAULT_ORDER_BY,
+      orderDirection: DEFAULT_ORDER_DIRECTION,
       page: DEFAULT_PAGE,
     });
   }, [setFilters]);

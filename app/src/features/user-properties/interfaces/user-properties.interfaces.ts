@@ -123,6 +123,8 @@ export interface UserPropertyListQuery {
   user_tracked_agency_id?: string;
   date_from?: string;
   date_to?: string;
+  order_by?: "created_at" | "updated_at" | "price";
+  order_direction?: "asc" | "desc";
 }
 
 export interface AdminUserPropertyListQuery {
@@ -140,6 +142,8 @@ export interface AdminUserPropertyListQuery {
   pending_crm_update?: boolean;
   date_from?: string;
   date_to?: string;
+  order_by?: "created_at" | "updated_at" | "price";
+  order_direction?: "asc" | "desc";
 }
 
 export type UserPropertyCountQuery = Omit<UserPropertyListQuery, "page" | "limit">;

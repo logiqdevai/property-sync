@@ -77,6 +77,16 @@ export class AdminUserPropertiesController {
   })
   @ApiQuery({ name: 'date_from', required: false, type: String })
   @ApiQuery({ name: 'date_to', required: false, type: String })
+  @ApiQuery({
+    name: 'order_by',
+    required: false,
+    enum: ['created_at', 'updated_at', 'price'],
+  })
+  @ApiQuery({
+    name: 'order_direction',
+    required: false,
+    enum: ['asc', 'desc'],
+  })
   findAll(
     @Query(new ZodValidationPipe(AdminUserPropertyQuerySchema))
     query: AdminUserPropertyQueryType,

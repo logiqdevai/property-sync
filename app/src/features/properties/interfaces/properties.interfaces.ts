@@ -148,6 +148,8 @@ export interface PropertyListQuery {
   agency_id?: string;
   date_from?: string;
   date_to?: string;
+  order_by?: "created_at" | "updated_at" | "price";
+  order_direction?: "asc" | "desc";
 }
 
 export type PropertyCountQuery = Omit<PropertyListQuery, "page" | "limit">;
