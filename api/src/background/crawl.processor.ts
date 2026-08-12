@@ -23,8 +23,6 @@ import {
 } from '@/integrations/crawler/block-handling/block-handling.utils';
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
-import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
-import { toCmsSyncOperationType } from '@/modules/cms-sync/interfaces/cms-sync-batch.interface';
 import { ScraperFailureHandlerService } from '@/background/scraper-failure-handler.service';
 import {
   CrawlRunStatus,
@@ -52,7 +50,6 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
     private readonly notificationsService: NotificationsService,
     private readonly scraperFailureHandler: ScraperFailureHandlerService,
     private readonly platformConfigService: PlatformConfigService,
-    private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
   ) {
     super();
   }
@@ -443,38 +440,17 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
 
       if (!runFailed) {
         try {
+          // Kicks off normalization and returns as soon as its work is
+          // enqueued/submitted (fanned-out BullMQ chunk jobs for the
+          // non-batch path, or an OpenAI Batch API submission) — it no
+          // longer awaits full completion in-process. CMS sync enqueue and
+          // notifications on that later failure are now owned by
+          // PropertyNormalizationService.syncAfterNormalization /
+          // finalizeNormalizationChunks, not this closure. This try/catch
+          // still covers enqueue-time failures (key resolution, JobLog
+          // creation, the addBulk/batch-submit call itself).
           await this.propertyNormalizationService.normalizeForCrawlRun(
             crawlRunId,
-            async (affected) => {
-              try {
-                await this.cmsSyncOrchestratorService.planAndEnqueueCrawlSync(
-                  crawlRunId,
-                  affected.map((a) => ({
-                    user_property_id: a.user_property_id,
-                    change_type: toCmsSyncOperationType(a.change_type),
-                    user_property: undefined,
-                  })),
-                );
-              } catch (syncError) {
-                const message =
-                  syncError instanceof Error
-                    ? syncError.message
-                    : String(syncError);
-                this.logger.error(
-                  `Crawl ${crawlRunId}: CMS sync enqueue failed after normalization: ${message}`,
-                );
-                const agencyName = run.source_agency?.name ?? 'Unknown agency';
-                this.notificationsService.create({
-                  type: NotificationType.CMS_SYNC_FAILURE,
-                  severity: NotificationSeverity.CRITICAL,
-                  title: `CMS sync enqueue failed — ${agencyName}`,
-                  message: `Crawl ${crawlRunId} for ${agencyName} normalized successfully but CMS sync enqueue failed: ${message}`,
-                  source_agency_id: run.source_agency_id,
-                  scraper_id: scraper.id,
-                  crawl_run_id: crawlRunId,
-                });
-              }
-            },
           );
         } catch (normalizationError) {
           const normalizationMessage =

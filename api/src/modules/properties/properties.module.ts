@@ -5,6 +5,7 @@ import { AiIntegrationModule } from '@/integrations/ai/ai.module';
 import { UserIntegrationsModule } from '@/modules/user-integrations/user-integrations.module';
 import {
   AI_BATCH_COMPLETE_QUEUE,
+  NORMALIZATION_QUEUE,
   RENORMALIZATION_QUEUE,
 } from '@/core/queues/queues.constants';
 import { AiBatchModule } from '@/integrations/ai-batch/ai-batch.module';
@@ -16,6 +17,7 @@ import { PropertyNormalizationService } from './services/property-normalization.
 import { AnthropicNormalizationService } from './services/anthropic-normalization.service';
 import { AiBatchCompleteProcessor } from '@/background/ai-batch-complete.processor';
 import { RenormalizationProcessor } from '@/background/renormalization.processor';
+import { NormalizationChunkProcessor } from '@/background/normalization-chunk.processor';
 import { UserPropertiesModule } from '@/modules/user-properties/user-properties.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { CmsSyncModule } from '@/modules/cms-sync/cms-sync.module';
@@ -38,6 +40,7 @@ import { ContentPublishingModule } from '@/modules/content-publishing/content-pu
     BullModule.registerQueue(
       { name: AI_BATCH_COMPLETE_QUEUE },
       { name: RENORMALIZATION_QUEUE },
+      { name: NORMALIZATION_QUEUE },
     ),
   ],
   controllers: [PropertiesController],
@@ -47,6 +50,7 @@ import { ContentPublishingModule } from '@/modules/content-publishing/content-pu
     AnthropicNormalizationService,
     AiBatchCompleteProcessor,
     RenormalizationProcessor,
+    NormalizationChunkProcessor,
   ],
   exports: [PropertyNormalizationService],
 })

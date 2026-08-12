@@ -1,5 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { NORMALIZATION_QUEUE } from '@/core/queues/queues.constants';
 import { AiService } from '@/integrations/ai/services/ai.service';
 import {
   AiProvider,
@@ -17,6 +20,11 @@ import {
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import { CostLogsService } from '@/modules/cost-logs/cost-logs.service';
+import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
+import {
+  NormalizationChunkItemResult,
+  NormalizationChunkJobData,
+} from '../interfaces/normalization-chunk-job.interface';
 import {
   CRAWL_REMOVAL_COVERAGE_MIN_BASELINE,
   CRAWL_REMOVAL_COVERAGE_RATIO_THRESHOLD,
@@ -44,11 +52,16 @@ import {
   matchExistingDuplicateGroup,
   matchNormalizedRowsToIds,
 } from '../utils/property-normalization.utils';
-import { PropertySyncChangeType } from '@/modules/cms-sync/interfaces/cms-sync-batch.interface';
+import {
+  AffectedUserProperty,
+  PropertySyncChangeType,
+  toCmsSyncOperationType,
+} from '@/modules/cms-sync/interfaces/cms-sync-batch.interface';
 import {
   CostOperationType,
   CrawlRunStatus,
   IntegrationType,
+  JobStatus,
   NotificationSeverity,
   NotificationType,
   Prisma,
@@ -74,10 +87,6 @@ type SourcePropertyRow = {
   content_hash: string | null;
 };
 
-type CmsSyncCallback = (
-  affected: SyncForPropertyResult[],
-) => Promise<void> | void;
-
 type PendingCmsSyncAffected = SyncForPropertyResult[];
 
 const CMS_SYNC_CHANGE_PRIORITY: Record<PropertySyncChangeType, number> = {
@@ -101,12 +110,12 @@ export class PropertyNormalizationService {
     private readonly notificationsService: NotificationsService,
     private readonly platformConfigService: PlatformConfigService,
     private readonly costLogsService: CostLogsService,
+    private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
+    @InjectQueue(NORMALIZATION_QUEUE)
+    private readonly normalizationQueue: Queue<NormalizationChunkJobData>,
   ) {}
 
-  async normalizeForCrawlRun(
-    crawlRunId: string,
-    onSync?: CmsSyncCallback,
-  ): Promise<void> {
+  async normalizeForCrawlRun(crawlRunId: string): Promise<void> {
     const crawlRun = await this.prisma.crawlRun.findUnique({
       where: { id: crawlRunId },
       include: {
@@ -175,6 +184,14 @@ export class PropertyNormalizationService {
           normalization_status: 'running',
           ...(normalizeLimit !== null && { normalize_limit: normalizeLimit }),
         },
+        // Reset so the per-chunk normalization path (below) can safely use
+        // `increment` instead of clobbering the total with each chunk's
+        // absolute values.
+        ai_input_tokens: 0,
+        ai_output_tokens: 0,
+        ai_input_cost: 0,
+        ai_output_cost: 0,
+        ai_total_cost: 0,
       },
     });
 
@@ -187,7 +204,6 @@ export class PropertyNormalizationService {
           userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
           scraperId: crawlRun.scraper_id ?? undefined,
           affected: [],
-          onSync,
         });
         await this.setNormalizationStatus(crawlRunId, 'completed');
         return;
@@ -202,7 +218,7 @@ export class PropertyNormalizationService {
         this.logger.log(
           `Crawl run ${crawlRunId}: skipping AI normalization for ${reused.length} unchanged listing(s)`,
         );
-        const reusedAffected = await this.applyNormalizedResults({
+        const { affected: reusedAffected } = await this.applyNormalizedResults({
           crawlRunId,
           sourceAgencyId: crawlRun.source_agency_id,
           crawlStartedAt: crawlRun.started_at,
@@ -224,7 +240,6 @@ export class PropertyNormalizationService {
           userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
           scraperId: crawlRun.scraper_id ?? undefined,
           affected: pendingAffected,
-          onSync,
         });
         await this.setNormalizationStatus(crawlRunId, 'completed');
         return;
@@ -262,39 +277,121 @@ export class PropertyNormalizationService {
         return;
       }
 
-      const syncResult = await this.normalizeSync(
-        limited,
-        aiProvider,
-        model,
-        resolvedKey.apiKey,
-      );
-
-      const normalizedAffected = await this.applyNormalizedResults({
+      // Fan out to independent, retryable, timeout-protected BullMQ jobs
+      // (one per NORMALIZATION_BATCH_SIZE chunk) instead of awaiting a
+      // sequential in-process loop — a single stuck AI call can no longer
+      // block every other property in the crawl. normalization_status stays
+      // 'running' until the last chunk's finalize step flips it, same as the
+      // OpenAI-Batch-API path above already behaves.
+      await this.enqueueNormalizationChunks({
         crawlRunId,
         sourceAgencyId: crawlRun.source_agency_id,
         crawlStartedAt: crawlRun.started_at,
-        sourceProperties: limited,
-        normalizedBySourceId: syncResult.normalizedBySourceId,
-        model,
-        provider: aiProvider,
-        anthropicUsage: syncResult.anthropicUsage,
-        openAiUsage: syncResult.openAiUsage,
-        userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
-        contentHashChanged: true,
-      });
-
-      await this.finalizeCrawlNormalizationSync({
-        crawlRunId,
-        sourceAgencyId: crawlRun.source_agency_id,
-        crawlStartedAt: crawlRun.started_at,
+        trackerUserId: tracker.user_id,
         userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
         scraperId: crawlRun.scraper_id ?? undefined,
-        affected: [...pendingAffected, ...normalizedAffected],
-        onSync,
+        provider: aiProvider,
+        model,
+        toNormalize: limited,
+        pendingAffected,
       });
-      await this.setNormalizationStatus(crawlRunId, 'completed');
     } catch (error) {
       await this.setNormalizationStatus(crawlRunId, 'failed');
+      throw error;
+    }
+  }
+
+  private async enqueueNormalizationChunks(params: {
+    crawlRunId: string;
+    sourceAgencyId: string;
+    crawlStartedAt: Date;
+    trackerUserId: string;
+    userTrackedAgencyId?: string;
+    scraperId?: string;
+    provider: IntegrationType;
+    model: string;
+    toNormalize: SourcePropertyRow[];
+    pendingAffected: SyncForPropertyResult[];
+  }): Promise<void> {
+    const chunks: SourcePropertyRow[][] = [];
+    for (
+      let i = 0;
+      i < params.toNormalize.length;
+      i += NORMALIZATION_BATCH_SIZE
+    ) {
+      chunks.push(params.toNormalize.slice(i, i + NORMALIZATION_BATCH_SIZE));
+    }
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: NORMALIZATION_QUEUE,
+        job_name: 'normalize-crawl-chunk',
+        status: JobStatus.WAITING,
+        crawl_run_id: params.crawlRunId,
+        payload: {
+          crawl_run_id: params.crawlRunId,
+          source_agency_id: params.sourceAgencyId,
+          total_chunks: chunks.length,
+        } as object,
+        result: {
+          total: chunks.length,
+          processed: 0,
+          chunks: [],
+          affected: params.pendingAffected,
+          created_count: 0,
+          finalized: false,
+          logs: [
+            `enqueued crawl_run=${params.crawlRunId} chunks=${chunks.length} properties=${params.toNormalize.length}`,
+          ],
+        } as object,
+      },
+    });
+
+    try {
+      await this.normalizationQueue.addBulk(
+        chunks.map((chunk, index) => {
+          const jobData: NormalizationChunkJobData = {
+            job_log_id: jobLog.id,
+            crawl_run_id: params.crawlRunId,
+            source_agency_id: params.sourceAgencyId,
+            crawl_started_at: params.crawlStartedAt.toISOString(),
+            tracker_user_id: params.trackerUserId,
+            user_tracked_agency_id: params.userTrackedAgencyId,
+            scraper_id: params.scraperId,
+            provider: params.provider,
+            model: params.model,
+            source_property_ids: chunk.map((sp) => sp.id),
+            chunk_index: index,
+            total_chunks: chunks.length,
+          };
+          return {
+            name: 'normalize-crawl-chunk',
+            data: jobData,
+            opts: {
+              jobId: `${jobLog.id}__${index}`,
+              attempts: 3,
+              backoff: { type: 'exponential' as const, delay: 5000 },
+              removeOnComplete: 100,
+              removeOnFail: 200,
+            },
+          };
+        }),
+      );
+    } catch (error) {
+      // Don't leave a WAITING JobLog with no jobs behind it — that's the same
+      // "silently wedged forever" shape as the bug this replaces.
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Crawl run ${params.crawlRunId}: failed to enqueue normalization chunks: ${message}`,
+      );
+      await this.prisma.jobLog.update({
+        where: { id: jobLog.id },
+        data: {
+          status: JobStatus.FAILED,
+          finished_at: new Date(),
+          error_message: message,
+        },
+      });
       throw error;
     }
   }
@@ -475,7 +572,11 @@ export class PropertyNormalizationService {
     costUserId?: string | null;
     costUserPropertyId?: string | null;
     contentHashChanged?: boolean;
-  }): Promise<SyncForPropertyResult[]> {
+    // When true, persistAiCosts increments the crawl run's cost columns
+    // instead of overwriting them — used when this is called once per chunk
+    // of a fanned-out crawl normalization rather than once for the whole run.
+    accumulateAiCost?: boolean;
+  }): Promise<{ affected: SyncForPropertyResult[]; createdCount: number }> {
     let createdCount = 0;
     const affected: SyncForPropertyResult[] = [];
     const batchProperties: Array<{
@@ -695,6 +796,7 @@ export class PropertyNormalizationService {
       isBatch: params.isBatch,
       userId: params.costUserId,
       userPropertyId: params.costUserPropertyId,
+      accumulate: params.accumulateAiCost,
     });
 
     if (params.crawlRunId) {
@@ -718,13 +820,12 @@ export class PropertyNormalizationService {
       }
     }
 
-    return affected;
+    return { affected, createdCount };
   }
 
   async completeBatchNormalization(
     crawlRunId: string,
     batchId: string,
-    onSync?: CmsSyncCallback,
   ): Promise<void> {
     const crawlRun = await this.prisma.crawlRun.findUnique({
       where: { id: crawlRunId },
@@ -810,7 +911,7 @@ export class PropertyNormalizationService {
     const model =
       (metadata.ai_model as string) ?? crawlRun.ai_model ?? AiDefaults.model;
 
-    const batchAffected = await this.applyNormalizedResults({
+    const { affected: batchAffected } = await this.applyNormalizedResults({
       crawlRunId,
       sourceAgencyId: crawlRun.source_agency_id,
       crawlStartedAt: crawlRun.started_at,
@@ -833,7 +934,6 @@ export class PropertyNormalizationService {
       userTrackedAgencyId: crawlRun.user_tracked_agency_id ?? undefined,
       scraperId: crawlRun.scraper_id ?? undefined,
       affected: [...pendingAffected, ...batchAffected],
-      onSync,
     });
 
     await this.clearPendingCmsSyncAffected(crawlRunId);
@@ -877,7 +977,6 @@ export class PropertyNormalizationService {
     userTrackedAgencyId?: string;
     scraperId?: string;
     affected: SyncForPropertyResult[];
-    onSync?: CmsSyncCallback;
   }): Promise<void> {
     const removalStats = await this.detectRemovalsAndReappearances({
       crawlRunId: params.crawlRunId,
@@ -896,11 +995,143 @@ export class PropertyNormalizationService {
       return;
     }
 
-    if (!params.onSync) {
-      return;
-    }
+    await this.syncAfterNormalization({
+      crawlRunId: params.crawlRunId,
+      scraperId: params.scraperId,
+      affected: allAffected,
+    });
+  }
 
-    await params.onSync(allAffected);
+  // Consolidates what used to be an inline callback duplicated verbatim at
+  // both call sites (crawl.processor.ts and ai-batch-complete.processor.ts).
+  // Never rethrows — a CMS sync enqueue failure must not fail normalization
+  // or block the finalize step that calls this.
+  private async syncAfterNormalization(params: {
+    crawlRunId: string;
+    scraperId?: string;
+    affected: SyncForPropertyResult[];
+  }): Promise<void> {
+    try {
+      await this.cmsSyncOrchestratorService.planAndEnqueueCrawlSync(
+        params.crawlRunId,
+        params.affected.map(
+          (a): AffectedUserProperty => ({
+            user_property_id: a.user_property_id,
+            change_type: toCmsSyncOperationType(a.change_type),
+            user_property: undefined,
+          }),
+        ),
+      );
+    } catch (syncError) {
+      const message =
+        syncError instanceof Error ? syncError.message : String(syncError);
+      this.logger.error(
+        `Crawl ${params.crawlRunId}: CMS sync enqueue failed after normalization: ${message}`,
+      );
+      const crawlRun = await this.prisma.crawlRun.findUnique({
+        where: { id: params.crawlRunId },
+        select: {
+          source_agency_id: true,
+          source_agency: { select: { name: true } },
+        },
+      });
+      const agencyName = crawlRun?.source_agency?.name ?? 'Unknown agency';
+      this.notificationsService.create({
+        type: NotificationType.CMS_SYNC_FAILURE,
+        severity: NotificationSeverity.CRITICAL,
+        title: `CMS sync enqueue failed — ${agencyName}`,
+        message: `Crawl ${params.crawlRunId} for ${agencyName} normalized successfully but CMS sync enqueue failed: ${message}`,
+        source_agency_id: crawlRun?.source_agency_id,
+        scraper_id: params.scraperId,
+        crawl_run_id: params.crawlRunId,
+      });
+    }
+  }
+
+  // Called by NormalizationChunkProcessor exactly once, after the last chunk
+  // of a fanned-out crawl-run normalization has been accounted for (success
+  // or terminal failure). Mirrors what normalizeForCrawlRun's non-chunked
+  // branches do inline: detect removals, sync to CMS, flip
+  // normalization_status. Once chunk-processing moved out of the crawl job's
+  // own try/catch (crawl.processor.ts), this is the only place left that
+  // would see a finalize-time failure — so it has to create the same
+  // JobLog+notification pair crawl.processor.ts creates for an
+  // enqueue-time failure, or that visibility is lost again.
+  async finalizeNormalizationChunks(params: {
+    crawlRunId: string;
+    sourceAgencyId: string;
+    crawlStartedAt: Date;
+    userTrackedAgencyId?: string;
+    scraperId?: string;
+    affected: SyncForPropertyResult[];
+    createdCount: number;
+  }): Promise<void> {
+    try {
+      await this.finalizeCrawlNormalizationSync({
+        crawlRunId: params.crawlRunId,
+        sourceAgencyId: params.sourceAgencyId,
+        crawlStartedAt: params.crawlStartedAt,
+        userTrackedAgencyId: params.userTrackedAgencyId,
+        scraperId: params.scraperId,
+        affected: params.affected,
+      });
+
+      if (params.createdCount > 0) {
+        const crawlRun = await this.prisma.crawlRun.findUnique({
+          where: { id: params.crawlRunId },
+          select: { ai_total_cost: true },
+        });
+        if (crawlRun?.ai_total_cost) {
+          await this.prisma.crawlRun.update({
+            where: { id: params.crawlRunId },
+            data: {
+              ai_average_cost_per_property:
+                crawlRun.ai_total_cost.toNumber() / params.createdCount,
+            },
+          });
+        }
+      }
+
+      await this.setNormalizationStatus(params.crawlRunId, 'completed');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(
+        `Crawl run ${params.crawlRunId}: finalize after chunked normalization failed: ${message}`,
+      );
+
+      await this.setNormalizationStatus(params.crawlRunId, 'failed');
+      await this.prisma.crawlRun.update({
+        where: { id: params.crawlRunId },
+        data: { error_message: message },
+      });
+      await this.prisma.jobLog.create({
+        data: {
+          queue_name: NORMALIZATION_QUEUE,
+          job_name: 'normalize-finalize',
+          status: JobStatus.FAILED,
+          crawl_run_id: params.crawlRunId,
+          finished_at: new Date(),
+          error_message: message,
+          stack_trace: stack ?? null,
+        },
+      });
+
+      const crawlRun = await this.prisma.crawlRun.findUnique({
+        where: { id: params.crawlRunId },
+        select: { source_agency: { select: { name: true } } },
+      });
+      const agencyName = crawlRun?.source_agency?.name ?? 'Unknown agency';
+      this.notificationsService.create({
+        type: NotificationType.AI_NORMALIZATION_FAILURE,
+        severity: NotificationSeverity.CRITICAL,
+        title: 'Property normalization failed',
+        message: `Crawl ${params.crawlRunId} for ${agencyName}: failed while finalizing normalization: ${message}`,
+        source_agency_id: params.sourceAgencyId,
+        scraper_id: params.scraperId,
+        crawl_run_id: params.crawlRunId,
+      });
+    }
   }
 
   private dedupeAffected(
@@ -1217,6 +1448,167 @@ export class PropertyNormalizationService {
     return { rows: [], usage };
   }
 
+  // Per-chunk business logic for the NormalizationChunkProcessor. Happy path
+  // only — throws on any failure (key resolution, the AI call itself) so the
+  // processor can decide whether to let BullMQ retry the job or, on the
+  // terminal attempt, degrade to applyFallbackForChunk instead.
+  async processNormalizationChunk(
+    data: NormalizationChunkJobData,
+  ): Promise<{
+    item: NormalizationChunkItemResult;
+    affected: SyncForPropertyResult[];
+  }> {
+    const { apiKey } = await this.userIntegrationsService.resolveActiveApiKey(
+      data.tracker_user_id,
+      data.provider,
+    );
+
+    const rows = await this.prisma.sourceProperty.findMany({
+      where: { id: { in: data.source_property_ids } },
+    });
+    const sourceProperties = rows.map((row) => this.toSourcePropertyRow(row));
+
+    if (sourceProperties.length === 0) {
+      return {
+        item: this.emptyChunkResult(data.chunk_index, 'normalized'),
+        affected: [],
+      };
+    }
+
+    const providerKey =
+      data.provider === IntegrationType.OPENAI
+        ? AiProviders.openai
+        : AiProviders.gemini;
+
+    const { rows: aiRows, usage } = await this.normalizeOpenAiChunk(
+      sourceProperties,
+      providerKey,
+      data.model,
+      apiKey,
+    );
+
+    const matched = matchNormalizedRowsToIds(
+      sourceProperties.map((sp) => sp.id),
+      aiRows,
+    );
+
+    let fallbackCount = 0;
+    const normalizedBySourceId = new Map<string, NormalizedAiRow | null>();
+    for (const sp of sourceProperties) {
+      const matchedRow = matched.get(sp.id);
+      if (matchedRow) {
+        normalizedBySourceId.set(sp.id, matchedRow);
+      } else {
+        fallbackCount++;
+        normalizedBySourceId.set(sp.id, buildFallbackNormalizedRow(sp));
+      }
+    }
+
+    const { affected, createdCount } = await this.applyNormalizedResults({
+      crawlRunId: data.crawl_run_id,
+      sourceAgencyId: data.source_agency_id,
+      crawlStartedAt: new Date(data.crawl_started_at),
+      sourceProperties,
+      normalizedBySourceId,
+      model: data.model,
+      provider: data.provider,
+      openAiUsage: usage,
+      userTrackedAgencyId: data.user_tracked_agency_id,
+      contentHashChanged: true,
+      accumulateAiCost: true,
+    });
+
+    return {
+      item: {
+        chunk_index: data.chunk_index,
+        status: 'normalized',
+        normalized_count: sourceProperties.length - fallbackCount,
+        fallback_count: fallbackCount,
+        created_count: createdCount,
+        input_tokens: usage.inputTokens,
+        output_tokens: usage.outputTokens,
+      },
+      affected,
+    };
+  }
+
+  // Called only by the processor on a chunk's terminal BullMQ attempt, after
+  // processNormalizationChunk has thrown on every retry. Never throws itself
+  // — every property in the chunk still gets written via
+  // buildFallbackNormalizedRow so nothing is silently dropped, same
+  // graceful-degradation guarantee the old sequential loop had, just resolved
+  // at the job level instead of a nested per-property retry loop.
+  async applyFallbackForChunk(
+    data: NormalizationChunkJobData,
+    error: unknown,
+  ): Promise<{
+    item: NormalizationChunkItemResult;
+    affected: SyncForPropertyResult[];
+  }> {
+    const message = error instanceof Error ? error.message : String(error);
+    this.logger.error(
+      `Crawl ${data.crawl_run_id} chunk ${data.chunk_index}/${data.total_chunks}: normalization failed after retries, falling back to raw scraped data for ${data.source_property_ids.length} propert(y/ies): ${message}`,
+    );
+
+    const rows = await this.prisma.sourceProperty.findMany({
+      where: { id: { in: data.source_property_ids } },
+    });
+    const sourceProperties = rows.map((row) => this.toSourcePropertyRow(row));
+
+    if (sourceProperties.length === 0) {
+      return {
+        item: { ...this.emptyChunkResult(data.chunk_index, 'failed'), error: message },
+        affected: [],
+      };
+    }
+
+    const normalizedBySourceId = new Map<string, NormalizedAiRow | null>(
+      sourceProperties.map((sp) => [sp.id, buildFallbackNormalizedRow(sp)]),
+    );
+
+    const { affected, createdCount } = await this.applyNormalizedResults({
+      crawlRunId: data.crawl_run_id,
+      sourceAgencyId: data.source_agency_id,
+      crawlStartedAt: new Date(data.crawl_started_at),
+      sourceProperties,
+      normalizedBySourceId,
+      model: data.model,
+      provider: data.provider,
+      userTrackedAgencyId: data.user_tracked_agency_id,
+      contentHashChanged: true,
+      accumulateAiCost: true,
+    });
+
+    return {
+      item: {
+        chunk_index: data.chunk_index,
+        status: 'failed',
+        normalized_count: 0,
+        fallback_count: sourceProperties.length,
+        created_count: createdCount,
+        input_tokens: 0,
+        output_tokens: 0,
+        error: message,
+      },
+      affected,
+    };
+  }
+
+  private emptyChunkResult(
+    chunkIndex: number,
+    status: NormalizationChunkItemResult['status'],
+  ): NormalizationChunkItemResult {
+    return {
+      chunk_index: chunkIndex,
+      status,
+      normalized_count: 0,
+      fallback_count: 0,
+      created_count: 0,
+      input_tokens: 0,
+      output_tokens: 0,
+    };
+  }
+
   private async detectRemovalsAndReappearances(params: {
     crawlRunId: string;
     sourceAgencyId: string;
@@ -1392,6 +1784,11 @@ export class PropertyNormalizationService {
     isBatch?: boolean;
     userId?: string | null;
     userPropertyId?: string | null;
+    // When true, increment the crawl run's cost columns instead of
+    // overwriting them (this call is one of several chunks contributing to
+    // the same run) and skip ai_average_cost_per_property, which isn't
+    // additive — the caller computes it once, after every chunk is in.
+    accumulate?: boolean;
   }): Promise<void> {
     if (
       params.provider === IntegrationType.ANTHROPIC &&
@@ -1453,18 +1850,27 @@ export class PropertyNormalizationService {
       if (params.crawlRunId) {
         await this.prisma.crawlRun.update({
           where: { id: params.crawlRunId },
-          data: {
-            ai_model: params.model,
-            ai_input_tokens: cost.inputTokens,
-            ai_output_tokens: cost.outputTokens,
-            ai_input_cost: cost.inputCost,
-            ai_output_cost: cost.outputCost,
-            ai_total_cost: cost.totalCost,
-            ai_average_cost_per_property:
-              params.createdCount > 0
-                ? cost.totalCost / params.createdCount
-                : null,
-          },
+          data: params.accumulate
+            ? {
+                ai_model: params.model,
+                ai_input_tokens: { increment: cost.inputTokens },
+                ai_output_tokens: { increment: cost.outputTokens },
+                ai_input_cost: { increment: cost.inputCost },
+                ai_output_cost: { increment: cost.outputCost },
+                ai_total_cost: { increment: cost.totalCost },
+              }
+            : {
+                ai_model: params.model,
+                ai_input_tokens: cost.inputTokens,
+                ai_output_tokens: cost.outputTokens,
+                ai_input_cost: cost.inputCost,
+                ai_output_cost: cost.outputCost,
+                ai_total_cost: cost.totalCost,
+                ai_average_cost_per_property:
+                  params.createdCount > 0
+                    ? cost.totalCost / params.createdCount
+                    : null,
+              },
         });
       }
 

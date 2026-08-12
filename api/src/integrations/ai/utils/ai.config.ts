@@ -13,6 +13,11 @@ export const AiDefaults = {
   model: AiModels.openai.gpt4oMini,
 } as const;
 
+// Comfortably covers a real structured-output response for a small chunk of
+// properties, while still failing fast enough that a few retries with
+// exponential backoff finish in well under 10 minutes.
+export const DEFAULT_AI_REQUEST_TIMEOUT_MS = 90_000;
+
 @Injectable()
 export class AiConfig {
   private readonly supportedModels: AIModelInfo[] = [

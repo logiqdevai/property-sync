@@ -13,6 +13,7 @@ export interface AIGenerateOptions {
   topP?: number;
   frequencyPenalty?: number;
   presencePenalty?: number;
+  timeoutMs?: number;
 }
 
 export interface AIGenerateTextResponse {

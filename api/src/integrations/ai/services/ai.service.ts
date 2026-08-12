@@ -6,7 +6,7 @@ import {
   AIGenerateTextResponse,
   AIStreamTextOptions,
 } from '../interfaces/ai.interface';
-import { AiConfig } from '../utils/ai.config';
+import { AiConfig, DEFAULT_AI_REQUEST_TIMEOUT_MS } from '../utils/ai.config';
 import { z } from 'zod';
 import { openai } from '@ai-sdk/openai';
 import { calculateAiCost } from '../utils/ai-cost';
@@ -38,6 +38,9 @@ export class AiService {
         topP: options.topP,
         frequencyPenalty: options.frequencyPenalty,
         presencePenalty: options.presencePenalty,
+        abortSignal: AbortSignal.timeout(
+          options.timeoutMs ?? DEFAULT_AI_REQUEST_TIMEOUT_MS,
+        ),
       });
 
       const cost = calculateAiCost({
