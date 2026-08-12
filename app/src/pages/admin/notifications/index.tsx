@@ -45,6 +45,7 @@ import type { SendTelegramTestFormValues } from "@/features/notifications/valida
 import { NotificationTypeFilterOptions } from "@/config/constants/dropdowns/notifications/notification-type-filter.options";
 import { NotificationSeverityFilterOptions } from "@/config/constants/dropdowns/notifications/notification-severity-filter.options";
 import { ReadFilterOptions } from "@/config/constants/dropdowns/notifications/read-filter.options";
+import { cn } from "@/lib/utils";
 
 function resolveNotificationLink(notification: Notification): string | null {
   if (notification.source_agency_id) {
@@ -301,6 +302,7 @@ export default function NotificationsListPage() {
                   <Table.Body>
                     {notifications.map((notification) => {
                       const link = resolveNotificationLink(notification);
+                      const isUnread = !notification.is_read;
 
                       return (
                         <Table.Row key={notification.id} id={notification.id}>
@@ -322,18 +324,36 @@ export default function NotificationsListPage() {
                               {link ? (
                                 <Link
                                   to={link}
-                                  className="font-medium text-foreground hover:text-accent transition-colors"
+                                  className={cn(
+                                    "hover:text-accent transition-colors",
+                                    isUnread
+                                      ? "font-bold text-foreground"
+                                      : "font-normal text-muted",
+                                  )}
                                 >
                                   {notification.title}
                                 </Link>
                               ) : (
-                                <span className="font-medium text-foreground">{notification.title}</span>
+                                <span
+                                  className={cn(
+                                    isUnread
+                                      ? "font-bold text-foreground"
+                                      : "font-normal text-muted",
+                                  )}
+                                >
+                                  {notification.title}
+                                </span>
                               )}
                               <div className="flex items-start gap-1">
                                 <button
                                   type="button"
                                   onClick={() => openNotificationDetail(notification)}
-                                  className="text-left text-xs text-muted line-clamp-2 hover:text-foreground transition-colors cursor-pointer"
+                                  className={cn(
+                                    "text-left text-xs line-clamp-2 hover:text-foreground transition-colors cursor-pointer",
+                                    isUnread
+                                      ? "font-semibold text-foreground/80"
+                                      : "font-normal text-muted",
+                                  )}
                                 >
                                   {notification.message}
                                 </button>
@@ -356,11 +376,22 @@ export default function NotificationsListPage() {
                           <Table.Cell>
                             <NotificationSeverityChip severity={notification.severity} />
                           </Table.Cell>
-                          <Table.Cell className="text-sm text-muted whitespace-nowrap">
+                          <Table.Cell
+                            className={cn(
+                              "text-sm whitespace-nowrap",
+                              isUnread ? "font-semibold text-foreground" : "text-muted",
+                            )}
+                          >
                             {formatTimestamp(notification.created_at)}
                           </Table.Cell>
                           <Table.Cell>
-                            <span className={notification.is_read ? "text-muted" : "text-foreground font-medium"}>
+                            <span
+                              className={cn(
+                                isUnread
+                                  ? "font-bold text-foreground"
+                                  : "font-normal text-muted",
+                              )}
+                            >
                               {notification.is_read ? "Read" : "Unread"}
                             </span>
                           </Table.Cell>
