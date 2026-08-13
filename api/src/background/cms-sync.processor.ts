@@ -22,7 +22,10 @@ import {
 } from 'generated/prisma';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { EstateWebException } from '@/integrations/estateweb/exceptions/estateweb.exception';
-import { isNotFoundEstateWebError } from '@/integrations/estateweb/utils/estateweb-error.util';
+import {
+  formatEstateWebError,
+  isNotFoundEstateWebError,
+} from '@/integrations/estateweb/utils/estateweb-error.util';
 import {
   EstateWebPropertyCatalog,
   EstateWebPropertyReconciliationService,
@@ -622,19 +625,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
 
   private extractErrorMessage(error: unknown): string {
     if (error instanceof EstateWebException) {
-      const response = error.getResponse();
-      const bodyMessage =
-        typeof response === 'object' &&
-        response !== null &&
-        'message' in response &&
-        typeof (response as { message: unknown }).message === 'string'
-          ? (response as { message: string }).message
-          : error.message;
-      const details =
-        error.details && Object.keys(error.details).length > 0
-          ? ` details=${JSON.stringify(error.details)}`
-          : '';
-      return `${error.code}: ${bodyMessage}${details}`;
+      return `${error.code}: ${formatEstateWebError(error)}`;
     }
 
     if (error instanceof HttpException) {

@@ -4,11 +4,11 @@ import { EstateWebException } from '../exceptions/estateweb.exception';
 
 export function formatEstateWebError(error: unknown): string {
   if (error instanceof EstateWebException) {
-    const parts = [error.message, `type=${error.code}`];
-    if (error.details && Object.keys(error.details).length > 0) {
-      parts.push(`details=${JSON.stringify(error.details)}`);
+    const body = error.details?.body;
+    if (typeof body === 'string' && body.trim().length > 0) {
+      return `${error.message} | body=${body}`;
     }
-    return parts.join(' | ');
+    return error.message;
   }
 
   if (error instanceof HttpException) {
@@ -44,6 +44,14 @@ export function extractEstateWebNotificationType(
   return undefined;
 }
 
+export function extractUpstreamStatus(error: unknown): number | undefined {
+  if (!(error instanceof EstateWebException)) {
+    return undefined;
+  }
+  const upstream = error.details?.upstreamStatus;
+  return typeof upstream === 'number' ? upstream : undefined;
+}
+
 export function mapFetchError(
   error: unknown,
   context: { method: string; path: string },
@@ -59,7 +67,7 @@ export function mapFetchError(
       `EstateWeb ${context.method} ${context.path} timed out`,
       NotificationType.ESTATEWEB_REQUEST_TIMEOUT,
       HttpStatus.REQUEST_TIMEOUT,
-      context,
+      { ...context },
     );
   }
 
@@ -67,7 +75,7 @@ export function mapFetchError(
     `EstateWeb ${context.method} ${context.path} network error: ${message}`,
     NotificationType.ESTATEWEB_NETWORK_ERROR,
     HttpStatus.BAD_GATEWAY,
-    context,
+    { ...context },
   );
 }
 
@@ -77,60 +85,62 @@ export function mapHttpStatusToException(
   path: string,
   errorBody: string,
 ): EstateWebException {
-  const context = { method, path, status };
+  const truncatedBody = truncateBody(errorBody);
+  const details = buildUpstreamDetails(method, path, status, truncatedBody);
+  const emptyBodySuffix = truncatedBody.trim() ? '' : ' (empty body)';
 
   if (status === 401 || status === 403) {
     return new EstateWebException(
-      `EstateWeb session is not authorized (${status})`,
+      `EstateWeb auth rejected HTTP ${status} on ${method} ${path}${emptyBodySuffix}`,
       status === 401
         ? NotificationType.ESTATEWEB_SESSION_EXPIRED
         : NotificationType.ESTATEWEB_UNAUTHORIZED,
       status === 401 ? HttpStatus.UNAUTHORIZED : HttpStatus.FORBIDDEN,
-      { ...context, body: truncateBody(errorBody) },
+      details,
     );
   }
 
   if (status === 404) {
     return new EstateWebException(
-      `EstateWeb resource not found: ${method} ${path}`,
+      `EstateWeb resource not found HTTP 404 on ${method} ${path}${emptyBodySuffix}`,
       NotificationType.ESTATEWEB_NOT_FOUND,
       HttpStatus.NOT_FOUND,
-      { ...context, body: truncateBody(errorBody) },
+      details,
     );
   }
 
   if (status === 408 || status === 504) {
     return new EstateWebException(
-      `EstateWeb request timed out (${status})`,
+      `EstateWeb timed out HTTP ${status} on ${method} ${path}${emptyBodySuffix}`,
       NotificationType.ESTATEWEB_REQUEST_TIMEOUT,
       HttpStatus.REQUEST_TIMEOUT,
-      { ...context, body: truncateBody(errorBody) },
+      details,
     );
   }
 
   if (status === 429) {
     return new EstateWebException(
-      'EstateWeb rate limit exceeded',
+      `EstateWeb rate limited HTTP 429 on ${method} ${path}${emptyBodySuffix}`,
       NotificationType.ESTATEWEB_RATE_LIMITED,
       HttpStatus.TOO_MANY_REQUESTS,
-      { ...context, body: truncateBody(errorBody) },
+      details,
     );
   }
 
   if (status >= 500) {
     return new EstateWebException(
-      `EstateWeb server error (${status})`,
+      `EstateWeb upstream HTTP ${status} on ${method} ${path}${emptyBodySuffix}`,
       NotificationType.ESTATEWEB_SERVER_ERROR,
       HttpStatus.BAD_GATEWAY,
-      { ...context, body: truncateBody(errorBody) },
+      details,
     );
   }
 
   return new EstateWebException(
-    `EstateWeb API ${method} ${path} failed with ${status}: ${truncateBody(errorBody)}`,
+    `EstateWeb API rejected HTTP ${status} on ${method} ${path}${emptyBodySuffix}`,
     NotificationType.ESTATEWEB_API_ERROR,
     HttpStatus.BAD_REQUEST,
-    { ...context, body: truncateBody(errorBody) },
+    details,
   );
 }
 
@@ -150,6 +160,23 @@ export function isNotFoundEstateWebError(error: unknown): boolean {
     error instanceof EstateWebException &&
     error.code === NotificationType.ESTATEWEB_NOT_FOUND
   );
+}
+
+function buildUpstreamDetails(
+  method: string,
+  path: string,
+  upstreamStatus: number,
+  body: string,
+): Record<string, unknown> {
+  const details: Record<string, unknown> = {
+    method,
+    path,
+    upstreamStatus,
+  };
+  if (body.trim().length > 0) {
+    details.body = body;
+  }
+  return details;
 }
 
 function truncateBody(body: string, maxLength = 500): string {

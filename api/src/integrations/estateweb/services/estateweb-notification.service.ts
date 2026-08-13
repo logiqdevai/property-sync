@@ -6,6 +6,7 @@ import { EstateWebException } from '../exceptions/estateweb.exception';
 import { EstateWebErrorContext } from '../interfaces/estateweb-notification.interface';
 import {
   extractEstateWebNotificationType,
+  extractUpstreamStatus,
   formatEstateWebError,
 } from '../utils/estateweb-error.util';
 
@@ -36,22 +37,27 @@ export class EstateWebNotificationService {
     error: unknown,
   ): Promise<void> {
     try {
-      const sourceAgencyId =
-        context.sourceAgencyId ??
-        (await this.resolveSourceAgencyId(context.userIntegrationId));
+      const agency =
+        context.sourceAgencyId || context.agencyName
+          ? {
+              id: context.sourceAgencyId,
+              name: context.agencyName,
+            }
+          : await this.resolveAgency(context.userIntegrationId);
 
-      const message = this.buildMessage(context, error);
       const notificationType =
         context.notificationType ??
         extractEstateWebNotificationType(error) ??
         NotificationType.ESTATEWEB_API_ERROR;
+      const upstreamStatus =
+        context.upstreamStatus ?? extractUpstreamStatus(error);
 
       this.notificationsService.create({
         type: notificationType,
         severity: this.resolveSeverity(notificationType),
-        title: this.buildTitle(context, notificationType),
-        message,
-        ...(sourceAgencyId ? { source_agency_id: sourceAgencyId } : {}),
+        title: this.buildTitle(context.operation, notificationType, upstreamStatus),
+        message: this.buildMessage(context, error, agency, upstreamStatus),
+        ...(agency?.id ? { source_agency_id: agency.id } : {}),
       });
     } catch (publishError) {
       const message =
@@ -63,33 +69,51 @@ export class EstateWebNotificationService {
   }
 
   private buildTitle(
-    context: EstateWebErrorContext,
+    operation: string,
     notificationType: NotificationType,
+    upstreamStatus?: number,
   ): string {
-    return `EstateWeb ${context.operation} failed (${notificationType})`;
+    if (upstreamStatus !== undefined) {
+      return `EstateWeb ${operation} failed (HTTP ${upstreamStatus})`;
+    }
+    return `EstateWeb ${operation} failed (${notificationType})`;
   }
 
-  private buildMessage(context: EstateWebErrorContext, error: unknown): string {
+  private buildMessage(
+    context: EstateWebErrorContext,
+    error: unknown,
+    agency: { id?: string; name?: string } | undefined,
+    upstreamStatus?: number,
+  ): string {
     const parts = [formatEstateWebError(error)];
+    const isEstateWebException = error instanceof EstateWebException;
+
+    if (agency?.name) {
+      parts.push(`agency=${agency.name}`);
+    }
 
     if (context.userIntegrationId) {
       parts.push(`integration=${context.userIntegrationId}`);
     }
 
-    if (context.method) {
-      parts.push(`method=${context.method}`);
+    if (!isEstateWebException) {
+      if (context.method) {
+        parts.push(`method=${context.method}`);
+      }
+      if (context.path) {
+        parts.push(`path=${context.path}`);
+      }
     }
 
-    if (context.path) {
-      parts.push(`path=${context.path}`);
-    }
-
-    if (context.statusCode !== undefined) {
-      parts.push(`status=${context.statusCode}`);
+    if (
+      upstreamStatus !== undefined &&
+      !isEstateWebException
+    ) {
+      parts.push(`upstreamStatus=${upstreamStatus}`);
     }
 
     if (context.propertyId !== undefined) {
-      parts.push(`propertyId=${context.propertyId}`);
+      parts.push(`estatewebPropertyId=${context.propertyId}`);
     }
 
     return parts.join(' | ');
@@ -121,9 +145,9 @@ export class EstateWebNotificationService {
     }
   }
 
-  private async resolveSourceAgencyId(
+  private async resolveAgency(
     userIntegrationId?: string,
-  ): Promise<string | undefined> {
+  ): Promise<{ id?: string; name?: string } | undefined> {
     if (!userIntegrationId) {
       return undefined;
     }
@@ -132,11 +156,23 @@ export class EstateWebNotificationService {
       where: { user_integration_id: userIntegrationId },
       select: {
         user_tracked_agency: {
-          select: { source_agency_id: true },
+          select: {
+            source_agency_id: true,
+            source_agency: { select: { name: true } },
+          },
         },
       },
     });
 
-    return link?.user_tracked_agency.source_agency_id;
+    const sourceAgencyId = link?.user_tracked_agency.source_agency_id;
+    const name = link?.user_tracked_agency.source_agency?.name;
+    if (!sourceAgencyId && !name) {
+      return undefined;
+    }
+
+    return {
+      id: sourceAgencyId,
+      name,
+    };
   }
 }

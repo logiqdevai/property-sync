@@ -186,8 +186,11 @@ export class EstateWebClientService {
     method: string,
     error: unknown,
   ) {
-    const statusCode =
-      error instanceof EstateWebException ? error.getStatus() : undefined;
+    const upstreamStatus =
+      error instanceof EstateWebException &&
+      typeof error.details?.upstreamStatus === 'number'
+        ? error.details.upstreamStatus
+        : undefined;
 
     return {
       userIntegrationId,
@@ -195,7 +198,7 @@ export class EstateWebClientService {
       path: options.path,
       method,
       propertyId: options.propertyId,
-      statusCode,
+      upstreamStatus,
       notificationType:
         error instanceof EstateWebException ? error.code : undefined,
     };
