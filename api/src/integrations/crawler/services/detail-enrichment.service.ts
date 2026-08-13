@@ -13,6 +13,7 @@ import {
 } from '../interfaces/scraper-config.interface';
 import { BlockHandlingConfig } from '../block-handling/block-handling.interface';
 import { waitForBotChallengeClearance } from '../block-handling/block-handling.utils';
+import { isDetailPageRedirectAway } from '../utils/crawler.utils';
 import { StealthBrowserService } from './stealth-browser.service';
 
 interface DetailEnrichmentResult {
@@ -28,6 +29,7 @@ interface DetailEnrichmentResult {
   longitude: number | null;
   raw_html_path: string | null;
   error?: string;
+  excludeFromCrawl?: boolean;
 }
 
 export interface DetailEnrichmentOptions {
@@ -87,6 +89,9 @@ export class DetailEnrichmentService {
         const detail = results[j];
         if (detail.error) {
           item.raw._detail_enrichment_error = detail.error;
+          if (detail.excludeFromCrawl) {
+            item.raw._crawl_exclude = true;
+          }
           this.logger.warn(
             `Detail enrichment skipped for ${item.source_url}: ${detail.error}`,
           );
@@ -197,6 +202,15 @@ export class DetailEnrichmentService {
 
       if (response && !response.ok()) {
         return { ...empty, error: `HTTP ${response.status()}` };
+      }
+
+      const finalUrl = page.url();
+      if (isDetailPageRedirectAway(item.source_url, finalUrl)) {
+        return {
+          ...empty,
+          error: `redirected away from listing to ${finalUrl}`,
+          excludeFromCrawl: true,
+        };
       }
 
       const extracted = await page.evaluate((cfg) => {

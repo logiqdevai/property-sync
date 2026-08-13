@@ -247,9 +247,14 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
 
       for (const item of crawlResult.items) {
         if (seenUrls.has(item.source_url)) continue;
-        seenUrls.add(item.source_url);
 
         const raw = item.raw ?? {};
+        if (raw._crawl_exclude === true) {
+          continue;
+        }
+
+        seenUrls.add(item.source_url);
+
         const denormalized = extractDenormalizedRawFields(raw);
         const { property_id: propertyId, internal_id: internalId } =
           extractSourcePropertyIds(item.source_url, raw);

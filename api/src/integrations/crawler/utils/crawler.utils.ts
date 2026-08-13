@@ -44,6 +44,41 @@ export function extractInternalIdFromText(
   return null;
 }
 
+export function normalizeUrlPath(pathname: string): string {
+  const trimmed = pathname.replace(/\/+$/, '');
+  return trimmed.length > 0 ? trimmed : '/';
+}
+
+export function isDetailPageRedirectAway(
+  sourceUrl: string,
+  finalUrl: string,
+): boolean {
+  try {
+    const source = new URL(sourceUrl);
+    const final = new URL(finalUrl);
+    if (source.origin !== final.origin) {
+      return true;
+    }
+
+    const sourcePath = normalizeUrlPath(source.pathname);
+    const finalPath = normalizeUrlPath(final.pathname);
+    if (sourcePath === finalPath) {
+      return false;
+    }
+
+    const sourceRoot = sourcePath.split('/').filter(Boolean)[0];
+    const finalRoot = finalPath.split('/').filter(Boolean)[0];
+
+    if (sourceRoot === 'property' && finalRoot !== 'property') {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 export function readDetailStructured(rawData: unknown): {
   specs: Record<string, string> | null;
   features: string[] | null;
