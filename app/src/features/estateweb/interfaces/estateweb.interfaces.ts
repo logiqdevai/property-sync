@@ -45,9 +45,25 @@ export type EstateWebAdminIntegration = {
   baseUrl: string;
 };
 
-export type EstateWebBulkSitesUpdateResult = {
+export type EstateWebBulkSitesEnqueueResult = {
+  job_log_id: string;
+  enqueued: number;
+  failed: Array<{ code: string; error: string }>;
+  message: string;
+};
+
+export type EstateWebBulkSitesByCodesItemResult = {
   code: string;
-  propertyId: number | null;
-  success: boolean;
+  property_id: number | null;
+  status: "updated" | "failed";
   error?: string;
+};
+
+export type EstateWebBulkSitesByCodesJobResult = {
+  total: number;
+  processed: number;
+  updated: number;
+  failed: number;
+  items: EstateWebBulkSitesByCodesItemResult[];
+  logs?: string[];
 };

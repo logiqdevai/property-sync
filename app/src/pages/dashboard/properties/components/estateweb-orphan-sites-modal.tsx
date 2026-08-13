@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { ListBox, Modal, Select, Skeleton, TextArea, useOverlayState } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { EstateWebPushSitesList } from "@/components/ui/estateweb-push-sites-list";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
+import { Routes } from "@/routes/routes";
 import type { EstateWebPushSiteSetting } from "@/features/estateweb/interfaces/estateweb-integration-settings.interfaces";
-import type { EstateWebBulkSitesUpdateResult } from "@/features/estateweb/interfaces/estateweb.interfaces";
+import type { EstateWebBulkSitesByCodesJobResult } from "@/features/estateweb/interfaces/estateweb.interfaces";
 import {
   useAvailableIntegrationTargets,
   useUserIntegrationSettings,
@@ -13,10 +15,12 @@ import {
   useBulkUpdateEstateWebPropertySites,
   useEstateWebAdminIntegrations,
 } from "@/features/estateweb/hooks/use-estateweb";
+import { useJob } from "@/features/jobs/hooks/use-jobs";
 
 export type EstateWebOrphanSitesModalState = ReturnType<typeof useOverlayState>;
 
 const NONE_SELECTED = "";
+const ACTIVE_JOB_STATUSES = new Set(["WAITING", "ACTIVE", "DELAYED", "PAUSED"]);
 
 function integrationLabel(integration: { userEmail: string; email: string | null }) {
   return integration.email
@@ -44,7 +48,7 @@ export function EstateWebOrphanSitesModal({
   const [codesInput, setCodesInput] = useState("");
   const [sites, setSites] = useState<EstateWebPushSiteSetting[]>([]);
   const [hydrated, setHydrated] = useState(false);
-  const [results, setResults] = useState<EstateWebBulkSitesUpdateResult[] | null>(null);
+  const [jobLogId, setJobLogId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!state.isOpen) {
@@ -52,7 +56,7 @@ export function EstateWebOrphanSitesModal({
       setCodesInput("");
       setSites([]);
       setHydrated(false);
-      setResults(null);
+      setJobLogId(null);
     }
   }, [state.isOpen]);
 
@@ -84,6 +88,9 @@ export function EstateWebOrphanSitesModal({
   }, [state.isOpen, hasIntegration, settings, settingsPending, settingsTargetId, hydrated]);
 
   const bulkUpdateSites = useBulkUpdateEstateWebPropertySites();
+  const { data: job } = useJob(jobLogId ?? "");
+  const jobResult = job?.result as EstateWebBulkSitesByCodesJobResult | undefined;
+  const jobIsActive = !!job && ACTIVE_JOB_STATUSES.has(job.status);
 
   const isLoadingSites =
     hasIntegration &&
@@ -94,20 +101,19 @@ export function EstateWebOrphanSitesModal({
 
   const handleApply = () => {
     if (codes.length === 0 || !hasIntegration) return;
-    setResults(null);
     bulkUpdateSites.mutate(
       {
         userIntegrationId: selectedIntegrationId,
         codes,
         sites: sites.filter((site) => site.selected),
       },
-      { onSuccess: setResults },
+      { onSuccess: (result) => setJobLogId(result.job_log_id) },
     );
   };
 
   return (
     <Modal state={state}>
-      <Modal.Backdrop isDismissable={!bulkUpdateSites.isPending}>
+      <Modal.Backdrop isDismissable={!jobIsActive}>
         <Modal.Container>
           <Modal.Dialog className="max-w-2xl w-full">
             <Modal.Header>
@@ -119,7 +125,8 @@ export function EstateWebOrphanSitesModal({
                   Pick an EstateWeb connection, paste in the property "code" values you want to
                   manage (one per line, or comma/space separated), then choose which sites those
                   properties should be published to. Useful for disabling the sites of orphaned
-                  duplicate EstateWeb properties that have no matching record in our system.
+                  duplicate EstateWeb properties that have no matching record in our system. Runs
+                  in the background since this can touch hundreds of properties.
                 </p>
 
                 <div className="flex flex-col gap-1">
@@ -128,7 +135,7 @@ export function EstateWebOrphanSitesModal({
                     aria-label="Select EstateWeb integration"
                     selectedKey={selectedIntegrationId}
                     onSelectionChange={(key) => setSelectedIntegrationId(String(key))}
-                    isDisabled={integrationsPending || bulkUpdateSites.isPending}
+                    isDisabled={integrationsPending || !!jobLogId}
                   >
                     <Select.Trigger>
                       <Select.Value />
@@ -149,7 +156,7 @@ export function EstateWebOrphanSitesModal({
                   </Select>
                 </div>
 
-                {hasIntegration ? (
+                {hasIntegration && !jobLogId ? (
                   <div className="flex flex-col gap-1">
                     <span className="text-sm font-medium text-foreground">
                       EstateWeb property codes
@@ -160,12 +167,11 @@ export function EstateWebOrphanSitesModal({
                       onChange={(event) => setCodesInput(event.target.value)}
                       placeholder={"4215\n4212\n4209"}
                       rows={5}
-                      disabled={bulkUpdateSites.isPending}
                     />
                   </div>
                 ) : null}
 
-                {hasIntegration ? (
+                {hasIntegration && !jobLogId ? (
                   <div className="flex flex-col gap-2">
                     <span className="text-sm font-medium text-foreground">
                       Site placements to apply
@@ -184,27 +190,54 @@ export function EstateWebOrphanSitesModal({
                         sites={sites}
                         onChange={setSites}
                         mode="select"
-                        isDisabled={bulkUpdateSites.isPending}
                         emptyLabel="No EstateWeb sites configured. Add them in Integrations → EstateWeb CMS Configuration."
                       />
                     )}
                   </div>
                 ) : null}
 
-                {results ? (
-                  <div className="flex flex-col gap-1 rounded-xl border border-border p-3">
-                    <span className="text-sm font-medium text-foreground">Results</span>
-                    {results.map((result) => (
-                      <div
-                        key={result.code}
-                        className="flex items-center justify-between gap-2 text-sm"
+                {jobLogId ? (
+                  <div className="flex flex-col gap-2 rounded-xl border border-border p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-foreground">
+                        {jobIsActive ? "Running in the background…" : "Finished"}
+                      </span>
+                      <Link
+                        to={Routes.admin.jobs.detail(jobLogId)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm text-accent hover:underline"
                       >
-                        <span className="font-mono text-foreground">{result.code}</span>
-                        <span className={result.success ? "text-success" : "text-danger"}>
-                          {result.success ? "Updated" : result.error || "Failed"}
-                        </span>
-                      </div>
-                    ))}
+                        View in Job queue
+                      </Link>
+                    </div>
+                    {jobResult ? (
+                      <>
+                        <p className="text-sm text-muted">
+                          {jobResult.processed} of {jobResult.total} processed —{" "}
+                          {jobResult.updated} updated, {jobResult.failed} failed
+                        </p>
+                        <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
+                          {jobResult.items.map((item) => (
+                            <div
+                              key={item.code}
+                              className="flex items-center justify-between gap-2 text-sm"
+                            >
+                              <span className="font-mono text-foreground">{item.code}</span>
+                              <span
+                                className={
+                                  item.status === "updated" ? "text-success" : "text-danger"
+                                }
+                              >
+                                {item.status === "updated" ? "Updated" : item.error || "Failed"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted">Starting…</p>
+                    )}
                   </div>
                 ) : null}
               </div>
@@ -214,18 +247,20 @@ export function EstateWebOrphanSitesModal({
                 type="button"
                 variant="secondary"
                 onPress={() => state.close()}
-                isDisabled={bulkUpdateSites.isPending}
+                isDisabled={jobIsActive}
               >
                 Close
               </ActionButtonWithPending>
-              <ActionButtonWithPending
-                type="button"
-                onPress={handleApply}
-                isPending={bulkUpdateSites.isPending}
-                isDisabled={!hasIntegration || codes.length === 0 || isLoadingSites}
-              >
-                Apply to {codes.length} code{codes.length === 1 ? "" : "s"}
-              </ActionButtonWithPending>
+              {!jobLogId ? (
+                <ActionButtonWithPending
+                  type="button"
+                  onPress={handleApply}
+                  isPending={bulkUpdateSites.isPending}
+                  isDisabled={!hasIntegration || codes.length === 0 || isLoadingSites}
+                >
+                  Apply to {codes.length} code{codes.length === 1 ? "" : "s"}
+                </ActionButtonWithPending>
+              ) : null}
             </Modal.Footer>
           </Modal.Dialog>
         </Modal.Container>

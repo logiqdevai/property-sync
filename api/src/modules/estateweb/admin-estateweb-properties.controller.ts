@@ -209,7 +209,7 @@ export class AdminEstateWebPropertiesController {
     @Param('userIntegrationId') userIntegrationId: string,
     @Body() dto: AdminEstateWebBulkUpdateSitesDto,
   ) {
-    return this.adminEstateWebPropertiesService.bulkUpdatePropertySitesByCodes(
+    return this.adminEstateWebPropertiesService.enqueueBulkUpdatePropertySitesByCodes(
       userIntegrationId,
       dto.codes,
       dto.sites,

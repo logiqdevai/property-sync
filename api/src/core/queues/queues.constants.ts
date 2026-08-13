@@ -9,6 +9,7 @@ export const CONTENT_PRODUCTION_QUEUE = 'content-production';
 export const SALES_PRICE_UPDATE_QUEUE = 'sales-price-update';
 export const CRM_CLIENT_NOTES_SYNC_QUEUE = 'crm-client-notes-sync';
 export const ESTATEWEB_SITES_UPDATE_QUEUE = 'estateweb-sites-update';
+export const ESTATEWEB_BULK_SITES_BY_CODES_QUEUE = 'estateweb-bulk-sites-by-codes';
 export const RENORMALIZATION_QUEUE = 'renormalization';
 export const NORMALIZATION_QUEUE = 'normalization';
 export const DELETE_INTEGRATION_IMAGES_QUEUE = 'delete-integration-images';

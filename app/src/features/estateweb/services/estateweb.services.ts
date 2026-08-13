@@ -3,7 +3,7 @@ import { ApiRoutes } from "@/config/api/routes";
 import type { EstateWebPushSiteSetting } from "../interfaces/estateweb-integration-settings.interfaces";
 import type {
   EstateWebAdminIntegration,
-  EstateWebBulkSitesUpdateResult,
+  EstateWebBulkSitesEnqueueResult,
   EstateWebDuplicatePropertyGroup,
   EstateWebFlatCatalogItem,
   EstateWebLocationCatalogItem,
@@ -133,7 +133,7 @@ export const bulkUpdateEstateWebPropertySites = async (
   userIntegrationId: string,
   codes: string[],
   sites: EstateWebPushSiteSetting[],
-): Promise<EstateWebBulkSitesUpdateResult[]> => {
+): Promise<EstateWebBulkSitesEnqueueResult> => {
   try {
     const response = await axiosInstance.post(
       ApiRoutes.admin.estateweb.bulkUpdateSites(userIntegrationId),
