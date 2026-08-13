@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Languages, NotebookPen, Pencil, Percent, RefreshCw, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
+import { Images, Languages, NotebookPen, Pencil, Percent, RefreshCw, Scissors, Sparkles, Unlink, Upload, X, ExternalLink, Globe } from "lucide-react";
 import { Button, useOverlayState } from "@heroui/react";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
-import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
+import type { TableRowAction, TableRowActionEntry } from "@/components/ui/table-row-actions-menu";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { PropertyDetailView } from "@/components/ui/property-detail-view";
@@ -262,17 +262,18 @@ export default function DashboardPropertyDetailPage() {
 
   const isAdmin = role === RoleTypes.ADMIN || role === RoleTypes.SUPER_ADMIN;
 
-  const headerActions = useMemo<TableRowAction[]>(() => {
+  const headerActions = useMemo<TableRowActionEntry[]>(() => {
     if (!property) return [];
 
     const crmUrl = property.integration_property_id
       ? getCrmPropertyAppUrl(property.integration_property_id)
       : null;
+    const hasIntegration = Boolean(property.integration_property_id);
 
-    return [
+    const crmItems: TableRowAction[] = [
       {
         id: "push-to-crm",
-        label: property.integration_property_id ? "Update CRM" : "Push to CRM",
+        label: hasIntegration ? "Update CRM" : "Push to CRM",
         variant: "accent",
         icon: Upload,
         isDisabled: isEditing || pushToCrm.isPending,
@@ -280,92 +281,101 @@ export default function DashboardPropertyDetailPage() {
       {
         id: "manage-estateweb-sites",
         label: "Manage EstateWeb Sites",
-        variant: "default" as const,
         icon: Globe,
-        isDisabled: isEditing || !property.integration_property_id,
-      },
-      {
-        id: "produce-content",
-        label: "Produce content",
-        variant: "default" as const,
-        icon: Languages,
-        isDisabled: isEditing || produceContent.isPending,
-      },
-      {
-        id: "renormalize",
-        label: "Renormalize",
-        variant: "default" as const,
-        icon: RefreshCw,
-        isDisabled: isEditing || renormalize.isPending,
+        isDisabled: isEditing || !hasIntegration,
       },
       {
         id: "update-sales-prices",
         label: "Update sales prices on CRM",
-        variant: "default" as const,
         icon: Percent,
-        isDisabled:
-          isEditing ||
-          !property.integration_property_id ||
-          updateSalesPrices.isPending,
+        isDisabled: isEditing || !hasIntegration || updateSalesPrices.isPending,
       },
       {
         id: "sync-crm-client-notes",
         label: "Sync CRM client notes",
-        variant: "default" as const,
         icon: NotebookPen,
         isDisabled:
-          isEditing ||
-          !property.integration_property_id ||
-          syncCrmClientNotes.isPending,
+          isEditing || !hasIntegration || syncCrmClientNotes.isPending,
+      },
+    ];
+
+    if (crmUrl) {
+      crmItems.push({
+        id: "open-in-crm",
+        label: "Open in CRM",
+        icon: ExternalLink,
+      });
+    }
+
+    if (isAdmin && hasIntegration) {
+      crmItems.push({
+        id: "unlink-from-crm",
+        label: "Unlink from CRM",
+        variant: "danger",
+        icon: Unlink,
+        isDisabled: isEditing || updateProperty.isPending,
+      });
+    }
+
+    return [
+      {
+        id: "crm",
+        label: "CRM",
+        icon: Upload,
+        items: crmItems,
       },
       {
-        id: "remove-watermarks",
-        label: "Remove watermarks",
-        variant: "default" as const,
-        icon: Sparkles,
-        isDisabled:
-          isEditing ||
-          !property.integration_property_id ||
-          removeWatermarksByCount.isPending,
+        id: "content",
+        label: "Content",
+        icon: Languages,
+        items: [
+          {
+            id: "produce-content",
+            label: "Produce content",
+            icon: Languages,
+            isDisabled: isEditing || produceContent.isPending,
+          },
+          {
+            id: "renormalize",
+            label: "Renormalize",
+            icon: RefreshCw,
+            isDisabled: isEditing || renormalize.isPending,
+          },
+          {
+            id: "truncate",
+            label: "Truncate text",
+            variant: "warning",
+            icon: Scissors,
+            isDisabled: isEditing,
+          },
+        ],
       },
-      ...(crmUrl
-        ? [
-            {
-              id: "open-in-crm",
-              label: "Open in CRM",
-              variant: "default" as const,
-              icon: ExternalLink,
-            },
-          ]
-        : []),
-      ...(isAdmin && property.integration_property_id
-        ? [
-            {
-              id: "unlink-from-crm",
-              label: "Unlink from CRM",
-              variant: "danger" as const,
-              icon: Unlink,
-              isDisabled: isEditing || updateProperty.isPending,
-            },
-          ]
-        : []),
       {
-        id: "truncate",
-        label: "Truncate text",
-        variant: "warning",
-        icon: Scissors,
+        id: "images",
+        label: "Images",
+        icon: Images,
+        items: [
+          {
+            id: "remove-watermarks",
+            label: "Remove watermarks",
+            icon: Sparkles,
+            isDisabled:
+              isEditing ||
+              !hasIntegration ||
+              removeWatermarksByCount.isPending,
+          },
+        ],
       },
       isEditing
         ? {
             id: "cancel-edit",
             label: "Cancel edit",
-            variant: "danger",
+            variant: "danger" as const,
             icon: X,
           }
         : {
             id: "edit",
             label: "Edit",
-            variant: "default",
             icon: Pencil,
           },
     ];

@@ -503,6 +503,17 @@ export class DetailEnrichmentService {
             ) {
               break;
             }
+            // Google Maps Embed API ("Share > Embed a map") encodes
+            // lng/lat as !2d<lng>!3d<lat> inside the opaque `pb` param.
+            const pbMatch = href.match(
+              /!2d(-?\d+\.\d+)!3d(-?\d+\.\d+)/,
+            );
+            if (
+              pbMatch &&
+              acceptCoords(parseCoord(pbMatch[2]), parseCoord(pbMatch[1]))
+            ) {
+              break;
+            }
           }
         }
 
