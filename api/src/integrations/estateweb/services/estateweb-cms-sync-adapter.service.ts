@@ -1014,9 +1014,14 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     ];
     for (const candidate of candidates) {
       if (!candidate) continue;
-      const trimmed = String(candidate).trim();
-      if (/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(trimmed)) {
-        return trimmed;
+      // Strip stray leading punctuation (e.g. a scraped "#1987") before
+      // validating, so a fixable value doesn't degrade to an empty code.
+      const sanitized = String(candidate)
+        .trim()
+        .replace(/^[^A-Za-z0-9]+/, '')
+        .slice(0, 64);
+      if (/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(sanitized)) {
+        return sanitized;
       }
     }
     return '';

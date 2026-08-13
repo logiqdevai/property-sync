@@ -141,26 +141,33 @@ export function extractDenormalizedRawFields(raw: Record<string, unknown>) {
   };
 }
 
+function stripIdPrefix(value: string | null): string | null {
+  if (!value) return value;
+  const stripped = value.replace(/^[^A-Za-z0-9]+/, '').trim();
+  return stripped || null;
+}
+
 export function extractSourcePropertyIds(
   sourceUrl: string,
   raw: Record<string, unknown>,
 ): { property_id: string; internal_id: string | null } {
-  const fromPage =
+  const fromPage = stripIdPrefix(
     readRawString(raw, [
       '_internal_id',
       '_external_id',
       'internal_id',
       'listing_code',
     ]) ??
-    extractInternalIdFromText(
-      readRawString(raw, [
-        '_detail_text',
-        'detail_text',
-        '_description',
-        'description',
-      ]),
-      readRawString(raw, ['location', '_location', 'raw_location']),
-    );
+      extractInternalIdFromText(
+        readRawString(raw, [
+          '_detail_text',
+          'detail_text',
+          '_description',
+          'description',
+        ]),
+        readRawString(raw, ['location', '_location', 'raw_location']),
+      ),
+  );
 
   const segments = sourceUrl.split('/').filter(Boolean).map((segment) => {
     try {
