@@ -3,7 +3,10 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { IntegrationType, JobStatus } from 'generated/prisma';
-import { ESTATEWEB_BULK_SITES_BY_CODES_QUEUE } from '@/core/queues/queues.constants';
+import {
+  ESTATEWEB_BULK_DELETE_BY_CODES_QUEUE,
+  ESTATEWEB_BULK_SITES_BY_CODES_QUEUE,
+} from '@/core/queues/queues.constants';
 import { EstateWebConfig } from '@/integrations/estateweb/config/estateweb.config';
 import {
   EstateWebCreatePropertyPayload,
@@ -29,6 +32,10 @@ import {
   EstateWebBulkSitesByCodesJobData,
   EstateWebBulkSitesByCodesJobResult,
 } from './interfaces/estateweb-bulk-sites-by-codes-job.interface';
+import {
+  EstateWebBulkDeleteByCodesJobData,
+  EstateWebBulkDeleteByCodesJobResult,
+} from './interfaces/estateweb-bulk-delete-by-codes-job.interface';
 
 @Injectable()
 export class AdminEstateWebPropertiesService {
@@ -41,6 +48,8 @@ export class AdminEstateWebPropertiesService {
     private readonly estateWebIntegrationResolverService: EstateWebIntegrationResolverService,
     @InjectQueue(ESTATEWEB_BULK_SITES_BY_CODES_QUEUE)
     private readonly estateWebBulkSitesByCodesQueue: Queue<EstateWebBulkSitesByCodesJobData>,
+    @InjectQueue(ESTATEWEB_BULK_DELETE_BY_CODES_QUEUE)
+    private readonly estateWebBulkDeleteByCodesQueue: Queue<EstateWebBulkDeleteByCodesJobData>,
   ) {}
 
   async listIntegrations(userId?: string) {
@@ -338,6 +347,118 @@ export class AdminEstateWebPropertiesService {
       failed,
       message:
         'EstateWeb sites update started in the background. Track progress in Job queue.',
+    };
+  }
+
+  // Same resolve-by-code + enqueue-one-job-per-code shape as
+  // enqueueBulkUpdatePropertySitesByCodes, but calls EstateWeb's delete endpoint instead of a
+  // sites PATCH. Deletion is irreversible on EstateWeb's side, so the frontend
+  // gates this behind an explicit confirmation before calling it.
+  async enqueueBulkDeletePropertiesByCodes(
+    userIntegrationId: string,
+    codes: string[],
+  ): Promise<{
+    job_log_id: string;
+    enqueued: number;
+    failed: Array<{ code: string; error: string }>;
+    message: string;
+  }> {
+    const requested = [...new Set(codes.map((code) => code.trim()).filter(Boolean))];
+    if (requested.length === 0) {
+      throw new BadRequestException('No codes provided');
+    }
+
+    const { list } =
+      await this.estateWebPropertyService.listAllPropertiesForIntegration(
+        userIntegrationId,
+      );
+
+    const byCode = new Map<string, number>();
+    for (const listing of list) {
+      const code = listing.code?.trim();
+      if (code && !byCode.has(code)) byCode.set(code, listing.id);
+    }
+
+    const enqueueItems: Array<{ code: string; propertyId: number }> = [];
+    const failed: Array<{ code: string; error: string }> = [];
+
+    for (const code of requested) {
+      const propertyId = byCode.get(code);
+      if (propertyId === undefined) {
+        failed.push({ code, error: 'No EstateWeb property has this code' });
+        continue;
+      }
+      enqueueItems.push({ code, propertyId });
+    }
+
+    if (enqueueItems.length === 0) {
+      const firstError = failed[0]?.error ?? 'No properties could be deleted';
+      throw new BadRequestException(
+        failed.length === 1
+          ? firstError
+          : `None of the ${requested.length} codes matched an EstateWeb property.`,
+      );
+    }
+
+    const initialResult: EstateWebBulkDeleteByCodesJobResult = {
+      total: enqueueItems.length,
+      processed: 0,
+      deleted: 0,
+      failed: failed.length,
+      items: failed.map((row) => ({
+        code: row.code,
+        property_id: null,
+        status: 'failed' as const,
+        error: row.error,
+      })),
+      logs: [
+        `enqueued integration=${userIntegrationId} codes=${enqueueItems.length} action=delete`,
+      ],
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: ESTATEWEB_BULK_DELETE_BY_CODES_QUEUE,
+        job_name: 'delete-estateweb-properties-by-code',
+        status: JobStatus.WAITING,
+        payload: {
+          user_integration_id: userIntegrationId,
+          codes: enqueueItems.map((item) => item.code),
+          total: enqueueItems.length,
+        } as object,
+        result: initialResult as object,
+      },
+    });
+
+    await this.estateWebBulkDeleteByCodesQueue.addBulk(
+      enqueueItems.map(({ code, propertyId }) => {
+        const jobData: EstateWebBulkDeleteByCodesJobData = {
+          job_log_id: jobLog.id,
+          user_integration_id: userIntegrationId,
+          code,
+          property_id: propertyId,
+          total: enqueueItems.length,
+        };
+        return {
+          name: 'delete-estateweb-property-by-code',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${propertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
+
+    return {
+      job_log_id: jobLog.id,
+      enqueued: enqueueItems.length,
+      failed,
+      message:
+        'EstateWeb property deletion started in the background. Track progress in Job queue.',
     };
   }
 

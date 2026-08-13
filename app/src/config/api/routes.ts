@@ -173,6 +173,8 @@ export const ApiRoutes = {
                 `/admin/estateweb/integrations/${userIntegrationId}/duplicates`,
             bulkUpdateSites: (userIntegrationId: string) =>
                 `/admin/estateweb/integrations/${userIntegrationId}/properties/bulk-update-sites`,
+            bulkDeleteByCodes: (userIntegrationId: string) =>
+                `/admin/estateweb/integrations/${userIntegrationId}/properties/bulk-delete-by-codes`,
         },
     },
     integrations: {

@@ -45,7 +45,7 @@ export type EstateWebAdminIntegration = {
   baseUrl: string;
 };
 
-export type EstateWebBulkSitesEnqueueResult = {
+export type EstateWebBulkJobEnqueueResult = {
   job_log_id: string;
   enqueued: number;
   failed: Array<{ code: string; error: string }>;
@@ -65,5 +65,21 @@ export type EstateWebBulkSitesByCodesJobResult = {
   updated: number;
   failed: number;
   items: EstateWebBulkSitesByCodesItemResult[];
+  logs?: string[];
+};
+
+export type EstateWebBulkDeleteByCodesItemResult = {
+  code: string;
+  property_id: number | null;
+  status: "deleted" | "failed";
+  error?: string;
+};
+
+export type EstateWebBulkDeleteByCodesJobResult = {
+  total: number;
+  processed: number;
+  deleted: number;
+  failed: number;
+  items: EstateWebBulkDeleteByCodesItemResult[];
   logs?: string[];
 };

@@ -1,23 +1,38 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ListBox, Modal, Select, Skeleton, TextArea, useOverlayState } from "@heroui/react";
+import {
+  Button,
+  ListBox,
+  Modal,
+  Select,
+  Skeleton,
+  TextArea,
+  useOverlayState,
+} from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { EstateWebPushSitesList } from "@/components/ui/estateweb-push-sites-list";
 import { IntegrationTypes } from "@/features/integration-targets/interfaces/integration-targets.interfaces";
 import { Routes } from "@/routes/routes";
 import type { EstateWebPushSiteSetting } from "@/features/estateweb/interfaces/estateweb-integration-settings.interfaces";
-import type { EstateWebBulkSitesByCodesJobResult } from "@/features/estateweb/interfaces/estateweb.interfaces";
+import type {
+  EstateWebBulkDeleteByCodesJobResult,
+  EstateWebBulkSitesByCodesJobResult,
+} from "@/features/estateweb/interfaces/estateweb.interfaces";
 import {
   useAvailableIntegrationTargets,
   useUserIntegrationSettings,
 } from "@/features/user-integrations/hooks/use-user-integrations";
 import {
+  useBulkDeleteEstateWebPropertiesByCodes,
   useBulkUpdateEstateWebPropertySites,
   useEstateWebAdminIntegrations,
 } from "@/features/estateweb/hooks/use-estateweb";
 import { useJob } from "@/features/jobs/hooks/use-jobs";
 
 export type EstateWebOrphanSitesModalState = ReturnType<typeof useOverlayState>;
+
+type Mode = "sites" | "delete";
 
 const NONE_SELECTED = "";
 const ACTIVE_JOB_STATUSES = new Set(["WAITING", "ACTIVE", "DELAYED", "PAUSED"]);
@@ -44,19 +59,24 @@ export function EstateWebOrphanSitesModal({
 }: {
   state: EstateWebOrphanSitesModalState;
 }) {
+  const [mode, setMode] = useState<Mode>("sites");
   const [selectedIntegrationId, setSelectedIntegrationId] = useState<string>(NONE_SELECTED);
   const [codesInput, setCodesInput] = useState("");
   const [sites, setSites] = useState<EstateWebPushSiteSetting[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [jobLogId, setJobLogId] = useState<string | null>(null);
+  const [jobKind, setJobKind] = useState<Mode | null>(null);
+  const deleteConfirm = useOverlayState();
 
   useEffect(() => {
     if (!state.isOpen) {
+      setMode("sites");
       setSelectedIntegrationId(NONE_SELECTED);
       setCodesInput("");
       setSites([]);
       setHydrated(false);
       setJobLogId(null);
+      setJobKind(null);
     }
   }, [state.isOpen]);
 
@@ -71,12 +91,13 @@ export function EstateWebOrphanSitesModal({
   const estateWebTarget = targets.find(
     (target) => target.integration_type === IntegrationTypes.ESTATEWEB,
   );
-  const settingsTargetId = state.isOpen && hasIntegration ? estateWebTarget?.id : undefined;
+  const settingsTargetId =
+    state.isOpen && hasIntegration && mode === "sites" ? estateWebTarget?.id : undefined;
   const { data: settings, isPending: settingsPending } =
     useUserIntegrationSettings(settingsTargetId);
 
   useEffect(() => {
-    if (!state.isOpen || !hasIntegration) {
+    if (!state.isOpen || !hasIntegration || mode !== "sites") {
       setHydrated(false);
       return;
     }
@@ -85,21 +106,25 @@ export function EstateWebOrphanSitesModal({
 
     setSites((settings.settings?.estateweb_default_sites ?? []).map((site) => ({ ...site })));
     setHydrated(true);
-  }, [state.isOpen, hasIntegration, settings, settingsPending, settingsTargetId, hydrated]);
+  }, [state.isOpen, hasIntegration, mode, settings, settingsPending, settingsTargetId, hydrated]);
 
   const bulkUpdateSites = useBulkUpdateEstateWebPropertySites();
+  const bulkDelete = useBulkDeleteEstateWebPropertiesByCodes();
   const { data: job } = useJob(jobLogId ?? "");
-  const jobResult = job?.result as EstateWebBulkSitesByCodesJobResult | undefined;
+  const sitesResult = job?.result as EstateWebBulkSitesByCodesJobResult | undefined;
+  const deleteResult = job?.result as EstateWebBulkDeleteByCodesJobResult | undefined;
   const jobIsActive = !!job && ACTIVE_JOB_STATUSES.has(job.status);
 
   const isLoadingSites =
+    mode === "sites" &&
     hasIntegration &&
     !hydrated &&
     (targetsPending || !settingsTargetId || settingsPending || settings === undefined);
 
   const codes = parseCodes(codesInput);
+  const isSubmitting = bulkUpdateSites.isPending || bulkDelete.isPending;
 
-  const handleApply = () => {
+  const handleApplySites = () => {
     if (codes.length === 0 || !hasIntegration) return;
     bulkUpdateSites.mutate(
       {
@@ -107,26 +132,50 @@ export function EstateWebOrphanSitesModal({
         codes,
         sites: sites.filter((site) => site.selected),
       },
-      { onSuccess: (result) => setJobLogId(result.job_log_id) },
+      {
+        onSuccess: (result) => {
+          setJobLogId(result.job_log_id);
+          setJobKind("sites");
+        },
+      },
     );
   };
 
+  const handleConfirmDelete = () => {
+    if (codes.length === 0 || !hasIntegration) return;
+    bulkDelete.mutate(
+      { userIntegrationId: selectedIntegrationId, codes },
+      {
+        onSuccess: (result) => {
+          setJobLogId(result.job_log_id);
+          setJobKind("delete");
+        },
+      },
+    );
+  };
+
+  const handleApply = () => {
+    if (mode === "sites") handleApplySites();
+    else deleteConfirm.open();
+  };
+
   return (
+    <>
     <Modal state={state}>
       <Modal.Backdrop isDismissable={!jobIsActive}>
         <Modal.Container>
           <Modal.Dialog className="max-w-2xl w-full">
             <Modal.Header>
-              <Modal.Heading>Manage EstateWeb sites by code</Modal.Heading>
+              <Modal.Heading>Manage EstateWeb properties by code</Modal.Heading>
             </Modal.Header>
             <Modal.Body>
               <div className="grid max-h-[65vh] gap-4 overflow-y-auto pr-1">
                 <p className="text-sm text-muted">
                   Pick an EstateWeb connection, paste in the property "code" values you want to
-                  manage (one per line, or comma/space separated), then choose which sites those
-                  properties should be published to. Useful for disabling the sites of orphaned
-                  duplicate EstateWeb properties that have no matching record in our system. Runs
-                  in the background since this can touch hundreds of properties.
+                  manage (one per line, or comma/space separated), then choose whether to update
+                  site placements or delete the properties outright. Useful for cleaning up
+                  orphaned duplicate EstateWeb properties that have no matching record in our
+                  system. Runs in the background since this can touch hundreds of properties.
                 </p>
 
                 <div className="flex flex-col gap-1">
@@ -158,6 +207,30 @@ export function EstateWebOrphanSitesModal({
 
                 {hasIntegration && !jobLogId ? (
                   <div className="flex flex-col gap-1">
+                    <span className="text-sm font-medium text-foreground">Action</span>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={mode === "sites" ? "primary" : "secondary"}
+                        onPress={() => setMode("sites")}
+                      >
+                        Update site placements
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={mode === "delete" ? "danger" : "secondary"}
+                        onPress={() => setMode("delete")}
+                      >
+                        Delete properties
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
+                {hasIntegration && !jobLogId ? (
+                  <div className="flex flex-col gap-1">
                     <span className="text-sm font-medium text-foreground">
                       EstateWeb property codes
                     </span>
@@ -171,7 +244,7 @@ export function EstateWebOrphanSitesModal({
                   </div>
                 ) : null}
 
-                {hasIntegration && !jobLogId ? (
+                {hasIntegration && !jobLogId && mode === "sites" ? (
                   <div className="flex flex-col gap-2">
                     <span className="text-sm font-medium text-foreground">
                       Site placements to apply
@@ -196,11 +269,22 @@ export function EstateWebOrphanSitesModal({
                   </div>
                 ) : null}
 
+                {hasIntegration && !jobLogId && mode === "delete" ? (
+                  <p className="text-sm text-danger">
+                    This permanently deletes each matched EstateWeb property. This cannot be
+                    undone.
+                  </p>
+                ) : null}
+
                 {jobLogId ? (
                   <div className="flex flex-col gap-2 rounded-xl border border-border p-3">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-medium text-foreground">
-                        {jobIsActive ? "Running in the background…" : "Finished"}
+                        {jobIsActive
+                          ? "Running in the background…"
+                          : jobKind === "delete"
+                            ? "Deletion finished"
+                            : "Finished"}
                       </span>
                       <Link
                         to={Routes.admin.jobs.detail(jobLogId)}
@@ -211,14 +295,42 @@ export function EstateWebOrphanSitesModal({
                         View in Job queue
                       </Link>
                     </div>
-                    {jobResult ? (
+                    {jobKind === "delete" ? (
+                      deleteResult ? (
+                        <>
+                          <p className="text-sm text-muted">
+                            {deleteResult.processed} of {deleteResult.total} processed —{" "}
+                            {deleteResult.deleted} deleted, {deleteResult.failed} failed
+                          </p>
+                          <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
+                            {deleteResult.items.map((item) => (
+                              <div
+                                key={item.code}
+                                className="flex items-center justify-between gap-2 text-sm"
+                              >
+                                <span className="font-mono text-foreground">{item.code}</span>
+                                <span
+                                  className={
+                                    item.status === "deleted" ? "text-success" : "text-danger"
+                                  }
+                                >
+                                  {item.status === "deleted" ? "Deleted" : item.error || "Failed"}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      ) : (
+                        <p className="text-sm text-muted">Starting…</p>
+                      )
+                    ) : sitesResult ? (
                       <>
                         <p className="text-sm text-muted">
-                          {jobResult.processed} of {jobResult.total} processed —{" "}
-                          {jobResult.updated} updated, {jobResult.failed} failed
+                          {sitesResult.processed} of {sitesResult.total} processed —{" "}
+                          {sitesResult.updated} updated, {sitesResult.failed} failed
                         </p>
                         <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
-                          {jobResult.items.map((item) => (
+                          {sitesResult.items.map((item) => (
                             <div
                               key={item.code}
                               className="flex items-center justify-between gap-2 text-sm"
@@ -254,11 +366,13 @@ export function EstateWebOrphanSitesModal({
               {!jobLogId ? (
                 <ActionButtonWithPending
                   type="button"
+                  variant={mode === "delete" ? "danger" : "primary"}
                   onPress={handleApply}
-                  isPending={bulkUpdateSites.isPending}
+                  isPending={isSubmitting}
                   isDisabled={!hasIntegration || codes.length === 0 || isLoadingSites}
                 >
-                  Apply to {codes.length} code{codes.length === 1 ? "" : "s"}
+                  {mode === "delete" ? "Delete" : "Apply to"} {codes.length} code
+                  {codes.length === 1 ? "" : "s"}
                 </ActionButtonWithPending>
               ) : null}
             </Modal.Footer>
@@ -266,5 +380,15 @@ export function EstateWebOrphanSitesModal({
         </Modal.Container>
       </Modal.Backdrop>
     </Modal>
+
+      <ConfirmationDialog
+        state={deleteConfirm}
+        title={`Delete ${codes.length} EstateWeb ${codes.length === 1 ? "property" : "properties"}?`}
+        description="This permanently deletes each matched property from EstateWeb. This cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={handleConfirmDelete}
+        isPending={bulkDelete.isPending}
+      />
+    </>
   );
 }

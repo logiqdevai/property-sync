@@ -40,6 +40,7 @@ import {
 } from './dto/admin-estateweb-property-list-query.schema';
 import { SetEstateWebSessionDto } from './dto/admin-estateweb-session.dto';
 import { AdminEstateWebBulkUpdateSitesDto } from './dto/admin-estateweb-bulk-sites.dto';
+import { AdminEstateWebBulkDeleteByCodesDto } from './dto/admin-estateweb-bulk-delete-by-codes.dto';
 
 @ApiTags('Admin EstateWeb')
 @ApiBearerAuth()
@@ -213,6 +214,20 @@ export class AdminEstateWebPropertiesController {
       userIntegrationId,
       dto.codes,
       dto.sites,
+    );
+  }
+
+  @Post('integrations/:userIntegrationId/properties/bulk-delete-by-codes')
+  @ApiOperation({
+    summary: 'Delete every EstateWeb property matching the given codes',
+  })
+  bulkDeletePropertiesByCodes(
+    @Param('userIntegrationId') userIntegrationId: string,
+    @Body() dto: AdminEstateWebBulkDeleteByCodesDto,
+  ) {
+    return this.adminEstateWebPropertiesService.enqueueBulkDeletePropertiesByCodes(
+      userIntegrationId,
+      dto.codes,
     );
   }
 

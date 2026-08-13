@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { EstateWebPushSiteSetting } from "../interfaces/estateweb-integration-settings.interfaces";
 import {
+  bulkDeleteEstateWebPropertiesByCodes,
   bulkUpdateEstateWebPropertySites,
   getEstateWebAdminIntegrations,
   getEstateWebDuplicateProperties,
@@ -111,5 +112,17 @@ export const useBulkUpdateEstateWebPropertySites = () => {
       codes: string[];
       sites: EstateWebPushSiteSetting[];
     }) => bulkUpdateEstateWebPropertySites(userIntegrationId, codes, sites),
+  });
+};
+
+export const useBulkDeleteEstateWebPropertiesByCodes = () => {
+  return useMutation({
+    mutationFn: ({
+      userIntegrationId,
+      codes,
+    }: {
+      userIntegrationId: string;
+      codes: string[];
+    }) => bulkDeleteEstateWebPropertiesByCodes(userIntegrationId, codes),
   });
 };

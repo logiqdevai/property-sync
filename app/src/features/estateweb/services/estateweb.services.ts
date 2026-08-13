@@ -3,7 +3,7 @@ import { ApiRoutes } from "@/config/api/routes";
 import type { EstateWebPushSiteSetting } from "../interfaces/estateweb-integration-settings.interfaces";
 import type {
   EstateWebAdminIntegration,
-  EstateWebBulkSitesEnqueueResult,
+  EstateWebBulkJobEnqueueResult,
   EstateWebDuplicatePropertyGroup,
   EstateWebFlatCatalogItem,
   EstateWebLocationCatalogItem,
@@ -133,7 +133,7 @@ export const bulkUpdateEstateWebPropertySites = async (
   userIntegrationId: string,
   codes: string[],
   sites: EstateWebPushSiteSetting[],
-): Promise<EstateWebBulkSitesEnqueueResult> => {
+): Promise<EstateWebBulkJobEnqueueResult> => {
   try {
     const response = await axiosInstance.post(
       ApiRoutes.admin.estateweb.bulkUpdateSites(userIntegrationId),
@@ -144,6 +144,24 @@ export const bulkUpdateEstateWebPropertySites = async (
     throw new Error(
       error?.response?.data?.message ||
         "Failed to update EstateWeb property sites. Please try again.",
+    );
+  }
+};
+
+export const bulkDeleteEstateWebPropertiesByCodes = async (
+  userIntegrationId: string,
+  codes: string[],
+): Promise<EstateWebBulkJobEnqueueResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.estateweb.bulkDeleteByCodes(userIntegrationId),
+      { codes },
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to delete EstateWeb properties. Please try again.",
     );
   }
 };

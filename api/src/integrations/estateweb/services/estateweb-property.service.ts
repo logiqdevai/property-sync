@@ -460,6 +460,31 @@ export class EstateWebPropertyService {
     });
   }
 
+  deleteProperty(
+    userIntegrationId: string,
+    propertyId: number | string,
+  ): Promise<number | string> {
+    return this.runValidatedOperation(
+      userIntegrationId,
+      'delete-property',
+      () => {
+        assertValidPropertyId(propertyId);
+
+        return this.estateWebClientService.request<number | string>(
+          userIntegrationId,
+          {
+            method: 'DELETE',
+            path: this.estateWebConfig
+              .getConfig()
+              .apiPaths.propertyById(propertyId),
+            operation: 'delete-property',
+            propertyId,
+          },
+        );
+      },
+    );
+  }
+
   private buildListQuery(
     query: EstateWebPropertyListQuery,
   ): Record<string, string | number | undefined> {
