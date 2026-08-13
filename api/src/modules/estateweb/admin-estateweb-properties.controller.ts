@@ -39,6 +39,7 @@ import {
   AdminEstateWebPropertyListQueryType,
 } from './dto/admin-estateweb-property-list-query.schema';
 import { SetEstateWebSessionDto } from './dto/admin-estateweb-session.dto';
+import { AdminEstateWebBulkUpdateSitesDto } from './dto/admin-estateweb-bulk-sites.dto';
 
 @ApiTags('Admin EstateWeb')
 @ApiBearerAuth()
@@ -196,6 +197,22 @@ export class AdminEstateWebPropertiesController {
   ) {
     return this.adminEstateWebPropertiesService.findDuplicateProperties(
       userIntegrationId,
+    );
+  }
+
+  @Post('integrations/:userIntegrationId/properties/bulk-update-sites')
+  @ApiOperation({
+    summary:
+      'Apply the same EstateWeb site selection to every property matching the given codes',
+  })
+  bulkUpdatePropertySitesByCodes(
+    @Param('userIntegrationId') userIntegrationId: string,
+    @Body() dto: AdminEstateWebBulkUpdateSitesDto,
+  ) {
+    return this.adminEstateWebPropertiesService.bulkUpdatePropertySitesByCodes(
+      userIntegrationId,
+      dto.codes,
+      dto.sites,
     );
   }
 

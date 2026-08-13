@@ -44,3 +44,10 @@ export type EstateWebAdminIntegration = {
   isDefault: boolean;
   baseUrl: string;
 };
+
+export type EstateWebBulkSitesUpdateResult = {
+  code: string;
+  propertyId: number | null;
+  success: boolean;
+  error?: string;
+};

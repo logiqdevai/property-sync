@@ -4,12 +4,17 @@ import { IntegrationType } from 'generated/prisma';
 import { EstateWebConfig } from '@/integrations/estateweb/config/estateweb.config';
 import {
   EstateWebCreatePropertyPayload,
+  EstateWebPropertyFieldValue,
   EstateWebPropertyListItem,
   EstateWebPropertyListQuery,
+  EstateWebPropertyResponse,
+  EstateWebPropertySite,
   EstateWebUpdatePropertyPayload,
   EstateWebUploadImagePayload,
 } from '@/integrations/estateweb/interfaces/estateweb-property.interface';
 import { EstateWebSession } from '@/integrations/estateweb/interfaces/estateweb-session.interface';
+import { EstateWebFieldType } from '@/integrations/estateweb/constants/estateweb-enums.constants';
+import { getEstateWebInitField } from '@/integrations/estateweb/utils/estateweb-init-lookup.util';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { EstateWebClientsService } from '@/integrations/estateweb/services/estateweb-clients.service';
 import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
@@ -21,6 +26,7 @@ import {
 import { SetEstateWebSessionDto } from './dto/admin-estateweb-session.dto';
 import { AdminEstateWebPropertyListQueryType } from './dto/admin-estateweb-property-list-query.schema';
 import { EstateWebDuplicatePropertyGroup } from './interfaces/estateweb-duplicate-property.interface';
+import { EstateWebBulkSitesUpdateResult } from './interfaces/estateweb-resolved-code-property.interface';
 
 @Injectable()
 export class AdminEstateWebPropertiesService {
@@ -207,6 +213,128 @@ export class AdminEstateWebPropertiesService {
         };
       })
       .sort((a, b) => b.count - a.count);
+  }
+
+  // Applies the SAME site selection to every EstateWeb property matching the given `code`
+  // values -- used to manage orphaned duplicate listings (see docs on the cretahouses
+  // duplicate-property incident) that exist on EstateWeb but were never linked back into our
+  // own database, so there's no local UserProperty to key off of. Resolution happens here,
+  // internally, as part of the same request -- there is no separate lookup step, since
+  // EstateWeb's list endpoint doesn't return usable `sites` data to preview beforehand.
+  //
+  // Each code is updated independently (partial failures/not-found codes don't block the
+  // rest); every update round-trips the FULL current record (see toFullUpdatePayload) because
+  // EstateWeb's PATCH endpoint resets price/description/ads/metadata/sites to defaults when
+  // they're omitted from the payload -- confirmed by a live incident where a minimal {code}
+  // PATCH wiped a listing.
+  async bulkUpdatePropertySitesByCodes(
+    userIntegrationId: string,
+    codes: string[],
+    sites: EstateWebPropertySite[],
+  ): Promise<EstateWebBulkSitesUpdateResult[]> {
+    const requested = [...new Set(codes.map((code) => code.trim()).filter(Boolean))];
+
+    const { list } =
+      await this.estateWebPropertyService.listAllPropertiesForIntegration(
+        userIntegrationId,
+      );
+
+    const byCode = new Map<string, number>();
+    for (const listing of list) {
+      const code = listing.code?.trim();
+      if (code && !byCode.has(code)) byCode.set(code, listing.id);
+    }
+
+    const results: EstateWebBulkSitesUpdateResult[] = [];
+
+    for (const code of requested) {
+      const propertyId = byCode.get(code);
+      if (propertyId === undefined) {
+        results.push({
+          code,
+          propertyId: null,
+          success: false,
+          error: 'No EstateWeb property has this code',
+        });
+        continue;
+      }
+
+      try {
+        const current = await this.estateWebPropertyService.getProperty(
+          userIntegrationId,
+          propertyId,
+        );
+        const payload = this.toFullUpdatePayload(current, sites);
+        await this.estateWebPropertyService.updateProperty(
+          userIntegrationId,
+          propertyId,
+          payload,
+        );
+        results.push({ code, propertyId, success: true });
+      } catch (error) {
+        results.push({
+          code,
+          propertyId,
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    return results;
+  }
+
+  private toFullUpdatePayload(
+    current: EstateWebPropertyResponse,
+    sites: EstateWebPropertySite[],
+  ): EstateWebUpdatePropertyPayload {
+    return {
+      id: current.id,
+      type_id: current.type_id,
+      scope_id: current.scope_id,
+      location_id: current.location_id,
+      client_id: current.client_id ?? undefined,
+      coop_id: current.coop_id ?? undefined,
+      to_client_id: current.to_client_id ?? undefined,
+      code: current.code ?? '',
+      address: current.address ?? '',
+      zip: current.zip ?? '',
+      price_start: current.price_start ?? 0,
+      price: current.price ?? 0,
+      price_final: current.price_final ?? 0,
+      price_web: current.price_web ?? 0,
+      sqm: current.sqm ?? 0,
+      distance_airport: current.distance_airport ?? '',
+      distance_port: current.distance_port ?? '',
+      distance_beach: current.distance_beach ?? '',
+      description: current.description ?? '',
+      status_id: current.status_id,
+      is_offer: current.is_offer ? 1 : 0,
+      is_exclusive_order: current.is_exclusive_order ? 1 : 0,
+      video_url: current.video_url ?? '',
+      show_video_on_site: current.show_video_on_site ? 1 : 0,
+      lat_lng: current.lat_lng ?? '',
+      show_map_on_site: current.show_map_on_site ? 1 : 0,
+      metadata: JSON.stringify(current.metadata ?? {}),
+      client_contacted_at: current.client_contacted_at ?? '',
+      expires_at: current.expires_at ?? '',
+      fields: (current.fields ?? [])
+        .map((field) => {
+          const definition = getEstateWebInitField(field.field_id);
+          if (!definition) return null;
+          if (definition.type_id === EstateWebFieldType.SELECT) {
+            return { id: field.field_id, value: Number(field.value) };
+          }
+          return { id: field.field_id, value: field.value };
+        })
+        .filter((field): field is EstateWebPropertyFieldValue => field !== null),
+      sites: sites.map((site) => ({ ...site, selected: true })),
+      gateways: [],
+      ads: current.ads ?? [],
+      foreign_agents: current.foreign_agents ?? [],
+      notes: [],
+      price_negotiable: current.price_negotiable ? 1 : 0,
+    } as EstateWebUpdatePropertyPayload;
   }
 
   getProperty(userIntegrationId: string, propertyId: string) {

@@ -1,7 +1,9 @@
 import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
+import type { EstateWebPushSiteSetting } from "../interfaces/estateweb-integration-settings.interfaces";
 import type {
   EstateWebAdminIntegration,
+  EstateWebBulkSitesUpdateResult,
   EstateWebDuplicatePropertyGroup,
   EstateWebFlatCatalogItem,
   EstateWebLocationCatalogItem,
@@ -123,6 +125,25 @@ export const getEstateWebDuplicateProperties = async (
     throw new Error(
       error?.response?.data?.message ||
         "Failed to check EstateWeb for duplicate properties. Please try again.",
+    );
+  }
+};
+
+export const bulkUpdateEstateWebPropertySites = async (
+  userIntegrationId: string,
+  codes: string[],
+  sites: EstateWebPushSiteSetting[],
+): Promise<EstateWebBulkSitesUpdateResult[]> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.estateweb.bulkUpdateSites(userIntegrationId),
+      { codes, sites },
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to update EstateWeb property sites. Please try again.",
     );
   }
 };

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import {
+  bulkAgencyTracking,
   getIntegrationLink,
   getTrackableAgencies,
   linkIntegration,
@@ -9,10 +10,12 @@ import {
   untrackAgency,
   updateAgencyTracking,
 } from "../services/user-tracked-agencies.services";
-import type {
-  AgencyListQuery,
-  LinkIntegrationPayload,
-  TrackAgencyPayload,
+import {
+  BulkAgencyTrackingActions,
+  type AgencyListQuery,
+  type BulkAgencyTrackingPayload,
+  type LinkIntegrationPayload,
+  type TrackAgencyPayload,
 } from "../interfaces/user-tracked-agencies.interfaces";
 
 export const useTrackableAgencies = (query: AgencyListQuery) => {
@@ -84,6 +87,32 @@ export const useUntrackAgency = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not untrack agency",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useBulkAgencyTracking = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: BulkAgencyTrackingPayload) =>
+      bulkAgencyTracking(payload),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["trackableAgencies"] });
+      const title =
+        variables.action === BulkAgencyTrackingActions.TRACK
+          ? "Agencies tracked"
+          : variables.action === BulkAgencyTrackingActions.UNTRACK
+            ? "Agencies untracked"
+            : "Tracking preferences saved";
+      toast({ title, duration: 2000, variant: "success" });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not update agencies",
         description: error.message,
         variant: "error",
       });

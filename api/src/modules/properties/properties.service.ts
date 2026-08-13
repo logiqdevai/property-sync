@@ -7,11 +7,13 @@ import {
 import { randomUUID } from 'crypto';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
-import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
+import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import {
   applyTextTruncatePieces,
   buildLocalizedTruncateUpdates,
+  didTextTruncateChange,
   normalizeTextTruncatePieces,
+  normalizeTruncateText,
 } from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
 import { PropertyQueryType } from './dto/property-query.schema';
 import { MergePropertiesDto } from './dto/merge-properties.dto';
@@ -26,7 +28,7 @@ export class PropertiesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly gcsService: GcsService,
-    private readonly contentProductionService: ContentProductionService,
+    private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
   ) {}
 
   private buildWhere(query: PropertyQueryType): Prisma.PropertyWhereInput {
@@ -386,18 +388,26 @@ export class PropertiesService {
 
     await this.prisma.$transaction(async (tx) => {
       for (const property of properties) {
-        const nextTitle =
-          applyTextTruncatePieces(property.title, pieces, replaceWith) ??
-          property.title;
-        const nextDescription = applyTextTruncatePieces(
+        const titleChanged = didTextTruncateChange(
+          property.title,
+          pieces,
+          replaceWith,
+        );
+        const descriptionChanged = didTextTruncateChange(
           property.description,
           pieces,
           replaceWith,
         );
 
-        const propertyChanged =
-          nextTitle !== property.title ||
-          nextDescription !== property.description;
+        const nextTitle = titleChanged
+          ? (applyTextTruncatePieces(property.title, pieces, replaceWith) ??
+            normalizeTruncateText(property.title))
+          : property.title;
+        const nextDescription = descriptionChanged
+          ? applyTextTruncatePieces(property.description, pieces, replaceWith)
+          : property.description;
+
+        const propertyChanged = titleChanged || descriptionChanged;
 
         if (propertyChanged) {
           await tx.property.update({
@@ -418,24 +428,35 @@ export class PropertiesService {
         let linkedChanged = false;
 
         for (const userProperty of linked) {
-          const linkedTitle =
-            applyTextTruncatePieces(
-              userProperty.title,
-              pieces,
-              replaceWith,
-            ) ?? userProperty.title;
-          const linkedDescription = applyTextTruncatePieces(
+          const linkedTitleChanged = didTextTruncateChange(
+            userProperty.title,
+            pieces,
+            replaceWith,
+          );
+          const linkedDescriptionChanged = didTextTruncateChange(
             userProperty.description,
             pieces,
             replaceWith,
           );
 
-          if (
-            linkedTitle === userProperty.title &&
-            linkedDescription === userProperty.description
-          ) {
+          if (!linkedTitleChanged && !linkedDescriptionChanged) {
             continue;
           }
+
+          const linkedTitle = linkedTitleChanged
+            ? (applyTextTruncatePieces(
+                userProperty.title,
+                pieces,
+                replaceWith,
+              ) ?? normalizeTruncateText(userProperty.title))
+            : userProperty.title;
+          const linkedDescription = linkedDescriptionChanged
+            ? applyTextTruncatePieces(
+                userProperty.description,
+                pieces,
+                replaceWith,
+              )
+            : userProperty.description;
 
           await tx.userProperty.update({
             where: { id: userProperty.id },
@@ -485,18 +506,31 @@ export class PropertiesService {
       }
     });
 
-    if (changedUserPropertyIds.length > 0) {
-      setImmediate(async () => {
-        try {
-          await this.contentProductionService.produceForUserProperties(
-            [...new Set(changedUserPropertyIds)],
-            { markStaleFirst: true, forceSyncAi: true },
-          );
-        } catch {}
+    const pushIds = [...new Set(changedUserPropertyIds)];
+    let queued = 0;
+    if (pushIds.length > 0) {
+      const owners = await this.prisma.userProperty.findMany({
+        where: { id: { in: pushIds } },
+        select: { id: true, user_id: true },
       });
+      const byUser = new Map<string, string[]>();
+      for (const row of owners) {
+        const list = byUser.get(row.user_id) ?? [];
+        list.push(row.id);
+        byUser.set(row.user_id, list);
+      }
+      for (const [userId, ids] of byUser) {
+        const result =
+          await this.cmsSyncOrchestratorService.planAndEnqueueManualPropertyUpdate(
+            userId,
+            ids,
+            { skipContentProduction: true },
+          );
+        queued += result.queued;
+      }
     }
 
-    return { updated, total: uniqueIds.length };
+    return { updated, total: uniqueIds.length, queued };
   }
 
   async dedupeGroups(propertyIds: string[]) {

@@ -2,6 +2,8 @@ import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
 import type {
   AgencyListQuery,
+  BulkAgencyTrackingPayload,
+  BulkAgencyTrackingResult,
   LinkIntegrationPayload,
   PaginatedResponse,
   TrackableAgency,
@@ -60,6 +62,22 @@ export const untrackAgency = async (agencyId: string): Promise<void> => {
     await axiosInstance.delete(ApiRoutes.agencies.track(agencyId));
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to untrack agency.");
+  }
+};
+
+export const bulkAgencyTracking = async (
+  payload: BulkAgencyTrackingPayload,
+): Promise<BulkAgencyTrackingResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.agencies.bulkTracking,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to update agencies.",
+    );
   }
 };
 

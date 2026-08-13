@@ -974,8 +974,8 @@ export const useTruncateUserPropertyDescriptions = () => {
       toast({
         title: "Text truncated",
         description: `Updated ${result.updated} of ${result.total} ${result.total === 1 ? "property" : "properties"}.${
-          result.job_log_id
-            ? " Regenerating translations and pushing to EstateWeb in the background."
+          result.queued
+            ? " Pushing to EstateWeb in the background."
             : ""
         }`,
         duration: 3000,

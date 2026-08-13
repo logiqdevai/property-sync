@@ -10,6 +10,10 @@ import { UserIntegrationsService } from '@/modules/user-integrations/user-integr
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import { BrowseAgencyQueryType } from './dto/agency-query.schema';
+import {
+  BulkAgencyTrackingActions,
+  BulkAgencyTrackingDto,
+} from './dto/bulk-agency-tracking.dto';
 import { TrackAgencyDto } from './dto/track-agency.dto';
 import { IntegrationType, Prisma } from 'generated/prisma';
 import { normalizeTextTruncatePieces } from './utils/apply-text-truncate-pieces.util';
@@ -184,48 +188,128 @@ export class UserTrackedAgenciesService {
 
     return this.prisma.userTrackedAgency.update({
       where: { id: existing.id },
-      data: {
-        ...(dto.track_new_listings !== undefined && {
-          track_new_listings: dto.track_new_listings,
-        }),
-        ...(dto.track_removed_listings !== undefined && {
-          track_removed_listings: dto.track_removed_listings,
-        }),
-        ...(dto.track_updated_listings !== undefined && {
-          track_updated_listings: dto.track_updated_listings,
-        }),
-        ...(dto.auto_update_to_crm !== undefined && {
-          auto_update_to_crm: dto.auto_update_to_crm,
-        }),
-        ...(dto.cms_update_on_hash_only !== undefined && {
-          cms_update_on_hash_only: dto.cms_update_on_hash_only,
-        }),
-        ...(dto.enabled !== undefined && { enabled: dto.enabled }),
-        ...(dto.concurrent_insertions !== undefined && {
-          concurrent_insertions: dto.concurrent_insertions,
-        }),
-        ...(dto.insertion_interval_seconds !== undefined && {
-          insertion_interval_seconds: dto.insertion_interval_seconds,
-        }),
-        ...(dto.max_properties !== undefined && {
-          max_properties: dto.max_properties,
-        }),
-        ...(dto.text_truncate_pieces !== undefined && {
-          text_truncate_pieces: normalizeTextTruncatePieces(
-            dto.text_truncate_pieces,
-          ),
-        }),
-        ...(dto.remove_watermark !== undefined && {
-          remove_watermark: dto.remove_watermark,
-        }),
-        ...(dto.watermark_image_count !== undefined && {
-          watermark_image_count: dto.watermark_image_count,
-        }),
-        ...(dto.watermark_manual_selection !== undefined && {
-          watermark_manual_selection: dto.watermark_manual_selection,
-        }),
-      },
+      data: this.trackingUpdateData(dto),
     });
+  }
+
+  async bulkTracking(userId: string, dto: BulkAgencyTrackingDto) {
+    const agencyIds = [...new Set(dto.agency_ids)];
+
+    if (dto.action === BulkAgencyTrackingActions.UNTRACK) {
+      const result = await this.prisma.userTrackedAgency.updateMany({
+        where: {
+          user_id: userId,
+          source_agency_id: { in: agencyIds },
+        },
+        data: { enabled: false },
+      });
+      return { updated: result.count };
+    }
+
+    if (dto.action === BulkAgencyTrackingActions.UPDATE) {
+      const data = this.trackingUpdateData(dto);
+      if (Object.keys(data).length === 0) {
+        throw new BadRequestException('No tracking fields to update');
+      }
+
+      const result = await this.prisma.userTrackedAgency.updateMany({
+        where: {
+          user_id: userId,
+          source_agency_id: { in: agencyIds },
+          enabled: true,
+        },
+        data,
+      });
+      return { updated: result.count };
+    }
+
+    await this.assertUserHasDefaultAiIntegration(userId);
+
+    const agencies = await this.prisma.sourceAgency.findMany({
+      where: {
+        id: { in: agencyIds },
+        is_visible: true,
+        is_enabled: true,
+      },
+      select: { id: true },
+    });
+    const trackableIds = agencies.map((agency) => agency.id);
+
+    if (trackableIds.length === 0) {
+      return { updated: 0 };
+    }
+
+    const existingTrackers = await this.prisma.userTrackedAgency.findMany({
+      where: {
+        user_id: userId,
+        source_agency_id: { in: trackableIds },
+      },
+      select: { id: true, source_agency_id: true },
+    });
+    const existingAgencyIds = new Set(
+      existingTrackers.map((tracker) => tracker.source_agency_id),
+    );
+    const toCreate = trackableIds.filter((id) => !existingAgencyIds.has(id));
+    const toReenable = existingTrackers.map((tracker) => tracker.id);
+
+    await this.prisma.$transaction([
+      ...(toCreate.length
+        ? [
+            this.prisma.userTrackedAgency.createMany({
+              data: toCreate.map((agencyId) => ({
+                user_id: userId,
+                source_agency_id: agencyId,
+                enabled: true,
+                track_new_listings: dto.track_new_listings ?? true,
+                track_removed_listings: dto.track_removed_listings ?? true,
+                track_updated_listings: dto.track_updated_listings ?? true,
+                auto_update_to_crm: dto.auto_update_to_crm ?? true,
+                cms_update_on_hash_only: dto.cms_update_on_hash_only ?? false,
+                remove_watermark: dto.remove_watermark ?? false,
+                watermark_image_count: dto.watermark_image_count ?? 1,
+                watermark_manual_selection:
+                  dto.watermark_manual_selection ?? false,
+              })),
+            }),
+          ]
+        : []),
+      ...(toReenable.length
+        ? [
+            this.prisma.userTrackedAgency.updateMany({
+              where: { id: { in: toReenable } },
+              data: {
+                enabled: true,
+                ...(dto.track_new_listings !== undefined && {
+                  track_new_listings: dto.track_new_listings,
+                }),
+                ...(dto.track_removed_listings !== undefined && {
+                  track_removed_listings: dto.track_removed_listings,
+                }),
+                ...(dto.track_updated_listings !== undefined && {
+                  track_updated_listings: dto.track_updated_listings,
+                }),
+                ...(dto.auto_update_to_crm !== undefined && {
+                  auto_update_to_crm: dto.auto_update_to_crm,
+                }),
+                ...(dto.cms_update_on_hash_only !== undefined && {
+                  cms_update_on_hash_only: dto.cms_update_on_hash_only,
+                }),
+                ...(dto.remove_watermark !== undefined && {
+                  remove_watermark: dto.remove_watermark,
+                }),
+                ...(dto.watermark_image_count !== undefined && {
+                  watermark_image_count: dto.watermark_image_count,
+                }),
+                ...(dto.watermark_manual_selection !== undefined && {
+                  watermark_manual_selection: dto.watermark_manual_selection,
+                }),
+              },
+            }),
+          ]
+        : []),
+    ]);
+
+    return { updated: trackableIds.length };
   }
 
   async untrack(userId: string, agencyId: string): Promise<void> {
@@ -359,6 +443,52 @@ export class UserTrackedAgenciesService {
         },
       },
     });
+  }
+
+  private trackingUpdateData(
+    dto: TrackAgencyDto,
+  ): Prisma.UserTrackedAgencyUpdateManyMutationInput {
+    return {
+      ...(dto.track_new_listings !== undefined && {
+        track_new_listings: dto.track_new_listings,
+      }),
+      ...(dto.track_removed_listings !== undefined && {
+        track_removed_listings: dto.track_removed_listings,
+      }),
+      ...(dto.track_updated_listings !== undefined && {
+        track_updated_listings: dto.track_updated_listings,
+      }),
+      ...(dto.auto_update_to_crm !== undefined && {
+        auto_update_to_crm: dto.auto_update_to_crm,
+      }),
+      ...(dto.cms_update_on_hash_only !== undefined && {
+        cms_update_on_hash_only: dto.cms_update_on_hash_only,
+      }),
+      ...(dto.enabled !== undefined && { enabled: dto.enabled }),
+      ...(dto.concurrent_insertions !== undefined && {
+        concurrent_insertions: dto.concurrent_insertions,
+      }),
+      ...(dto.insertion_interval_seconds !== undefined && {
+        insertion_interval_seconds: dto.insertion_interval_seconds,
+      }),
+      ...(dto.max_properties !== undefined && {
+        max_properties: dto.max_properties,
+      }),
+      ...(dto.text_truncate_pieces !== undefined && {
+        text_truncate_pieces: normalizeTextTruncatePieces(
+          dto.text_truncate_pieces,
+        ),
+      }),
+      ...(dto.remove_watermark !== undefined && {
+        remove_watermark: dto.remove_watermark,
+      }),
+      ...(dto.watermark_image_count !== undefined && {
+        watermark_image_count: dto.watermark_image_count,
+      }),
+      ...(dto.watermark_manual_selection !== undefined && {
+        watermark_manual_selection: dto.watermark_manual_selection,
+      }),
+    };
   }
 
   private async requireOwnedTracker(userId: string, agencyId: string) {

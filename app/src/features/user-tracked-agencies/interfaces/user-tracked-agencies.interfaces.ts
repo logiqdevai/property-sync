@@ -48,6 +48,24 @@ export interface TrackAgencyPayload {
   watermark_manual_selection?: boolean;
 }
 
+export const BulkAgencyTrackingActions = {
+  TRACK: "track",
+  UNTRACK: "untrack",
+  UPDATE: "update",
+} as const;
+
+export type BulkAgencyTrackingAction =
+  (typeof BulkAgencyTrackingActions)[keyof typeof BulkAgencyTrackingActions];
+
+export interface BulkAgencyTrackingPayload extends TrackAgencyPayload {
+  agency_ids: string[];
+  action: BulkAgencyTrackingAction;
+}
+
+export interface BulkAgencyTrackingResult {
+  updated: number;
+}
+
 export interface AgencyListQuery {
   page?: number;
   limit?: number;

@@ -51,7 +51,9 @@ import {
 import {
   applyTextTruncatePieces,
   buildLocalizedTruncateUpdates,
+  didTextTruncateChange,
   normalizeTextTruncatePieces,
+  normalizeTruncateText,
 } from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
 import {
   BulkRemoveWatermarkImagesDto,
@@ -2401,21 +2403,27 @@ export class UserPropertiesService {
     });
 
     const propertyUpdates = properties.flatMap((property) => {
-      const nextTitle =
-        applyTextTruncatePieces(property.title, pieces, replaceWith) ??
-        property.title;
-      const nextDescription = applyTextTruncatePieces(
+      const titleChanged = didTextTruncateChange(
+        property.title,
+        pieces,
+        replaceWith,
+      );
+      const descriptionChanged = didTextTruncateChange(
         property.description,
         pieces,
         replaceWith,
       );
-
-      if (
-        nextTitle === property.title &&
-        nextDescription === property.description
-      ) {
+      if (!titleChanged && !descriptionChanged) {
         return [];
       }
+
+      const nextTitle = titleChanged
+        ? (applyTextTruncatePieces(property.title, pieces, replaceWith) ??
+          normalizeTruncateText(property.title))
+        : property.title;
+      const nextDescription = descriptionChanged
+        ? applyTextTruncatePieces(property.description, pieces, replaceWith)
+        : property.description;
 
       return [
         {
@@ -2525,39 +2533,26 @@ export class UserPropertiesService {
     const localizedChangedIds = [
       ...new Set(localizedUpdates.map((update) => update.user_property_id)),
     ];
-    const pushOnlyIds = localizedChangedIds.filter(
-      (id) => !propertyChangedIds.includes(id),
-    );
+    const changedIds = [
+      ...new Set([...propertyChangedIds, ...localizedChangedIds]),
+    ];
+    const pushIds = changedIds.length > 0 ? changedIds : uniqueIds;
 
-    let jobLogId: string | null = null;
-    if (propertyChangedIds.length > 0) {
-      const job = await this.enqueueContentProductionJobs(
-        userId,
-        propertyChangedIds,
-        {
-          runTranslations: true,
-          runAiTitles: true,
-          useAiBatch: false,
-          regenerate: true,
-          pushToCrm: true,
-        },
-      );
-      jobLogId = job.job_log_id;
-    } else if (pushOnlyIds.length > 0) {
-      const job = await this.enqueueContentProductionJobs(userId, pushOnlyIds, {
-        runTranslations: false,
-        runAiTitles: false,
-        useAiBatch: false,
-        regenerate: false,
-        pushToCrm: true,
-      });
-      jobLogId = job.job_log_id;
+    let queued = 0;
+    if (pushIds.length > 0) {
+      const result =
+        await this.cmsSyncOrchestratorService.planAndEnqueueManualPropertyUpdate(
+          userId,
+          pushIds,
+          { skipContentProduction: true },
+        );
+      queued = result.queued;
     }
 
     return {
-      updated: new Set([...propertyChangedIds, ...localizedChangedIds]).size,
+      updated: changedIds.length,
       total: uniqueIds.length,
-      job_log_id: jobLogId,
+      queued,
     };
   }
 
@@ -3491,21 +3486,27 @@ export class UserPropertiesService {
     });
 
     const propertyUpdates = properties.flatMap((property) => {
-      const nextTitle =
-        applyTextTruncatePieces(property.title, pieces, replaceWith) ??
-        property.title;
-      const nextDescription = applyTextTruncatePieces(
+      const titleChanged = didTextTruncateChange(
+        property.title,
+        pieces,
+        replaceWith,
+      );
+      const descriptionChanged = didTextTruncateChange(
         property.description,
         pieces,
         replaceWith,
       );
-
-      if (
-        nextTitle === property.title &&
-        nextDescription === property.description
-      ) {
+      if (!titleChanged && !descriptionChanged) {
         return [];
       }
+
+      const nextTitle = titleChanged
+        ? (applyTextTruncatePieces(property.title, pieces, replaceWith) ??
+          normalizeTruncateText(property.title))
+        : property.title;
+      const nextDescription = descriptionChanged
+        ? applyTextTruncatePieces(property.description, pieces, replaceWith)
+        : property.description;
 
       return [
         {
@@ -3619,19 +3620,27 @@ export class UserPropertiesService {
     const changedIds = [
       ...new Set([...propertyChangedIds, ...localizedChangedIds]),
     ];
-
-    if (propertyChangedIds.length > 0) {
-      setImmediate(async () => {
-        try {
-          await this.contentProductionService.produceForUserProperties(
-            propertyChangedIds,
-            { markStaleFirst: true, forceSyncAi: true },
-          );
-        } catch {}
-      });
+    const pushIds = changedIds.length > 0 ? changedIds : uniqueIds;
+    const pushByUser = new Map<string, string[]>();
+    for (const property of properties) {
+      if (!pushIds.includes(property.id)) continue;
+      const list = pushByUser.get(property.user_id) ?? [];
+      list.push(property.id);
+      pushByUser.set(property.user_id, list);
     }
 
-    return { updated: changedIds.length, total: uniqueIds.length };
+    let queued = 0;
+    for (const [ownerId, ownerIds] of pushByUser) {
+      const result =
+        await this.cmsSyncOrchestratorService.planAndEnqueueManualPropertyUpdate(
+          ownerId,
+          ownerIds,
+          { skipContentProduction: true },
+        );
+      queued += result.queued;
+    }
+
+    return { updated: changedIds.length, total: uniqueIds.length, queued };
   }
 
   async adminSplitMany(ids: string[]) {

@@ -171,6 +171,8 @@ export const ApiRoutes = {
             integrations: "/admin/estateweb/integrations",
             duplicates: (userIntegrationId: string) =>
                 `/admin/estateweb/integrations/${userIntegrationId}/duplicates`,
+            bulkUpdateSites: (userIntegrationId: string) =>
+                `/admin/estateweb/integrations/${userIntegrationId}/properties/bulk-update-sites`,
         },
     },
     integrations: {
@@ -186,6 +188,7 @@ export const ApiRoutes = {
     agencies: {
         prefix: "/agencies",
         list: "/agencies",
+        bulkTracking: "/agencies/bulk-tracking",
         track: (agencyId: string) => `/agencies/${agencyId}/track`,
         integrationLink: (agencyId: string) => `/agencies/${agencyId}/track/integration`,
         contentPublishing: (agencyId: string) =>

@@ -282,7 +282,7 @@ export interface UpdateUserPropertyStatusResult {
 export interface TruncateUserPropertyDescriptionsResult {
   updated: number;
   total: number;
-  job_log_id?: string | null;
+  queued?: number;
 }
 
 export interface UpdateIntegrationImagesPayload {

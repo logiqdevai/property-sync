@@ -1,12 +1,14 @@
-import type {
-  AgencyListQuery,
-  TrackAgencyPayload,
-  TrackableAgency,
+import {
+  BulkAgencyTrackingActions,
+  type AgencyListQuery,
+  type TrackAgencyPayload,
+  type TrackableAgency,
 } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { TablePageSizeOptions } from "@/config/constants/dropdowns/shared/table-page-size.options";
 import {
+  useBulkAgencyTracking,
   useTrackableAgencies,
   useUntrackAgency,
   useUpdateAgencyTracking,
@@ -17,7 +19,12 @@ import {
   useAgencyTrackingControls,
 } from "./components/agency-list-card";
 import { AgencyPublishingSettingsModal } from "./components/agency-publishing-settings-modal";
-import { AgencyTrackingColumnHeader } from "./components/agency-tracking-column-header";
+import {
+  AgencyTrackingColumnHeader,
+  getAgencyTrackingTogglePayload,
+  getAgencyTrackingToggleValue,
+  type AgencyTrackingToggleColumnId,
+} from "./components/agency-tracking-column-header";
 import { WatermarkSettingsModal } from "./components/watermark-settings-modal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMemo, useState } from "react";
@@ -186,6 +193,7 @@ function AgencyRow({
 export default function DashboardAgenciesPage() {
   const isMobile = useIsMobile();
   const untrackConfirm = useOverlayState();
+  const bulkUntrackConfirm = useOverlayState();
   const watermarkModal = useOverlayState();
   const publishingModal = useOverlayState();
   const [search, setSearch] = useState("");
@@ -193,6 +201,9 @@ export default function DashboardAgenciesPage() {
   const [limit, setLimit] = useState(20);
   const [pendingUntrack, setPendingUntrack] = useState<TrackableAgency | null>(
     null,
+  );
+  const [pendingBulkUntrackIds, setPendingBulkUntrackIds] = useState<string[]>(
+    [],
   );
   const [settingsAgency, setSettingsAgency] = useState<TrackableAgency | null>(
     null,
@@ -211,6 +222,7 @@ export default function DashboardAgenciesPage() {
   const { data, isPending } = useTrackableAgencies(query);
   const untrackAgency = useUntrackAgency();
   const updateTracking = useUpdateAgencyTracking();
+  const bulkTracking = useBulkAgencyTracking();
 
   const agencies = data?.data ?? [];
   const pagination = data?.pagination;
@@ -223,6 +235,65 @@ export default function DashboardAgenciesPage() {
     if (!pendingUntrack) return;
     await untrackAgency.mutateAsync(pendingUntrack.id);
     setPendingUntrack(null);
+  };
+
+  const handleBulkUntrack = async () => {
+    if (pendingBulkUntrackIds.length === 0) return;
+    await bulkTracking.mutateAsync({
+      agency_ids: pendingBulkUntrackIds,
+      action: BulkAgencyTrackingActions.UNTRACK,
+    });
+    setPendingBulkUntrackIds([]);
+  };
+
+  const enabledAgencies = agencies.filter((agency) => agency.is_enabled);
+  const trackedAgencies = enabledAgencies.filter((agency) => agency.is_tracked);
+  const isColumnTogglePending = bulkTracking.isPending;
+
+  const getColumnToggle = (columnId: AgencyTrackingToggleColumnId) => {
+    const eligible =
+      columnId === "track" ? enabledAgencies : trackedAgencies;
+    const isSelected =
+      eligible.length > 0 &&
+      eligible.every((agency) =>
+        getAgencyTrackingToggleValue(agency, columnId),
+      );
+
+    return {
+      isSelected,
+      isDisabled: eligible.length === 0 || isColumnTogglePending,
+      onChange: (next: boolean) => {
+        if (columnId === "track") {
+          const agencyIds = enabledAgencies
+            .filter((agency) => agency.is_tracked !== next)
+            .map((agency) => agency.id);
+          if (agencyIds.length === 0) return;
+          if (!next) {
+            setPendingBulkUntrackIds(agencyIds);
+            bulkUntrackConfirm.open();
+            return;
+          }
+          bulkTracking.mutate({
+            agency_ids: agencyIds,
+            action: BulkAgencyTrackingActions.TRACK,
+          });
+          return;
+        }
+
+        const agencyIds = trackedAgencies
+          .filter(
+            (agency) =>
+              getAgencyTrackingToggleValue(agency, columnId) !== next,
+          )
+          .map((agency) => agency.id);
+        if (agencyIds.length === 0) return;
+        bulkTracking.mutate({
+          agency_ids: agencyIds,
+          action: BulkAgencyTrackingActions.UPDATE,
+          ...getAgencyTrackingTogglePayload(columnId, next),
+        });
+      },
+    };
   };
 
   const saveSettingsPrefs = (payload: TrackAgencyPayload) => {
@@ -344,22 +415,40 @@ export default function DashboardAgenciesPage() {
                       <AgencyTrackingColumnHeader columnId="agency" />
                     </Table.Column>
                     <Table.Column>
-                      <AgencyTrackingColumnHeader columnId="track" />
+                      <AgencyTrackingColumnHeader
+                        columnId="track"
+                        toggle={getColumnToggle("track")}
+                      />
                     </Table.Column>
                     <Table.Column>
-                      <AgencyTrackingColumnHeader columnId="new" />
+                      <AgencyTrackingColumnHeader
+                        columnId="new"
+                        toggle={getColumnToggle("new")}
+                      />
                     </Table.Column>
                     <Table.Column>
-                      <AgencyTrackingColumnHeader columnId="updated" />
+                      <AgencyTrackingColumnHeader
+                        columnId="updated"
+                        toggle={getColumnToggle("updated")}
+                      />
                     </Table.Column>
                     <Table.Column>
-                      <AgencyTrackingColumnHeader columnId="removed" />
+                      <AgencyTrackingColumnHeader
+                        columnId="removed"
+                        toggle={getColumnToggle("removed")}
+                      />
                     </Table.Column>
                     <Table.Column>
-                      <AgencyTrackingColumnHeader columnId="auto_crm" />
+                      <AgencyTrackingColumnHeader
+                        columnId="auto_crm"
+                        toggle={getColumnToggle("auto_crm")}
+                      />
                     </Table.Column>
                     <Table.Column>
-                      <AgencyTrackingColumnHeader columnId="content_changes_only" />
+                      <AgencyTrackingColumnHeader
+                        columnId="content_changes_only"
+                        toggle={getColumnToggle("content_changes_only")}
+                      />
                     </Table.Column>
                     <Table.Column>
                       <AgencyTrackingColumnHeader columnId="watermark" />
@@ -424,6 +513,15 @@ export default function DashboardAgenciesPage() {
         confirmLabel="Untrack"
         onConfirm={handleUntrack}
         isPending={untrackAgency.isPending}
+      />
+
+      <ConfirmationDialog
+        state={bulkUntrackConfirm}
+        title="Stop tracking these agencies?"
+        description={`You will no longer receive property updates from ${pendingBulkUntrackIds.length} ${pendingBulkUntrackIds.length === 1 ? "agency" : "agencies"}.`}
+        confirmLabel="Untrack"
+        onConfirm={handleBulkUntrack}
+        isPending={bulkTracking.isPending}
       />
 
       {activeSettingsAgency?.tracking_prefs ? (

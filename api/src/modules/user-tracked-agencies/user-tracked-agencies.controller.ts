@@ -23,6 +23,7 @@ import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { UserTrackedAgenciesService } from './user-tracked-agencies.service';
 import { TrackAgencyDto } from './dto/track-agency.dto';
+import { BulkAgencyTrackingDto } from './dto/bulk-agency-tracking.dto';
 import { LinkIntegrationDto } from './dto/link-integration.dto';
 import {
   BrowseAgencyQuerySchema,
@@ -50,6 +51,18 @@ export class UserTrackedAgenciesController {
     query: BrowseAgencyQueryType,
   ) {
     return this.userTrackedAgenciesService.findAll(userId, query);
+  }
+
+  @Post('bulk-tracking')
+  @ApiOperation({
+    summary: 'Track, untrack, or update preferences for many agencies',
+  })
+  @ApiResponse({ status: 201, description: 'Bulk tracking applied' })
+  bulkTracking(
+    @CurrentUser('id') userId: string,
+    @Body() dto: BulkAgencyTrackingDto,
+  ) {
+    return this.userTrackedAgenciesService.bulkTracking(userId, dto);
   }
 
   @Post(':agencyId/track')

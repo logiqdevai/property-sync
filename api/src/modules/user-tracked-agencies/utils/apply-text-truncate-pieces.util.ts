@@ -15,7 +15,7 @@ function parsePiece(piece: string): { mode: TruncatePieceMode; value: string } {
   return { mode: 'text', value: piece };
 }
 
-function normalizeTruncateText(text: string): string {
+export function normalizeTruncateText(text: string): string {
   return text
     .normalize('NFC')
     .replace(/\r\n?/g, '\n')
@@ -46,7 +46,7 @@ function buildPatternRegExp(pattern: string): RegExp {
     .join('[\\s\\S]*?')
     .split(NUMBER_MARKER)
     .join('[0-9]+(?:-[0-9]+)*');
-  return new RegExp(source, 'g');
+  return new RegExp(source, 'gu');
 }
 
 function removePiece(
@@ -65,7 +65,7 @@ function removePiece(
   }
 
   const pattern = escapeRegExp(value).replace(/\s+/g, '\\s+');
-  return text.replace(new RegExp(pattern, 'g'), replacement);
+  return text.replace(new RegExp(pattern, 'gu'), replacement);
 }
 
 export function applyTextTruncatePieces(
@@ -81,7 +81,11 @@ export function applyTextTruncatePieces(
     const { mode, value } = parsePiece(piece);
     const normalizedValue = normalizeTruncateText(value);
     if (!normalizedValue) continue;
-    result = removePiece(result, encodeTruncatePiece(mode, normalizedValue), replacement);
+    result = removePiece(
+      result,
+      encodeTruncatePiece(mode, normalizedValue),
+      replacement,
+    );
   }
 
   const cleaned = normalizeTruncateText(result);
@@ -110,14 +114,24 @@ export function normalizeTextTruncatePieces(
   return normalized;
 }
 
+export function didTextTruncateChange(
+  text: string | null | undefined,
+  pieces: string[],
+  replacement = '',
+): boolean {
+  const previous = text ? normalizeTruncateText(text) : '';
+  const next = applyTextTruncatePieces(text, pieces, replacement) ?? '';
+  return next !== previous;
+}
+
 export function buildLocalizedTruncateUpdates(
   rows: Array<{ id: string; user_property_id: string; text: string }>,
   pieces: string[],
   replacement = '',
 ): Array<{ id: string; user_property_id: string; text: string }> {
   return rows.flatMap((row) => {
+    if (!didTextTruncateChange(row.text, pieces, replacement)) return [];
     const nextText = applyTextTruncatePieces(row.text, pieces, replacement) ?? '';
-    if (nextText === row.text) return [];
     return [
       {
         id: row.id,

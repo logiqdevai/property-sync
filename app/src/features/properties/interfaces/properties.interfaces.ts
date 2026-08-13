@@ -204,4 +204,5 @@ export interface TruncatePropertyDescriptionsPayload {
 export interface TruncatePropertyDescriptionsResult {
   updated: number;
   total: number;
+  queued?: number;
 }

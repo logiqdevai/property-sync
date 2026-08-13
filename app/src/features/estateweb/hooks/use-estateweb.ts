@@ -1,5 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import type { EstateWebPushSiteSetting } from "../interfaces/estateweb-integration-settings.interfaces";
 import {
+  bulkUpdateEstateWebPropertySites,
   getEstateWebAdminIntegrations,
   getEstateWebDuplicateProperties,
   getEstateWebEnergyClassCatalog,
@@ -95,5 +97,19 @@ export const useEstateWebDuplicateProperties = (
     queryKey: ["estateweb", "admin", "duplicates", userIntegrationId],
     queryFn: () => getEstateWebDuplicateProperties(userIntegrationId as string),
     enabled: enabled && !!userIntegrationId,
+  });
+};
+
+export const useBulkUpdateEstateWebPropertySites = () => {
+  return useMutation({
+    mutationFn: ({
+      userIntegrationId,
+      codes,
+      sites,
+    }: {
+      userIntegrationId: string;
+      codes: string[];
+      sites: EstateWebPushSiteSetting[];
+    }) => bulkUpdateEstateWebPropertySites(userIntegrationId, codes, sites),
   });
 };
