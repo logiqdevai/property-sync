@@ -49,9 +49,12 @@ import {
   buildPropertyRecord,
   detectDuplicates,
   diffPropertyChanges,
+  imagesArray,
   matchExistingDuplicateGroup,
   matchNormalizedRowsToIds,
 } from '../utils/property-normalization.utils';
+import { detectSoldWatermark } from '../utils/sold-watermark-detection.util';
+import { ScraperConfig } from '@/integrations/crawler/interfaces/scraper-config.interface';
 import {
   AffectedUserProperty,
   PropertySyncChangeType,
@@ -91,6 +94,7 @@ type PendingCmsSyncAffected = SyncForPropertyResult[];
 
 const CMS_SYNC_CHANGE_PRIORITY: Record<PropertySyncChangeType, number> = {
   removed: 3,
+  sold: 3,
   created: 2,
   updated: 1,
 };
@@ -1711,26 +1715,74 @@ export class PropertyNormalizationService {
       return { removedCount: 0, totalTracked, affected: [] };
     }
 
+    let soldWatermarkCheckEnabled = false;
+    if (scraperId) {
+      const scraper = await this.prisma.scraper.findUnique({
+        where: { id: scraperId },
+        select: { active_version: { select: { config: true } } },
+      });
+      const config = scraper?.active_version?.config as unknown as
+        | ScraperConfig
+        | undefined;
+      soldWatermarkCheckEnabled = config?.sold_watermark_check === true;
+    }
+
     const affected: SyncForPropertyResult[] = [];
 
     for (const property of candidates) {
+      let newStatus: PropertyStatus = PropertyStatus.REMOVED;
+      let changeType: PropertySyncChangeType = 'removed';
+
+      if (soldWatermarkCheckEnabled) {
+        const primaryImage = imagesArray(property.images)[0];
+        if (primaryImage) {
+          try {
+            if (await detectSoldWatermark(primaryImage)) {
+              newStatus = PropertyStatus.SOLD;
+              changeType = 'sold';
+            }
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            this.logger.warn(
+              `Sold-watermark check failed for property ${property.id}, falling back to REMOVED: ${message}`,
+            );
+          }
+        }
+      }
+
       await this.prisma.property.update({
         where: { id: property.id },
-        data: { status: PropertyStatus.REMOVED },
+        data: { status: newStatus },
       });
-      await this.prisma.propertyHistory.create({
-        data: {
-          property_id: property.id,
-          event_type: PropertyHistoryEventType.REMOVED,
-          crawl_run_id: crawlRunId,
-        },
-      });
+
+      if (newStatus === PropertyStatus.SOLD) {
+        await this.prisma.propertyHistory.create({
+          data: {
+            property_id: property.id,
+            event_type: PropertyHistoryEventType.STATUS_CHANGED,
+            field: 'status',
+            old_value: property.status,
+            new_value: newStatus,
+            crawl_run_id: crawlRunId,
+          },
+        });
+      } else {
+        await this.prisma.propertyHistory.create({
+          data: {
+            property_id: property.id,
+            event_type: PropertyHistoryEventType.REMOVED,
+            crawl_run_id: crawlRunId,
+          },
+        });
+      }
+
       const removalResults = await this.userPropertiesService.syncForProperty(
         property.id,
         {
           userTrackedAgencyId,
           sourceAgencyId,
-          changeType: 'removed',
+          changeType,
         },
       );
       affected.push(...removalResults);

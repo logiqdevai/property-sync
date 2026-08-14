@@ -44,6 +44,11 @@ export interface ScraperConfig {
   fields?: Record<string, string | FieldDef>;
   pagination?: PaginationConfig;
   detail_page?: DetailPageConfig;
+  // When true, a property about to be marked REMOVED (missing from the current crawl) is first
+  // checked for a "SOLD" stamp baked into the pixels of its primary image (agencies that don't
+  // expose sold status as page text/markup, only as a burned-in watermark on the cover photo) —
+  // see property-normalization.service.ts#detectRemovalsAndReappearances.
+  sold_watermark_check?: boolean;
 }
 
 export interface CrawlItem {

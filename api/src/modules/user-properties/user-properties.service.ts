@@ -106,7 +106,7 @@ import {
 } from './utils/integration-property-images.util';
 import { buildUserPropertySearchOr } from './utils/user-property-search.util';
 
-export type PropertySyncChangeType = 'created' | 'updated' | 'removed';
+export type PropertySyncChangeType = 'created' | 'updated' | 'removed' | 'sold';
 
 export interface SyncForPropertyOptions {
   userTrackedAgencyId?: string;
@@ -2946,7 +2946,10 @@ export class UserPropertiesService {
         continue;
       }
 
-      if (options.changeType === 'removed' && !tracker.track_removed_listings) {
+      if (
+        (options.changeType === 'removed' || options.changeType === 'sold') &&
+        !tracker.track_removed_listings
+      ) {
         continue;
       }
 
@@ -2993,18 +2996,21 @@ export class UserPropertiesService {
         continue;
       }
 
-      if (options.changeType === 'removed') {
+      if (options.changeType === 'removed' || options.changeType === 'sold') {
         if (!existing) continue;
         await this.prisma.userProperty.update({
           where: { id: existing.id },
           data: {
-            status: PropertyStatus.REMOVED,
+            status:
+              options.changeType === 'sold'
+                ? PropertyStatus.SOLD
+                : PropertyStatus.REMOVED,
             last_synced_at: new Date(),
           },
         });
         results.push({
           user_property_id: existing.id,
-          change_type: 'removed',
+          change_type: options.changeType,
           user_tracked_agency_id: tracker.id,
         });
         continue;

@@ -726,7 +726,7 @@ export interface HistoryWriteInput {
   crawl_run_id?: string | null;
 }
 
-function imagesArray(value: unknown): string[] {
+export function imagesArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === 'string');
 }

@@ -2,7 +2,7 @@ import { UserProperty } from 'generated/prisma';
 
 export type CmsSyncOperationType = 'CREATE' | 'UPDATE' | 'REMOVE';
 
-export type PropertySyncChangeType = 'created' | 'updated' | 'removed';
+export type PropertySyncChangeType = 'created' | 'updated' | 'removed' | 'sold';
 
 const PROPERTY_SYNC_TO_CMS_OPERATION: Record<
   PropertySyncChangeType,
@@ -11,6 +11,9 @@ const PROPERTY_SYNC_TO_CMS_OPERATION: Record<
   created: 'CREATE',
   updated: 'UPDATE',
   removed: 'REMOVE',
+  // The CMS integration only knows CREATE/UPDATE/REMOVE -- a sold listing is delisted the same
+  // way a removed one is, it's just tracked as a more specific PropertyStatus internally.
+  sold: 'REMOVE',
 };
 
 export function toCmsSyncOperationType(
