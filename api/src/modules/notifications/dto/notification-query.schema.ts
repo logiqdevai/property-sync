@@ -16,6 +16,16 @@ export const NotificationQuerySchema = z.object({
     .enum(['true', 'false'])
     .optional()
     .transform((v) => (v === undefined ? undefined : v === 'true')),
+  date_from: z
+    .string()
+    .datetime()
+    .optional()
+    .transform((v) => (v ? new Date(v) : undefined)),
+  date_to: z
+    .string()
+    .datetime()
+    .optional()
+    .transform((v) => (v ? new Date(v) : undefined)),
 });
 
 export type NotificationQueryType = z.infer<typeof NotificationQuerySchema>;

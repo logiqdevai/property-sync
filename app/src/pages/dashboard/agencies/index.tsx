@@ -26,18 +26,24 @@ import {
   type AgencyTrackingToggleColumnId,
 } from "./components/agency-tracking-column-header";
 import { WatermarkSettingsModal } from "./components/watermark-settings-modal";
+import {
+  BulkInsertionSettingsModal,
+  type BulkInsertionSettingsPayload,
+} from "./components/bulk-insertion-settings-modal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMemo, useState } from "react";
 import {
   Button,
+  Dropdown,
   Input,
+  Label,
   ListBox,
   Pagination,
   Select,
   Table,
   useOverlayState,
 } from "@heroui/react";
-import { ExternalLink, Search, Settings } from "lucide-react";
+import { ChevronDown, ExternalLink, Search, Settings, SlidersHorizontal } from "lucide-react";
 
 function AgencyRow({
   agency,
@@ -196,6 +202,7 @@ export default function DashboardAgenciesPage() {
   const bulkUntrackConfirm = useOverlayState();
   const watermarkModal = useOverlayState();
   const publishingModal = useOverlayState();
+  const bulkInsertionSettingsModal = useOverlayState();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
@@ -223,6 +230,14 @@ export default function DashboardAgenciesPage() {
   const untrackAgency = useUntrackAgency();
   const updateTracking = useUpdateAgencyTracking();
   const bulkTracking = useBulkAgencyTracking();
+
+  const allTrackedAgenciesQuery = useTrackableAgencies(
+    { page: 1, limit: 0 },
+    { enabled: bulkInsertionSettingsModal.isOpen },
+  );
+  const allTrackedAgencyIds = (allTrackedAgenciesQuery.data?.data ?? [])
+    .filter((agency) => agency.is_tracked && agency.is_enabled)
+    .map((agency) => agency.id);
 
   const agencies = data?.data ?? [];
   const pagination = data?.pagination;
@@ -306,6 +321,18 @@ export default function DashboardAgenciesPage() {
     });
   };
 
+  const handleBulkInsertionSettingsSave = async (
+    payload: BulkInsertionSettingsPayload,
+  ) => {
+    if (allTrackedAgencyIds.length === 0) return;
+    await bulkTracking.mutateAsync({
+      agency_ids: allTrackedAgencyIds,
+      action: BulkAgencyTrackingActions.UPDATE,
+      concurrent_insertions: payload.concurrent_insertions,
+      insertion_interval_seconds: payload.insertion_interval_seconds,
+    });
+  };
+
   const openWatermarkSettings = (item: TrackableAgency) => {
     setSettingsAgency(item);
     watermarkModal.open();
@@ -375,6 +402,31 @@ export default function DashboardAgenciesPage() {
             </ListBox>
           </Select.Popover>
         </Select>
+        <Dropdown>
+          <Button variant="secondary" className="shrink-0">
+            Actions
+            <ChevronDown className="size-3.5" />
+          </Button>
+          <Dropdown.Popover>
+            <Dropdown.Menu
+              onAction={(key) => {
+                if (key === "bulk-insertion-settings") {
+                  bulkInsertionSettingsModal.open();
+                }
+              }}
+            >
+              <Dropdown.Item
+                id="bulk-insertion-settings"
+                textValue="Bulk insertion settings"
+              >
+                <div className="flex w-full items-center gap-2">
+                  <SlidersHorizontal className="h-3.5 w-3.5 shrink-0 text-muted" />
+                  <Label>Bulk insertion settings</Label>
+                </div>
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown.Popover>
+        </Dropdown>
       </div>
 
       {isPending ? (
@@ -553,6 +605,14 @@ export default function DashboardAgenciesPage() {
           !activeSettingsAgency?.is_enabled || updateTracking.isPending
         }
         onAdminSettingsChange={saveSettingsPrefs}
+      />
+
+      <BulkInsertionSettingsModal
+        state={bulkInsertionSettingsModal}
+        agencyCount={allTrackedAgencyIds.length}
+        isLoadingCount={allTrackedAgenciesQuery.isPending}
+        isPending={bulkTracking.isPending}
+        onConfirm={handleBulkInsertionSettingsSave}
       />
     </div>
   );

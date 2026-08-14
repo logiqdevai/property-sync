@@ -50,6 +50,8 @@ export class NotificationsController {
   @ApiQuery({ name: 'type', required: false, enum: NotificationType })
   @ApiQuery({ name: 'severity', required: false, enum: NotificationSeverity })
   @ApiQuery({ name: 'is_read', required: false, enum: ['true', 'false'] })
+  @ApiQuery({ name: 'date_from', required: false, type: String })
+  @ApiQuery({ name: 'date_to', required: false, type: String })
   findAll(
     @Query(new ZodValidationPipe(NotificationQuerySchema))
     query: NotificationQueryType,

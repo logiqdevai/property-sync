@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  ArrayMaxSize,
-  ArrayMinSize,
-  IsArray,
-  IsIn,
-  IsUUID,
-} from 'class-validator';
+import { ArrayMinSize, IsArray, IsIn, IsUUID } from 'class-validator';
 import { TrackAgencyDto } from './track-agency.dto';
 
 export const BulkAgencyTrackingActions = {
@@ -21,7 +15,6 @@ export class BulkAgencyTrackingDto extends TrackAgencyDto {
   @ApiProperty({ type: [String], minItems: 1 })
   @IsArray()
   @ArrayMinSize(1)
-  @ArrayMaxSize(500)
   @IsUUID('4', { each: true })
   agency_ids: string[];
 

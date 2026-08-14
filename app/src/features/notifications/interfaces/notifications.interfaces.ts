@@ -63,6 +63,8 @@ export interface NotificationListQuery {
   type?: NotificationType;
   severity?: NotificationSeverity;
   is_read?: boolean;
+  date_from?: string;
+  date_to?: string;
 }
 
 export interface PaginationMeta {

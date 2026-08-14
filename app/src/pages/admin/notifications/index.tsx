@@ -13,9 +13,11 @@ import {
 } from "@heroui/react";
 import { Copy, MailOpen, Send, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
+import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { toEndOfDayIso, toStartOfDayIso } from "@/lib/date";
 import {
   TableRowActionsMenu,
   type TableRowAction,
@@ -85,6 +87,8 @@ export default function NotificationsListPage() {
   const [type, setType] = useState<NotificationType | "all">("all");
   const [severity, setSeverity] = useState<NotificationSeverity | "all">("all");
   const [readState, setReadState] = useState<"all" | "true" | "false">("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deleteNotificationId, setDeleteNotificationId] = useState<string | null>(null);
@@ -102,8 +106,10 @@ export default function NotificationsListPage() {
       ...(type !== "all" && { type }),
       ...(severity !== "all" && { severity }),
       ...(readState !== "all" && { is_read: readState === "true" }),
+      ...(dateFrom && { date_from: toStartOfDayIso(dateFrom) }),
+      ...(dateTo && { date_to: toEndOfDayIso(dateTo) }),
     }),
-    [page, type, severity, readState],
+    [page, type, severity, readState, dateFrom, dateTo],
   );
 
   const { data, isPending } = useNotifications(query);
@@ -263,6 +269,25 @@ export default function NotificationsListPage() {
             </ListBox>
           </Select.Popover>
         </Select>
+
+        <DatePickerField
+          aria-label="From date"
+          value={dateFrom}
+          onChange={(next) => {
+            setPage(1);
+            clearSelection();
+            setDateFrom(next);
+          }}
+        />
+        <DatePickerField
+          aria-label="To date"
+          value={dateTo}
+          onChange={(next) => {
+            setPage(1);
+            clearSelection();
+            setDateTo(next);
+          }}
+        />
       </div>
 
       {isPending ? (

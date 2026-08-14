@@ -66,6 +66,12 @@ export class NotificationsService {
       ...(query.type && { type: query.type }),
       ...(query.severity && { severity: query.severity }),
       ...(query.is_read !== undefined && { is_read: query.is_read }),
+      ...((query.date_from || query.date_to) && {
+        created_at: {
+          ...(query.date_from && { gte: query.date_from }),
+          ...(query.date_to && { lte: query.date_to }),
+        },
+      }),
     };
 
     const [items, total] = await Promise.all([

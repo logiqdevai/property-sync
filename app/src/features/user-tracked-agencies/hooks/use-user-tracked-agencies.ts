@@ -18,10 +18,14 @@ import {
   type TrackAgencyPayload,
 } from "../interfaces/user-tracked-agencies.interfaces";
 
-export const useTrackableAgencies = (query: AgencyListQuery) => {
+export const useTrackableAgencies = (
+  query: AgencyListQuery,
+  options?: { enabled?: boolean },
+) => {
   return useQuery({
     queryKey: ["trackableAgencies", query],
     queryFn: () => getTrackableAgencies(query),
+    enabled: options?.enabled ?? true,
   });
 };
 
