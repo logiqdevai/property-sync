@@ -107,7 +107,7 @@ export class PropertiesService {
   ): string | null {
     const names: string[] = [];
     const seen = new Set<string>();
-    const ordered = [...sourceLinks].toSorted(
+    const ordered = [...sourceLinks].sort(
       (a, b) => Number(b.is_primary_source) - Number(a.is_primary_source),
     );
 

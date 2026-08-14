@@ -8,6 +8,8 @@ Generated: 2026-08-14
 
 **delete_ids (comma separated):** 52485, 52483, 52481, 52478, 52476, 52474, 52473, 52471, 52468, 52466, 52463, 52461, 52459, 52456, 52455, 52453, 52452, 52449, 52446, 52444, 52443, 52441, 52439, 52438, 52436, 52434, 52432, 52430, 52429, 52428, 52426, 52424, 52422, 52421, 52418, 52416, 52415, 52413, 52408, 52407, 52406, 52404, 52402, 52400, 52398, 52396, 52395, 52394, 52393, 52391, 52390, 51467, 51463, 51462, 46868, 46849, 46823, 46814, 46801, 46800, 46799, 46798, 46789, 46788, 46787, 46786, 46785, 46780, 46773, 46772, 46771, 46770
 
+⚠️ **Needs a real double-check (not confident it's a true duplicate):** `52452` — location doesn't match its keeper (Ρέθυμνο vs Επισκοπή). Everything else in this agency's DUPLICATE rows is confirmed (location + sqm match exactly; the price mismatch you'll see for most of them is a known data bug — the orphan's price field equals its own sqm value, not a real price). The 21 STANDALONE rows (no code collision, no local match at all — the `0204`–`0240` batch) have no duplicate to cross-check against and still need individual manual review regardless.
+
 | Delete ID | Code | Delete link | Status | Keep ID | Keep link | Local property title |
 |---|---|---|---|---|---|---|
 | 52485 | 14726228 | [open](https://app.estateweb.gr/app/property/52485) | DUPLICATE | 52508 | [open](https://app.estateweb.gr/app/property/52508) | Βίλα προς πώληση Πηγή (Αρκάδι) |
@@ -87,6 +89,8 @@ Generated: 2026-08-14
 
 **delete_ids (comma separated):** 52723, 52708, 51573, 51324, 51202, 50900, 50899, 50790, 50739, 50719, 50524, 50326, 49977, 49733, 49683, 49657, 49656, 49655, 49551, 49295, 48700, 48699, 48616, 48476, 48231, 47821, 47698, 47302, 47232, 47224, 47126, 47102, 47094, 47076
 
+⚠️ **Needs a real double-check (not confident it's a true duplicate):** `51202`, `50899`, `50719` — real location mismatch plus an 11–15% price gap against their keeper, the most likely candidates for a false-positive code collision (two different real listings that share a code by coincidence). Also `48476` (76.7% price gap, same location/sqm — likely a stale snapshot but unverified), `49655` (13.6% price gap), `49656` (27% sqm gap). The other 28 STANDALONE rows still need individual manual review — they have no code collision to compare against at all.
+
 | Delete ID | Code | Delete link | Status | Keep ID | Keep link | Local property title |
 |---|---|---|---|---|---|---|
 | 52723 | 25029 | [open](https://app.estateweb.gr/app/property/52723) | DUPLICATE | 52778 | [open](https://app.estateweb.gr/app/property/52778) | Οικόπεδο προς πώληση Φραγκοκάστελλο (Σφακιά), € 350.000, 10.000 τ.μ. |
@@ -128,6 +132,8 @@ Generated: 2026-08-14
 
 **delete_ids (comma separated):** 50470, 50468, 50441, 50440, 49880, 49867, 49863, 49861, 49803
 
+⚠️ **Needs a real double-check (not confident it's a true duplicate):** `50470`, `50440`, `49861`, `49803`, `49867` — location mismatch against the keeper, though mostly the pattern of the keeper being tagged with the generic city ("Χανιά") while the orphan has a specific neighborhood, which may just be coarser granularity rather than a different property. `50440` additionally has a 100% sqm mismatch (61 vs 0), the most suspicious one here. Also `49880` and `50468` (price off by 8.5–10.5%, location matches). The 2 STANDALONE rows (`50441`, `49863`) still need individual manual review.
+
 | Delete ID | Code | Delete link | Status | Keep ID | Keep link | Local property title |
 |---|---|---|---|---|---|---|
 | 50470 | CH247 | [open](https://app.estateweb.gr/app/property/50470) | DUPLICATE | 53398 | [open](https://app.estateweb.gr/app/property/53398) | Luxury Maisonette Apartment By the Old Harbor of Chania |
@@ -144,6 +150,8 @@ Generated: 2026-08-14
 
 **delete_ids (comma separated):** 52780, 52352, 52256, 52030
 
+✅ **Needs a real double-check:** none — the 2 DUPLICATE rows (`52352`, `52256`) are exact matches on price/location/sqm against their keeper. `52780` and `52030` are STANDALONE (no duplicate to compare against; `52030`'s code matches a local property that isn't linked to it) and still need individual manual review.
+
 | Delete ID | Code | Delete link | Status | Keep ID | Keep link | Local property title |
 |---|---|---|---|---|---|---|
 | 52780 | 1974 | [open](https://app.estateweb.gr/app/property/52780) | STANDALONE — no local match, verify manually | - | - | - |
@@ -154,6 +162,8 @@ Generated: 2026-08-14
 ## nikiestate — 1 orphan record(s)
 
 **delete_ids (comma separated):** 48640
+
+✅ **Needs a real double-check:** not applicable — no code collision here, so nothing to cross-check against. `48640` is STANDALONE and needs individual manual review regardless.
 
 | Delete ID | Code | Delete link | Status | Keep ID | Keep link | Local property title |
 |---|---|---|---|---|---|---|
