@@ -14,7 +14,7 @@ export default function DashboardLayout() {
     <div className="flex h-full w-full min-h-0 min-w-0 max-w-full overflow-hidden bg-background">
       <Sidebar />
 
-      <div className="mx-3 flex min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden lg:mr-3 lg:ml-0">
+      <div className="mx-3 flex min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden">
         <DashboardNavbar onMenuClick={drawerState.open} />
         <main className="min-h-0 min-w-0 max-w-full flex-1 overflow-y-auto overflow-x-hidden overscroll-contain p-4 sm:p-6">
           <div className="w-full min-w-0 max-w-full">

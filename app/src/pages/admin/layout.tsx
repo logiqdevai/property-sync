@@ -99,7 +99,7 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      <div className="mr-3 flex min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden">
+      <div className="mx-3 flex min-h-0 min-w-0 max-w-full flex-1 flex-col overflow-hidden">
         <AdminDashboardNavbar onMenuClick={drawerState.open} />
         <main className="min-h-0 min-w-0 max-w-full flex-1 overflow-y-auto overflow-x-hidden overscroll-contain p-6">
           <div className="w-full min-w-0 max-w-full">

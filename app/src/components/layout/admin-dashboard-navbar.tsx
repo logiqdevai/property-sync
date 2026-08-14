@@ -22,7 +22,7 @@ export default function AdminDashboardNavbar({ onMenuClick }: AdminDashboardNavb
   return (
     <header
       className={cn(
-        'mx-3 mt-3 rounded-xl shrink-0',
+        'mt-3 rounded-xl shrink-0',
         'h-12 flex items-center justify-between px-3',
         'bg-surface border border-border',
       )}
@@ -53,7 +53,7 @@ export default function AdminDashboardNavbar({ onMenuClick }: AdminDashboardNavb
         >
           {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </button>
-        <UserMenuPopover collapsed={false} placement="bottom" />
+        <UserMenuPopover collapsed placement="bottom" />
       </div>
     </header>
   );

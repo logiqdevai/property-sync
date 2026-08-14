@@ -1,0 +1,89 @@
+============================================================================
+PAGALOS-TRUST -- 51 duplicate(s) to delete
+============================================================================
+
+14726228  https://app.estateweb.gr/app/property/52485
+12833725  https://app.estateweb.gr/app/property/52483
+17697274  https://app.estateweb.gr/app/property/52481
+19263939  https://app.estateweb.gr/app/property/52478
+1508517  https://app.estateweb.gr/app/property/52476
+17609663  https://app.estateweb.gr/app/property/52474
+19333240  https://app.estateweb.gr/app/property/52473
+19906722  https://app.estateweb.gr/app/property/52471
+12596831  https://app.estateweb.gr/app/property/52468
+10998157  https://app.estateweb.gr/app/property/52466
+15967987  https://app.estateweb.gr/app/property/52463
+15809072  https://app.estateweb.gr/app/property/52461
+18429148  https://app.estateweb.gr/app/property/52459
+17800054  https://app.estateweb.gr/app/property/52456
+11887476  https://app.estateweb.gr/app/property/52455
+16233101  https://app.estateweb.gr/app/property/52453
+19943739  https://app.estateweb.gr/app/property/52452
+15809064  https://app.estateweb.gr/app/property/52449
+12114743  https://app.estateweb.gr/app/property/52446
+20365517  https://app.estateweb.gr/app/property/52444
+19061428  https://app.estateweb.gr/app/property/52443
+17553703  https://app.estateweb.gr/app/property/52441
+20378263  https://app.estateweb.gr/app/property/52439
+20176002  https://app.estateweb.gr/app/property/52438
+16103164  https://app.estateweb.gr/app/property/52436
+19467738  https://app.estateweb.gr/app/property/52434
+19467975  https://app.estateweb.gr/app/property/52432
+19277265  https://app.estateweb.gr/app/property/52430
+16875798  https://app.estateweb.gr/app/property/52429
+19899984  https://app.estateweb.gr/app/property/52428
+17049045  https://app.estateweb.gr/app/property/52426
+9248874  https://app.estateweb.gr/app/property/52424
+16744305  https://app.estateweb.gr/app/property/52422
+18510839  https://app.estateweb.gr/app/property/52421
+18765710  https://app.estateweb.gr/app/property/52418
+19505210  https://app.estateweb.gr/app/property/52416
+4460377  https://app.estateweb.gr/app/property/52415
+15280316  https://app.estateweb.gr/app/property/52413
+20146751  https://app.estateweb.gr/app/property/52408
+4872043  https://app.estateweb.gr/app/property/52407
+17190425  https://app.estateweb.gr/app/property/52406
+14481011  https://app.estateweb.gr/app/property/52404
+19683627  https://app.estateweb.gr/app/property/52402
+19899994  https://app.estateweb.gr/app/property/52400
+19995986  https://app.estateweb.gr/app/property/52398
+17228181  https://app.estateweb.gr/app/property/52396
+16429285  https://app.estateweb.gr/app/property/52395
+13259230  https://app.estateweb.gr/app/property/52394
+19981256  https://app.estateweb.gr/app/property/52393
+11921345  https://app.estateweb.gr/app/property/52391
+20256172  https://app.estateweb.gr/app/property/52390
+
+============================================================================
+SAMSON-HOMES -- 9 duplicate(s) to delete
+============================================================================
+
+25029  https://app.estateweb.gr/app/property/52723
+23033  https://app.estateweb.gr/app/property/52708
+26041  https://app.estateweb.gr/app/property/51202
+26021  https://app.estateweb.gr/app/property/50899
+26010  https://app.estateweb.gr/app/property/50719
+25059  https://app.estateweb.gr/app/property/49656
+25061  https://app.estateweb.gr/app/property/49655
+25029  https://app.estateweb.gr/app/property/48476
+12769  https://app.estateweb.gr/app/property/47698
+
+============================================================================
+EUROLAND-CRETE -- 6 duplicate(s) to delete
+============================================================================
+
+CH247  https://app.estateweb.gr/app/property/50470
+CH235  https://app.estateweb.gr/app/property/50468
+RH066  https://app.estateweb.gr/app/property/49880
+KH342  https://app.estateweb.gr/app/property/49867
+KH354  https://app.estateweb.gr/app/property/49861
+KH348  https://app.estateweb.gr/app/property/49803
+
+============================================================================
+BITSIMIS-REAL-HOMES -- 2 duplicate(s) to delete
+============================================================================
+
+2793  https://app.estateweb.gr/app/property/52352
+3-2692  https://app.estateweb.gr/app/property/52256
+
+Total duplicates to delete across all agencies: 68
