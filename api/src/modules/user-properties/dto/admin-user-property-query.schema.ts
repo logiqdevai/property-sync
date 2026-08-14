@@ -5,6 +5,7 @@ import {
   PropertyType,
 } from 'generated/prisma';
 import { queryOrderSchemaFields } from '@/shared/utils/query-order.util';
+import { PROPERTY_CHANGE_FILTER_VALUES } from '@/modules/properties/utils/property-change-filter.util';
 
 const booleanQueryParam = z
   .enum(['true', 'false'])
@@ -27,7 +28,7 @@ export const AdminUserPropertyQuerySchema = z.object({
       return Math.min(parsed, 100);
     }),
   status: z.nativeEnum(PropertyStatus).optional(),
-  change: z.enum(['new', 'updated']).optional(),
+  change: z.enum(PROPERTY_CHANGE_FILTER_VALUES).optional(),
   listing_type: z.nativeEnum(ListingType).optional(),
   property_type: z.nativeEnum(PropertyType).optional(),
   search: z.string().optional(),

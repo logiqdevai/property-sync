@@ -47,6 +47,19 @@ export const PropertyHistoryEventTypes = {
 export type PropertyHistoryEventType =
   (typeof PropertyHistoryEventTypes)[keyof typeof PropertyHistoryEventTypes];
 
+export const PropertyChangeFilters = {
+  NEW: "new",
+  UPDATED: "updated",
+  PRICE_CHANGED: "price_changed",
+  IMAGES_CHANGED: "images_changed",
+  FIELDS_UPDATED: "fields_updated",
+  STATUS_CHANGED: "status_changed",
+  REMOVED: "removed",
+  REAPPEARED: "reappeared",
+} as const;
+export type PropertyChangeFilter =
+  (typeof PropertyChangeFilters)[keyof typeof PropertyChangeFilters];
+
 export interface Property extends PropertyCmsFields {
   id: string;
   title: string;
@@ -137,7 +150,7 @@ export interface PropertyListQuery {
   page?: number;
   limit?: number;
   status?: PropertyStatus;
-  change?: "new" | "updated";
+  change?: PropertyChangeFilter;
   listing_type?: ListingType;
   property_type?: PropertyType;
   city?: string;

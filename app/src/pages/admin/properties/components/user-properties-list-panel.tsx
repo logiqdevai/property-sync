@@ -40,10 +40,12 @@ import type {
 import {
   PropertyStatuses,
   type ListingType,
+  type PropertyChangeFilter,
   type PropertyStatus,
   type PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/properties/property-status-filter.options";
+import { PropertyChangeFilterOptions } from "@/config/constants/dropdowns/properties/property-change-filter.options";
 import { PropertySortByOptions } from "@/config/constants/dropdowns/properties/property-sort-by.options";
 import { ListingTypeFilterOptions } from "@/config/constants/dropdowns/properties/listing-type-filter.options";
 import { PropertyTypeFilterOptions } from "@/config/constants/dropdowns/properties/property-type-filter.options";
@@ -78,6 +80,7 @@ export function UserPropertiesListPanel() {
   const splitConfirm = useOverlayState();
 
   const [status, setStatus] = useState<PropertyStatus | "all">("all");
+  const [change, setChange] = useState<PropertyChangeFilter | "all">("all");
   const [listingType, setListingType] = useState<ListingType | "all">("all");
   const [propertyType, setPropertyType] = useState<PropertyType | "all">("all");
   const [search, setSearch] = useState("");
@@ -106,6 +109,7 @@ export function UserPropertiesListPanel() {
       page,
       limit,
       ...(status !== "all" && { status }),
+      ...(change !== "all" && { change }),
       ...(listingType !== "all" && { listing_type: listingType }),
       ...(propertyType !== "all" && { property_type: propertyType }),
       ...(search.trim() && { search: search.trim() }),
@@ -129,6 +133,7 @@ export function UserPropertiesListPanel() {
       page,
       limit,
       status,
+      change,
       listingType,
       propertyType,
       search,
@@ -367,6 +372,29 @@ export function UserPropertiesListPanel() {
           <Select.Popover>
             <ListBox>
               {PropertyStatusFilterOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+        <Select
+          aria-label="Filter by change"
+          selectedKey={change}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setChange(key as PropertyChangeFilter | "all");
+          }}
+          className="w-48"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {PropertyChangeFilterOptions.map((option) => (
                 <ListBox.Item key={option.id} id={option.id}>
                   {option.label}
                 </ListBox.Item>

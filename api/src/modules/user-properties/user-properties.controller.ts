@@ -25,6 +25,7 @@ import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { AuthRole, PropertyStatus } from 'generated/prisma';
 import { UserPropertiesService } from './user-properties.service';
+import { PROPERTY_CHANGE_FILTER_VALUES } from '@/modules/properties/utils/property-change-filter.util';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import { DeleteUserPropertiesDto } from './dto/delete-user-properties.dto';
 import { DeleteIntegrationImagesDto } from './dto/delete-integration-images.dto';
@@ -63,7 +64,11 @@ export class UserPropertiesController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'status', required: false, enum: PropertyStatus })
-  @ApiQuery({ name: 'change', required: false, enum: ['new', 'updated'] })
+  @ApiQuery({
+    name: 'change',
+    required: false,
+    enum: PROPERTY_CHANGE_FILTER_VALUES,
+  })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'city', required: false, type: String })
   @ApiQuery({ name: 'price_min', required: false, type: Number })
@@ -109,7 +114,11 @@ export class UserPropertiesController {
   @ApiOperation({ summary: 'Count saved properties matching filters' })
   @ApiResponse({ status: 200, description: 'Filtered saved property total' })
   @ApiQuery({ name: 'status', required: false, enum: PropertyStatus })
-  @ApiQuery({ name: 'change', required: false, enum: ['new', 'updated'] })
+  @ApiQuery({
+    name: 'change',
+    required: false,
+    enum: PROPERTY_CHANGE_FILTER_VALUES,
+  })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'city', required: false, type: String })
   @ApiQuery({ name: 'price_min', required: false, type: Number })

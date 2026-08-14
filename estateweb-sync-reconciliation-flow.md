@@ -26,10 +26,13 @@ Operation = **CREATE**. Before creating anything new, `EstateWebPropertyReconcil
 
 ## 3. A property that already exists (we know its EstateWeb id) — the normal UPDATE path
 
-Operation = **UPDATE**. Before pushing the update, `listingBelongsToLinkedIntegration()` checks whether the stored `integration_property_id` still belongs to the linked account — fetches the live EstateWeb record and compares its `code` against our `internal_id`:
+Operation = **UPDATE**. Before pushing the update, `listingBelongsToLinkedIntegration()` (`api\src\modules\cms-sync\services\cms-sync-orchestrator.service.ts:864-885`) checks whether the stored `integration_property_id` still belongs to the linked account. It's a two-step check:
 
-- **Matches** → normal `pushUpdate()` (always a full-record round-trip payload now, never a partial PATCH — see `estateweb-duplication-investigation-summary.md` §2).
-- **Doesn't match, or the record isn't found (404)** → the local link is considered stale (e.g. someone deleted it manually on EstateWeb) → the local `integration_property_id` is cleared, and the property re-enters the **same** flow as §1 (it searches by code again before creating — never a blind create).
+1. **Existence**: fetches the live record via `estateWebPropertyService.getProperty(userIntegrationId, integrationPropertyId)`, i.e. asks EstateWeb directly, using the linked account's own credentials, whether that id exists under that account.
+2. **Code match**: if found, and our local `internal_id` is set, compares the live record's `code` against our `internal_id` (trimmed/lowercased on both sides). If `internal_id` is blank locally, this step is skipped and existence alone is trusted.
+
+- **Matches** (or no `internal_id` to check against) → normal `pushUpdate()` (always a full-record round-trip payload now, never a partial PATCH — see `estateweb-duplication-investigation-summary.md` §2).
+- **Doesn't match, or the record isn't found (404, `isNotFoundEstateWebError`)** → the local link is considered stale (e.g. someone deleted it manually on EstateWeb, or the id now points to a different listing) → the local `integration_property_id` is cleared, and the property re-enters the **same** flow as §1 (it searches by code again before creating — never a blind create).
 - **Any other error** (network, timeout, rate limit) → **not** treated as "doesn't belong anymore" (this was the bug fixed 2026-08-12, see `estateweb-duplication-investigation-summary.md` §9.2). The operation fails and is retried instead.
 
 ## One-sentence summary

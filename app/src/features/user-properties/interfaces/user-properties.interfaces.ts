@@ -1,5 +1,6 @@
 import type {
   ListingType,
+  PropertyChangeFilter,
   PropertyHistoryEntry,
   PropertySourceLink,
   PropertyStatus,
@@ -112,7 +113,7 @@ export interface UserPropertyListQuery {
   page?: number;
   limit?: number;
   status?: PropertyStatus;
-  change?: "new" | "updated";
+  change?: PropertyChangeFilter;
   search?: string;
   city?: string;
   price_min?: number;
@@ -132,7 +133,7 @@ export interface AdminUserPropertyListQuery {
   page?: number;
   limit?: number;
   status?: PropertyStatus;
-  change?: "new" | "updated";
+  change?: PropertyChangeFilter;
   listing_type?: ListingType;
   property_type?: PropertyType;
   search?: string;

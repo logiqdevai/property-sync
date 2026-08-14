@@ -26,6 +26,7 @@ import {
 } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { PropertiesService } from './properties.service';
+import { PROPERTY_CHANGE_FILTER_VALUES } from '@/modules/properties/utils/property-change-filter.util';
 import {
   PropertyQuerySchema,
   PropertyQueryType,
@@ -49,7 +50,11 @@ export class PropertiesController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'status', required: false, enum: PropertyStatus })
-  @ApiQuery({ name: 'change', required: false, enum: ['new', 'updated'] })
+  @ApiQuery({
+    name: 'change',
+    required: false,
+    enum: PROPERTY_CHANGE_FILTER_VALUES,
+  })
   @ApiQuery({ name: 'listing_type', required: false, enum: ListingType })
   @ApiQuery({ name: 'property_type', required: false, enum: PropertyType })
   @ApiQuery({ name: 'city', required: false, type: String })
@@ -85,7 +90,11 @@ export class PropertiesController {
   @ApiOperation({ summary: 'Count properties matching filters' })
   @ApiResponse({ status: 200, description: 'Filtered property total' })
   @ApiQuery({ name: 'status', required: false, enum: PropertyStatus })
-  @ApiQuery({ name: 'change', required: false, enum: ['new', 'updated'] })
+  @ApiQuery({
+    name: 'change',
+    required: false,
+    enum: PROPERTY_CHANGE_FILTER_VALUES,
+  })
   @ApiQuery({ name: 'listing_type', required: false, enum: ListingType })
   @ApiQuery({ name: 'property_type', required: false, enum: PropertyType })
   @ApiQuery({ name: 'city', required: false, type: String })

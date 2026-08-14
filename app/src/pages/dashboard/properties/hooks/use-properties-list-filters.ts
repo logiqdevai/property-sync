@@ -2,7 +2,9 @@ import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Routes } from "@/routes/routes";
 import {
+  PropertyChangeFilters,
   PropertyStatuses,
+  type PropertyChangeFilter,
   type PropertyStatus,
 } from "@/features/properties/interfaces/properties.interfaces";
 import {
@@ -19,6 +21,7 @@ const DEFAULT_ORDER_BY = OrderBy.UPDATED_AT;
 const DEFAULT_ORDER_DIRECTION = OrderDirection.DESC;
 
 const STATUS_VALUES = new Set<string>(Object.values(PropertyStatuses));
+const CHANGE_VALUES = new Set<string>(Object.values(PropertyChangeFilters));
 const ORDER_BY_VALUES = new Set<string>(Object.values(OrderBy));
 const ORDER_DIRECTION_VALUES = new Set<string>(Object.values(OrderDirection));
 const BOOL_FILTER_VALUES = new Set(["true", "false"]);
@@ -48,6 +51,7 @@ export function resolvePropertiesListReturnTo(state: unknown): string {
 
 export type PropertiesListFilters = {
   status: PropertyStatus | "all";
+  change: PropertyChangeFilter | "all";
   search: string;
   trackedAgencyId: string | "all";
   duplicateGroup: PropertiesListBoolFilter;
@@ -65,6 +69,11 @@ type PropertiesListFilterPatch = Partial<PropertiesListFilters>;
 
 function parseStatus(value: string | null): PropertyStatus | "all" {
   if (value && STATUS_VALUES.has(value)) return value as PropertyStatus;
+  return "all";
+}
+
+function parseChange(value: string | null): PropertyChangeFilter | "all" {
+  if (value && CHANGE_VALUES.has(value)) return value as PropertyChangeFilter;
   return "all";
 }
 
@@ -104,6 +113,7 @@ function parsePage(value: string | null): number {
 function parseFilters(searchParams: URLSearchParams): PropertiesListFilters {
   return {
     status: parseStatus(searchParams.get("status")),
+    change: parseChange(searchParams.get("change")),
     search: searchParams.get("search") ?? "",
     trackedAgencyId: searchParams.get("agency") ?? "all",
     duplicateGroup: parseBoolFilter(searchParams.get("duplicate_group")),
@@ -122,6 +132,7 @@ function buildSearchParams(filters: PropertiesListFilters): URLSearchParams {
   const params = new URLSearchParams();
 
   if (filters.status !== "all") params.set("status", filters.status);
+  if (filters.change !== "all") params.set("change", filters.change);
   if (filters.search) params.set("search", filters.search);
   if (filters.trackedAgencyId !== "all") {
     params.set("agency", filters.trackedAgencyId);
@@ -152,6 +163,7 @@ function buildSearchParams(filters: PropertiesListFilters): URLSearchParams {
 function countActiveFilters(filters: PropertiesListFilters): number {
   return [
     filters.status !== "all",
+    filters.change !== "all",
     filters.trackedAgencyId !== "all",
     filters.duplicateGroup !== "all",
     filters.pushedToCrm !== "all",
@@ -192,6 +204,7 @@ export function usePropertiesListFilters() {
   const clearFilters = useCallback(() => {
     setFilters({
       status: "all",
+      change: "all",
       trackedAgencyId: "all",
       duplicateGroup: "all",
       pushedToCrm: "all",

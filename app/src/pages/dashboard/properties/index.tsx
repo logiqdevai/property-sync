@@ -39,6 +39,7 @@ import {
   type PropertyStatus,
 } from "@/features/properties/interfaces/properties.interfaces";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/properties/property-status-filter.options";
+import { PropertyChangeFilterOptions } from "@/config/constants/dropdowns/properties/property-change-filter.options";
 import { PropertySortByOptions } from "@/config/constants/dropdowns/properties/property-sort-by.options";
 import { PropertyDuplicateGroupFilterOptions } from "@/config/constants/dropdowns/properties/property-duplicate-group-filter.options";
 import { PropertyCrmPushFilterOptions } from "@/config/constants/dropdowns/properties/property-crm-push-filter.options";
@@ -295,6 +296,7 @@ export default function DashboardPropertiesListPage() {
   const location = useLocation();
   const {
     status,
+    change,
     search,
     trackedAgencyId,
     duplicateGroup,
@@ -326,6 +328,7 @@ export default function DashboardPropertiesListPage() {
       page,
       limit,
       ...(status !== "all" && { status }),
+      ...(change !== "all" && { change }),
       ...(search.trim() && { search: search.trim() }),
       ...(trackedAgencyId !== "all" && { user_tracked_agency_id: trackedAgencyId }),
       ...(duplicateGroup !== "all" && {
@@ -346,6 +349,7 @@ export default function DashboardPropertiesListPage() {
       page,
       limit,
       status,
+      change,
       search,
       trackedAgencyId,
       duplicateGroup,
@@ -952,6 +956,28 @@ export default function DashboardPropertiesListPage() {
               <Select.Popover>
                 <ListBox>
                   {PropertyStatusFilterOptions.map((option) => (
+                    <ListBox.Item key={option.id} id={option.id}>
+                      {option.label}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+            <Select
+              aria-label="Filter by change"
+              selectedKey={change}
+              onSelectionChange={(key) => {
+                setFilters({ change: key as typeof change });
+              }}
+              className="w-full sm:w-48"
+            >
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {PropertyChangeFilterOptions.map((option) => (
                     <ListBox.Item key={option.id} id={option.id}>
                       {option.label}
                     </ListBox.Item>
