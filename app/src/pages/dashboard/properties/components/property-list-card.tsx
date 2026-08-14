@@ -18,6 +18,7 @@ import type { PropertiesListLocationState } from "../hooks/use-properties-list-f
 type PropertyListCardProps = {
   id: string;
   title: string;
+  agencyName: string | null;
   city: string | null;
   price: string | null;
   currency: string | null;
@@ -37,6 +38,7 @@ type PropertyListCardProps = {
 export function PropertyListCard({
   id,
   title,
+  agencyName,
   city,
   price,
   currency,
@@ -89,7 +91,9 @@ export function PropertyListCard({
           >
             {title}
           </Link>
-          <p className="mt-0.5 truncate text-sm text-muted">{city ?? "—"}</p>
+          <p className="mt-0.5 truncate text-sm text-muted">
+            {[agencyName, city].filter(Boolean).join(" · ") || "—"}
+          </p>
         </div>
         <TableRowActionsMenu
           actions={rowActions}

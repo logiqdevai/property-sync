@@ -20,6 +20,7 @@ import { MergePropertiesDto } from './dto/merge-properties.dto';
 import { Prisma } from 'generated/prisma';
 import { serializePropertyForApi } from './utils/property-api-response.util';
 import { buildHistoryChangeFilter } from './utils/property-change-filter.util';
+import { resolveAgencyName } from './utils/resolve-agency-name.util';
 
 @Injectable()
 export class PropertiesService {
@@ -99,28 +100,6 @@ export class PropertiesService {
     };
   }
 
-  private resolveAgencyName(
-    sourceLinks: Array<{
-      is_primary_source: boolean;
-      source_property: { source_agency: { name: string } | null };
-    }>,
-  ): string | null {
-    const names: string[] = [];
-    const seen = new Set<string>();
-    const ordered = [...sourceLinks].sort(
-      (a, b) => Number(b.is_primary_source) - Number(a.is_primary_source),
-    );
-
-    for (const link of ordered) {
-      const name = link.source_property.source_agency?.name;
-      if (!name || seen.has(name)) continue;
-      seen.add(name);
-      names.push(name);
-    }
-
-    return names.length > 0 ? names.join(', ') : null;
-  }
-
   async findAll(query: PropertyQueryType) {
     const where = this.buildWhere(query);
     const unlimited = query.limit === 0;
@@ -163,7 +142,7 @@ export class PropertiesService {
       data: items.map(({ source_links, ...item }) =>
         serializePropertyForApi({
           ...item,
-          agency_name: this.resolveAgencyName(source_links),
+          agency_name: resolveAgencyName(source_links),
         }),
       ),
       pagination: {
@@ -259,7 +238,7 @@ export class PropertiesService {
     return serializePropertyForApi({
       ...property,
       source_links: sourceLinks,
-      agency_name: this.resolveAgencyName(property.source_links),
+      agency_name: resolveAgencyName(property.source_links),
     });
   }
 

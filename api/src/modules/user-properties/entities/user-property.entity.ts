@@ -120,6 +120,9 @@ export class UserPropertyEntity {
   @ApiProperty({ nullable: true })
   cms_metadata: unknown;
 
+  @ApiProperty({ nullable: true })
+  agency_name: string | null;
+
   @ApiProperty()
   is_modified: boolean;
 

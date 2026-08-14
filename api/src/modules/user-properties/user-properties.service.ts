@@ -43,6 +43,7 @@ import { isEstateWebListingTypeAllowed } from '@/integrations/estateweb/utils/es
 import { resolveCanonicalOrCrmPriceStart } from '@/modules/user-integrations/utils/sales-pricing.util';
 import { serializePropertyForApi } from '@/modules/properties/utils/property-api-response.util';
 import { buildHistoryChangeFilter } from '@/modules/properties/utils/property-change-filter.util';
+import { resolveAgencyName } from '@/modules/properties/utils/resolve-agency-name.util';
 import {
   syncEstateWebFeaturesInCmsFields,
   upsertEstateWebEnergyClassInCmsFields,
@@ -281,7 +282,19 @@ export class UserPropertiesService {
             : { [query.order_by]: query.order_direction },
         include: {
           canonical_property: {
-            select: { duplicate_group_id: true },
+            select: {
+              duplicate_group_id: true,
+              source_links: {
+                select: {
+                  is_primary_source: true,
+                  source_property: {
+                    select: {
+                      source_agency: { select: { name: true } },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       }),
@@ -295,6 +308,7 @@ export class UserPropertiesService {
         serializePropertyForApi({
           ...item,
           duplicate_group_id: canonical_property.duplicate_group_id,
+          agency_name: resolveAgencyName(canonical_property.source_links),
         }),
       ),
       pagination: {
@@ -413,6 +427,7 @@ export class UserPropertiesService {
     return serializePropertyForApi({
       ...rest,
       duplicate_group_id: canonical_property.duplicate_group_id,
+      agency_name: resolveAgencyName(canonical_property.source_links),
       source_links: canonical_property.source_links,
       history: canonical_property.history,
       localized_contents,
@@ -3234,7 +3249,19 @@ export class UserPropertiesService {
         include: {
           user: { select: { id: true, email: true } },
           canonical_property: {
-            select: { duplicate_group_id: true },
+            select: {
+              duplicate_group_id: true,
+              source_links: {
+                select: {
+                  is_primary_source: true,
+                  source_property: {
+                    select: {
+                      source_agency: { select: { name: true } },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       }),
@@ -3249,6 +3276,7 @@ export class UserPropertiesService {
           ...item,
           user,
           duplicate_group_id: canonical_property.duplicate_group_id,
+          agency_name: resolveAgencyName(canonical_property.source_links),
         }),
       ),
       pagination: {
@@ -3361,6 +3389,7 @@ export class UserPropertiesService {
       ...rest,
       user,
       duplicate_group_id: canonical_property.duplicate_group_id,
+      agency_name: resolveAgencyName(canonical_property.source_links),
       source_links: canonical_property.source_links,
       history: canonical_property.history,
       localized_contents,

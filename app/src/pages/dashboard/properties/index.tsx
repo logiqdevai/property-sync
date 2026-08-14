@@ -1225,6 +1225,7 @@ export default function DashboardPropertiesListPage() {
                   key={property.id}
                   id={property.id}
                   title={property.title}
+                  agencyName={property.agency_name}
                   city={property.city}
                   price={property.price}
                   currency={property.currency}
@@ -1308,6 +1309,7 @@ export default function DashboardPropertiesListPage() {
                       </Checkbox>
                     </Table.Column>
                     <Table.Column isRowHeader>Title</Table.Column>
+                    <Table.Column isRowHeader>Agency</Table.Column>
                     <Table.Column isRowHeader>City</Table.Column>
                     <Table.Column isRowHeader>Price</Table.Column>
                     <Table.Column isRowHeader>Status</Table.Column>
@@ -1369,6 +1371,9 @@ export default function DashboardPropertiesListPage() {
                           >
                             {property.title}
                           </Link>
+                        </Table.Cell>
+                        <Table.Cell className={groupCellClass}>
+                          {property.agency_name ?? "—"}
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>{property.city ?? "—"}</Table.Cell>
                         <Table.Cell className={groupCellClass}>
