@@ -260,13 +260,47 @@ export function extractLatLng(rawData: unknown): {
 
 const AREA_UNIT_RE =
   /(?:τ\.?\s*μ\.?|τμ|m²|m2|sq\.?\s*m\.?|sqm)/i;
-const NUMBER_RE = /\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?/g;
+// Matches European thousands-dot numbers ("1.234.567"), US thousands-comma numbers
+// ("1,234,567"), and plain numbers with at most one trailing separator of either kind.
+const NUMBER_RE =
+  /\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:[.,]\d+)?/g;
 const NUMBER_WITH_AREA_RE =
-  /(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?)\s*(?:τ\.?\s*μ\.?|τμ|m²|m2|sq\.?\s*m\.?|sqm)/gi;
+  /(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:[.,]\d+)?)\s*(?:τ\.?\s*μ\.?|τμ|m²|m2|sq\.?\s*m\.?|sqm)/gi;
 
+// Real-estate prices get quoted in both European ("1.234.567,50" -- dot=thousands,
+// comma=decimal) and US ("1,234,567.50" -- comma=thousands, dot=decimal) formats,
+// depending on the source site. Detects the format per-token instead of assuming one,
+// since blindly treating every comma as a decimal point silently truncated any
+// comma-thousands price down to its leading digits (e.g. "1,000,000" -> 1).
 function parseNumericToken(token: string): number | null {
-  const cleaned = token.replace(/\./g, '').replace(',', '.');
-  const value = parseFloat(cleaned);
+  const trimmed = token.trim();
+  const dotCount = (trimmed.match(/\./g) ?? []).length;
+  const commaCount = (trimmed.match(/,/g) ?? []).length;
+
+  let normalized: string;
+  if (dotCount > 0 && commaCount > 0) {
+    // Both separators present -- whichever comes last is the decimal separator.
+    const decimalIsDot = trimmed.lastIndexOf('.') > trimmed.lastIndexOf(',');
+    normalized = decimalIsDot
+      ? trimmed.replace(/,/g, '')
+      : trimmed.replace(/\./g, '').replace(',', '.');
+  } else if (dotCount > 1) {
+    normalized = trimmed.replace(/\./g, '');
+  } else if (commaCount > 1) {
+    normalized = trimmed.replace(/,/g, '');
+  } else if (dotCount === 1 || commaCount === 1) {
+    // A single separator is ambiguous between "thousands" and "decimal". Real-estate
+    // prices are essentially never quoted with cents, so a trailing group of exactly
+    // 3 digits is treated as a thousands separator (covers both "125.000" and
+    // "125,000" meaning 125000); anything else is treated as a decimal point.
+    const sep = dotCount === 1 ? '.' : ',';
+    const digitsAfter = trimmed.length - trimmed.lastIndexOf(sep) - 1;
+    normalized = digitsAfter === 3 ? trimmed.replace(sep, '') : trimmed.replace(sep, '.');
+  } else {
+    normalized = trimmed;
+  }
+
+  const value = parseFloat(normalized);
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 
