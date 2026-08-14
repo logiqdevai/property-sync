@@ -54,3 +54,12 @@ export const UserPropertyQuerySchema = z.object({
 });
 
 export type UserPropertyQueryType = z.infer<typeof UserPropertyQuerySchema>;
+
+export const UserPropertyMapQuerySchema = UserPropertyQuerySchema.omit({
+  page: true,
+  limit: true,
+});
+
+export type UserPropertyMapQueryType = z.infer<
+  typeof UserPropertyMapQuerySchema
+>;

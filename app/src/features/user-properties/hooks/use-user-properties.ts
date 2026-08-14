@@ -12,6 +12,7 @@ import {
   getAdminUserProperty,
   getUserProperties,
   getUserPropertiesCount,
+  getUserPropertiesMap,
   getUserProperty,
   pushUserPropertiesToCrm,
   pushUserPropertyToCrm,
@@ -67,12 +68,24 @@ import type {
   UpdateUserPropertyStatusResult,
   UserPropertyCountQuery,
   UserPropertyListQuery,
+  UserPropertyMapQuery,
 } from "../interfaces/user-properties.interfaces";
 
 export const useUserProperties = (query: UserPropertyListQuery) => {
   return useQuery({
     queryKey: ["userProperties", "list", query],
     queryFn: () => getUserProperties(query),
+  });
+};
+
+export const useUserPropertiesMap = (
+  query: UserPropertyMapQuery,
+  options?: { enabled?: boolean },
+) => {
+  return useQuery({
+    queryKey: ["userProperties", "map", query],
+    queryFn: () => getUserPropertiesMap(query),
+    enabled: options?.enabled ?? true,
   });
 };
 

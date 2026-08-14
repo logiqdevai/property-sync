@@ -15,12 +15,19 @@ import {
   normalizeTextTruncatePieces,
   normalizeTruncateText,
 } from '@/modules/user-tracked-agencies/utils/apply-text-truncate-pieces.util';
-import { PropertyQueryType } from './dto/property-query.schema';
+import {
+  PropertyMapQueryType,
+  PropertyQueryType,
+} from './dto/property-query.schema';
 import { MergePropertiesDto } from './dto/merge-properties.dto';
 import { Prisma } from 'generated/prisma';
 import { serializePropertyForApi } from './utils/property-api-response.util';
 import { buildHistoryChangeFilter } from './utils/property-change-filter.util';
 import { resolveSourceAgency, sourceAgencySummarySelect } from './utils/resolve-agency-name.util';
+import {
+  PROPERTY_MAP_MARKERS_HARD_CAP,
+  toPropertyMapMarker,
+} from '@/shared/utils/property-map-marker.util';
 
 @Injectable()
 export class PropertiesService {
@@ -32,7 +39,9 @@ export class PropertiesService {
     private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
   ) {}
 
-  private buildWhere(query: PropertyQueryType): Prisma.PropertyWhereInput {
+  private buildWhere(
+    query: Omit<PropertyQueryType, 'page' | 'limit'>,
+  ): Prisma.PropertyWhereInput {
     const historyFilter = buildHistoryChangeFilter({
       change: query.change,
       dateFrom: query.date_from,
@@ -161,6 +170,54 @@ export class PropertiesService {
       where: this.buildWhere(query),
     });
     return { total };
+  }
+
+  async findAllForMap(query: PropertyMapQueryType) {
+    const where: Prisma.PropertyWhereInput = {
+      ...this.buildWhere(query),
+      latitude: { not: null },
+      longitude: { not: null },
+    };
+
+    const [rows, total] = await Promise.all([
+      this.prisma.property.findMany({
+        where,
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          currency: true,
+          city: true,
+          status: true,
+          latitude: true,
+          longitude: true,
+          source_links: {
+            select: {
+              is_primary_source: true,
+              source_property: {
+                select: {
+                  source_agency: { select: sourceAgencySummarySelect },
+                },
+              },
+            },
+          },
+        },
+        take: PROPERTY_MAP_MARKERS_HARD_CAP,
+        orderBy: { updated_at: 'desc' },
+      }),
+      this.prisma.property.count({ where }),
+    ]);
+
+    return {
+      data: rows.map(({ source_links, ...row }) =>
+        toPropertyMapMarker({
+          ...row,
+          agency_name: resolveSourceAgency(source_links)?.name ?? null,
+        }),
+      ),
+      total,
+      capped: total > PROPERTY_MAP_MARKERS_HARD_CAP,
+    };
   }
 
   async findOne(id: string) {

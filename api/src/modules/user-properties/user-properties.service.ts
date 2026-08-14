@@ -24,7 +24,10 @@ import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/se
 import { CmsSyncAdapterFactory } from '@/modules/cms-sync/services/cms-sync-adapter.factory';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
-import { UserPropertyQueryType } from './dto/user-property-query.schema';
+import {
+  UserPropertyMapQueryType,
+  UserPropertyQueryType,
+} from './dto/user-property-query.schema';
 import { AdminUserPropertyQueryType } from './dto/admin-user-property-query.schema';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import {
@@ -44,6 +47,10 @@ import { resolveCanonicalOrCrmPriceStart } from '@/modules/user-integrations/uti
 import { serializePropertyForApi } from '@/modules/properties/utils/property-api-response.util';
 import { buildHistoryChangeFilter } from '@/modules/properties/utils/property-change-filter.util';
 import { resolveSourceAgency, sourceAgencySummarySelect } from '@/modules/properties/utils/resolve-agency-name.util';
+import {
+  PROPERTY_MAP_MARKERS_HARD_CAP,
+  toPropertyMapMarker,
+} from '@/shared/utils/property-map-marker.util';
 import {
   syncEstateWebFeaturesInCmsFields,
   upsertEstateWebEnergyClassInCmsFields,
@@ -148,7 +155,7 @@ export class UserPropertiesService {
 
   private async resolveFilterSourceAgencyId(
     userId: string,
-    query: UserPropertyQueryType,
+    query: Omit<UserPropertyQueryType, 'page' | 'limit'>,
   ): Promise<string | undefined | null> {
     let sourceAgencyId = query.agency_id;
 
@@ -173,7 +180,7 @@ export class UserPropertiesService {
 
   private buildWhere(
     userId: string,
-    query: UserPropertyQueryType,
+    query: Omit<UserPropertyQueryType, 'page' | 'limit'>,
     sourceAgencyId?: string,
   ): Prisma.UserPropertyWhereInput {
     const historyFilter = buildHistoryChangeFilter({
@@ -344,6 +351,76 @@ export class UserPropertiesService {
       where: this.buildWhere(userId, query, sourceAgencyId),
     });
     return { total };
+  }
+
+  async findAllForMap(userId: string, query: UserPropertyMapQueryType) {
+    const sourceAgencyId = await this.resolveFilterSourceAgencyId(
+      userId,
+      query,
+    );
+
+    if (sourceAgencyId === null) {
+      return { data: [], total: 0, capped: false };
+    }
+
+    const where: Prisma.UserPropertyWhereInput = {
+      ...this.buildWhere(userId, query, sourceAgencyId),
+      latitude: { not: null },
+      longitude: { not: null },
+    };
+
+    const [rows, total, filteredSourceAgency] = await Promise.all([
+      this.prisma.userProperty.findMany({
+        where,
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          currency: true,
+          city: true,
+          status: true,
+          latitude: true,
+          longitude: true,
+          canonical_property: {
+            select: {
+              source_links: {
+                select: {
+                  is_primary_source: true,
+                  source_property: {
+                    select: {
+                      source_agency: { select: sourceAgencySummarySelect },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        take: PROPERTY_MAP_MARKERS_HARD_CAP,
+        orderBy: { updated_at: 'desc' },
+      }),
+      this.prisma.userProperty.count({ where }),
+      sourceAgencyId
+        ? this.prisma.sourceAgency.findUnique({
+            where: { id: sourceAgencyId },
+            select: sourceAgencySummarySelect,
+          })
+        : Promise.resolve(null),
+    ]);
+
+    return {
+      data: rows.map(({ canonical_property, ...row }) =>
+        toPropertyMapMarker({
+          ...row,
+          agency_name:
+            filteredSourceAgency?.name ??
+            resolveSourceAgency(canonical_property.source_links)?.name ??
+            null,
+        }),
+      ),
+      total,
+      capped: total > PROPERTY_MAP_MARKERS_HARD_CAP,
+    };
   }
 
   async findOne(userId: string, id: string) {

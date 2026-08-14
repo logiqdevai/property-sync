@@ -40,6 +40,8 @@ import { BulkRemoveWatermarkImagesResponseEntity } from './entities/bulk-remove-
 import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
 import { UpdateEstateWebSitesDto } from './dto/update-estateweb-sites.dto';
 import {
+  UserPropertyMapQuerySchema,
+  UserPropertyMapQueryType,
   UserPropertyQuerySchema,
   UserPropertyQueryType,
 } from './dto/user-property-query.schema';
@@ -148,6 +150,46 @@ export class UserPropertiesController {
     query: UserPropertyQueryType,
   ) {
     return this.userPropertiesService.count(userId, query);
+  }
+
+  @Get('map')
+  @ApiOperation({ summary: 'List the current user saved properties with coordinates for map view' })
+  @ApiResponse({ status: 200, description: 'Map markers for saved properties with coordinates' })
+  @ApiQuery({ name: 'status', required: false, enum: PropertyStatus })
+  @ApiQuery({
+    name: 'change',
+    required: false,
+    enum: PROPERTY_CHANGE_FILTER_VALUES,
+  })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'city', required: false, type: String })
+  @ApiQuery({ name: 'price_min', required: false, type: Number })
+  @ApiQuery({ name: 'price_max', required: false, type: Number })
+  @ApiQuery({
+    name: 'has_duplicate_group',
+    required: false,
+    enum: ['true', 'false'],
+  })
+  @ApiQuery({
+    name: 'pushed_to_crm',
+    required: false,
+    enum: ['true', 'false'],
+  })
+  @ApiQuery({
+    name: 'pending_crm_update',
+    required: false,
+    enum: ['true', 'false'],
+  })
+  @ApiQuery({ name: 'agency_id', required: false, type: String })
+  @ApiQuery({ name: 'user_tracked_agency_id', required: false, type: String })
+  @ApiQuery({ name: 'date_from', required: false, type: String })
+  @ApiQuery({ name: 'date_to', required: false, type: String })
+  findAllForMap(
+    @CurrentUser('id') userId: string,
+    @Query(new ZodValidationPipe(UserPropertyMapQuerySchema))
+    query: UserPropertyMapQueryType,
+  ) {
+    return this.userPropertiesService.findAllForMap(userId, query);
   }
 
   @Post('bulk-delete')

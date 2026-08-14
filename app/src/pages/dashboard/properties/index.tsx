@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import {
   Button,
   Checkbox,
@@ -9,10 +9,11 @@ import {
   Select,
   ListBox,
   Table,
+  Tabs,
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { CircleDot, CopyCheck, Globe, Hash, ImageOff, Images, Languages, Layers, ListFilter, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { CircleDot, CopyCheck, Globe, Hash, ImageOff, Images, Languages, Layers, ListFilter, MapIcon, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, TableIcon, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
@@ -68,11 +69,14 @@ import {
   useSyncUserPropertyCrmClientNotes,
   useUserProperties,
   useUserPropertiesCount,
+  useUserPropertiesMap,
 } from "@/features/user-properties/hooks/use-user-properties";
 import type {
   UserPropertyCountQuery,
   UserPropertyListQuery,
+  UserPropertyMapQuery,
 } from "@/features/user-properties/interfaces/user-properties.interfaces";
+import { PropertyClusterMap } from "@/components/map/property-cluster-map";
 import { useTrackableAgencies } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
 import { getTrackableAgencyLabel } from "@/features/user-tracked-agencies/utils/integration-link.utils";
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
@@ -367,8 +371,30 @@ export default function DashboardPropertiesListPage() {
     return filters;
   }, [query]);
 
+  const mapQuery = useMemo<UserPropertyMapQuery>(() => {
+    const { page: _page, limit: _limit, ...filters } = query;
+    return filters;
+  }, [query]);
+
+  const [viewParams, setViewParams] = useSearchParams();
+  const view: "table" | "map" = viewParams.get("view") === "map" ? "map" : "table";
+  const setView = (next: "table" | "map") => {
+    setViewParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        if (next === "table") params.delete("view");
+        else params.set("view", next);
+        return params;
+      },
+      { replace: true },
+    );
+  };
+
   const { data, isPending } = useUserProperties(query);
   const { data: countData } = useUserPropertiesCount(countQuery);
+  const { data: mapData, isPending: isMapPending } = useUserPropertiesMap(mapQuery, {
+    enabled: view === "map",
+  });
   const { data: agenciesData } = useTrackableAgencies({ limit: 100 });
   const deleteUserProperty = useDeleteUserProperty();
   const deleteUserProperties = useDeleteUserProperties();
@@ -902,10 +928,31 @@ export default function DashboardPropertiesListPage() {
         />
       </div>
 
+      <Tabs
+        className="w-fit"
+        selectedKey={view}
+        onSelectionChange={(key) => setView(key === "map" ? "map" : "table")}
+      >
+        <Tabs.ListContainer>
+          <Tabs.List aria-label="Property view">
+            <Tabs.Tab id="table" className="w-auto gap-1.5 px-3">
+              <TableIcon className="size-4" />
+              Table
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="map" className="w-auto gap-1.5 px-3">
+              <MapIcon className="size-4" />
+              Map
+              <Tabs.Indicator />
+            </Tabs.Tab>
+          </Tabs.List>
+        </Tabs.ListContainer>
+      </Tabs>
+
       <div className="flex min-w-0 flex-col gap-3">
         <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
           <ClearableSearchInput
-            placeholder="Search id, property/internal/CRM id, title, city — or comma-separated ids…"
+            placeholder="Search..."
             value={search}
             onValueChange={(next) => {
               setFilters({ search: next });
@@ -1211,7 +1258,13 @@ export default function DashboardPropertiesListPage() {
         ) : null}
       </div>
 
-      {isPending ? (
+      {view === "map" ? (
+        <PropertyClusterMap
+          markers={mapData?.data ?? []}
+          isLoading={isMapPending}
+          getDetailHref={(id) => Routes.dashboard.properties.detail(id)}
+        />
+      ) : isPending ? (
         <TableSkeleton rows={8} columns={6} />
       ) : properties.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-6 text-center text-sm text-muted sm:p-10">
@@ -1501,7 +1554,7 @@ export default function DashboardPropertiesListPage() {
         </>
       )}
 
-      {pagination && pagination.total_pages > 1 && (
+      {view === "table" && pagination && pagination.total_pages > 1 && (
         <Pagination className="min-w-0 overflow-x-auto">
           <Pagination.Content>
             <Pagination.Item>

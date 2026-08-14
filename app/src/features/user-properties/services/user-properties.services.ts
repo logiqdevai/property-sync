@@ -29,6 +29,8 @@ import type {
   UserPropertyCountResponse,
   UserPropertyDetail,
   UserPropertyListQuery,
+  UserPropertyMapQuery,
+  UserPropertyMapResponse,
   TruncateUserPropertyDescriptionsPayload,
   TruncateUserPropertyDescriptionsResult,
   UpdateIntegrationImagesPayload,
@@ -53,6 +55,19 @@ export const getUserProperties = async (
     return response.data;
   } catch {
     throw new Error("Failed to fetch your properties. Please try again.");
+  }
+};
+
+export const getUserPropertiesMap = async (
+  query?: UserPropertyMapQuery,
+): Promise<UserPropertyMapResponse> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.userProperties.map, {
+      params: query,
+    });
+    return response.data;
+  } catch {
+    throw new Error("Failed to fetch properties for map. Please try again.");
   }
 };
 

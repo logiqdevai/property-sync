@@ -28,6 +28,8 @@ import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { PropertiesService } from './properties.service';
 import { PROPERTY_CHANGE_FILTER_VALUES } from '@/modules/properties/utils/property-change-filter.util';
 import {
+  PropertyMapQuerySchema,
+  PropertyMapQueryType,
   PropertyQuerySchema,
   PropertyQueryType,
 } from './dto/property-query.schema';
@@ -114,6 +116,37 @@ export class PropertiesController {
     @Query(new ZodValidationPipe(PropertyQuerySchema)) query: PropertyQueryType,
   ) {
     return this.propertiesService.count(query);
+  }
+
+  @Get('map')
+  @ApiOperation({ summary: 'List properties with coordinates for map view' })
+  @ApiResponse({ status: 200, description: 'Map markers for properties with coordinates' })
+  @ApiQuery({ name: 'status', required: false, enum: PropertyStatus })
+  @ApiQuery({
+    name: 'change',
+    required: false,
+    enum: PROPERTY_CHANGE_FILTER_VALUES,
+  })
+  @ApiQuery({ name: 'listing_type', required: false, enum: ListingType })
+  @ApiQuery({ name: 'property_type', required: false, enum: PropertyType })
+  @ApiQuery({ name: 'city', required: false, type: String })
+  @ApiQuery({ name: 'price_min', required: false, type: Number })
+  @ApiQuery({ name: 'price_max', required: false, type: Number })
+  @ApiQuery({ name: 'duplicate_group_id', required: false, type: String })
+  @ApiQuery({
+    name: 'has_duplicate_group',
+    required: false,
+    enum: ['true', 'false'],
+  })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'agency_id', required: false, type: String })
+  @ApiQuery({ name: 'date_from', required: false, type: String })
+  @ApiQuery({ name: 'date_to', required: false, type: String })
+  findAllForMap(
+    @Query(new ZodValidationPipe(PropertyMapQuerySchema))
+    query: PropertyMapQueryType,
+  ) {
+    return this.propertiesService.findAllForMap(query);
   }
 
   @Post('merge')

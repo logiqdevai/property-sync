@@ -11,6 +11,8 @@ import type {
   PropertyCountResponse,
   PropertyDetail,
   PropertyListQuery,
+  PropertyMapQuery,
+  PropertyMapResponse,
   SplitPropertiesPayload,
   SplitPropertiesResult,
   TruncatePropertyDescriptionsPayload,
@@ -40,6 +42,19 @@ export const getPropertiesCount = async (
     return response.data;
   } catch {
     throw new Error("Failed to fetch property count. Please try again.");
+  }
+};
+
+export const getPropertiesMap = async (
+  query?: PropertyMapQuery,
+): Promise<PropertyMapResponse> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.properties.map, {
+      params: query,
+    });
+    return response.data;
+  } catch {
+    throw new Error("Failed to fetch properties for map. Please try again.");
   }
 };
 

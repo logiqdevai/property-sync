@@ -159,6 +159,26 @@ export interface UserPropertyCountResponse {
   total: number;
 }
 
+export type UserPropertyMapQuery = Omit<UserPropertyListQuery, "page" | "limit">;
+
+export interface UserPropertyMapMarker {
+  id: string;
+  title: string;
+  price: number | null;
+  currency: string | null;
+  city: string | null;
+  status: PropertyStatus;
+  latitude: number;
+  longitude: number;
+  agency_name: string | null;
+}
+
+export interface UserPropertyMapResponse {
+  data: UserPropertyMapMarker[];
+  total: number;
+  capped: boolean;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: {

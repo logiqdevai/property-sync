@@ -6,6 +6,7 @@ import {
   dedupePropertyGroups,
   getProperties,
   getPropertiesCount,
+  getPropertiesMap,
   getProperty,
   mergeProperties,
   splitProperties,
@@ -18,6 +19,7 @@ import type {
   MergePropertiesPayload,
   PropertyCountQuery,
   PropertyListQuery,
+  PropertyMapQuery,
   SplitPropertiesPayload,
   TruncatePropertyDescriptionsPayload,
 } from "../interfaces/properties.interfaces";
@@ -33,6 +35,14 @@ export const usePropertiesCount = (query: PropertyCountQuery) => {
   return useQuery({
     queryKey: ["properties", "count", query],
     queryFn: () => getPropertiesCount(query),
+  });
+};
+
+export const usePropertiesMap = (query: PropertyMapQuery, options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: ["properties", "map", query],
+    queryFn: () => getPropertiesMap(query),
+    enabled: options?.enabled ?? true,
   });
 };
 

@@ -172,6 +172,26 @@ export interface PropertyCountResponse {
   total: number;
 }
 
+export type PropertyMapQuery = Omit<PropertyListQuery, "page" | "limit">;
+
+export interface PropertyMapMarker {
+  id: string;
+  title: string;
+  price: number | null;
+  currency: string | null;
+  city: string | null;
+  status: PropertyStatus;
+  latitude: number;
+  longitude: number;
+  agency_name: string | null;
+}
+
+export interface PropertyMapResponse {
+  data: PropertyMapMarker[];
+  total: number;
+  capped: boolean;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: {

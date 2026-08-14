@@ -7,10 +7,11 @@ import {
   Select,
   ListBox,
   Table,
+  Tabs,
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Layers, Merge, Scissors, Trash2, Ungroup } from "lucide-react";
+import { Layers, MapIcon, Merge, Scissors, TableIcon, Trash2, Ungroup } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
@@ -31,6 +32,7 @@ import {
   useMergeProperties,
   useProperties,
   usePropertiesCount,
+  usePropertiesMap,
   useSplitProperties,
   useTruncatePropertyDescriptions,
 } from "@/features/properties/hooks/use-properties";
@@ -40,9 +42,11 @@ import {
   type PropertyChangeFilter,
   type PropertyCountQuery,
   type PropertyListQuery,
+  type PropertyMapQuery,
   type PropertyStatus,
   type PropertyType,
 } from "@/features/properties/interfaces/properties.interfaces";
+import { PropertyClusterMap } from "@/components/map/property-cluster-map";
 import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/properties/property-status-filter.options";
 import { PropertyChangeFilterOptions } from "@/config/constants/dropdowns/properties/property-change-filter.options";
 import { PropertySortByOptions } from "@/config/constants/dropdowns/properties/property-sort-by.options";
@@ -91,6 +95,7 @@ export function PropertiesListPanel() {
   );
   const [limit, setLimit] = useState(20);
   const [page, setPage] = useState(1);
+  const [view, setView] = useState<"table" | "map">("table");
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deletePropertyId, setDeletePropertyId] = useState<string | null>(null);
 
@@ -134,8 +139,16 @@ export function PropertiesListPanel() {
     return filters;
   }, [query]);
 
+  const mapQuery = useMemo<PropertyMapQuery>(() => {
+    const { page: _page, limit: _limit, ...filters } = query;
+    return filters;
+  }, [query]);
+
   const { data, isPending } = useProperties(query);
   const { data: countData } = usePropertiesCount(countQuery);
+  const { data: mapData, isPending: isMapPending } = usePropertiesMap(mapQuery, {
+    enabled: view === "map",
+  });
   const { data: agenciesData } = useAgencies({ limit: 100 });
   const mergeProperties = useMergeProperties();
   const deleteProperty = useDeleteProperty();
@@ -551,7 +564,34 @@ export function PropertiesListPanel() {
         </Select>
       </div>
 
-      {isPending ? (
+      <Tabs
+        className="w-fit"
+        selectedKey={view}
+        onSelectionChange={(key) => setView(key === "map" ? "map" : "table")}
+      >
+        <Tabs.ListContainer>
+          <Tabs.List aria-label="Property view">
+            <Tabs.Tab id="table" className="w-auto gap-1.5 px-3">
+              <TableIcon className="size-4" />
+              Table
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="map" className="w-auto gap-1.5 px-3">
+              <MapIcon className="size-4" />
+              Map
+              <Tabs.Indicator />
+            </Tabs.Tab>
+          </Tabs.List>
+        </Tabs.ListContainer>
+      </Tabs>
+
+      {view === "map" ? (
+        <PropertyClusterMap
+          markers={mapData?.data ?? []}
+          isLoading={isMapPending}
+          getDetailHref={(id) => Routes.admin.properties.detail(id)}
+        />
+      ) : isPending ? (
         <TableSkeleton rows={10} />
       ) : properties.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
@@ -671,7 +711,7 @@ export function PropertiesListPanel() {
         </div>
       )}
 
-      {pagination && pagination.total_pages > 1 && (
+      {view === "table" && pagination && pagination.total_pages > 1 && (
         <Pagination>
           <Pagination.Content>
             <Pagination.Item>
