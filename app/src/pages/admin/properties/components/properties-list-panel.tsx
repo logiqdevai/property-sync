@@ -596,7 +596,7 @@ export function PropertiesListPanel() {
                         </Link>
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>
-                        {property.agency_name ?? "—"}
+                        {property.source_agency?.name ?? "—"}
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>{property.city ?? "—"}</Table.Cell>
                       <Table.Cell className={groupCellClass}>

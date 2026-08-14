@@ -99,8 +99,8 @@ export class PropertyEntity {
   @ApiProperty({ nullable: true })
   duplicate_group_id: string | null;
 
-  @ApiProperty({ nullable: true })
-  agency_name: string | null;
+  @ApiProperty({ nullable: true, type: Object })
+  source_agency: { id: string; name: string } | null;
 
   @ApiProperty()
   created_at: Date;

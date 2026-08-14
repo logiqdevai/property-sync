@@ -395,6 +395,12 @@ export default function DashboardPropertiesListPage() {
   const trackedAgencies = (agenciesData?.data ?? []).filter(
     (agency) => agency.is_tracked && agency.user_tracked_agency_id,
   );
+  const filteredAgencyName =
+    trackedAgencyId === "all"
+      ? null
+      : (trackedAgencies.find(
+          (agency) => agency.user_tracked_agency_id === trackedAgencyId,
+        )?.name ?? null);
   const storedTruncateRules = useMemo(() => {
     const relevantAgencies =
       trackedAgencyId !== "all"
@@ -1225,7 +1231,7 @@ export default function DashboardPropertiesListPage() {
                   key={property.id}
                   id={property.id}
                   title={property.title}
-                  agencyName={property.agency_name}
+                  agencyName={property.source_agency?.name ?? filteredAgencyName}
                   city={property.city}
                   price={property.price}
                   currency={property.currency}
@@ -1373,7 +1379,7 @@ export default function DashboardPropertiesListPage() {
                           </Link>
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
-                          {property.agency_name ?? "—"}
+                          {property.source_agency?.name ?? filteredAgencyName ?? "—"}
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>{property.city ?? "—"}</Table.Cell>
                         <Table.Cell className={groupCellClass}>

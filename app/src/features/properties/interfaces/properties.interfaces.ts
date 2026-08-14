@@ -72,7 +72,7 @@ export interface Property extends PropertyCmsFields {
   construction_year: number | null;
   renovation_year: number | null;
   duplicate_group_id: string | null;
-  agency_name: string | null;
+  source_agency: { id: string; name: string } | null;
   features: string[] | null;
   images: string[] | null;
   created_at: string;

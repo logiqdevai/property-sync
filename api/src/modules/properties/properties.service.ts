@@ -20,7 +20,7 @@ import { MergePropertiesDto } from './dto/merge-properties.dto';
 import { Prisma } from 'generated/prisma';
 import { serializePropertyForApi } from './utils/property-api-response.util';
 import { buildHistoryChangeFilter } from './utils/property-change-filter.util';
-import { resolveAgencyName } from './utils/resolve-agency-name.util';
+import { resolveSourceAgency, sourceAgencySummarySelect } from './utils/resolve-agency-name.util';
 
 @Injectable()
 export class PropertiesService {
@@ -113,7 +113,7 @@ export class PropertiesService {
               is_primary_source: true,
               source_property: {
                 select: {
-                  source_agency: { select: { name: true } },
+                  source_agency: { select: sourceAgencySummarySelect },
                 },
               },
             },
@@ -142,7 +142,7 @@ export class PropertiesService {
       data: items.map(({ source_links, ...item }) =>
         serializePropertyForApi({
           ...item,
-          agency_name: resolveAgencyName(source_links),
+          source_agency: resolveSourceAgency(source_links),
         }),
       ),
       pagination: {
@@ -238,7 +238,7 @@ export class PropertiesService {
     return serializePropertyForApi({
       ...property,
       source_links: sourceLinks,
-      agency_name: resolveAgencyName(property.source_links),
+      source_agency: resolveSourceAgency(property.source_links),
     });
   }
 

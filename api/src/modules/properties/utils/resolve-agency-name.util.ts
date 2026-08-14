@@ -1,23 +1,27 @@
-export type AgencyNameSourceLink = {
-  is_primary_source: boolean;
-  source_property: { source_agency: { name: string } | null };
+export const sourceAgencySummarySelect = {
+  id: true,
+  name: true,
+} as const;
+
+export type SourceAgencySummary = {
+  id: string;
+  name: string;
 };
 
-export function resolveAgencyName(
-  sourceLinks: AgencyNameSourceLink[],
-): string | null {
-  const names: string[] = [];
-  const seen = new Set<string>();
-  const ordered = [...sourceLinks].toSorted(
-    (a, b) => Number(b.is_primary_source) - Number(a.is_primary_source),
-  );
+export function resolveSourceAgency(
+  sourceLinks: Array<{
+    is_primary_source: boolean;
+    source_property: { source_agency: SourceAgencySummary | null };
+  }>,
+): SourceAgencySummary | null {
+  let fallback: SourceAgencySummary | null = null;
 
-  for (const link of ordered) {
-    const name = link.source_property.source_agency?.name;
-    if (!name || seen.has(name)) continue;
-    seen.add(name);
-    names.push(name);
+  for (const link of sourceLinks) {
+    const agency = link.source_property.source_agency;
+    if (!agency) continue;
+    if (link.is_primary_source) return agency;
+    if (!fallback) fallback = agency;
   }
 
-  return names.length > 0 ? names.join(', ') : null;
+  return fallback;
 }

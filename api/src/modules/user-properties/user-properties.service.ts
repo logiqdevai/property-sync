@@ -43,7 +43,7 @@ import { isEstateWebListingTypeAllowed } from '@/integrations/estateweb/utils/es
 import { resolveCanonicalOrCrmPriceStart } from '@/modules/user-integrations/utils/sales-pricing.util';
 import { serializePropertyForApi } from '@/modules/properties/utils/property-api-response.util';
 import { buildHistoryChangeFilter } from '@/modules/properties/utils/property-change-filter.util';
-import { resolveAgencyName } from '@/modules/properties/utils/resolve-agency-name.util';
+import { resolveSourceAgency, sourceAgencySummarySelect } from '@/modules/properties/utils/resolve-agency-name.util';
 import {
   syncEstateWebFeaturesInCmsFields,
   upsertEstateWebEnergyClassInCmsFields,
@@ -264,7 +264,7 @@ export class UserPropertiesService {
     const where = this.buildWhere(userId, query, sourceAgencyId);
 
     const unlimited = query.limit === 0;
-    const [items, total] = await Promise.all([
+    const [items, total, filteredSourceAgency] = await Promise.all([
       this.prisma.userProperty.findMany({
         where,
         ...(unlimited
@@ -289,7 +289,7 @@ export class UserPropertiesService {
                   is_primary_source: true,
                   source_property: {
                     select: {
-                      source_agency: { select: { name: true } },
+                      source_agency: { select: sourceAgencySummarySelect },
                     },
                   },
                 },
@@ -299,6 +299,12 @@ export class UserPropertiesService {
         },
       }),
       this.prisma.userProperty.count({ where }),
+      sourceAgencyId
+        ? this.prisma.sourceAgency.findUnique({
+            where: { id: sourceAgencyId },
+            select: sourceAgencySummarySelect,
+          })
+        : Promise.resolve(null),
     ]);
 
     const totalPages = unlimited ? 1 : Math.ceil(total / query.limit);
@@ -308,7 +314,9 @@ export class UserPropertiesService {
         serializePropertyForApi({
           ...item,
           duplicate_group_id: canonical_property.duplicate_group_id,
-          agency_name: resolveAgencyName(canonical_property.source_links),
+          source_agency:
+            filteredSourceAgency ??
+            resolveSourceAgency(canonical_property.source_links),
         }),
       ),
       pagination: {
@@ -427,7 +435,7 @@ export class UserPropertiesService {
     return serializePropertyForApi({
       ...rest,
       duplicate_group_id: canonical_property.duplicate_group_id,
-      agency_name: resolveAgencyName(canonical_property.source_links),
+      source_agency: resolveSourceAgency(canonical_property.source_links),
       source_links: canonical_property.source_links,
       history: canonical_property.history,
       localized_contents,
@@ -3230,7 +3238,7 @@ export class UserPropertiesService {
     const where = this.buildAdminWhere(query);
     const unlimited = query.limit === 0;
 
-    const [items, total] = await Promise.all([
+    const [items, total, filteredSourceAgency] = await Promise.all([
       this.prisma.userProperty.findMany({
         where,
         ...(unlimited
@@ -3256,7 +3264,7 @@ export class UserPropertiesService {
                   is_primary_source: true,
                   source_property: {
                     select: {
-                      source_agency: { select: { name: true } },
+                      source_agency: { select: sourceAgencySummarySelect },
                     },
                   },
                 },
@@ -3266,6 +3274,12 @@ export class UserPropertiesService {
         },
       }),
       this.prisma.userProperty.count({ where }),
+      query.agency_id
+        ? this.prisma.sourceAgency.findUnique({
+            where: { id: query.agency_id },
+            select: sourceAgencySummarySelect,
+          })
+        : Promise.resolve(null),
     ]);
 
     const totalPages = unlimited ? 1 : Math.ceil(total / query.limit);
@@ -3276,7 +3290,9 @@ export class UserPropertiesService {
           ...item,
           user,
           duplicate_group_id: canonical_property.duplicate_group_id,
-          agency_name: resolveAgencyName(canonical_property.source_links),
+          source_agency:
+            filteredSourceAgency ??
+            resolveSourceAgency(canonical_property.source_links),
         }),
       ),
       pagination: {
@@ -3389,7 +3405,7 @@ export class UserPropertiesService {
       ...rest,
       user,
       duplicate_group_id: canonical_property.duplicate_group_id,
-      agency_name: resolveAgencyName(canonical_property.source_links),
+      source_agency: resolveSourceAgency(canonical_property.source_links),
       source_links: canonical_property.source_links,
       history: canonical_property.history,
       localized_contents,
