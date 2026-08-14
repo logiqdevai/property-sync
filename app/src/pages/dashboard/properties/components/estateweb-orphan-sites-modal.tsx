@@ -18,6 +18,7 @@ import type { EstateWebPushSiteSetting } from "@/features/estateweb/interfaces/e
 import type {
   EstateWebBulkDeleteByCodesJobResult,
   EstateWebBulkSitesByCodesJobResult,
+  EstateWebIdentifierType,
 } from "@/features/estateweb/interfaces/estateweb.interfaces";
 import {
   useAvailableIntegrationTargets,
@@ -43,12 +44,12 @@ function integrationLabel(integration: { userEmail: string; email: string | null
     : integration.userEmail;
 }
 
-function parseCodes(raw: string): string[] {
+function parseIdentifiers(raw: string): string[] {
   return [
     ...new Set(
       raw
         .split(/[\s,]+/)
-        .map((code) => code.trim())
+        .map((identifier) => identifier.trim())
         .filter(Boolean),
     ),
   ];
@@ -61,6 +62,7 @@ export function EstateWebOrphanSitesModal({
 }) {
   const [mode, setMode] = useState<Mode>("sites");
   const [selectedIntegrationId, setSelectedIntegrationId] = useState<string>(NONE_SELECTED);
+  const [identifierType, setIdentifierType] = useState<EstateWebIdentifierType>("code");
   const [codesInput, setCodesInput] = useState("");
   const [sites, setSites] = useState<EstateWebPushSiteSetting[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -72,6 +74,7 @@ export function EstateWebOrphanSitesModal({
     if (!state.isOpen) {
       setMode("sites");
       setSelectedIntegrationId(NONE_SELECTED);
+      setIdentifierType("code");
       setCodesInput("");
       setSites([]);
       setHydrated(false);
@@ -121,7 +124,7 @@ export function EstateWebOrphanSitesModal({
     !hydrated &&
     (targetsPending || !settingsTargetId || settingsPending || settings === undefined);
 
-  const codes = parseCodes(codesInput);
+  const codes = parseIdentifiers(codesInput);
   const isSubmitting = bulkUpdateSites.isPending || bulkDelete.isPending;
 
   const handleApplySites = () => {
@@ -129,8 +132,9 @@ export function EstateWebOrphanSitesModal({
     bulkUpdateSites.mutate(
       {
         userIntegrationId: selectedIntegrationId,
-        codes,
+        identifiers: codes,
         sites: sites.filter((site) => site.selected),
+        identifierType,
       },
       {
         onSuccess: (result) => {
@@ -144,7 +148,7 @@ export function EstateWebOrphanSitesModal({
   const handleConfirmDelete = () => {
     if (codes.length === 0 || !hasIntegration) return;
     bulkDelete.mutate(
-      { userIntegrationId: selectedIntegrationId, codes },
+      { userIntegrationId: selectedIntegrationId, identifiers: codes, identifierType },
       {
         onSuccess: (result) => {
           setJobLogId(result.job_log_id);
@@ -171,11 +175,13 @@ export function EstateWebOrphanSitesModal({
             <Modal.Body>
               <div className="grid max-h-[65vh] gap-4 overflow-y-auto pr-1">
                 <p className="text-sm text-muted">
-                  Pick an EstateWeb connection, paste in the property "code" values you want to
-                  manage (one per line, or comma/space separated), then choose whether to update
-                  site placements or delete the properties outright. Useful for cleaning up
-                  orphaned duplicate EstateWeb properties that have no matching record in our
-                  system. Runs in the background since this can touch hundreds of properties.
+                  Pick an EstateWeb connection, choose whether you're pasting in property "code"
+                  values or numeric EstateWeb ids (from the property URL), then paste them in
+                  (one per line, or comma/space separated) and choose whether to update site
+                  placements or delete the properties outright. Useful for cleaning up orphaned
+                  duplicate EstateWeb properties that have no matching record in our system —
+                  use IDs when two properties share a code, since codes can't disambiguate them.
+                  Runs in the background since this can touch hundreds of properties.
                 </p>
 
                 <div className="flex flex-col gap-1">
@@ -231,14 +237,48 @@ export function EstateWebOrphanSitesModal({
 
                 {hasIntegration && !jobLogId ? (
                   <div className="flex flex-col gap-1">
+                    <span className="text-sm font-medium text-foreground">Identify properties by</span>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={identifierType === "code" ? "primary" : "secondary"}
+                        onPress={() => setIdentifierType("code")}
+                      >
+                        Code
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={identifierType === "id" ? "primary" : "secondary"}
+                        onPress={() => setIdentifierType("id")}
+                      >
+                        ID (from EstateWeb URL)
+                      </Button>
+                    </div>
+                    {identifierType === "id" ? (
+                      <p className="text-xs text-muted">
+                        Use this when two properties share the same code (duplicates) — codes
+                        can&apos;t tell them apart, but the numeric id from the property URL
+                        (app.estateweb.gr/app/property/<strong>52485</strong>) always targets
+                        exactly one.
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {hasIntegration && !jobLogId ? (
+                  <div className="flex flex-col gap-1">
                     <span className="text-sm font-medium text-foreground">
-                      EstateWeb property codes
+                      EstateWeb property {identifierType === "id" ? "ids" : "codes"}
                     </span>
                     <TextArea
-                      aria-label="EstateWeb property codes"
+                      aria-label={`EstateWeb property ${identifierType === "id" ? "ids" : "codes"}`}
                       value={codesInput}
                       onChange={(event) => setCodesInput(event.target.value)}
-                      placeholder={"4215\n4212\n4209"}
+                      placeholder={
+                        identifierType === "id" ? "52485\n52483\n52481" : "4215\n4212\n4209"
+                      }
                       rows={5}
                     />
                   </div>
@@ -371,7 +411,8 @@ export function EstateWebOrphanSitesModal({
                   isPending={isSubmitting}
                   isDisabled={!hasIntegration || codes.length === 0 || isLoadingSites}
                 >
-                  {mode === "delete" ? "Delete" : "Apply to"} {codes.length} code
+                  {mode === "delete" ? "Delete" : "Apply to"} {codes.length}{" "}
+                  {identifierType === "id" ? "id" : "code"}
                   {codes.length === 1 ? "" : "s"}
                 </ActionButtonWithPending>
               ) : null}

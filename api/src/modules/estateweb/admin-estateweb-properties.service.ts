@@ -36,6 +36,7 @@ import {
   EstateWebBulkDeleteByCodesJobData,
   EstateWebBulkDeleteByCodesJobResult,
 } from './interfaces/estateweb-bulk-delete-by-codes-job.interface';
+import { EstateWebIdentifierType } from './interfaces/estateweb-bulk-identifier.interface';
 
 @Injectable()
 export class AdminEstateWebPropertiesService {
@@ -228,28 +229,32 @@ export class AdminEstateWebPropertiesService {
       .sort((a, b) => b.count - a.count);
   }
 
-  // Resolves EstateWeb `code` values to property ids (one cheap catalog fetch, matching what
-  // reconciliation already does) and enqueues one background job per matched code to apply the
-  // site selection -- used to manage orphaned duplicate listings (see docs on the cretahouses
-  // duplicate-property incident) that exist on EstateWeb but were never linked back into our
-  // own database, so there's no local UserProperty to key off of. This runs as a BullMQ job
-  // per code (mirroring UserPropertiesService.updateEstateWebSites) rather than inline in the
-  // request, since a paste of hundreds of codes -- each requiring a live GET+PATCH round trip
-  // to EstateWeb -- would far exceed any reasonable HTTP request timeout. Progress/results are
-  // tracked on the JobLog row and readable via GET /admin/jobs/:id.
-  async enqueueBulkUpdatePropertySitesByCodes(
+  // Resolves requested identifiers to EstateWeb property ids. `code` lookups fetch the full
+  // catalog and match on the "code" field (ambiguous when duplicate properties share a code --
+  // the first one encountered wins). `id` lookups skip the catalog fetch entirely and trust the
+  // numeric EstateWeb property id (from the property URL) directly, which is the only way to
+  // target one specific copy of a duplicate-code pair.
+  private async resolveEstateWebIdentifiers(
     userIntegrationId: string,
-    codes: string[],
-    sites: EstateWebPropertySite[],
+    identifiers: string[],
+    identifierType: EstateWebIdentifierType,
   ): Promise<{
-    job_log_id: string;
-    enqueued: number;
+    enqueueItems: Array<{ code: string; propertyId: number }>;
     failed: Array<{ code: string; error: string }>;
-    message: string;
   }> {
-    const requested = [...new Set(codes.map((code) => code.trim()).filter(Boolean))];
-    if (requested.length === 0) {
-      throw new BadRequestException('No codes provided');
+    const enqueueItems: Array<{ code: string; propertyId: number }> = [];
+    const failed: Array<{ code: string; error: string }> = [];
+
+    if (identifierType === 'id') {
+      for (const identifier of identifiers) {
+        const propertyId = Number(identifier);
+        if (!Number.isInteger(propertyId) || propertyId <= 0) {
+          failed.push({ code: identifier, error: 'Not a valid EstateWeb property id' });
+          continue;
+        }
+        enqueueItems.push({ code: identifier, propertyId });
+      }
+      return { enqueueItems, failed };
     }
 
     const { list } =
@@ -263,10 +268,7 @@ export class AdminEstateWebPropertiesService {
       if (code && !byCode.has(code)) byCode.set(code, listing.id);
     }
 
-    const enqueueItems: Array<{ code: string; propertyId: number }> = [];
-    const failed: Array<{ code: string; error: string }> = [];
-
-    for (const code of requested) {
+    for (const code of identifiers) {
       const propertyId = byCode.get(code);
       if (propertyId === undefined) {
         failed.push({ code, error: 'No EstateWeb property has this code' });
@@ -275,12 +277,47 @@ export class AdminEstateWebPropertiesService {
       enqueueItems.push({ code, propertyId });
     }
 
+    return { enqueueItems, failed };
+  }
+
+  // Resolves EstateWeb identifiers to property ids and enqueues one background job per match to
+  // apply the site selection -- used to manage orphaned duplicate listings (see docs on the
+  // cretahouses duplicate-property incident) that exist on EstateWeb but were never linked back
+  // into our own database, so there's no local UserProperty to key off of. This runs as a BullMQ
+  // job per identifier (mirroring UserPropertiesService.updateEstateWebSites) rather than inline
+  // in the request, since a paste of hundreds of identifiers -- each requiring a live GET+PATCH
+  // round trip to EstateWeb -- would far exceed any reasonable HTTP request timeout. Progress/
+  // results are tracked on the JobLog row and readable via GET /admin/jobs/:id.
+  async enqueueBulkUpdatePropertySitesByCodes(
+    userIntegrationId: string,
+    identifiers: string[],
+    sites: EstateWebPropertySite[],
+    identifierType: EstateWebIdentifierType = 'code',
+  ): Promise<{
+    job_log_id: string;
+    enqueued: number;
+    failed: Array<{ code: string; error: string }>;
+    message: string;
+  }> {
+    const requested = [
+      ...new Set(identifiers.map((identifier) => identifier.trim()).filter(Boolean)),
+    ];
+    if (requested.length === 0) {
+      throw new BadRequestException('No codes or ids provided');
+    }
+
+    const { enqueueItems, failed } = await this.resolveEstateWebIdentifiers(
+      userIntegrationId,
+      requested,
+      identifierType,
+    );
+
     if (enqueueItems.length === 0) {
       const firstError = failed[0]?.error ?? 'No properties could be updated';
       throw new BadRequestException(
         failed.length === 1
           ? firstError
-          : `None of the ${requested.length} codes matched an EstateWeb property.`,
+          : `None of the ${requested.length} ${identifierType === 'id' ? 'ids' : 'codes'} matched an EstateWeb property.`,
       );
     }
 
@@ -350,53 +387,41 @@ export class AdminEstateWebPropertiesService {
     };
   }
 
-  // Same resolve-by-code + enqueue-one-job-per-code shape as
+  // Same resolve + enqueue-one-job-per-identifier shape as
   // enqueueBulkUpdatePropertySitesByCodes, but calls EstateWeb's delete endpoint instead of a
   // sites PATCH. Deletion is irreversible on EstateWeb's side, so the frontend
-  // gates this behind an explicit confirmation before calling it.
+  // gates this behind an explicit confirmation before calling it. Resolving by numeric id
+  // (rather than code) is the only safe way to target one specific copy of a duplicate-code
+  // pair, since code lookups can't disambiguate between two properties sharing a code.
   async enqueueBulkDeletePropertiesByCodes(
     userIntegrationId: string,
-    codes: string[],
+    identifiers: string[],
+    identifierType: EstateWebIdentifierType = 'code',
   ): Promise<{
     job_log_id: string;
     enqueued: number;
     failed: Array<{ code: string; error: string }>;
     message: string;
   }> {
-    const requested = [...new Set(codes.map((code) => code.trim()).filter(Boolean))];
+    const requested = [
+      ...new Set(identifiers.map((identifier) => identifier.trim()).filter(Boolean)),
+    ];
     if (requested.length === 0) {
-      throw new BadRequestException('No codes provided');
+      throw new BadRequestException('No codes or ids provided');
     }
 
-    const { list } =
-      await this.estateWebPropertyService.listAllPropertiesForIntegration(
-        userIntegrationId,
-      );
-
-    const byCode = new Map<string, number>();
-    for (const listing of list) {
-      const code = listing.code?.trim();
-      if (code && !byCode.has(code)) byCode.set(code, listing.id);
-    }
-
-    const enqueueItems: Array<{ code: string; propertyId: number }> = [];
-    const failed: Array<{ code: string; error: string }> = [];
-
-    for (const code of requested) {
-      const propertyId = byCode.get(code);
-      if (propertyId === undefined) {
-        failed.push({ code, error: 'No EstateWeb property has this code' });
-        continue;
-      }
-      enqueueItems.push({ code, propertyId });
-    }
+    const { enqueueItems, failed } = await this.resolveEstateWebIdentifiers(
+      userIntegrationId,
+      requested,
+      identifierType,
+    );
 
     if (enqueueItems.length === 0) {
       const firstError = failed[0]?.error ?? 'No properties could be deleted';
       throw new BadRequestException(
         failed.length === 1
           ? firstError
-          : `None of the ${requested.length} codes matched an EstateWeb property.`,
+          : `None of the ${requested.length} ${identifierType === 'id' ? 'ids' : 'codes'} matched an EstateWeb property.`,
       );
     }
 

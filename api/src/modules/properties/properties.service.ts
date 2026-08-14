@@ -99,6 +99,28 @@ export class PropertiesService {
     };
   }
 
+  private resolveAgencyName(
+    sourceLinks: Array<{
+      is_primary_source: boolean;
+      source_property: { source_agency: { name: string } | null };
+    }>,
+  ): string | null {
+    const names: string[] = [];
+    const seen = new Set<string>();
+    const ordered = [...sourceLinks].toSorted(
+      (a, b) => Number(b.is_primary_source) - Number(a.is_primary_source),
+    );
+
+    for (const link of ordered) {
+      const name = link.source_property.source_agency?.name;
+      if (!name || seen.has(name)) continue;
+      seen.add(name);
+      names.push(name);
+    }
+
+    return names.length > 0 ? names.join(', ') : null;
+  }
+
   async findAll(query: PropertyQueryType) {
     const where = this.buildWhere(query);
     const unlimited = query.limit === 0;
@@ -106,6 +128,18 @@ export class PropertiesService {
     const [items, total] = await Promise.all([
       this.prisma.property.findMany({
         where,
+        include: {
+          source_links: {
+            select: {
+              is_primary_source: true,
+              source_property: {
+                select: {
+                  source_agency: { select: { name: true } },
+                },
+              },
+            },
+          },
+        },
         ...(unlimited
           ? {}
           : {
@@ -126,7 +160,12 @@ export class PropertiesService {
     const totalPages = unlimited ? 1 : Math.ceil(total / query.limit);
 
     return {
-      data: items.map((item) => serializePropertyForApi(item)),
+      data: items.map(({ source_links, ...item }) =>
+        serializePropertyForApi({
+          ...item,
+          agency_name: this.resolveAgencyName(source_links),
+        }),
+      ),
       pagination: {
         page: unlimited ? 1 : query.page,
         limit: query.limit,
@@ -220,6 +259,7 @@ export class PropertiesService {
     return serializePropertyForApi({
       ...property,
       source_links: sourceLinks,
+      agency_name: this.resolveAgencyName(property.source_links),
     });
   }
 

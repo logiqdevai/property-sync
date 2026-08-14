@@ -6,6 +6,7 @@ import type {
   EstateWebBulkJobEnqueueResult,
   EstateWebDuplicatePropertyGroup,
   EstateWebFlatCatalogItem,
+  EstateWebIdentifierType,
   EstateWebLocationCatalogItem,
   EstateWebPropertyTypeCatalogItem,
 } from "../interfaces/estateweb.interfaces";
@@ -131,13 +132,14 @@ export const getEstateWebDuplicateProperties = async (
 
 export const bulkUpdateEstateWebPropertySites = async (
   userIntegrationId: string,
-  codes: string[],
+  identifiers: string[],
   sites: EstateWebPushSiteSetting[],
+  identifierType: EstateWebIdentifierType = "code",
 ): Promise<EstateWebBulkJobEnqueueResult> => {
   try {
     const response = await axiosInstance.post(
       ApiRoutes.admin.estateweb.bulkUpdateSites(userIntegrationId),
-      { codes, sites },
+      { identifiers, sites, identifier_type: identifierType },
     );
     return response.data;
   } catch (error: any) {
@@ -150,12 +152,13 @@ export const bulkUpdateEstateWebPropertySites = async (
 
 export const bulkDeleteEstateWebPropertiesByCodes = async (
   userIntegrationId: string,
-  codes: string[],
+  identifiers: string[],
+  identifierType: EstateWebIdentifierType = "code",
 ): Promise<EstateWebBulkJobEnqueueResult> => {
   try {
     const response = await axiosInstance.post(
       ApiRoutes.admin.estateweb.bulkDeleteByCodes(userIntegrationId),
-      { codes },
+      { identifiers, identifier_type: identifierType },
     );
     return response.data;
   } catch (error: any) {

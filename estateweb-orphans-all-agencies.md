@@ -1,0 +1,160 @@
+# EstateWeb Orphan / Duplicate Records — Pending Deletion (all agencies)
+
+Generated: 2026-08-14
+
+> **Important:** the deletion tool resolves by `code`, but for **DUPLICATE** rows below the two EstateWeb records share the exact same code — resolving by code alone is ambiguous and could delete the wrong copy. Use the numeric **Delete ID** column (the EstateWeb record id, from the property URL) to target deletion precisely, not the code. Verify each link visually before deleting.
+
+## pagalos-trust — 72 orphan record(s)
+
+**delete_ids (comma separated):** 52485, 52483, 52481, 52478, 52476, 52474, 52473, 52471, 52468, 52466, 52463, 52461, 52459, 52456, 52455, 52453, 52452, 52449, 52446, 52444, 52443, 52441, 52439, 52438, 52436, 52434, 52432, 52430, 52429, 52428, 52426, 52424, 52422, 52421, 52418, 52416, 52415, 52413, 52408, 52407, 52406, 52404, 52402, 52400, 52398, 52396, 52395, 52394, 52393, 52391, 52390, 51467, 51463, 51462, 46868, 46849, 46823, 46814, 46801, 46800, 46799, 46798, 46789, 46788, 46787, 46786, 46785, 46780, 46773, 46772, 46771, 46770
+
+| Delete ID | Code | Delete link | Status | Keep ID | Keep link | Local property title |
+|---|---|---|---|---|---|---|
+| 52485 | 14726228 | [open](https://app.estateweb.gr/app/property/52485) | DUPLICATE | 52508 | [open](https://app.estateweb.gr/app/property/52508) | Βίλα προς πώληση Πηγή (Αρκάδι) |
+| 52483 | 12833725 | [open](https://app.estateweb.gr/app/property/52483) | DUPLICATE | 52507 | [open](https://app.estateweb.gr/app/property/52507) | Κτίριο προς πώληση Λούτρα (Αρκάδι) |
+| 52481 | 17697274 | [open](https://app.estateweb.gr/app/property/52481) | DUPLICATE | 52506 | [open](https://app.estateweb.gr/app/property/52506) | Γραφείο προς πώληση Εβλιγιάς - Καλλιθέα (Ρέθυμνο) |
+| 52478 | 19263939 | [open](https://app.estateweb.gr/app/property/52478) | DUPLICATE | 52504 | [open](https://app.estateweb.gr/app/property/52504) | ΠΩΛΕΙΤΑΙ κτίριο στην καρδιά της παλιάς πόλης του Ρεθύμνου δύο ορόφων που αποτελείται από έξι διαμερίσματα επιφάνειας περίπου 50 έως 70 τμ |
+| 52476 | 1508517 | [open](https://app.estateweb.gr/app/property/52476) | DUPLICATE | 52503 | [open](https://app.estateweb.gr/app/property/52503) | Άλλο είδος ακινήτου προς πώληση Ρέθυμνο |
+| 52474 | 17609663 | [open](https://app.estateweb.gr/app/property/52474) | DUPLICATE | 52502 | [open](https://app.estateweb.gr/app/property/52502) | Συγκρότημα προς πώληση Παλιά Πόλη - Φορτέτζα (Ρέθυμνο) |
+| 52473 | 19333240 | [open](https://app.estateweb.gr/app/property/52473) | DUPLICATE | 52501 | [open](https://app.estateweb.gr/app/property/52501) | Πωλείται ακίνητο στο κέντρο της Παλιάς Πόλης Ρεθύμνου |
+| 52471 | 19906722 | [open](https://app.estateweb.gr/app/property/52471) | DUPLICATE | 52500 | [open](https://app.estateweb.gr/app/property/52500) | Πωλείται Αγροτεμάχιο 6.800 τ.μ. – Σχοινάρια, Δήμος Αγίου Βασιλείου Πωλείται εξαιρετικό αγροτεμάχιο 6.800 τ.μ |
+| 52468 | 12596831 | [open](https://app.estateweb.gr/app/property/52468) | DUPLICATE | 52498 | [open](https://app.estateweb.gr/app/property/52498) | Μεζονέτα προς πώληση Αμάρι (Σίβριτος) |
+| 52466 | 10998157 | [open](https://app.estateweb.gr/app/property/52466) | DUPLICATE | 52497 | [open](https://app.estateweb.gr/app/property/52497) | Μονοκατοικία προς πώληση Παγκαλοχώρι (Αρκάδι) |
+| 52463 | 15967987 | [open](https://app.estateweb.gr/app/property/52463) | DUPLICATE | 52496 | [open](https://app.estateweb.gr/app/property/52496) | Μεζονέτα προς πώληση Κυριάννα (Αρκάδι) |
+| 52461 | 15809072 | [open](https://app.estateweb.gr/app/property/52461) | DUPLICATE | 52495 | [open](https://app.estateweb.gr/app/property/52495) | Μονοκατοικία προς πώληση Αγία Τριάδα (Αρκάδι) |
+| 52459 | 18429148 | [open](https://app.estateweb.gr/app/property/52459) | DUPLICATE | 52494 | [open](https://app.estateweb.gr/app/property/52494) | Μεζονέτα προς πώληση Σταυρωμένος (Αρκάδι) |
+| 52456 | 17800054 | [open](https://app.estateweb.gr/app/property/52456) | DUPLICATE | 52492 | [open](https://app.estateweb.gr/app/property/52492) | Πωλείται οικόπεδο 1469τμ Σφακακι Ρεθυμνου |
+| 52455 | 11887476 | [open](https://app.estateweb.gr/app/property/52455) | DUPLICATE | 52491 | [open](https://app.estateweb.gr/app/property/52491) | Αγροτεμάχιο προς πώληση Πρινές (Νικηφόρος Φωκάς) |
+| 52453 | 16233101 | [open](https://app.estateweb.gr/app/property/52453) | DUPLICATE | 52490 | [open](https://app.estateweb.gr/app/property/52490) | Μεζονέτα προς πώληση Περιβόλια (Ρέθυμνο) |
+| 52452 | 19943739 | [open](https://app.estateweb.gr/app/property/52452) | DUPLICATE | 52489 | [open](https://app.estateweb.gr/app/property/52489) | Αγροτεμάχιο προς πώληση Επισκοπή (Λάππα) |
+| 52449 | 15809064 | [open](https://app.estateweb.gr/app/property/52449) | DUPLICATE | 52487 | [open](https://app.estateweb.gr/app/property/52487) | Οικόπεδο προς πώληση Νέα Μαγνησία (Αρκάδι) |
+| 52446 | 12114743 | [open](https://app.estateweb.gr/app/property/52446) | DUPLICATE | 52486 | [open](https://app.estateweb.gr/app/property/52486) | Πωλείται λουξ διώροφη οικία 189 τμ , στο Άδελε Ρεθύμνου |
+| 52444 | 20365517 | [open](https://app.estateweb.gr/app/property/52444) | DUPLICATE | 52484 | [open](https://app.estateweb.gr/app/property/52484) | Κατάστημα προς πώληση, Ρέθυμνο |
+| 52443 | 19061428 | [open](https://app.estateweb.gr/app/property/52443) | DUPLICATE | 52482 | [open](https://app.estateweb.gr/app/property/52482) | Αγροτεμάχιο προς πώληση Γεράνι (Νικηφόρος Φωκάς) |
+| 52441 | 17553703 | [open](https://app.estateweb.gr/app/property/52441) | DUPLICATE | 52479 | [open](https://app.estateweb.gr/app/property/52479) | Πωλείται οικόπεδο 1400τ.μ., 800 μέτρα από τη θάλασσα, με εμβαδόν δόμησης 200 τμ, στο Σφακάκι Ρεθύμνου. Είναι γωνιακό οικόπεδο με πολύ καλή θέα |
+| 52439 | 20378263 | [open](https://app.estateweb.gr/app/property/52439) | DUPLICATE | 52477 | [open](https://app.estateweb.gr/app/property/52477) | Αγροτεμάχιο, Αρχοντική Ρεθύμνου |
+| 52438 | 20176002 | [open](https://app.estateweb.gr/app/property/52438) | DUPLICATE | 52475 | [open](https://app.estateweb.gr/app/property/52475) | Οικόπεδο, Καλλιθέα Ρεθύμνου |
+| 52436 | 16103164 | [open](https://app.estateweb.gr/app/property/52436) | DUPLICATE | 52472 | [open](https://app.estateweb.gr/app/property/52472) | Συγκρότημα προς πώληση Ατσιπόπουλο (Νικηφόρος Φωκάς) |
+| 52434 | 19467738 | [open](https://app.estateweb.gr/app/property/52434) | DUPLICATE | 52469 | [open](https://app.estateweb.gr/app/property/52469) | Αγροτεμάχιο προς πώληση Γεράνι (Νικηφόρος Φωκάς) |
+| 52432 | 19467975 | [open](https://app.estateweb.gr/app/property/52432) | DUPLICATE | 52467 | [open](https://app.estateweb.gr/app/property/52467) | Μονοκατοικία προς πώληση Άγιος Κωνσταντίνος (Νικηφόρος Φωκάς) |
+| 52430 | 19277265 | [open](https://app.estateweb.gr/app/property/52430) | DUPLICATE | 52465 | [open](https://app.estateweb.gr/app/property/52465) | ΠΩΛΕΙΤΑΙ τριόροφο οίκημα γωνιακό, 160 τμ |
+| 52429 | 16875798 | [open](https://app.estateweb.gr/app/property/52429) | DUPLICATE | 52464 | [open](https://app.estateweb.gr/app/property/52464) | Οικόπεδο προς πώληση Ατσιπόπουλο (Νικηφόρος Φωκάς) |
+| 52428 | 19899984 | [open](https://app.estateweb.gr/app/property/52428) | DUPLICATE | 52462 | [open](https://app.estateweb.gr/app/property/52462) | ΡΕΘΥΜΝΟ-ΞΗΡΟ ΧΩΡΙΟ Πωλείται μονοκατοικία 60τμ. Χαρακτηριστικά ακινήτου: • 2 άνετα υπνοδωμάτια |
+| 52426 | 17049045 | [open](https://app.estateweb.gr/app/property/52426) | DUPLICATE | 52460 | [open](https://app.estateweb.gr/app/property/52460) | ΠΩΛΕΙΤΑΙ Αγροτεμάχιο 3000τμ με 2 άδειες των 93τμ στο γεράνι Ρεθύμνου ( θέσ |
+| 52424 | 9248874 | [open](https://app.estateweb.gr/app/property/52424) | DUPLICATE | 52457 | [open](https://app.estateweb.gr/app/property/52457) | ΠΩΛΕΊΤΑΙ ΒΙΛΛΑ Παραδοσιακό κατάλυμα Α΄τάξης |
+| 52422 | 16744305 | [open](https://app.estateweb.gr/app/property/52422) | DUPLICATE | 52454 | [open](https://app.estateweb.gr/app/property/52454) | Κατάστημα προς πώληση Παλιά Πόλη - Φορτέτζα (Ρέθυμνο) |
+| 52421 | 18510839 | [open](https://app.estateweb.gr/app/property/52421) | DUPLICATE | 52448 | [open](https://app.estateweb.gr/app/property/52448) | Plot of land for sale 4100 sq m in a very good location, Zourida area, Rethymno |
+| 52418 | 18765710 | [open](https://app.estateweb.gr/app/property/52418) | DUPLICATE | 52445 | [open](https://app.estateweb.gr/app/property/52445) | Αγροτεμάχιο προς πώληση Βλυχάδα (Γεροπόταμος) |
+| 52416 | 19505210 | [open](https://app.estateweb.gr/app/property/52416) | DUPLICATE | 52442 | [open](https://app.estateweb.gr/app/property/52442) | Πωλείται γωνιακό οικόπεδο 230 τ.μ. με 3 προσόψεις σε εξαιρετικό σημείο στον Σταυρωμένο Ρεθύμνου. |
+| 52415 | 4460377 | [open](https://app.estateweb.gr/app/property/52415) | DUPLICATE | 52440 | [open](https://app.estateweb.gr/app/property/52440) | Διαμέρισμα προς πώληση Ατσιπόπουλο (Νικηφόρος Φωκάς) |
+| 52413 | 15280316 | [open](https://app.estateweb.gr/app/property/52413) | DUPLICATE | 52437 | [open](https://app.estateweb.gr/app/property/52437) | Οικόπεδο προς πώληση Σταυρωμένος (Αρκάδι) |
+| 52408 | 20146751 | [open](https://app.estateweb.gr/app/property/52408) | DUPLICATE | 52431 | [open](https://app.estateweb.gr/app/property/52431) | Διαμέρισμα, Μασταμπάς Ρεθύμνου |
+| 52407 | 4872043 | [open](https://app.estateweb.gr/app/property/52407) | DUPLICATE | 52427 | [open](https://app.estateweb.gr/app/property/52427) | Οικόπεδο προς πώληση Μισίρια (Ρέθυμνο) |
+| 52406 | 17190425 | [open](https://app.estateweb.gr/app/property/52406) | DUPLICATE | 52425 | [open](https://app.estateweb.gr/app/property/52425) | Οικόπεδο προς πώληση Κυριάννα (Αρκάδι) |
+| 52404 | 14481011 | [open](https://app.estateweb.gr/app/property/52404) | DUPLICATE | 52423 | [open](https://app.estateweb.gr/app/property/52423) | Μονοκατοικία προς πώληση Άγιος Δημήτριος (Αρκάδι) |
+| 52402 | 19683627 | [open](https://app.estateweb.gr/app/property/52402) | DUPLICATE | 52420 | [open](https://app.estateweb.gr/app/property/52420) | Μεζονέτα προς πώληση Πανόραμα (Νικηφόρος Φωκάς) |
+| 52400 | 19899994 | [open](https://app.estateweb.gr/app/property/52400) | DUPLICATE | 52417 | [open](https://app.estateweb.gr/app/property/52417) | Ακίνητο προς πώληση, Ξηρό Χωριό (Ρέθυμνο) |
+| 52398 | 19995986 | [open](https://app.estateweb.gr/app/property/52398) | DUPLICATE | 52414 | [open](https://app.estateweb.gr/app/property/52414) | Οικόπεδο προς πώληση Εβλιγιάς - Καλλιθέα (Ρέθυμνο) |
+| 52396 | 17228181 | [open](https://app.estateweb.gr/app/property/52396) | DUPLICATE | 52411 | [open](https://app.estateweb.gr/app/property/52411) | ΠΩΛΕΙΤΑΙ πολυτελής βίλλα 270 τετραγωνικών μέτρων σε οικόπεδο 1 στρέμματος |
+| 52395 | 16429285 | [open](https://app.estateweb.gr/app/property/52395) | DUPLICATE | 52409 | [open](https://app.estateweb.gr/app/property/52409) | Οικόπεδο προς πώληση Γάλλος (Ρέθυμνο) |
+| 52394 | 13259230 | [open](https://app.estateweb.gr/app/property/52394) | DUPLICATE | 52405 | [open](https://app.estateweb.gr/app/property/52405) | Αγροτεμάχιο προς πώληση Ανώγεια (Ρέθυμνο) |
+| 52393 | 19981256 | [open](https://app.estateweb.gr/app/property/52393) | DUPLICATE | 52403 | [open](https://app.estateweb.gr/app/property/52403) | Ξενοδοχείο προς πώληση Τσεσμές (Ρέθυμνο) |
+| 52391 | 11921345 | [open](https://app.estateweb.gr/app/property/52391) | DUPLICATE | 52399 | [open](https://app.estateweb.gr/app/property/52399) | Αγροτεμάχιο, Καστελλάκια Ρεθύμνου |
+| 52390 | 20256172 | [open](https://app.estateweb.gr/app/property/52390) | DUPLICATE | 52397 | [open](https://app.estateweb.gr/app/property/52397) | Οικόπεδο, Κυριάννα Ρεθύμνου |
+| 51467 | 0240 | [open](https://app.estateweb.gr/app/property/51467) | STANDALONE — no local match, verify manually | - | - | - |
+| 51463 | 0239 | [open](https://app.estateweb.gr/app/property/51463) | STANDALONE — no local match, verify manually | - | - | - |
+| 51462 | 0238 | [open](https://app.estateweb.gr/app/property/51462) | STANDALONE — no local match, verify manually | - | - | - |
+| 46868 | 0237 | [open](https://app.estateweb.gr/app/property/46868) | STANDALONE — no local match, verify manually | - | - | - |
+| 46849 | 0233 | [open](https://app.estateweb.gr/app/property/46849) | STANDALONE — no local match, verify manually | - | - | - |
+| 46823 | 0229 | [open](https://app.estateweb.gr/app/property/46823) | STANDALONE — no local match, verify manually | - | - | - |
+| 46814 | 0222 | [open](https://app.estateweb.gr/app/property/46814) | STANDALONE — no local match, verify manually | - | - | - |
+| 46801 | 0220 | [open](https://app.estateweb.gr/app/property/46801) | STANDALONE — no local match, verify manually | - | - | - |
+| 46800 | 0219 | [open](https://app.estateweb.gr/app/property/46800) | STANDALONE — no local match, verify manually | - | - | - |
+| 46799 | 0218 | [open](https://app.estateweb.gr/app/property/46799) | STANDALONE — no local match, verify manually | - | - | - |
+| 46798 | 0217 | [open](https://app.estateweb.gr/app/property/46798) | STANDALONE — no local match, verify manually | - | - | - |
+| 46789 | 0214 | [open](https://app.estateweb.gr/app/property/46789) | STANDALONE — no local match, verify manually | - | - | - |
+| 46788 | 0213 | [open](https://app.estateweb.gr/app/property/46788) | STANDALONE — no local match, verify manually | - | - | - |
+| 46787 | 0212 | [open](https://app.estateweb.gr/app/property/46787) | STANDALONE — no local match, verify manually | - | - | - |
+| 46786 | 0211 | [open](https://app.estateweb.gr/app/property/46786) | STANDALONE — no local match, verify manually | - | - | - |
+| 46785 | 0210 | [open](https://app.estateweb.gr/app/property/46785) | STANDALONE — no local match, verify manually | - | - | - |
+| 46780 | 0208 | [open](https://app.estateweb.gr/app/property/46780) | STANDALONE — no local match, verify manually | - | - | - |
+| 46773 | 0207 | [open](https://app.estateweb.gr/app/property/46773) | STANDALONE — no local match, verify manually | - | - | - |
+| 46772 | 0206 | [open](https://app.estateweb.gr/app/property/46772) | STANDALONE — no local match, verify manually | - | - | - |
+| 46771 | 0205 | [open](https://app.estateweb.gr/app/property/46771) | STANDALONE — no local match, verify manually | - | - | - |
+| 46770 | 0204 | [open](https://app.estateweb.gr/app/property/46770) | STANDALONE — no local match, verify manually | - | - | - |
+
+## samson-homes — 34 orphan record(s)
+
+**delete_ids (comma separated):** 52723, 52708, 51573, 51324, 51202, 50900, 50899, 50790, 50739, 50719, 50524, 50326, 49977, 49733, 49683, 49657, 49656, 49655, 49551, 49295, 48700, 48699, 48616, 48476, 48231, 47821, 47698, 47302, 47232, 47224, 47126, 47102, 47094, 47076
+
+| Delete ID | Code | Delete link | Status | Keep ID | Keep link | Local property title |
+|---|---|---|---|---|---|---|
+| 52723 | 25029 | [open](https://app.estateweb.gr/app/property/52723) | DUPLICATE | 52778 | [open](https://app.estateweb.gr/app/property/52778) | Οικόπεδο προς πώληση Φραγκοκάστελλο (Σφακιά), € 350.000, 10.000 τ.μ. |
+| 52708 | 23033 | [open](https://app.estateweb.gr/app/property/52708) | DUPLICATE | 52779 | [open](https://app.estateweb.gr/app/property/52779) | Οικόπεδο προς πώληση Αγία Φωτεινή (Λάμπη), € 1.000.000, 51.000 τ.μ. |
+| 51573 | 26055 | [open](https://app.estateweb.gr/app/property/51573) | STANDALONE — no local match, verify manually | - | - | - |
+| 51324 | 26043 | [open](https://app.estateweb.gr/app/property/51324) | STANDALONE — no local match, verify manually | - | - | - |
+| 51202 | 26041 | [open](https://app.estateweb.gr/app/property/51202) | DUPLICATE | 52713 | [open](https://app.estateweb.gr/app/property/52713) | Οικόπεδο προς πώληση Σωματάς (Ρέθυμνο), € 80.000, 453 τ.μ. |
+| 50900 | 26012 | [open](https://app.estateweb.gr/app/property/50900) | STANDALONE — no local match, verify manually | - | - | - |
+| 50899 | 26021 | [open](https://app.estateweb.gr/app/property/50899) | DUPLICATE | 52698 | [open](https://app.estateweb.gr/app/property/52698) | Οικόπεδο προς πώληση Επισκοπή (Λάππα), € 145.000, 2.500 τ.μ. |
+| 50790 | 26017 | [open](https://app.estateweb.gr/app/property/50790) | STANDALONE — no local match, verify manually | - | - | - |
+| 50739 | 26011 | [open](https://app.estateweb.gr/app/property/50739) | STANDALONE — no local match, verify manually | - | - | - |
+| 50719 | 26010 | [open](https://app.estateweb.gr/app/property/50719) | DUPLICATE | 52664 | [open](https://app.estateweb.gr/app/property/52664) | Οικόπεδο προς πώληση Αγία Παρασκευή (Λάμπη), € 110.000, 2.500 τ.μ. |
+| 50524 | 26007 | [open](https://app.estateweb.gr/app/property/50524) | STANDALONE — no local match, verify manually | - | - | - |
+| 50326 | 25085 | [open](https://app.estateweb.gr/app/property/50326) | STANDALONE — no local match, verify manually | - | - | - |
+| 49977 | 25071 | [open](https://app.estateweb.gr/app/property/49977) | STANDALONE — no local match, verify manually | - | - | - |
+| 49733 | 25070 | [open](https://app.estateweb.gr/app/property/49733) | STANDALONE — no local match, verify manually | - | - | - |
+| 49683 | 25062 | [open](https://app.estateweb.gr/app/property/49683) | STANDALONE — no local match, verify manually | - | - | - |
+| 49657 | 24107 | [open](https://app.estateweb.gr/app/property/49657) | STANDALONE — no local match, verify manually | - | - | - |
+| 49656 | 25059 | [open](https://app.estateweb.gr/app/property/49656) | DUPLICATE | 52726 | [open](https://app.estateweb.gr/app/property/52726) | Βίλα προς πώληση Ασώματος (Φοινίκας), € 1.100.000, 370 τ.μ. |
+| 49655 | 25061 | [open](https://app.estateweb.gr/app/property/49655) | DUPLICATE | 52731 | [open](https://app.estateweb.gr/app/property/52731) | Οικόπεδο προς πώληση Πλατανιάς (Ρέθυμνο), € 1.100.000, 2.542 τ.μ. |
+| 49551 | 25052 | [open](https://app.estateweb.gr/app/property/49551) | STANDALONE — no local match, verify manually | - | - | - |
+| 49295 | 25047 | [open](https://app.estateweb.gr/app/property/49295) | STANDALONE — no local match, verify manually | - | - | - |
+| 48700 | 25037 | [open](https://app.estateweb.gr/app/property/48700) | STANDALONE — no local match, verify manually | - | - | - |
+| 48699 | 25040 | [open](https://app.estateweb.gr/app/property/48699) | STANDALONE — no local match, verify manually | - | - | - |
+| 48616 | 24002 | [open](https://app.estateweb.gr/app/property/48616) | STANDALONE — no local match, verify manually | - | - | - |
+| 48476 | 25029 | [open](https://app.estateweb.gr/app/property/48476) | DUPLICATE | 52778 | [open](https://app.estateweb.gr/app/property/52778) | Οικόπεδο προς πώληση Φραγκοκάστελλο (Σφακιά), € 350.000, 10.000 τ.μ. |
+| 48231 | 24017 | [open](https://app.estateweb.gr/app/property/48231) | STANDALONE — no local match, verify manually | - | - | - |
+| 47821 | 21031 | [open](https://app.estateweb.gr/app/property/47821) | STANDALONE — no local match, verify manually | - | - | - |
+| 47698 | 12769 | [open](https://app.estateweb.gr/app/property/47698) | DUPLICATE | 52680 | [open](https://app.estateweb.gr/app/property/52680) | Οικόπεδο προς πώληση Πλακιάς (Φοινίκας), € 160.000, 710 τ.μ. |
+| 47302 | 24131 | [open](https://app.estateweb.gr/app/property/47302) | STANDALONE — no local match, verify manually | - | - | - |
+| 47232 | 23020 | [open](https://app.estateweb.gr/app/property/47232) | STANDALONE — no local match, verify manually | - | - | - |
+| 47224 | 24130 | [open](https://app.estateweb.gr/app/property/47224) | STANDALONE — no local match, verify manually | - | - | - |
+| 47126 | 24121 | [open](https://app.estateweb.gr/app/property/47126) | STANDALONE — no local match, verify manually | - | - | - |
+| 47102 | 12730 | [open](https://app.estateweb.gr/app/property/47102) | STANDALONE — no local match, verify manually | - | - | - |
+| 47094 | 12669 | [open](https://app.estateweb.gr/app/property/47094) | STANDALONE — no local match, verify manually | - | - | - |
+| 47076 | 23008 | [open](https://app.estateweb.gr/app/property/47076) | STANDALONE — no local match, verify manually | - | - | - |
+
+## euroland-crete — 9 orphan record(s)
+
+**delete_ids (comma separated):** 50470, 50468, 50441, 50440, 49880, 49867, 49863, 49861, 49803
+
+| Delete ID | Code | Delete link | Status | Keep ID | Keep link | Local property title |
+|---|---|---|---|---|---|---|
+| 50470 | CH247 | [open](https://app.estateweb.gr/app/property/50470) | DUPLICATE | 53398 | [open](https://app.estateweb.gr/app/property/53398) | Luxury Maisonette Apartment By the Old Harbor of Chania |
+| 50468 | CH235 | [open](https://app.estateweb.gr/app/property/50468) | DUPLICATE | 52938 | [open](https://app.estateweb.gr/app/property/52938) | Cozy Apartment in the Heart of Chania |
+| 50441 | KH373 | [open](https://app.estateweb.gr/app/property/50441) | STANDALONE — no local match, verify manually | - | - | - |
+| 50440 | CH262 | [open](https://app.estateweb.gr/app/property/50440) | DUPLICATE | 53283 | [open](https://app.estateweb.gr/app/property/53283) | Tranquil Residence with Countryside Views |
+| 49880 | RH066 | [open](https://app.estateweb.gr/app/property/49880) | DUPLICATE | 53106 | [open](https://app.estateweb.gr/app/property/53106) | Spectacular Luxury Sea View Villa |
+| 49867 | KH342 | [open](https://app.estateweb.gr/app/property/49867) | DUPLICATE | 52939 | [open](https://app.estateweb.gr/app/property/52939) | Lovely Residential Project with a Swimming Pool |
+| 49863 | AH171 | [open](https://app.estateweb.gr/app/property/49863) | STANDALONE — no local match, verify manually | - | - | - |
+| 49861 | KH354 | [open](https://app.estateweb.gr/app/property/49861) | DUPLICATE | 53225 | [open](https://app.estateweb.gr/app/property/53225) | Immaculate Views with a Private Cove |
+| 49803 | KH348 | [open](https://app.estateweb.gr/app/property/49803) | DUPLICATE | 53221 | [open](https://app.estateweb.gr/app/property/53221) | Countryside Stone House With Open Views |
+
+## bitsimis-real-homes — 4 orphan record(s)
+
+**delete_ids (comma separated):** 52780, 52352, 52256, 52030
+
+| Delete ID | Code | Delete link | Status | Keep ID | Keep link | Local property title |
+|---|---|---|---|---|---|---|
+| 52780 | 1974 | [open](https://app.estateweb.gr/app/property/52780) | STANDALONE — no local match, verify manually | - | - | - |
+| 52352 | 2793 | [open](https://app.estateweb.gr/app/property/52352) | DUPLICATE | 52354 | [open](https://app.estateweb.gr/app/property/52354) | Διαμέρισμα 34 τ.μ. |
+| 52256 | 3-2692 | [open](https://app.estateweb.gr/app/property/52256) | DUPLICATE | 52330 | [open](https://app.estateweb.gr/app/property/52330) | Φάληρο Αγία Τριάδα ΠΩΛΕΙΤΑΙ Πλήρως Ανακαινισμένη και πλήρως Επιπλωμένη Γκαρσονιέρα στον 6ο όροφο συνολικής επιφάνειας 38 τ.μ(35,28 καθαρά ). |
+| 52030 | 10-1974 | [open](https://app.estateweb.gr/app/property/52030) | STANDALONE — code matches a local property **not linked** to this EstateWeb record; check for a separate keeper | - | - | Κατάστημα 88 τ.μ. |
+
+## nikiestate — 1 orphan record(s)
+
+**delete_ids (comma separated):** 48640
+
+| Delete ID | Code | Delete link | Status | Keep ID | Keep link | Local property title |
+|---|---|---|---|---|---|---|
+| 48640 | 0966 | [open](https://app.estateweb.gr/app/property/48640) | STANDALONE — no local match, verify manually | - | - | - |

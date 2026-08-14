@@ -1,3 +1,5 @@
+export type EstateWebIdentifierType = "code" | "id";
+
 export type EstateWebLocationCatalogItem = {
   id: number;
   name: string;

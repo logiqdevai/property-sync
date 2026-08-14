@@ -212,8 +212,9 @@ export class AdminEstateWebPropertiesController {
   ) {
     return this.adminEstateWebPropertiesService.enqueueBulkUpdatePropertySitesByCodes(
       userIntegrationId,
-      dto.codes,
+      dto.identifiers,
       dto.sites,
+      dto.identifier_type,
     );
   }
 
@@ -227,7 +228,8 @@ export class AdminEstateWebPropertiesController {
   ) {
     return this.adminEstateWebPropertiesService.enqueueBulkDeletePropertiesByCodes(
       userIntegrationId,
-      dto.codes,
+      dto.identifiers,
+      dto.identifier_type,
     );
   }
 

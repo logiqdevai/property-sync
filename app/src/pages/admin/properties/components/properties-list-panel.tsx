@@ -550,6 +550,7 @@ export function PropertiesListPanel() {
                     </Checkbox>
                   </Table.Column>
                   <Table.Column isRowHeader>Title</Table.Column>
+                  <Table.Column isRowHeader>Agency</Table.Column>
                   <Table.Column isRowHeader>City</Table.Column>
                   <Table.Column isRowHeader>Price</Table.Column>
                   <Table.Column isRowHeader>Listing</Table.Column>
@@ -593,6 +594,9 @@ export function PropertiesListPanel() {
                         >
                           {property.title}
                         </Link>
+                      </Table.Cell>
+                      <Table.Cell className={groupCellClass}>
+                        {property.agency_name ?? "—"}
                       </Table.Cell>
                       <Table.Cell className={groupCellClass}>{property.city ?? "—"}</Table.Cell>
                       <Table.Cell className={groupCellClass}>
