@@ -422,11 +422,41 @@ export class CrawlerService {
         ? await page.locator(listingSelector).count().catch(() => 0)
         : 0;
 
-      const grew = await this.waitForInfiniteScrollGrowth(
+      let grew = await this.waitForInfiniteScrollGrowth(
         page,
         listingSelector,
         prevCount,
       );
+
+      // The very first scroll-growth wait occasionally stalls for the full
+      // timeout with zero growth -- the site's lazy-load AJAX never fires,
+      // seen intermittently on JetEngine infinite-scroll grids (e.g.
+      // domilux.gr), roughly every other crawl. A genuine "fewer listings
+      // than one page" end-of-list would fail identically on retry, costing
+      // one extra wait cycle; every real multi-page site only reaches this
+      // no-growth branch after already growing at least once (pageNum > 0),
+      // so this retry is scoped to pageNum 0 only.
+      if (!grew && pageNum === 0) {
+        log('infinite_scroll_stall_retry', { prevCount });
+        await page
+          .reload({
+            waitUntil: 'domcontentloaded',
+            timeout: crawlerConfig.page_timeout_ms,
+          })
+          .catch(() => undefined);
+        if (listingSelector) {
+          await page
+            .waitForSelector(listingSelector, {
+              timeout: crawlerConfig.selector_timeout_ms,
+            })
+            .catch(() => undefined);
+        }
+        grew = await this.waitForInfiniteScrollGrowth(
+          page,
+          listingSelector,
+          prevCount,
+        );
+      }
 
       if (!grew) {
         log('pagination_end', {

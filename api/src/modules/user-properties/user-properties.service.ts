@@ -2994,7 +2994,10 @@ export class UserPropertiesService {
         });
       }
 
+      const statusChanged = existing.status !== canonicalFields.status;
+
       if (
+        !statusChanged &&
         tracker.cms_update_on_hash_only &&
         options.contentHashChanged === false
       ) {
