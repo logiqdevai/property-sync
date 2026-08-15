@@ -63,7 +63,7 @@ import {
 import { useAdminUsers } from "@/features/users/hooks/use-admin-users";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { formatPrice } from "@/lib/price";
-import { toEndOfDayIso, toStartOfDayIso } from "@/lib/date";
+import { formatDateTime, toEndOfDayIso, toStartOfDayIso } from "@/lib/date";
 import { getDuplicateGroupRowClasses } from "@/lib/duplicate-group-color.utils";
 import { getDuplicateGroupDedupePlan } from "@/lib/duplicate-group-dedupe.utils";
 import { cn } from "@/lib/utils";
@@ -673,6 +673,7 @@ export function UserPropertiesListPanel() {
                   <Table.Column isRowHeader>Type</Table.Column>
                   <Table.Column isRowHeader>Status</Table.Column>
                   <Table.Column isRowHeader>Group</Table.Column>
+                  <Table.Column isRowHeader>Created</Table.Column>
                   <Table.Column isRowHeader>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
@@ -745,6 +746,9 @@ export function UserPropertiesListPanel() {
                           ) : (
                             "—"
                           )}
+                        </Table.Cell>
+                        <Table.Cell className={groupCellClass}>
+                          {formatDateTime(property.created_at)}
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
                           <TableRowActionsMenu

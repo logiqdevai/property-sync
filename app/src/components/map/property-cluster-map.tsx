@@ -1,10 +1,17 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Flame, Loader2, MapPin } from "lucide-react";
+import { Tabs } from "@heroui/react";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
+import type { GoogleMapsOverlay } from "@deck.gl/google-maps";
 import { loadGoogleMaps } from "./google-maps-loader";
+import { getPriceMarkerIcon } from "./marker-icon";
+import { createPriceClusterRenderer } from "./cluster-renderer";
+import { buildPriceColorScale, buildPriceWeightScale } from "./price-color-scale";
+import { loadDeckGlHeatmap, type PriceHeatmapPoint } from "./heatmap-layer";
+import { PriceLegend } from "./price-legend";
 import type { MapMarkerData } from "./types";
-import { formatPrice } from "@/lib/price";
+import { dominantCurrency, formatPrice } from "@/lib/price";
 import { getPropertyStatusLabel } from "@/config/constants/dropdowns/properties/property-status-form.options";
 import {
   PropertyStatuses,
@@ -20,10 +27,17 @@ const STATUS_COLOR: Record<PropertyStatus, string> = {
   [PropertyStatuses.UNKNOWN]: "#6b7280",
 };
 
+type LayerMode = "markers" | "heatmap";
+
 function escapeHtml(value: string): string {
   const div = document.createElement("div");
   div.textContent = value;
   return div.innerHTML;
+}
+
+function toFinitePrice(price: MapMarkerData["price"]): number | null {
+  const amount = typeof price === "string" ? Number(price) : price;
+  return amount != null && Number.isFinite(amount) ? amount : null;
 }
 
 function buildInfoWindowContent(
@@ -89,11 +103,22 @@ export function PropertyClusterMap({
   emptyMessage = "No properties with map coordinates to display.",
 }: PropertyClusterMapProps) {
   const navigate = useNavigate();
+  const [layerMode, setLayerMode] = useState<LayerMode>("markers");
+  const legend = useMemo(
+    () => ({
+      stops: buildPriceColorScale(markers.map((marker) => marker.price)).legend,
+      currency: dominantCurrency(markers.map((marker) => marker.currency)),
+    }),
+    [markers],
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const clustererRef = useRef<MarkerClusterer | null>(null);
+  const deckOverlayRef = useRef<GoogleMapsOverlay | null>(null);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const gMarkersRef = useRef<google.maps.Marker[]>([]);
+  const priceByMarkerRef = useRef(new WeakMap<google.maps.Marker, number>());
+  const lastFitMarkersRef = useRef<MapMarkerData[] | null>(null);
   const navigateRef = useRef(navigate);
   const getDetailHrefRef = useRef(getDetailHref);
 
@@ -108,14 +133,19 @@ export function PropertyClusterMap({
     if (markers.length === 0) {
       gMarkersRef.current.forEach((marker) => marker.setMap(null));
       gMarkersRef.current = [];
-      clustererRef.current?.clearMarkers();
+      clustererRef.current?.setMap(null);
       clustererRef.current = null;
+      deckOverlayRef.current?.setMap(null);
+      deckOverlayRef.current = null;
       mapRef.current = null;
       infoWindowRef.current = null;
       return;
     }
 
-    loadGoogleMaps().then(() => {
+    const colorScale = buildPriceColorScale(markers.map((marker) => marker.price));
+    const weightScale = buildPriceWeightScale(markers.map((marker) => marker.price));
+
+    loadGoogleMaps().then(async () => {
       if (cancelled || !containerRef.current) return;
 
       if (!mapRef.current) {
@@ -128,13 +158,19 @@ export function PropertyClusterMap({
       const map = mapRef.current;
 
       gMarkersRef.current.forEach((marker) => marker.setMap(null));
-      clustererRef.current?.clearMarkers();
+      clustererRef.current?.setMap(null);
+      priceByMarkerRef.current = new WeakMap();
 
       const gMarkers = markers.map((marker) => {
+        const price = toFinitePrice(marker.price);
         const gMarker = new google.maps.Marker({
           position: { lat: marker.latitude, lng: marker.longitude },
           title: marker.title,
+          icon: getPriceMarkerIcon(colorScale.color(marker.price)),
         });
+        if (price != null) {
+          priceByMarkerRef.current.set(gMarker, price);
+        }
         gMarker.addListener("click", () => {
           const href = getDetailHrefRef.current(marker.id);
           const content = buildInfoWindowContent(marker, href, () =>
@@ -147,38 +183,74 @@ export function PropertyClusterMap({
       });
       gMarkersRef.current = gMarkers;
 
-      if (!clustererRef.current) {
-        clustererRef.current = new MarkerClusterer({ map, markers: gMarkers });
+      clustererRef.current = new MarkerClusterer({
+        markers: gMarkers,
+        renderer: createPriceClusterRenderer(priceByMarkerRef.current, colorScale.color),
+      });
+
+      if (layerMode === "heatmap") {
+        const { GoogleMapsOverlay, HeatmapLayer } = await loadDeckGlHeatmap();
+        if (cancelled) return;
+
+        const points: PriceHeatmapPoint[] = markers
+          .map((marker) => {
+            const weight = weightScale(marker.price);
+            return weight > 0 ? { position: [marker.longitude, marker.latitude] as const, weight } : null;
+          })
+          .filter((point): point is PriceHeatmapPoint => point != null);
+
+        if (!deckOverlayRef.current) {
+          deckOverlayRef.current = new GoogleMapsOverlay({});
+          deckOverlayRef.current.setMap(map);
+        }
+        deckOverlayRef.current.setProps({
+          layers: [
+            new HeatmapLayer<PriceHeatmapPoint>({
+              id: "price-heatmap",
+              data: points,
+              getPosition: (point) => point.position,
+              getWeight: (point) => point.weight,
+              radiusPixels: 40,
+              intensity: 1,
+            }),
+          ],
+        });
+        clustererRef.current.setMap(null);
       } else {
-        clustererRef.current.addMarkers(gMarkers);
+        deckOverlayRef.current?.setProps({ layers: [] });
+        clustererRef.current.setMap(map);
       }
 
-      if (markers.length === 1) {
-        map.setCenter({ lat: markers[0].latitude, lng: markers[0].longitude });
-        map.setZoom(14);
-      } else {
-        const bounds = new google.maps.LatLngBounds();
-        markers.forEach((marker) =>
-          bounds.extend({ lat: marker.latitude, lng: marker.longitude }),
-        );
-        map.fitBounds(bounds, 40);
-        google.maps.event.addListenerOnce(map, "bounds_changed", () => {
-          if ((map.getZoom() ?? 0) > 16) {
-            map.setZoom(16);
-          }
-        });
+      if (lastFitMarkersRef.current !== markers) {
+        lastFitMarkersRef.current = markers;
+        if (markers.length === 1) {
+          map.setCenter({ lat: markers[0].latitude, lng: markers[0].longitude });
+          map.setZoom(14);
+        } else {
+          const bounds = new google.maps.LatLngBounds();
+          markers.forEach((marker) =>
+            bounds.extend({ lat: marker.latitude, lng: marker.longitude }),
+          );
+          map.fitBounds(bounds, 40);
+          google.maps.event.addListenerOnce(map, "bounds_changed", () => {
+            if ((map.getZoom() ?? 0) > 16) {
+              map.setZoom(16);
+            }
+          });
+        }
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, [markers]);
+  }, [markers, layerMode]);
 
   useEffect(() => {
     return () => {
       gMarkersRef.current.forEach((marker) => marker.setMap(null));
-      clustererRef.current?.clearMarkers();
+      clustererRef.current?.setMap(null);
+      deckOverlayRef.current?.setMap(null);
     };
   }, []);
 
@@ -198,8 +270,31 @@ export function PropertyClusterMap({
   }
 
   return (
-    <div className="h-[560px] w-full overflow-hidden rounded-xl border border-border">
+    <div className="relative h-[560px] w-full overflow-hidden rounded-xl border border-border">
       <div ref={containerRef} className="h-full w-full" />
+
+      <Tabs
+        className="absolute top-3 right-3 z-10 w-fit"
+        selectedKey={layerMode}
+        onSelectionChange={(key) => setLayerMode(key === "heatmap" ? "heatmap" : "markers")}
+      >
+        <Tabs.ListContainer>
+          <Tabs.List aria-label="Price layer" className="w-auto shadow-sm backdrop-blur">
+            <Tabs.Tab id="markers" className="w-auto gap-1.5 px-3">
+              <MapPin className="size-4" />
+              Markers
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="heatmap" className="w-auto gap-1.5 px-3">
+              <Flame className="size-4" />
+              Heatmap
+              <Tabs.Indicator />
+            </Tabs.Tab>
+          </Tabs.List>
+        </Tabs.ListContainer>
+      </Tabs>
+
+      <PriceLegend stops={legend.stops} currency={legend.currency} />
     </div>
   );
 }

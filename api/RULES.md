@@ -51,3 +51,52 @@ the literal string before guessing at the source.
 - If a custom jobId isn't needed for deduplication or lookup, don't set one — let BullMQ auto-generate
   one (numeric, always safe). Only add a custom `jobId` when you specifically need
   `queue.getJob(jobId)` to find it again later.
+
+### Never make N concurrent workers `SELECT ... FOR UPDATE` the same single job_logs row to track per-item progress
+
+**Don't:**
+```ts
+await this.prisma.$transaction(async (tx) => {
+  await tx.$executeRaw(Prisma.sql`SELECT id FROM job_logs WHERE id = ${logId} FOR UPDATE`);
+  const log = await tx.jobLog.findUnique({ where: { id: logId } });
+  const result = log.result as MyJobResult; // read the whole JSON blob
+  result.items.push(item);                  // mutate it in JS
+  await tx.jobLog.update({ where: { id: logId }, data: { result } }); // write it all back
+});
+```
+
+**Do:** give each item its own row (`JobLogItem`, upserted independently — different entity_ids never
+contend for the same row lock), then atomically re-derive the job_logs summary from a `COUNT(*)`
+subquery in a single `$executeRaw` `UPDATE ... FROM (...)` statement — no `$transaction`, no
+`SELECT ... FOR UPDATE`, no held-open lock window. See `geocode-coordinates.processor.ts`'s
+`recordItemResult` for the pattern.
+
+**Why:** a batch job that fans out into many BullMQ jobs sharing one `job_log_id` (any
+`queue.addBulk` + `` `${jobLog.id}__${itemId}` `` jobId pattern) commonly runs with real
+concurrency (e.g. `concurrency: 15`). If every worker's completion handler does
+`SELECT ... FOR UPDATE` on the *same* `job_logs` row inside a Prisma interactive transaction
+(default 5s timeout), workers queue up waiting for that one row's lock. Once the queue depth
+exceeds what a 5-second window can drain, transactions start throwing
+`"Unable to start a transaction in the given time"` / `"A commit cannot be executed on an expired
+transaction"`. Worse: `process()`'s catch-block fallback write can *also* hit the same timeout,
+in which case the exception escapes uncaught, BullMQ exhausts retries, and that item's result is
+never written *anywhere* — `result.processed` permanently falls short of `result.total`, the
+job_log's `status` can never leave `ACTIVE`/`WAITING`, and anything gating on job completion (e.g.
+a modal's Close button `isDisabled={jobIsActive}`) is stuck disabled forever.
+
+**Incident:** 2026-08-15. A 370-property `geocode-missing-coordinates` batch got stuck at
+`processed: 358 / total: 370`, `status: ACTIVE` forever — the "Find missing coordinates" modal's
+Close button was permanently disabled. `job_logs.result.items` was missing exactly the entities
+whose *every* attempt (of 3) hit `Transaction API error: ... expired transaction` on both the
+primary and fallback write. Fixed by moving per-item results into a new `job_log_items` table
+(one row per `(job_log_id, entity_id)`, unique-constrained) and replacing the interactive
+transaction with an idempotent atomic `UPDATE ... FROM (SELECT COUNT(*) ... FROM job_log_items ...)`
+that any worker can safely re-run — a slow or failed refresh from one worker is self-healed by the
+very next item's completion, so no item's result can ever be permanently lost.
+
+**How to apply:** before adding a new `queue.addBulk` batch job whose items report back to a
+shared `job_logs` row, check whether progress bookkeeping needs a per-item child table instead of
+a JSON blob mutated under `SELECT ... FOR UPDATE`. `normalization-chunk.processor.ts`,
+`estateweb-bulk-delete-by-codes.processor.ts`, and `estateweb-bulk-sites-by-codes.processor.ts`
+use `jobLog.findUnique`/similar per-item update patterns as of this writing and haven't been
+audited for the same risk — worth checking before they hit the same wall at scale.

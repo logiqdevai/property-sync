@@ -4,9 +4,11 @@ import {
   deleteProperties,
   deleteProperty,
   dedupePropertyGroups,
+  geocodeMissingCoordinates,
   getProperties,
   getPropertiesCount,
   getPropertiesMap,
+  getPropertiesMissingCoordinatesCount,
   getProperty,
   mergeProperties,
   splitProperties,
@@ -202,5 +204,31 @@ export const useTruncatePropertyDescriptions = () => {
         variant: "error",
       });
     },
+  });
+};
+
+export const useGeocodeMissingCoordinates = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => geocodeMissingCoordinates(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["properties"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not start geocoding",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useMissingCoordinatesCount = (enabled: boolean) => {
+  return useQuery({
+    queryKey: ["properties", "missing-coordinates-count"],
+    queryFn: () => getPropertiesMissingCoordinatesCount(),
+    enabled,
   });
 };

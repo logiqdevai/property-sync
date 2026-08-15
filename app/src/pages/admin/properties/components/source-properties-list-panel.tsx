@@ -368,6 +368,7 @@ export function SourcePropertiesListPanel() {
                   <Table.Column isRowHeader>Status</Table.Column>
                   <Table.Column isRowHeader>Links</Table.Column>
                   <Table.Column isRowHeader>Last seen</Table.Column>
+                  <Table.Column isRowHeader>Created</Table.Column>
                   <Table.Column isRowHeader>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
@@ -425,6 +426,9 @@ export function SourcePropertiesListPanel() {
                         {sourceProperty.last_seen_at
                           ? formatDateTime(sourceProperty.last_seen_at)
                           : "—"}
+                      </Table.Cell>
+                      <Table.Cell>
+                        {formatDateTime(sourceProperty.created_at)}
                       </Table.Cell>
                       <Table.Cell>
                         <TableRowActionsMenu

@@ -4,10 +4,14 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
+import { GEOCODE_MISSING_COORDINATES_QUEUE } from '@/core/queues/queues.constants';
+import { GeocodeCoordinatesJobData } from '@/modules/user-properties/interfaces/geocode-coordinates-job.interface';
 import {
   applyTextTruncatePieces,
   buildLocalizedTruncateUpdates,
@@ -20,7 +24,7 @@ import {
   PropertyQueryType,
 } from './dto/property-query.schema';
 import { MergePropertiesDto } from './dto/merge-properties.dto';
-import { Prisma } from 'generated/prisma';
+import { JobStatus, Prisma } from 'generated/prisma';
 import { serializePropertyForApi } from './utils/property-api-response.util';
 import { buildHistoryChangeFilter } from './utils/property-change-filter.util';
 import { resolveSourceAgency, sourceAgencySummarySelect } from './utils/resolve-agency-name.util';
@@ -37,6 +41,8 @@ export class PropertiesService {
     private readonly prisma: PrismaService,
     private readonly gcsService: GcsService,
     private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
+    @InjectQueue(GEOCODE_MISSING_COORDINATES_QUEUE)
+    private readonly geocodeCoordinatesQueue: Queue,
   ) {}
 
   private buildWhere(
@@ -653,6 +659,77 @@ export class PropertiesService {
     await this.clearSingletonDuplicateGroups(affectedGroupIds);
 
     return { deleted: deleteIds.length, kept: keepIds };
+  }
+
+  async countMissingCoordinates() {
+    const count = await this.prisma.property.count({
+      where: { OR: [{ latitude: null }, { longitude: null }] },
+    });
+    return { count };
+  }
+
+  async geocodeMissingCoordinates() {
+    const properties = await this.prisma.property.findMany({
+      where: { OR: [{ latitude: null }, { longitude: null }] },
+      select: { id: true },
+    });
+
+    if (properties.length === 0) {
+      throw new BadRequestException('No properties are missing coordinates');
+    }
+
+    const enqueueIds = properties.map((property) => property.id);
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: GEOCODE_MISSING_COORDINATES_QUEUE,
+        job_name: 'geocode-missing-coordinates',
+        status: JobStatus.WAITING,
+        payload: {
+          property_ids: enqueueIds,
+          total: enqueueIds.length,
+        } as object,
+        result: {
+          total: enqueueIds.length,
+          processed: 0,
+          geocoded: 0,
+          failed: 0,
+        } as object,
+      },
+    });
+
+    this.logger.log(
+      `[geocodeMissingCoordinates] queued job_log=${jobLog.id} properties=${enqueueIds.length}`,
+    );
+
+    await this.geocodeCoordinatesQueue.addBulk(
+      enqueueIds.map((propertyId) => {
+        const jobData: GeocodeCoordinatesJobData = {
+          job_log_id: jobLog.id,
+          entity_type: 'property',
+          entity_id: propertyId,
+          total: enqueueIds.length,
+        };
+        return {
+          name: 'geocode-missing-coordinates',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${propertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
+
+    return {
+      job_log_id: jobLog.id,
+      enqueued: enqueueIds.length,
+      message:
+        'Geocoding started in the background. Track progress in Job queue.',
+    };
   }
 
   private async clearSingletonDuplicateGroups(groupIds: string[]) {

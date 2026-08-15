@@ -257,6 +257,16 @@ export interface RenormalizeUserPropertiesResult {
   message: string;
 }
 
+export interface GeocodeMissingCoordinatesResult {
+  job_log_id: string;
+  enqueued: number;
+  message: string;
+}
+
+export interface MissingCoordinatesCountResponse {
+  count: number;
+}
+
 export interface BulkDeleteIntegrationImagesPayload {
   ids: string[];
 }

@@ -118,6 +118,16 @@ export class PropertiesController {
     return this.propertiesService.count(query);
   }
 
+  @Get('count-missing-coordinates')
+  @ApiOperation({ summary: 'Count properties missing coordinates' })
+  @ApiResponse({
+    status: 200,
+    description: 'Count of properties missing coordinates',
+  })
+  countMissingCoordinates() {
+    return this.propertiesService.countMissingCoordinates();
+  }
+
   @Get('map')
   @ApiOperation({ summary: 'List properties with coordinates for map view' })
   @ApiResponse({ status: 200, description: 'Map markers for properties with coordinates' })
@@ -210,6 +220,18 @@ export class PropertiesController {
   @ApiResponse({ status: 404, description: 'One or more properties not found' })
   splitMany(@Body() dto: DeletePropertiesDto) {
     return this.propertiesService.splitMany(dto.property_ids);
+  }
+
+  @Post('geocode-missing-coordinates')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Find and geocode every property missing coordinates via Google Maps (background)',
+  })
+  @ApiResponse({ status: 200, description: 'Geocoding job enqueued' })
+  @ApiResponse({ status: 400, description: 'Cannot enqueue geocoding' })
+  geocodeMissingCoordinates() {
+    return this.propertiesService.geocodeMissingCoordinates();
   }
 
   @Get(':id')

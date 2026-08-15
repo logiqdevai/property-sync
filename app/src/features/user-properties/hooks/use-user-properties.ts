@@ -29,6 +29,8 @@ import {
   removeUserPropertiesWatermarkImages,
   produceUserPropertyContent,
   renormalizeUserProperties,
+  geocodeMissingCoordinates,
+  getUserPropertiesMissingCoordinatesCount,
   bulkDeleteUserPropertyIntegrationImages,
   bulkMigrateUserPropertyIntegrationImages,
   splitAdminUserProperties,
@@ -676,6 +678,32 @@ export const useRenormalizeUserProperties = () => {
         variant: "error",
       });
     },
+  });
+};
+
+export const useGeocodeMissingCoordinates = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => geocodeMissingCoordinates(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not start geocoding",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useUserPropertiesMissingCoordinatesCount = (enabled: boolean) => {
+  return useQuery({
+    queryKey: ["userProperties", "missing-coordinates-count"],
+    queryFn: () => getUserPropertiesMissingCoordinatesCount(),
+    enabled,
   });
 };
 

@@ -6,6 +6,7 @@ import {
   CRM_CLIENT_NOTES_SYNC_QUEUE,
   DELETE_INTEGRATION_IMAGES_QUEUE,
   ESTATEWEB_SITES_UPDATE_QUEUE,
+  GEOCODE_MISSING_COORDINATES_QUEUE,
   MIGRATE_INTEGRATION_IMAGES_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
@@ -14,6 +15,7 @@ import {
 import { DewatermarkModule } from '@/integrations/dewatermark/dewatermark.module';
 import { EstateWebModule } from '@/integrations/estateweb/estateweb.module';
 import { GcsIntegrationModule } from '@/integrations/storage/gcs/gcs.module';
+import { GoogleMapsModule } from '@/shared/services/google-maps/google-maps.module';
 import { CmsSyncModule } from '@/modules/cms-sync/cms-sync.module';
 import { ContentPublishingModule } from '@/modules/content-publishing/content-publishing.module';
 import { PlatformConfigModule } from '@/modules/platform-config/platform-config.module';
@@ -25,6 +27,7 @@ import { CrmClientNotesSyncProcessor } from '@/background/crm-client-notes-sync.
 import { EstateWebSitesUpdateProcessor } from '@/background/estateweb-sites-update.processor';
 import { DeleteIntegrationImagesProcessor } from '@/background/delete-integration-images.processor';
 import { MigrateIntegrationImagesProcessor } from '@/background/migrate-integration-images.processor';
+import { GeocodeCoordinatesProcessor } from '@/background/geocode-coordinates.processor';
 import { UserPropertiesController } from './user-properties.controller';
 import { AdminUserPropertiesController } from './admin-user-properties.controller';
 import { UserPropertiesService } from './user-properties.service';
@@ -35,6 +38,7 @@ import { CrmClientNotesSyncJobService } from './services/crm-client-notes-sync-j
 import { EstateWebSitesUpdateJobService } from './services/estateweb-sites-update-job.service';
 import { DeleteIntegrationImagesJobService } from './services/delete-integration-images-job.service';
 import { MigrateIntegrationImagesJobService } from './services/migrate-integration-images-job.service';
+import { GeocodeCoordinatesJobService } from './services/geocode-coordinates-job.service';
 
 @Module({
   imports: [
@@ -46,6 +50,7 @@ import { MigrateIntegrationImagesJobService } from './services/migrate-integrati
     GcsIntegrationModule,
     PlatformConfigModule,
     CostLogsModule,
+    GoogleMapsModule,
     BullModule.registerQueue(
       { name: WATERMARK_REMOVAL_QUEUE },
       { name: CONTENT_PRODUCTION_QUEUE },
@@ -55,6 +60,7 @@ import { MigrateIntegrationImagesJobService } from './services/migrate-integrati
       { name: RENORMALIZATION_QUEUE },
       { name: DELETE_INTEGRATION_IMAGES_QUEUE },
       { name: MIGRATE_INTEGRATION_IMAGES_QUEUE },
+      { name: GEOCODE_MISSING_COORDINATES_QUEUE },
     ),
   ],
   controllers: [UserPropertiesController, AdminUserPropertiesController],
@@ -74,6 +80,8 @@ import { MigrateIntegrationImagesJobService } from './services/migrate-integrati
     DeleteIntegrationImagesProcessor,
     MigrateIntegrationImagesJobService,
     MigrateIntegrationImagesProcessor,
+    GeocodeCoordinatesJobService,
+    GeocodeCoordinatesProcessor,
   ],
   exports: [UserPropertiesService],
 })

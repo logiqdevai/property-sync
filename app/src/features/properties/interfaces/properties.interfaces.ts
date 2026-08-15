@@ -240,3 +240,13 @@ export interface TruncatePropertyDescriptionsResult {
   total: number;
   queued?: number;
 }
+
+export interface GeocodeMissingCoordinatesResult {
+  job_log_id: string;
+  enqueued: number;
+  message: string;
+}
+
+export interface MissingCoordinatesCountResponse {
+  count: number;
+}

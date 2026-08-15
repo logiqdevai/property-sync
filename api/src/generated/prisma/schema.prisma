@@ -809,7 +809,8 @@ model JobLog {
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
 
-  crawl_run CrawlRun? @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)
+  crawl_run CrawlRun?    @relation(fields: [crawl_run_id], references: [id], onDelete: SetNull)
+  items     JobLogItem[]
 
   @@index([queue_name])
   @@index([job_id])
@@ -817,6 +818,25 @@ model JobLog {
   @@index([crawl_run_id])
   @@index([created_at])
   @@map("job_logs")
+}
+
+// Per-entity progress for batched background jobs (e.g. geocode-missing-coordinates).
+// One row per (job_log, entity) so concurrent workers upsert independent rows instead of
+// contending on a single job_logs row -- see incident notes in api/RULES.md.
+model JobLogItem {
+  id         String   @id @default(uuid())
+  job_log_id String
+  entity_id  String
+  status     String
+  error      String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  job_log JobLog @relation(fields: [job_log_id], references: [id], onDelete: Cascade)
+
+  @@unique([job_log_id, entity_id])
+  @@index([job_log_id, status])
+  @@map("job_log_items")
 }
 
 // New: dashboard section 20 -- persisted notifications, independent of any push/email channel.

@@ -385,6 +385,16 @@ exports.Prisma.JobLogScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
+exports.Prisma.JobLogItemScalarFieldEnum = {
+  id: 'id',
+  job_log_id: 'job_log_id',
+  entity_id: 'entity_id',
+  status: 'status',
+  error: 'error',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
 exports.Prisma.NotificationScalarFieldEnum = {
   id: 'id',
   type: 'type',
@@ -1022,6 +1032,7 @@ exports.Prisma.ModelName = {
   DiagnosticsPackage: 'DiagnosticsPackage',
   DiagnosticsArtifact: 'DiagnosticsArtifact',
   JobLog: 'JobLog',
+  JobLogItem: 'JobLogItem',
   Notification: 'Notification',
   NotificationSetting: 'NotificationSetting',
   CmsSyncRun: 'CmsSyncRun',

@@ -13,6 +13,8 @@ import type {
   UpdateEstateWebSitesResult,
   RenormalizeUserPropertiesPayload,
   RenormalizeUserPropertiesResult,
+  GeocodeMissingCoordinatesResult,
+  MissingCoordinatesCountResponse,
   BulkDeleteIntegrationImagesPayload,
   BulkDeleteIntegrationImagesResult,
   BulkMigrateIntegrationImagesPayload,
@@ -421,6 +423,35 @@ export const renormalizeUserProperties = async (
     );
   }
 };
+
+export const geocodeMissingCoordinates =
+  async (): Promise<GeocodeMissingCoordinatesResult> => {
+    try {
+      const response = await axiosInstance.post(
+        ApiRoutes.userProperties.geocodeMissingCoordinates,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error?.response?.data?.message || "Failed to geocode properties.",
+      );
+    }
+  };
+
+export const getUserPropertiesMissingCoordinatesCount =
+  async (): Promise<MissingCoordinatesCountResponse> => {
+    try {
+      const response = await axiosInstance.get(
+        ApiRoutes.userProperties.countMissingCoordinates,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error?.response?.data?.message ||
+          "Failed to count properties missing coordinates.",
+      );
+    }
+  };
 
 export const updateUserPropertyStatus = async (
   payload: UpdateUserPropertyStatusPayload,

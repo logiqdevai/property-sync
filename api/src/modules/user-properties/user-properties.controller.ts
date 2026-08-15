@@ -152,6 +152,21 @@ export class UserPropertiesController {
     return this.userPropertiesService.count(userId, query);
   }
 
+  @Get('count-missing-coordinates')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary: 'Count saved properties missing coordinates (admin only)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Count of saved properties missing coordinates',
+  })
+  @ApiResponse({ status: 403, description: 'Admin only' })
+  countMissingCoordinates(@CurrentUser('id') userId: string) {
+    return this.userPropertiesService.countMissingCoordinates(userId);
+  }
+
   @Get('map')
   @ApiOperation({ summary: 'List the current user saved properties with coordinates for map view' })
   @ApiResponse({ status: 200, description: 'Map markers for saved properties with coordinates' })
@@ -453,6 +468,20 @@ export class UserPropertiesController {
       userId,
       dto,
     );
+  }
+
+  @Post('geocode-missing-coordinates')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Find and geocode every saved property missing coordinates via Google Maps (admin only, background)',
+  })
+  @ApiResponse({ status: 200, description: 'Geocoding job enqueued' })
+  @ApiResponse({ status: 400, description: 'Cannot enqueue geocoding' })
+  @ApiResponse({ status: 403, description: 'Admin only' })
+  geocodeMissingCoordinates(@CurrentUser('id') userId: string) {
+    return this.userPropertiesService.geocodeMissingCoordinates(userId);
   }
 
   @Get(':id')

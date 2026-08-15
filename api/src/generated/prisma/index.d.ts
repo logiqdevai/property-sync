@@ -130,6 +130,11 @@ export type DiagnosticsArtifact = $Result.DefaultSelection<Prisma.$DiagnosticsAr
  */
 export type JobLog = $Result.DefaultSelection<Prisma.$JobLogPayload>
 /**
+ * Model JobLogItem
+ * 
+ */
+export type JobLogItem = $Result.DefaultSelection<Prisma.$JobLogItemPayload>
+/**
  * Model Notification
  * 
  */
@@ -1047,6 +1052,16 @@ export class PrismaClient<
   get jobLog(): Prisma.JobLogDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.jobLogItem`: Exposes CRUD operations for the **JobLogItem** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more JobLogItems
+    * const jobLogItems = await prisma.jobLogItem.findMany()
+    * ```
+    */
+  get jobLogItem(): Prisma.JobLogItemDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.notification`: Exposes CRUD operations for the **Notification** model.
     * Example usage:
     * ```ts
@@ -1666,6 +1681,7 @@ export namespace Prisma {
     DiagnosticsPackage: 'DiagnosticsPackage',
     DiagnosticsArtifact: 'DiagnosticsArtifact',
     JobLog: 'JobLog',
+    JobLogItem: 'JobLogItem',
     Notification: 'Notification',
     NotificationSetting: 'NotificationSetting',
     CmsSyncRun: 'CmsSyncRun',
@@ -1698,7 +1714,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "blockRule" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "notification" | "notificationSetting" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "contentPublishingConfig" | "contentOutput" | "aiTitleFamily" | "propertyLocalizedContent" | "aiBatchRun" | "costLog" | "integrationProperty" | "platformConfig" | "document"
+      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "blockRule" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "jobLogItem" | "notification" | "notificationSetting" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "contentPublishingConfig" | "contentOutput" | "aiTitleFamily" | "propertyLocalizedContent" | "aiBatchRun" | "costLog" | "integrationProperty" | "platformConfig" | "document"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2957,6 +2973,80 @@ export namespace Prisma {
           count: {
             args: Prisma.JobLogCountArgs<ExtArgs>
             result: $Utils.Optional<JobLogCountAggregateOutputType> | number
+          }
+        }
+      }
+      JobLogItem: {
+        payload: Prisma.$JobLogItemPayload<ExtArgs>
+        fields: Prisma.JobLogItemFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.JobLogItemFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JobLogItemPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.JobLogItemFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JobLogItemPayload>
+          }
+          findFirst: {
+            args: Prisma.JobLogItemFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JobLogItemPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.JobLogItemFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JobLogItemPayload>
+          }
+          findMany: {
+            args: Prisma.JobLogItemFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JobLogItemPayload>[]
+          }
+          create: {
+            args: Prisma.JobLogItemCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JobLogItemPayload>
+          }
+          createMany: {
+            args: Prisma.JobLogItemCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.JobLogItemCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JobLogItemPayload>[]
+          }
+          delete: {
+            args: Prisma.JobLogItemDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JobLogItemPayload>
+          }
+          update: {
+            args: Prisma.JobLogItemUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JobLogItemPayload>
+          }
+          deleteMany: {
+            args: Prisma.JobLogItemDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.JobLogItemUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.JobLogItemUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JobLogItemPayload>[]
+          }
+          upsert: {
+            args: Prisma.JobLogItemUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$JobLogItemPayload>
+          }
+          aggregate: {
+            args: Prisma.JobLogItemAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateJobLogItem>
+          }
+          groupBy: {
+            args: Prisma.JobLogItemGroupByArgs<ExtArgs>
+            result: $Utils.Optional<JobLogItemGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.JobLogItemCountArgs<ExtArgs>
+            result: $Utils.Optional<JobLogItemCountAggregateOutputType> | number
           }
         }
       }
@@ -4343,6 +4433,7 @@ export namespace Prisma {
     diagnosticsPackage?: DiagnosticsPackageOmit
     diagnosticsArtifact?: DiagnosticsArtifactOmit
     jobLog?: JobLogOmit
+    jobLogItem?: JobLogItemOmit
     notification?: NotificationOmit
     notificationSetting?: NotificationSettingOmit
     cmsSyncRun?: CmsSyncRunOmit
@@ -4967,6 +5058,37 @@ export namespace Prisma {
    */
   export type DiagnosticsPackageCountOutputTypeCountArtifactsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DiagnosticsArtifactWhereInput
+  }
+
+
+  /**
+   * Count Type JobLogCountOutputType
+   */
+
+  export type JobLogCountOutputType = {
+    items: number
+  }
+
+  export type JobLogCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    items?: boolean | JobLogCountOutputTypeCountItemsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * JobLogCountOutputType without action
+   */
+  export type JobLogCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogCountOutputType
+     */
+    select?: JobLogCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * JobLogCountOutputType without action
+   */
+  export type JobLogCountOutputTypeCountItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: JobLogItemWhereInput
   }
 
 
@@ -25793,6 +25915,8 @@ export namespace Prisma {
     created_at?: boolean
     updated_at?: boolean
     crawl_run?: boolean | JobLog$crawl_runArgs<ExtArgs>
+    items?: boolean | JobLog$itemsArgs<ExtArgs>
+    _count?: boolean | JobLogCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["jobLog"]>
 
   export type JobLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -25860,6 +25984,8 @@ export namespace Prisma {
   export type JobLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "queue_name" | "job_id" | "job_name" | "status" | "attempt" | "max_attempts" | "crawl_run_id" | "payload" | "result" | "error_message" | "stack_trace" | "started_at" | "finished_at" | "duration_ms" | "created_at" | "updated_at", ExtArgs["result"]["jobLog"]>
   export type JobLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     crawl_run?: boolean | JobLog$crawl_runArgs<ExtArgs>
+    items?: boolean | JobLog$itemsArgs<ExtArgs>
+    _count?: boolean | JobLogCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type JobLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     crawl_run?: boolean | JobLog$crawl_runArgs<ExtArgs>
@@ -25872,6 +25998,7 @@ export namespace Prisma {
     name: "JobLog"
     objects: {
       crawl_run: Prisma.$CrawlRunPayload<ExtArgs> | null
+      items: Prisma.$JobLogItemPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -26286,6 +26413,7 @@ export namespace Prisma {
   export interface Prisma__JobLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     crawl_run<T extends JobLog$crawl_runArgs<ExtArgs> = {}>(args?: Subset<T, JobLog$crawl_runArgs<ExtArgs>>): Prisma__CrawlRunClient<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    items<T extends JobLog$itemsArgs<ExtArgs> = {}>(args?: Subset<T, JobLog$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JobLogItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -26747,6 +26875,30 @@ export namespace Prisma {
   }
 
   /**
+   * JobLog.items
+   */
+  export type JobLog$itemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogItem
+     */
+    select?: JobLogItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JobLogItem
+     */
+    omit?: JobLogItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JobLogItemInclude<ExtArgs> | null
+    where?: JobLogItemWhereInput
+    orderBy?: JobLogItemOrderByWithRelationInput | JobLogItemOrderByWithRelationInput[]
+    cursor?: JobLogItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: JobLogItemScalarFieldEnum | JobLogItemScalarFieldEnum[]
+  }
+
+  /**
    * JobLog without action
    */
   export type JobLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -26762,6 +26914,1090 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: JobLogInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model JobLogItem
+   */
+
+  export type AggregateJobLogItem = {
+    _count: JobLogItemCountAggregateOutputType | null
+    _min: JobLogItemMinAggregateOutputType | null
+    _max: JobLogItemMaxAggregateOutputType | null
+  }
+
+  export type JobLogItemMinAggregateOutputType = {
+    id: string | null
+    job_log_id: string | null
+    entity_id: string | null
+    status: string | null
+    error: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type JobLogItemMaxAggregateOutputType = {
+    id: string | null
+    job_log_id: string | null
+    entity_id: string | null
+    status: string | null
+    error: string | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type JobLogItemCountAggregateOutputType = {
+    id: number
+    job_log_id: number
+    entity_id: number
+    status: number
+    error: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type JobLogItemMinAggregateInputType = {
+    id?: true
+    job_log_id?: true
+    entity_id?: true
+    status?: true
+    error?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type JobLogItemMaxAggregateInputType = {
+    id?: true
+    job_log_id?: true
+    entity_id?: true
+    status?: true
+    error?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type JobLogItemCountAggregateInputType = {
+    id?: true
+    job_log_id?: true
+    entity_id?: true
+    status?: true
+    error?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type JobLogItemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which JobLogItem to aggregate.
+     */
+    where?: JobLogItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of JobLogItems to fetch.
+     */
+    orderBy?: JobLogItemOrderByWithRelationInput | JobLogItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: JobLogItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` JobLogItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` JobLogItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned JobLogItems
+    **/
+    _count?: true | JobLogItemCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: JobLogItemMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: JobLogItemMaxAggregateInputType
+  }
+
+  export type GetJobLogItemAggregateType<T extends JobLogItemAggregateArgs> = {
+        [P in keyof T & keyof AggregateJobLogItem]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateJobLogItem[P]>
+      : GetScalarType<T[P], AggregateJobLogItem[P]>
+  }
+
+
+
+
+  export type JobLogItemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: JobLogItemWhereInput
+    orderBy?: JobLogItemOrderByWithAggregationInput | JobLogItemOrderByWithAggregationInput[]
+    by: JobLogItemScalarFieldEnum[] | JobLogItemScalarFieldEnum
+    having?: JobLogItemScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: JobLogItemCountAggregateInputType | true
+    _min?: JobLogItemMinAggregateInputType
+    _max?: JobLogItemMaxAggregateInputType
+  }
+
+  export type JobLogItemGroupByOutputType = {
+    id: string
+    job_log_id: string
+    entity_id: string
+    status: string
+    error: string | null
+    created_at: Date
+    updated_at: Date
+    _count: JobLogItemCountAggregateOutputType | null
+    _min: JobLogItemMinAggregateOutputType | null
+    _max: JobLogItemMaxAggregateOutputType | null
+  }
+
+  type GetJobLogItemGroupByPayload<T extends JobLogItemGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<JobLogItemGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof JobLogItemGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], JobLogItemGroupByOutputType[P]>
+            : GetScalarType<T[P], JobLogItemGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type JobLogItemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    job_log_id?: boolean
+    entity_id?: boolean
+    status?: boolean
+    error?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    job_log?: boolean | JobLogDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["jobLogItem"]>
+
+  export type JobLogItemSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    job_log_id?: boolean
+    entity_id?: boolean
+    status?: boolean
+    error?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    job_log?: boolean | JobLogDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["jobLogItem"]>
+
+  export type JobLogItemSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    job_log_id?: boolean
+    entity_id?: boolean
+    status?: boolean
+    error?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    job_log?: boolean | JobLogDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["jobLogItem"]>
+
+  export type JobLogItemSelectScalar = {
+    id?: boolean
+    job_log_id?: boolean
+    entity_id?: boolean
+    status?: boolean
+    error?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type JobLogItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "job_log_id" | "entity_id" | "status" | "error" | "created_at" | "updated_at", ExtArgs["result"]["jobLogItem"]>
+  export type JobLogItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    job_log?: boolean | JobLogDefaultArgs<ExtArgs>
+  }
+  export type JobLogItemIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    job_log?: boolean | JobLogDefaultArgs<ExtArgs>
+  }
+  export type JobLogItemIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    job_log?: boolean | JobLogDefaultArgs<ExtArgs>
+  }
+
+  export type $JobLogItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "JobLogItem"
+    objects: {
+      job_log: Prisma.$JobLogPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      job_log_id: string
+      entity_id: string
+      status: string
+      error: string | null
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["jobLogItem"]>
+    composites: {}
+  }
+
+  type JobLogItemGetPayload<S extends boolean | null | undefined | JobLogItemDefaultArgs> = $Result.GetResult<Prisma.$JobLogItemPayload, S>
+
+  type JobLogItemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<JobLogItemFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: JobLogItemCountAggregateInputType | true
+    }
+
+  export interface JobLogItemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['JobLogItem'], meta: { name: 'JobLogItem' } }
+    /**
+     * Find zero or one JobLogItem that matches the filter.
+     * @param {JobLogItemFindUniqueArgs} args - Arguments to find a JobLogItem
+     * @example
+     * // Get one JobLogItem
+     * const jobLogItem = await prisma.jobLogItem.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends JobLogItemFindUniqueArgs>(args: SelectSubset<T, JobLogItemFindUniqueArgs<ExtArgs>>): Prisma__JobLogItemClient<$Result.GetResult<Prisma.$JobLogItemPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one JobLogItem that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {JobLogItemFindUniqueOrThrowArgs} args - Arguments to find a JobLogItem
+     * @example
+     * // Get one JobLogItem
+     * const jobLogItem = await prisma.jobLogItem.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends JobLogItemFindUniqueOrThrowArgs>(args: SelectSubset<T, JobLogItemFindUniqueOrThrowArgs<ExtArgs>>): Prisma__JobLogItemClient<$Result.GetResult<Prisma.$JobLogItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first JobLogItem that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JobLogItemFindFirstArgs} args - Arguments to find a JobLogItem
+     * @example
+     * // Get one JobLogItem
+     * const jobLogItem = await prisma.jobLogItem.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends JobLogItemFindFirstArgs>(args?: SelectSubset<T, JobLogItemFindFirstArgs<ExtArgs>>): Prisma__JobLogItemClient<$Result.GetResult<Prisma.$JobLogItemPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first JobLogItem that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JobLogItemFindFirstOrThrowArgs} args - Arguments to find a JobLogItem
+     * @example
+     * // Get one JobLogItem
+     * const jobLogItem = await prisma.jobLogItem.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends JobLogItemFindFirstOrThrowArgs>(args?: SelectSubset<T, JobLogItemFindFirstOrThrowArgs<ExtArgs>>): Prisma__JobLogItemClient<$Result.GetResult<Prisma.$JobLogItemPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more JobLogItems that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JobLogItemFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all JobLogItems
+     * const jobLogItems = await prisma.jobLogItem.findMany()
+     * 
+     * // Get first 10 JobLogItems
+     * const jobLogItems = await prisma.jobLogItem.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const jobLogItemWithIdOnly = await prisma.jobLogItem.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends JobLogItemFindManyArgs>(args?: SelectSubset<T, JobLogItemFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JobLogItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a JobLogItem.
+     * @param {JobLogItemCreateArgs} args - Arguments to create a JobLogItem.
+     * @example
+     * // Create one JobLogItem
+     * const JobLogItem = await prisma.jobLogItem.create({
+     *   data: {
+     *     // ... data to create a JobLogItem
+     *   }
+     * })
+     * 
+     */
+    create<T extends JobLogItemCreateArgs>(args: SelectSubset<T, JobLogItemCreateArgs<ExtArgs>>): Prisma__JobLogItemClient<$Result.GetResult<Prisma.$JobLogItemPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many JobLogItems.
+     * @param {JobLogItemCreateManyArgs} args - Arguments to create many JobLogItems.
+     * @example
+     * // Create many JobLogItems
+     * const jobLogItem = await prisma.jobLogItem.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends JobLogItemCreateManyArgs>(args?: SelectSubset<T, JobLogItemCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many JobLogItems and returns the data saved in the database.
+     * @param {JobLogItemCreateManyAndReturnArgs} args - Arguments to create many JobLogItems.
+     * @example
+     * // Create many JobLogItems
+     * const jobLogItem = await prisma.jobLogItem.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many JobLogItems and only return the `id`
+     * const jobLogItemWithIdOnly = await prisma.jobLogItem.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends JobLogItemCreateManyAndReturnArgs>(args?: SelectSubset<T, JobLogItemCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JobLogItemPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a JobLogItem.
+     * @param {JobLogItemDeleteArgs} args - Arguments to delete one JobLogItem.
+     * @example
+     * // Delete one JobLogItem
+     * const JobLogItem = await prisma.jobLogItem.delete({
+     *   where: {
+     *     // ... filter to delete one JobLogItem
+     *   }
+     * })
+     * 
+     */
+    delete<T extends JobLogItemDeleteArgs>(args: SelectSubset<T, JobLogItemDeleteArgs<ExtArgs>>): Prisma__JobLogItemClient<$Result.GetResult<Prisma.$JobLogItemPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one JobLogItem.
+     * @param {JobLogItemUpdateArgs} args - Arguments to update one JobLogItem.
+     * @example
+     * // Update one JobLogItem
+     * const jobLogItem = await prisma.jobLogItem.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends JobLogItemUpdateArgs>(args: SelectSubset<T, JobLogItemUpdateArgs<ExtArgs>>): Prisma__JobLogItemClient<$Result.GetResult<Prisma.$JobLogItemPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more JobLogItems.
+     * @param {JobLogItemDeleteManyArgs} args - Arguments to filter JobLogItems to delete.
+     * @example
+     * // Delete a few JobLogItems
+     * const { count } = await prisma.jobLogItem.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends JobLogItemDeleteManyArgs>(args?: SelectSubset<T, JobLogItemDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more JobLogItems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JobLogItemUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many JobLogItems
+     * const jobLogItem = await prisma.jobLogItem.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends JobLogItemUpdateManyArgs>(args: SelectSubset<T, JobLogItemUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more JobLogItems and returns the data updated in the database.
+     * @param {JobLogItemUpdateManyAndReturnArgs} args - Arguments to update many JobLogItems.
+     * @example
+     * // Update many JobLogItems
+     * const jobLogItem = await prisma.jobLogItem.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more JobLogItems and only return the `id`
+     * const jobLogItemWithIdOnly = await prisma.jobLogItem.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends JobLogItemUpdateManyAndReturnArgs>(args: SelectSubset<T, JobLogItemUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$JobLogItemPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one JobLogItem.
+     * @param {JobLogItemUpsertArgs} args - Arguments to update or create a JobLogItem.
+     * @example
+     * // Update or create a JobLogItem
+     * const jobLogItem = await prisma.jobLogItem.upsert({
+     *   create: {
+     *     // ... data to create a JobLogItem
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the JobLogItem we want to update
+     *   }
+     * })
+     */
+    upsert<T extends JobLogItemUpsertArgs>(args: SelectSubset<T, JobLogItemUpsertArgs<ExtArgs>>): Prisma__JobLogItemClient<$Result.GetResult<Prisma.$JobLogItemPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of JobLogItems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JobLogItemCountArgs} args - Arguments to filter JobLogItems to count.
+     * @example
+     * // Count the number of JobLogItems
+     * const count = await prisma.jobLogItem.count({
+     *   where: {
+     *     // ... the filter for the JobLogItems we want to count
+     *   }
+     * })
+    **/
+    count<T extends JobLogItemCountArgs>(
+      args?: Subset<T, JobLogItemCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], JobLogItemCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a JobLogItem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JobLogItemAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends JobLogItemAggregateArgs>(args: Subset<T, JobLogItemAggregateArgs>): Prisma.PrismaPromise<GetJobLogItemAggregateType<T>>
+
+    /**
+     * Group by JobLogItem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {JobLogItemGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends JobLogItemGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: JobLogItemGroupByArgs['orderBy'] }
+        : { orderBy?: JobLogItemGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, JobLogItemGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetJobLogItemGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the JobLogItem model
+   */
+  readonly fields: JobLogItemFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for JobLogItem.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__JobLogItemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    job_log<T extends JobLogDefaultArgs<ExtArgs> = {}>(args?: Subset<T, JobLogDefaultArgs<ExtArgs>>): Prisma__JobLogClient<$Result.GetResult<Prisma.$JobLogPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the JobLogItem model
+   */
+  interface JobLogItemFieldRefs {
+    readonly id: FieldRef<"JobLogItem", 'String'>
+    readonly job_log_id: FieldRef<"JobLogItem", 'String'>
+    readonly entity_id: FieldRef<"JobLogItem", 'String'>
+    readonly status: FieldRef<"JobLogItem", 'String'>
+    readonly error: FieldRef<"JobLogItem", 'String'>
+    readonly created_at: FieldRef<"JobLogItem", 'DateTime'>
+    readonly updated_at: FieldRef<"JobLogItem", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * JobLogItem findUnique
+   */
+  export type JobLogItemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogItem
+     */
+    select?: JobLogItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JobLogItem
+     */
+    omit?: JobLogItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JobLogItemInclude<ExtArgs> | null
+    /**
+     * Filter, which JobLogItem to fetch.
+     */
+    where: JobLogItemWhereUniqueInput
+  }
+
+  /**
+   * JobLogItem findUniqueOrThrow
+   */
+  export type JobLogItemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogItem
+     */
+    select?: JobLogItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JobLogItem
+     */
+    omit?: JobLogItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JobLogItemInclude<ExtArgs> | null
+    /**
+     * Filter, which JobLogItem to fetch.
+     */
+    where: JobLogItemWhereUniqueInput
+  }
+
+  /**
+   * JobLogItem findFirst
+   */
+  export type JobLogItemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogItem
+     */
+    select?: JobLogItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JobLogItem
+     */
+    omit?: JobLogItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JobLogItemInclude<ExtArgs> | null
+    /**
+     * Filter, which JobLogItem to fetch.
+     */
+    where?: JobLogItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of JobLogItems to fetch.
+     */
+    orderBy?: JobLogItemOrderByWithRelationInput | JobLogItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for JobLogItems.
+     */
+    cursor?: JobLogItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` JobLogItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` JobLogItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of JobLogItems.
+     */
+    distinct?: JobLogItemScalarFieldEnum | JobLogItemScalarFieldEnum[]
+  }
+
+  /**
+   * JobLogItem findFirstOrThrow
+   */
+  export type JobLogItemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogItem
+     */
+    select?: JobLogItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JobLogItem
+     */
+    omit?: JobLogItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JobLogItemInclude<ExtArgs> | null
+    /**
+     * Filter, which JobLogItem to fetch.
+     */
+    where?: JobLogItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of JobLogItems to fetch.
+     */
+    orderBy?: JobLogItemOrderByWithRelationInput | JobLogItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for JobLogItems.
+     */
+    cursor?: JobLogItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` JobLogItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` JobLogItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of JobLogItems.
+     */
+    distinct?: JobLogItemScalarFieldEnum | JobLogItemScalarFieldEnum[]
+  }
+
+  /**
+   * JobLogItem findMany
+   */
+  export type JobLogItemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogItem
+     */
+    select?: JobLogItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JobLogItem
+     */
+    omit?: JobLogItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JobLogItemInclude<ExtArgs> | null
+    /**
+     * Filter, which JobLogItems to fetch.
+     */
+    where?: JobLogItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of JobLogItems to fetch.
+     */
+    orderBy?: JobLogItemOrderByWithRelationInput | JobLogItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing JobLogItems.
+     */
+    cursor?: JobLogItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` JobLogItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` JobLogItems.
+     */
+    skip?: number
+    distinct?: JobLogItemScalarFieldEnum | JobLogItemScalarFieldEnum[]
+  }
+
+  /**
+   * JobLogItem create
+   */
+  export type JobLogItemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogItem
+     */
+    select?: JobLogItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JobLogItem
+     */
+    omit?: JobLogItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JobLogItemInclude<ExtArgs> | null
+    /**
+     * The data needed to create a JobLogItem.
+     */
+    data: XOR<JobLogItemCreateInput, JobLogItemUncheckedCreateInput>
+  }
+
+  /**
+   * JobLogItem createMany
+   */
+  export type JobLogItemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many JobLogItems.
+     */
+    data: JobLogItemCreateManyInput | JobLogItemCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * JobLogItem createManyAndReturn
+   */
+  export type JobLogItemCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogItem
+     */
+    select?: JobLogItemSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the JobLogItem
+     */
+    omit?: JobLogItemOmit<ExtArgs> | null
+    /**
+     * The data used to create many JobLogItems.
+     */
+    data: JobLogItemCreateManyInput | JobLogItemCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JobLogItemIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * JobLogItem update
+   */
+  export type JobLogItemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogItem
+     */
+    select?: JobLogItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JobLogItem
+     */
+    omit?: JobLogItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JobLogItemInclude<ExtArgs> | null
+    /**
+     * The data needed to update a JobLogItem.
+     */
+    data: XOR<JobLogItemUpdateInput, JobLogItemUncheckedUpdateInput>
+    /**
+     * Choose, which JobLogItem to update.
+     */
+    where: JobLogItemWhereUniqueInput
+  }
+
+  /**
+   * JobLogItem updateMany
+   */
+  export type JobLogItemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update JobLogItems.
+     */
+    data: XOR<JobLogItemUpdateManyMutationInput, JobLogItemUncheckedUpdateManyInput>
+    /**
+     * Filter which JobLogItems to update
+     */
+    where?: JobLogItemWhereInput
+    /**
+     * Limit how many JobLogItems to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * JobLogItem updateManyAndReturn
+   */
+  export type JobLogItemUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogItem
+     */
+    select?: JobLogItemSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the JobLogItem
+     */
+    omit?: JobLogItemOmit<ExtArgs> | null
+    /**
+     * The data used to update JobLogItems.
+     */
+    data: XOR<JobLogItemUpdateManyMutationInput, JobLogItemUncheckedUpdateManyInput>
+    /**
+     * Filter which JobLogItems to update
+     */
+    where?: JobLogItemWhereInput
+    /**
+     * Limit how many JobLogItems to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JobLogItemIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * JobLogItem upsert
+   */
+  export type JobLogItemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogItem
+     */
+    select?: JobLogItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JobLogItem
+     */
+    omit?: JobLogItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JobLogItemInclude<ExtArgs> | null
+    /**
+     * The filter to search for the JobLogItem to update in case it exists.
+     */
+    where: JobLogItemWhereUniqueInput
+    /**
+     * In case the JobLogItem found by the `where` argument doesn't exist, create a new JobLogItem with this data.
+     */
+    create: XOR<JobLogItemCreateInput, JobLogItemUncheckedCreateInput>
+    /**
+     * In case the JobLogItem was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<JobLogItemUpdateInput, JobLogItemUncheckedUpdateInput>
+  }
+
+  /**
+   * JobLogItem delete
+   */
+  export type JobLogItemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogItem
+     */
+    select?: JobLogItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JobLogItem
+     */
+    omit?: JobLogItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JobLogItemInclude<ExtArgs> | null
+    /**
+     * Filter which JobLogItem to delete.
+     */
+    where: JobLogItemWhereUniqueInput
+  }
+
+  /**
+   * JobLogItem deleteMany
+   */
+  export type JobLogItemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which JobLogItems to delete
+     */
+    where?: JobLogItemWhereInput
+    /**
+     * Limit how many JobLogItems to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * JobLogItem without action
+   */
+  export type JobLogItemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the JobLogItem
+     */
+    select?: JobLogItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the JobLogItem
+     */
+    omit?: JobLogItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: JobLogItemInclude<ExtArgs> | null
   }
 
 
@@ -48365,6 +49601,19 @@ export namespace Prisma {
   export type JobLogScalarFieldEnum = (typeof JobLogScalarFieldEnum)[keyof typeof JobLogScalarFieldEnum]
 
 
+  export const JobLogItemScalarFieldEnum: {
+    id: 'id',
+    job_log_id: 'job_log_id',
+    entity_id: 'entity_id',
+    status: 'status',
+    error: 'error',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type JobLogItemScalarFieldEnum = (typeof JobLogItemScalarFieldEnum)[keyof typeof JobLogItemScalarFieldEnum]
+
+
   export const NotificationScalarFieldEnum: {
     id: 'id',
     type: 'type',
@@ -50977,6 +52226,7 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"JobLog"> | Date | string
     updated_at?: DateTimeFilter<"JobLog"> | Date | string
     crawl_run?: XOR<CrawlRunNullableScalarRelationFilter, CrawlRunWhereInput> | null
+    items?: JobLogItemListRelationFilter
   }
 
   export type JobLogOrderByWithRelationInput = {
@@ -50998,6 +52248,7 @@ export namespace Prisma {
     created_at?: SortOrder
     updated_at?: SortOrder
     crawl_run?: CrawlRunOrderByWithRelationInput
+    items?: JobLogItemOrderByRelationAggregateInput
   }
 
   export type JobLogWhereUniqueInput = Prisma.AtLeast<{
@@ -51022,6 +52273,7 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"JobLog"> | Date | string
     updated_at?: DateTimeFilter<"JobLog"> | Date | string
     crawl_run?: XOR<CrawlRunNullableScalarRelationFilter, CrawlRunWhereInput> | null
+    items?: JobLogItemListRelationFilter
   }, "id">
 
   export type JobLogOrderByWithAggregationInput = {
@@ -51070,6 +52322,72 @@ export namespace Prisma {
     duration_ms?: IntNullableWithAggregatesFilter<"JobLog"> | number | null
     created_at?: DateTimeWithAggregatesFilter<"JobLog"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"JobLog"> | Date | string
+  }
+
+  export type JobLogItemWhereInput = {
+    AND?: JobLogItemWhereInput | JobLogItemWhereInput[]
+    OR?: JobLogItemWhereInput[]
+    NOT?: JobLogItemWhereInput | JobLogItemWhereInput[]
+    id?: StringFilter<"JobLogItem"> | string
+    job_log_id?: StringFilter<"JobLogItem"> | string
+    entity_id?: StringFilter<"JobLogItem"> | string
+    status?: StringFilter<"JobLogItem"> | string
+    error?: StringNullableFilter<"JobLogItem"> | string | null
+    created_at?: DateTimeFilter<"JobLogItem"> | Date | string
+    updated_at?: DateTimeFilter<"JobLogItem"> | Date | string
+    job_log?: XOR<JobLogScalarRelationFilter, JobLogWhereInput>
+  }
+
+  export type JobLogItemOrderByWithRelationInput = {
+    id?: SortOrder
+    job_log_id?: SortOrder
+    entity_id?: SortOrder
+    status?: SortOrder
+    error?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    job_log?: JobLogOrderByWithRelationInput
+  }
+
+  export type JobLogItemWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    job_log_id_entity_id?: JobLogItemJob_log_idEntity_idCompoundUniqueInput
+    AND?: JobLogItemWhereInput | JobLogItemWhereInput[]
+    OR?: JobLogItemWhereInput[]
+    NOT?: JobLogItemWhereInput | JobLogItemWhereInput[]
+    job_log_id?: StringFilter<"JobLogItem"> | string
+    entity_id?: StringFilter<"JobLogItem"> | string
+    status?: StringFilter<"JobLogItem"> | string
+    error?: StringNullableFilter<"JobLogItem"> | string | null
+    created_at?: DateTimeFilter<"JobLogItem"> | Date | string
+    updated_at?: DateTimeFilter<"JobLogItem"> | Date | string
+    job_log?: XOR<JobLogScalarRelationFilter, JobLogWhereInput>
+  }, "id" | "job_log_id_entity_id">
+
+  export type JobLogItemOrderByWithAggregationInput = {
+    id?: SortOrder
+    job_log_id?: SortOrder
+    entity_id?: SortOrder
+    status?: SortOrder
+    error?: SortOrderInput | SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: JobLogItemCountOrderByAggregateInput
+    _max?: JobLogItemMaxOrderByAggregateInput
+    _min?: JobLogItemMinOrderByAggregateInput
+  }
+
+  export type JobLogItemScalarWhereWithAggregatesInput = {
+    AND?: JobLogItemScalarWhereWithAggregatesInput | JobLogItemScalarWhereWithAggregatesInput[]
+    OR?: JobLogItemScalarWhereWithAggregatesInput[]
+    NOT?: JobLogItemScalarWhereWithAggregatesInput | JobLogItemScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"JobLogItem"> | string
+    job_log_id?: StringWithAggregatesFilter<"JobLogItem"> | string
+    entity_id?: StringWithAggregatesFilter<"JobLogItem"> | string
+    status?: StringWithAggregatesFilter<"JobLogItem"> | string
+    error?: StringNullableWithAggregatesFilter<"JobLogItem"> | string | null
+    created_at?: DateTimeWithAggregatesFilter<"JobLogItem"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"JobLogItem"> | Date | string
   }
 
   export type NotificationWhereInput = {
@@ -54857,6 +56175,7 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     crawl_run?: CrawlRunCreateNestedOneWithoutJob_logsInput
+    items?: JobLogItemCreateNestedManyWithoutJob_logInput
   }
 
   export type JobLogUncheckedCreateInput = {
@@ -54877,6 +56196,7 @@ export namespace Prisma {
     duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
+    items?: JobLogItemUncheckedCreateNestedManyWithoutJob_logInput
   }
 
   export type JobLogUpdateInput = {
@@ -54897,6 +56217,7 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_run?: CrawlRunUpdateOneWithoutJob_logsNestedInput
+    items?: JobLogItemUpdateManyWithoutJob_logNestedInput
   }
 
   export type JobLogUncheckedUpdateInput = {
@@ -54917,6 +56238,7 @@ export namespace Prisma {
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    items?: JobLogItemUncheckedUpdateManyWithoutJob_logNestedInput
   }
 
   export type JobLogCreateManyInput = {
@@ -54974,6 +56296,75 @@ export namespace Prisma {
     started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type JobLogItemCreateInput = {
+    id?: string
+    entity_id: string
+    status: string
+    error?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    job_log: JobLogCreateNestedOneWithoutItemsInput
+  }
+
+  export type JobLogItemUncheckedCreateInput = {
+    id?: string
+    job_log_id: string
+    entity_id: string
+    status: string
+    error?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type JobLogItemUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entity_id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    job_log?: JobLogUpdateOneRequiredWithoutItemsNestedInput
+  }
+
+  export type JobLogItemUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    job_log_id?: StringFieldUpdateOperationsInput | string
+    entity_id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type JobLogItemCreateManyInput = {
+    id?: string
+    job_log_id: string
+    entity_id: string
+    status: string
+    error?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type JobLogItemUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entity_id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type JobLogItemUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    job_log_id?: StringFieldUpdateOperationsInput | string
+    entity_id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    error?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -58952,6 +60343,16 @@ export namespace Prisma {
     not?: NestedEnumJobStatusFilter<$PrismaModel> | $Enums.JobStatus
   }
 
+  export type JobLogItemListRelationFilter = {
+    every?: JobLogItemWhereInput
+    some?: JobLogItemWhereInput
+    none?: JobLogItemWhereInput
+  }
+
+  export type JobLogItemOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type JobLogCountOrderByAggregateInput = {
     id?: SortOrder
     queue_name?: SortOrder
@@ -59028,6 +60429,46 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumJobStatusFilter<$PrismaModel>
     _max?: NestedEnumJobStatusFilter<$PrismaModel>
+  }
+
+  export type JobLogScalarRelationFilter = {
+    is?: JobLogWhereInput
+    isNot?: JobLogWhereInput
+  }
+
+  export type JobLogItemJob_log_idEntity_idCompoundUniqueInput = {
+    job_log_id: string
+    entity_id: string
+  }
+
+  export type JobLogItemCountOrderByAggregateInput = {
+    id?: SortOrder
+    job_log_id?: SortOrder
+    entity_id?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type JobLogItemMaxOrderByAggregateInput = {
+    id?: SortOrder
+    job_log_id?: SortOrder
+    entity_id?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type JobLogItemMinOrderByAggregateInput = {
+    id?: SortOrder
+    job_log_id?: SortOrder
+    entity_id?: SortOrder
+    status?: SortOrder
+    error?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
   }
 
   export type EnumNotificationTypeFilter<$PrismaModel = never> = {
@@ -62686,6 +64127,20 @@ export namespace Prisma {
     connect?: CrawlRunWhereUniqueInput
   }
 
+  export type JobLogItemCreateNestedManyWithoutJob_logInput = {
+    create?: XOR<JobLogItemCreateWithoutJob_logInput, JobLogItemUncheckedCreateWithoutJob_logInput> | JobLogItemCreateWithoutJob_logInput[] | JobLogItemUncheckedCreateWithoutJob_logInput[]
+    connectOrCreate?: JobLogItemCreateOrConnectWithoutJob_logInput | JobLogItemCreateOrConnectWithoutJob_logInput[]
+    createMany?: JobLogItemCreateManyJob_logInputEnvelope
+    connect?: JobLogItemWhereUniqueInput | JobLogItemWhereUniqueInput[]
+  }
+
+  export type JobLogItemUncheckedCreateNestedManyWithoutJob_logInput = {
+    create?: XOR<JobLogItemCreateWithoutJob_logInput, JobLogItemUncheckedCreateWithoutJob_logInput> | JobLogItemCreateWithoutJob_logInput[] | JobLogItemUncheckedCreateWithoutJob_logInput[]
+    connectOrCreate?: JobLogItemCreateOrConnectWithoutJob_logInput | JobLogItemCreateOrConnectWithoutJob_logInput[]
+    createMany?: JobLogItemCreateManyJob_logInputEnvelope
+    connect?: JobLogItemWhereUniqueInput | JobLogItemWhereUniqueInput[]
+  }
+
   export type EnumJobStatusFieldUpdateOperationsInput = {
     set?: $Enums.JobStatus
   }
@@ -62698,6 +64153,48 @@ export namespace Prisma {
     delete?: CrawlRunWhereInput | boolean
     connect?: CrawlRunWhereUniqueInput
     update?: XOR<XOR<CrawlRunUpdateToOneWithWhereWithoutJob_logsInput, CrawlRunUpdateWithoutJob_logsInput>, CrawlRunUncheckedUpdateWithoutJob_logsInput>
+  }
+
+  export type JobLogItemUpdateManyWithoutJob_logNestedInput = {
+    create?: XOR<JobLogItemCreateWithoutJob_logInput, JobLogItemUncheckedCreateWithoutJob_logInput> | JobLogItemCreateWithoutJob_logInput[] | JobLogItemUncheckedCreateWithoutJob_logInput[]
+    connectOrCreate?: JobLogItemCreateOrConnectWithoutJob_logInput | JobLogItemCreateOrConnectWithoutJob_logInput[]
+    upsert?: JobLogItemUpsertWithWhereUniqueWithoutJob_logInput | JobLogItemUpsertWithWhereUniqueWithoutJob_logInput[]
+    createMany?: JobLogItemCreateManyJob_logInputEnvelope
+    set?: JobLogItemWhereUniqueInput | JobLogItemWhereUniqueInput[]
+    disconnect?: JobLogItemWhereUniqueInput | JobLogItemWhereUniqueInput[]
+    delete?: JobLogItemWhereUniqueInput | JobLogItemWhereUniqueInput[]
+    connect?: JobLogItemWhereUniqueInput | JobLogItemWhereUniqueInput[]
+    update?: JobLogItemUpdateWithWhereUniqueWithoutJob_logInput | JobLogItemUpdateWithWhereUniqueWithoutJob_logInput[]
+    updateMany?: JobLogItemUpdateManyWithWhereWithoutJob_logInput | JobLogItemUpdateManyWithWhereWithoutJob_logInput[]
+    deleteMany?: JobLogItemScalarWhereInput | JobLogItemScalarWhereInput[]
+  }
+
+  export type JobLogItemUncheckedUpdateManyWithoutJob_logNestedInput = {
+    create?: XOR<JobLogItemCreateWithoutJob_logInput, JobLogItemUncheckedCreateWithoutJob_logInput> | JobLogItemCreateWithoutJob_logInput[] | JobLogItemUncheckedCreateWithoutJob_logInput[]
+    connectOrCreate?: JobLogItemCreateOrConnectWithoutJob_logInput | JobLogItemCreateOrConnectWithoutJob_logInput[]
+    upsert?: JobLogItemUpsertWithWhereUniqueWithoutJob_logInput | JobLogItemUpsertWithWhereUniqueWithoutJob_logInput[]
+    createMany?: JobLogItemCreateManyJob_logInputEnvelope
+    set?: JobLogItemWhereUniqueInput | JobLogItemWhereUniqueInput[]
+    disconnect?: JobLogItemWhereUniqueInput | JobLogItemWhereUniqueInput[]
+    delete?: JobLogItemWhereUniqueInput | JobLogItemWhereUniqueInput[]
+    connect?: JobLogItemWhereUniqueInput | JobLogItemWhereUniqueInput[]
+    update?: JobLogItemUpdateWithWhereUniqueWithoutJob_logInput | JobLogItemUpdateWithWhereUniqueWithoutJob_logInput[]
+    updateMany?: JobLogItemUpdateManyWithWhereWithoutJob_logInput | JobLogItemUpdateManyWithWhereWithoutJob_logInput[]
+    deleteMany?: JobLogItemScalarWhereInput | JobLogItemScalarWhereInput[]
+  }
+
+  export type JobLogCreateNestedOneWithoutItemsInput = {
+    create?: XOR<JobLogCreateWithoutItemsInput, JobLogUncheckedCreateWithoutItemsInput>
+    connectOrCreate?: JobLogCreateOrConnectWithoutItemsInput
+    connect?: JobLogWhereUniqueInput
+  }
+
+  export type JobLogUpdateOneRequiredWithoutItemsNestedInput = {
+    create?: XOR<JobLogCreateWithoutItemsInput, JobLogUncheckedCreateWithoutItemsInput>
+    connectOrCreate?: JobLogCreateOrConnectWithoutItemsInput
+    upsert?: JobLogUpsertWithoutItemsInput
+    connect?: JobLogWhereUniqueInput
+    update?: XOR<XOR<JobLogUpdateToOneWithWhereWithoutItemsInput, JobLogUpdateWithoutItemsInput>, JobLogUncheckedUpdateWithoutItemsInput>
   }
 
   export type SourceAgencyCreateNestedOneWithoutNotificationsInput = {
@@ -69395,6 +70892,7 @@ export namespace Prisma {
     duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
+    items?: JobLogItemCreateNestedManyWithoutJob_logInput
   }
 
   export type JobLogUncheckedCreateWithoutCrawl_runInput = {
@@ -69414,6 +70912,7 @@ export namespace Prisma {
     duration_ms?: number | null
     created_at?: Date | string
     updated_at?: Date | string
+    items?: JobLogItemUncheckedCreateNestedManyWithoutJob_logInput
   }
 
   export type JobLogCreateOrConnectWithoutCrawl_runInput = {
@@ -70614,6 +72113,34 @@ export namespace Prisma {
     create: XOR<CrawlRunCreateWithoutJob_logsInput, CrawlRunUncheckedCreateWithoutJob_logsInput>
   }
 
+  export type JobLogItemCreateWithoutJob_logInput = {
+    id?: string
+    entity_id: string
+    status: string
+    error?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type JobLogItemUncheckedCreateWithoutJob_logInput = {
+    id?: string
+    entity_id: string
+    status: string
+    error?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type JobLogItemCreateOrConnectWithoutJob_logInput = {
+    where: JobLogItemWhereUniqueInput
+    create: XOR<JobLogItemCreateWithoutJob_logInput, JobLogItemUncheckedCreateWithoutJob_logInput>
+  }
+
+  export type JobLogItemCreateManyJob_logInputEnvelope = {
+    data: JobLogItemCreateManyJob_logInput | JobLogItemCreateManyJob_logInput[]
+    skipDuplicates?: boolean
+  }
+
   export type CrawlRunUpsertWithoutJob_logsInput = {
     update: XOR<CrawlRunUpdateWithoutJob_logsInput, CrawlRunUncheckedUpdateWithoutJob_logsInput>
     create: XOR<CrawlRunCreateWithoutJob_logsInput, CrawlRunUncheckedCreateWithoutJob_logsInput>
@@ -70697,6 +72224,131 @@ export namespace Prisma {
     cms_sync_runs?: CmsSyncRunUncheckedUpdateManyWithoutCrawl_runNestedInput
     ai_batch_runs?: AiBatchRunUncheckedUpdateManyWithoutCrawl_runNestedInput
     cost_logs?: CostLogUncheckedUpdateManyWithoutCrawl_runNestedInput
+  }
+
+  export type JobLogItemUpsertWithWhereUniqueWithoutJob_logInput = {
+    where: JobLogItemWhereUniqueInput
+    update: XOR<JobLogItemUpdateWithoutJob_logInput, JobLogItemUncheckedUpdateWithoutJob_logInput>
+    create: XOR<JobLogItemCreateWithoutJob_logInput, JobLogItemUncheckedCreateWithoutJob_logInput>
+  }
+
+  export type JobLogItemUpdateWithWhereUniqueWithoutJob_logInput = {
+    where: JobLogItemWhereUniqueInput
+    data: XOR<JobLogItemUpdateWithoutJob_logInput, JobLogItemUncheckedUpdateWithoutJob_logInput>
+  }
+
+  export type JobLogItemUpdateManyWithWhereWithoutJob_logInput = {
+    where: JobLogItemScalarWhereInput
+    data: XOR<JobLogItemUpdateManyMutationInput, JobLogItemUncheckedUpdateManyWithoutJob_logInput>
+  }
+
+  export type JobLogItemScalarWhereInput = {
+    AND?: JobLogItemScalarWhereInput | JobLogItemScalarWhereInput[]
+    OR?: JobLogItemScalarWhereInput[]
+    NOT?: JobLogItemScalarWhereInput | JobLogItemScalarWhereInput[]
+    id?: StringFilter<"JobLogItem"> | string
+    job_log_id?: StringFilter<"JobLogItem"> | string
+    entity_id?: StringFilter<"JobLogItem"> | string
+    status?: StringFilter<"JobLogItem"> | string
+    error?: StringNullableFilter<"JobLogItem"> | string | null
+    created_at?: DateTimeFilter<"JobLogItem"> | Date | string
+    updated_at?: DateTimeFilter<"JobLogItem"> | Date | string
+  }
+
+  export type JobLogCreateWithoutItemsInput = {
+    id?: string
+    queue_name: string
+    job_id?: string | null
+    job_name?: string | null
+    status: $Enums.JobStatus
+    attempt?: number
+    max_attempts?: number | null
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    result?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    stack_trace?: string | null
+    started_at?: Date | string | null
+    finished_at?: Date | string | null
+    duration_ms?: number | null
+    created_at?: Date | string
+    updated_at?: Date | string
+    crawl_run?: CrawlRunCreateNestedOneWithoutJob_logsInput
+  }
+
+  export type JobLogUncheckedCreateWithoutItemsInput = {
+    id?: string
+    queue_name: string
+    job_id?: string | null
+    job_name?: string | null
+    status: $Enums.JobStatus
+    attempt?: number
+    max_attempts?: number | null
+    crawl_run_id?: string | null
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    result?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: string | null
+    stack_trace?: string | null
+    started_at?: Date | string | null
+    finished_at?: Date | string | null
+    duration_ms?: number | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type JobLogCreateOrConnectWithoutItemsInput = {
+    where: JobLogWhereUniqueInput
+    create: XOR<JobLogCreateWithoutItemsInput, JobLogUncheckedCreateWithoutItemsInput>
+  }
+
+  export type JobLogUpsertWithoutItemsInput = {
+    update: XOR<JobLogUpdateWithoutItemsInput, JobLogUncheckedUpdateWithoutItemsInput>
+    create: XOR<JobLogCreateWithoutItemsInput, JobLogUncheckedCreateWithoutItemsInput>
+    where?: JobLogWhereInput
+  }
+
+  export type JobLogUpdateToOneWithWhereWithoutItemsInput = {
+    where?: JobLogWhereInput
+    data: XOR<JobLogUpdateWithoutItemsInput, JobLogUncheckedUpdateWithoutItemsInput>
+  }
+
+  export type JobLogUpdateWithoutItemsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queue_name?: StringFieldUpdateOperationsInput | string
+    job_id?: NullableStringFieldUpdateOperationsInput | string | null
+    job_name?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    attempt?: IntFieldUpdateOperationsInput | number
+    max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    result?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    stack_trace?: NullableStringFieldUpdateOperationsInput | string | null
+    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    crawl_run?: CrawlRunUpdateOneWithoutJob_logsNestedInput
+  }
+
+  export type JobLogUncheckedUpdateWithoutItemsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    queue_name?: StringFieldUpdateOperationsInput | string
+    job_id?: NullableStringFieldUpdateOperationsInput | string | null
+    job_name?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+    attempt?: IntFieldUpdateOperationsInput | number
+    max_attempts?: NullableIntFieldUpdateOperationsInput | number | null
+    crawl_run_id?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    result?: NullableJsonNullValueInput | InputJsonValue
+    error_message?: NullableStringFieldUpdateOperationsInput | string | null
+    stack_trace?: NullableStringFieldUpdateOperationsInput | string | null
+    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SourceAgencyCreateWithoutNotificationsInput = {
@@ -77378,6 +79030,7 @@ export namespace Prisma {
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    items?: JobLogItemUpdateManyWithoutJob_logNestedInput
   }
 
   export type JobLogUncheckedUpdateWithoutCrawl_runInput = {
@@ -77397,6 +79050,7 @@ export namespace Prisma {
     duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    items?: JobLogItemUncheckedUpdateManyWithoutJob_logNestedInput
   }
 
   export type JobLogUncheckedUpdateManyWithoutCrawl_runInput = {
@@ -77712,6 +79366,42 @@ export namespace Prisma {
     content_type?: StringFieldUpdateOperationsInput | string
     size_bytes?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type JobLogItemCreateManyJob_logInput = {
+    id?: string
+    entity_id: string
+    status: string
+    error?: string | null
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type JobLogItemUpdateWithoutJob_logInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entity_id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type JobLogItemUncheckedUpdateWithoutJob_logInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entity_id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type JobLogItemUncheckedUpdateManyWithoutJob_logInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entity_id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PropertySourceLinkCreateManySource_propertyInput = {

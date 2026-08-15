@@ -5,6 +5,7 @@ import { AiIntegrationModule } from '@/integrations/ai/ai.module';
 import { UserIntegrationsModule } from '@/modules/user-integrations/user-integrations.module';
 import {
   AI_BATCH_COMPLETE_QUEUE,
+  GEOCODE_MISSING_COORDINATES_QUEUE,
   NORMALIZATION_QUEUE,
   RENORMALIZATION_QUEUE,
 } from '@/core/queues/queues.constants';
@@ -41,6 +42,7 @@ import { ContentPublishingModule } from '@/modules/content-publishing/content-pu
       { name: AI_BATCH_COMPLETE_QUEUE },
       { name: RENORMALIZATION_QUEUE },
       { name: NORMALIZATION_QUEUE },
+      { name: GEOCODE_MISSING_COORDINATES_QUEUE },
     ),
   ],
   controllers: [PropertiesController],

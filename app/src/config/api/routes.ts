@@ -104,6 +104,8 @@ export const ApiRoutes = {
             truncateDescriptions: "/admin/properties/truncate-descriptions",
             bulkSplit: "/admin/properties/bulk-split",
             split: (id: string) => `/admin/properties/${id}/split`,
+            geocodeMissingCoordinates: "/admin/properties/geocode-missing-coordinates",
+            countMissingCoordinates: "/admin/properties/count-missing-coordinates",
         },
         sourceProperties: {
             prefix: "/admin/source-properties",
@@ -236,6 +238,8 @@ export const ApiRoutes = {
         syncCrmClientNotes: "/properties/sync-crm-client-notes",
         produceContent: "/properties/produce-content",
         renormalize: "/properties/renormalize",
+        geocodeMissingCoordinates: "/properties/geocode-missing-coordinates",
+        countMissingCoordinates: "/properties/count-missing-coordinates",
         bulkDeleteIntegrationImages: "/properties/bulk-delete-integration-images",
         bulkMigrateIntegrationImages: "/properties/bulk-migrate-integration-images",
     },

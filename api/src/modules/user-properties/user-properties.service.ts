@@ -13,17 +13,20 @@ import {
   CRM_CLIENT_NOTES_SYNC_QUEUE,
   DELETE_INTEGRATION_IMAGES_QUEUE,
   ESTATEWEB_SITES_UPDATE_QUEUE,
+  GEOCODE_MISSING_COORDINATES_QUEUE,
   MIGRATE_INTEGRATION_IMAGES_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
 } from '@/core/queues/queues.constants';
+import { GeocodeCoordinatesJobData } from './interfaces/geocode-coordinates-job.interface';
 import { DewatermarkOrchestratorService } from '@/integrations/dewatermark/services/dewatermark-orchestrator.service';
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { CmsSyncAdapterFactory } from '@/modules/cms-sync/services/cms-sync-adapter.factory';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
+import { GcsFolders } from '@/shared/config/gcs-folders';
 import {
   UserPropertyMapQueryType,
   UserPropertyQueryType,
@@ -151,6 +154,8 @@ export class UserPropertiesService {
     private readonly deleteIntegrationImagesQueue: Queue<DeleteIntegrationImagesJobData>,
     @InjectQueue(MIGRATE_INTEGRATION_IMAGES_QUEUE)
     private readonly migrateIntegrationImagesQueue: Queue<MigrateIntegrationImagesJobData>,
+    @InjectQueue(GEOCODE_MISSING_COORDINATES_QUEUE)
+    private readonly geocodeCoordinatesQueue: Queue<GeocodeCoordinatesJobData>,
   ) {}
 
   private async resolveFilterSourceAgencyId(
@@ -1305,6 +1310,85 @@ export class UserPropertiesService {
       failed,
       message:
         'Sales price update started in the background. Track progress in Job queue.',
+    };
+  }
+
+  async countMissingCoordinates(userId: string) {
+    const count = await this.prisma.userProperty.count({
+      where: {
+        user_id: userId,
+        OR: [{ latitude: null }, { longitude: null }],
+      },
+    });
+    return { count };
+  }
+
+  async geocodeMissingCoordinates(userId: string) {
+    const properties = await this.prisma.userProperty.findMany({
+      where: {
+        user_id: userId,
+        OR: [{ latitude: null }, { longitude: null }],
+      },
+      select: { id: true },
+    });
+
+    if (properties.length === 0) {
+      throw new BadRequestException('No properties are missing coordinates');
+    }
+
+    const enqueueIds = properties.map((property) => property.id);
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: GEOCODE_MISSING_COORDINATES_QUEUE,
+        job_name: 'geocode-missing-coordinates',
+        status: JobStatus.WAITING,
+        payload: {
+          user_id: userId,
+          ids: enqueueIds,
+          total: enqueueIds.length,
+        } as object,
+        result: {
+          total: enqueueIds.length,
+          processed: 0,
+          geocoded: 0,
+          failed: 0,
+        } as object,
+      },
+    });
+
+    this.logger.log(
+      `[geocodeMissingCoordinates] queued job_log=${jobLog.id} user=${userId} ids=${enqueueIds.length}`,
+    );
+
+    await this.geocodeCoordinatesQueue.addBulk(
+      enqueueIds.map((userPropertyId) => {
+        const jobData: GeocodeCoordinatesJobData = {
+          job_log_id: jobLog.id,
+          entity_type: 'user_property',
+          entity_id: userPropertyId,
+          user_id: userId,
+          total: enqueueIds.length,
+        };
+        return {
+          name: 'geocode-missing-coordinates',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${userPropertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
+
+    return {
+      job_log_id: jobLog.id,
+      enqueued: enqueueIds.length,
+      message:
+        'Geocoding started in the background. Track progress in Job queue.',
     };
   }
 
@@ -3040,13 +3124,29 @@ export class UserPropertiesService {
         continue;
       }
 
-      if (!this.hasUserPropertyFieldChanges(existing, canonicalFields)) {
+      // The canonical Property always carries the raw source image URLs
+      // (mapFromCanonical pulls straight from the latest scrape). Once the
+      // watermark pipeline replaces an image with a GCS-hosted, processed
+      // copy, that replacement must survive future syncs -- otherwise every
+      // crawl re-introduces the raw URL, looks like a fresh "image change",
+      // and gets re-billed to Dewatermark for an image that was already
+      // processed. Keep already-processed URLs in place; only positions that
+      // still hold a non-GCS (unprocessed) URL take the fresh scrape value.
+      const effectiveFields = {
+        ...canonicalFields,
+        images: this.mergeImagesPreservingProcessed(
+          existing.images,
+          canonicalFields.images,
+        ),
+      };
+
+      if (!this.hasUserPropertyFieldChanges(existing, effectiveFields)) {
         continue;
       }
 
       const imagesChanged =
         this.normalizeComparableValue(existing.images) !==
-        this.normalizeComparableValue(canonicalFields.images);
+        this.normalizeComparableValue(effectiveFields.images);
       const contentChanged =
         this.normalizeComparableValue(existing.title) !==
           this.normalizeComparableValue(canonicalFields.title) ||
@@ -3056,14 +3156,14 @@ export class UserPropertiesService {
       await this.prisma.userProperty.update({
         where: { id: existing.id },
         data: {
-          ...canonicalFields,
-          city: canonicalFields.city ?? existing.city,
-          district: canonicalFields.district ?? existing.district,
+          ...effectiveFields,
+          city: effectiveFields.city ?? existing.city,
+          district: effectiveFields.district ?? existing.district,
           estateweb_location_id:
-            canonicalFields.estateweb_location_id ??
+            effectiveFields.estateweb_location_id ??
             existing.estateweb_location_id,
           estateweb_type_id:
-            canonicalFields.estateweb_type_id ?? existing.estateweb_type_id,
+            effectiveFields.estateweb_type_id ?? existing.estateweb_type_id,
         },
       });
 
@@ -3177,6 +3277,24 @@ export class UserPropertiesService {
     });
 
     return new Map(rows.map((row) => [row.user_id, row.settings]));
+  }
+
+  private mergeImagesPreservingProcessed(
+    existingImages: unknown,
+    nextImages: Prisma.JsonValue | undefined,
+  ): Prisma.JsonValue | undefined {
+    if (!Array.isArray(nextImages) || !Array.isArray(existingImages)) {
+      return nextImages;
+    }
+
+    const isProcessed = (url: unknown): url is string =>
+      typeof url === 'string' &&
+      url.includes(`/${GcsFolders.propertyImages}/`);
+
+    return nextImages.map((url, index) => {
+      const existingUrl = existingImages[index];
+      return isProcessed(existingUrl) ? existingUrl : url;
+    });
   }
 
   private mapFromCanonical(

@@ -13,7 +13,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { CircleDot, CopyCheck, Globe, Hash, ImageOff, Images, Languages, Layers, ListFilter, MapIcon, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, TableIcon, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { CircleDot, CopyCheck, Globe, Hash, ImageOff, Images, Languages, Layers, ListFilter, MapIcon, MapPin, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, TableIcon, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
@@ -21,6 +21,7 @@ import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
+import { GeocodeMissingCoordinatesModal } from "@/components/ui/geocode-missing-coordinates-modal";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { MigrateIntegrationImagesModal } from "@/components/ui/migrate-integration-images-modal";
 import {
@@ -60,6 +61,8 @@ import {
   usePushUserPropertyToCrm,
   useRemoveUserPropertiesWatermarkImages,
   useRenormalizeUserProperties,
+  useGeocodeMissingCoordinates,
+  useUserPropertiesMissingCoordinatesCount,
   useBulkDeleteUserPropertyIntegrationImages,
   useBulkMigrateUserPropertyIntegrationImages,
   useSplitUserProperties,
@@ -82,7 +85,7 @@ import { getTrackableAgencyLabel } from "@/features/user-tracked-agencies/utils/
 import { RoleTypes } from "@/features/user/interfaces/user.interface";
 import { useAuthStore } from "@/stores/auth";
 import { formatPrice } from "@/lib/price";
-import { toEndOfDayIso, toStartOfDayIso } from "@/lib/date";
+import { formatDateTime, toEndOfDayIso, toStartOfDayIso } from "@/lib/date";
 import { getDuplicateGroupRowClasses } from "@/lib/duplicate-group-color.utils";
 import { getDuplicateGroupDedupePlan } from "@/lib/duplicate-group-dedupe.utils";
 import { cn } from "@/lib/utils";
@@ -273,6 +276,7 @@ export default function DashboardPropertiesListPage() {
   const migrateCmsImagesModal = useOverlayState();
   const checkCrmDuplicatesModal = useOverlayState();
   const manageOrphanSitesModal = useOverlayState();
+  const geocodeModal = useOverlayState();
   const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
   const [removeWatermarkPropertyIds, setRemoveWatermarkPropertyIds] = useState<
     string[]
@@ -411,6 +415,10 @@ export default function DashboardPropertiesListPage() {
   const renormalize = useRenormalizeUserProperties();
   const bulkDeleteCmsImages = useBulkDeleteUserPropertyIntegrationImages();
   const bulkMigrateCmsImages = useBulkMigrateUserPropertyIntegrationImages();
+  const geocodeMissingCoordinates = useGeocodeMissingCoordinates();
+  const missingCoordinatesCount = useUserPropertiesMissingCoordinatesCount(
+    geocodeModal.isOpen,
+  );
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
@@ -617,6 +625,12 @@ export default function DashboardPropertiesListPage() {
         icon: Hash,
       });
 
+      entries.push({
+        id: "geocode-missing-coordinates",
+        label: "Find missing coordinates",
+        icon: MapPin,
+      });
+
       const duplicateItems: TableRowAction[] = [
         {
           id: "split",
@@ -799,6 +813,10 @@ export default function DashboardPropertiesListPage() {
     }
     if (actionId === "manage-crm-sites-by-code") {
       manageOrphanSitesModal.open();
+      return;
+    }
+    if (actionId === "geocode-missing-coordinates") {
+      geocodeModal.open();
       return;
     }
     if (actionId === "delete") {
@@ -1400,6 +1418,7 @@ export default function DashboardPropertiesListPage() {
                     <Table.Column isRowHeader>Status</Table.Column>
                     <Table.Column isRowHeader>CRM</Table.Column>
                     <Table.Column isRowHeader>Integration ID</Table.Column>
+                    <Table.Column isRowHeader>Created</Table.Column>
                     <Table.Column isRowHeader>Actions</Table.Column>
                   </Table.Header>
                   <Table.Body>
@@ -1494,6 +1513,9 @@ export default function DashboardPropertiesListPage() {
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
                           {property.integration_property_id ?? "—"}
+                        </Table.Cell>
+                        <Table.Cell className={groupCellClass}>
+                          {formatDateTime(property.created_at)}
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
                           <TableRowActionsMenu
@@ -1671,6 +1693,11 @@ export default function DashboardPropertiesListPage() {
         confirmLabel="Renormalize"
         onConfirm={handleRenormalize}
         isPending={renormalize.isPending}
+      />
+      <GeocodeMissingCoordinatesModal
+        state={geocodeModal}
+        countQuery={missingCoordinatesCount}
+        geocode={geocodeMissingCoordinates}
       />
       <ConfirmationDialog
         state={deleteCmsImagesConfirm}

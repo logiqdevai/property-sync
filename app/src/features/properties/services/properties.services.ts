@@ -4,7 +4,9 @@ import type {
   DeletePropertiesPayload,
   DedupePropertiesPayload,
   DedupePropertiesResult,
+  GeocodeMissingCoordinatesResult,
   MergePropertiesPayload,
+  MissingCoordinatesCountResponse,
   PaginatedResponse,
   Property,
   PropertyCountQuery,
@@ -155,3 +157,32 @@ export const truncatePropertyDescriptions = async (
     );
   }
 };
+
+export const geocodeMissingCoordinates =
+  async (): Promise<GeocodeMissingCoordinatesResult> => {
+    try {
+      const response = await axiosInstance.post(
+        ApiRoutes.admin.properties.geocodeMissingCoordinates,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error?.response?.data?.message || "Failed to geocode properties.",
+      );
+    }
+  };
+
+export const getPropertiesMissingCoordinatesCount =
+  async (): Promise<MissingCoordinatesCountResponse> => {
+    try {
+      const response = await axiosInstance.get(
+        ApiRoutes.admin.properties.countMissingCoordinates,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error?.response?.data?.message ||
+          "Failed to count properties missing coordinates.",
+      );
+    }
+  };
