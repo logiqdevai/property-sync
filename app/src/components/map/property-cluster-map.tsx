@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Flame, Loader2, MapPin } from "lucide-react";
 import { Tabs } from "@heroui/react";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
@@ -40,14 +39,19 @@ function toFinitePrice(price: MapMarkerData["price"]): number | null {
   return amount != null && Number.isFinite(amount) ? amount : null;
 }
 
-function buildInfoWindowContent(
-  marker: MapMarkerData,
-  href: string,
-  onNavigate: () => void,
-): HTMLElement {
+function buildInfoWindowContent(marker: MapMarkerData, href: string): HTMLElement {
   const root = document.createElement("div");
   root.style.cssText =
     "display:flex;flex-direction:column;gap:4px;padding:4px;font-size:13px;max-width:220px;";
+
+  if (marker.image) {
+    const image = document.createElement("img");
+    image.src = marker.image;
+    image.alt = "";
+    image.style.cssText =
+      "width:100%;height:120px;object-fit:cover;border-radius:6px;margin-bottom:2px;";
+    root.appendChild(image);
+  }
 
   const title = document.createElement("p");
   title.style.cssText = "font-weight:600;margin:0;";
@@ -77,13 +81,11 @@ function buildInfoWindowContent(
 
   const link = document.createElement("a");
   link.href = href;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
   link.textContent = "View details";
   link.style.cssText =
     "margin-top:4px;color:#2563eb;font-weight:600;text-decoration:none;";
-  link.addEventListener("click", (event) => {
-    event.preventDefault();
-    onNavigate();
-  });
   root.appendChild(link);
 
   return root;
@@ -102,7 +104,6 @@ export function PropertyClusterMap({
   getDetailHref,
   emptyMessage = "No properties with map coordinates to display.",
 }: PropertyClusterMapProps) {
-  const navigate = useNavigate();
   const [layerMode, setLayerMode] = useState<LayerMode>("markers");
   const legend = useMemo(
     () => ({
@@ -119,13 +120,11 @@ export function PropertyClusterMap({
   const gMarkersRef = useRef<google.maps.Marker[]>([]);
   const priceByMarkerRef = useRef(new WeakMap<google.maps.Marker, number>());
   const lastFitMarkersRef = useRef<MapMarkerData[] | null>(null);
-  const navigateRef = useRef(navigate);
   const getDetailHrefRef = useRef(getDetailHref);
 
   useEffect(() => {
-    navigateRef.current = navigate;
     getDetailHrefRef.current = getDetailHref;
-  }, [navigate, getDetailHref]);
+  }, [getDetailHref]);
 
   useEffect(() => {
     let cancelled = false;
@@ -173,9 +172,7 @@ export function PropertyClusterMap({
         }
         gMarker.addListener("click", () => {
           const href = getDetailHrefRef.current(marker.id);
-          const content = buildInfoWindowContent(marker, href, () =>
-            navigateRef.current(href),
-          );
+          const content = buildInfoWindowContent(marker, href);
           infoWindowRef.current?.setContent(content);
           infoWindowRef.current?.open({ map, anchor: gMarker });
         });

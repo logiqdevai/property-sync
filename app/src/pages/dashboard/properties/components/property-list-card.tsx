@@ -19,7 +19,6 @@ type PropertyListCardProps = {
   id: string;
   title: string;
   agencyName: string | null;
-  city: string | null;
   price: string | null;
   currency: string | null;
   status: PropertyStatus;
@@ -39,7 +38,6 @@ export function PropertyListCard({
   id,
   title,
   agencyName,
-  city,
   price,
   currency,
   status,
@@ -92,7 +90,7 @@ export function PropertyListCard({
             {title}
           </Link>
           <p className="mt-0.5 truncate text-sm text-muted">
-            {[agencyName, city].filter(Boolean).join(" · ") || "—"}
+            {agencyName || "—"}
           </p>
         </div>
         <TableRowActionsMenu
@@ -134,12 +132,6 @@ export function PropertyListCard({
           ) : (
             <span className="text-sm text-muted">—</span>
           )}
-        </div>
-        <div className="flex min-w-0 flex-col gap-0.5">
-          <span className="text-xs text-muted">Integration ID</span>
-          <span className="break-all text-sm text-foreground">
-            {integrationPropertyId ?? "—"}
-          </span>
         </div>
       </div>
     </article>

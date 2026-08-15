@@ -386,6 +386,7 @@ export class UserPropertiesService {
           status: true,
           latitude: true,
           longitude: true,
+          images: true,
           canonical_property: {
             select: {
               source_links: {

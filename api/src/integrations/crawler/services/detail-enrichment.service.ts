@@ -12,7 +12,10 @@ import {
   DetailPageConfig,
 } from '../interfaces/scraper-config.interface';
 import { BlockHandlingConfig } from '../block-handling/block-handling.interface';
-import { waitForBotChallengeClearance } from '../block-handling/block-handling.utils';
+import {
+  classifyPageAccess,
+  waitForBotChallengeClearance,
+} from '../block-handling/block-handling.utils';
 import { isDetailPageRedirectAway } from '../utils/crawler.utils';
 import { StealthBrowserService } from './stealth-browser.service';
 
@@ -601,6 +604,25 @@ export class DetailEnrichmentService {
           longitude,
         };
       }, detailConfig ?? null);
+
+      // Some WAF/bot-challenge interstitials (e.g. Imperva's "Pardon Our
+      // Interruption" page) delay revealing their challenge content via a
+      // client-side timer, so the clearance check above can sample the page
+      // before that timer fires and read as 'ok' -- then the reveal lands in
+      // the gap between that check and the extraction just above, and we'd
+      // otherwise persist the interstitial's own title/text as if it were
+      // real listing content. Re-classify right after extraction to catch a
+      // late reveal and discard the result instead of accepting it.
+      const postExtractState = await classifyPageAccess(
+        page,
+        blockHandlingConfig,
+      );
+      if (postExtractState === 'blocked' || postExtractState === 'challenge') {
+        return {
+          ...empty,
+          error: `access barrier revealed after extraction: ${postExtractState}`,
+        };
+      }
 
       const html = await page.content();
       const rawHtmlPath = await this.uploadDetailHtml(

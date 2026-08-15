@@ -197,6 +197,7 @@ export class PropertiesService {
           status: true,
           latitude: true,
           longitude: true,
+          images: true,
           source_links: {
             select: {
               is_primary_source: true,

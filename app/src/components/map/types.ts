@@ -10,4 +10,5 @@ export interface MapMarkerData {
   latitude: number;
   longitude: number;
   agency_name: string | null;
+  image: string | null;
 }

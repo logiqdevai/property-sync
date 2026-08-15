@@ -541,6 +541,48 @@ export default function DashboardPropertiesListPage() {
       isDisabled: selectedLinkedCount < 1 || bulkDeleteCmsImages.isPending,
     });
 
+    const crmItems: TableRowAction[] = [
+      {
+        id: "push-to-crm",
+        label: "Push to CRM",
+        icon: Upload,
+        isDisabled: selectedCount < 1 || pushSelectedToCrm.isPending,
+      },
+      {
+        id: "manage-estateweb-sites",
+        label: "Manage EstateWeb Sites",
+        icon: Globe,
+        isDisabled: selectedLinkedCount < 1,
+      },
+      {
+        id: "update-sales-prices",
+        label: "Update sales prices on CRM",
+        icon: Percent,
+        isDisabled: selectedLinkedCount < 1 || updateSalesPrices.isPending,
+      },
+      {
+        id: "sync-crm-client-notes",
+        label: "Sync CRM client notes",
+        icon: NotebookPen,
+        isDisabled: selectedLinkedCount < 1 || syncCrmClientNotes.isPending,
+      },
+    ];
+
+    if (canManageBulk) {
+      crmItems.push(
+        {
+          id: "check-crm-duplicates",
+          label: "Check CRM duplicates",
+          icon: CopyCheck,
+        },
+        {
+          id: "manage-crm-sites-by-code",
+          label: "Manage CRM sites by code",
+          icon: Hash,
+        },
+      );
+    }
+
     const entries: TableRowActionEntry[] = [
       {
         id: "change-status",
@@ -552,32 +594,7 @@ export default function DashboardPropertiesListPage() {
         id: "crm",
         label: "CRM",
         icon: Upload,
-        items: [
-          {
-            id: "push-to-crm",
-            label: "Push to CRM",
-            icon: Upload,
-            isDisabled: selectedCount < 1 || pushSelectedToCrm.isPending,
-          },
-          {
-            id: "manage-estateweb-sites",
-            label: "Manage EstateWeb Sites",
-            icon: Globe,
-            isDisabled: selectedLinkedCount < 1,
-          },
-          {
-            id: "update-sales-prices",
-            label: "Update sales prices on CRM",
-            icon: Percent,
-            isDisabled: selectedLinkedCount < 1 || updateSalesPrices.isPending,
-          },
-          {
-            id: "sync-crm-client-notes",
-            label: "Sync CRM client notes",
-            icon: NotebookPen,
-            isDisabled: selectedLinkedCount < 1 || syncCrmClientNotes.isPending,
-          },
-        ],
+        items: crmItems,
       },
       {
         id: "content",
@@ -613,18 +630,6 @@ export default function DashboardPropertiesListPage() {
     ];
 
     if (canManageBulk) {
-      entries.push({
-        id: "check-crm-duplicates",
-        label: "Check CRM duplicates",
-        icon: CopyCheck,
-      });
-
-      entries.push({
-        id: "manage-crm-sites-by-code",
-        label: "Manage CRM sites by code",
-        icon: Hash,
-      });
-
       entries.push({
         id: "geocode-missing-coordinates",
         label: "Find missing coordinates",
@@ -1329,7 +1334,6 @@ export default function DashboardPropertiesListPage() {
                   id={property.id}
                   title={property.title}
                   agencyName={property.source_agency?.name ?? filteredAgencyName}
-                  city={property.city}
                   price={property.price}
                   currency={property.currency}
                   status={property.status}
@@ -1413,11 +1417,9 @@ export default function DashboardPropertiesListPage() {
                     </Table.Column>
                     <Table.Column isRowHeader>Title</Table.Column>
                     <Table.Column isRowHeader>Agency</Table.Column>
-                    <Table.Column isRowHeader>City</Table.Column>
                     <Table.Column isRowHeader>Price</Table.Column>
                     <Table.Column isRowHeader>Status</Table.Column>
                     <Table.Column isRowHeader>CRM</Table.Column>
-                    <Table.Column isRowHeader>Integration ID</Table.Column>
                     <Table.Column isRowHeader>Created</Table.Column>
                     <Table.Column isRowHeader>Actions</Table.Column>
                   </Table.Header>
@@ -1479,7 +1481,6 @@ export default function DashboardPropertiesListPage() {
                         <Table.Cell className={groupCellClass}>
                           {property.source_agency?.name ?? filteredAgencyName ?? "—"}
                         </Table.Cell>
-                        <Table.Cell className={groupCellClass}>{property.city ?? "—"}</Table.Cell>
                         <Table.Cell className={groupCellClass}>
                           {formatPrice(property.price, property.currency)}
                         </Table.Cell>
@@ -1510,9 +1511,6 @@ export default function DashboardPropertiesListPage() {
                           ) : (
                             "—"
                           )}
-                        </Table.Cell>
-                        <Table.Cell className={groupCellClass}>
-                          {property.integration_property_id ?? "—"}
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
                           {formatDateTime(property.created_at)}

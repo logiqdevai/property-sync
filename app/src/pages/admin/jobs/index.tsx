@@ -250,7 +250,12 @@ export default function JobsListPage() {
                 </Table.Header>
                 <Table.Body>
                   {jobs.map((job) => (
-                    <Table.Row key={job.id} id={job.id}>
+                    <Table.Row
+                      key={job.id}
+                      id={job.id}
+                      onAction={() => navigate(Routes.admin.jobs.detail(job.id))}
+                      className="cursor-pointer"
+                    >
                       <Table.Cell className="pr-0">
                         <Checkbox
                           aria-label={`Select job ${job.id}`}
@@ -278,10 +283,12 @@ export default function JobsListPage() {
                       <Table.Cell>
                         {job.crawl_run_id ? (
                           <button
+                            type="button"
                             className="text-sm text-accent hover:underline"
-                            onClick={() =>
-                              navigate(Routes.admin.crawlRuns.detail(job.crawl_run_id!))
-                            }
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              navigate(Routes.admin.crawlRuns.detail(job.crawl_run_id!));
+                            }}
                           >
                             View run
                           </button>

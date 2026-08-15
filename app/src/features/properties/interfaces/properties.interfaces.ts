@@ -184,6 +184,7 @@ export interface PropertyMapMarker {
   latitude: number;
   longitude: number;
   agency_name: string | null;
+  image: string | null;
 }
 
 export interface PropertyMapResponse {
