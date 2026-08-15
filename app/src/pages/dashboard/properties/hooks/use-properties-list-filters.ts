@@ -193,7 +193,11 @@ export function usePropertiesListFilters() {
             next.page = DEFAULT_PAGE;
           }
 
-          return buildSearchParams(next);
+          const params = buildSearchParams(next);
+          const view = prev.get("view");
+          if (view) params.set("view", view);
+
+          return params;
         },
         { replace: true },
       );

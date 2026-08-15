@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Flame, Loader2, MapPin } from "lucide-react";
-import { Tabs } from "@heroui/react";
+import { Flame, MapPin } from "lucide-react";
+import { Skeleton, Tabs } from "@heroui/react";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import type { GoogleMapsOverlay } from "@deck.gl/google-maps";
 import { loadGoogleMaps } from "./google-maps-loader";
@@ -39,29 +39,56 @@ function toFinitePrice(price: MapMarkerData["price"]): number | null {
   return amount != null && Number.isFinite(amount) ? amount : null;
 }
 
-function buildInfoWindowContent(marker: MapMarkerData, href: string): HTMLElement {
+function buildInfoWindowContent(
+  marker: MapMarkerData,
+  href: string,
+  onClose: () => void,
+): HTMLElement {
   const root = document.createElement("div");
-  root.style.cssText =
-    "display:flex;flex-direction:column;gap:4px;padding:4px;font-size:13px;max-width:220px;";
+  root.className = "pcm-iw-root";
+  root.style.cssText = "display:block;width:100%;max-width:100%;box-sizing:border-box;overflow:hidden;";
+
+  const media = document.createElement("div");
+  media.style.cssText = "position:relative;width:100%;";
 
   if (marker.image) {
     const image = document.createElement("img");
     image.src = marker.image;
     image.alt = "";
     image.style.cssText =
-      "width:100%;height:120px;object-fit:cover;border-radius:6px;margin-bottom:2px;";
-    root.appendChild(image);
+      "display:block;width:100%;max-width:none;height:132px;object-fit:cover;";
+    media.appendChild(image);
+  } else {
+    media.style.minHeight = "36px";
   }
+
+  const close = document.createElement("button");
+  close.type = "button";
+  close.setAttribute("aria-label", "Close");
+  close.innerHTML = "&times;";
+  close.style.cssText =
+    "position:absolute;top:8px;right:8px;z-index:2;display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:9999px;background:#fff;color:#374151;font-size:20px;line-height:1;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25);";
+  close.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onClose();
+  });
+  media.appendChild(close);
+  root.appendChild(media);
+
+  const body = document.createElement("div");
+  body.style.cssText =
+    "display:flex;flex-direction:column;gap:4px;padding:10px 12px 12px;font-size:13px;min-width:0;overflow-wrap:anywhere;";
 
   const title = document.createElement("p");
   title.style.cssText = "font-weight:600;margin:0;";
   title.innerHTML = escapeHtml(marker.title);
-  root.appendChild(title);
+  body.appendChild(title);
 
   const price = document.createElement("p");
   price.style.margin = "0";
   price.textContent = formatPrice(marker.price, marker.currency);
-  root.appendChild(price);
+  body.appendChild(price);
 
   const metaParts = [marker.city, marker.agency_name].filter(
     (part): part is string => !!part,
@@ -70,14 +97,14 @@ function buildInfoWindowContent(marker: MapMarkerData, href: string): HTMLElemen
     const meta = document.createElement("p");
     meta.style.cssText = "margin:0;color:#6b7280;";
     meta.innerHTML = metaParts.map(escapeHtml).join(" &middot; ");
-    root.appendChild(meta);
+    body.appendChild(meta);
   }
 
   const badge = document.createElement("span");
   const color = STATUS_COLOR[marker.status];
   badge.style.cssText = `display:inline-block;width:fit-content;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:${color}20;color:${color};`;
   badge.textContent = getPropertyStatusLabel(marker.status);
-  root.appendChild(badge);
+  body.appendChild(badge);
 
   const link = document.createElement("a");
   link.href = href;
@@ -86,8 +113,9 @@ function buildInfoWindowContent(marker: MapMarkerData, href: string): HTMLElemen
   link.textContent = "View details";
   link.style.cssText =
     "margin-top:4px;color:#2563eb;font-weight:600;text-decoration:none;";
-  root.appendChild(link);
+  body.appendChild(link);
 
+  root.appendChild(body);
   return root;
 }
 
@@ -152,7 +180,25 @@ export function PropertyClusterMap({
           center: { lat: markers[0].latitude, lng: markers[0].longitude },
           zoom: 12,
         });
-        infoWindowRef.current = new google.maps.InfoWindow();
+        infoWindowRef.current = new google.maps.InfoWindow({
+          headerDisabled: true,
+          minWidth: 240,
+          maxWidth: 240,
+        });
+        infoWindowRef.current.addListener("domready", () => {
+          const content = infoWindowRef.current?.getContent();
+          if (!(content instanceof HTMLElement)) return;
+          const bubble = content.closest(".gm-style-iw-c");
+          if (!(bubble instanceof HTMLElement)) return;
+          for (let node = content.parentElement; node && node !== bubble; node = node.parentElement) {
+            node.style.setProperty("width", "100%", "important");
+            node.style.setProperty("max-width", "100%", "important");
+            node.style.setProperty("margin", "0", "important");
+            node.style.setProperty("padding", "0", "important");
+            node.style.setProperty("overflow", "hidden", "important");
+            node.style.setProperty("box-sizing", "border-box", "important");
+          }
+        });
       }
       const map = mapRef.current;
 
@@ -172,9 +218,13 @@ export function PropertyClusterMap({
         }
         gMarker.addListener("click", () => {
           const href = getDetailHrefRef.current(marker.id);
-          const content = buildInfoWindowContent(marker, href);
-          infoWindowRef.current?.setContent(content);
-          infoWindowRef.current?.open({ map, anchor: gMarker });
+          const infoWindow = infoWindowRef.current;
+          if (!infoWindow) return;
+          infoWindow.setHeaderDisabled(true);
+          infoWindow.setContent(
+            buildInfoWindowContent(marker, href, () => infoWindow.close()),
+          );
+          infoWindow.open({ map, anchor: gMarker });
         });
         return gMarker;
       });
@@ -251,23 +301,40 @@ export function PropertyClusterMap({
     };
   }, []);
 
+  if (isLoading) {
+    return (
+      <div
+        className="relative h-[560px] w-full overflow-hidden rounded-xl border border-border"
+        aria-busy="true"
+        aria-label="Loading map"
+      >
+        <Skeleton className="h-full w-full rounded-none" />
+        <div className="absolute top-3 right-3 z-10 flex gap-1 rounded-xl border border-border bg-surface/95 p-1 shadow-sm">
+          <Skeleton className="h-8 w-20 rounded-lg" />
+          <Skeleton className="h-8 w-24 rounded-lg" />
+        </div>
+        <div className="absolute bottom-3 left-3 z-10 flex flex-col gap-1.5 rounded-lg border border-border bg-surface/95 px-3 py-2 shadow-sm">
+          <Skeleton className="h-3 w-10 rounded-md" />
+          <Skeleton className="h-2.5 w-36 rounded-full" />
+          <div className="flex justify-between gap-8">
+            <Skeleton className="h-3 w-8 rounded-md" />
+            <Skeleton className="h-3 w-8 rounded-md" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (markers.length === 0) {
     return (
       <div className="flex h-[560px] items-center justify-center rounded-xl border border-border bg-surface p-6 text-center text-sm text-muted">
-        {isLoading ? (
-          <span className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Loading map&hellip;
-          </span>
-        ) : (
-          emptyMessage
-        )}
+        {emptyMessage}
       </div>
     );
   }
 
   return (
-    <div className="relative h-[560px] w-full overflow-hidden rounded-xl border border-border">
+    <div className="property-cluster-map relative h-[560px] w-full overflow-hidden rounded-xl border border-border">
       <div ref={containerRef} className="h-full w-full" />
 
       <Tabs

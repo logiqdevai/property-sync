@@ -296,6 +296,45 @@ body {
   font-family: var(--mono);
 }
 
+.property-cluster-map .gm-style .gm-style-iw-c {
+  padding: 0 !important;
+  max-width: 240px !important;
+}
+
+.property-cluster-map .gm-style .gm-style-iw-chr {
+  display: none !important;
+}
+
+.property-cluster-map .gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.property-cluster-map .gm-style .gm-style-iw-d > div {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Resets any wrapper div Google Maps inserts between .gm-style-iw-c and our
+   content, regardless of class name or nesting depth. */
+.property-cluster-map .gm-style .gm-style-iw-c *:has(.pcm-iw-root) {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.property-cluster-map .gm-style .gm-ui-hover-effect {
+  display: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
