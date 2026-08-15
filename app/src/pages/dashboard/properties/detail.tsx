@@ -236,6 +236,8 @@ export default function DashboardPropertyDetailPage() {
       address: property.address,
       postal_code: property.postal_code,
       country: property.country,
+      latitude: property.latitude ? Number(property.latitude) : null,
+      longitude: property.longitude ? Number(property.longitude) : null,
       square_meters: property.square_meters ? Number(property.square_meters) : null,
       bedrooms: property.bedrooms,
       bathrooms: property.bathrooms,
@@ -700,6 +702,26 @@ export default function DashboardPropertyDetailPage() {
                     className={fieldClassName}
                     placeholder="Country"
                     {...register("country")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Latitude</span>
+                  <input
+                    type="number"
+                    step="any"
+                    className={fieldClassName}
+                    placeholder="e.g. 35.1856"
+                    {...register("latitude")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Longitude</span>
+                  <input
+                    type="number"
+                    step="any"
+                    className={fieldClassName}
+                    placeholder="e.g. 33.3823"
+                    {...register("longitude")}
                   />
                 </label>
                 <label className="flex flex-col gap-1 text-sm">

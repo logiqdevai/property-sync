@@ -51,6 +51,7 @@ import {
   type PropertyDisplayImage,
 } from "@/features/integration-property/utils/resolve-property-display-images";
 import { PropertyHistoryChangeLabel } from "@/components/ui/property-history-change-label";
+import { PropertyLocationMap } from "@/components/map/property-location-map";
 import { getDropdownOptionLabel } from "@/lib/dropdown-option-label.utils";
 import { formatDateTime } from "@/lib/date";
 import { formatPrice } from "@/lib/price";
@@ -81,6 +82,8 @@ export interface PropertyDetailViewData extends Partial<PropertyCmsFields> {
   address: string | null;
   postal_code?: string | null;
   country?: string | null;
+  latitude?: string | null;
+  longitude?: string | null;
   square_meters: string | null;
   bedrooms: number | null;
   bathrooms: number | null;
@@ -1182,6 +1185,17 @@ export function PropertyDetailView({
           </div>
         )}
       </section>
+
+      {property.latitude && property.longitude ? (
+        <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
+          <h2 className="text-sm font-semibold text-foreground">Location</h2>
+          <PropertyLocationMap
+            latitude={Number(property.latitude)}
+            longitude={Number(property.longitude)}
+            title={property.title}
+          />
+        </section>
+      ) : null}
 
       <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:p-5">
         <h2 className="text-sm font-semibold text-foreground">History</h2>

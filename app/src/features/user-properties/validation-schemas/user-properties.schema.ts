@@ -54,6 +54,8 @@ export const updateUserPropertyFormSchema = z.object({
   address: z.string().nullable().optional(),
   postal_code: z.string().nullable().optional(),
   country: z.string().nullable().optional(),
+  latitude: optionalNumber.optional(),
+  longitude: optionalNumber.optional(),
   square_meters: optionalNumber.optional(),
   bedrooms: optionalNumber.optional(),
   bathrooms: optionalNumber.optional(),
