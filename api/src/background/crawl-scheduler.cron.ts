@@ -15,6 +15,13 @@ const MANUAL_ONLY_CRAWL_ENVS: ReadonlySet<EnvConfig['NODE_ENV']> = new Set([
 
 const DEFAULT_CRAWL_SCHEDULE_TZ = 'Europe/Athens';
 
+// Most agencies share the same default crawl_interval, so without jitter every
+// one of them would come due in the same single minute -- e.g. all ~15 agencies
+// enqueuing at once at the 03:00 boundary, saturating worker concurrency and
+// spiking memory in one burst. Spreading agencies deterministically across this
+// window turns that thundering herd into a steady trickle.
+const SCHEDULE_JITTER_WINDOW_MINUTES = 10;
+
 @Injectable()
 export class CrawlSchedulerCron {
   private readonly logger = new Logger(CrawlSchedulerCron.name);
@@ -51,7 +58,10 @@ export class CrawlSchedulerCron {
     });
 
     for (const agency of agencies) {
-      if (!this.isCronDue(agency.crawl_interval, now, scheduleTz)) {
+      const jitteredNow = new Date(
+        now.getTime() - this.jitterMsForAgency(agency.id),
+      );
+      if (!this.isCronDue(agency.crawl_interval, jitteredNow, scheduleTz)) {
         continue;
       }
 
@@ -88,6 +98,17 @@ export class CrawlSchedulerCron {
         );
       }
     }
+  }
+
+  // Deterministic per-agency offset within SCHEDULE_JITTER_WINDOW_MINUTES,
+  // so the same agency always lands at the same offset (stable across cron
+  // ticks) instead of jittering randomly run to run.
+  private jitterMsForAgency(agencyId: string): number {
+    let hash = 0;
+    for (let i = 0; i < agencyId.length; i++) {
+      hash = (hash * 31 + agencyId.charCodeAt(i)) >>> 0;
+    }
+    return (hash % SCHEDULE_JITTER_WINDOW_MINUTES) * 60_000;
   }
 
   private isCronDue(
