@@ -786,9 +786,11 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     ]);
 
     const sales = resolveSalesPricingSettings(integration?.settings?.settings);
+    // `price` is frozen after creation — the sales markup must track the
+    // live price, which only ever moves via `price_web` on re-crawl.
     const basePrice = resolveSaleBasePrice(
-      userProperty.price,
       userProperty.price_web,
+      userProperty.price,
       userProperty.square_meters,
     );
     if (

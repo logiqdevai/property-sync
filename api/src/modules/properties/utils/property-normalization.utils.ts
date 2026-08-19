@@ -781,13 +781,15 @@ export function diffPropertyChanges(
   const events: HistoryWriteInput[] = [];
   const base = { property_id: oldProperty.id, crawl_run_id: crawlRunId };
 
-  const oldPrice = decimalString(oldProperty.price);
-  const newPrice = decimalString(newData.price);
+  // `price` is frozen after creation (see applyNormalizedResults), so a real
+  // price change on re-crawl only ever shows up in `price_web`.
+  const oldPrice = decimalString(oldProperty.price_web);
+  const newPrice = decimalString(newData.price_web);
   if (oldPrice !== newPrice) {
     events.push({
       ...base,
       event_type: PropertyHistoryEventType.PRICE_CHANGED,
-      field: 'price',
+      field: 'price_web',
       old_value: oldPrice,
       new_value: newPrice,
     });
@@ -853,7 +855,6 @@ export function diffPropertyChanges(
     'distance_port',
     'distance_beach',
     'price_start',
-    'price_web',
     'estateweb_type_id',
     'estateweb_location_id',
     'cms_fields',

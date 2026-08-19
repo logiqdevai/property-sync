@@ -654,6 +654,11 @@ export class PropertyNormalizationService {
           where: { id: existingLink.property.id },
           data: {
             ...record,
+            // `price` is only ever set at creation — a re-crawl that finds a
+            // new price must only move `price_web`, so the two fields
+            // diverging is how a price change is detected (see
+            // diffPropertyChanges).
+            price: existingLink.property.price,
             city: record.city ?? existingLink.property.city,
             district: record.district ?? existingLink.property.district,
             estateweb_location_id:
