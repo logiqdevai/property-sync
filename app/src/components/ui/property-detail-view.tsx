@@ -943,13 +943,13 @@ export function PropertyDetailView({
                 />
               </div>
 
-              {(property.price_start || property.price_web) && (
+              {(property.price || property.price_web) && (
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
-                  {property.price_start && (
+                  {property.price && (
                     <span>
-                      List{" "}
+                      First price{" "}
                       <span className="text-foreground tabular-nums">
-                        {formatPrice(property.price_start, property.currency)}
+                        {formatPrice(property.price, property.currency)}
                       </span>
                     </span>
                   )}

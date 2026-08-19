@@ -1288,7 +1288,7 @@ export default function DashboardPropertiesListPage() {
           getDetailHref={(id) => Routes.dashboard.properties.detail(id)}
         />
       ) : isPending ? (
-        <TableSkeleton rows={8} columns={6} />
+        <TableSkeleton rows={8} columns={7} />
       ) : properties.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-6 text-center text-sm text-muted sm:p-10">
           No properties yet. Track an agency to start receiving listings.
@@ -1417,7 +1417,8 @@ export default function DashboardPropertiesListPage() {
                     </Table.Column>
                     <Table.Column isRowHeader>Title</Table.Column>
                     <Table.Column isRowHeader>Agency</Table.Column>
-                    <Table.Column isRowHeader>Price</Table.Column>
+                    <Table.Column isRowHeader>Web price</Table.Column>
+                    <Table.Column isRowHeader>First price</Table.Column>
                     <Table.Column isRowHeader>Status</Table.Column>
                     <Table.Column isRowHeader>CRM</Table.Column>
                     <Table.Column isRowHeader>Created</Table.Column>
@@ -1480,6 +1481,9 @@ export default function DashboardPropertiesListPage() {
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
                           {property.source_agency?.name ?? filteredAgencyName ?? "—"}
+                        </Table.Cell>
+                        <Table.Cell className={groupCellClass}>
+                          {formatPrice(property.price_web, property.currency)}
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
                           {formatPrice(property.price, property.currency)}
