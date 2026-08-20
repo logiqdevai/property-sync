@@ -16,7 +16,8 @@ export function normalizeEstateWebLabel(input: string): string {
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
     .toLowerCase()
-    .trim();
+    .trim()
+    .replace(/\s+/g, ' ');
 }
 
 function flattenPropertyTypes(

@@ -6,6 +6,7 @@ import {
   createScraperVersion,
   deleteScraper,
   deleteScrapers,
+  duplicateScraper,
   getScraper,
   getScraperVersions,
   getScrapers,
@@ -16,6 +17,7 @@ import type {
   CreateScraperPayload,
   CreateScraperVersionPayload,
   DeleteScrapersPayload,
+  DuplicateScraperPayload,
   ScraperListQuery,
   UpdateScraperPayload,
 } from "../interfaces/scrapers.interfaces";
@@ -125,6 +127,22 @@ export const useRunScraperNow = () => {
         description: error.message,
         variant: "error",
       });
+    },
+  });
+};
+
+export const useDuplicateScraper = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: DuplicateScraperPayload }) =>
+      duplicateScraper(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scrapers"] });
+      toast({ title: "Scraper duplicated", duration: 2000, variant: "success" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Could not duplicate scraper", description: error.message, variant: "error" });
     },
   });
 };

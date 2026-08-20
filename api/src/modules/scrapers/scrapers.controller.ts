@@ -24,6 +24,7 @@ import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { ScrapersService } from './scrapers.service';
 import { CreateScraperDto } from './dto/create-scraper.dto';
 import { CreateScraperVersionDto } from './dto/create-scraper-version.dto';
+import { DuplicateScraperDto } from './dto/duplicate-scraper.dto';
 import { UpdateScraperDto } from './dto/update-scraper.dto';
 import {
   ScraperQuerySchema,
@@ -88,6 +89,22 @@ export class ScrapersController {
   @ApiResponse({ status: 201, type: Scraper })
   create(@Body() dto: CreateScraperDto) {
     return this.scrapersService.create(dto);
+  }
+
+  @Post(':id/duplicate')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      "Duplicate a scraper's active version config into a new scraper for another agency",
+  })
+  @ApiResponse({ status: 201, type: Scraper })
+  @ApiResponse({ status: 404, description: 'Scraper or target agency not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'Target agency already has a scraper',
+  })
+  duplicate(@Param('id') id: string, @Body() dto: DuplicateScraperDto) {
+    return this.scrapersService.duplicate(id, dto);
   }
 
   @Get(':id/versions')

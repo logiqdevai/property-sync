@@ -5,6 +5,7 @@ import type {
   CreateScraperPayload,
   CreateScraperVersionPayload,
   DeleteScrapersPayload,
+  DuplicateScraperPayload,
   PaginatedResponse,
   Scraper,
   ScraperListQuery,
@@ -98,6 +99,20 @@ export const runScraperNow = async (id: string): Promise<CrawlRun> => {
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to run scraper. Please try again.");
+  }
+};
+
+export const duplicateScraper = async (
+  id: string,
+  payload: DuplicateScraperPayload,
+): Promise<Scraper> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.scrapers.duplicate(id), payload);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to duplicate scraper. Please try again.",
+    );
   }
 };
 

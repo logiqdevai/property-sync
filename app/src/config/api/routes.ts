@@ -43,6 +43,7 @@ export const ApiRoutes = {
             activateVersion: (id: string, versionId: string) =>
                 `/admin/scrapers/${id}/versions/${versionId}/activate`,
             runNow: (id: string) => `/admin/scrapers/${id}/run-now`,
+            duplicate: (id: string) => `/admin/scrapers/${id}/duplicate`,
             bulkDelete: "/admin/scrapers/bulk-delete",
         },
         generationRuns: {

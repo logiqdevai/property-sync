@@ -5,6 +5,35 @@ import {
 } from '../interfaces/estateweb-location.interface';
 import { normalizeEstateWebLabel } from './estateweb-init-lookup.util';
 
+// The catalog spells common Greek place-name prefixes as abbreviations (e.g. "Αγ. Μελετίου",
+// "Πλ. Βικτωρίας", "Λεωφ. Λιοσίων"), but AI-normalized/scraped city & district text usually
+// spells them out in full ("Αγίου Μελετίου", "Πλατεία Βικτωρίας", "Λεωφόρος Λιοσίων"). Collapse
+// both forms to the same token (per whitespace-delimited word, diacritic/case already stripped
+// by normalizeEstateWebLabel) so exact-string matching still finds the catalog node.
+const PLACE_WORD_ABBREVIATIONS: Record<string, string> = {
+  αγιος: 'αγ',
+  αγια: 'αγ',
+  αγιου: 'αγ',
+  αγιας: 'αγ',
+  αγιοι: 'αγ',
+  αγιων: 'αγ',
+  'αγ.': 'αγ',
+  πλατεια: 'πλ',
+  πλατειας: 'πλ',
+  'πλ.': 'πλ',
+  λεωφορος: 'λεωφ',
+  λεωφορου: 'λεωφ',
+  'λεωφ.': 'λεωφ',
+};
+
+/** Like {@link normalizeEstateWebLabel}, plus canonicalizing common place-name abbreviations. */
+function normalizeEstateWebPlaceLabel(input: string): string {
+  return normalizeEstateWebLabel(input)
+    .split(' ')
+    .map((token) => PLACE_WORD_ABBREVIATIONS[token] ?? token)
+    .join(' ');
+}
+
 const LOCATION_BY_ID = new Map<number, EstateWebLocation>(
   ESTATEWEB_LOCATIONS.map((loc) => [loc.id, loc]),
 );
@@ -27,7 +56,7 @@ const LOCATION_CATALOG: EstateWebLocationCatalogItem[] =
 const LOCATION_BY_NORMALIZED_NAME: Map<string, EstateWebLocation[]> = (() => {
   const idx = new Map<string, EstateWebLocation[]>();
   for (const loc of ESTATEWEB_LOCATIONS) {
-    const key = normalizeEstateWebLabel(loc.name);
+    const key = normalizeEstateWebPlaceLabel(loc.name);
     const bucket = idx.get(key);
     if (bucket) bucket.push(loc);
     else idx.set(key, [loc]);
@@ -38,7 +67,7 @@ const LOCATION_BY_NORMALIZED_NAME: Map<string, EstateWebLocation[]> = (() => {
 const LOCATION_NORMALIZED_SEGMENTS = new Map<number, string[]>(
   ESTATEWEB_LOCATIONS.map((loc) => [
     loc.id,
-    loc.path.split(' » ').map((seg) => normalizeEstateWebLabel(seg)),
+    loc.path.split(' » ').map((seg) => normalizeEstateWebPlaceLabel(seg)),
   ]),
 );
 
@@ -116,6 +145,9 @@ const CITY_ALIASES: Record<string, string> = {
   'agios nikolaos': 'αγιος νικολαος',
   siteia: 'σητεια',
   irakleio: 'ηρακλειο',
+  // Athens neighborhoods the AI/scraper commonly reports on their own, but the catalog only
+  // has them as part of a compound node name.
+  γκυζη: 'γκυζη αρειος παγος',
 };
 
 const REGION_PATH_HINTS: Array<{ re: RegExp; segment: string }> = [
@@ -253,7 +285,7 @@ function expandCityLabels(city?: string | null): {
   preferPeripheral: boolean;
 } {
   if (!city) return { labels: [], preferPeripheral: false };
-  const raw = normalizeEstateWebLabel(city);
+  const raw = normalizeEstateWebPlaceLabel(city);
   if (!raw) return { labels: [], preferPeripheral: false };
 
   const preferPeripheral = PERIPHERAL_CITY_LABELS.has(raw);
@@ -265,6 +297,12 @@ function expandCityLabels(city?: string | null): {
   push(raw);
   const aliased = CITY_ALIASES[raw];
   if (aliased) push(aliased);
+
+  // "Α - Β" compound labels are sometimes catalogued as a plain-space name ("Α Β") instead --
+  // try that variant too (safe: verified against the full catalog to never collide with a
+  // distinct dash-containing entry).
+  const dashCollapsed = raw.replace(/\s*[-–]\s*/g, ' ').replace(/\s+/g, ' ').trim();
+  if (dashCollapsed !== raw) push(dashCollapsed);
 
   const withoutNomos = raw.replace(/^ν\.?\s+/, '');
   if (withoutNomos !== raw) {
@@ -282,6 +320,11 @@ function expandCityLabels(city?: string | null): {
     if (aliasFromGenitive) push(aliasFromGenitive);
   }
 
+  // City sometimes carries its own "Neighborhood (Street A - Street B)" suffix with no
+  // separate `district` given -- try just the neighborhood part too.
+  const parenthetical = parseParentheticalParts(raw);
+  if (parenthetical) push(parenthetical.outer);
+
   return { labels, preferPeripheral };
 }
 
@@ -298,7 +341,7 @@ function parseParentheticalParts(
 
 function expandDistrictLabels(district?: string | null): string[] {
   if (!district) return [];
-  const raw = normalizeEstateWebLabel(district);
+  const raw = normalizeEstateWebPlaceLabel(district);
   if (!raw) return [];
 
   const parts = raw
@@ -372,7 +415,7 @@ function resolveRelatedToAnchor(
       if (
         sameParent ||
         isDescendantOf(candidate, anchor.id) ||
-        matchesCity(candidate, normalizeEstateWebLabel(anchor.name))
+        matchesCity(candidate, normalizeEstateWebPlaceLabel(anchor.name))
       ) {
         related.push(candidate);
         break;
@@ -413,8 +456,8 @@ function resolveParentheticalDistrict(
   const parsed = parseParentheticalParts(district);
   if (!parsed) return undefined;
 
-  const outerNorm = normalizeEstateWebLabel(parsed.outer);
-  const innerNorm = normalizeEstateWebLabel(parsed.inner);
+  const outerNorm = normalizeEstateWebPlaceLabel(parsed.outer);
+  const innerNorm = normalizeEstateWebPlaceLabel(parsed.inner);
   if (!outerNorm || !innerNorm) return undefined;
 
   // Filter the CANDIDATE LISTS (not just the final pick) by the known region --
@@ -551,7 +594,7 @@ export function resolveEstateWebLocation(
   }
 
   if (district) {
-    const compoundParts = normalizeEstateWebLabel(district)
+    const compoundParts = normalizeEstateWebPlaceLabel(district)
       .split(/\s*[,|/]\s*/)
       .map((part) => part.trim())
       .filter(Boolean);

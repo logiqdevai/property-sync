@@ -1,39 +1,34 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Modal, Switch, EmptyState, Select, ListBox, Label, Input, useOverlayState } from "@heroui/react";
-import { ArrowLeft, Bot, Activity, History, Sparkles } from "lucide-react";
+import { ArrowLeft, Bot, Activity, History, Play, Copy, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { DetailErrorState } from "@/components/ui/detail-error-state";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { TableRowActionsMenu, type TableRowAction } from "@/components/ui/table-row-actions-menu";
 import { ScraperStatusChip } from "./components/scraper-status-chip";
 import { ScraperHealthChip } from "./components/scraper-health-chip";
 import { ScraperVersionForm } from "./components/scraper-version-form";
+import { DuplicateScraperForm } from "./components/duplicate-scraper-form";
 import {
   useActivateScraperVersion,
   useCreateScraperVersion,
   useDeleteScraper,
+  useDuplicateScraper,
   useRunScraperNow,
   useScraper,
   useScraperVersions,
   useUpdateScraper,
 } from "@/features/scrapers/hooks/use-scrapers";
 import { parseOptionalJsonConfig } from "@/features/scrapers/validation-schemas/scrapers.schema";
-import {
-  ScraperStatuses,
-  type ScraperStatus,
-  type DiagnosticsMode,
-} from "@/features/scrapers/interfaces/scrapers.interfaces";
+import type { ScraperStatus, DiagnosticsMode } from "@/features/scrapers/interfaces/scrapers.interfaces";
 import { ScraperStatusFormOptions } from "@/config/constants/dropdowns/scrapers/scraper-status-form.options";
 import { DiagnosticsModeFormOptions } from "@/config/constants/dropdowns/scrapers/diagnostics-mode-form.options";
-import { CreateGenerationRunForm } from "./components/create-generation-run-form";
 import { GenerationRunStatusChip } from "./components/generation-run-status-chip";
 import { GenerationRunTriggerChip } from "./components/generation-run-trigger-chip";
-import {
-  useCreateGenerationRun,
-  useGenerationRuns,
-} from "@/features/scraper-generation/hooks/use-scraper-generation";
+import { useGenerationRuns } from "@/features/scraper-generation/hooks/use-scraper-generation";
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import { useCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
 import { formatDateTime } from "@/lib/date";
@@ -43,8 +38,8 @@ export default function ScraperDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const newVersionModal = useOverlayState();
-  const generateModal = useOverlayState();
   const deleteConfirm = useOverlayState();
+  const duplicateModal = useOverlayState();
 
   const [compareA, setCompareA] = useState<string | null>(null);
   const [compareB, setCompareB] = useState<string | null>(null);
@@ -58,8 +53,8 @@ export default function ScraperDetailPage() {
   const activateVersion = useActivateScraperVersion();
   const createVersion = useCreateScraperVersion();
   const runNow = useRunScraperNow();
-  const createGenerationRun = useCreateGenerationRun();
   const deleteScraper = useDeleteScraper();
+  const duplicateScraper = useDuplicateScraper();
 
   const generationRuns = generationRunsData?.data ?? [];
   const crawlRuns = crawlRunsData?.data ?? [];
@@ -72,6 +67,12 @@ export default function ScraperDetailPage() {
     () => versions?.find((v) => v.id === compareB) ?? null,
     [versions, compareB],
   );
+
+  const scraperActions: TableRowAction[] = [
+    { id: "run-now", label: "Run now", icon: Play, isDisabled: runNow.isPending },
+    { id: "duplicate", label: "Duplicate", icon: Copy },
+    { id: "delete", label: "Delete", icon: Trash2, variant: "danger", isDisabled: deleteScraper.isPending },
+  ];
 
   if (isPending) {
     return <DetailSkeleton fieldCount={6} showSubTable />;
@@ -108,34 +109,21 @@ export default function ScraperDetailPage() {
           <ScraperStatusChip status={scraper.status} />
           <ScraperHealthChip health={scraper.health} />
         </div>
-        <div className="flex items-center gap-2">
-          <ActionButtonWithPending
-            variant="secondary"
-            idleLeading={<Sparkles className="h-4 w-4" />}
-            onPress={generateModal.open}
-          >
-            {scraper.status === ScraperStatuses.BROKEN ? "Fix with AI" : "Generate with AI"}
-          </ActionButtonWithPending>
-          <ActionButtonWithPending
-            isPending={runNow.isPending}
-            isDisabled={runNow.isPending}
-            onPress={() =>
+        <TableRowActionsMenu
+          actions={scraperActions}
+          ariaLabel={`Actions for scraper ${scraper.name}`}
+          onAction={(actionId) => {
+            if (actionId === "run-now") {
               runNow.mutate(scraper.id, {
                 onSuccess: (run) => navigate(Routes.admin.crawlRuns.detail(run.id)),
-              })
+              });
+            } else if (actionId === "duplicate") {
+              duplicateModal.open();
+            } else if (actionId === "delete") {
+              deleteConfirm.open();
             }
-          >
-            Run now
-          </ActionButtonWithPending>
-          <ActionButtonWithPending
-            variant="danger"
-            isPending={deleteScraper.isPending}
-            isDisabled={deleteScraper.isPending}
-            onPress={deleteConfirm.open}
-          >
-            Delete
-          </ActionButtonWithPending>
-        </div>
+          }}
+        />
       </div>
 
       <div className="rounded-xl border border-border bg-surface p-6">
@@ -499,39 +487,29 @@ export default function ScraperDetailPage() {
         </Modal.Backdrop>
       </Modal>
 
-      <Modal state={generateModal}>
+      <Modal state={duplicateModal}>
         <Modal.Backdrop isDismissable>
           <Modal.Container>
             <Modal.Dialog>
               <Modal.Header>
                 <Modal.Heading>
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4" />
-                    {scraper.status === ScraperStatuses.BROKEN ? "Fix with AI" : "Generate with AI"}
+                    <Copy className="h-4 w-4" />
+                    Duplicate scraper
                   </div>
                 </Modal.Heading>
               </Modal.Header>
               <Modal.Body>
-                <CreateGenerationRunForm
-                  defaultAgencyId={scraper.source_agency_id}
-                  defaultAgencyName={scraper.source_agency?.name}
-                  lockAgency
-                  defaultScraperId={scraper.id}
-                  submitLabel="Generate"
-                  isPending={createGenerationRun.isPending}
-                  onCancel={generateModal.close}
+                <DuplicateScraperForm
+                  isPending={duplicateScraper.isPending}
+                  onCancel={duplicateModal.close}
                   onSubmit={(values) =>
-                    createGenerationRun.mutate(
+                    duplicateScraper.mutate(
+                      { id: scraper.id, payload: { source_agency_id: values.source_agency_id } },
                       {
-                        source_agency_id: values.source_agency_id,
-                        scraper_id: values.scraper_id,
-                        prompt: values.prompt || undefined,
-                        max_steps: values.max_steps,
-                      },
-                      {
-                        onSuccess: (run) => {
-                          generateModal.close();
-                          navigate(Routes.admin.generationRuns.detail(run.id));
+                        onSuccess: (created) => {
+                          duplicateModal.close();
+                          navigate(Routes.admin.scrapers.detail(created.id));
                         },
                       },
                     )

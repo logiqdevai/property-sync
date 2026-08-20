@@ -52,3 +52,9 @@ export const createScraperVersionFormSchema = z.object({
 });
 
 export type CreateScraperVersionFormValues = z.infer<typeof createScraperVersionFormSchema>;
+
+export const duplicateScraperFormSchema = z.object({
+  source_agency_id: z.string().min(1, "Agency is required"),
+});
+
+export type DuplicateScraperFormValues = z.infer<typeof duplicateScraperFormSchema>;
