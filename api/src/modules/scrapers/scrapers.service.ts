@@ -13,6 +13,7 @@ import {
 } from 'generated/prisma';
 import { CreateScraperDto } from './dto/create-scraper.dto';
 import { CreateScraperVersionDto } from './dto/create-scraper-version.dto';
+import { DuplicateScraperDto } from './dto/duplicate-scraper.dto';
 import { UpdateScraperDto } from './dto/update-scraper.dto';
 import { ScraperQueryType } from './dto/scraper-query.schema';
 import { PaginatedResult } from './interfaces/scraper.interface';
@@ -44,7 +45,7 @@ export class ScrapersService {
     const [items, total] = await Promise.all([
       this.prisma.scraper.findMany({
         where,
-        include: { source_agency: { select: { name: true } } },
+        include: { source_agency: { select: { name: true, base_url: true } } },
         skip: (query.page - 1) * query.limit,
         take: query.limit,
         orderBy: { created_at: 'desc' },
@@ -69,7 +70,7 @@ export class ScrapersService {
     const scraper = await this.prisma.scraper.findUnique({
       where: { id },
       include: {
-        source_agency: { select: { name: true } },
+        source_agency: { select: { name: true, base_url: true } },
         active_version: true,
       },
     });
@@ -94,7 +95,7 @@ export class ScrapersService {
         },
         include: {
           active_version: true,
-          source_agency: { select: { name: true } },
+          source_agency: { select: { name: true, base_url: true } },
         },
       });
     }
@@ -125,7 +126,72 @@ export class ScrapersService {
         data: { active_version_id: version.id, version_count: 1 },
         include: {
           active_version: true,
-          source_agency: { select: { name: true } },
+          source_agency: { select: { name: true, base_url: true } },
+        },
+      });
+    });
+  }
+
+  async duplicate(id: string, dto: DuplicateScraperDto) {
+    const source = await this.prisma.scraper.findUnique({
+      where: { id },
+      include: { active_version: true },
+    });
+
+    if (!source) {
+      throw new NotFoundException('Scraper not found');
+    }
+
+    if (!source.active_version) {
+      throw new BadRequestException(
+        'Source scraper has no active version to duplicate',
+      );
+    }
+
+    const targetAgency = await this.prisma.sourceAgency.findUnique({
+      where: { id: dto.source_agency_id },
+    });
+
+    if (!targetAgency) {
+      throw new NotFoundException('Target agency not found');
+    }
+
+    const existing = await this.prisma.scraper.findFirst({
+      where: { source_agency_id: dto.source_agency_id },
+      select: { id: true },
+    });
+
+    if (existing) {
+      throw new BadRequestException(
+        'Target agency already has a scraper. Fix/replace its existing scraper instead of creating a second one.',
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const scraper = await tx.scraper.create({
+        data: {
+          source_agency_id: dto.source_agency_id,
+          name: `${targetAgency.name} scraper`,
+          status: ScraperStatus.TESTING,
+        },
+      });
+
+      const version = await tx.scraperVersion.create({
+        data: {
+          scraper_id: scraper.id,
+          version: 1,
+          config: source.active_version.config as Prisma.InputJsonValue,
+          created_by: ScraperVersionCreatedBy.USER,
+          notes: `Duplicated from "${source.name}" (${source.id}, v${source.active_version.version})`,
+        },
+      });
+
+      return tx.scraper.update({
+        where: { id: scraper.id },
+        data: { active_version_id: version.id, version_count: 1 },
+        include: {
+          active_version: true,
+          source_agency: { select: { name: true, base_url: true } },
         },
       });
     });
@@ -189,7 +255,7 @@ export class ScrapersService {
       },
       include: {
         active_version: true,
-        source_agency: { select: { name: true } },
+        source_agency: { select: { name: true, base_url: true } },
       },
     });
   }
@@ -214,7 +280,7 @@ export class ScrapersService {
         },
         include: {
           active_version: true,
-          source_agency: { select: { name: true } },
+          source_agency: { select: { name: true, base_url: true } },
         },
       });
     }
@@ -262,7 +328,7 @@ export class ScrapersService {
         },
         include: {
           active_version: true,
-          source_agency: { select: { name: true } },
+          source_agency: { select: { name: true, base_url: true } },
         },
       });
     });

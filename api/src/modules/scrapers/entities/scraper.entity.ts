@@ -78,5 +78,5 @@ export class Scraper {
     description: 'Present on list/detail views',
     example: { name: 'Acme Real Estate' },
   })
-  source_agency?: { name: string };
+  source_agency?: { name: string; base_url?: string };
 }

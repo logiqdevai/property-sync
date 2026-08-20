@@ -10,7 +10,7 @@ import {
   Pagination,
   useOverlayState,
 } from "@heroui/react";
-import { Ban, CheckCircle, Eye, EyeOff, Plus, Search, Trash2 } from "lucide-react";
+import { Ban, CheckCircle, ExternalLink, Eye, EyeOff, Plus, Search, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -220,7 +220,19 @@ export default function AgenciesListPage() {
                       </Table.Cell>
                       <Table.Cell>
                         <div className="flex flex-col">
-                          <span className="font-medium text-foreground">{agency.name}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-medium text-foreground">{agency.name}</span>
+                            <a
+                              href={agency.base_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              aria-label={`Open ${agency.name} website in a new tab`}
+                              className="shrink-0 text-muted hover:text-accent"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <ExternalLink className="size-3.5" />
+                            </a>
+                          </div>
                           <span className="text-xs text-muted truncate max-w-xs">{agency.base_url}</span>
                         </div>
                       </Table.Cell>
@@ -333,7 +345,12 @@ export default function AgenciesListPage() {
                           block_rules: blockHandling.block_rules,
                         }),
                       },
-                      { onSuccess: () => createModal.close() },
+                      {
+                        onSuccess: (agency) => {
+                          createModal.close();
+                          navigate(Routes.admin.agencies.detail(agency.id));
+                        },
+                      },
                     );
                   }}
                 />

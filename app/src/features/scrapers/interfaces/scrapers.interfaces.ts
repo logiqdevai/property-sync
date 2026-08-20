@@ -64,7 +64,7 @@ export interface Scraper {
   created_at: string;
   updated_at: string;
   active_version?: ScraperVersion | null;
-  source_agency?: { id?: string; name: string };
+  source_agency?: { id?: string; name: string; base_url?: string };
 }
 
 export interface CreateScraperPayload {
@@ -112,4 +112,8 @@ export interface PaginatedResponse<T> {
 
 export interface DeleteScrapersPayload {
   scraper_ids: string[];
+}
+
+export interface DuplicateScraperPayload {
+  source_agency_id: string;
 }

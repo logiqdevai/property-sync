@@ -12,7 +12,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Search, Plus, Trash2 } from "lucide-react";
+import { Search, Plus, Trash2, ExternalLink } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -278,7 +278,21 @@ export default function ScrapersListPage() {
                       </Table.Cell>
                       <Table.Cell>
                         <div className="flex flex-col">
-                          <span className="font-medium text-foreground">{scraper.name}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-medium text-foreground">{scraper.name}</span>
+                            {scraper.source_agency?.base_url ? (
+                              <a
+                                href={scraper.source_agency.base_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label={`Open ${scraper.source_agency.name} website in a new tab`}
+                                className="shrink-0 text-muted hover:text-accent"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <ExternalLink className="size-3.5" />
+                              </a>
+                            ) : null}
+                          </div>
                           <span className="text-xs text-muted">v{scraper.version_count}</span>
                         </div>
                       </Table.Cell>
