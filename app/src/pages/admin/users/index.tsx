@@ -140,7 +140,7 @@ export default function AdminUsersListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton columns={5} rows={8} />
+        <TableSkeleton columns={6} rows={8} />
       ) : users.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No users found.
@@ -155,6 +155,7 @@ export default function AdminUsersListPage() {
                   <Table.Column>Role</Table.Column>
                   <Table.Column>Phone</Table.Column>
                   <Table.Column>Joined</Table.Column>
+                  <Table.Column>Updated</Table.Column>
                   <Table.Column>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
@@ -171,6 +172,7 @@ export default function AdminUsersListPage() {
                       </Table.Cell>
                       <Table.Cell>{user.phone ?? "—"}</Table.Cell>
                       <Table.Cell>{formatDate(user.created_at)}</Table.Cell>
+                      <Table.Cell>{formatDate(user.updated_at)}</Table.Cell>
                       <Table.Cell>
                         <RoleGate roles={[RoleTypes.ADMIN, RoleTypes.SUPER_ADMIN]}>
                           <TableRowActionsMenu
