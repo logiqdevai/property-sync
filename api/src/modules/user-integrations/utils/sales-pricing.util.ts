@@ -60,7 +60,7 @@ export function resolveSalesPricingSettings(
 }
 
 const SALE_PERCENTAGE_STEP = 0.01;
-const CLEAN_PRICE_STEP = 1000;
+export const CLEAN_PRICE_STEP = 1000;
 
 function toFiniteNumber(
   value: number | null | undefined | Prisma.Decimal,
@@ -169,6 +169,30 @@ export function hasValidSalePriceStart(
     return false;
   }
   return startNum > priceNum;
+}
+
+/**
+ * A stored `price_start` only reflects the *current* markup if it still
+ * falls within the configured percentage band above `basePrice`. A plain
+ * `startNum > baseNum` check (see hasValidSalePriceStart) stays true forever
+ * once the price drops, since a markup computed off a higher, stale price is
+ * still numerically above the new, lower price — this catches that case and
+ * forces a recalculation off the current `price_web`.
+ */
+export function isSalePriceStartWithinMarkupRange(
+  priceStart: number | null | undefined | Prisma.Decimal,
+  basePrice: number | null | undefined | Prisma.Decimal,
+  sales: SalesPricingSettings,
+): boolean {
+  const startNum = toFiniteNumber(priceStart);
+  const baseNum = toFiniteNumber(basePrice);
+  if (startNum == null || startNum <= 0 || baseNum == null || baseNum <= 0) {
+    return false;
+  }
+
+  const minAllowed = baseNum * (1 + sales.sale_percentage_start) - CLEAN_PRICE_STEP;
+  const maxAllowed = baseNum * (1 + sales.sale_percentage_end) + CLEAN_PRICE_STEP;
+  return startNum >= minAllowed && startNum <= maxAllowed;
 }
 
 export function shouldApplySalesPriceStart(

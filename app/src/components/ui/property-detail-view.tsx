@@ -875,6 +875,15 @@ export function PropertyDetailView({
                     : "Price not set"}
                 </p>
 
+                {property.price_web && (
+                  <p className="text-sm text-muted">
+                    Web{" "}
+                    <span className="text-foreground tabular-nums">
+                      {formatPrice(property.price_web, property.currency)}
+                    </span>
+                  </p>
+                )}
+
                 {location && (
                   <p className="flex min-w-0 items-start gap-2 text-sm text-muted">
                     <MapPin className="mt-0.5 size-4 shrink-0 text-tertiary" />

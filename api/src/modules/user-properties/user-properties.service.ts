@@ -3339,10 +3339,13 @@ export class UserPropertiesService {
       distance_airport: property.distance_airport,
       distance_port: property.distance_port,
       distance_beach: property.distance_beach,
+      // Validate against `price_web` (the live, crawl-tracked price), not
+      // the frozen `price` — otherwise a markup computed off a stale higher
+      // price keeps looking "valid" forever once the real price drops.
       price_start: resolveCanonicalOrCrmPriceStart(
         property.price_start,
         existing?.price_start,
-        property.price,
+        property.price_web,
       ),
       price_web: property.price_web,
       features: property.features ?? undefined,

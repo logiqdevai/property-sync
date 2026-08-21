@@ -35,7 +35,7 @@ import { buildEstateWebImageUrl } from '../utils/estateweb-image-url.util';
 import { resolveEstateWebPushSitesForTracker } from '../utils/estateweb-integration-settings.util';
 import {
   computeSalePriceStart,
-  hasValidSalePriceStart,
+  isSalePriceStartWithinMarkupRange,
   pickSalePercentage,
   resolveSaleBasePrice,
   resolveSalesPricingSettings,
@@ -807,7 +807,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
     if (
       !forceRecalc &&
-      hasValidSalePriceStart(userProperty.price_start, basePrice)
+      isSalePriceStartWithinMarkupRange(userProperty.price_start, basePrice, sales)
     ) {
       return;
     }
@@ -847,20 +847,21 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         userProperty?.price_web,
         userProperty?.square_meters,
       ) ?? (userProperty?.price ? Number(userProperty.price) : 0);
+    // `price_web` is the live, crawl-tracked price and may legitimately be
+    // below the frozen `price` (e.g. the listing dropped in price) — never
+    // clamp it back up to the stale `price`, or CRM pushes silently drop
+    // real price drops.
+    const priceWebRaw =
+      userProperty?.price_web != null ? Number(userProperty.price_web) : NaN;
+    const priceWeb = Number.isFinite(priceWebRaw) ? priceWebRaw : price;
     const priceStartRaw =
       userProperty?.price_start != null
         ? Number(userProperty.price_start)
         : NaN;
     const priceStart =
-      Number.isFinite(priceStartRaw) && priceStartRaw > price
+      Number.isFinite(priceStartRaw) && priceStartRaw > priceWeb
         ? priceStartRaw
-        : price;
-    const priceWebRaw =
-      userProperty?.price_web != null ? Number(userProperty.price_web) : NaN;
-    const priceWeb =
-      Number.isFinite(priceWebRaw) && priceWebRaw >= price
-        ? priceWebRaw
-        : price;
+        : priceWeb;
     const title = userProperty?.title ?? '';
     const description = userProperty?.description ?? '';
     const latLng = this.buildLatLng(userProperty);
