@@ -870,16 +870,18 @@ export function PropertyDetailView({
                 </div>
 
                 <p className="text-2xl font-semibold tracking-tight text-tertiary tabular-nums break-words sm:text-3xl">
-                  {hasPrice
-                    ? formatPrice(property.price, property.currency)
-                    : "Price not set"}
+                  {property.price_web
+                    ? formatPrice(property.price_web, property.currency)
+                    : hasPrice
+                      ? formatPrice(property.price, property.currency)
+                      : "Price not set"}
                 </p>
 
-                {property.price_web && (
+                {property.price_web && hasPrice && (
                   <p className="text-sm text-muted">
-                    Web{" "}
+                    First price{" "}
                     <span className="text-foreground tabular-nums">
-                      {formatPrice(property.price_web, property.currency)}
+                      {formatPrice(property.price, property.currency)}
                     </span>
                   </p>
                 )}
