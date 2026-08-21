@@ -1422,6 +1422,7 @@ export default function DashboardPropertiesListPage() {
                     <Table.Column isRowHeader>Status</Table.Column>
                     <Table.Column isRowHeader>CRM</Table.Column>
                     <Table.Column isRowHeader>Created</Table.Column>
+                    <Table.Column isRowHeader>Updated</Table.Column>
                     <Table.Column isRowHeader>Actions</Table.Column>
                   </Table.Header>
                   <Table.Body>
@@ -1518,6 +1519,9 @@ export default function DashboardPropertiesListPage() {
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
                           {formatDateTime(property.created_at)}
+                        </Table.Cell>
+                        <Table.Cell className={groupCellClass}>
+                          {formatDateTime(property.updated_at)}
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
                           <TableRowActionsMenu
