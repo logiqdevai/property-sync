@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Button,
   Checkbox,
@@ -17,6 +17,7 @@ import { CircleDot, CopyCheck, Globe, Hash, ImageOff, Images, Languages, Layers,
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
+import { CopyIconButton } from "@/components/ui/copy-icon-button";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
@@ -88,8 +89,10 @@ import { formatPrice } from "@/lib/price";
 import { formatDateTime, toEndOfDayIso, toStartOfDayIso } from "@/lib/date";
 import { getDuplicateGroupRowClasses } from "@/lib/duplicate-group-color.utils";
 import { getDuplicateGroupDedupePlan } from "@/lib/duplicate-group-dedupe.utils";
+import { getIdPrefixBeforeDash } from "@/lib/id-prefix.utils";
 import { cn } from "@/lib/utils";
 import { PropertyListCard } from "./components/property-list-card";
+import { PropertyTableIdCell } from "./components/property-table-id-cell";
 import {
   usePropertiesListFilters,
   type PropertiesListBoolFilter,
@@ -316,8 +319,10 @@ export default function DashboardPropertiesListPage() {
     orderDirection,
     limit,
     page,
+    view,
     activeFilterCount,
     setFilters,
+    setView,
     clearFilters,
   } = usePropertiesListFilters();
   const detailLinkState = useMemo<PropertiesListLocationState>(
@@ -379,20 +384,6 @@ export default function DashboardPropertiesListPage() {
     const { page: _page, limit: _limit, ...filters } = query;
     return filters;
   }, [query]);
-
-  const [viewParams, setViewParams] = useSearchParams();
-  const view: "table" | "map" = viewParams.get("view") === "map" ? "map" : "table";
-  const setView = (next: "table" | "map") => {
-    setViewParams(
-      (prev) => {
-        const params = new URLSearchParams(prev);
-        if (next === "table") params.delete("view");
-        else params.set("view", next);
-        return params;
-      },
-      { replace: true },
-    );
-  };
 
   const { data, isPending } = useUserProperties(query);
   const { data: countData } = useUserPropertiesCount(countQuery);
@@ -1288,7 +1279,7 @@ export default function DashboardPropertiesListPage() {
           getDetailHref={(id) => Routes.dashboard.properties.detail(id)}
         />
       ) : isPending ? (
-        <TableSkeleton rows={8} columns={7} />
+        <TableSkeleton rows={8} columns={10} />
       ) : properties.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-6 text-center text-sm text-muted sm:p-10">
           No properties yet. Track an agency to start receiving listings.
@@ -1416,6 +1407,7 @@ export default function DashboardPropertiesListPage() {
                       </Checkbox>
                     </Table.Column>
                     <Table.Column isRowHeader>Title</Table.Column>
+                    <Table.Column isRowHeader>Property ID</Table.Column>
                     <Table.Column isRowHeader>Agency</Table.Column>
                     <Table.Column isRowHeader>Web price</Table.Column>
                     <Table.Column isRowHeader>First price</Table.Column>
@@ -1469,16 +1461,33 @@ export default function DashboardPropertiesListPage() {
                           </Checkbox>
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
-                          <Link
-                            to={Routes.dashboard.properties.detail(property.id)}
-                            state={detailLinkState}
-                            className={cn(
-                              "font-medium text-foreground hover:text-accent transition-colors",
-                              isRemoved && "line-through",
-                            )}
-                          >
-                            {property.title}
-                          </Link>
+                          <div className="flex min-w-0 flex-col gap-1">
+                            <Link
+                              to={Routes.dashboard.properties.detail(property.id)}
+                              state={detailLinkState}
+                              className={cn(
+                                "font-medium text-foreground hover:text-accent transition-colors",
+                                isRemoved && "line-through",
+                              )}
+                            >
+                              {property.title}
+                            </Link>
+                            <div className="flex min-w-0 items-center gap-1">
+                              <span className="font-mono text-xs text-muted">
+                                {getIdPrefixBeforeDash(property.id)}
+                              </span>
+                              <CopyIconButton
+                                value={property.id}
+                                ariaLabel={`Copy internal ID ${property.id}`}
+                              />
+                            </div>
+                          </div>
+                        </Table.Cell>
+                        <Table.Cell className={groupCellClass}>
+                          <PropertyTableIdCell
+                            propertyId={property.property_id}
+                            integrationPropertyId={property.integration_property_id}
+                          />
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
                           {property.source_agency?.name ?? filteredAgencyName ?? "—"}

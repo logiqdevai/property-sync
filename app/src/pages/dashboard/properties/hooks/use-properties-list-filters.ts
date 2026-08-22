@@ -205,26 +205,41 @@ export function usePropertiesListFilters() {
     [setSearchParams],
   );
 
+  const view: "table" | "map" = searchParams.get("view") === "map" ? "map" : "table";
+
+  const setView = useCallback(
+    (next: "table" | "map") => {
+      setSearchParams(
+        (prev) => {
+          const params = new URLSearchParams(prev);
+          if (next === "table") params.delete("view");
+          else params.set("view", "map");
+          return params;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
   const clearFilters = useCallback(() => {
-    setFilters({
-      status: "all",
-      change: "all",
-      trackedAgencyId: "all",
-      duplicateGroup: "all",
-      pushedToCrm: "all",
-      pendingCrmUpdate: "all",
-      dateFrom: "",
-      dateTo: "",
-      orderBy: DEFAULT_ORDER_BY,
-      orderDirection: DEFAULT_ORDER_DIRECTION,
-      page: DEFAULT_PAGE,
-    });
-  }, [setFilters]);
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams();
+        const currentView = prev.get("view");
+        if (currentView) params.set("view", currentView);
+        return params;
+      },
+      { replace: true },
+    );
+  }, [setSearchParams]);
 
   return {
     ...filters,
+    view,
     activeFilterCount,
     setFilters,
+    setView,
     clearFilters,
   };
 }
