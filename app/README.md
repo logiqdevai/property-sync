@@ -71,4 +71,4 @@ export default defineConfig([
   },
 ])
 ```
-# heroui-react-starter
+# heroui-react-starter.
