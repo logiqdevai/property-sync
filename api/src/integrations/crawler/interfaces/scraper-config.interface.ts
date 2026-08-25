@@ -70,3 +70,13 @@ export interface CrawlResult {
   networkError?: boolean;
   zeroListingsPage0?: boolean;
 }
+
+// Distinguishes "pagination legitimately ended" (last page reached, button gone) from
+// "pagination was cut short by a real error" (e.g. a non-2xx response on a later page) --
+// the latter must fail the crawl run with the real error instead of silently reporting
+// whatever was scraped so far as a complete success.
+export interface PaginationAdvanceResult {
+  advanced: boolean;
+  networkError?: boolean;
+  errorMessage?: string;
+}

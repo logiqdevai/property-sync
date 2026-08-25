@@ -8,6 +8,7 @@ import {
   CrawlItem,
   CrawlResult,
   CrawlStep,
+  PaginationAdvanceResult,
   ScraperConfig,
 } from '../interfaces/scraper-config.interface';
 import { crawlTimestamp } from '../utils/crawler.utils';
@@ -256,7 +257,7 @@ export class CrawlerService {
           break;
         }
 
-        const advanced = await this.advancePagination(
+        const advanceResult = await this.advancePagination(
           page,
           pagination,
           pageNum,
@@ -265,7 +266,15 @@ export class CrawlerService {
           config.listing_selector,
           blockHandlingConfig,
         );
-        if (!advanced) {
+        if (!advanceResult.advanced) {
+          if (advanceResult.networkError) {
+            // A real HTTP failure mid-pagination (e.g. a 5xx on page N) is not the
+            // same as "we reached the last page" -- surface it as a genuine failure
+            // instead of silently reporting whatever was scraped so far as success.
+            networkError = true;
+            errorSummary = advanceResult.errorMessage ?? errorSummary;
+            break;
+          }
           if (isAccumulatingPagination) {
             const trailingCount = await page
               .locator(config.listing_selector)
@@ -284,8 +293,13 @@ export class CrawlerService {
         pageNum++;
       }
 
-      success = items.length > 0;
-      log('done', { total_items: items.length, pages: pageNum + 1, success });
+      success = networkError ? false : items.length > 0;
+      log('done', {
+        total_items: items.length,
+        pages: pageNum + 1,
+        success,
+        networkError,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       errorSummary = message;
@@ -310,7 +324,7 @@ export class CrawlerService {
     crawlerConfig: ResolvedCrawlerConfig,
     listingSelector?: string,
     blockHandlingConfig?: BlockHandlingConfig,
-  ): Promise<boolean> {
+  ): Promise<PaginationAdvanceResult> {
     if (
       pagination.type === 'next_button' ||
       pagination.type === 'NEXT_BUTTON'
@@ -325,13 +339,13 @@ export class CrawlerService {
         const exists = await nextControl.count().catch(() => 0);
         if (!exists) {
           log('pagination_end', { reason: 'next_selector_not_found' });
-          return false;
+          return { advanced: false };
         }
         const visible = await nextControl.isVisible().catch(() => false);
         const disabled = await nextControl.isDisabled().catch(() => false);
         if (!visible || disabled) {
           log('pagination_end', { reason: 'next_selector_not_clickable' });
-          return false;
+          return { advanced: false };
         }
 
         const navigated = await this.clickNextAndWaitForChange(
@@ -342,10 +356,10 @@ export class CrawlerService {
         );
         if (!navigated) {
           log('pagination_end', { reason: 'url_unchanged_after_next' });
-          return false;
+          return { advanced: false };
         }
         log('clicked_next', { url: page.url() });
-        return true;
+        return { advanced: true };
       }
 
       // Legacy fallback for configs generated before pagination.selector was
@@ -360,7 +374,7 @@ export class CrawlerService {
 
       if (!nextPageNum) {
         log('pagination_end', { reason: 'cannot_detect_active_page' });
-        return false;
+        return { advanced: false };
       }
 
       const nextPageLink = page
@@ -372,7 +386,7 @@ export class CrawlerService {
         log('pagination_end', {
           reason: `no_page_link_for_page_${nextPageNum}`,
         });
-        return false;
+        return { advanced: false };
       }
 
       const navigated = await this.clickNextAndWaitForChange(
@@ -383,19 +397,19 @@ export class CrawlerService {
       );
       if (!navigated) {
         log('pagination_end', { reason: 'url_unchanged_after_page_click' });
-        return false;
+        return { advanced: false };
       }
       log('clicked_page', { page: nextPageNum, url: page.url() });
-      return true;
+      return { advanced: true };
     }
 
     if (pagination.type === 'load_more' || pagination.type === 'LOAD_MORE') {
-      if (!pagination.selector) return false;
+      if (!pagination.selector) return { advanced: false };
       const btn = page.locator(pagination.selector).first();
       const visible = await btn.isVisible().catch(() => false);
       if (!visible) {
         log('pagination_end', { reason: 'load_more_not_visible' });
-        return false;
+        return { advanced: false };
       }
       const prevCount = listingSelector
         ? await page.locator(listingSelector).count().catch(() => 0)
@@ -411,7 +425,7 @@ export class CrawlerService {
         // content in place (same count, different cards) rather than appending.
         await page.waitForTimeout(crawlerConfig.scroll_pause_ms);
       }
-      return true;
+      return { advanced: true };
     }
 
     if (
@@ -463,7 +477,7 @@ export class CrawlerService {
           reason: 'scroll_no_new_cards',
           prevCount,
         });
-        return false;
+        return { advanced: false };
       }
       log('infinite_scroll_grew', {
         prevCount,
@@ -471,7 +485,7 @@ export class CrawlerService {
           ? await page.locator(listingSelector).count().catch(() => prevCount)
           : prevCount,
       });
-      return true;
+      return { advanced: true };
     }
 
     if (pagination.type === 'url_param' || pagination.type === 'URL_PARAM') {
@@ -488,13 +502,18 @@ export class CrawlerService {
         Math.min(15_000, crawlerConfig.page_timeout_ms),
       );
       if (response && !response.ok()) {
-        log('network_error', { status: response.status(), url: url.href });
-        return false;
+        const status = response.status();
+        log('network_error', { status, url: url.href });
+        return {
+          advanced: false,
+          networkError: true,
+          errorMessage: `HTTP ${status} on ${url.href} while paginating to page ${pageNum + 2}`,
+        };
       }
-      return true;
+      return { advanced: true };
     }
 
-    return false;
+    return { advanced: false };
   }
 
   private async waitForInfiniteScrollGrowth(
