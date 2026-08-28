@@ -93,12 +93,14 @@ export function useAgencyTrackingControls(
     onUntrackRequest(agency);
   };
 
-  const location =
-    [agency.city, agency.country].filter(Boolean).join(", ") || agency.base_url;
+  const cityCountry = [agency.city, agency.country].filter(Boolean).join(", ");
+  const location = cityCountry || agency.base_url;
+  const locationTitle = cityCountry ? undefined : agency.base_url;
 
   return {
     prefs,
     location,
+    locationTitle,
     isAgencyDisabled,
     isControlsDisabled,
     prefsDisabled,
@@ -125,6 +127,7 @@ export function AgencyListCard({
   const {
     prefs,
     location,
+    locationTitle,
     isAgencyDisabled,
     isControlsDisabled,
     prefsDisabled,
@@ -154,7 +157,12 @@ export function AgencyListCard({
                 <ExternalLink className="size-3.5" />
               </a>
             </div>
-            <p className="truncate text-xs text-muted">{location}</p>
+            <p
+              className="min-w-0 truncate text-xs text-muted"
+              title={locationTitle}
+            >
+              {location}
+            </p>
             {isAgencyDisabled ? (
               <p className="mt-1 text-xs text-muted">Unavailable</p>
             ) : null}

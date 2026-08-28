@@ -61,6 +61,7 @@ function AgencyRow({
   const {
     prefs,
     location,
+    locationTitle,
     isAgencyDisabled,
     isControlsDisabled,
     prefsDisabled,
@@ -89,7 +90,12 @@ function AgencyRow({
               <ExternalLink className="size-3.5" />
             </a>
           </div>
-          <span className="truncate text-xs text-muted">{location}</span>
+          <span
+            className="block max-w-xs truncate text-xs text-muted"
+            title={locationTitle}
+          >
+            {location}
+          </span>
           {isAgencyDisabled ? (
             <span className="text-xs text-muted">Unavailable</span>
           ) : null}
