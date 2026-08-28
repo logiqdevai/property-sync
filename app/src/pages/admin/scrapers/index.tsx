@@ -26,9 +26,10 @@ import {
   useCreateScraper,
   useDeleteScraper,
   useDeleteScrapers,
+  useDuplicateScraper,
   useScrapers,
 } from "@/features/scrapers/hooks/use-scrapers";
-import { parseOptionalJsonConfig, parseOptionalNormalizeLimit } from "@/features/scrapers/validation-schemas/scrapers.schema";
+import { parseOptionalNormalizeLimit } from "@/features/scrapers/validation-schemas/scrapers.schema";
 import {
   type ScraperHealth,
   type ScraperListQuery,
@@ -73,6 +74,7 @@ export default function ScrapersListPage() {
   const { data, isPending } = useScrapers(query);
   const { data: agenciesData } = useAgencies({ limit: 100 });
   const createScraper = useCreateScraper();
+  const duplicateScraper = useDuplicateScraper();
   const deleteScraper = useDeleteScraper();
   const deleteScrapers = useDeleteScrapers();
 
@@ -376,19 +378,39 @@ export default function ScrapersListPage() {
               <Modal.Body>
                 <ScraperForm
                   submitLabel="Create"
-                  isPending={createScraper.isPending}
+                  isPending={createScraper.isPending || duplicateScraper.isPending}
                   onCancel={createModal.close}
                   onSubmit={(values) => {
-                    const config = parseOptionalJsonConfig(values.config);
+                    if (values.duplicate_from_scraper_id) {
+                      duplicateScraper.mutate(
+                        {
+                          id: values.duplicate_from_scraper_id,
+                          payload: { source_agency_id: values.source_agency_id },
+                        },
+                        {
+                          onSuccess: (created) => {
+                            createModal.close();
+                            navigate(Routes.admin.scrapers.detail(created.id));
+                          },
+                        },
+                      );
+                      return;
+                    }
+
                     const normalizeLimit = parseOptionalNormalizeLimit(values.normalize_limit ?? "");
                     createScraper.mutate(
                       {
                         source_agency_id: values.source_agency_id,
-                        name: values.name,
+                        // Validated non-empty by createScraperFormSchema when not duplicating.
+                        name: values.name ?? "",
                         ...(normalizeLimit !== undefined && { normalize_limit: normalizeLimit }),
-                        ...(config && { config }),
                       },
-                      { onSuccess: () => createModal.close() },
+                      {
+                        onSuccess: (created) => {
+                          createModal.close();
+                          navigate(Routes.admin.scrapers.detail(created.id));
+                        },
+                      },
                     );
                   }}
                 />

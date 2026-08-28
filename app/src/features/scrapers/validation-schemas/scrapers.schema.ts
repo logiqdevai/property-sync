@@ -27,22 +27,34 @@ export function parseOptionalNormalizeLimit(value: string): number | null | unde
   return parsed;
 }
 
-export const createScraperFormSchema = z.object({
-  source_agency_id: z.string().min(1, "Agency is required"),
-  name: z.string().min(1, "Name is required"),
-  normalize_limit: z
-    .string()
-    .optional()
-    .refine(
-      (value) => {
-        if (!value?.trim()) return true;
-        const parsed = Number(value);
-        return Number.isInteger(parsed) && parsed >= 1;
-      },
-      { message: "Enter a whole number ≥ 1, or leave blank for unlimited" },
-    ),
-  config: optionalJsonTextarea,
-});
+export const createScraperFormSchema = z
+  .object({
+    source_agency_id: z.string().min(1, "Agency is required"),
+    // Empty string = create a blank scraper. Non-empty = duplicate that scraper's active
+    // config into a new one instead (name/normalize_limit below are ignored server-side).
+    duplicate_from_scraper_id: z.string().optional(),
+    name: z.string().optional(),
+    normalize_limit: z
+      .string()
+      .optional()
+      .refine(
+        (value) => {
+          if (!value?.trim()) return true;
+          const parsed = Number(value);
+          return Number.isInteger(parsed) && parsed >= 1;
+        },
+        { message: "Enter a whole number ≥ 1, or leave blank for unlimited" },
+      ),
+  })
+  .superRefine((values, ctx) => {
+    if (!values.duplicate_from_scraper_id && !values.name?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["name"],
+        message: "Name is required",
+      });
+    }
+  });
 
 export type CreateScraperFormValues = z.infer<typeof createScraperFormSchema>;
 

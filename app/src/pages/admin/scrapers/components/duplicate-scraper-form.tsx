@@ -60,7 +60,8 @@ export function DuplicateScraperForm({ isPending, onSubmit, onCancel }: Duplicat
         {errors.source_agency_id && <FieldError>{errors.source_agency_id.message}</FieldError>}
         <span className="text-xs text-muted">
           Only agencies without an existing scraper are shown. The new scraper's name is
-          auto-generated as "&lt;agency name&gt; scraper".
+          auto-generated as "&lt;agency name&gt; scraper", and its start_url is taken from
+          this agency's own base_url (not copied from the source scraper).
         </span>
       </div>
 

@@ -156,6 +156,12 @@ export class ScrapersService {
       throw new NotFoundException('Target agency not found');
     }
 
+    if (!targetAgency.base_url) {
+      throw new BadRequestException(
+        `Target agency "${targetAgency.name}" has no base_url set — set it to that agency's real listings URL before duplicating a scraper for it.`,
+      );
+    }
+
     const existing = await this.prisma.scraper.findFirst({
       where: { source_agency_id: dto.source_agency_id },
       select: { id: true },
@@ -180,7 +186,15 @@ export class ScrapersService {
         data: {
           scraper_id: scraper.id,
           version: 1,
-          config: source.active_version.config as Prisma.InputJsonValue,
+          // start_url is always site-specific -- never carry over the source scraper's
+          // URL onto a different agency. The target agency's own base_url is that site's
+          // real listings URL (the convention every agency's base_url already follows),
+          // even though the rest of the config (selectors, pagination, ...) is a
+          // legitimate reusable template.
+          config: {
+            ...(source.active_version.config as Record<string, unknown>),
+            start_url: targetAgency.base_url,
+          } as Prisma.InputJsonValue,
           created_by: ScraperVersionCreatedBy.USER,
           notes: `Duplicated from "${source.name}" (${source.id}, v${source.active_version.version})`,
         },
