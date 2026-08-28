@@ -79,6 +79,53 @@ export function isDetailPageRedirectAway(
   }
 }
 
+// CDN-served listing photos are frequently exposed at multiple resolutions
+// under otherwise-identical URLs, e.g. `.../173799670_900x675.jpg` (detail
+// gallery) and `.../173799670_300x220.jpg` (listing-page thumbnail) -- same
+// photo, different size suffix. A literal-string Set doesn't catch that, so
+// merging raw image lists from different pages of a crawl can double-count a
+// single photo. Strip the `_WxH` suffix (and query string) before comparing.
+const IMAGE_SIZE_VARIANT_PATTERN = /[_-]\d{2,4}x\d{2,4}(?=\.[a-z0-9]+$)/i;
+
+function imageBaseKey(url: string): string {
+  try {
+    const parsed = new URL(url);
+    const pathname = parsed.pathname.replace(IMAGE_SIZE_VARIANT_PATTERN, '');
+    return `${parsed.origin}${pathname}`;
+  } catch {
+    return url.split('?')[0].replace(IMAGE_SIZE_VARIANT_PATTERN, '');
+  }
+}
+
+function imageResolutionScore(url: string): number {
+  const match = url.match(/(\d{2,4})x(\d{2,4})/);
+  if (!match) return 0;
+  return Number(match[1]) * Number(match[2]);
+}
+
+/// Merges image URL lists (e.g. detail-page gallery + listing-page card
+/// images) into one deduplicated list, treating same-photo size variants as
+/// duplicates and keeping the highest-resolution URL for each photo.
+export function mergeImagesDedupingSizeVariants(
+  ...lists: (string[] | undefined)[]
+): string[] {
+  const chosenByKey = new Map<string, string>();
+  const keyOrder: string[] = [];
+  for (const list of lists) {
+    for (const url of list ?? []) {
+      const key = imageBaseKey(url);
+      const existing = chosenByKey.get(key);
+      if (existing === undefined) {
+        chosenByKey.set(key, url);
+        keyOrder.push(key);
+      } else if (imageResolutionScore(url) > imageResolutionScore(existing)) {
+        chosenByKey.set(key, url);
+      }
+    }
+  }
+  return keyOrder.map((key) => chosenByKey.get(key) as string);
+}
+
 export function readDetailStructured(rawData: unknown): {
   specs: Record<string, string> | null;
   features: string[] | null;

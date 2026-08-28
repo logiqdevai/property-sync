@@ -16,7 +16,10 @@ import {
   classifyPageAccess,
   waitForBotChallengeClearance,
 } from '../block-handling/block-handling.utils';
-import { isDetailPageRedirectAway } from '../utils/crawler.utils';
+import {
+  isDetailPageRedirectAway,
+  mergeImagesDedupingSizeVariants,
+} from '../utils/crawler.utils';
 import { StealthBrowserService } from './stealth-browser.service';
 
 interface DetailEnrichmentResult {
@@ -102,9 +105,10 @@ export class DetailEnrichmentService {
         }
         const listingImages =
           (item.raw._all_images as string[] | undefined) ?? [];
-        item.raw._all_images = [
-          ...new Set([...detail.images, ...listingImages]),
-        ];
+        item.raw._all_images = mergeImagesDedupingSizeVariants(
+          detail.images,
+          listingImages,
+        );
         item.raw._detail_text = detail.raw_detail_text;
         if (Object.keys(detail.detail_specs).length > 0) {
           item.raw._detail_specs = detail.detail_specs;
