@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Copy, Download, Layers } from "lucide-react";
+import { ArrowLeft, Copy, Download } from "lucide-react";
 import { Button, ListBox, Modal, Select, Table, useOverlayState } from "@heroui/react";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { CopyIconButton } from "@/components/ui/copy-icon-button";
@@ -72,7 +72,6 @@ export function EstateWebDuplicatePropertiesModal({
   const queryClient = useQueryClient();
   const mergeProperties = useMergeProperties();
   const mergeGroupConfirm = useOverlayState();
-  const mergeAllConfirm = useOverlayState();
   const [selectedIntegrationId, setSelectedIntegrationId] = useState<string>(NONE_SELECTED);
   const [copyIdField, setCopyIdField] = useState<CopyIdField>("user_property_id");
   const [pendingMergeGroup, setPendingMergeGroup] =
@@ -183,15 +182,6 @@ export function EstateWebDuplicatePropertiesModal({
     setPendingMergeGroup(null);
   };
 
-  const handleMergeAllGroups = async () => {
-    for (const group of groups) {
-      const propertyIds = getGroupPropertyIds(group);
-      if (propertyIds.length < 2) continue;
-      await mergeProperties.mutateAsync({ property_ids: propertyIds });
-    }
-    await invalidateAfterMerge();
-  };
-
   const requestMergeGroup = (group: EstateWebDuplicatePropertyGroup) => {
     setPendingMergeGroup(group);
     mergeGroupConfirm.open();
@@ -202,12 +192,12 @@ export function EstateWebDuplicatePropertiesModal({
       <Modal state={state}>
         <Modal.Backdrop isDismissable={!mergeProperties.isPending}>
           <Modal.Container>
-            <Modal.Dialog className="max-w-5xl">
+            <Modal.Dialog className="w-full max-w-5xl min-w-0">
               <Modal.Header>
                 <Modal.Heading>Check CRM duplicates</Modal.Heading>
               </Modal.Header>
-              <Modal.Body>
-                <div className="flex flex-col gap-4">
+              <Modal.Body className="min-w-0">
+                <div className="flex min-w-0 flex-col gap-4">
                   {!hasSelection ? (
                     <>
                       <p className="text-sm text-muted">
@@ -241,30 +231,31 @@ export function EstateWebDuplicatePropertiesModal({
                   ) : (
                     <>
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-sm text-muted">
-                          {selectedIntegration
-                            ? integrationLabel(selectedIntegration)
-                            : "Selected integration"}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex min-w-0 items-center gap-2">
                           <Button
                             size="sm"
                             variant="ghost"
-                            onPress={handleDownload}
-                            isDisabled={rows.length === 0}
-                          >
-                            <Download className="size-4" />
-                            Download .txt
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
+                            isIconOnly
+                            aria-label="Change integration"
                             onPress={() => setSelectedIntegrationId(NONE_SELECTED)}
                           >
                             <ArrowLeft className="size-4" />
-                            Change integration
                           </Button>
+                          <p className="min-w-0 truncate text-sm text-muted">
+                            {selectedIntegration
+                              ? integrationLabel(selectedIntegration)
+                              : "Selected integration"}
+                          </p>
                         </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onPress={handleDownload}
+                          isDisabled={rows.length === 0}
+                        >
+                          <Download className="size-4" />
+                          Download .txt
+                        </Button>
                       </div>
 
                       {duplicatesPending ? (
@@ -328,25 +319,19 @@ export function EstateWebDuplicatePropertiesModal({
                               <Copy className="size-4" />
                               Copy IDs
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onPress={mergeAllConfirm.open}
-                              isDisabled={stats.mergeableGroups === 0 || mergeProperties.isPending}
-                            >
-                              <Layers className="size-4" />
-                              Mark all groups
-                            </Button>
                           </div>
 
                           {copyFeedback ? (
                             <p className="text-sm text-muted">{copyFeedback}</p>
                           ) : null}
 
-                          <div className="overflow-y-auto max-h-96 rounded-xl border border-border">
+                          <div className="min-w-0 max-h-96 overflow-hidden rounded-xl border border-border">
                             <Table>
                               <Table.ScrollContainer>
-                                <Table.Content aria-label="Duplicate EstateWeb properties">
+                                <Table.Content
+                                  aria-label="Duplicate EstateWeb properties"
+                                  className="min-w-max"
+                                >
                                   <Table.Header>
                                     <Table.Column isRowHeader>Κωδικός</Table.Column>
                                     <Table.Column>Count</Table.Column>
@@ -378,15 +363,15 @@ export function EstateWebDuplicatePropertiesModal({
                                               <span className="text-muted">—</span>
                                             )}
                                           </Table.Cell>
-                                          <Table.Cell>
+                                          <Table.Cell className="max-w-48">
                                             {url ? (
                                               <a
                                                 href={url}
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className="font-mono text-sm text-accent hover:underline break-all"
+                                                className="font-mono text-sm text-accent hover:underline"
                                               >
-                                                {url}
+                                                {row.id}
                                               </a>
                                             ) : (
                                               <span className="font-mono text-sm text-foreground">
@@ -394,7 +379,7 @@ export function EstateWebDuplicatePropertiesModal({
                                               </span>
                                             )}
                                           </Table.Cell>
-                                          <Table.Cell>
+                                          <Table.Cell className="max-w-40">
                                             {row.user_property_id ? (
                                               <div className="flex min-w-0 items-center gap-1">
                                                 <span className="truncate font-mono text-xs text-foreground">
@@ -409,7 +394,7 @@ export function EstateWebDuplicatePropertiesModal({
                                               <span className="text-sm text-muted">—</span>
                                             )}
                                           </Table.Cell>
-                                          <Table.Cell>
+                                          <Table.Cell className="max-w-36">
                                             {row.internal_id ? (
                                               <div className="flex min-w-0 items-center gap-1">
                                                 <span className="truncate font-mono text-xs text-foreground">
@@ -424,7 +409,7 @@ export function EstateWebDuplicatePropertiesModal({
                                               <span className="text-sm text-muted">—</span>
                                             )}
                                           </Table.Cell>
-                                          <Table.Cell>
+                                          <Table.Cell className="max-w-40">
                                             {row.property_id ? (
                                               <div className="flex min-w-0 items-center gap-1">
                                                 <span className="truncate font-mono text-xs text-foreground">
@@ -439,7 +424,7 @@ export function EstateWebDuplicatePropertiesModal({
                                               <span className="text-sm text-muted">—</span>
                                             )}
                                           </Table.Cell>
-                                          <Table.Cell>
+                                          <Table.Cell className="whitespace-nowrap">
                                             {row.isFirstInGroup ? (
                                               <Button
                                                 size="sm"
@@ -488,15 +473,6 @@ export function EstateWebDuplicatePropertiesModal({
         }
         confirmLabel="Mark group"
         onConfirm={handleMergeGroup}
-        isPending={mergeProperties.isPending}
-      />
-
-      <ConfirmationDialog
-        state={mergeAllConfirm}
-        title="Mark all duplicate groups?"
-        description={`This will create duplicate groups for up to ${stats.mergeableGroups} codes where at least two linked saved properties were found.`}
-        confirmLabel="Mark all groups"
-        onConfirm={handleMergeAllGroups}
         isPending={mergeProperties.isPending}
       />
     </>
