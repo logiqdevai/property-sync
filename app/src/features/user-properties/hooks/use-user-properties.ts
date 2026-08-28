@@ -534,14 +534,14 @@ export const usePushUserPropertiesToCrm = () => {
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
       queryClient.invalidateQueries({ queryKey: ["cmsSyncRuns"] });
 
-      if ("queued" in result) {
+      if ("job_log_id" in result) {
         const bulk = result as PushUserPropertiesToCrmResult;
         toast({
           title: "EstateWeb sync queued",
           description:
             bulk.failed.length > 0
-              ? `Queued ${bulk.queued}. ${bulk.failed.length} failed.`
-              : `${bulk.queued} ${bulk.queued === 1 ? "property" : "properties"} will be pushed shortly.`,
+              ? `Queued ${bulk.enqueued}. ${bulk.failed.length} failed.`
+              : `${bulk.enqueued} ${bulk.enqueued === 1 ? "property" : "properties"} will be pushed in the background.`,
           duration: 2500,
           variant: bulk.failed.length > 0 ? "warning" : "success",
         });

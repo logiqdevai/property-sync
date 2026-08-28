@@ -202,8 +202,9 @@ export interface PushUserPropertiesToCrmPayload {
 }
 
 export interface PushUserPropertiesToCrmResult {
-  queued: number;
-  batches_enqueued: number;
+  job_log_id: string;
+  enqueued: number;
+  message: string;
   failed: Array<{ user_property_id: string; error: string }>;
 }
 

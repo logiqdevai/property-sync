@@ -15,6 +15,7 @@ import {
   DELETE_INTEGRATION_IMAGES_QUEUE,
   ESTATEWEB_SITES_UPDATE_QUEUE,
   MIGRATE_INTEGRATION_IMAGES_QUEUE,
+  PUSH_TO_CMS_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
@@ -47,6 +48,8 @@ export class JobsService {
     private readonly contentProductionQueue: Queue,
     @InjectQueue(SALES_PRICE_UPDATE_QUEUE)
     private readonly salesPriceUpdateQueue: Queue,
+    @InjectQueue(PUSH_TO_CMS_QUEUE)
+    private readonly pushToCmsQueue: Queue,
     @InjectQueue(CRM_CLIENT_NOTES_SYNC_QUEUE)
     private readonly crmClientNotesSyncQueue: Queue,
     @InjectQueue(ESTATEWEB_SITES_UPDATE_QUEUE)
@@ -154,6 +157,7 @@ export class JobsService {
         : jobLog.queue_name === WATERMARK_REMOVAL_QUEUE ||
             jobLog.queue_name === CONTENT_PRODUCTION_QUEUE ||
             jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE ||
+            jobLog.queue_name === PUSH_TO_CMS_QUEUE ||
             jobLog.queue_name === CRM_CLIENT_NOTES_SYNC_QUEUE ||
             jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE ||
             jobLog.queue_name === RENORMALIZATION_QUEUE ||
@@ -241,6 +245,38 @@ export class JobsService {
       await this.salesPriceUpdateQueue.addBulk(
         propertyIds.map((userPropertyId) => ({
           name: jobLog.job_name ?? 'update-sales-price',
+          data: {
+            job_log_id: jobLog.id,
+            user_id: payloadRecord.user_id,
+            user_property_id: userPropertyId,
+            total: payloadRecord.total ?? propertyIds.length,
+          },
+          opts: {
+            ...(jobOptions ?? {}),
+            jobId: `${jobLog.id}__${userPropertyId}`,
+          },
+        })),
+      );
+      return this.findOne(id);
+    }
+
+    if (jobLog.queue_name === PUSH_TO_CMS_QUEUE) {
+      const payloadRecord = payload as {
+        user_id?: string;
+        user_property_ids?: string[];
+        total?: number;
+      };
+      const propertyIds = Array.isArray(payloadRecord.user_property_ids)
+        ? payloadRecord.user_property_ids
+        : [];
+      if (!payloadRecord.user_id || propertyIds.length === 0) {
+        throw new BadRequestException(
+          'Push to CMS job payload is missing user or property ids',
+        );
+      }
+      await this.pushToCmsQueue.addBulk(
+        propertyIds.map((userPropertyId) => ({
+          name: jobLog.job_name ?? 'push-to-cms',
           data: {
             job_log_id: jobLog.id,
             user_id: payloadRecord.user_id,
@@ -498,6 +534,7 @@ export class JobsService {
     if (
       jobLog.queue_name === CONTENT_PRODUCTION_QUEUE ||
       jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE ||
+      jobLog.queue_name === PUSH_TO_CMS_QUEUE ||
       jobLog.queue_name === CRM_CLIENT_NOTES_SYNC_QUEUE ||
       jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE ||
       jobLog.queue_name === RENORMALIZATION_QUEUE ||
@@ -515,15 +552,17 @@ export class JobsService {
           ? this.contentProductionQueue
           : jobLog.queue_name === SALES_PRICE_UPDATE_QUEUE
             ? this.salesPriceUpdateQueue
-            : jobLog.queue_name === CRM_CLIENT_NOTES_SYNC_QUEUE
-              ? this.crmClientNotesSyncQueue
-              : jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE
-                ? this.estateWebSitesUpdateQueue
-                : jobLog.queue_name === DELETE_INTEGRATION_IMAGES_QUEUE
-                  ? this.deleteIntegrationImagesQueue
-                  : jobLog.queue_name === MIGRATE_INTEGRATION_IMAGES_QUEUE
-                    ? this.migrateIntegrationImagesQueue
-                    : this.renormalizationQueue;
+            : jobLog.queue_name === PUSH_TO_CMS_QUEUE
+              ? this.pushToCmsQueue
+              : jobLog.queue_name === CRM_CLIENT_NOTES_SYNC_QUEUE
+                ? this.crmClientNotesSyncQueue
+                : jobLog.queue_name === ESTATEWEB_SITES_UPDATE_QUEUE
+                  ? this.estateWebSitesUpdateQueue
+                  : jobLog.queue_name === DELETE_INTEGRATION_IMAGES_QUEUE
+                    ? this.deleteIntegrationImagesQueue
+                    : jobLog.queue_name === MIGRATE_INTEGRATION_IMAGES_QUEUE
+                      ? this.migrateIntegrationImagesQueue
+                      : this.renormalizationQueue;
       for (const propertyId of propertyIds) {
         try {
           await queue.remove(`${jobLog.id}__${propertyId}`);
@@ -600,6 +639,9 @@ export class JobsService {
     }
     if (queueName === SALES_PRICE_UPDATE_QUEUE) {
       return this.salesPriceUpdateQueue;
+    }
+    if (queueName === PUSH_TO_CMS_QUEUE) {
+      return this.pushToCmsQueue;
     }
     if (queueName === CRM_CLIENT_NOTES_SYNC_QUEUE) {
       return this.crmClientNotesSyncQueue;

@@ -301,11 +301,12 @@ export class UserPropertiesController {
   }
 
   @Post('push-to-cms')
+  @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
     summary:
-      'Push one or more properties to the linked EstateWeb CMS (create or update)',
+      'Enqueue background CMS push (create or update) for one or more properties to the linked EstateWeb CMS (5 parallel workers)',
   })
-  @ApiResponse({ status: 200, description: 'CMS push queued' })
+  @ApiResponse({ status: 202, description: 'CMS push job enqueued' })
   @ApiResponse({ status: 400, description: 'Cannot push to CMS' })
   @ApiResponse({ status: 404, description: 'Saved property not found' })
   pushToCrmMany(

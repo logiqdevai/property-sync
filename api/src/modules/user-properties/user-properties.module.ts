@@ -8,6 +8,7 @@ import {
   ESTATEWEB_SITES_UPDATE_QUEUE,
   GEOCODE_MISSING_COORDINATES_QUEUE,
   MIGRATE_INTEGRATION_IMAGES_QUEUE,
+  PUSH_TO_CMS_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
@@ -23,6 +24,7 @@ import { CostLogsModule } from '@/modules/cost-logs/cost-logs.module';
 import { ContentProductionProcessor } from '@/background/content-production.processor';
 import { WatermarkRemovalProcessor } from '@/background/watermark-removal.processor';
 import { SalesPriceUpdateProcessor } from '@/background/sales-price-update.processor';
+import { PushToCmsProcessor } from '@/background/push-to-cms.processor';
 import { CrmClientNotesSyncProcessor } from '@/background/crm-client-notes-sync.processor';
 import { EstateWebSitesUpdateProcessor } from '@/background/estateweb-sites-update.processor';
 import { DeleteIntegrationImagesProcessor } from '@/background/delete-integration-images.processor';
@@ -34,6 +36,7 @@ import { UserPropertiesService } from './user-properties.service';
 import { ContentProductionJobService } from './services/content-production-job.service';
 import { WatermarkRemovalService } from './services/watermark-removal.service';
 import { SalesPriceUpdateJobService } from './services/sales-price-update-job.service';
+import { PushToCmsJobService } from './services/push-to-cms-job.service';
 import { CrmClientNotesSyncJobService } from './services/crm-client-notes-sync-job.service';
 import { EstateWebSitesUpdateJobService } from './services/estateweb-sites-update-job.service';
 import { DeleteIntegrationImagesJobService } from './services/delete-integration-images-job.service';
@@ -55,6 +58,7 @@ import { GeocodeCoordinatesJobService } from './services/geocode-coordinates-job
       { name: WATERMARK_REMOVAL_QUEUE },
       { name: CONTENT_PRODUCTION_QUEUE },
       { name: SALES_PRICE_UPDATE_QUEUE },
+      { name: PUSH_TO_CMS_QUEUE },
       { name: CRM_CLIENT_NOTES_SYNC_QUEUE },
       { name: ESTATEWEB_SITES_UPDATE_QUEUE },
       { name: RENORMALIZATION_QUEUE },
@@ -72,6 +76,8 @@ import { GeocodeCoordinatesJobService } from './services/geocode-coordinates-job
     ContentProductionProcessor,
     SalesPriceUpdateJobService,
     SalesPriceUpdateProcessor,
+    PushToCmsJobService,
+    PushToCmsProcessor,
     CrmClientNotesSyncJobService,
     CrmClientNotesSyncProcessor,
     EstateWebSitesUpdateJobService,

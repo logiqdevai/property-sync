@@ -15,6 +15,7 @@ import {
   ESTATEWEB_SITES_UPDATE_QUEUE,
   GEOCODE_MISSING_COORDINATES_QUEUE,
   MIGRATE_INTEGRATION_IMAGES_QUEUE,
+  PUSH_TO_CMS_QUEUE,
   RENORMALIZATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
@@ -86,6 +87,10 @@ import {
   SalesPriceUpdateJobResult,
 } from './interfaces/sales-price-update-job.interface';
 import {
+  PushToCmsJobData,
+  PushToCmsJobResult,
+} from './interfaces/push-to-cms-job.interface';
+import {
   CrmClientNotesSyncJobData,
   CrmClientNotesSyncJobResult,
 } from './interfaces/crm-client-notes-sync-job.interface';
@@ -148,6 +153,8 @@ export class UserPropertiesService {
     private readonly contentProductionQueue: Queue<ContentProductionJobData>,
     @InjectQueue(SALES_PRICE_UPDATE_QUEUE)
     private readonly salesPriceUpdateQueue: Queue<SalesPriceUpdateJobData>,
+    @InjectQueue(PUSH_TO_CMS_QUEUE)
+    private readonly pushToCmsQueue: Queue<PushToCmsJobData>,
     @InjectQueue(CRM_CLIENT_NOTES_SYNC_QUEUE)
     private readonly crmClientNotesSyncQueue: Queue<CrmClientNotesSyncJobData>,
     @InjectQueue(ESTATEWEB_SITES_UPDATE_QUEUE)
@@ -819,26 +826,104 @@ export class UserPropertiesService {
       throw new NotFoundException('Property not found');
     }
 
-    try {
-      const result =
-        await this.cmsSyncOrchestratorService.planAndEnqueueManualPropertyUpdate(
-          userId,
-          idList,
-        );
+    // A single property (the ':id/push-to-cms' route, and the properties
+    // detail/list pages' individual push button) pushes fast enough to run
+    // inline and hand back the updated property, which is what those callers
+    // expect. Anything larger runs in the background instead -- per property
+    // this does several sequential translation/AI/EstateWeb-verification
+    // network calls, so doing that inline for a big selection blocked the
+    // request for minutes and risked a proxy timeout.
+    if (idList.length === 1) {
+      try {
+        const result =
+          await this.cmsSyncOrchestratorService.planAndEnqueueManualPropertyUpdate(
+            userId,
+            idList,
+          );
 
-      if (idList.length === 1 && result.queued === 1) {
-        return serializePropertyForApi(
-          await this.prisma.userProperty.findFirstOrThrow({
-            where: { id: idList[0], user_id: userId },
-          }),
-        );
+        if (result.queued === 1) {
+          return serializePropertyForApi(
+            await this.prisma.userProperty.findFirstOrThrow({
+              where: { id: idList[0], user_id: userId },
+            }),
+          );
+        }
+
+        return result;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new BadRequestException(message);
       }
-
-      return result;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(message);
     }
+
+    const ownedIdSet = new Set(owned.map((row) => row.id));
+    const ownedIds = idList.filter((id) => ownedIdSet.has(id));
+    const notOwnedFailed = idList
+      .filter((id) => !ownedIdSet.has(id))
+      .map((id) => ({ user_property_id: id, error: 'Property not found' }));
+
+    const initialResult: PushToCmsJobResult = {
+      total: ownedIds.length,
+      processed: 0,
+      queued: 0,
+      failed: notOwnedFailed.length,
+      items: notOwnedFailed.map((row) => ({
+        user_property_id: row.user_property_id,
+        status: 'failed' as const,
+        error: row.error,
+      })),
+      logs: [`enqueued user=${userId} properties=${ownedIds.length}`],
+    };
+
+    const payload = {
+      user_id: userId,
+      user_property_ids: ownedIds,
+      total: ownedIds.length,
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: PUSH_TO_CMS_QUEUE,
+        job_name: 'push-to-cms',
+        status: JobStatus.WAITING,
+        payload: payload as object,
+        result: initialResult as object,
+      },
+    });
+
+    this.logger.log(
+      `[pushToCrm] queued job_log=${jobLog.id} user=${userId} ids=${ownedIds.length}`,
+    );
+
+    await this.pushToCmsQueue.addBulk(
+      ownedIds.map((userPropertyId) => {
+        const jobData: PushToCmsJobData = {
+          job_log_id: jobLog.id,
+          user_id: userId,
+          user_property_id: userPropertyId,
+          total: ownedIds.length,
+        };
+        return {
+          name: 'push-to-cms',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${userPropertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
+
+    return {
+      job_log_id: jobLog.id,
+      enqueued: ownedIds.length,
+      message:
+        'CMS push started in the background (up to 5 properties in parallel). Track progress in Job queue.',
+      failed: notOwnedFailed,
+    };
   }
 
   async produceContent(
