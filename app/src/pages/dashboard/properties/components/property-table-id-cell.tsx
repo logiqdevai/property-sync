@@ -5,19 +5,23 @@ import { getCrmPropertyAppUrl } from "@/config/constants/crm-app-urls";
 import { cn } from "@/lib/utils";
 
 type PropertyTableIdCellProps = {
-  propertyId: string;
+  internalId: string | null;
   integrationPropertyId: string | null;
   className?: string;
 };
 
 export const PropertyTableIdCell: FC<PropertyTableIdCellProps> = ({
-  propertyId,
+  internalId,
   integrationPropertyId,
   className,
 }) => {
   const crmPropertyAppUrl = integrationPropertyId
     ? getCrmPropertyAppUrl(integrationPropertyId)
     : null;
+
+  if (!internalId) {
+    return <span className="text-sm text-muted">—</span>;
+  }
 
   return (
     <div className={cn("flex min-w-0 items-center gap-1", className)}>
@@ -28,17 +32,17 @@ export const PropertyTableIdCell: FC<PropertyTableIdCellProps> = ({
           rel="noreferrer"
           className="inline-flex min-w-0 items-center gap-1 font-mono text-sm text-accent hover:underline"
         >
-          <span className="truncate">{propertyId}</span>
+          <span className="truncate">{internalId}</span>
           <ExternalLink className="size-3.5 shrink-0" />
         </a>
       ) : (
         <span className="min-w-0 truncate font-mono text-sm text-foreground">
-          {propertyId}
+          {internalId}
         </span>
       )}
       <CopyIconButton
-        value={propertyId}
-        ariaLabel={`Copy property ID ${propertyId}`}
+        value={internalId}
+        ariaLabel={`Copy internal ID ${internalId}`}
       />
     </div>
   );

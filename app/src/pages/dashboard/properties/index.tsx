@@ -1500,7 +1500,7 @@ export default function DashboardPropertiesListPage() {
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
                           <PropertyTableIdCell
-                            propertyId={property.property_id}
+                            internalId={property.internal_id}
                             integrationPropertyId={property.integration_property_id}
                           />
                         </Table.Cell>
