@@ -49,7 +49,11 @@ import { isEstateWebListingTypeAllowed } from '@/integrations/estateweb/utils/es
 import { resolveCanonicalOrCrmPriceStart } from '@/modules/user-integrations/utils/sales-pricing.util';
 import { serializePropertyForApi } from '@/modules/properties/utils/property-api-response.util';
 import { buildHistoryChangeFilter } from '@/modules/properties/utils/property-change-filter.util';
-import { resolveSourceAgency, sourceAgencySummarySelect } from '@/modules/properties/utils/resolve-agency-name.util';
+import {
+  resolveSourceAgency,
+  resolveSourceUrl,
+  sourceAgencySummarySelect,
+} from '@/modules/properties/utils/resolve-agency-name.util';
 import {
   PROPERTY_MAP_MARKERS_HARD_CAP,
   toPropertyMapMarker,
@@ -301,6 +305,7 @@ export class UserPropertiesService {
                   is_primary_source: true,
                   source_property: {
                     select: {
+                      source_url: true,
                       source_agency: { select: sourceAgencySummarySelect },
                     },
                   },
@@ -329,6 +334,7 @@ export class UserPropertiesService {
           source_agency:
             filteredSourceAgency ??
             resolveSourceAgency(canonical_property.source_links),
+          source_url: resolveSourceUrl(canonical_property.source_links),
         }),
       ),
       pagination: {
@@ -3472,6 +3478,7 @@ export class UserPropertiesService {
                   is_primary_source: true,
                   source_property: {
                     select: {
+                      source_url: true,
                       source_agency: { select: sourceAgencySummarySelect },
                     },
                   },
@@ -3501,6 +3508,7 @@ export class UserPropertiesService {
           source_agency:
             filteredSourceAgency ??
             resolveSourceAgency(canonical_property.source_links),
+          source_url: resolveSourceUrl(canonical_property.source_links),
         }),
       ),
       pagination: {

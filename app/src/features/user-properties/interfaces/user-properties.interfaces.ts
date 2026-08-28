@@ -54,6 +54,7 @@ export interface UserProperty extends PropertyCmsFields {
   images: string[] | null;
   duplicate_group_id: string | null;
   source_agency: { id: string; name: string } | null;
+  source_url: string | null;
   is_modified: boolean;
   pending_crm_update: boolean;
   last_synced_at: string | null;

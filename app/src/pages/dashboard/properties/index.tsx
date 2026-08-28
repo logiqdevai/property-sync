@@ -13,7 +13,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { CircleDot, CopyCheck, Globe, Hash, ImageOff, Images, Languages, Layers, ListFilter, MapIcon, MapPin, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, TableIcon, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { CircleDot, CopyCheck, ExternalLink, Globe, Hash, ImageOff, Images, Languages, Layers, ListFilter, MapIcon, MapPin, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, TableIcon, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
@@ -1324,6 +1324,7 @@ export default function DashboardPropertiesListPage() {
                   key={property.id}
                   id={property.id}
                   title={property.title}
+                  sourceUrl={property.source_url}
                   agencyName={property.source_agency?.name ?? filteredAgencyName}
                   price={property.price}
                   currency={property.currency}
@@ -1462,16 +1463,29 @@ export default function DashboardPropertiesListPage() {
                         </Table.Cell>
                         <Table.Cell className={groupCellClass}>
                           <div className="flex min-w-0 flex-col gap-1">
-                            <Link
-                              to={Routes.dashboard.properties.detail(property.id)}
-                              state={detailLinkState}
-                              className={cn(
-                                "font-medium text-foreground hover:text-accent transition-colors",
-                                isRemoved && "line-through",
-                              )}
-                            >
-                              {property.title}
-                            </Link>
+                            <div className="flex min-w-0 items-start gap-2">
+                              <Link
+                                to={Routes.dashboard.properties.detail(property.id)}
+                                state={detailLinkState}
+                                className={cn(
+                                  "min-w-0 font-medium text-foreground hover:text-accent transition-colors",
+                                  isRemoved && "line-through",
+                                )}
+                              >
+                                {property.title}
+                              </Link>
+                              {property.source_url ? (
+                                <a
+                                  href={property.source_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="mt-0.5 shrink-0 text-muted hover:text-accent"
+                                  aria-label="Open source listing"
+                                >
+                                  <ExternalLink className="size-4" />
+                                </a>
+                              ) : null}
+                            </div>
                             <div className="flex min-w-0 items-center gap-1">
                               <span className="font-mono text-xs text-muted">
                                 {getIdPrefixBeforeDash(property.id)}
