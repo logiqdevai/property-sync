@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
@@ -197,10 +201,43 @@ export class AdminEstateWebPropertiesService {
   async findDuplicateProperties(
     userIntegrationId: string,
   ): Promise<EstateWebDuplicatePropertyGroup[]> {
+    const integration = await this.prisma.userIntegration.findUnique({
+      where: { id: userIntegrationId },
+      select: { user_id: true },
+    });
+
+    if (!integration) {
+      throw new NotFoundException('Integration not found');
+    }
+
     const { list } =
       await this.estateWebPropertyService.listAllPropertiesForIntegration(
         userIntegrationId,
       );
+
+    const listingIds = list.map((listing) => String(listing.id));
+    const linkedUserProperties =
+      listingIds.length === 0
+        ? []
+        : await this.prisma.userProperty.findMany({
+            where: {
+              user_id: integration.user_id,
+              integration_property_id: { in: listingIds },
+            },
+            select: {
+              id: true,
+              property_id: true,
+              internal_id: true,
+              integration_property_id: true,
+              canonical_property_id: true,
+            },
+          });
+
+    const linkedByIntegrationId = new Map(
+      linkedUserProperties
+        .filter((property) => property.integration_property_id)
+        .map((property) => [property.integration_property_id!, property]),
+    );
 
     const byCode = new Map<string, EstateWebPropertyListItem[]>();
     for (const listing of list) {
@@ -218,12 +255,19 @@ export class AdminEstateWebPropertiesService {
         return {
           code: sorted[0].code ?? '',
           count: sorted.length,
-          listings: sorted.map((listing) => ({
-            id: listing.id,
-            address: listing.address ?? null,
-            price: listing.price ?? null,
-            created_at: listing.created_at ?? null,
-          })),
+          listings: sorted.map((listing) => {
+            const linked = linkedByIntegrationId.get(String(listing.id));
+            return {
+              id: listing.id,
+              address: listing.address ?? null,
+              price: listing.price ?? null,
+              created_at: listing.created_at ?? null,
+              user_property_id: linked?.id ?? null,
+              property_id: linked?.property_id ?? null,
+              canonical_property_id: linked?.canonical_property_id ?? null,
+              internal_id: linked?.internal_id ?? null,
+            };
+          }),
         };
       })
       .sort((a, b) => b.count - a.count);
