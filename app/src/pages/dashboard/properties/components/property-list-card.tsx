@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { ExternalLink } from "lucide-react";
 import { Button, Checkbox, Chip } from "@heroui/react";
 import { Routes } from "@/routes/routes";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
@@ -18,6 +19,7 @@ import type { PropertiesListLocationState } from "../hooks/use-properties-list-f
 type PropertyListCardProps = {
   id: string;
   title: string;
+  sourceUrl: string | null;
   agencyName: string | null;
   price: string | null;
   currency: string | null;
@@ -37,6 +39,7 @@ type PropertyListCardProps = {
 export function PropertyListCard({
   id,
   title,
+  sourceUrl,
   agencyName,
   price,
   currency,
@@ -79,16 +82,29 @@ export function PropertyListCard({
           </Checkbox.Content>
         </Checkbox>
         <div className="min-w-0 flex-1">
-          <Link
-            to={Routes.dashboard.properties.detail(id)}
-            state={detailLinkState}
-            className={cn(
-              "text-base font-semibold text-foreground break-words hover:text-accent transition-colors",
-              isRemoved && "line-through",
-            )}
-          >
-            {title}
-          </Link>
+          <div className="flex min-w-0 items-start gap-2">
+            <Link
+              to={Routes.dashboard.properties.detail(id)}
+              state={detailLinkState}
+              className={cn(
+                "min-w-0 text-base font-semibold text-foreground break-words hover:text-accent transition-colors",
+                isRemoved && "line-through",
+              )}
+            >
+              {title}
+            </Link>
+            {sourceUrl ? (
+              <a
+                href={sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-1 shrink-0 text-muted hover:text-accent"
+                aria-label="Open source listing"
+              >
+                <ExternalLink className="size-4" />
+              </a>
+            ) : null}
+          </div>
           <p className="mt-0.5 truncate text-sm text-muted">
             {agencyName || "—"}
           </p>
