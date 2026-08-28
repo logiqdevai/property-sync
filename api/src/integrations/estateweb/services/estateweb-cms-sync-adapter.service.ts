@@ -324,10 +324,15 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       payload,
     );
 
+    // Intentionally do NOT persist `sites: []` here. This unpublish is a transient,
+    // crawler-driven reaction to the source listing disappearing -- not a user decision
+    // to permanently stop publishing. Leaving the stored site preference untouched lets
+    // resolvePushSitesForSync() restore the original sites automatically on the next
+    // pushUpdate() once the listing reappears, instead of the property staying
+    // unpublished on every site forever (see incident notes in api/RULES.md).
     await this.persistIntegrationPropertySites({
       userIntegrationId,
       userPropertyId: userProperty.id,
-      sites: [],
       ads: [],
     });
   }
@@ -704,7 +709,10 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   private async persistIntegrationPropertySites(params: {
     userIntegrationId: string;
     userPropertyId: string;
-    sites: EstateWebPropertySite[];
+    // Omit entirely to leave the stored site preference untouched (e.g. a transient
+    // pushRemove unpublish) -- pass [] explicitly only when the caller intends to
+    // record "publish nowhere" as the new sticky preference.
+    sites?: EstateWebPropertySite[];
     ads?: EstateWebPropertyAd[];
   }): Promise<void> {
     const integration = await this.prisma.userIntegration.findUnique({
@@ -721,14 +729,16 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       return;
     }
 
-    const sites: EstateWebPushSiteSetting[] = params.sites.map((site) => ({
-      selected: true,
-      name: site.name ?? '',
-      agent_site_id: Number(site.agent_site_id),
-      show_on_slider: site.show_on_slider ? 1 : 0,
-      show_on_first_page: site.show_on_first_page ? 1 : 0,
-      show_on_relative_pages: site.show_on_relative_pages ? 1 : 0,
-    }));
+    const sites: EstateWebPushSiteSetting[] | undefined = params.sites?.map(
+      (site) => ({
+        selected: true,
+        name: site.name ?? '',
+        agent_site_id: Number(site.agent_site_id),
+        show_on_slider: site.show_on_slider ? 1 : 0,
+        show_on_first_page: site.show_on_first_page ? 1 : 0,
+        show_on_relative_pages: site.show_on_relative_pages ? 1 : 0,
+      }),
+    );
 
     const ads = (params.ads ?? []).map((ad) => ({
       lang_id: ad.lang_id,
@@ -752,11 +762,13 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
           user_integration_settings_id:
             integration.user_integration_settings_id,
           user_property_id: params.userPropertyId,
-          sites: sites as unknown as Prisma.InputJsonValue,
+          sites: (sites ?? []) as unknown as Prisma.InputJsonValue,
           ads: ads as unknown as Prisma.InputJsonValue,
         },
         update: {
-          sites: sites as unknown as Prisma.InputJsonValue,
+          ...(sites !== undefined
+            ? { sites: sites as unknown as Prisma.InputJsonValue }
+            : {}),
           ...(params.ads !== undefined
             ? { ads: ads as unknown as Prisma.InputJsonValue }
             : {}),
