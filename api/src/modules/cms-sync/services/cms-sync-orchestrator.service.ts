@@ -563,6 +563,7 @@ export class CmsSyncOrchestratorService {
             link.user_integration_id,
             userProperty.integration_property_id,
             userProperty.internal_id,
+            userProperty.property_id,
           );
         } catch (error) {
           failed.push({
@@ -870,17 +871,27 @@ export class CmsSyncOrchestratorService {
     userIntegrationId: string,
     integrationPropertyId: string,
     internalId: string | null,
+    propertyId?: string | null,
   ): Promise<boolean> {
     try {
       const listing = await this.estateWebPropertyService.getProperty(
         userIntegrationId,
         integrationPropertyId,
       );
-      if (!internalId?.trim()) {
+      // Fall back to property_id (the URL-derived id, which never changes)
+      // alongside internal_id (the displayed public code, which can be
+      // corrected after the fact, e.g. a scraper selector fix) -- otherwise
+      // correcting internal_id for an already-pushed property makes every
+      // already-linked EstateWeb listing look "not ours" on its next sync
+      // and creates a duplicate instead of updating the existing one.
+      const candidates = [internalId, propertyId]
+        .map((value) => value?.trim().toLowerCase())
+        .filter((value): value is string => Boolean(value));
+      if (candidates.length === 0) {
         return true;
       }
       const listingCode = listing.code?.trim().toLowerCase() ?? '';
-      return listingCode === internalId.trim().toLowerCase();
+      return candidates.includes(listingCode);
     } catch (error) {
       if (isNotFoundEstateWebError(error)) {
         return false;
