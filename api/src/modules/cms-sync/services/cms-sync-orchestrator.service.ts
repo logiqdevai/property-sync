@@ -20,7 +20,10 @@ import { IntegrationType, PropertyStatus } from 'generated/prisma';
 const DEFAULT_MAX_ATTEMPTS = 3;
 
 interface ProcessTrackerBatchOptions {
-  includeUpdatesRegardlessOfAuto?: boolean;
+  // Bypasses the auto_update_to_crm gate for both CREATE and UPDATE -- used by
+  // explicit manual pushes (e.g. "push to CRM" from the Properties page), which
+  // should always go through regardless of the tracker's auto-sync setting.
+  bypassAutoUpdateGate?: boolean;
 }
 
 interface TrackerGroup {
@@ -664,7 +667,7 @@ export class CmsSyncOrchestratorService {
           affected: entry.affected,
         },
         {
-          includeUpdatesRegardlessOfAuto: true,
+          bypassAutoUpdateGate: true,
         },
       );
 
@@ -709,18 +712,18 @@ export class CmsSyncOrchestratorService {
     const tracker = trackerGroup.tracker;
     const logLabel = crawlRunId ? `Crawl ${crawlRunId}` : `Tracker ${tracker.id} (no crawl)`;
 
-    const heldBackUpdates = trackerGroup.affected.filter(
+    const heldBack = trackerGroup.affected.filter(
       (a) =>
-        a.change_type === 'UPDATE' &&
-        tracker.track_updated_listings &&
         !tracker.auto_update_to_crm &&
-        !options?.includeUpdatesRegardlessOfAuto,
+        !options?.bypassAutoUpdateGate &&
+        ((a.change_type === 'UPDATE' && tracker.track_updated_listings) ||
+          (a.change_type === 'CREATE' && tracker.track_new_listings)),
     );
 
-    if (heldBackUpdates.length > 0) {
+    if (heldBack.length > 0) {
       await this.prisma.userProperty.updateMany({
         where: {
-          id: { in: heldBackUpdates.map((a) => a.user_property_id) },
+          id: { in: heldBack.map((a) => a.user_property_id) },
         },
         data: { pending_crm_update: true },
       });
@@ -851,10 +854,12 @@ export class CmsSyncOrchestratorService {
   ): boolean {
     switch (changeType) {
       case 'CREATE':
-        return tracker.track_new_listings;
+        if (!tracker.track_new_listings) return false;
+        if (options?.bypassAutoUpdateGate) return true;
+        return tracker.auto_update_to_crm;
       case 'UPDATE':
         if (!tracker.track_updated_listings) return false;
-        if (options?.includeUpdatesRegardlessOfAuto) return true;
+        if (options?.bypassAutoUpdateGate) return true;
         return tracker.auto_update_to_crm;
       case 'REMOVE':
         return tracker.track_removed_listings;
