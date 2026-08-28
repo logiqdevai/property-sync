@@ -16,6 +16,7 @@ import {
   INFINITE_SCROLL_MAX_WAIT_MS,
   INFINITE_SCROLL_POLL_INTERVAL_MS,
   INFINITE_SCROLL_STEP_VIEWPORT_RATIO,
+  SHARED_PLACEHOLDER_IMAGE_MIN_OCCURRENCES,
 } from '../constants/crawler.constants';
 import {
   classifyPageAccess,
@@ -293,6 +294,8 @@ export class CrawlerService {
         pageNum++;
       }
 
+      this.stripSharedPlaceholderImages(items, log);
+
       success = networkError ? false : items.length > 0;
       log('done', {
         total_items: items.length,
@@ -314,6 +317,61 @@ export class CrawlerService {
       networkError,
       zeroListingsPage0,
     };
+  }
+
+  // Card-level image extraction (field.image and the broader per-card img/
+  // background-image sweep above) has no way to tell a real listing photo from
+  // a fallback graphic the site renders for photo-less listings (often the
+  // agency's own header logo) -- the URL itself gives no textual hint, unlike
+  // "logo.png". A genuine property photo essentially never repeats verbatim
+  // across unrelated listings, so treat any image URL seen this often across
+  // one crawl's items as a shared placeholder and strip it everywhere.
+  private stripSharedPlaceholderImages(
+    items: CrawlItem[],
+    log: (msg: string, data?: Record<string, unknown>) => void,
+  ): void {
+    const counts = new Map<string, number>();
+    const bump = (url: unknown) => {
+      if (typeof url === 'string' && url) {
+        counts.set(url, (counts.get(url) ?? 0) + 1);
+      }
+    };
+    for (const item of items) {
+      bump(item.raw.image);
+      for (const url of (item.raw._all_images as string[] | undefined) ?? []) {
+        bump(url);
+      }
+    }
+
+    const placeholders = new Set(
+      [...counts.entries()]
+        .filter(([, count]) => count >= SHARED_PLACEHOLDER_IMAGE_MIN_OCCURRENCES)
+        .map(([url]) => url),
+    );
+    if (placeholders.size === 0) return;
+
+    let affectedItems = 0;
+    for (const item of items) {
+      let affected = false;
+      if (typeof item.raw.image === 'string' && placeholders.has(item.raw.image)) {
+        item.raw.image = null;
+        affected = true;
+      }
+      const allImages = item.raw._all_images as string[] | undefined;
+      if (allImages?.length) {
+        const filtered = allImages.filter((url) => !placeholders.has(url));
+        if (filtered.length !== allImages.length) {
+          item.raw._all_images = filtered;
+          affected = true;
+        }
+      }
+      if (affected) affectedItems++;
+    }
+
+    log('stripped_shared_placeholder_images', {
+      urls: [...placeholders],
+      affected_items: affectedItems,
+    });
   }
 
   private async advancePagination(

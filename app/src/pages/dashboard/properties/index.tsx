@@ -1481,6 +1481,7 @@ export default function DashboardPropertiesListPage() {
                                   rel="noreferrer"
                                   className="mt-0.5 shrink-0 text-muted hover:text-accent"
                                   aria-label="Open source listing"
+                                  onClick={(event) => event.stopPropagation()}
                                 >
                                   <ExternalLink className="size-4" />
                                 </a>
