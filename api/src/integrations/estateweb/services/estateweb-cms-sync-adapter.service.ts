@@ -35,6 +35,7 @@ import { buildEstateWebImageUrl } from '../utils/estateweb-image-url.util';
 import { resolveEstateWebPushSitesForTracker } from '../utils/estateweb-integration-settings.util';
 import {
   computeSalePriceStart,
+  hasValidSalePriceStart,
   isSalePriceStartWithinMarkupRange,
   pickSalePercentage,
   resolveSaleBasePrice,
@@ -805,6 +806,29 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       userProperty.price,
       userProperty.square_meters,
     );
+
+    if (!sales.enable_sales) {
+      // Disabling the toggle must not just stop *new* markups -- a markup
+      // already written to price_start otherwise survives forever (both
+      // here, which used to just no-op, and via mapFromCanonical() in
+      // user-properties.service.ts, which keeps carrying the stale value
+      // forward on every re-crawl). Reset it to the plain `price`, but only
+      // when the source listing itself has no genuine discount, so a real
+      // CRM/source markdown is never touched.
+      if (
+        userProperty.price_start != null &&
+        basePrice != null &&
+        !hasValidSalePriceStart(canonical?.price_start, basePrice)
+      ) {
+        await this.prisma.userProperty.update({
+          where: { id: userProperty.id },
+          data: { price_start: userProperty.price },
+        });
+        userProperty.price_start = userProperty.price;
+      }
+      return;
+    }
+
     if (
       basePrice == null ||
       !shouldApplySalesPriceStart(
