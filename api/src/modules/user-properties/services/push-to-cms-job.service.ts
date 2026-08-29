@@ -16,13 +16,18 @@ export class PushToCmsJobService {
   async processProperty(data: PushToCmsJobData): Promise<PushToCmsItemResult> {
     try {
       // One property per call so each runs as its own BullMQ job -- content
-      // production (translations, AI titles) and CRM ownership verification
-      // for this property no longer block the other properties in the batch,
-      // or the original HTTP request that enqueued them.
+      // production (translations, AI titles) for this property no longer
+      // blocks the other properties in the batch, or the original HTTP
+      // request that enqueued them. skipOwnershipCheck: true because this is
+      // a human-initiated bulk "Push to CRM" click -- trust the stored
+      // integration_property_id instead of re-verifying it against
+      // EstateWeb's stored code, so a since-corrected internal_id doesn't
+      // make an already-linked listing look unowned and get duplicated.
       const result =
         await this.cmsSyncOrchestratorService.planAndEnqueueManualPropertyUpdate(
           data.user_id,
           [data.user_property_id],
+          { skipOwnershipCheck: true },
         );
 
       const failedEntry = result.failed.find(

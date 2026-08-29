@@ -1044,11 +1044,13 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     ];
     for (const candidate of candidates) {
       if (!candidate) continue;
-      // Strip stray leading punctuation (e.g. a scraped "#1987") before
-      // validating, so a fixable value doesn't degrade to an empty code.
+      // Strip stray leading punctuation (e.g. a scraped "#1987") and any
+      // internal whitespace (e.g. a scraped "AP 419") before validating, so
+      // a fixable value doesn't degrade to an empty code.
       const sanitized = String(candidate)
         .trim()
         .replace(/^[^A-Za-z0-9]+/, '')
+        .replace(/\s+/g, '')
         .slice(0, 64);
       if (/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(sanitized)) {
         return sanitized;

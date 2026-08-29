@@ -839,6 +839,7 @@ export class UserPropertiesService {
           await this.cmsSyncOrchestratorService.planAndEnqueueManualPropertyUpdate(
             userId,
             idList,
+            { skipOwnershipCheck: true },
           );
 
         if (result.queued === 1) {

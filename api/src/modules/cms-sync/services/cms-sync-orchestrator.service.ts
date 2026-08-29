@@ -403,7 +403,21 @@ export class CmsSyncOrchestratorService {
   async planAndEnqueueManualPropertyUpdate(
     userId: string,
     userPropertyIds: string | string[],
-    options?: { skipContentProduction?: boolean; forceSyncAi?: boolean },
+    options?: {
+      skipContentProduction?: boolean;
+      forceSyncAi?: boolean;
+      // Skip the "does this EstateWeb listing's stored code still match our
+      // record" verification and trust userProperty.integration_property_id
+      // as-is. Only safe for a human-initiated single/bulk "Push to CRM"
+      // click, where a stale link fails loudly (an EstateWeb update against
+      // a bad id errors, visible in cms_sync_runs) and the user is right
+      // there to notice and re-link -- NOT for unattended flows (crawl-driven
+      // sync, title-batch continuation, admin bulk edits across many users),
+      // where skipping this check risks a silent duplicate create going
+      // unnoticed, which is exactly the bug this check was added to prevent
+      // (see git history: 94104f6, b4e3660).
+      skipOwnershipCheck?: boolean;
+    },
   ): Promise<{
     queued: number;
     batches_enqueued: number;
@@ -553,6 +567,7 @@ export class CmsSyncOrchestratorService {
       let resolvedOperation = operation;
       const link = entry.tracker.integration_link;
       if (
+        !options?.skipOwnershipCheck &&
         resolvedOperation === 'UPDATE' &&
         userProperty.integration_property_id &&
         link
