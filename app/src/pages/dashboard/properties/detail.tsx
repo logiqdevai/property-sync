@@ -245,6 +245,8 @@ export default function DashboardPropertyDetailPage() {
       features: property.features ?? [],
       construction_year: property.construction_year,
       renovation_year: property.renovation_year,
+      property_id: property.property_id,
+      internal_id: property.internal_id,
       integration_property_id: property.integration_property_id,
       estateweb_type_id: property.estateweb_type_id,
       estateweb_location_id: property.estateweb_location_id,
@@ -869,6 +871,22 @@ export default function DashboardPropertyDetailPage() {
 
               <h3 className="text-sm font-semibold text-foreground pt-2">CMS & integration</h3>
               <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Property ID</span>
+                  <input
+                    className={fieldClassName}
+                    placeholder="Agency property ID"
+                    {...register("property_id")}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-muted">Internal ID</span>
+                  <input
+                    className={fieldClassName}
+                    placeholder="Public / internal listing ID"
+                    {...register("internal_id")}
+                  />
+                </label>
                 <label className="flex flex-col gap-1 text-sm md:col-span-2">
                   <span className="text-muted">CMS property ID</span>
                   <input

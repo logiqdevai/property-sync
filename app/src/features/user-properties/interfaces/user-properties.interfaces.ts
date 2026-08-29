@@ -95,6 +95,8 @@ export interface UpdateUserPropertyPayload {
   floor?: string | null;
   construction_year?: number | null;
   renovation_year?: number | null;
+  property_id?: string;
+  internal_id?: string | null;
   integration_property_id?: string | null;
   estateweb_type_id?: number | null;
   estateweb_location_id?: number | null;

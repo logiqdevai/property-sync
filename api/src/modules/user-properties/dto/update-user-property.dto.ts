@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 import { ListingType, PropertyStatus, PropertyType } from 'generated/prisma';
 
 export class UpdateUserPropertyDto {
@@ -174,4 +174,15 @@ export class UpdateUserPropertyDto {
   @IsOptional()
   @IsString()
   integration_property_id?: string | null;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  property_id?: string;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsString()
+  internal_id?: string | null;
 }

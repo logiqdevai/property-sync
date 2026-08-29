@@ -63,6 +63,8 @@ export const updateUserPropertyFormSchema = z.object({
   features: z.array(z.string()).nullable().optional(),
   construction_year: optionalNumber.optional(),
   renovation_year: optionalNumber.optional(),
+  property_id: z.string().min(1, "Property ID is required"),
+  internal_id: optionalString.optional(),
   integration_property_id: optionalString.optional(),
   estateweb_type_id: optionalNumber.optional(),
   estateweb_location_id: optionalNumber.optional(),
