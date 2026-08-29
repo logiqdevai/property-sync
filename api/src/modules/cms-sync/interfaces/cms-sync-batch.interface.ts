@@ -27,6 +27,8 @@ export interface AffectedUserProperty {
   change_type: CmsSyncOperationType;
   user_property?: UserProperty;
   content_changed?: boolean;
+  // See CmsSyncBatchOperation.skip_ownership_check.
+  skip_ownership_check?: boolean;
 }
 
 export interface CmsSyncBatchOperation {
@@ -36,6 +38,14 @@ export interface CmsSyncBatchOperation {
   is_representative: boolean;
   skipped_sibling_ids?: string[];
   payload?: Record<string, unknown>;
+  // Trust userProperty.integration_property_id for an UPDATE instead of
+  // re-verifying it against EstateWeb's stored listing code. Only set for a
+  // human-initiated single/bulk "Push to CRM" click (cms-sync-orchestrator's
+  // planAndEnqueueManualPropertyUpdate with skipOwnershipCheck) -- never for
+  // crawl-driven sync or admin bulk edits, where a silent duplicate create
+  // could go unnoticed. See listingBelongsToIntegration in
+  // cms-sync.processor.ts, the execution-time counterpart of this same check.
+  skip_ownership_check?: boolean;
 }
 
 export interface CmsSyncBatch {

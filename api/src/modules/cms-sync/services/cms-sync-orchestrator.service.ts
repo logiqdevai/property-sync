@@ -613,6 +613,7 @@ export class CmsSyncOrchestratorService {
         user_property_id: userProperty.id,
         change_type: resolvedOperation,
         user_property: userProperty,
+        skip_ownership_check: !!options?.skipOwnershipCheck,
       });
     }
 
@@ -929,6 +930,7 @@ export class CmsSyncOrchestratorService {
         duplicate_group_id: op.duplicate_group_id,
         is_representative: op.is_representative,
         skipped_sibling_ids: op.skipped_sibling_ids,
+        skip_ownership_check: op.skip_ownership_check,
       })),
     };
   }

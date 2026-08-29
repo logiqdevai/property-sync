@@ -29,15 +29,19 @@ export class CmsSyncBatchService {
       input.affected.map((a) => a.user_property_id),
     );
     const affectedMap = new Map(
-      input.affected.map((a) => [a.user_property_id, a.change_type]),
+      input.affected.map((a) => [a.user_property_id, a]),
     );
 
     const operations: CmsSyncBatchOperation[] = [];
 
     for (const userProperty of affectedUserProperties) {
-      const changeType = affectedMap.get(userProperty.id);
-      if (!changeType) continue;
-      const op = this.resolveOperation(userProperty, changeType);
+      const affected = affectedMap.get(userProperty.id);
+      if (!affected) continue;
+      const op = this.resolveOperation(
+        userProperty,
+        affected.change_type,
+        !!affected.skip_ownership_check,
+      );
       if (op) {
         operations.push(op);
       }
@@ -65,6 +69,7 @@ export class CmsSyncBatchService {
   private resolveOperation(
     userProperty: UserProperty,
     changeType: CmsSyncOperationType,
+    skipOwnershipCheck: boolean,
   ): CmsSyncBatchOperation | null {
     const duplicateGroupId = userProperty.duplicate_group_id ?? null;
 
@@ -103,6 +108,7 @@ export class CmsSyncBatchService {
       operation: 'UPDATE',
       duplicate_group_id: duplicateGroupId,
       is_representative: true,
+      skip_ownership_check: skipOwnershipCheck,
     };
   }
 

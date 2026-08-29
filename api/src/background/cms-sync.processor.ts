@@ -506,13 +506,14 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             throw new Error('No integration property id for update');
           }
 
-          const belongsToLinkedAccount =
-            await this.listingBelongsToIntegration(
-              userIntegrationId,
-              integrationId,
-              userProperty.internal_id,
-              userProperty.property_id,
-            );
+          const belongsToLinkedAccount = operation.skip_ownership_check
+            ? true
+            : await this.listingBelongsToIntegration(
+                userIntegrationId,
+                integrationId,
+                userProperty.internal_id,
+                userProperty.property_id,
+              );
 
           if (!belongsToLinkedAccount) {
             await this.clearIntegrationPropertyId(operation.user_property_id);
