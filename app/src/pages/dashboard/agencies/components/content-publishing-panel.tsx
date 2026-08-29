@@ -67,6 +67,20 @@ interface DraftOutput {
 
 const nextFamilyKey = () => crypto.randomUUID();
 
+type BatchModeKey = "inherit" | "batch" | "sync";
+
+const BatchModeFormOptions: { id: BatchModeKey; label: string }[] = [
+  { id: "inherit", label: "Inherit config default" },
+  { id: "batch", label: "Always use OpenAI Batch API" },
+  { id: "sync", label: "Always generate synchronously" },
+];
+
+const batchModeFromUseBatch = (useBatch: boolean | null): BatchModeKey =>
+  useBatch === null ? "inherit" : useBatch ? "batch" : "sync";
+
+const resolveUseBatchFromMode = (mode: BatchModeKey): boolean | null =>
+  mode === "inherit" ? null : mode === "batch";
+
 const emptyFamilies = (
   sourceLanguage: ContentLanguage = ContentLanguages.EL,
 ): DraftFamily[] => [
@@ -425,13 +439,23 @@ export function ContentPublishingPanel({
                 </Button>
               </div>
               <div className="flex items-start justify-between gap-3">
-                <span className="text-xs text-muted">
-                  Default batch for new families
-                </span>
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="text-sm text-foreground">
+                    Use OpenAI Batch API
+                  </span>
+                  <span className="text-xs text-muted">
+                    Cheaper and used by default, but async — CMS publish waits
+                    for the batch to complete, and if OpenAI&apos;s Batch API
+                    is degraded, title generation stalls. Turn off to
+                    generate titles synchronously instead (slightly pricier,
+                    no batch-outage risk). Applies to any family below that
+                    doesn&apos;t set its own override.
+                  </span>
+                </div>
                 <Switch
                   isSelected={useAiBatch}
                   onChange={setUseAiBatch}
-                  aria-label="Use AI batch"
+                  aria-label="Use OpenAI Batch API for titles"
                   className="shrink-0"
                 >
                   <Switch.Control>
@@ -512,6 +536,41 @@ export function ContentPublishingPanel({
                     </Select.Trigger>
                     <Select.Popover>
                       <ListBox items={[...ContentLanguageFormOptions]}>
+                        {(option) => (
+                          <ListBox.Item
+                            id={option.id}
+                            textValue={option.label}
+                          >
+                            {option.label}
+                          </ListBox.Item>
+                        )}
+                      </ListBox>
+                    </Select.Popover>
+                  </Select>
+                  <Select
+                    aria-label={`Family ${index + 1} batch mode`}
+                    selectedKey={batchModeFromUseBatch(family.use_batch)}
+                    onSelectionChange={(key) => {
+                      if (!key) return;
+                      const mode = String(key) as BatchModeKey;
+                      setFamilies((prev) =>
+                        prev.map((item) =>
+                          item.key === family.key
+                            ? {
+                                ...item,
+                                use_batch: resolveUseBatchFromMode(mode),
+                              }
+                            : item,
+                        ),
+                      );
+                    }}
+                  >
+                    <Label>OpenAI Batch API</Label>
+                    <Select.Trigger>
+                      <Select.Value />
+                    </Select.Trigger>
+                    <Select.Popover>
+                      <ListBox items={[...BatchModeFormOptions]}>
                         {(option) => (
                           <ListBox.Item
                             id={option.id}

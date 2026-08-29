@@ -46,6 +46,7 @@ export class AiTitleBatchService {
     userId?: string | null;
     crawlRunId?: string | null;
     changeTypesByPropertyId?: Record<string, string>;
+    retryCount?: number;
     items: Array<{
       userPropertyId: string;
       title: string;
@@ -107,6 +108,7 @@ export class AiTitleBatchService {
           model,
           user_id: params.userId ?? null,
           change_types_by_property_id: params.changeTypesByPropertyId ?? {},
+          retry_count: params.retryCount ?? 0,
         },
       },
     });
@@ -293,8 +295,7 @@ export class AiTitleBatchService {
       return;
     }
     const userPropertyId = parsed.custom_id;
-    const content =
-      parsed.response?.body?.choices?.[0]?.message?.content ?? '';
+    const content = parsed.response?.body?.choices?.[0]?.message?.content ?? '';
     if (!userPropertyId || !content) return;
 
     const usage = parsed.response?.body?.usage;
@@ -382,11 +383,28 @@ export class AiTitleBatchService {
       batch.status === 'expired' ||
       batch.status === 'cancelled'
     ) {
-      await this.markFailed(batchId, `OpenAI batch ${batch.status}`);
+      await this.markFailed(batchId, `OpenAI batch ${batch.status}`, apiKey);
     }
   }
 
-  async markFailed(batchId: string, message: string): Promise<void> {
+  // How many times to transparently resubmit a title batch that failed for the
+  // specific OpenAI-side "cannot find file" race (see isTransientFileRace below)
+  // before giving up and surfacing it as a real failure.
+  private static readonly MAX_TRANSIENT_RETRIES = 2;
+
+  async markFailed(
+    batchId: string,
+    message: string,
+    apiKey?: string,
+  ): Promise<void> {
+    if (apiKey) {
+      const resubmitted = await this.tryResubmitTransientFailure(
+        batchId,
+        apiKey,
+      );
+      if (resubmitted) return;
+    }
+
     await this.prisma.aiBatchRun.updateMany({
       where: { openai_batch_id: batchId },
       data: { status: AiBatchRunStatus.FAILED, error_message: message },
@@ -395,6 +413,128 @@ export class AiTitleBatchService {
       where: { queue_name: OPENAI_BATCH_QUEUE, job_id: batchId },
       data: { status: JobStatus.FAILED, error_message: message },
     });
+  }
+
+  // OpenAI's batch worker can resolve a batch straight to `failed` (request_counts
+  // all zero, usually within ~1-2 minutes) with "Cannot find file ... or organization
+  // does not have access to it" -- the same file-propagation race createBatch() already
+  // retries around for the synchronous create() call, but this instance happens later,
+  // inside OpenAI's own async batch execution, so no amount of waiting before create()
+  // can prevent it. Detect that specific signature and transparently resubmit a fresh
+  // batch (new file upload, new batch) instead of surfacing a false alarm.
+  private isTransientFileRace(errors: unknown): boolean {
+    const list =
+      (errors as { data?: Array<{ code?: string; message?: string }> })?.data ??
+      [];
+    return list.some(
+      (e) =>
+        e.code === 'invalid_request' &&
+        /cannot find file/i.test(e.message ?? ''),
+    );
+  }
+
+  private async tryResubmitTransientFailure(
+    batchId: string,
+    apiKey: string,
+  ): Promise<boolean> {
+    const run = await this.prisma.aiBatchRun.findUnique({
+      where: { openai_batch_id: batchId },
+    });
+    if (!run || run.kind !== AiBatchRunKind.TITLE_FAMILY) return false;
+
+    const meta = (run.metadata ?? {}) as {
+      target_languages?: ContentLanguage[];
+      source_language?: ContentLanguage;
+      writing_language?: ContentLanguage;
+      family_name?: string;
+      model?: string;
+      user_id?: string | null;
+      change_types_by_property_id?: Record<string, string>;
+      retry_count?: number;
+    };
+    const retryCount = meta.retry_count ?? 0;
+    if (retryCount >= AiTitleBatchService.MAX_TRANSIENT_RETRIES) return false;
+
+    try {
+      const client = this.aiBatchClient.createClient(apiKey);
+      const batch = await this.aiBatchClient.retrieveBatch(client, batchId);
+      if (!this.isTransientFileRace(batch.errors)) return false;
+    } catch (error) {
+      this.logger.warn(
+        `tryResubmitTransientFailure: could not inspect batch ${batchId} errors: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return false;
+    }
+
+    if (
+      !run.config_id ||
+      !run.ai_title_family_id ||
+      !meta.target_languages?.length
+    ) {
+      return false;
+    }
+
+    const propertyIds = Array.isArray(run.user_property_ids)
+      ? (run.user_property_ids as string[])
+      : [];
+    if (!propertyIds.length) return false;
+
+    const [family, properties] = await Promise.all([
+      this.prisma.aiTitleFamily.findUnique({
+        where: { id: run.ai_title_family_id },
+      }),
+      this.prisma.userProperty.findMany({
+        where: { id: { in: propertyIds } },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          district: true,
+          city: true,
+          listing_type: true,
+          square_meters: true,
+          property_type: true,
+        },
+      }),
+    ]);
+    if (!properties.length) return false;
+
+    const newBatchId = await this.submitFamilyBatch({
+      configId: run.config_id,
+      familyId: run.ai_title_family_id,
+      familyName: meta.family_name ?? family?.name ?? 'title family',
+      instructions: family?.instructions ?? null,
+      model: meta.model ?? family?.model ?? null,
+      sourceLanguage: meta.source_language ?? ContentLanguage.EN,
+      writingLanguage: meta.writing_language ?? ContentLanguage.EN,
+      targetLanguages: meta.target_languages,
+      apiKey,
+      userId: meta.user_id,
+      crawlRunId: run.crawl_run_id,
+      changeTypesByPropertyId: meta.change_types_by_property_id ?? {},
+      retryCount: retryCount + 1,
+      items: properties.map((property) => ({
+        userPropertyId: property.id,
+        title: property.title,
+        description: property.description,
+        facts: {
+          district: property.district,
+          city: property.city,
+          listing_type: property.listing_type,
+          square_meters: property.square_meters?.toString() ?? null,
+          property_type: property.property_type,
+        },
+      })),
+    });
+
+    if (!newBatchId) return false;
+
+    this.logger.warn(
+      `Title batch ${batchId} failed with a transient file-propagation race; resubmitted as ${newBatchId} (retry ${retryCount + 1}/${AiTitleBatchService.MAX_TRANSIENT_RETRIES})`,
+    );
+    return true;
   }
 
   async findByOpenAiBatchId(batchId: string) {

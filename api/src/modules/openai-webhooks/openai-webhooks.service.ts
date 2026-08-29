@@ -8,6 +8,7 @@ import { ContentProductionService } from '@/modules/content-publishing/services/
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import {
+  AiBatchRunStatus,
   JobStatus,
   NotificationSeverity,
   NotificationType,
@@ -147,7 +148,16 @@ export class OpenAiWebhooksService {
         await this.aiTitleBatchService.markFailed(
           batchId,
           `OpenAI batch ${event.type}`,
+          apiKey,
         );
+
+        // markFailed transparently resubmits (up to a retry cap) when this is the
+        // known OpenAI-side transient file-propagation race; only notify if it's
+        // still FAILED after that attempt, so a self-healed batch doesn't page anyone.
+        const stillFailed =
+          await this.aiTitleBatchService.findByOpenAiBatchId(batchId);
+        if (stillFailed?.status !== AiBatchRunStatus.FAILED) return;
+
         const agency = await this.resolveAgencyForCrawlRun(
           titleBatch.crawl_run_id,
         );
