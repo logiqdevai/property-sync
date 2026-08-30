@@ -646,6 +646,14 @@ export function resolveEstateWebLocationFromSources(input: {
   rawLocation?: string | null;
   title?: string | null;
   description?: string | null;
+  // The Greek municipality ("Δήμος X") from Google's Geocoding API for this
+  // property's address/coordinates, when available. This is ground truth (not
+  // inferred from ambiguous scraped text), so it's prepended ahead of the
+  // regex-derived hints below and takes priority in filterByPreferredPath --
+  // this is what scopes a homonym district (e.g. 11 different "Αγία Σοφία"
+  // nodes nationwide) to the correct region instead of falling through to
+  // pickMostSpecific()'s unscoped, tree-depth-based guess.
+  googleMunicipality?: string | null;
 }): EstateWebLocation | undefined {
   const preferredPathSegments = inferPreferredPathSegments(
     input.title,
@@ -654,6 +662,17 @@ export function resolveEstateWebLocationFromSources(input: {
     input.city,
     input.district,
   );
+  if (input.googleMunicipality) {
+    const normalizedMunicipality = normalizeEstateWebPlaceLabel(
+      input.googleMunicipality,
+    );
+    if (
+      normalizedMunicipality &&
+      !preferredPathSegments.includes(normalizedMunicipality)
+    ) {
+      preferredPathSegments.unshift(normalizedMunicipality);
+    }
+  }
   const latinRaw =
     !!input.rawLocation && isMostlyLatinLabel(input.rawLocation);
   if (latinRaw && !preferredPathSegments.includes('κρητη')) {

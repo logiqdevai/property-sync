@@ -2,7 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { NORMALIZATION_QUEUE } from '@/core/queues/queues.constants';
+import {
+  NORMALIZATION_QUEUE,
+  RESOLVE_ESTATEWEB_LOCATION_QUEUE,
+} from '@/core/queues/queues.constants';
+import {
+  ResolveEstateWebLocationEntityType,
+  ResolveEstateWebLocationJobData,
+} from '@/modules/user-properties/interfaces/resolve-estateweb-location-job.interface';
 import { AiService } from '@/integrations/ai/services/ai.service';
 import {
   AiProvider,
@@ -117,7 +124,56 @@ export class PropertyNormalizationService {
     private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
     @InjectQueue(NORMALIZATION_QUEUE)
     private readonly normalizationQueue: Queue<NormalizationChunkJobData>,
+    @InjectQueue(RESOLVE_ESTATEWEB_LOCATION_QUEUE)
+    private readonly resolveEstateWebLocationQueue: Queue<ResolveEstateWebLocationJobData>,
   ) {}
+
+  // Fire-and-forget: queues a single-entity Google-based EstateWeb location
+  // resolution job right after a property is created/updated, so it self-corrects
+  // shortly after ingestion without blocking the (synchronous, network-free)
+  // normalization path. Failure to enqueue must never fail normalization itself.
+  private async enqueueResolveEstateWebLocation(
+    entityType: ResolveEstateWebLocationEntityType,
+    entityId: string,
+    userId?: string,
+  ): Promise<void> {
+    try {
+      const jobLog = await this.prisma.jobLog.create({
+        data: {
+          queue_name: RESOLVE_ESTATEWEB_LOCATION_QUEUE,
+          job_name: 'resolve-estateweb-location',
+          status: JobStatus.WAITING,
+          payload: { entity_type: entityType, entity_id: entityId } as object,
+          result: { total: 1, processed: 0, resolved: 0, failed: 0 } as object,
+        },
+      });
+
+      const jobData: ResolveEstateWebLocationJobData = {
+        job_log_id: jobLog.id,
+        entity_type: entityType,
+        entity_id: entityId,
+        user_id: userId,
+        total: 1,
+      };
+
+      await this.resolveEstateWebLocationQueue.add(
+        'resolve-estateweb-location',
+        jobData,
+        {
+          jobId: `${jobLog.id}__resolve-estateweb-location`,
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 5000 },
+          removeOnComplete: 100,
+          removeOnFail: 200,
+        },
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `[enqueueResolveEstateWebLocation] failed to enqueue ${entityType}=${entityId}: ${message}`,
+      );
+    }
+  }
 
   async normalizeForCrawlRun(crawlRunId: string): Promise<void> {
     const crawlRun = await this.prisma.crawlRun.findUnique({
@@ -772,6 +828,7 @@ export class PropertyNormalizationService {
       createdCount++;
       batchProperties.push(created);
       existingProperties.push(created);
+      await this.enqueueResolveEstateWebLocation('property', created.id);
       const createdResults = await this.userPropertiesService.syncForProperty(
         created.id,
         {

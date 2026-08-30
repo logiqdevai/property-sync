@@ -485,6 +485,20 @@ export class UserPropertiesController {
     return this.userPropertiesService.geocodeMissingCoordinates(userId);
   }
 
+  @Post('resolve-estateweb-locations')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Re-resolve estateweb_location_id for every saved property using Google\'s structured address (admin only, background)',
+  })
+  @ApiResponse({ status: 200, description: 'Resolution job enqueued' })
+  @ApiResponse({ status: 400, description: 'Cannot enqueue resolution' })
+  @ApiResponse({ status: 403, description: 'Admin only' })
+  resolveEstateWebLocations(@CurrentUser('id') userId: string) {
+    return this.userPropertiesService.resolveEstateWebLocations(userId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get one saved property with canonical history' })
   @ApiResponse({ status: 200, type: UserPropertyEntity })

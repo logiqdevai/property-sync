@@ -8,6 +8,7 @@ import {
   GEOCODE_MISSING_COORDINATES_QUEUE,
   NORMALIZATION_QUEUE,
   RENORMALIZATION_QUEUE,
+  RESOLVE_ESTATEWEB_LOCATION_QUEUE,
 } from '@/core/queues/queues.constants';
 import { AiBatchModule } from '@/integrations/ai-batch/ai-batch.module';
 import { GcsIntegrationModule } from '@/integrations/storage/gcs/gcs.module';
@@ -43,6 +44,7 @@ import { ContentPublishingModule } from '@/modules/content-publishing/content-pu
       { name: RENORMALIZATION_QUEUE },
       { name: NORMALIZATION_QUEUE },
       { name: GEOCODE_MISSING_COORDINATES_QUEUE },
+      { name: RESOLVE_ESTATEWEB_LOCATION_QUEUE },
     ),
   ],
   controllers: [PropertiesController],

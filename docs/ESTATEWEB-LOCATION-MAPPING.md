@@ -1,8 +1,22 @@
 # EstateWeb Location Mapping — Handoff
 
-**Date:** 2026-07-19  
-**Status:** Blocked on missing location tree data; interfaces + matcher not yet implemented  
+**Date:** 2026-07-19 (handoff written) · **Implemented:** 2026-08-30  
+**Status:** ✅ Implemented — deterministic name/alias/hierarchy matcher against a committed location catalog, with manual override UI  
 **Related:** CMS sync push fails when `estateweb_location_id` is null
+
+---
+
+## Implementation summary (2026-08-30)
+
+Everything under "Proposed solution" below was built as described. Kept for historical context; the "Blocked" framing further down no longer applies.
+
+- **Catalog**: `api/src/integrations/estateweb/constants/estateweb-locations.data.json` (full internal location tree: `id`, `parent_id`, `name`, `level`, `path`, `is_city`), loaded via `estateweb-locations.constants.ts` into `ESTATEWEB_LOCATIONS`.
+- **Resolver**: `api/src/integrations/estateweb/utils/estateweb-location-lookup.util.ts` — normalizes Greek text (diacritics/case, abbreviations like `Αγ.`↔`Άγιος`, genitive stripping), applies a `CITY_ALIASES` map (incl. Latin→Greek transliteration, e.g. `heraklion`→`ηρακλειο`), matches against the catalog, then disambiguates homonyms via ancestor/path hierarchy and region hints from title/description, preferring the most specific match and falling back to the broader region node instead of returning null. Entry points: `resolveEstateWebLocation(city, district, hints)`, `resolveEstateWebLocationFromSources({city, district, rawLocation, title, description})`. Tests: `estateweb-location-lookup.util.spec.ts`.
+- **Wired into normalization**: `api/src/modules/properties/utils/property-normalization.utils.ts` calls `resolveEstateWebLocationFromSources` and persists the result as `estateweb_location_id` on `Property` / `UserProperty` (an AI-supplied id, if already present, is respected).
+- **Push validation unchanged**: `estateweb-cms-sync-adapter.service.ts` still asserts the field is present before pushing.
+- **Manual override UI**: `app/src/pages/dashboard/properties/components/estateweb-location-picker-modal.tsx` lets a user browse/search the same catalog and override the auto-resolved id when the matcher gets it wrong.
+
+---
 
 ---
 

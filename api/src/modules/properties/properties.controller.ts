@@ -234,6 +234,18 @@ export class PropertiesController {
     return this.propertiesService.geocodeMissingCoordinates();
   }
 
+  @Post('resolve-estateweb-locations')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Re-resolve estateweb_location_id for every property using Google\'s structured address (background)',
+  })
+  @ApiResponse({ status: 200, description: 'Resolution job enqueued' })
+  @ApiResponse({ status: 400, description: 'Cannot enqueue resolution' })
+  resolveEstateWebLocations() {
+    return this.propertiesService.resolveEstateWebLocations();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get property with source links and history' })
   @ApiResponse({ status: 200, type: PropertyEntity })

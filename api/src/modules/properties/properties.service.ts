@@ -10,8 +10,12 @@ import { randomUUID } from 'crypto';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
-import { GEOCODE_MISSING_COORDINATES_QUEUE } from '@/core/queues/queues.constants';
+import {
+  GEOCODE_MISSING_COORDINATES_QUEUE,
+  RESOLVE_ESTATEWEB_LOCATION_QUEUE,
+} from '@/core/queues/queues.constants';
 import { GeocodeCoordinatesJobData } from '@/modules/user-properties/interfaces/geocode-coordinates-job.interface';
+import { ResolveEstateWebLocationJobData } from '@/modules/user-properties/interfaces/resolve-estateweb-location-job.interface';
 import {
   applyTextTruncatePieces,
   buildLocalizedTruncateUpdates,
@@ -43,6 +47,8 @@ export class PropertiesService {
     private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
     @InjectQueue(GEOCODE_MISSING_COORDINATES_QUEUE)
     private readonly geocodeCoordinatesQueue: Queue,
+    @InjectQueue(RESOLVE_ESTATEWEB_LOCATION_QUEUE)
+    private readonly resolveEstateWebLocationQueue: Queue,
   ) {}
 
   private buildWhere(
@@ -730,6 +736,69 @@ export class PropertiesService {
       enqueued: enqueueIds.length,
       message:
         'Geocoding started in the background. Track progress in Job queue.',
+    };
+  }
+
+  async resolveEstateWebLocations() {
+    const properties = await this.prisma.property.findMany({
+      select: { id: true },
+    });
+
+    if (properties.length === 0) {
+      throw new BadRequestException('No properties to resolve');
+    }
+
+    const enqueueIds = properties.map((property) => property.id);
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: RESOLVE_ESTATEWEB_LOCATION_QUEUE,
+        job_name: 'resolve-estateweb-location',
+        status: JobStatus.WAITING,
+        payload: {
+          property_ids: enqueueIds,
+          total: enqueueIds.length,
+        } as object,
+        result: {
+          total: enqueueIds.length,
+          processed: 0,
+          resolved: 0,
+          failed: 0,
+        } as object,
+      },
+    });
+
+    this.logger.log(
+      `[resolveEstateWebLocations] queued job_log=${jobLog.id} properties=${enqueueIds.length}`,
+    );
+
+    await this.resolveEstateWebLocationQueue.addBulk(
+      enqueueIds.map((propertyId) => {
+        const jobData: ResolveEstateWebLocationJobData = {
+          job_log_id: jobLog.id,
+          entity_type: 'property',
+          entity_id: propertyId,
+          total: enqueueIds.length,
+        };
+        return {
+          name: 'resolve-estateweb-location',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${propertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
+
+    return {
+      job_log_id: jobLog.id,
+      enqueued: enqueueIds.length,
+      message:
+        'EstateWeb location resolution started in the background. Track progress in Job queue.',
     };
   }
 

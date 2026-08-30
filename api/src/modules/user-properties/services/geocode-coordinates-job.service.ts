@@ -6,7 +6,7 @@ import {
   GeocodeCoordinatesJobData,
 } from '../interfaces/geocode-coordinates-job.interface';
 
-function buildAddressText(fields: {
+export function buildAddressText(fields: {
   address: string | null;
   district: string | null;
   city: string | null;

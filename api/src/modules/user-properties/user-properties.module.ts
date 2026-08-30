@@ -10,6 +10,7 @@ import {
   MIGRATE_INTEGRATION_IMAGES_QUEUE,
   PUSH_TO_CMS_QUEUE,
   RENORMALIZATION_QUEUE,
+  RESOLVE_ESTATEWEB_LOCATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
 } from '@/core/queues/queues.constants';
@@ -30,6 +31,7 @@ import { EstateWebSitesUpdateProcessor } from '@/background/estateweb-sites-upda
 import { DeleteIntegrationImagesProcessor } from '@/background/delete-integration-images.processor';
 import { MigrateIntegrationImagesProcessor } from '@/background/migrate-integration-images.processor';
 import { GeocodeCoordinatesProcessor } from '@/background/geocode-coordinates.processor';
+import { ResolveEstateWebLocationProcessor } from '@/background/resolve-estateweb-location.processor';
 import { UserPropertiesController } from './user-properties.controller';
 import { AdminUserPropertiesController } from './admin-user-properties.controller';
 import { UserPropertiesService } from './user-properties.service';
@@ -42,6 +44,7 @@ import { EstateWebSitesUpdateJobService } from './services/estateweb-sites-updat
 import { DeleteIntegrationImagesJobService } from './services/delete-integration-images-job.service';
 import { MigrateIntegrationImagesJobService } from './services/migrate-integration-images-job.service';
 import { GeocodeCoordinatesJobService } from './services/geocode-coordinates-job.service';
+import { ResolveEstateWebLocationJobService } from './services/resolve-estateweb-location-job.service';
 
 @Module({
   imports: [
@@ -65,6 +68,7 @@ import { GeocodeCoordinatesJobService } from './services/geocode-coordinates-job
       { name: DELETE_INTEGRATION_IMAGES_QUEUE },
       { name: MIGRATE_INTEGRATION_IMAGES_QUEUE },
       { name: GEOCODE_MISSING_COORDINATES_QUEUE },
+      { name: RESOLVE_ESTATEWEB_LOCATION_QUEUE },
     ),
   ],
   controllers: [UserPropertiesController, AdminUserPropertiesController],
@@ -88,6 +92,8 @@ import { GeocodeCoordinatesJobService } from './services/geocode-coordinates-job
     MigrateIntegrationImagesProcessor,
     GeocodeCoordinatesJobService,
     GeocodeCoordinatesProcessor,
+    ResolveEstateWebLocationJobService,
+    ResolveEstateWebLocationProcessor,
   ],
   exports: [UserPropertiesService],
 })

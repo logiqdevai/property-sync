@@ -17,10 +17,15 @@ import {
   MIGRATE_INTEGRATION_IMAGES_QUEUE,
   PUSH_TO_CMS_QUEUE,
   RENORMALIZATION_QUEUE,
+  RESOLVE_ESTATEWEB_LOCATION_QUEUE,
   SALES_PRICE_UPDATE_QUEUE,
   WATERMARK_REMOVAL_QUEUE,
 } from '@/core/queues/queues.constants';
 import { GeocodeCoordinatesJobData } from './interfaces/geocode-coordinates-job.interface';
+import {
+  ResolveEstateWebLocationEntityType,
+  ResolveEstateWebLocationJobData,
+} from './interfaces/resolve-estateweb-location-job.interface';
 import { DewatermarkOrchestratorService } from '@/integrations/dewatermark/services/dewatermark-orchestrator.service';
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
@@ -167,7 +172,55 @@ export class UserPropertiesService {
     private readonly migrateIntegrationImagesQueue: Queue<MigrateIntegrationImagesJobData>,
     @InjectQueue(GEOCODE_MISSING_COORDINATES_QUEUE)
     private readonly geocodeCoordinatesQueue: Queue<GeocodeCoordinatesJobData>,
+    @InjectQueue(RESOLVE_ESTATEWEB_LOCATION_QUEUE)
+    private readonly resolveEstateWebLocationQueue: Queue<ResolveEstateWebLocationJobData>,
   ) {}
+
+  // Fire-and-forget: queues a single-entity Google-based EstateWeb location
+  // resolution job right after a UserProperty is created, so it self-corrects
+  // shortly after ingestion. Failure to enqueue must never fail the sync itself.
+  private async enqueueResolveEstateWebLocation(
+    entityType: ResolveEstateWebLocationEntityType,
+    entityId: string,
+    userId?: string,
+  ): Promise<void> {
+    try {
+      const jobLog = await this.prisma.jobLog.create({
+        data: {
+          queue_name: RESOLVE_ESTATEWEB_LOCATION_QUEUE,
+          job_name: 'resolve-estateweb-location',
+          status: JobStatus.WAITING,
+          payload: { entity_type: entityType, entity_id: entityId } as object,
+          result: { total: 1, processed: 0, resolved: 0, failed: 0 } as object,
+        },
+      });
+
+      const jobData: ResolveEstateWebLocationJobData = {
+        job_log_id: jobLog.id,
+        entity_type: entityType,
+        entity_id: entityId,
+        user_id: userId,
+        total: 1,
+      };
+
+      await this.resolveEstateWebLocationQueue.add(
+        'resolve-estateweb-location',
+        jobData,
+        {
+          jobId: `${jobLog.id}__resolve-estateweb-location`,
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 5000 },
+          removeOnComplete: 100,
+          removeOnFail: 200,
+        },
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `[enqueueResolveEstateWebLocation] failed to enqueue ${entityType}=${entityId}: ${message}`,
+      );
+    }
+  }
 
   private async resolveFilterSourceAgencyId(
     userId: string,
@@ -1488,6 +1541,72 @@ export class UserPropertiesService {
       enqueued: enqueueIds.length,
       message:
         'Geocoding started in the background. Track progress in Job queue.',
+    };
+  }
+
+  async resolveEstateWebLocations(userId: string) {
+    const properties = await this.prisma.userProperty.findMany({
+      where: { user_id: userId },
+      select: { id: true },
+    });
+
+    if (properties.length === 0) {
+      throw new BadRequestException('No saved properties to resolve');
+    }
+
+    const enqueueIds = properties.map((property) => property.id);
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: RESOLVE_ESTATEWEB_LOCATION_QUEUE,
+        job_name: 'resolve-estateweb-location',
+        status: JobStatus.WAITING,
+        payload: {
+          user_id: userId,
+          ids: enqueueIds,
+          total: enqueueIds.length,
+        } as object,
+        result: {
+          total: enqueueIds.length,
+          processed: 0,
+          resolved: 0,
+          failed: 0,
+        } as object,
+      },
+    });
+
+    this.logger.log(
+      `[resolveEstateWebLocations] queued job_log=${jobLog.id} user=${userId} ids=${enqueueIds.length}`,
+    );
+
+    await this.resolveEstateWebLocationQueue.addBulk(
+      enqueueIds.map((userPropertyId) => {
+        const jobData: ResolveEstateWebLocationJobData = {
+          job_log_id: jobLog.id,
+          entity_type: 'user_property',
+          entity_id: userPropertyId,
+          user_id: userId,
+          total: enqueueIds.length,
+        };
+        return {
+          name: 'resolve-estateweb-location',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${userPropertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
+
+    return {
+      job_log_id: jobLog.id,
+      enqueued: enqueueIds.length,
+      message:
+        'EstateWeb location resolution started in the background. Track progress in Job queue.',
     };
   }
 
@@ -3083,6 +3202,11 @@ export class UserPropertiesService {
           watermarkManualSelection: tracker.watermark_manual_selection,
           watermarkImageCount: tracker.watermark_image_count,
         });
+        await this.enqueueResolveEstateWebLocation(
+          'user_property',
+          created.id,
+          tracker.user_id,
+        );
         results.push({
           user_property_id: created.id,
           change_type: 'created',
@@ -3127,6 +3251,11 @@ export class UserPropertiesService {
           watermarkManualSelection: tracker.watermark_manual_selection,
           watermarkImageCount: tracker.watermark_image_count,
         });
+        await this.enqueueResolveEstateWebLocation(
+          'user_property',
+          created.id,
+          tracker.user_id,
+        );
         results.push({
           user_property_id: created.id,
           change_type: 'created',
