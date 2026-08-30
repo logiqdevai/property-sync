@@ -105,6 +105,36 @@ export class ContentProductionService {
     return { pendingBatch: result.pendingBatchIds.includes(userPropertyId) };
   }
 
+  // Buckets ids by the same tracker+config grouping produceForUserProperties()
+  // uses internally, so a caller that needs to enqueue work per-agency (rather
+  // than per-property) can do so without re-deriving agency resolution itself.
+  // A property with no resolvable tracker/config gets its own single-item group.
+  async groupUserPropertyIdsByAgency(
+    userPropertyIds: string[],
+  ): Promise<string[][]> {
+    const uniqueIds = [...new Set(userPropertyIds.filter(Boolean))];
+    if (!uniqueIds.length) return [];
+
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: uniqueIds } },
+      select: {
+        id: true,
+        user_id: true,
+        title: true,
+        description: true,
+        canonical_property_id: true,
+        district: true,
+        city: true,
+        listing_type: true,
+        square_meters: true,
+        property_type: true,
+      },
+    });
+
+    const groups = await this.groupByTrackerConfig(properties);
+    return groups.map((group) => group.properties.map((p) => p.id));
+  }
+
   async produceForUserProperties(
     userPropertyIds: string[],
     options?: {

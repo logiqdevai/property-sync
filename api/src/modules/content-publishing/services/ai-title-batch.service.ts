@@ -397,6 +397,22 @@ export class AiTitleBatchService {
     message: string,
     apiKey?: string,
   ): Promise<void> {
+    // Atomically claim this run out of SUBMITTED before doing anything else.
+    // OpenAI fans a batch.failed event out to every webhook endpoint
+    // registered on the org, so this can be entered concurrently for the same
+    // batchId (and can also race the watchdog cron); without this guard both
+    // callers read the same "not yet handled" state and both resubmit,
+    // doubling the batch count on every failure. Claiming into CANCELLED
+    // up front also means a run that gets successfully resubmitted no longer
+    // sits in SUBMITTED forever -- previously that left it a zombie the
+    // watchdog would rediscover and resubmit again on every future tick,
+    // since its own metadata.retry_count was never incremented.
+    const claim = await this.prisma.aiBatchRun.updateMany({
+      where: { openai_batch_id: batchId, status: AiBatchRunStatus.SUBMITTED },
+      data: { status: AiBatchRunStatus.CANCELLED, error_message: message },
+    });
+    if (claim.count === 0) return;
+
     if (apiKey) {
       const resubmitted = await this.tryResubmitTransientFailure(
         batchId,

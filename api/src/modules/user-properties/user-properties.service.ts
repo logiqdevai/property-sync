@@ -1014,12 +1014,19 @@ export class UserPropertiesService {
       },
     });
 
+    // Group by agency (same tracker+config resolution produceForUserProperties
+    // uses internally) so one BullMQ job -- and one OpenAI title batch -- covers
+    // a whole agency's worth of properties instead of fanning out one job (and
+    // one OpenAI batch) per property.
+    const groupedIds =
+      await this.contentProductionService.groupUserPropertyIdsByAgency(ownedIds);
+
     await this.contentProductionQueue.addBulk(
-      ownedIds.map((userPropertyId) => {
+      groupedIds.map((groupIds, index) => {
         const jobData: ContentProductionJobData = {
           job_log_id: jobLog.id,
           user_id: userId,
-          user_property_id: userPropertyId,
+          user_property_ids: groupIds,
           run_translations: runTranslations,
           run_ai_titles: runAiTitles,
           use_ai_batch: useAiBatch,
@@ -1031,7 +1038,7 @@ export class UserPropertiesService {
           name: 'produce-content',
           data: jobData,
           opts: {
-            jobId: `${jobLog.id}__${userPropertyId}`,
+            jobId: `${jobLog.id}__group_${index}`,
             attempts: 3,
             backoff: { type: 'exponential' as const, delay: 5000 },
             removeOnComplete: 100,
@@ -1044,8 +1051,7 @@ export class UserPropertiesService {
     return {
       job_log_id: jobLog.id,
       enqueued: ownedIds.length,
-      message:
-        'Content production started in the background (up to 5 properties in parallel). Track progress in Job queue.',
+      message: `Content production started in the background (${groupedIds.length} agency batch${groupedIds.length === 1 ? '' : 'es'}). Track progress in Job queue.`,
       skipped: notOwnedFailed,
     };
   }
@@ -2831,94 +2837,6 @@ export class UserPropertiesService {
       total: uniqueIds.length,
       queued,
     };
-  }
-
-  private async enqueueContentProductionJobs(
-    userId: string,
-    userPropertyIds: string[],
-    options: {
-      runTranslations?: boolean;
-      runAiTitles?: boolean;
-      useAiBatch?: boolean;
-      regenerate?: boolean;
-      pushToCrm?: boolean;
-    } = {},
-  ): Promise<{ job_log_id: string; enqueued: number }> {
-    const runTranslations = options.runTranslations ?? true;
-    const runAiTitles = options.runAiTitles ?? true;
-    const useAiBatch = options.useAiBatch ?? false;
-    const regenerate = options.regenerate ?? true;
-    const pushToCrm = options.pushToCrm ?? true;
-
-    const payload = {
-      user_id: userId,
-      user_property_ids: userPropertyIds,
-      run_translations: runTranslations,
-      run_ai_titles: runAiTitles,
-      use_ai_batch: useAiBatch,
-      regenerate,
-      push_to_crm: pushToCrm,
-      total: userPropertyIds.length,
-    };
-
-    const initialResult: ContentProductionJobResult = {
-      total: userPropertyIds.length,
-      processed: 0,
-      ready: 0,
-      pending_batch: 0,
-      failed: 0,
-      cms_pushed: 0,
-      cms_failed: 0,
-      translations_written: 0,
-      titles_written: 0,
-      items: [],
-      logs: [
-        `enqueued user=${userId} properties=${userPropertyIds.length} translations=${runTranslations} ai=${runAiTitles} batch=${useAiBatch} regenerate=${regenerate} pushToCrm=${pushToCrm}`,
-      ],
-    };
-
-    const jobLog = await this.prisma.jobLog.create({
-      data: {
-        queue_name: CONTENT_PRODUCTION_QUEUE,
-        job_name: 'produce-content',
-        status: JobStatus.WAITING,
-        payload: payload as object,
-        result: initialResult as object,
-      },
-    });
-
-    this.logger.log(
-      `[enqueueContentProductionJobs] queued job_log=${jobLog.id} user=${userId} ids=${userPropertyIds.length} translations=${runTranslations} ai=${runAiTitles} batch=${useAiBatch} regenerate=${regenerate} pushToCrm=${pushToCrm}`,
-    );
-
-    await this.contentProductionQueue.addBulk(
-      userPropertyIds.map((userPropertyId) => {
-        const jobData: ContentProductionJobData = {
-          job_log_id: jobLog.id,
-          user_id: userId,
-          user_property_id: userPropertyId,
-          run_translations: runTranslations,
-          run_ai_titles: runAiTitles,
-          use_ai_batch: useAiBatch,
-          regenerate,
-          push_to_crm: pushToCrm,
-          total: userPropertyIds.length,
-        };
-        return {
-          name: 'produce-content',
-          data: jobData,
-          opts: {
-            jobId: `${jobLog.id}__${userPropertyId}`,
-            attempts: 3,
-            backoff: { type: 'exponential' as const, delay: 5000 },
-            removeOnComplete: 100,
-            removeOnFail: 200,
-          },
-        };
-      }),
-    );
-
-    return { job_log_id: jobLog.id, enqueued: userPropertyIds.length };
   }
 
   async splitMany(userId: string, ids: string[]) {

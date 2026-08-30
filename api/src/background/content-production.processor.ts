@@ -7,7 +7,7 @@ import { CONTENT_PRODUCTION_QUEUE } from '@/core/queues/queues.constants';
 import { JobStatus } from 'generated/prisma';
 import { ContentProductionJobService } from '@/modules/user-properties/services/content-production-job.service';
 import {
-  ContentProductionItemResult,
+  ContentProductionGroupResult,
   ContentProductionJobData,
   ContentProductionJobResult,
 } from '@/modules/user-properties/interfaces/content-production-job.interface';
@@ -35,26 +35,32 @@ export class ContentProductionProcessor
   }
 
   async process(job: Job<ContentProductionJobData>): Promise<void> {
-    const { job_log_id, user_property_id, total } = job.data;
+    const { job_log_id, user_property_ids, total } = job.data;
 
     await this.ensureJobActive(job_log_id, job, total);
 
     try {
-      const item =
-        await this.contentProductionJobService.processProperty(job.data);
-      await this.recordItemResult(job_log_id, item, total);
+      const group = await this.contentProductionJobService.processGroup(
+        job.data,
+      );
+      await this.recordGroupResult(job_log_id, String(job.id), group, total);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `[process] job_log=${job_log_id} property=${user_property_id} failed: ${message}`,
+        `[process] job_log=${job_log_id} properties=${user_property_ids.length} failed: ${message}`,
         error instanceof Error ? error.stack : undefined,
       );
-      await this.recordItemResult(
+      await this.recordGroupResult(
         job_log_id,
+        String(job.id),
         {
-          user_property_id,
-          status: 'failed',
-          error: message,
+          items: user_property_ids.map((id) => ({
+            user_property_id: id,
+            status: 'failed' as const,
+            error: message,
+          })),
+          translations_written: 0,
+          titles_written: 0,
         },
         total,
       );
@@ -95,7 +101,7 @@ export class ContentProductionProcessor
         this.emptyResult(total);
       if (!result.logs) result.logs = [];
       result.logs.push(
-        `worker start property=${job.data.user_property_id} bull_job_id=${job.id} attempt=${job.attemptsMade + 1}`,
+        `worker start properties=${job.data.user_property_ids.length} bull_job_id=${job.id} attempt=${job.attemptsMade + 1}`,
       );
 
       await tx.jobLog.update({
@@ -114,9 +120,10 @@ export class ContentProductionProcessor
     });
   }
 
-  private async recordItemResult(
+  private async recordGroupResult(
     logId: string,
-    item: ContentProductionItemResult,
+    groupKey: string,
+    group: ContentProductionGroupResult,
     total: number,
   ): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
@@ -130,39 +137,53 @@ export class ContentProductionProcessor
         (log.result as unknown as ContentProductionJobResult | null) ??
         this.emptyResult(total);
 
-      const already = result.items.some(
-        (row) => row.user_property_id === item.user_property_id,
-      );
-      if (already) {
-        result.items = result.items.map((row) =>
-          row.user_property_id === item.user_property_id ? item : row,
+      for (const item of group.items) {
+        const already = result.items.some(
+          (row) => row.user_property_id === item.user_property_id,
         );
-      } else {
-        result.items.push(item);
-        result.processed += 1;
+        if (already) {
+          result.items = result.items.map((row) =>
+            row.user_property_id === item.user_property_id ? item : row,
+          );
+        } else {
+          result.items.push(item);
+          result.processed += 1;
+        }
       }
 
-      result.ready = result.items.filter((row) => row.status === 'ready').length;
+      // Keyed by BullMQ job id so re-recording a retried job overwrites its
+      // own contribution instead of adding it again.
+      if (!result.group_totals) result.group_totals = {};
+      result.group_totals[groupKey] = {
+        translations_written: group.translations_written,
+        titles_written: group.titles_written,
+      };
+
+      result.ready = result.items.filter(
+        (row) => row.status === 'ready',
+      ).length;
       result.pending_batch = result.items.filter(
         (row) => row.status === 'pending_batch',
       ).length;
-      result.failed = result.items.filter((row) => row.status === 'failed').length;
+      result.failed = result.items.filter(
+        (row) => row.status === 'failed',
+      ).length;
       result.cms_failed = result.items.filter(
         (row) => row.status === 'cms_failed',
       ).length;
       result.cms_pushed = result.items.filter((row) => row.cms_pushed).length;
-      result.translations_written = result.items.reduce(
-        (sum, row) => sum + (row.translations_written ?? 0),
+      result.translations_written = Object.values(result.group_totals).reduce(
+        (sum, row) => sum + row.translations_written,
         0,
       );
-      result.titles_written = result.items.reduce(
-        (sum, row) => sum + (row.titles_written ?? 0),
+      result.titles_written = Object.values(result.group_totals).reduce(
+        (sum, row) => sum + row.titles_written,
         0,
       );
 
       if (!result.logs) result.logs = [];
       result.logs.push(
-        `property=${item.user_property_id} status=${item.status}${item.error ? ` error=${item.error}` : ''}`,
+        `group=${groupKey} properties=${group.items.length} translations_written=${group.translations_written} titles_written=${group.titles_written}`,
       );
 
       const finished = result.processed >= result.total;
@@ -182,7 +203,7 @@ export class ContentProductionProcessor
                 status: hardFailed ? JobStatus.FAILED : JobStatus.COMPLETED,
                 finished_at: finishedAt,
                 duration_ms: log.started_at
-                  ? (finishedAt!.getTime() - log.started_at.getTime())
+                  ? finishedAt!.getTime() - log.started_at.getTime()
                   : null,
                 error_message: hardFailed
                   ? `Content production failed for all ${result.total} properties`
