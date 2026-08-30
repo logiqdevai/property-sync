@@ -30,6 +30,7 @@ import {
   BulkInsertionSettingsModal,
   type BulkInsertionSettingsPayload,
 } from "./components/bulk-insertion-settings-modal";
+import { useBulkSetAiBatch } from "@/features/content-publishing/hooks/use-content-publishing";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMemo, useState } from "react";
 import {
@@ -43,7 +44,15 @@ import {
   Table,
   useOverlayState,
 } from "@heroui/react";
-import { ChevronDown, ExternalLink, Search, Settings, SlidersHorizontal } from "lucide-react";
+import {
+  ChevronDown,
+  ExternalLink,
+  Search,
+  Settings,
+  SlidersHorizontal,
+  Zap,
+  ZapOff,
+} from "lucide-react";
 
 function AgencyRow({
   agency,
@@ -209,9 +218,13 @@ export default function DashboardAgenciesPage() {
   const watermarkModal = useOverlayState();
   const publishingModal = useOverlayState();
   const bulkInsertionSettingsModal = useOverlayState();
+  const bulkAiBatchConfirm = useOverlayState();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
+  const [pendingAiBatchValue, setPendingAiBatchValue] = useState<
+    boolean | null
+  >(null);
   const [pendingUntrack, setPendingUntrack] = useState<TrackableAgency | null>(
     null,
   );
@@ -236,6 +249,7 @@ export default function DashboardAgenciesPage() {
   const untrackAgency = useUntrackAgency();
   const updateTracking = useUpdateAgencyTracking();
   const bulkTracking = useBulkAgencyTracking();
+  const bulkSetAiBatch = useBulkSetAiBatch();
 
   const allTrackedAgenciesQuery = useTrackableAgencies(
     { page: 1, limit: 0 },
@@ -339,6 +353,17 @@ export default function DashboardAgenciesPage() {
     });
   };
 
+  const requestBulkAiBatch = (useAiBatch: boolean) => {
+    setPendingAiBatchValue(useAiBatch);
+    bulkAiBatchConfirm.open();
+  };
+
+  const handleBulkAiBatchConfirm = async () => {
+    if (pendingAiBatchValue === null) return;
+    await bulkSetAiBatch.mutateAsync(pendingAiBatchValue);
+    setPendingAiBatchValue(null);
+  };
+
   const openWatermarkSettings = (item: TrackableAgency) => {
     setSettingsAgency(item);
     watermarkModal.open();
@@ -418,6 +443,10 @@ export default function DashboardAgenciesPage() {
               onAction={(key) => {
                 if (key === "bulk-insertion-settings") {
                   bulkInsertionSettingsModal.open();
+                } else if (key === "enable-ai-batch") {
+                  requestBulkAiBatch(true);
+                } else if (key === "disable-ai-batch") {
+                  requestBulkAiBatch(false);
                 }
               }}
             >
@@ -428,6 +457,18 @@ export default function DashboardAgenciesPage() {
                 <div className="flex w-full items-center gap-2">
                   <SlidersHorizontal className="h-3.5 w-3.5 shrink-0 text-muted" />
                   <Label>Bulk insertion settings</Label>
+                </div>
+              </Dropdown.Item>
+              <Dropdown.Item id="enable-ai-batch" textValue="Enable AI batch (all agencies)">
+                <div className="flex w-full items-center gap-2">
+                  <Zap className="h-3.5 w-3.5 shrink-0 text-muted" />
+                  <Label>Enable AI batch (all agencies)</Label>
+                </div>
+              </Dropdown.Item>
+              <Dropdown.Item id="disable-ai-batch" textValue="Disable AI batch (all agencies)">
+                <div className="flex w-full items-center gap-2">
+                  <ZapOff className="h-3.5 w-3.5 shrink-0 text-muted" />
+                  <Label>Disable AI batch (all agencies)</Label>
                 </div>
               </Dropdown.Item>
             </Dropdown.Menu>
@@ -580,6 +621,23 @@ export default function DashboardAgenciesPage() {
         confirmLabel="Untrack"
         onConfirm={handleBulkUntrack}
         isPending={bulkTracking.isPending}
+      />
+
+      <ConfirmationDialog
+        state={bulkAiBatchConfirm}
+        title={
+          pendingAiBatchValue
+            ? "Enable OpenAI Batch API for all agencies?"
+            : "Disable OpenAI Batch API for all agencies?"
+        }
+        description={
+          pendingAiBatchValue
+            ? "Title generation will default to the OpenAI Batch API across every tracked agency (cheaper, but async — CMS publish waits for the batch, and stalls if the Batch API is degraded). Clears any per-family override so none of them fight this."
+            : "Title generation will run synchronously across every tracked agency instead of using the OpenAI Batch API (slightly pricier, but no batch-outage risk). Clears any per-family override so none of them fight this."
+        }
+        confirmLabel={pendingAiBatchValue ? "Enable" : "Disable"}
+        onConfirm={handleBulkAiBatchConfirm}
+        isPending={bulkSetAiBatch.isPending}
       />
 
       {activeSettingsAgency?.tracking_prefs ? (

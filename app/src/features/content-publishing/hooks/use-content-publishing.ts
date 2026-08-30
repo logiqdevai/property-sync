@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import {
+  bulkSetAiBatch,
   deleteContentPublishingConfig,
   getContentPublishingConfig,
   upsertContentPublishingConfig,
@@ -40,6 +41,29 @@ export const useUpsertContentPublishingConfig = (agencyId: string) => {
     onError: (error: Error) => {
       toast({
         title: "Could not save content publishing",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useBulkSetAiBatch = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (useAiBatch: boolean) => bulkSetAiBatch(useAiBatch),
+    onSuccess: (result, useAiBatch) => {
+      queryClient.invalidateQueries({ queryKey: ["content-publishing"] });
+      queryClient.invalidateQueries({ queryKey: ["trackableAgencies"] });
+      toast({
+        title: `AI batch ${useAiBatch ? "enabled" : "disabled"} for ${result.updated} ${result.updated === 1 ? "agency" : "agencies"}`,
+        duration: 3000,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not update AI batch setting",
         description: error.message,
         variant: "error",
       });

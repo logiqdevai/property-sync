@@ -200,6 +200,10 @@ export const ApiRoutes = {
         contentPublishing: (agencyId: string) =>
             `/agencies/${agencyId}/track/content-publishing`,
     },
+    contentPublishing: {
+        prefix: "/content-publishing",
+        bulkAiBatch: "/content-publishing/bulk-ai-batch",
+    },
     cmsSyncRuns: {
         prefix: "/cms-sync-runs",
         list: "/cms-sync-runs",

@@ -166,6 +166,26 @@ export class ContentPublishingConfigService {
     return this.loadConfig(trackerId);
   }
 
+  // Sets the OpenAI Batch API default across every agency this user has a
+  // content publishing config for, and clears any per-family override so no
+  // family can keep fighting the new default (it falls back to inheriting it).
+  async bulkSetUseAiBatch(
+    userId: string,
+    useAiBatch: boolean,
+  ): Promise<{ updated: number }> {
+    return this.prisma.$transaction(async (tx) => {
+      const configUpdate = await tx.contentPublishingConfig.updateMany({
+        where: { user_tracked_agency: { user_id: userId } },
+        data: { use_ai_batch: useAiBatch },
+      });
+      await tx.aiTitleFamily.updateMany({
+        where: { config: { user_tracked_agency: { user_id: userId } } },
+        data: { use_batch: null },
+      });
+      return { updated: configUpdate.count };
+    });
+  }
+
   private validateDto(
     dto: UpsertContentPublishingConfigDto,
     sourceLanguage: ContentLanguage,

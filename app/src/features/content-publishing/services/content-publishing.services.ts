@@ -42,3 +42,17 @@ export const deleteContentPublishingConfig = async (
     throw new Error("Failed to delete content publishing config.");
   }
 };
+
+export const bulkSetAiBatch = async (
+  useAiBatch: boolean,
+): Promise<{ updated: number }> => {
+  try {
+    const response = await axiosInstance.patch(
+      ApiRoutes.contentPublishing.bulkAiBatch,
+      { use_ai_batch: useAiBatch },
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to update AI batch setting.");
+  }
+};

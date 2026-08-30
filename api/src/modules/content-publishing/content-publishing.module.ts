@@ -8,6 +8,7 @@ import { CostLogsModule } from '@/modules/cost-logs/cost-logs.module';
 import { PlatformConfigModule } from '@/modules/platform-config/platform-config.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { ContentPublishingController } from './content-publishing.controller';
+import { ContentPublishingBulkController } from './content-publishing-bulk.controller';
 import { ContentPublishingConfigService } from './services/content-publishing-config.service';
 import { ContentProductionService } from './services/content-production.service';
 import { ContentResolutionService } from './services/content-resolution.service';
@@ -28,7 +29,7 @@ import { AiBatchWatchdogCron } from '@/background/ai-batch-watchdog.cron';
     PlatformConfigModule,
     NotificationsModule,
   ],
-  controllers: [ContentPublishingController],
+  controllers: [ContentPublishingController, ContentPublishingBulkController],
   providers: [
     ContentPublishingConfigService,
     ContentProductionService,
