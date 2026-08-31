@@ -4,15 +4,42 @@ import { ConfigService } from '@nestjs/config';
 export interface GoogleGeocodeDetails {
     lat: number;
     lng: number;
-    // The Greek municipality ("Δήμος X") if Google's response includes one --
-    // this is the string that lines up 1:1 with a path segment in the EstateWeb
-    // location catalog (verified against real geocoding responses), regardless
-    // of which administrative_area_level Google happens to assign it in a given
-    // region (it is NOT consistently level 3 or level 4 across Greece).
-    municipality: string | null;
-    locality: string | null;
+    // Ordered broad-to-specific administrative/locality names from Google's response
+    // (region/prefecture down to neighborhood). These line up 1:1 with individual path
+    // segments in the EstateWeb location catalog often enough to be useful scoping
+    // hints -- e.g. Google's administrative_area_level_3 "Θεσσαλονίκη" matches the
+    // catalog's prefecture segment even though Google never spells out "Δήμος X" outside
+    // Attica-style regions. Deliberately NOT limited to components literally prefixed
+    // "Δήμος " -- that regex only ever matched Attica addresses (verified against real
+    // geocoding responses for Thessaloniki/Crete, which return bare admin names with no
+    // "Δήμος" word at all), so restricting to it left the vast majority of addresses with
+    // no usable hint.
+    adminSegments: string[];
     formattedAddress: string | null;
 }
+
+// Broad-to-specific: administrative hierarchy first (region/prefecture/municipality,
+// whatever levels Google assigns for a given part of Greece), then locality/sublocality/
+// neighborhood. Deliberately excludes street_number/route/postal_code/country/plus_code/
+// premise/subpremise and POI-ish types (establishment, point_of_interest, ...) -- those
+// are never path segments in the EstateWeb catalog.
+const ADMIN_SEGMENT_TYPE_PRIORITY = [
+    'administrative_area_level_1',
+    'administrative_area_level_2',
+    'administrative_area_level_3',
+    'administrative_area_level_4',
+    'administrative_area_level_5',
+    'administrative_area_level_6',
+    'administrative_area_level_7',
+    'locality',
+    'sublocality',
+    'sublocality_level_1',
+    'sublocality_level_2',
+    'sublocality_level_3',
+    'sublocality_level_4',
+    'sublocality_level_5',
+    'neighborhood',
+];
 
 @Injectable()
 export class GoogleMapsService {
@@ -76,25 +103,39 @@ export class GoogleMapsService {
             );
         }
 
-        const result = data.results[0];
+        const results: Array<{
+            geometry: { location: { lat: number; lng: number } };
+            formatted_address?: string;
+            address_components?: Array<{ long_name: string; types: string[] }>;
+        }> = data.results;
+        const result = results[0];
         const { lat, lng } = result.geometry.location;
-        const components: Array<{ long_name: string; types: string[] }> =
-            result.address_components ?? [];
 
-        // Search every component regardless of its administrative_area_level_N --
-        // that number is not stable across regions (e.g. it's level 4 in Attica),
-        // whereas "Δήμος " as a long_name prefix reliably identifies the Greek
-        // municipality node wherever Google places it in the hierarchy.
-        const municipality =
-            components.find((c) => /^Δήμος\s/.test(c.long_name))?.long_name ?? null;
-        const locality =
-            components.find((c) => c.types.includes('locality'))?.long_name ?? null;
+        // Reverse geocoding spreads the admin hierarchy across SEPARATE top-level result
+        // entries rather than nesting it all in results[0].address_components -- e.g. for
+        // an Attica address, "Δήμος Φιλοθέης-Ψυχικού" (administrative_area_level_4) only
+        // appears in a later result entry (its own minimal {admin_level_4, country} pair),
+        // never inside the precise street-address result. Must merge components across
+        // every result entry, or the exact case this hint was built for goes right back to
+        // having no usable municipality segment (verified against the real API response).
+        const components = results.flatMap((r) => r.address_components ?? []);
+
+        const adminSegments: string[] = [];
+        for (const type of ADMIN_SEGMENT_TYPE_PRIORITY) {
+            for (const component of components) {
+                if (
+                    component.types.includes(type) &&
+                    !adminSegments.includes(component.long_name)
+                ) {
+                    adminSegments.push(component.long_name);
+                }
+            }
+        }
 
         return {
             lat,
             lng,
-            municipality,
-            locality,
+            adminSegments,
             formattedAddress: result.formatted_address ?? null,
         };
     }

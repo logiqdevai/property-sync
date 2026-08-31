@@ -20,9 +20,14 @@ export class ResolveEstateWebLocationJobService {
   // Reverse-geocodes existing coordinates when present (cheaper/more reliable
   // ground truth than re-forward-geocoding scraped text), otherwise forward-geocodes
   // the same address text the coordinates job already builds. Either way we only read
-  // the municipality out of the response -- lat/lng backfill is explicitly out of
+  // admin/locality names out of the response -- lat/lng backfill is explicitly out of
   // scope for this job (handled separately by geocode-missing-coordinates).
-  private async resolveGoogleMunicipality(fields: {
+  //
+  // Returns [] (not an error) when Google has nothing usable -- ZERO_RESULTS, or a
+  // result with no admin/locality components -- so the resolver still runs on the
+  // property's own city/district/title/description below instead of being skipped
+  // outright. Only a real Google API error (bad key, quota, ...) should fail the item.
+  private async resolveGoogleAddressSegments(fields: {
     latitude: unknown;
     longitude: unknown;
     address: string | null;
@@ -30,22 +35,22 @@ export class ResolveEstateWebLocationJobService {
     city: string | null;
     postal_code: string | null;
     country: string | null;
-  }): Promise<string | null> {
+  }): Promise<string[]> {
     if (fields.latitude != null && fields.longitude != null) {
       const details = await this.googleMapsService.reverseGeocode(
         Number(fields.latitude),
         Number(fields.longitude),
       );
-      return details?.municipality ?? null;
+      return details?.adminSegments ?? [];
     }
 
     const addressText = buildAddressText(fields);
-    if (!addressText) return null;
+    if (!addressText) return [];
 
     const details = await this.googleMapsService.geocodeAddressDetailed(
       addressText,
     );
-    return details?.municipality ?? null;
+    return details?.adminSegments ?? [];
   }
 
   async processProperty(
@@ -77,25 +82,22 @@ export class ResolveEstateWebLocationJobService {
     }
 
     try {
-      const municipality = await this.resolveGoogleMunicipality(property);
-      if (!municipality) {
-        return {
-          entity_id: data.entity_id,
-          status: 'skipped',
-          error: 'Google returned no municipality for this address',
-        };
-      }
+      const googleAddressSegments =
+        await this.resolveGoogleAddressSegments(property);
 
       const resolved = resolveEstateWebLocationFromSources({
         city: property.city,
         district: property.district,
         title: property.title,
         description: property.description,
-        googleMunicipality: municipality,
+        googleAddressSegments,
       });
 
-      if (!resolved || resolved.id === property.estateweb_location_id) {
-        return { entity_id: data.entity_id, status: 'unchanged' };
+      if (!resolved) {
+        return { entity_id: data.entity_id, status: 'skipped', title: property.title };
+      }
+      if (resolved.id === property.estateweb_location_id) {
+        return { entity_id: data.entity_id, status: 'unchanged', title: property.title };
       }
 
       await this.prisma.property.update({
@@ -103,10 +105,15 @@ export class ResolveEstateWebLocationJobService {
         data: { estateweb_location_id: resolved.id },
       });
 
-      return { entity_id: data.entity_id, status: 'resolved' };
+      return { entity_id: data.entity_id, status: 'resolved', title: property.title };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      return { entity_id: data.entity_id, status: 'failed', error: message };
+      return {
+        entity_id: data.entity_id,
+        status: 'failed',
+        title: property.title,
+        error: message,
+      };
     }
   }
 
@@ -139,25 +146,22 @@ export class ResolveEstateWebLocationJobService {
     }
 
     try {
-      const municipality = await this.resolveGoogleMunicipality(property);
-      if (!municipality) {
-        return {
-          entity_id: data.entity_id,
-          status: 'skipped',
-          error: 'Google returned no municipality for this address',
-        };
-      }
+      const googleAddressSegments =
+        await this.resolveGoogleAddressSegments(property);
 
       const resolved = resolveEstateWebLocationFromSources({
         city: property.city,
         district: property.district,
         title: property.title,
         description: property.description,
-        googleMunicipality: municipality,
+        googleAddressSegments,
       });
 
-      if (!resolved || resolved.id === property.estateweb_location_id) {
-        return { entity_id: data.entity_id, status: 'unchanged' };
+      if (!resolved) {
+        return { entity_id: data.entity_id, status: 'skipped', title: property.title };
+      }
+      if (resolved.id === property.estateweb_location_id) {
+        return { entity_id: data.entity_id, status: 'unchanged', title: property.title };
       }
 
       await this.prisma.userProperty.update({
@@ -169,10 +173,15 @@ export class ResolveEstateWebLocationJobService {
         },
       });
 
-      return { entity_id: data.entity_id, status: 'resolved' };
+      return { entity_id: data.entity_id, status: 'resolved', title: property.title };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      return { entity_id: data.entity_id, status: 'failed', error: message };
+      return {
+        entity_id: data.entity_id,
+        status: 'failed',
+        title: property.title,
+        error: message,
+      };
     }
   }
 }

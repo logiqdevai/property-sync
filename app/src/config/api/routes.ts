@@ -107,6 +107,7 @@ export const ApiRoutes = {
             split: (id: string) => `/admin/properties/${id}/split`,
             geocodeMissingCoordinates: "/admin/properties/geocode-missing-coordinates",
             countMissingCoordinates: "/admin/properties/count-missing-coordinates",
+            resolveEstateWebLocations: "/admin/properties/resolve-estateweb-locations",
         },
         sourceProperties: {
             prefix: "/admin/source-properties",
@@ -245,6 +246,7 @@ export const ApiRoutes = {
         renormalize: "/properties/renormalize",
         geocodeMissingCoordinates: "/properties/geocode-missing-coordinates",
         countMissingCoordinates: "/properties/count-missing-coordinates",
+        resolveEstateWebLocations: "/properties/resolve-estateweb-locations",
         bulkDeleteIntegrationImages: "/properties/bulk-delete-integration-images",
         bulkMigrateIntegrationImages: "/properties/bulk-migrate-integration-images",
     },

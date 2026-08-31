@@ -13,7 +13,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { CircleDot, CopyCheck, ExternalLink, Globe, Hash, ImageOff, Images, Languages, Layers, ListFilter, MapIcon, MapPin, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, TableIcon, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { CircleDot, Compass, CopyCheck, ExternalLink, Globe, Hash, ImageOff, Images, Languages, Layers, ListFilter, MapIcon, MapPin, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, TableIcon, Trash2, Ungroup, Upload, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
@@ -23,6 +23,7 @@ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import { GeocodeMissingCoordinatesModal } from "@/components/ui/geocode-missing-coordinates-modal";
+import { ResolveEstateWebLocationsModal } from "@/components/ui/resolve-estateweb-locations-modal";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { MigrateIntegrationImagesModal } from "@/components/ui/migrate-integration-images-modal";
 import {
@@ -64,6 +65,7 @@ import {
   useRenormalizeUserProperties,
   useGeocodeMissingCoordinates,
   useUserPropertiesMissingCoordinatesCount,
+  useResolveEstateWebLocations,
   useBulkDeleteUserPropertyIntegrationImages,
   useBulkMigrateUserPropertyIntegrationImages,
   useSplitUserProperties,
@@ -280,6 +282,7 @@ export default function DashboardPropertiesListPage() {
   const checkCrmDuplicatesModal = useOverlayState();
   const manageOrphanSitesModal = useOverlayState();
   const geocodeModal = useOverlayState();
+  const resolveEstateWebLocationsModal = useOverlayState();
   const [manageSitesPropertyIds, setManageSitesPropertyIds] = useState<string[]>([]);
   const [removeWatermarkPropertyIds, setRemoveWatermarkPropertyIds] = useState<
     string[]
@@ -410,6 +413,7 @@ export default function DashboardPropertiesListPage() {
   const missingCoordinatesCount = useUserPropertiesMissingCoordinatesCount(
     geocodeModal.isOpen,
   );
+  const resolveEstateWebLocations = useResolveEstateWebLocations();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
@@ -626,6 +630,11 @@ export default function DashboardPropertiesListPage() {
         label: "Find missing coordinates",
         icon: MapPin,
       });
+      entries.push({
+        id: "resolve-estateweb-locations",
+        label: "Resolve EstateWeb locations",
+        icon: Compass,
+      });
 
       const duplicateItems: TableRowAction[] = [
         {
@@ -813,6 +822,10 @@ export default function DashboardPropertiesListPage() {
     }
     if (actionId === "geocode-missing-coordinates") {
       geocodeModal.open();
+      return;
+    }
+    if (actionId === "resolve-estateweb-locations") {
+      resolveEstateWebLocationsModal.open();
       return;
     }
     if (actionId === "delete") {
@@ -1728,6 +1741,11 @@ export default function DashboardPropertiesListPage() {
         state={geocodeModal}
         countQuery={missingCoordinatesCount}
         geocode={geocodeMissingCoordinates}
+      />
+      <ResolveEstateWebLocationsModal
+        state={resolveEstateWebLocationsModal}
+        resolve={resolveEstateWebLocations}
+        getDetailRoute={(id) => Routes.dashboard.properties.detail(id)}
       />
       <ConfirmationDialog
         state={deleteCmsImagesConfirm}

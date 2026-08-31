@@ -109,7 +109,7 @@ describe('resolveEstateWebLocation', () => {
     const withHint = resolveEstateWebLocationFromSources({
       city: 'Νέο Ψυχικό',
       district: 'Αγία Σοφία',
-      googleMunicipality: 'Δήμος Φιλοθέης-Ψυχικού',
+      googleAddressSegments: ['Δήμος Φιλοθέης-Ψυχικού'],
     });
     expect(withHint).toEqual(
       expect.objectContaining({
@@ -118,5 +118,36 @@ describe('resolveEstateWebLocation', () => {
         path: 'Στερεά Ελλάδα » Αθήνα » Δήμος Φιλοθέης-Ψυχικού » Αγία Σοφία',
       }),
     );
+  });
+
+  it('scopes via a bare prefecture-level Google segment with no "Δήμος" wording', () => {
+    // Google essentially never spells the municipality out with a "Δήμος " prefix
+    // outside Attica -- for Thessaloniki/Crete addresses it returns bare names like
+    // "Θεσσαλονίκη" (administrative_area_level_3) with no "Δήμος" anywhere. That name
+    // still matches the catalog's prefecture path segment directly, so it must still
+    // work as a scoping hint even though it's not a literal municipality string.
+    const loc = resolveEstateWebLocationFromSources({
+      district: 'Καλαμαριά, Αρετσού',
+      googleAddressSegments: ['Θεσσαλονίκη', 'Καλαμαριά'],
+    });
+    expect(loc).toEqual(
+      expect.objectContaining({
+        id: 103986,
+        name: 'Αρετσού',
+        path: 'Μακεδονία » Θεσσαλονίκη » Δήμος Καλαμαριάς » Αρετσού',
+      }),
+    );
+  });
+
+  it('still resolves via city/district alone when Google returns no usable segments', () => {
+    // A property whose district is a globally unique catalog name must not be left
+    // unresolved just because Google's response (or its absence) yielded an empty
+    // hint array -- the resolver's own fallback must still run.
+    expect(
+      resolveEstateWebLocationFromSources({
+        district: 'Αρετσού',
+        googleAddressSegments: [],
+      })?.id,
+    ).toBe(103986);
   });
 });

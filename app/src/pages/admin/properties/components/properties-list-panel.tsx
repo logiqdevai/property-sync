@@ -12,6 +12,7 @@ import {
   type Selection,
 } from "@heroui/react";
 import {
+  Compass,
   Layers,
   MapIcon,
   MapPin,
@@ -29,6 +30,7 @@ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TruncateDescriptionDialog } from "@/components/ui/truncate-description-dialog";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import { GeocodeMissingCoordinatesModal } from "@/components/ui/geocode-missing-coordinates-modal";
+import { ResolveEstateWebLocationsModal } from "@/components/ui/resolve-estateweb-locations-modal";
 import { PropertyStatusChip } from "@/components/ui/property-status-chip";
 import { PropertyDuplicateGroupChip } from "@/components/ui/property-duplicate-group-chip";
 import {
@@ -45,6 +47,7 @@ import {
   useProperties,
   usePropertiesCount,
   usePropertiesMap,
+  useResolveEstateWebLocations,
   useSplitProperties,
   useTruncatePropertyDescriptions,
 } from "@/features/properties/hooks/use-properties";
@@ -92,6 +95,7 @@ export function PropertiesListPanel() {
   const truncateConfirm = useOverlayState();
   const splitConfirm = useOverlayState();
   const geocodeModal = useOverlayState();
+  const resolveEstateWebLocationsModal = useOverlayState();
 
   const [status, setStatus] = useState<PropertyStatus | "all">("all");
   const [change, setChange] = useState<PropertyChangeFilter | "all">("all");
@@ -171,6 +175,7 @@ export function PropertiesListPanel() {
   const truncateDescriptions = useTruncatePropertyDescriptions();
   const geocodeMissingCoordinates = useGeocodeMissingCoordinates();
   const missingCoordinatesCount = useMissingCoordinatesCount(geocodeModal.isOpen);
+  const resolveEstateWebLocations = useResolveEstateWebLocations();
 
   const properties = data?.data ?? [];
   const pagination = data?.pagination;
@@ -219,6 +224,11 @@ export function PropertiesListPanel() {
         icon: MapPin,
       },
       {
+        id: "resolve-estateweb-locations",
+        label: "Resolve EstateWeb locations",
+        icon: Compass,
+      },
+      {
         id: "delete",
         label: "Delete selected",
         variant: "danger",
@@ -260,6 +270,10 @@ export function PropertiesListPanel() {
     }
     if (actionId === "geocode-missing-coordinates") {
       geocodeModal.open();
+      return;
+    }
+    if (actionId === "resolve-estateweb-locations") {
+      resolveEstateWebLocationsModal.open();
       return;
     }
     if (actionId === "delete") {
@@ -823,6 +837,12 @@ export function PropertiesListPanel() {
         state={geocodeModal}
         countQuery={missingCoordinatesCount}
         geocode={geocodeMissingCoordinates}
+      />
+
+      <ResolveEstateWebLocationsModal
+        state={resolveEstateWebLocationsModal}
+        resolve={resolveEstateWebLocations}
+        getDetailRoute={(id) => Routes.admin.properties.detail(id)}
       />
     </div>
   );

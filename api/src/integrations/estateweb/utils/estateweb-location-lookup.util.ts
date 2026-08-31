@@ -646,14 +646,18 @@ export function resolveEstateWebLocationFromSources(input: {
   rawLocation?: string | null;
   title?: string | null;
   description?: string | null;
-  // The Greek municipality ("Δήμος X") from Google's Geocoding API for this
-  // property's address/coordinates, when available. This is ground truth (not
-  // inferred from ambiguous scraped text), so it's prepended ahead of the
-  // regex-derived hints below and takes priority in filterByPreferredPath --
-  // this is what scopes a homonym district (e.g. 11 different "Αγία Σοφία"
-  // nodes nationwide) to the correct region instead of falling through to
-  // pickMostSpecific()'s unscoped, tree-depth-based guess.
-  googleMunicipality?: string | null;
+  // Ordered broad-to-specific administrative/locality names (region/prefecture down to
+  // neighborhood) from Google's Geocoding API for this property's address/coordinates,
+  // when available. This is ground truth (not inferred from ambiguous scraped text), so
+  // it's prepended ahead of the regex-derived hints below and takes priority in
+  // filterByPreferredPath -- this is what scopes a homonym district (e.g. 11 different
+  // "Αγία Σοφία" nodes nationwide) to the correct region instead of falling through to
+  // pickMostSpecific()'s unscoped, tree-depth-based guess. Deliberately not limited to a
+  // single "the municipality" string -- Google rarely spells the municipality out with a
+  // "Δήμος " prefix outside Attica, but its prefecture/locality names still match catalog
+  // path segments directly often enough to scope correctly (e.g. administrative_area_level_3
+  // "Θεσσαλονίκη" matches the catalog's prefecture segment even with no "Δήμος" anywhere).
+  googleAddressSegments?: string[] | null;
 }): EstateWebLocation | undefined {
   const preferredPathSegments = inferPreferredPathSegments(
     input.title,
@@ -662,16 +666,18 @@ export function resolveEstateWebLocationFromSources(input: {
     input.city,
     input.district,
   );
-  if (input.googleMunicipality) {
-    const normalizedMunicipality = normalizeEstateWebPlaceLabel(
-      input.googleMunicipality,
+  if (input.googleAddressSegments?.length) {
+    const normalizedSegments = input.googleAddressSegments
+      .map((segment) => normalizeEstateWebPlaceLabel(segment))
+      .filter(
+        (segment, index, all) =>
+          segment && all.indexOf(segment) === index,
+      );
+    preferredPathSegments.unshift(
+      ...normalizedSegments.filter(
+        (segment) => !preferredPathSegments.includes(segment),
+      ),
     );
-    if (
-      normalizedMunicipality &&
-      !preferredPathSegments.includes(normalizedMunicipality)
-    ) {
-      preferredPathSegments.unshift(normalizedMunicipality);
-    }
   }
   const latinRaw =
     !!input.rawLocation && isMostlyLatinLabel(input.rawLocation);

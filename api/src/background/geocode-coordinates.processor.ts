@@ -10,9 +10,18 @@ import {
 } from '@/modules/user-properties/interfaces/geocode-coordinates-job.interface';
 
 const GEOCODE_COORDINATES_WORKER_CONCURRENCY = 15;
+// Google Geocoding's OVER_QUERY_LIMIT is a QPS/sustained-throughput throttle, not the
+// monthly free-tier cap -- concurrency alone doesn't protect against it on a multi-thousand
+// item backfill. Capping the whole worker's throughput here (not just per-item retry) is
+// what keeps this queue under a rate the shared API key can sustain indefinitely.
+const GEOCODE_COORDINATES_MAX_REQUESTS_PER_SECOND = 8;
 
 @Processor(GEOCODE_MISSING_COORDINATES_QUEUE, {
   concurrency: GEOCODE_COORDINATES_WORKER_CONCURRENCY,
+  limiter: {
+    max: GEOCODE_COORDINATES_MAX_REQUESTS_PER_SECOND,
+    duration: 1000,
+  },
 })
 export class GeocodeCoordinatesProcessor
   extends WorkerHost

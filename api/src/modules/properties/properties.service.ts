@@ -763,6 +763,8 @@ export class PropertiesService {
           total: enqueueIds.length,
           processed: 0,
           resolved: 0,
+          unchanged: 0,
+          skipped: 0,
           failed: 0,
         } as object,
       },

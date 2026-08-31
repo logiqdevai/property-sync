@@ -251,3 +251,9 @@ export interface GeocodeMissingCoordinatesResult {
 export interface MissingCoordinatesCountResponse {
   count: number;
 }
+
+export interface ResolveEstateWebLocationsResult {
+  job_log_id: string;
+  enqueued: number;
+  message: string;
+}

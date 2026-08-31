@@ -144,7 +144,14 @@ export class PropertyNormalizationService {
           job_name: 'resolve-estateweb-location',
           status: JobStatus.WAITING,
           payload: { entity_type: entityType, entity_id: entityId } as object,
-          result: { total: 1, processed: 0, resolved: 0, failed: 0 } as object,
+          result: {
+            total: 1,
+            processed: 0,
+            resolved: 0,
+            unchanged: 0,
+            skipped: 0,
+            failed: 0,
+          } as object,
         },
       });
 

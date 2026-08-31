@@ -31,6 +31,7 @@ import {
   renormalizeUserProperties,
   geocodeMissingCoordinates,
   getUserPropertiesMissingCoordinatesCount,
+  resolveEstateWebLocations,
   bulkDeleteUserPropertyIntegrationImages,
   bulkMigrateUserPropertyIntegrationImages,
   splitAdminUserProperties,
@@ -704,6 +705,24 @@ export const useUserPropertiesMissingCoordinatesCount = (enabled: boolean) => {
     queryKey: ["userProperties", "missing-coordinates-count"],
     queryFn: () => getUserPropertiesMissingCoordinatesCount(),
     enabled,
+  });
+};
+
+export const useResolveEstateWebLocations = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => resolveEstateWebLocations(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not start EstateWeb location resolution",
+        description: error.message,
+        variant: "error",
+      });
+    },
   });
 };
 

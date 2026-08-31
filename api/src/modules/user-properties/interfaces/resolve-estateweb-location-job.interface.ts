@@ -17,7 +17,14 @@ export type ResolveEstateWebLocationItemStatus =
 export interface ResolveEstateWebLocationItemResult {
   entity_id: string;
   status: ResolveEstateWebLocationItemStatus;
+  title?: string | null;
   error?: string;
+}
+
+export interface ResolveEstateWebLocationFailure {
+  entity_id: string;
+  title: string | null;
+  error: string;
 }
 
 // Per-entity results live in JobLogItem (one row per entity, upserted independently so
@@ -27,5 +34,10 @@ export interface ResolveEstateWebLocationJobResult {
   total: number;
   processed: number;
   resolved: number;
+  unchanged: number;
+  skipped: number;
   failed: number;
+  // Capped (see RESOLVE_ESTATEWEB_LOCATION_MAX_TRACKED_FAILURES) -- failures beyond the
+  // cap still count toward `failed` above, they just stop being individually listed.
+  failures?: ResolveEstateWebLocationFailure[];
 }

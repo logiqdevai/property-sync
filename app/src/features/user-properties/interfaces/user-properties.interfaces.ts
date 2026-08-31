@@ -272,6 +272,12 @@ export interface MissingCoordinatesCountResponse {
   count: number;
 }
 
+export interface ResolveEstateWebLocationsResult {
+  job_log_id: string;
+  enqueued: number;
+  message: string;
+}
+
 export interface BulkDeleteIntegrationImagesPayload {
   ids: string[];
 }

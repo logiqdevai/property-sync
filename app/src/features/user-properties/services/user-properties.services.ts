@@ -15,6 +15,7 @@ import type {
   RenormalizeUserPropertiesResult,
   GeocodeMissingCoordinatesResult,
   MissingCoordinatesCountResponse,
+  ResolveEstateWebLocationsResult,
   BulkDeleteIntegrationImagesPayload,
   BulkDeleteIntegrationImagesResult,
   BulkMigrateIntegrationImagesPayload,
@@ -449,6 +450,21 @@ export const getUserPropertiesMissingCoordinatesCount =
       throw new Error(
         error?.response?.data?.message ||
           "Failed to count properties missing coordinates.",
+      );
+    }
+  };
+
+export const resolveEstateWebLocations =
+  async (): Promise<ResolveEstateWebLocationsResult> => {
+    try {
+      const response = await axiosInstance.post(
+        ApiRoutes.userProperties.resolveEstateWebLocations,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error?.response?.data?.message ||
+          "Failed to resolve EstateWeb locations.",
       );
     }
   };
