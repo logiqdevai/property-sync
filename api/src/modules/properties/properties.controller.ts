@@ -35,6 +35,7 @@ import {
 } from './dto/property-query.schema';
 import { MergePropertiesDto } from './dto/merge-properties.dto';
 import { DeletePropertiesDto } from './dto/delete-properties.dto';
+import { ResolveEstateWebLocationsDto } from './dto/resolve-estateweb-locations.dto';
 import { TruncatePropertyDescriptionsDto } from './dto/truncate-property-descriptions.dto';
 import { PropertyEntity } from './entities/property.entity';
 
@@ -238,12 +239,12 @@ export class PropertiesController {
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary:
-      'Re-resolve estateweb_location_id for every property using Google\'s structured address (background)',
+      'Re-resolve estateweb_location_id for the selected properties using Google\'s structured address (background)',
   })
   @ApiResponse({ status: 200, description: 'Resolution job enqueued' })
   @ApiResponse({ status: 400, description: 'Cannot enqueue resolution' })
-  resolveEstateWebLocations() {
-    return this.propertiesService.resolveEstateWebLocations();
+  resolveEstateWebLocations(@Body() dto: ResolveEstateWebLocationsDto) {
+    return this.propertiesService.resolveEstateWebLocations(dto.property_ids);
   }
 
   @Get(':id')

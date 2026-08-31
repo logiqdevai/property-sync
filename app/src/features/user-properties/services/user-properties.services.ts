@@ -454,11 +454,13 @@ export const getUserPropertiesMissingCoordinatesCount =
     }
   };
 
-export const resolveEstateWebLocations =
-  async (): Promise<ResolveEstateWebLocationsResult> => {
+export const resolveEstateWebLocations = async (
+  ids: string[],
+): Promise<ResolveEstateWebLocationsResult> => {
     try {
       const response = await axiosInstance.post(
         ApiRoutes.userProperties.resolveEstateWebLocations,
+        { ids },
       );
       return response.data;
     } catch (error: any) {

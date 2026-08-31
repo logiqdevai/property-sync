@@ -188,17 +188,19 @@ export const getPropertiesMissingCoordinatesCount =
     }
   };
 
-export const resolveEstateWebLocations =
-  async (): Promise<ResolveEstateWebLocationsResult> => {
-    try {
-      const response = await axiosInstance.post(
-        ApiRoutes.admin.properties.resolveEstateWebLocations,
-      );
-      return response.data;
-    } catch (error: any) {
-      throw new Error(
-        error?.response?.data?.message ||
-          "Failed to resolve EstateWeb locations.",
-      );
-    }
-  };
+export const resolveEstateWebLocations = async (
+  propertyIds: string[],
+): Promise<ResolveEstateWebLocationsResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.properties.resolveEstateWebLocations,
+      { property_ids: propertyIds },
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to resolve EstateWeb locations.",
+    );
+  }
+};

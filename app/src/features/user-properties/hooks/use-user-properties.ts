@@ -712,7 +712,7 @@ export const useResolveEstateWebLocations = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => resolveEstateWebLocations(),
+    mutationFn: (ids: string[]) => resolveEstateWebLocations(ids),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
     },

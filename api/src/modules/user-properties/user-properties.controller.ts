@@ -28,6 +28,7 @@ import { UserPropertiesService } from './user-properties.service';
 import { PROPERTY_CHANGE_FILTER_VALUES } from '@/modules/properties/utils/property-change-filter.util';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import { DeleteUserPropertiesDto } from './dto/delete-user-properties.dto';
+import { ResolveEstateWebLocationsDto } from './dto/resolve-estateweb-locations.dto';
 import { DeleteIntegrationImagesDto } from './dto/delete-integration-images.dto';
 import { CreateIntegrationImagesDto } from './dto/create-integration-images.dto';
 import { UpdateIntegrationImagesDto } from './dto/update-integration-images.dto';
@@ -490,13 +491,16 @@ export class UserPropertiesController {
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary:
-      'Re-resolve estateweb_location_id for every saved property using Google\'s structured address (admin only, background)',
+      'Re-resolve estateweb_location_id for the selected saved properties using Google\'s structured address (admin only, background)',
   })
   @ApiResponse({ status: 200, description: 'Resolution job enqueued' })
   @ApiResponse({ status: 400, description: 'Cannot enqueue resolution' })
   @ApiResponse({ status: 403, description: 'Admin only' })
-  resolveEstateWebLocations(@CurrentUser('id') userId: string) {
-    return this.userPropertiesService.resolveEstateWebLocations(userId);
+  resolveEstateWebLocations(
+    @CurrentUser('id') userId: string,
+    @Body() dto: ResolveEstateWebLocationsDto,
+  ) {
+    return this.userPropertiesService.resolveEstateWebLocations(userId, dto.ids);
   }
 
   @Get(':id')

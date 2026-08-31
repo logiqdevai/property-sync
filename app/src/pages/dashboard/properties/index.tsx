@@ -634,6 +634,7 @@ export default function DashboardPropertiesListPage() {
         id: "resolve-estateweb-locations",
         label: "Resolve EstateWeb locations",
         icon: Compass,
+        isDisabled: selectedCount < 1,
       });
 
       const duplicateItems: TableRowAction[] = [
@@ -1746,6 +1747,7 @@ export default function DashboardPropertiesListPage() {
         state={resolveEstateWebLocationsModal}
         resolve={resolveEstateWebLocations}
         getDetailRoute={(id) => Routes.dashboard.properties.detail(id)}
+        propertyIds={Array.from(selectedIds)}
       />
       <ConfirmationDialog
         state={deleteCmsImagesConfirm}

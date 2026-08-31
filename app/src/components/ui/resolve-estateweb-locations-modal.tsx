@@ -36,12 +36,16 @@ export function ResolveEstateWebLocationsModal({
   state,
   resolve,
   getDetailRoute,
+  propertyIds,
 }: {
   state: ResolveEstateWebLocationsModalState;
-  resolve: UseMutationResult<ResolveEstateWebLocationsResult, Error, void>;
+  resolve: UseMutationResult<ResolveEstateWebLocationsResult, Error, string[]>;
   /** Builds the link target for a failed entity's own detail page (differs between the
    * admin canonical-Property list and the per-user saved-properties dashboard). */
   getDetailRoute: (entityId: string) => string;
+  /** The currently table-selected property/user-property ids -- this only ever acts on
+   * the selection, never on every row, so an empty selection has nothing to run. */
+  propertyIds: string[];
 }) {
   const [jobLogId, setJobLogId] = useState<string | null>(null);
 
@@ -56,7 +60,7 @@ export function ResolveEstateWebLocationsModal({
   const jobIsActive = !!job && ACTIVE_JOB_STATUSES.has(job.status);
 
   const handleStart = () => {
-    resolve.mutate(undefined, {
+    resolve.mutate(propertyIds, {
       onSuccess: (started) => setJobLogId(started.job_log_id),
     });
   };
@@ -73,10 +77,18 @@ export function ResolveEstateWebLocationsModal({
               <div className="flex flex-col gap-4">
                 {!jobLogId ? (
                   <p className="text-sm text-foreground">
-                    Re-check every property&apos;s EstateWeb location against Google&apos;s
-                    structured address (municipality-scoped) and correct any mismatched
-                    location id. Runs in the background — progress shows here and in Job
-                    queue.
+                    {propertyIds.length === 0 ? (
+                      "Select one or more properties in the table first."
+                    ) : (
+                      <>
+                        Re-check{" "}
+                        <span className="font-semibold">{propertyIds.length}</span>{" "}
+                        selected {propertyIds.length === 1 ? "property's" : "properties'"}{" "}
+                        EstateWeb location against Google&apos;s structured address
+                        (municipality-scoped) and correct any mismatched location id. Runs
+                        in the background — progress shows here and in Job queue.
+                      </>
+                    )}
                   </p>
                 ) : (
                   <div className="flex flex-col gap-2 rounded-xl border border-border p-3">
@@ -161,6 +173,7 @@ export function ResolveEstateWebLocationsModal({
                   variant="primary"
                   onPress={handleStart}
                   isPending={resolve.isPending}
+                  isDisabled={propertyIds.length === 0}
                 >
                   Resolve locations
                 </ActionButtonWithPending>

@@ -1551,9 +1551,9 @@ export class UserPropertiesService {
     };
   }
 
-  async resolveEstateWebLocations(userId: string) {
+  async resolveEstateWebLocations(userId: string, ids: string[]) {
     const properties = await this.prisma.userProperty.findMany({
-      where: { user_id: userId },
+      where: { user_id: userId, id: { in: ids } },
       select: { id: true },
     });
 

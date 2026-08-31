@@ -227,6 +227,7 @@ export function PropertiesListPanel() {
         id: "resolve-estateweb-locations",
         label: "Resolve EstateWeb locations",
         icon: Compass,
+        isDisabled: selectedCount < 1,
       },
       {
         id: "delete",
@@ -843,6 +844,7 @@ export function PropertiesListPanel() {
         state={resolveEstateWebLocationsModal}
         resolve={resolveEstateWebLocations}
         getDetailRoute={(id) => Routes.admin.properties.detail(id)}
+        propertyIds={Array.from(selectedIds)}
       />
     </div>
   );
