@@ -15,7 +15,7 @@ export const SourcePropertyQuerySchema = z.object({
       const parsed = parseInt(v, 10);
       if (!Number.isFinite(parsed) || parsed < 0) return 20;
       if (parsed === 0) return 0;
-      return Math.min(parsed, 100);
+      return Math.min(parsed, 1000);
     }),
   status: z.nativeEnum(PropertyStatus).optional(),
   search: z.string().optional(),
