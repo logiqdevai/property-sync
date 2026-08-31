@@ -724,9 +724,16 @@ export class PropertyNormalizationService {
             price: existingLink.property.price,
             city: record.city ?? existingLink.property.city,
             district: record.district ?? existingLink.property.district,
+            // Once a location id is set, only the async Google-verified re-check
+            // (enqueued below) may change it -- NOT this synchronous re-normalization.
+            // buildPropertyRecord's resolver has no Google hint and (by design) almost
+            // never returns null, it just sometimes guesses the wrong region; letting a
+            // fresh guess win here on every re-crawl would silently regress an id that
+            // was already corrected (by the async job or an admin backfill) back to a
+            // possibly-wrong one, indefinitely, with nothing to notice or fix it again.
             estateweb_location_id:
-              record.estateweb_location_id ??
-              existingLink.property.estateweb_location_id,
+              existingLink.property.estateweb_location_id ??
+              record.estateweb_location_id,
             estateweb_type_id:
               record.estateweb_type_id ??
               existingLink.property.estateweb_type_id,
@@ -770,6 +777,16 @@ export class PropertyNormalizationService {
         });
 
         batchProperties.push(updated);
+        // Only worth a fresh Google check when there was no id yet, or the location
+        // text itself actually changed on this re-crawl -- not on every re-crawl
+        // regardless of relevance (most re-crawls only touch price/images/etc.).
+        if (
+          existingLink.property.estateweb_location_id == null ||
+          record.city !== existingLink.property.city ||
+          record.district !== existingLink.property.district
+        ) {
+          await this.enqueueResolveEstateWebLocation('property', updated.id);
+        }
         const updatedResults = await this.userPropertiesService.syncForProperty(
           updated.id,
           {

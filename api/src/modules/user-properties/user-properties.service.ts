@@ -3316,6 +3316,21 @@ export class UserPropertiesService {
         },
       });
 
+      // Only worth a fresh Google check when there was no id yet, or the location
+      // text itself actually changed on this sync (e.g. per-user truncation makes
+      // this row's own city/district differ from the canonical property's).
+      if (
+        existing.estateweb_location_id == null ||
+        effectiveFields.city !== existing.city ||
+        effectiveFields.district !== existing.district
+      ) {
+        await this.enqueueResolveEstateWebLocation(
+          'user_property',
+          existing.id,
+          tracker.user_id,
+        );
+      }
+
       if (imagesChanged) {
         await this.watermarkRemovalService.applyTrackerWatermarkPipeline({
           userPropertyId: existing.id,

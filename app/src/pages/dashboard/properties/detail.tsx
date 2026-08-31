@@ -945,7 +945,16 @@ export default function DashboardPropertyDetailPage() {
                   />
                 </label>
               </div>
-              <div className="flex justify-stretch sm:justify-end">
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <ActionButtonWithPending
+                  type="button"
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                  onPress={handleCancelEdit}
+                  isDisabled={updateProperty.isPending}
+                >
+                  Cancel
+                </ActionButtonWithPending>
                 <ActionButtonWithPending
                   type="submit"
                   className="w-full sm:w-auto"
