@@ -4,6 +4,13 @@
 **Status:** ✅ Implemented — deterministic name/alias/hierarchy matcher against a committed location catalog, with manual override UI  
 **Related:** CMS sync push fails when `estateweb_location_id` is null
 
+**⚠️ Accuracy follow-up (2026-08-31):** the deterministic matcher described below shipped
+with several real accuracy bugs — it resolved plausible-looking but wrong ids for
+properties across many agencies (homonym Greek place names scoped to the wrong region).
+See **`docs/ESTATEWEB-LOCATION-ACCURACY-FIXES.md`** for the full root-cause writeup, the
+Google-geocoding-based fix, and a re-crawl regression bug found while verifying it — read
+that doc if you're debugging a wrong `estateweb_location_id` again.
+
 ---
 
 ## Implementation summary (2026-08-30)
