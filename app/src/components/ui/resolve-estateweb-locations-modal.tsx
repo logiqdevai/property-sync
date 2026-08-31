@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Modal, useOverlayState } from "@heroui/react";
+import { Modal, ProgressBar, useOverlayState } from "@heroui/react";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { useJob } from "@/features/jobs/hooks/use-jobs";
@@ -58,6 +58,14 @@ export function ResolveEstateWebLocationsModal({
   const { data: job } = useJob(jobLogId ?? "");
   const result = job?.result as ResolveEstateWebLocationJobResult | undefined;
   const jobIsActive = !!job && ACTIVE_JOB_STATUSES.has(job.status);
+  const progressTotal = result?.total || propertyIds.length || 1;
+  const progressColor = !result
+    ? "accent"
+    : !jobIsActive && result.failed > 0
+      ? "warning"
+      : !jobIsActive
+        ? "success"
+        : "accent";
 
   const handleStart = () => {
     resolve.mutate(propertyIds, {
@@ -66,8 +74,30 @@ export function ResolveEstateWebLocationsModal({
   };
 
   return (
-    <Modal state={state}>
-      <Modal.Backdrop isDismissable={!jobIsActive}>
+    <>
+      {/* Moving shimmer overlay on the progress fill while the job is actively running --
+          purely decorative (the fill's width itself already animates from real, polled
+          progress), gives a "live" feel during the ~2s gaps between polls. */}
+      <style>{`
+        @keyframes estateweb-progress-shimmer-move {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .estateweb-progress-shimmer::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.35),
+            transparent
+          );
+          animation: estateweb-progress-shimmer-move 1.2s linear infinite;
+        }
+      `}</style>
+      <Modal state={state}>
+        <Modal.Backdrop isDismissable={!jobIsActive}>
         <Modal.Container>
           <Modal.Dialog className="max-w-lg w-full">
             <Modal.Header>
@@ -105,6 +135,25 @@ export function ResolveEstateWebLocationsModal({
                         View in Job queue
                       </Link>
                     </div>
+
+                    <ProgressBar.Root
+                      value={result?.processed ?? 0}
+                      minValue={0}
+                      maxValue={progressTotal}
+                      isIndeterminate={!result}
+                      color={progressColor}
+                      size="md"
+                    >
+                      <ProgressBar.Track className="relative overflow-hidden">
+                        <ProgressBar.Fill
+                          className={
+                            "transition-[width] duration-700 ease-out" +
+                            (jobIsActive ? " estateweb-progress-shimmer" : "")
+                          }
+                        />
+                      </ProgressBar.Track>
+                    </ProgressBar.Root>
+
                     {result ? (
                       <p className="text-sm text-muted">
                         {result.processed} of {result.total} checked —{" "}
@@ -182,6 +231,7 @@ export function ResolveEstateWebLocationsModal({
           </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>
-    </Modal>
+      </Modal>
+    </>
   );
 }
