@@ -482,6 +482,7 @@ function resolveParentheticalDistrict(
     outerNorm,
     [innerNorm, ...cityLabels],
     preferPeripheral,
+    preferredPathSegments,
   );
   if (scopedOuter) return scopedOuter;
 

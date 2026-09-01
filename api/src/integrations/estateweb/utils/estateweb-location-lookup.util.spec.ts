@@ -139,6 +139,34 @@ describe('resolveEstateWebLocation', () => {
     );
   });
 
+  it('scopes a "Neighborhood (Street A - Street B)" district by the Google hint', () => {
+    // resolveParentheticalDistrict's `related` path needs a real inner-label catalog
+    // match, which a street-range parenthetical (not a "Village (Municipality)" pair)
+    // never has -- it must fall through to the outer-label scopedOuter lookup, which
+    // previously dropped preferredPathSegments entirely. That silently re-opened the
+    // same "deepest/lowest-id node nationwide wins" landmine even with a good hint:
+    // "Άγιος Νικόλαος" alone matched 51 nationwide, including Thessaloniki's deeper
+    // node (114954), while Athens' own (113253) sat one level shallower.
+    const withoutHint = resolveEstateWebLocationFromSources({
+      city: 'Άγιος Νικόλαος',
+      district: 'Άγιος Νικόλαος (Λεωφόρος Πατησίων - Λεωφόρος Αχαρνών)',
+    });
+    expect(withoutHint?.id).toBe(114954);
+
+    const withHint = resolveEstateWebLocationFromSources({
+      city: 'Άγιος Νικόλαος',
+      district: 'Άγιος Νικόλαος (Λεωφόρος Πατησίων - Λεωφόρος Αχαρνών)',
+      googleAddressSegments: ['Στερεά Ελλάδα', 'Αθήνα', 'Δήμος Αθηναίων'],
+    });
+    expect(withHint).toEqual(
+      expect.objectContaining({
+        id: 113253,
+        name: 'Άγιος Νικόλαος',
+        path: 'Στερεά Ελλάδα » Αθήνα » Δήμος Αθηναίων » Άγιος Νικόλαος',
+      }),
+    );
+  });
+
   it('still resolves via city/district alone when Google returns no usable segments', () => {
     // A property whose district is a globally unique catalog name must not be left
     // unresolved just because Google's response (or its absence) yielded an empty
