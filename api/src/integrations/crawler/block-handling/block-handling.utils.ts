@@ -110,6 +110,21 @@ async function classifySnapshot(
   rules: BlockRule[],
   minReadyBodyLength: number,
 ): Promise<ClassifyResult> {
+  // Challenge patterns are checked before the hard-status short-circuit below:
+  // bot-management interstitials (e.g. Cloudflare's "Just a moment..." managed
+  // challenge) commonly respond with a 401/403/429/503 themselves while the JS
+  // challenge is still resolving, which would otherwise read identically to a
+  // real, unrecoverable block and skip the poll loop in
+  // waitForBotChallengeClearance that exists specifically to wait these out.
+  for (const rule of rules) {
+    if (
+      rule.signal === 'challenge' &&
+      (await ruleMatches(page, rule, snapshot))
+    ) {
+      return 'challenge';
+    }
+  }
+
   if (
     snapshot.httpStatus != null &&
     HARD_BLOCK_STATUSES.has(snapshot.httpStatus)
@@ -120,14 +135,6 @@ async function classifySnapshot(
   for (const rule of rules) {
     if (rule.signal === 'blocked' && (await ruleMatches(page, rule, snapshot))) {
       return 'blocked';
-    }
-  }
-  for (const rule of rules) {
-    if (
-      rule.signal === 'challenge' &&
-      (await ruleMatches(page, rule, snapshot))
-    ) {
-      return 'challenge';
     }
   }
   if (snapshot.text.trim().length < minReadyBodyLength) {

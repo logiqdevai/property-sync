@@ -93,4 +93,24 @@ export const DEFAULT_BLOCK_RULES: BlockRule[] = [
     source: 'text',
     pattern: 'Your support ID is',
   },
+  {
+    id: 'cloudflare-challenge-title',
+    signal: 'challenge',
+    source: 'title',
+    pattern: 'Just a moment',
+  },
+  {
+    id: 'cloudflare-challenge-text',
+    signal: 'challenge',
+    source: 'text',
+    pattern: 'Performing security verification|Checking if the site connection is secure',
+    regex: true,
+  },
+  {
+    id: 'cloudflare-challenge-platform-script',
+    signal: 'challenge',
+    source: 'script_content',
+    pattern: '/cdn-cgi/challenge-platform/|challenges\\.cloudflare\\.com|cf_chl_opt',
+    regex: true,
+  },
 ];

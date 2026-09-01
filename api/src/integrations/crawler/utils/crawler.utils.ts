@@ -4,6 +4,20 @@ export function crawlTimestamp(): string {
   return new Date().toISOString();
 }
 
+// Playwright's page.goto() throws (rather than resolving with a non-ok response)
+// for connection-level failures -- DNS, TLS, HTTP/2 protocol errors, refused
+// connections, navigation timeouts. These indicate the target site is
+// unreachable/flaky right now, not that the scraper's selectors/config are
+// wrong, so they must be classified the same as an HTTP-level networkError
+// (see crawler.service.ts's scrapeListingPages catch block) rather than
+// falling through to the generic "scraper is broken" 3-strike counter.
+const TRANSIENT_NAVIGATION_ERROR_PATTERN =
+  /net::ERR_|NS_ERROR_|Timeout \d+ms exceeded/i;
+
+export function isTransientNavigationError(message: string): boolean {
+  return TRANSIENT_NAVIGATION_ERROR_PATTERN.test(message);
+}
+
 export function contentHash(obj: Record<string, unknown>): string {
   return createHash('sha256')
     .update(JSON.stringify(obj))

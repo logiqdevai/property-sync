@@ -11,7 +11,10 @@ import {
   PaginationAdvanceResult,
   ScraperConfig,
 } from '../interfaces/scraper-config.interface';
-import { crawlTimestamp } from '../utils/crawler.utils';
+import {
+  crawlTimestamp,
+  isTransientNavigationError,
+} from '../utils/crawler.utils';
 import {
   INFINITE_SCROLL_MAX_WAIT_MS,
   INFINITE_SCROLL_POLL_INTERVAL_MS,
@@ -306,7 +309,10 @@ export class CrawlerService {
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       errorSummary = message;
-      log('error', { message });
+      if (isTransientNavigationError(message)) {
+        networkError = true;
+      }
+      log('error', { message, networkError });
     }
 
     return {
