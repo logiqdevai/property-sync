@@ -48,26 +48,35 @@ const ID_CODE =
 // "Κωδικός" is also seen followed by a semicolon (likely a fat-fingered
 // colon on a Greek keyboard) instead of ":".
 const LABEL_SEP = '[:：;]?';
+// Every label below gets tried two ways: the code glued/hyphenated with no
+// internal space (ID_CODE), and the shape where the site put a space between
+// the code's letters and digits (e.g. "Κωδικός: ΑΤΡ 525", "Property code
+// ISAB 4423") -- captured as two groups and rejoined by the caller. Kept
+// separate from ID_CODE itself, since ID_CODE is reused generically and a
+// space-joined run there would swallow the rest of the sentence.
+function withCodeVariants(labelSource: string, flags: string): RegExp[] {
+  return [
+    new RegExp(`${labelSource}\\s*${LABEL_SEP}\\s*(${ID_CODE})`, flags),
+    new RegExp(
+      `${labelSource}\\s*${LABEL_SEP}\\s*([A-Za-zΑ-Ωα-ω]{1,6})\\s+(\\d{2,7})(?!\\d)`,
+      flags,
+    ),
+  ];
+}
+
 const INTERNAL_ID_PATTERNS: RegExp[] = [
-  new RegExp(`Κωδικός(?:\\s+ακινήτου)?\\s*${LABEL_SEP}\\s*(${ID_CODE})`, 'iu'),
-  // Same label, but the code itself has a space between its letters and
-  // digits (e.g. "Κωδικός: ΑΤΡ 525") -- captured as two groups and rejoined
-  // below. Kept as a separate pattern rather than folding the space into
-  // ID_CODE, since ID_CODE is reused generically and a space-joined run
-  // there would swallow the rest of the sentence.
-  new RegExp(
-    `Κωδικός(?:\\s+ακινήτου)?\\s*${LABEL_SEP}\\s*([A-Za-zΑ-Ωα-ω]{1,6})\\s+(\\d{2,7})(?!\\d)`,
-    'iu',
-  ),
-  new RegExp(`Property\\s*ID\\s*${LABEL_SEP}\\s*(${ID_CODE})`, 'i'),
-  new RegExp(`(?:Property\\s+)?(?:Code|Ref(?:erence)?)\\s*${LABEL_SEP}\\s*(${ID_CODE})`, 'i'),
+  ...withCodeVariants('Κωδικός(?:\\s+ακινήτου)?', 'iu'),
+  ...withCodeVariants('Property\\s*ID', 'i'),
+  ...withCodeVariants('(?:Property\\s+)?(?:Code|Ref(?:erence)?)', 'i'),
   // Some listings show no label at all -- the code is just the very first
-  // thing in the text (e.g. "<p>MPR225</p>" as the opening paragraph, before
-  // any "Κωδικός" word appears anywhere). Restrict to a tight
-  // LETTERS-then-DIGITS shape anchored at the start so ordinary prose
-  // ("Πωλείται διαμέρισμα...") can't match; the trailing negative lookahead
-  // stops it from truncating a longer run of digits mid-number.
-  new RegExp(`^\\s*([A-Za-zΑ-Ωα-ω]{2,6}\\d{2,6})(?!\\d)`, 'u'),
+  // thing in the text (e.g. "<p>MPR225</p>" or "<p>ΝΜ0411222</p>" as the
+  // opening paragraph, before any "Κωδικός" word appears anywhere). Restrict
+  // to a tight LETTERS-then-DIGITS shape anchored at the start so ordinary
+  // prose ("Πωλείται διαμέρισμα...") can't match; digits go up to 9 to cover
+  // date-stamped codes like "ΝΜ0411222" (DDMMYY + sequence); the trailing
+  // negative lookahead stops it from truncating a longer run of digits
+  // mid-number.
+  new RegExp(`^\\s*([A-Za-zΑ-Ωα-ω]{2,6}\\d{2,9})(?!\\d)`, 'u'),
 ];
 
 export function extractInternalIdFromText(
@@ -282,6 +291,11 @@ export function extractSourcePropertyIds(
           'description',
         ]),
         readRawString(raw, ['location', '_location', 'raw_location']),
+        // Some listings only put the code in the title (page <title>/<h1>),
+        // never in the description at all, e.g.
+        // "...325000ευρώ. Κωδικός:PI 29423" -- checked last since the
+        // description is the more reliable source when both are present.
+        readRawString(raw, ['title', '_title']),
       ),
   );
 
