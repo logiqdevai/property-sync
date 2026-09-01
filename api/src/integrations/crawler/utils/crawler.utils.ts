@@ -38,11 +38,17 @@ function readRawString(
   return null;
 }
 
+// Listing codes mix Latin and Greek letters (e.g. "PIM1023", "ΜΙ23623"), and
+// sites frequently render the label glued directly to the value with no
+// colon or even whitespace between them (e.g. "ΚωδικόςPIM1023" as a single
+// text node) -- the separator and the code's own character set can't be
+// assumed, only that the code itself contains at least one digit.
+const ID_CODE =
+  '(?=[A-Za-zΑ-Ωα-ω0-9-]*\\d)[A-Za-zΑ-Ωα-ω0-9]+(?:-[A-Za-zΑ-Ωα-ω0-9]+)*';
 const INTERNAL_ID_PATTERNS: RegExp[] = [
-  /Κωδικός\s+ακινήτου\s*[:：]?\s*([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/iu,
-  /Κωδικός\s*[:：]\s*([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/iu,
-  /Property\s*ID\s*[:：]\s*([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/i,
-  /(?:Property\s+)?(?:Code|Ref(?:erence)?)\s*[:：]\s*([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/i,
+  new RegExp(`Κωδικός(?:\\s+ακινήτου)?\\s*[:：]?\\s*(${ID_CODE})`, 'iu'),
+  new RegExp(`Property\\s*ID\\s*[:：]\\s*(${ID_CODE})`, 'i'),
+  new RegExp(`(?:Property\\s+)?(?:Code|Ref(?:erence)?)\\s*[:：]\\s*(${ID_CODE})`, 'i'),
 ];
 
 export function extractInternalIdFromText(
@@ -53,6 +59,32 @@ export function extractInternalIdFromText(
     for (const pattern of INTERNAL_ID_PATTERNS) {
       const match = text.match(pattern);
       if (match?.[1]) return match[1].trim();
+    }
+  }
+  return null;
+}
+
+// Some sites never put price in its own element -- it's baked straight into
+// the title/description prose (e.g. "...102τμ 150000ευρώ."), so a
+// price_selector has nothing to target. Only used as a fallback when the
+// scraper config produced no raw.price at all.
+// JS's \b treats only [A-Za-z0-9_] as word characters -- it never recognizes
+// Greek letters as "word" even with the /u flag -- so it can't be used to
+// bound "ευρώ"/"€"; a following-letter lookahead on the Latin "EUR" spelling
+// is enough to stop it from matching inside a longer word like "EURO".
+const PRICE_PATTERNS: RegExp[] = [
+  /(?:Τιμή|Price)\s*[:：]?\s*(\d[\d.,]*)\s*(€|ευρώ|EUR(?![A-Za-z]))?/iu,
+  /(\d[\d.,]*)\s*(€|ευρώ|EUR(?![A-Za-z]))/iu,
+];
+
+export function extractPriceFromText(
+  ...texts: Array<string | null | undefined>
+): string | null {
+  for (const text of texts) {
+    if (!text) continue;
+    for (const pattern of PRICE_PATTERNS) {
+      const match = text.match(pattern);
+      if (match?.[1]) return match[2] ? `${match[1]}${match[2]}` : match[1];
     }
   }
   return null;

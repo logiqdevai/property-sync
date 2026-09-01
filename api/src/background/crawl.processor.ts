@@ -15,6 +15,7 @@ import { DiagnosticsRunContext } from '@/integrations/diagnostics/interfaces/dia
 import {
   contentHash,
   extractDenormalizedRawFields,
+  extractPriceFromText,
   extractSourcePropertyIds,
 } from '@/integrations/crawler/utils/crawler.utils';
 import {
@@ -258,12 +259,19 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         const denormalized = extractDenormalizedRawFields(raw);
         const { property_id: propertyId, internal_id: internalId } =
           extractSourcePropertyIds(item.source_url, raw);
+        const priceText =
+          (raw.price as string | undefined) ??
+          extractPriceFromText(
+            raw.title as string | undefined,
+            raw._detail_text as string | undefined,
+          ) ??
+          null;
         const rawHtmlPath =
           typeof raw._raw_html_path === 'string' ? raw._raw_html_path : null;
         const hash = contentHash({
           url: item.source_url,
           title: raw.title,
-          price: raw.price,
+          price: priceText,
         });
 
         const existing = await this.prisma.sourceProperty.findUnique({
@@ -313,7 +321,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
             source_url: item.source_url,
             raw_title: safeTitle,
             raw_description: (raw._detail_text as string | undefined) ?? null,
-            raw_price: (raw.price as string | undefined) ?? null,
+            raw_price: priceText,
             raw_location: (raw.location as string | undefined) ?? null,
             ...denormalized,
             raw_data: raw as Prisma.InputJsonValue,
@@ -328,7 +336,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
             internal_id: internalId,
             raw_title: safeTitle,
             raw_description: (raw._detail_text as string | undefined) ?? null,
-            raw_price: (raw.price as string | undefined) ?? null,
+            raw_price: priceText,
             raw_location: (raw.location as string | undefined) ?? null,
             ...denormalized,
             raw_data: raw as Prisma.InputJsonValue,
