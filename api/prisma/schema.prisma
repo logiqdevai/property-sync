@@ -432,8 +432,8 @@ model SourceAgency {
   country            String?
   city               String?
   content_language   ContentLanguage  @default(EL)
-  is_visible         Boolean          @default(false) // not displayed to the user, only to the admin
-  is_enabled         Boolean          @default(false) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin
+  is_visible         Boolean          @default(true) // not displayed to the user, only to the admin
+  is_enabled         Boolean          @default(true) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin
   use_ai_batching    Boolean          @default(false)
   crawl_interval     String           @default("0 */6 * * *")
   notes              String?
@@ -501,8 +501,8 @@ model UserTrackedAgency {
   track_new_listings         Boolean  @default(true)
   track_removed_listings     Boolean  @default(true)
   track_updated_listings     Boolean  @default(true)
-  auto_update_to_crm         Boolean  @default(true) // when false, new listings and CRM updates are both held (pending_crm_update) for manual push from Properties
-  cms_update_on_hash_only    Boolean  @default(false) // when true, CRM updates only if source content_hash changed
+  auto_update_to_crm         Boolean  @default(false) // when false, new listings and CRM updates are both held (pending_crm_update) for manual push from Properties
+  cms_update_on_hash_only    Boolean  @default(true) // when true, CRM updates only if source content_hash changed
   remove_watermark             Boolean  @default(false)
   watermark_image_count        Int      @default(1)
   watermark_manual_selection   Boolean  @default(false)

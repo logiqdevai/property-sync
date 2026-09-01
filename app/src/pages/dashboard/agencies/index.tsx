@@ -150,7 +150,7 @@ function AgencyRow({
       </Table.Cell>
       <Table.Cell>
         <PrefSwitch
-          isSelected={prefs?.auto_update_to_crm ?? true}
+          isSelected={prefs?.auto_update_to_crm ?? false}
           isDisabled={prefsDisabled}
           onChange={(isSelected) =>
             savePrefs({ auto_update_to_crm: isSelected })
@@ -160,7 +160,7 @@ function AgencyRow({
       </Table.Cell>
       <Table.Cell>
         <PrefSwitch
-          isSelected={prefs?.cms_update_on_hash_only ?? false}
+          isSelected={prefs?.cms_update_on_hash_only ?? true}
           isDisabled={prefsDisabled}
           onChange={(isSelected) =>
             savePrefs({ cms_update_on_hash_only: isSelected })

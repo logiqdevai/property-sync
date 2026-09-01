@@ -63,7 +63,7 @@ export class CreateAgencyDto {
 
   @ApiProperty({
     required: false,
-    default: false,
+    default: true,
     description: 'Visible for scraper/crawl setup',
   })
   @IsOptional()
@@ -72,7 +72,7 @@ export class CreateAgencyDto {
 
   @ApiProperty({
     required: false,
-    default: false,
+    default: true,
     description: 'Visible/trackable by end users',
   })
   @IsOptional()

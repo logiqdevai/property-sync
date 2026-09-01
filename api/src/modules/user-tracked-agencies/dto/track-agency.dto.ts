@@ -29,7 +29,7 @@ export class TrackAgencyDto {
 
   @ApiProperty({
     required: false,
-    default: true,
+    default: false,
     description:
       'When true, listing updates are pushed to the CMS automatically. When false, push from the Properties page.',
   })
@@ -39,7 +39,7 @@ export class TrackAgencyDto {
 
   @ApiProperty({
     required: false,
-    default: false,
+    default: true,
     description:
       'When true, CRM updates are pushed only if the source listing content_hash changed (stricter mode).',
   })
