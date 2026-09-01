@@ -45,10 +45,29 @@ function readRawString(
 // assumed, only that the code itself contains at least one digit.
 const ID_CODE =
   '(?=[A-Za-zΑ-Ωα-ω0-9-]*\\d)[A-Za-zΑ-Ωα-ω0-9]+(?:-[A-Za-zΑ-Ωα-ω0-9]+)*';
+// "Κωδικός" is also seen followed by a semicolon (likely a fat-fingered
+// colon on a Greek keyboard) instead of ":".
+const LABEL_SEP = '[:：;]?';
 const INTERNAL_ID_PATTERNS: RegExp[] = [
-  new RegExp(`Κωδικός(?:\\s+ακινήτου)?\\s*[:：]?\\s*(${ID_CODE})`, 'iu'),
-  new RegExp(`Property\\s*ID\\s*[:：]\\s*(${ID_CODE})`, 'i'),
-  new RegExp(`(?:Property\\s+)?(?:Code|Ref(?:erence)?)\\s*[:：]\\s*(${ID_CODE})`, 'i'),
+  new RegExp(`Κωδικός(?:\\s+ακινήτου)?\\s*${LABEL_SEP}\\s*(${ID_CODE})`, 'iu'),
+  // Same label, but the code itself has a space between its letters and
+  // digits (e.g. "Κωδικός: ΑΤΡ 525") -- captured as two groups and rejoined
+  // below. Kept as a separate pattern rather than folding the space into
+  // ID_CODE, since ID_CODE is reused generically and a space-joined run
+  // there would swallow the rest of the sentence.
+  new RegExp(
+    `Κωδικός(?:\\s+ακινήτου)?\\s*${LABEL_SEP}\\s*([A-Za-zΑ-Ωα-ω]{1,6})\\s+(\\d{2,7})(?!\\d)`,
+    'iu',
+  ),
+  new RegExp(`Property\\s*ID\\s*${LABEL_SEP}\\s*(${ID_CODE})`, 'i'),
+  new RegExp(`(?:Property\\s+)?(?:Code|Ref(?:erence)?)\\s*${LABEL_SEP}\\s*(${ID_CODE})`, 'i'),
+  // Some listings show no label at all -- the code is just the very first
+  // thing in the text (e.g. "<p>MPR225</p>" as the opening paragraph, before
+  // any "Κωδικός" word appears anywhere). Restrict to a tight
+  // LETTERS-then-DIGITS shape anchored at the start so ordinary prose
+  // ("Πωλείται διαμέρισμα...") can't match; the trailing negative lookahead
+  // stops it from truncating a longer run of digits mid-number.
+  new RegExp(`^\\s*([A-Za-zΑ-Ωα-ω]{2,6}\\d{2,6})(?!\\d)`, 'u'),
 ];
 
 export function extractInternalIdFromText(
@@ -58,7 +77,9 @@ export function extractInternalIdFromText(
     if (!text) continue;
     for (const pattern of INTERNAL_ID_PATTERNS) {
       const match = text.match(pattern);
-      if (match?.[1]) return match[1].trim();
+      if (match?.[1]) {
+        return match[2] ? `${match[1]}${match[2]}`.trim() : match[1].trim();
+      }
     }
   }
   return null;
@@ -236,7 +257,9 @@ export function extractDenormalizedRawFields(raw: Record<string, unknown>) {
 
 function stripIdPrefix(value: string | null): string | null {
   if (!value) return value;
-  const stripped = value.replace(/^[^A-Za-z0-9]+/, '').trim();
+  // Codes can be Greek-lettered (e.g. "ΜΙ23623") -- an ASCII-only class here
+  // would treat those leading letters as "junk" and strip them too.
+  const stripped = value.replace(/^[^A-Za-zΑ-Ωα-ω0-9]+/u, '').trim();
   return stripped || null;
 }
 
