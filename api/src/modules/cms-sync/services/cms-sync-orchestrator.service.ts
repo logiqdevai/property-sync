@@ -113,20 +113,18 @@ export class CmsSyncOrchestratorService {
       return;
     }
 
-    const properties = await this.prisma.userProperty.findMany({
-      where: { id: { in: readyIds } },
-      select: { id: true, user_id: true },
-    });
-    const byUser = new Map<string, string[]>();
-    for (const property of properties) {
-      const list = byUser.get(property.user_id) ?? [];
-      list.push(property.id);
-      byUser.set(property.user_id, list);
-    }
-    for (const [userId, ids] of byUser) {
-      await this.planAndEnqueueManualPropertyUpdate(userId, ids, {
-        skipContentProduction: true,
-      });
+    // Not tied to a crawl run (e.g. content produced outside a crawl), but
+    // this is still an automatic continuation of the content pipeline (an AI
+    // title batch finishing) -- NOT a user-initiated "Push to CRM" click. Go
+    // through the same tracker-grouped path planAndEnqueueCrawlSync uses so
+    // the auto_update_to_crm gate is respected (held-back properties get
+    // pending_crm_update instead of being pushed immediately). Do NOT route
+    // this through planAndEnqueueManualPropertyUpdate -- it unconditionally
+    // bypasses that gate, which previously caused every property to be
+    // pushed to the CMS regardless of the tracker's auto-update setting.
+    const byTracker = await this.groupByTracker(affected);
+    for (const trackerGroup of byTracker) {
+      await this.processTrackerBatch(null, trackerGroup);
     }
   }
 
