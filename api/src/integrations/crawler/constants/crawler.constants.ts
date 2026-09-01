@@ -40,3 +40,9 @@ export const SHARED_PLACEHOLDER_IMAGE_MIN_OCCURRENCES = 3;
 // consecutive_failures (and eventually marking it BROKEN) over pure flakiness.
 export const START_PAGE_GOTO_MAX_ATTEMPTS = 3;
 export const START_PAGE_GOTO_RETRY_DELAY_MS = 3_000;
+// Same reasoning as above, applied to the "click the next/load-more control and
+// wait for the page to change" step -- a click that resolves but whose resulting
+// navigation stalls (locator.click: Timeout ...ms exceeded) is the same kind of
+// one-off site slowness, not evidence pagination has actually ended.
+export const PAGINATION_CLICK_MAX_ATTEMPTS = 3;
+export const PAGINATION_CLICK_RETRY_DELAY_MS = 3_000;

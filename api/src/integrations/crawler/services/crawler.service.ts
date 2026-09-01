@@ -19,6 +19,8 @@ import {
   INFINITE_SCROLL_MAX_WAIT_MS,
   INFINITE_SCROLL_POLL_INTERVAL_MS,
   INFINITE_SCROLL_STEP_VIEWPORT_RATIO,
+  PAGINATION_CLICK_MAX_ATTEMPTS,
+  PAGINATION_CLICK_RETRY_DELAY_MS,
   SHARED_PLACEHOLDER_IMAGE_MIN_OCCURRENCES,
   START_PAGE_GOTO_MAX_ATTEMPTS,
   START_PAGE_GOTO_RETRY_DELAY_MS,
@@ -329,40 +331,47 @@ export class CrawlerService {
     };
   }
 
-  // Retries the initial navigation on connection-level failures (net::ERR_*,
-  // handshake timeouts) -- these are frequently a single bad moment for the
-  // target site rather than it actually being down, and retrying here avoids
-  // inflating the scraper's failure count over pure flakiness. Anything else
-  // (a real HTTP response, or a non-network exception) is not retried.
+  // Retries an action on connection-level failures (net::ERR_*, handshake/
+  // navigation timeouts) -- these are frequently a single bad moment for the
+  // target site rather than it actually being down, and retrying avoids
+  // inflating the scraper's failure count (or aborting pagination entirely)
+  // over pure flakiness. Anything else (a real HTTP response, or a non-network
+  // exception) is not retried and rethrows immediately.
+  private async retryTransient<T>(
+    action: () => Promise<T>,
+    maxAttempts: number,
+    delayMs: number,
+    onRetry: (attempt: number, message: string) => void,
+  ): Promise<T> {
+    let lastErr: unknown;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await action();
+      } catch (err) {
+        lastErr = err;
+        const message = err instanceof Error ? err.message : String(err);
+        if (!isTransientNavigationError(message) || attempt === maxAttempts) {
+          throw err;
+        }
+        onRetry(attempt, message);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+    throw lastErr;
+  }
+
   private async gotoWithRetry(
     page: Page,
     url: string,
     timeoutMs: number,
     log: (msg: string, data?: Record<string, unknown>) => void,
   ) {
-    let lastErr: unknown;
-    for (let attempt = 1; attempt <= START_PAGE_GOTO_MAX_ATTEMPTS; attempt++) {
-      try {
-        return await page.goto(url, {
-          waitUntil: 'domcontentloaded',
-          timeout: timeoutMs,
-        });
-      } catch (err) {
-        lastErr = err;
-        const message = err instanceof Error ? err.message : String(err);
-        if (
-          !isTransientNavigationError(message) ||
-          attempt === START_PAGE_GOTO_MAX_ATTEMPTS
-        ) {
-          throw err;
-        }
-        log('navigate_retry', { attempt, message });
-        await new Promise((resolve) =>
-          setTimeout(resolve, START_PAGE_GOTO_RETRY_DELAY_MS),
-        );
-      }
-    }
-    throw lastErr;
+    return this.retryTransient(
+      () => page.goto(url, { waitUntil: 'domcontentloaded', timeout: timeoutMs }),
+      START_PAGE_GOTO_MAX_ATTEMPTS,
+      START_PAGE_GOTO_RETRY_DELAY_MS,
+      (attempt, message) => log('navigate_retry', { attempt, message }),
+    );
   }
 
   // Card-level image extraction (field.image and the broader per-card img/
@@ -457,6 +466,7 @@ export class CrawlerService {
           nextControl,
           listingSelector,
           crawlerConfig,
+          log,
         );
         if (!navigated) {
           log('pagination_end', { reason: 'url_unchanged_after_next' });
@@ -498,6 +508,7 @@ export class CrawlerService {
         nextPageLink,
         listingSelector,
         crawlerConfig,
+        log,
       );
       if (!navigated) {
         log('pagination_end', { reason: 'url_unchanged_after_page_click' });
@@ -518,7 +529,22 @@ export class CrawlerService {
       const prevCount = listingSelector
         ? await page.locator(listingSelector).count().catch(() => 0)
         : 0;
-      await btn.click({ timeout: 8000 });
+      try {
+        await this.retryTransient(
+          () => btn.click({ timeout: 8000 }),
+          PAGINATION_CLICK_MAX_ATTEMPTS,
+          PAGINATION_CLICK_RETRY_DELAY_MS,
+          (retryAttempt, message) =>
+            log('pagination_click_retry', { attempt: retryAttempt, message }),
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        log('pagination_end', {
+          reason: 'load_more_click_failed_after_retries',
+          message,
+        });
+        return { advanced: false };
+      }
       const grew = await this.waitForCardCountIncrease(
         page,
         listingSelector,
@@ -723,6 +749,7 @@ export class CrawlerService {
     nextControl: Locator,
     listingSelector: string | undefined,
     crawlerConfig: ResolvedCrawlerConfig,
+    log: (msg: string, data?: Record<string, unknown>) => void,
   ): Promise<boolean> {
     const urlBefore = page.url();
     const fingerprintBefore = listingSelector
@@ -738,7 +765,25 @@ export class CrawlerService {
         if (!visible || disabled) return false;
       }
 
-      await nextControl.click({ timeout: 8000 });
+      try {
+        await this.retryTransient(
+          () => nextControl.click({ timeout: 8000 }),
+          PAGINATION_CLICK_MAX_ATTEMPTS,
+          PAGINATION_CLICK_RETRY_DELAY_MS,
+          (retryAttempt, message) =>
+            log('pagination_click_retry', { attempt: retryAttempt, message }),
+        );
+      } catch (err) {
+        // The click itself never went through despite retries -- treat this
+        // as the end of pagination (like a missing/disabled next control)
+        // rather than failing the whole crawl over what we already found.
+        const message = err instanceof Error ? err.message : String(err);
+        log('pagination_end', {
+          reason: 'next_click_failed_after_retries',
+          message,
+        });
+        return false;
+      }
       await page
         .waitForLoadState('domcontentloaded', {
           timeout: crawlerConfig.page_timeout_ms,
