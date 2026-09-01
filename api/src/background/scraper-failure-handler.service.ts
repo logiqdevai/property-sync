@@ -31,6 +31,12 @@ export class ScraperFailureHandlerService {
     sourceAgencyId: string;
     zeroListingsPage0: boolean;
     networkError: boolean;
+    // True when the run never actually reached/rendered the target site at all
+    // because our own worker crashed/restarted mid-job (CrawlRunWatchdogCron).
+    // Distinct from networkError (target site itself is down/blocking us) --
+    // both mean "not the scraper's config fault", so neither should trigger an
+    // AI self-heal regeneration.
+    infraFailure?: boolean;
     errorMessage: string;
   }): Promise<void> {
     const nextFailures = params.scraper.consecutive_failures + 1;
@@ -81,7 +87,11 @@ export class ScraperFailureHandlerService {
       });
     }
 
-    if (params.scraper.self_healing_enabled) {
+    if (
+      params.scraper.self_healing_enabled &&
+      !params.networkError &&
+      !params.infraFailure
+    ) {
       const selfHealPrompt = `Self-heal triggered after crawl failure: ${params.errorMessage}`;
       const retried = await this.scraperGenerationService.retryLatestForScraper(
         params.scraper.id,

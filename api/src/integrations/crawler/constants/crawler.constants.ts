@@ -33,3 +33,10 @@ export const DETAIL_HTML_UPLOAD_TIMEOUT_MS = 30_000;
 // is treated as a shared placeholder and stripped from every item, not just filtered
 // by URL keyword matching.
 export const SHARED_PLACEHOLDER_IMAGE_MIN_OCCURRENCES = 3;
+// A single connection-level blip (net::ERR_HTTP2_PROTOCOL_ERROR, a timed-out
+// handshake, ...) on the initial page.goto is often just that site having one
+// bad moment, not it actually being down -- retrying in-process a couple times
+// before giving up on the whole crawl attempt avoids inflating a scraper's
+// consecutive_failures (and eventually marking it BROKEN) over pure flakiness.
+export const START_PAGE_GOTO_MAX_ATTEMPTS = 3;
+export const START_PAGE_GOTO_RETRY_DELAY_MS = 3_000;

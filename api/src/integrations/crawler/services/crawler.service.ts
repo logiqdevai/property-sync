@@ -20,6 +20,8 @@ import {
   INFINITE_SCROLL_POLL_INTERVAL_MS,
   INFINITE_SCROLL_STEP_VIEWPORT_RATIO,
   SHARED_PLACEHOLDER_IMAGE_MIN_OCCURRENCES,
+  START_PAGE_GOTO_MAX_ATTEMPTS,
+  START_PAGE_GOTO_RETRY_DELAY_MS,
 } from '../constants/crawler.constants';
 import {
   classifyPageAccess,
@@ -75,10 +77,12 @@ export class CrawlerService {
 
     try {
       log('navigate', { url: config.start_url });
-      const response = await page.goto(config.start_url, {
-        waitUntil: 'domcontentloaded',
-        timeout: crawlerConfig.page_timeout_ms,
-      });
+      const response = await this.gotoWithRetry(
+        page,
+        config.start_url,
+        crawlerConfig.page_timeout_ms,
+        log,
+      );
 
       await waitForBotChallengeClearance(
         page,
@@ -323,6 +327,42 @@ export class CrawlerService {
       networkError,
       zeroListingsPage0,
     };
+  }
+
+  // Retries the initial navigation on connection-level failures (net::ERR_*,
+  // handshake timeouts) -- these are frequently a single bad moment for the
+  // target site rather than it actually being down, and retrying here avoids
+  // inflating the scraper's failure count over pure flakiness. Anything else
+  // (a real HTTP response, or a non-network exception) is not retried.
+  private async gotoWithRetry(
+    page: Page,
+    url: string,
+    timeoutMs: number,
+    log: (msg: string, data?: Record<string, unknown>) => void,
+  ) {
+    let lastErr: unknown;
+    for (let attempt = 1; attempt <= START_PAGE_GOTO_MAX_ATTEMPTS; attempt++) {
+      try {
+        return await page.goto(url, {
+          waitUntil: 'domcontentloaded',
+          timeout: timeoutMs,
+        });
+      } catch (err) {
+        lastErr = err;
+        const message = err instanceof Error ? err.message : String(err);
+        if (
+          !isTransientNavigationError(message) ||
+          attempt === START_PAGE_GOTO_MAX_ATTEMPTS
+        ) {
+          throw err;
+        }
+        log('navigate_retry', { attempt, message });
+        await new Promise((resolve) =>
+          setTimeout(resolve, START_PAGE_GOTO_RETRY_DELAY_MS),
+        );
+      }
+    }
+    throw lastErr;
   }
 
   // Card-level image extraction (field.image and the broader per-card img/

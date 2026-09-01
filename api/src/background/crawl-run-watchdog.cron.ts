@@ -90,6 +90,7 @@ export class CrawlRunWatchdogCron {
           sourceAgencyId: run.source_agency_id,
           zeroListingsPage0: false,
           networkError: false,
+          infraFailure: true,
           errorMessage,
         });
       }
