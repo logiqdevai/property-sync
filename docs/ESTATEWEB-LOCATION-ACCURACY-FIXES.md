@@ -1,7 +1,7 @@
 # EstateWeb Location Resolution — Accuracy Debugging Session
 
-**Date:** 2026-08-31
-**Status:** ✅ Root causes fixed and verified against production data. One optional follow-up (AI tie-break) not started.
+**Date:** 2026-08-31 (updated 2026-09-02 — root cause #8 + its backfill)
+**Status:** ✅ Root causes fixed and verified against production data. One optional follow-up (AI tie-break) not started. Root cause #8's backfill (2026-09-02) is complete.
 **Related doc:** `docs/ESTATEWEB-LOCATION-MAPPING.md` (original build/handoff doc — read that first for the base architecture; this doc covers a follow-up debugging session that found and fixed several correctness bugs in what that doc shipped).
 
 If you're an agent picking this up cold: read `ESTATEWEB-LOCATION-MAPPING.md` first for what `estateweb_location_id` is and the base resolver design, then this doc for what was *wrong* with the first implementation and how it was fixed. The diagnostic recipes in this doc (SQL queries, live Google API probes) are reusable if the same class of bug resurfaces.
@@ -122,6 +122,37 @@ The one path deliberately left untouched: `UserPropertiesService.resync()` — a
 
 ---
 
+## Root cause #8 — the "last resort" fallback unconditionally defaulted to Crete (found 2026-09-02, fixing `user_properties.id = cb630743-30b6-4c49-a14b-45e1a4fdec7d`)
+
+`resolveEstateWebLocationFromSources()`'s final fallback (for when nothing else matched) looped over `preferredPathSegments` looking for a segment that named a real `is_city` catalog node; if none did, it **unconditionally** returned the single island-level `"Κρήτη"` node (id `4`) — regardless of whether Crete had anything to do with the property. This was safe back when this resolver only ever ran against Crete-specific regex hints (`REGION_PATH_HINTS`), but root cause #1 made `googleAddressSegments` feed this nationwide, and the comment's assumption ("if we only know it's Crete generally") stopped being true.
+
+Concretely: `UserProperty.id = cb630743-30b6-4c49-a14b-45e1a4fdec7d` (agency ref `AG131`) has `city: "Σύρος"`, `district: null` — Syros, a Cycladic island, ~300km from Crete. `"Σύρος"` has no exact/aliased catalog node (only `"Άνω Σύρος"`, `"Ερμούπολη"`, etc. exist under `Δήμος Σύρου-Ερμουπόλεως`), and **none of Syros's catalog nodes are flagged `is_city`** — so the `is_city` loop found nothing, even with correct Google hints (`adminSegments: ["Σύρος", "Άνω Σύρος", "Ερμούπολη", ...]`), and fell through to the blind Crete default: `estateweb_location_id = 4`.
+
+### Fix — pick the most specific node actually named by a hint segment; no blind regional default
+
+```ts
+const namedMatches = preferredPathSegments.flatMap(
+  (segment) => LOCATION_BY_NORMALIZED_NAME.get(segment) ?? [],
+);
+const bestNamed = pickMostSpecific(namedMatches);
+if (bestNamed) return bestNamed;
+```
+Still never guesses a same-named-but-wrong-region homonym — every candidate here was named by a real hint segment (Google ground truth or a region regex), not picked blind. For the Syros case this now resolves to `107399` (`"Άνω Σύρος"`), matching Google's own `formattedAddress` for that exact coordinate. Regression test added in `estateweb-location-lookup.util.spec.ts` ("does not blindly default to Crete when no hint segment has an is_city anchor").
+
+**This is systemic, same as the original bug**: any property outside Crete whose city/district text doesn't exactly match a catalog node, and whose Google hint segments don't happen to hit one of the handful of `is_city`-flagged nodes (Χανιά/Ρέθυμνο/Ηράκλειο/Λασίθι and similar prefecture seats), would have been silently mis-set to Crete (`id 4`). Measured in production before the fix: **60 `Property` rows and 64 `UserProperty` rows** had `estateweb_location_id = 4`, and a sample of their `city` values (`Αγία Τριάδα Βοιωτίας`, `Λιβάδι Παρνασσού`, `Ορεινή Ναυπακτία`, `Κλίμα`, `Πιτσινιά`, ...) confirmed most were nowhere near Crete — mostly mainland (Φωκίδα/Παρνασσός/Βοιωτία/Ναυπακτία), some in Crete itself but the wrong specific node, one on Mykonos, one in Nicosia, Cyprus.
+
+```sql
+-- Find remaining rows hit by this bug (before the backfill below was run)
+SELECT id, city, district FROM properties WHERE estateweb_location_id = 4;
+SELECT id, city, district FROM user_properties WHERE estateweb_location_id = 4;
+```
+
+**Backfill run 2026-09-02** (ad hoc script, same Google-reverse-geocode + resolver call as the real job, run directly against production rather than via BullMQ since the affected set was small): `Property: 55 resolved, 2 unchanged, 3 skipped, 0 failed`. `UserProperty: 58 resolved, 2 unchanged, 4 skipped, 0 failed`.
+- **unchanged (4 rows total)** genuinely resolved to Crete again (`id 4`) — real Crete properties where the resolver still can't pin a more specific node; correct, not a bug.
+- **skipped (7 rows total)** correctly left alone rather than guessed: `Μύκονος` (no catalog node — Mykonos isn't in this catalog at all), `Κάμιλα`/`Κavousi` (ambiguous/typo'd spelling with no catalog or Google match), and `Κοκκινοτριμιθιά`/`Λευκωσία` (Nicosia, **Cyprus** — correctly not force-matched into the Greek catalog).
+
+---
+
 ## Current architecture summary
 
 ```
@@ -230,3 +261,4 @@ resolveEstateWebLocationFromSources({ city, district, googleAddressSegments: [..
 - **Option 2 (discussed, not built):** use a cheap LLM (e.g. Claude Haiku 4.5) as a tie-breaker over a Google-narrowed shortlist of catalog candidates, instead of relying solely on deterministic string matching. Cost analysis for this was done (see conversation) but no code was written — explicitly deferred until the Google-scoping fix (this doc) was proven out first.
 - The `UserProperty` `'updated'` sync branch still prefers canonical's current value on conflict (not flipped like the `Property` update branch) — this is intentional (see root cause #7 fix notes), but worth re-checking if a future bug suggests canonical itself can still drift.
 - No backfill has been run yet against the *fixed* pipeline at the time of writing this doc for the full ~3,176 properties / all agencies — only the single test case and a small production sample (8 properties) were verified live. Run the admin bulk action (now selection-scoped — select all rows first) to backfill the rest.
+- ~~Root cause #8 backfill not run~~ — done 2026-09-02, see root cause #8 above for the final counts.

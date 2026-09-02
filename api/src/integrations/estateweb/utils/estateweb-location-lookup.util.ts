@@ -729,11 +729,8 @@ export function resolveEstateWebLocationFromSources(input: {
   // that either isn't in the catalog at all, or is spelled differently there. Rather than
   // leaving estateweb_location_id permanently null (which blocks CMS sync entirely), fall
   // back to the broader region we're already confident about from `preferredPathSegments`.
-  // Only ever resolves to an unambiguous node: a real `is_city` anchor for a named prefecture
-  // (Χανιά/Ρέθυμνο/Ηράκλειο/Λασίθι all have one), or -- if we only know it's Crete generally
-  // -- the single, unique island-level "Κρήτη" node. Never guesses a specific village, and
-  // never picks a same-named-but-wrong-region homonym (there are unrelated "Χανιά" villages
-  // elsewhere in Greece; requiring `is_city` here excludes those).
+  // First prefer a real `is_city` anchor for a named prefecture (Χανιά/Ρέθυμνο/Ηράκλειο/
+  // Λασίθι all have one) when one of the hint segments names it directly.
   if (preferredPathSegments.length > 0) {
     for (const segment of preferredPathSegments) {
       const cityNode = (LOCATION_BY_NORMALIZED_NAME.get(segment) ?? []).find(
@@ -741,8 +738,23 @@ export function resolveEstateWebLocationFromSources(input: {
       );
       if (cityNode) return cityNode;
     }
-    const islandMatches = LOCATION_BY_NORMALIZED_NAME.get('κρητη') ?? [];
-    if (islandMatches.length === 1) return islandMatches[0];
+
+    // No `is_city` anchor among the hints -- this used to unconditionally fall back to
+    // the single island-level "Κρήτη" node, which was only ever safe back when this
+    // resolver only ran against Crete-only regex hints (REGION_PATH_HINTS). Now that
+    // googleAddressSegments feeds it nationwide (see root cause #1 in
+    // ESTATEWEB-LOCATION-ACCURACY-FIXES.md), that blind Crete default misfired for
+    // every other region with no is_city hit -- e.g. a Syros property with hint segments
+    // ["Σύρος", "Άνω Σύρος", "Ερμούπολη", ...] (none flagged is_city) was wrongly resolved
+    // to Crete (id 4), ~300km away. Instead, pick the most specific catalog node whose
+    // name exactly matches one of the hint segments -- still never guesses a
+    // same-named-but-wrong-region homonym, since every candidate here was named by a real
+    // hint segment (Google ground truth or a region regex), not picked blind.
+    const namedMatches = preferredPathSegments.flatMap(
+      (segment) => LOCATION_BY_NORMALIZED_NAME.get(segment) ?? [],
+    );
+    const bestNamed = pickMostSpecific(namedMatches);
+    if (bestNamed) return bestNamed;
   }
 
   return undefined;

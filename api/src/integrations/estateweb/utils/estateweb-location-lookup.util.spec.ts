@@ -167,6 +167,33 @@ describe('resolveEstateWebLocation', () => {
     );
   });
 
+  it('does not blindly default to Crete when no hint segment has an is_city anchor', () => {
+    // Regression for user_properties.id = cb630743-30b6-4c49-a14b-45e1a4fdec7d: city
+    // "Σύρος" has no exact/aliased catalog node (only "Άνω Σύρος" etc. exist), and none
+    // of Syros's real catalog nodes are flagged `is_city`. The old last-resort fallback
+    // unconditionally returned the single island-level "Κρήτη" node (id 4) whenever no
+    // hint segment matched an `is_city` node -- ~300km from the actual property, on a
+    // different island entirely. It must instead pick the most specific catalog node
+    // actually named by one of the Google hint segments.
+    const loc = resolveEstateWebLocationFromSources({
+      city: 'Σύρος',
+      googleAddressSegments: [
+        'Περιφέρεια Νοτίου Αιγαίου',
+        'Σύρος',
+        'Άνω Σύρος',
+        'Ερμούπολη',
+      ],
+    });
+    expect(loc?.id).not.toBe(4);
+    expect(loc).toEqual(
+      expect.objectContaining({
+        id: 107399,
+        name: 'Άνω Σύρος',
+        path: 'Νησιά Αιγαίου » Κυκλάδες » Δήμος Σύρου-Ερμουπόλεως » Άνω Σύρος',
+      }),
+    );
+  });
+
   it('still resolves via city/district alone when Google returns no usable segments', () => {
     // A property whose district is a globally unique catalog name must not be left
     // unresolved just because Google's response (or its absence) yielded an empty
