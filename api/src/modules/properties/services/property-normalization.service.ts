@@ -717,11 +717,12 @@ export class PropertyNormalizationService {
           where: { id: existingLink.property.id },
           data: {
             ...record,
-            // `price` is only ever set at creation — a re-crawl that finds a
-            // new price must only move `price_web`, so the two fields
-            // diverging is how a price change is detected (see
+            // `price` and `price_start` are only ever set at creation — a
+            // re-crawl that finds a new price must only move `price_web`, so
+            // the fields diverging is how a price change is detected (see
             // diffPropertyChanges).
             price: existingLink.property.price,
+            price_start: existingLink.property.price_start,
             city: record.city ?? existingLink.property.city,
             district: record.district ?? existingLink.property.district,
             // Once a location id is set, only the async Google-verified re-check
