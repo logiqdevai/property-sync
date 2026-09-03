@@ -5,6 +5,8 @@ import type {
   CrawlRunDetail,
   CrawlRunListQuery,
   CrawlRunListResponse,
+  CrawlRunTimelineQuery,
+  CrawlRunTimelineResponse,
   DeleteCrawlRunsPayload,
 } from "../interfaces/crawl-runs.interfaces";
 
@@ -16,6 +18,19 @@ export const getCrawlRuns = async (
     return response.data;
   } catch (error) {
     throw new Error("Failed to fetch crawl runs. Please try again.");
+  }
+};
+
+export const getCrawlRunTimeline = async (
+  query?: CrawlRunTimelineQuery,
+): Promise<CrawlRunTimelineResponse> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.crawlRuns.timeline, {
+      params: query,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to fetch crawl run timeline. Please try again.");
   }
 };
 

@@ -26,6 +26,10 @@ import {
   CrawlRunQueryType,
 } from './dto/crawl-run-query.schema';
 import { DeleteCrawlRunsDto } from './dto/delete-crawl-runs.dto';
+import {
+  CrawlRunTimelineQuerySchema,
+  CrawlRunTimelineQueryType,
+} from './dto/crawl-run-timeline-query.schema';
 import { CrawlRun } from './entities/crawl-run.entity';
 
 @ApiTags('Crawl Runs')
@@ -52,6 +56,34 @@ export class CrawlRunsController {
     @Query(new ZodValidationPipe(CrawlRunQuerySchema)) query: CrawlRunQueryType,
   ) {
     return this.crawlRunsService.findAll(query);
+  }
+
+  @Get('timeline')
+  @ApiOperation({
+    summary: 'Get crawl runs within a time window, grouped by agency, for the Gantt chart',
+  })
+  @ApiResponse({ status: 200, description: 'Timeline rows for the requested window' })
+  @ApiQuery({
+    name: 'date_from',
+    required: false,
+    type: String,
+    description: 'ISO datetime; start of the window (client computes this from the local day), defaults to today (UTC)',
+  })
+  @ApiQuery({
+    name: 'date_to',
+    required: false,
+    type: String,
+    description: 'ISO datetime; end of the window, defaults to 24h after date_from',
+  })
+  @ApiQuery({ name: 'status', required: false, enum: CrawlRunStatus })
+  @ApiQuery({ name: 'agency_id', required: false, type: String })
+  @ApiQuery({ name: 'scraper_id', required: false, type: String })
+  @ApiQuery({ name: 'user_id', required: false, type: String })
+  timeline(
+    @Query(new ZodValidationPipe(CrawlRunTimelineQuerySchema))
+    query: CrawlRunTimelineQueryType,
+  ) {
+    return this.crawlRunsService.timeline(query);
   }
 
   @Post('bulk-delete')

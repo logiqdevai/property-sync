@@ -152,3 +152,38 @@ export interface CrawlRunListResponse extends PaginatedResponse<CrawlRun> {
 export interface DeleteCrawlRunsPayload {
   crawl_run_ids: string[];
 }
+
+export interface CrawlRunTimelineRunEntry {
+  id: string;
+  status: CrawlRunStatus;
+  started_at: string | null;
+  finished_at: string | null;
+  duration_ms: number | null;
+  created_at: string;
+  total_found: number;
+  total_new_listings: number;
+  error_message: string | null;
+}
+
+export interface CrawlRunTimelineRow {
+  agency_id: string;
+  agency_name: string;
+  scraper_id: string | null;
+  scraper_name: string | null;
+  runs: CrawlRunTimelineRunEntry[];
+}
+
+export interface CrawlRunTimelineResponse {
+  range_from: string;
+  range_to: string;
+  rows: CrawlRunTimelineRow[];
+}
+
+export interface CrawlRunTimelineQuery {
+  date_from?: string;
+  date_to?: string;
+  status?: CrawlRunStatus;
+  agency_id?: string;
+  scraper_id?: string;
+  user_id?: string;
+}

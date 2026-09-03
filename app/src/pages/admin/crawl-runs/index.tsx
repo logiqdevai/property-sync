@@ -4,6 +4,7 @@ import {
   Button,
   Checkbox,
   Table,
+  Tabs,
   Select,
   ListBox,
   Pagination,
@@ -20,6 +21,7 @@ import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { useScrapers } from "@/features/scrapers/hooks/use-scrapers";
 import { useAdminUsers } from "@/features/users/hooks/use-admin-users";
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
+import { CrawlRunsTimeline } from "./components/crawl-runs-timeline";
 import {
   useCrawlRuns,
   useDeleteCrawlRun,
@@ -36,6 +38,13 @@ import { formatDuration } from "@/lib/duration";
 const CRAWL_RUN_DELETE_ACTIONS: TableRowAction[] = [
   { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
 ];
+
+const CRAWL_RUN_TAB_KEYS = {
+  table: "table",
+  timeline: "timeline",
+} as const;
+
+type CrawlRunTabKey = (typeof CRAWL_RUN_TAB_KEYS)[keyof typeof CRAWL_RUN_TAB_KEYS];
 
 function toStartOfDayIso(date: string) {
   return new Date(`${date}T00:00:00.000Z`).toISOString();
@@ -57,6 +66,7 @@ export default function CrawlRunsListPage() {
   const deleteConfirm = useOverlayState();
   const bulkDeleteConfirm = useOverlayState();
 
+  const [activeTab, setActiveTab] = useState<CrawlRunTabKey>(CRAWL_RUN_TAB_KEYS.table);
   const [status, setStatus] = useState<CrawlRunStatus | "all">("all");
   const [agencyId, setAgencyId] = useState<string | "all">("all");
   const [scraperId, setScraperId] = useState<string | "all">("all");
@@ -129,6 +139,41 @@ export default function CrawlRunsListPage() {
           <p className="text-2xl font-semibold tracking-tight text-foreground">Crawl runs</p>
           <p className="text-sm text-muted">Production Playwright executions against source agencies.</p>
         </div>
+      </div>
+
+      <Tabs
+        className="w-full"
+        variant="secondary"
+        selectedKey={activeTab}
+        onSelectionChange={(key) => setActiveTab(key as CrawlRunTabKey)}
+      >
+        <Tabs.ListContainer>
+          <Tabs.List aria-label="Crawl run views">
+            <Tabs.Tab id={CRAWL_RUN_TAB_KEYS.table}>
+              Table
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id={CRAWL_RUN_TAB_KEYS.timeline}>
+              Timeline
+              <Tabs.Indicator />
+            </Tabs.Tab>
+          </Tabs.List>
+        </Tabs.ListContainer>
+
+        <Tabs.Panel id={CRAWL_RUN_TAB_KEYS.timeline} className="pt-6">
+          <CrawlRunsTimeline />
+        </Tabs.Panel>
+
+        <Tabs.Panel id={CRAWL_RUN_TAB_KEYS.table} className="pt-6 flex flex-col gap-6">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-2 w-fit">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">
+            Total cost
+          </p>
+          <p className="font-mono text-3xl font-bold text-foreground">
+            {isPending ? "—" : formatUsd(data?.total_cost ?? null)}
+          </p>
+        </div>
         <Button
           variant="danger"
           isDisabled={selectedCount < 1}
@@ -136,15 +181,6 @@ export default function CrawlRunsListPage() {
         >
           Delete selected ({selectedCount})
         </Button>
-      </div>
-
-      <div className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-2 w-fit">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted">
-          Total cost
-        </p>
-        <p className="font-mono text-3xl font-bold text-foreground">
-          {isPending ? "—" : formatUsd(data?.total_cost ?? null)}
-        </p>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -399,6 +435,8 @@ export default function CrawlRunsListPage() {
           </Pagination.Content>
         </Pagination>
       )}
+        </Tabs.Panel>
+      </Tabs>
 
       <ConfirmationDialog
         state={deleteConfirm}

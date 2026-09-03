@@ -5,12 +5,14 @@ import {
   deleteCrawlRun,
   deleteCrawlRuns,
   getCrawlRun,
+  getCrawlRunTimeline,
   getCrawlRuns,
   rerunCrawlRun,
 } from "../services/crawl-runs.services";
 import type {
   CrawlRunListQuery,
   CrawlRunStatus,
+  CrawlRunTimelineQuery,
   DeleteCrawlRunsPayload,
 } from "../interfaces/crawl-runs.interfaces";
 
@@ -20,6 +22,20 @@ export const useCrawlRuns = (query: CrawlRunListQuery) => {
   return useQuery({
     queryKey: ["crawlRuns", "list", query],
     queryFn: () => getCrawlRuns(query),
+  });
+};
+
+export const useCrawlRunTimeline = (query: CrawlRunTimelineQuery) => {
+  return useQuery({
+    queryKey: ["crawlRuns", "timeline", query],
+    queryFn: () => getCrawlRunTimeline(query),
+    refetchInterval: (result) => {
+      const rows = result.state.data?.rows ?? [];
+      const hasActiveRun = rows.some((row) =>
+        row.runs.some((run) => ACTIVE_STATUSES.includes(run.status)),
+      );
+      return hasActiveRun ? 5000 : false;
+    },
   });
 };
 

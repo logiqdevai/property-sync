@@ -59,6 +59,7 @@ export const ApiRoutes = {
         crawlRuns: {
             prefix: "/admin/crawl-runs",
             list: "/admin/crawl-runs",
+            timeline: "/admin/crawl-runs/timeline",
             detail: (id: string) => `/admin/crawl-runs/${id}`,
             rerun: (id: string) => `/admin/crawl-runs/${id}/rerun`,
             cancel: (id: string) => `/admin/crawl-runs/${id}/cancel`,

@@ -13,10 +13,29 @@ import {
 } from '@/integrations/crawler/constants/crawler.constants';
 import { CrawlRunStatus, JobStatus, Prisma } from 'generated/prisma';
 import { CrawlRunQueryType } from './dto/crawl-run-query.schema';
+import { CrawlRunTimelineQueryType } from './dto/crawl-run-timeline-query.schema';
 import { PaginatedResult } from './interfaces/crawl-run.interface';
 
 interface CrawlJobData {
   crawlRunId: string;
+}
+
+export interface CrawlRunTimelineRow {
+  agency_id: string;
+  agency_name: string;
+  scraper_id: string | null;
+  scraper_name: string | null;
+  runs: Array<{
+    id: string;
+    status: CrawlRunStatus;
+    started_at: Date | null;
+    finished_at: Date | null;
+    duration_ms: number | null;
+    created_at: Date;
+    total_found: number;
+    total_new_listings: number;
+    error_message: string | null;
+  }>;
 }
 
 const STOPPABLE_JOB_STATUSES: JobStatus[] = [
@@ -159,6 +178,96 @@ export class CrawlRunsService {
         has_prev: query.page > 1,
       },
       total_cost: aggregate._sum.ai_total_cost?.toString() ?? null,
+    };
+  }
+
+  // Powers the /admin/crawl-runs Gantt chart: one row per source agency (a
+  // Scraper belongs to exactly one agency, so grouping by agency == grouping
+  // by scraper) with every CrawlRun whose interval overlaps the requested day.
+  async timeline(query: CrawlRunTimelineQueryType) {
+    const rangeFrom = query.date_from ?? new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`);
+    const rangeTo = query.date_to ?? new Date(rangeFrom.getTime() + 24 * 60 * 60 * 1000);
+
+    const where: Prisma.CrawlRunWhereInput = {
+      ...(query.status && { status: query.status }),
+      ...(query.agency_id && { source_agency_id: query.agency_id }),
+      ...(query.scraper_id && { scraper_id: query.scraper_id }),
+      OR: [
+        {
+          started_at: { lte: rangeTo },
+          OR: [{ finished_at: null }, { finished_at: { gte: rangeFrom } }],
+        },
+        {
+          started_at: null,
+          created_at: { gte: rangeFrom, lte: rangeTo },
+        },
+      ],
+    };
+
+    if (query.user_id) {
+      const trackedAgencies = await this.prisma.userTrackedAgency.findMany({
+        where: { user_id: query.user_id },
+        select: { id: true },
+      });
+      where.user_tracked_agency_id = {
+        in: trackedAgencies.map((tracked) => tracked.id),
+      };
+    }
+
+    const runs = await this.prisma.crawlRun.findMany({
+      where,
+      select: {
+        id: true,
+        source_agency_id: true,
+        scraper_id: true,
+        status: true,
+        started_at: true,
+        finished_at: true,
+        duration_ms: true,
+        created_at: true,
+        total_found: true,
+        total_new_listings: true,
+        error_message: true,
+        source_agency: { select: { name: true } },
+        scraper: { select: { name: true } },
+      },
+      orderBy: { started_at: 'asc' },
+    });
+
+    const rowsByAgency = new Map<string, CrawlRunTimelineRow>();
+    for (const run of runs) {
+      let row = rowsByAgency.get(run.source_agency_id);
+      if (!row) {
+        row = {
+          agency_id: run.source_agency_id,
+          agency_name: run.source_agency?.name ?? run.source_agency_id,
+          scraper_id: run.scraper_id,
+          scraper_name: run.scraper?.name ?? null,
+          runs: [],
+        };
+        rowsByAgency.set(run.source_agency_id, row);
+      }
+      row.runs.push({
+        id: run.id,
+        status: run.status,
+        started_at: run.started_at,
+        finished_at: run.finished_at,
+        duration_ms: run.duration_ms,
+        created_at: run.created_at,
+        total_found: run.total_found,
+        total_new_listings: run.total_new_listings,
+        error_message: run.error_message,
+      });
+    }
+
+    const rows = [...rowsByAgency.values()].sort((a, b) =>
+      a.agency_name.localeCompare(b.agency_name),
+    );
+
+    return {
+      range_from: rangeFrom.toISOString(),
+      range_to: rangeTo.toISOString(),
+      rows,
     };
   }
 
