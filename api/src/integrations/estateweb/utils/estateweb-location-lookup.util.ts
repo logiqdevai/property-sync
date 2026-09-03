@@ -53,13 +53,32 @@ const LOCATION_CATALOG: EstateWebLocationCatalogItem[] =
     has_children: LOCATION_IDS_WITH_CHILDREN.has(loc.id),
   }));
 
+// Catalog municipality nodes are named "Δήμος <Genitive>" (e.g. "Δήμος Αποκορώνου"), but
+// scraped/AI-normalized district text and Google's own admin-area names essentially never
+// spell out the word "Δήμος" (see root cause #2 in ESTATEWEB-LOCATION-ACCURACY-FIXES.md) --
+// they give the bare genitive/nominative name instead. Index every such node under its bare
+// name too, so "Αποκορώνου" alone still finds "Δήμος Αποκορώνου".
+const MUNICIPALITY_PREFIX = 'δημος ';
+
 const LOCATION_BY_NORMALIZED_NAME: Map<string, EstateWebLocation[]> = (() => {
   const idx = new Map<string, EstateWebLocation[]>();
-  for (const loc of ESTATEWEB_LOCATIONS) {
-    const key = normalizeEstateWebPlaceLabel(loc.name);
+  const add = (key: string, loc: EstateWebLocation) => {
     const bucket = idx.get(key);
     if (bucket) bucket.push(loc);
     else idx.set(key, [loc]);
+  };
+  for (const loc of ESTATEWEB_LOCATIONS) {
+    add(normalizeEstateWebPlaceLabel(loc.name), loc);
+  }
+  // Second pass: only fill genuine gaps. A handful of municipality bare names collide with
+  // an unrelated real catalog entry elsewhere (e.g. "Δήμος Πύργου" in Ilia vs. the settlement
+  // "Πυργού" in Crete) -- never shadow/ambiguously-merge an existing name, only add the bare
+  // form where nothing was already indexed under it.
+  for (const loc of ESTATEWEB_LOCATIONS) {
+    const key = normalizeEstateWebPlaceLabel(loc.name);
+    if (!key.startsWith(MUNICIPALITY_PREFIX)) continue;
+    const bare = key.slice(MUNICIPALITY_PREFIX.length);
+    if (!idx.has(bare)) add(bare, loc);
   }
   return idx;
 })();
@@ -89,6 +108,13 @@ const CITY_ALIASES: Record<string, string> = {
   'ν. χαλκιδικης': 'χαλκιδικη',
   'ν χαλκιδικης': 'χαλκιδικη',
   χαλκιδικης: 'χαλκιδικη',
+  // "Αποκόρωνας"/"Αποκορώνας" (the modern, colloquial nominative spelling everyone actually
+  // writes) is an irregular alternate lemma of the catalog's formal "Δήμος Αποκορώνου" --
+  // not reachable via regular Greek declension (guessGreekGenitive only covers the regular
+  // -ος/-ου pair, e.g. Google's own "Αποκόρωνος"). See root cause #9 in
+  // ESTATEWEB-LOCATION-ACCURACY-FIXES.md.
+  αποκορωνας: 'αποκορωνου',
+  αποκορωνα: 'αποκορωνου',
   malia: 'μαλια',
   stalis: 'σταλιδα',
   mesampelies: 'μεσαμπελιες',
@@ -268,6 +294,9 @@ function pickCanonicalCity(
 }
 
 function stripGreekGenitive(normalized: string): string | null {
+  if (normalized.endsWith('ου') && normalized.length > 3) {
+    return normalized.slice(0, -2) + 'ος';
+  }
   if (normalized.endsWith('ης') && normalized.length > 3) {
     return normalized.slice(0, -2) + 'η';
   }
@@ -276,6 +305,20 @@ function stripGreekGenitive(normalized: string): string | null {
   }
   if (normalized.endsWith('ων') && normalized.length > 3) {
     return normalized.slice(0, -2) + 'ες';
+  }
+  return null;
+}
+
+// Inverse of stripGreekGenitive's "-ος -> -ου" pair: municipality catalog nodes are named
+// with the region's genitive ("Δήμος Αποκορώνου"), but Google/scraped text usually gives the
+// plain nominative ("Αποκόρωνος") -- this is a completely regular, productive Greek 2nd-
+// declension pattern (also e.g. Ρόδος/Ρόδου, Νάξος/Νάξου), unlike the -ης/-ας/-ων pairs above
+// which stripGreekGenitive already treats as genitive-shaped input. Only the -ος/-ου
+// direction is added here: -α/-η endings are ambiguous between nominative and an already-
+// genitive-looking form for this catalog's naming style, so guessing would risk false matches.
+function guessGreekGenitive(normalized: string): string | null {
+  if (normalized.endsWith('ος') && normalized.length > 3) {
+    return normalized.slice(0, -2) + 'ου';
   }
   return null;
 }
@@ -362,6 +405,11 @@ function expandDistrictLabels(district?: string | null): string[] {
     for (const expansion of expansions) push(expansion);
   }
   if (aliased) push(aliased);
+  // A district given in the plain nominative ("Αποκόρωνος") won't match the catalog's
+  // genitive-cased municipality name ("Δήμος Αποκορώνου", now also bare-indexed as
+  // "Αποκορώνου") without this -- see MUNICIPALITY_PREFIX indexing above.
+  const genitiveGuess = guessGreekGenitive(raw);
+  if (genitiveGuess) push(genitiveGuess);
   for (let i = parts.length - 1; i >= 0; i--) {
     push(parts[i]);
     const partAlias = CITY_ALIASES[parts[i]];
@@ -544,7 +592,23 @@ function resolveByDistrict(
 
   const anyKnownCity = cityLabels.some(isKnownCatalogLabel);
   if (!anyKnownCity || districtMatches.length === 1) {
-    return pickMostSpecific(districtMatches);
+    const fallback = pickMostSpecific(districtMatches);
+    // The bare-municipality-name indexing above means a district label can now resolve
+    // to a municipality node that is the ANCESTOR of an already-known, more specific city
+    // match (e.g. district "Αποκορώνας" -> "Δήμος Αποκορώνου", city "Κεφαλάς" -> one of its
+    // own villages) -- matchesCity above only catches the district match being a
+    // descendant/sibling of the city, not this reverse shape. Prefer the city's own node
+    // when it's nested under the district fallback, instead of silently coarsening an
+    // already-correct, more specific match down to its parent municipality.
+    if (fallback) {
+      for (const cityLabel of cityLabels) {
+        const nested = (LOCATION_BY_NORMALIZED_NAME.get(cityLabel) ?? []).find((loc) =>
+          isDescendantOf(loc, fallback.id),
+        );
+        if (nested) return nested;
+      }
+    }
+    return fallback;
   }
 
   return undefined;

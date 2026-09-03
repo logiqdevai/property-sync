@@ -194,6 +194,56 @@ describe('resolveEstateWebLocation', () => {
     );
   });
 
+  it('resolves a municipality named only in the nominative to its genitive-cased catalog node', () => {
+    // Regression for user_properties.id = e02c44ec-6412-4459-99dc-775d483883a4 (root cause #9):
+    // city "Χανιά" / district "Αποκορώνας" resolved to Χανιά *town* (113671, under Δήμος
+    // Χανίων) instead of the correct Δήμος Αποκορώνου (40300) -- a different, adjacent
+    // municipality. The catalog only has "Δήμος Αποκορώνου" (genitive, no bare entry), and
+    // "Αποκορώνας" is an irregular alternate lemma of that name unreachable via regular
+    // declension, so an explicit alias is required even with the bare-municipality-name
+    // indexing and -ος/-ου genitive guessing added alongside this fix.
+    const loc = resolveEstateWebLocationFromSources({
+      city: 'Χανιά',
+      district: 'Αποκορώνας',
+    });
+    expect(loc).toEqual(
+      expect.objectContaining({
+        id: 40300,
+        name: 'Δήμος Αποκορώνου',
+        path: 'Κρήτη » Χανιά » Δήμος Αποκορώνου',
+      }),
+    );
+  });
+
+  it('resolves a bare (no "Δήμος" prefix) genitive municipality name via a Google hint', () => {
+    // General case behind root cause #9: Google reverse-geocoding returns the municipality
+    // in the plain nominative ("Αποκόρωνος"), which must reach the catalog's genitive-cased
+    // "Δήμος Αποκορώνου" node via guessGreekGenitive + the bare-municipality-name index, with
+    // no curated alias needed since -ος/-ου is a regular declension pattern.
+    expect(
+      resolveEstateWebLocation(null, 'Αποκόρωνος'),
+    ).toEqual(
+      expect.objectContaining({ id: 40300, name: 'Δήμος Αποκορώνου' }),
+    );
+    expect(resolveEstateWebLocation(null, 'Αποκορώνου')).toEqual(
+      expect.objectContaining({ id: 40300, name: 'Δήμος Αποκορώνου' }),
+    );
+  });
+
+  it('does not coarsen an already-specific village match down to its parent municipality', () => {
+    // Guard for the bare-municipality-name indexing added alongside root cause #9: once
+    // district "Αποκορώνας" can resolve to the municipality "Δήμος Αποκορώνου" itself, a
+    // property whose city already names one of that municipality's own villages (e.g.
+    // "Κεφαλάς", "Βάμος" -- both real production rows that were already correct) must keep
+    // resolving to that specific village, not regress to the broader municipality node.
+    expect(
+      resolveEstateWebLocationFromSources({ city: 'Κεφαλάς', district: 'Αποκορώνας' }),
+    ).toEqual(expect.objectContaining({ id: 105545, name: 'Κεφαλάς' }));
+    expect(
+      resolveEstateWebLocationFromSources({ city: 'Βάμος', district: 'Αποκορώνας' }),
+    ).toEqual(expect.objectContaining({ id: 105544, name: 'Βάμος' }));
+  });
+
   it('still resolves via city/district alone when Google returns no usable segments', () => {
     // A property whose district is a globally unique catalog name must not be left
     // unresolved just because Google's response (or its absence) yielded an empty
