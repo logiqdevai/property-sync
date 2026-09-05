@@ -720,9 +720,11 @@ export class PropertyNormalizationService {
             // `price` and `price_start` are only ever set at creation — a
             // re-crawl that finds a new price must only move `price_web`, so
             // the fields diverging is how a price change is detected (see
-            // diffPropertyChanges).
-            price: existingLink.property.price,
-            price_start: existingLink.property.price_start,
+            // diffPropertyChanges). The `?? record.*` fallback lets a still-null
+            // value (creation-time normalization found no price) self-heal from
+            // a later re-crawl instead of staying null forever.
+            price: existingLink.property.price ?? record.price,
+            price_start: existingLink.property.price_start ?? record.price_start,
             city: record.city ?? existingLink.property.city,
             district: record.district ?? existingLink.property.district,
             // Once a location id is set, only the async Google-verified re-check
