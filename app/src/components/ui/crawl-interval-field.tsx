@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Checkbox, Label, ListBox, Select, Tabs } from "@heroui/react";
 import {
   buildCrawlIntervalCron,
@@ -44,8 +44,17 @@ export function CrawlIntervalField({ value, disabled = false, onChange }: CrawlI
     () => parseCrawlIntervalBuilderState(value) ?? DefaultCrawlIntervalBuilderState,
   );
 
+  // Tracks cron strings this component just produced itself (via commit), so the
+  // sync effect below can tell "the parent echoed our own change back down" apart
+  // from "the value changed for some external reason" and only resync builder
+  // state in the latter case. Without this, committing e.g. Daily + one day
+  // checked (which happens to produce the same cron shape as Weekly) would
+  // immediately get re-parsed and silently flip the frequency to Weekly.
+  const lastCommittedRef = useRef<string | null>(null);
+
   useEffect(() => {
     setCustomValue(value);
+    if (lastCommittedRef.current === value) return;
     const parsed = parseCrawlIntervalBuilderState(value);
     if (parsed) setBuilder(parsed);
   }, [value]);
@@ -53,6 +62,7 @@ export function CrawlIntervalField({ value, disabled = false, onChange }: CrawlI
   const commit = (cron: string) => {
     const next = cron.trim();
     if (!next || next === value) return;
+    lastCommittedRef.current = next;
     onChange(next);
   };
 
