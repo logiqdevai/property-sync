@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Label, ListBox, Select, Tabs } from "@heroui/react";
+import { Checkbox, Label, ListBox, Select, Tabs } from "@heroui/react";
 import {
   buildCrawlIntervalCron,
   CrawlIntervalBuilderFrequencies,
@@ -207,6 +207,36 @@ export function CrawlIntervalField({ value, disabled = false, onChange }: CrawlI
                   </ListBox>
                 </Select.Popover>
               </Select>
+            ) : null}
+
+            {builder.frequency === CrawlIntervalBuilderFrequencies.HOURLY ||
+            builder.frequency === CrawlIntervalBuilderFrequencies.DAILY ? (
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm text-muted">Days of week</span>
+                <div className="flex flex-wrap gap-3" role="group" aria-label="Days of week">
+                  {CrawlIntervalBuilderWeekdayOptions.map((option) => (
+                    <Checkbox
+                      key={option.id}
+                      isSelected={builder.days.includes(option.id)}
+                      isDisabled={disabled}
+                      onChange={(isSelected) => {
+                        const nextDays = isSelected
+                          ? [...builder.days, option.id]
+                          : builder.days.filter((day) => day !== option.id);
+                        updateBuilder({ days: nextDays });
+                      }}
+                    >
+                      <Checkbox.Content>
+                        <Checkbox.Control>
+                          <Checkbox.Indicator />
+                        </Checkbox.Control>
+                        {option.label}
+                      </Checkbox.Content>
+                    </Checkbox>
+                  ))}
+                </div>
+                <span className="text-xs text-muted">Leave all unchecked to run every day.</span>
+              </div>
             ) : null}
 
             {builder.frequency !== CrawlIntervalBuilderFrequencies.HOURLY ? (

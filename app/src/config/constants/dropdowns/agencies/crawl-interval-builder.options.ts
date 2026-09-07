@@ -49,6 +49,8 @@ export interface CrawlIntervalBuilderState {
   hourlyInterval: string;
   hour: string;
   weekday: string;
+  /** HOURLY/DAILY only. Weekday ids from CrawlIntervalBuilderWeekdayOptions; [] means every day. */
+  days: string[];
 }
 
 export const DefaultCrawlIntervalBuilderState: CrawlIntervalBuilderState = {
@@ -56,16 +58,36 @@ export const DefaultCrawlIntervalBuilderState: CrawlIntervalBuilderState = {
   hourlyInterval: "6",
   hour: "9",
   weekday: "1",
+  days: [],
 };
+
+function formatDaysField(days: string[]): string {
+  if (days.length === 0) return "*";
+  return [...days].sort((a, b) => Number(a) - Number(b)).join(",");
+}
+
+function parseDaysField(dayOfWeek: string): string[] | null {
+  if (dayOfWeek === "*") return [];
+
+  const parts = dayOfWeek.split(",");
+  const seen = new Set<string>();
+  for (const part of parts) {
+    if (seen.has(part)) return null;
+    if (!CrawlIntervalBuilderWeekdayOptions.some((option) => option.id === part)) return null;
+    seen.add(part);
+  }
+
+  return parts.slice().sort((a, b) => Number(a) - Number(b));
+}
 
 export function buildCrawlIntervalCron(state: CrawlIntervalBuilderState): string {
   if (state.frequency === CrawlIntervalBuilderFrequencies.HOURLY) {
     const interval = state.hourlyInterval === "1" ? "*" : `*/${state.hourlyInterval}`;
-    return `0 ${interval} * * *`;
+    return `0 ${interval} * * ${formatDaysField(state.days)}`;
   }
 
   if (state.frequency === CrawlIntervalBuilderFrequencies.DAILY) {
-    return `0 ${state.hour} * * *`;
+    return `0 ${state.hour} * * ${formatDaysField(state.days)}`;
   }
 
   return `0 ${state.hour} * * ${state.weekday}`;
@@ -80,40 +102,12 @@ export function parseCrawlIntervalBuilderState(
   const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
   if (minute !== "0" || dayOfMonth !== "*" || month !== "*") return null;
 
-  if (dayOfWeek === "*") {
-    if (hour === "*") {
-      return {
-        ...DefaultCrawlIntervalBuilderState,
-        frequency: CrawlIntervalBuilderFrequencies.HOURLY,
-        hourlyInterval: "1",
-      };
-    }
-
-    const everyMatch = hour.match(/^\*\/(\d+)$/);
-    if (everyMatch) {
-      const interval = everyMatch[1];
-      if (CrawlIntervalBuilderHourlyIntervalOptions.some((option) => option.id === interval)) {
-        return {
-          ...DefaultCrawlIntervalBuilderState,
-          frequency: CrawlIntervalBuilderFrequencies.HOURLY,
-          hourlyInterval: interval,
-        };
-      }
-      return null;
-    }
-
-    if (/^\d+$/.test(hour) && Number(hour) >= 0 && Number(hour) <= 23) {
-      return {
-        ...DefaultCrawlIntervalBuilderState,
-        frequency: CrawlIntervalBuilderFrequencies.DAILY,
-        hour,
-      };
-    }
-
-    return null;
-  }
-
+  // A single specific weekday paired with a specific hour is shape-ambiguous with
+  // "Daily restricted to that one day" — Weekly wins the tie so previously-saved
+  // Weekly crons keep round-tripping into the Weekly tab unchanged.
   if (
+    dayOfWeek !== "*" &&
+    !dayOfWeek.includes(",") &&
     /^\d+$/.test(hour) &&
     Number(hour) >= 0 &&
     Number(hour) <= 23 &&
@@ -124,6 +118,41 @@ export function parseCrawlIntervalBuilderState(
       frequency: CrawlIntervalBuilderFrequencies.WEEKLY,
       hour,
       weekday: dayOfWeek,
+    };
+  }
+
+  const days = parseDaysField(dayOfWeek);
+  if (days === null) return null;
+
+  if (hour === "*") {
+    return {
+      ...DefaultCrawlIntervalBuilderState,
+      frequency: CrawlIntervalBuilderFrequencies.HOURLY,
+      hourlyInterval: "1",
+      days,
+    };
+  }
+
+  const everyMatch = hour.match(/^\*\/(\d+)$/);
+  if (everyMatch) {
+    const interval = everyMatch[1];
+    if (CrawlIntervalBuilderHourlyIntervalOptions.some((option) => option.id === interval)) {
+      return {
+        ...DefaultCrawlIntervalBuilderState,
+        frequency: CrawlIntervalBuilderFrequencies.HOURLY,
+        hourlyInterval: interval,
+        days,
+      };
+    }
+    return null;
+  }
+
+  if (/^\d+$/.test(hour) && Number(hour) >= 0 && Number(hour) <= 23) {
+    return {
+      ...DefaultCrawlIntervalBuilderState,
+      frequency: CrawlIntervalBuilderFrequencies.DAILY,
+      hour,
+      days,
     };
   }
 
