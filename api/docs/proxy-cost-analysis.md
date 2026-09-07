@@ -21,10 +21,12 @@ Most of the data transferred on these pages is property photos. But our scraper 
 
 ## Real cost, measured
 
+Priced at Bright Data's actual rate for our account, $8 per GB.
+
 | | Just these 2 scrapers today | If we scale to 100 scrapers |
 |---|---|---|
-| **Without the photo-skip fix** | ~$330/month | ~$1,980/month |
-| **With the photo-skip fix** | **~$12/month** | **~$72/month** |
+| **Without the photo-skip fix** | ~$528/month | ~$3,170/month |
+| **With the photo-skip fix** | **~$19/month** | **~$116/month** |
 
 ## Why not a cheaper-looking alternative?
 
@@ -36,4 +38,4 @@ Bright Data is both the cheaper option and the one that requires no rework — s
 
 ## Bottom line
 
-Fixing these 2 scrapers costs about **$12/month**. Scaling this same protection to 100 scrapers, if we ever need it, would cost about **$72/month**. Both numbers come from real, measured data — not estimates.
+Fixing these 2 scrapers costs about **$19/month**. Scaling this same protection to 100 scrapers, if we ever need it, would cost about **$116/month**. Both numbers come from real, measured data — not estimates.

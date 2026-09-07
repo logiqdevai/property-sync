@@ -77,8 +77,20 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
 
     if (!options?.useManagedBrowser) this.contextsSinceLaunch++;
 
+    // Bright Data's Scraping Browser rejects any attempt to override the
+    // Accept-Language/Accept headers over CDP ("Overriding Accept-Language,
+    // Accept headers forbidden" -- Page.navigate fails outright before
+    // navigating) since their fleet already sets realistic headers itself as
+    // part of the anti-detection service. Only strip it for the managed
+    // browser -- the local Chromium still wants it.
+    const { extraHTTPHeaders, ...managedSafeStealthOptions } =
+      STEALTH_CONTEXT_OPTIONS;
+    const baseContextOptions = options?.useManagedBrowser
+      ? managedSafeStealthOptions
+      : STEALTH_CONTEXT_OPTIONS;
+
     const context = await browser.newContext({
-      ...STEALTH_CONTEXT_OPTIONS,
+      ...baseContextOptions,
       ...contextOptions,
     });
     await applyStealthInitScript(context);
