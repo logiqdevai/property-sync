@@ -6,6 +6,8 @@ import { GcsFolders } from '@/shared/config/gcs-folders';
 import {
   CONTEXT_CLOSE_TIMEOUT_MS,
   DETAIL_HTML_UPLOAD_TIMEOUT_MS,
+  START_PAGE_GOTO_MAX_ATTEMPTS,
+  START_PAGE_GOTO_RETRY_DELAY_MS,
 } from '../constants/crawler.constants';
 import {
   CrawlItem,
@@ -19,6 +21,7 @@ import {
 import {
   isDetailPageRedirectAway,
   mergeImagesDedupingSizeVariants,
+  retryTransient,
 } from '../utils/crawler.utils';
 import { StealthBrowserService } from './stealth-browser.service';
 
@@ -179,11 +182,20 @@ export class DetailEnrichmentService {
       { useManagedBrowser, blockImages: useManagedBrowser },
     );
 
+    const gotoDetailPage = () =>
+      retryTransient(
+        () =>
+          page.goto(item.source_url, {
+            waitUntil: 'domcontentloaded',
+            timeout: pageTimeoutMs,
+          }),
+        START_PAGE_GOTO_MAX_ATTEMPTS,
+        START_PAGE_GOTO_RETRY_DELAY_MS,
+        () => undefined,
+      );
+
     try {
-      let response = await page.goto(item.source_url, {
-        waitUntil: 'domcontentloaded',
-        timeout: pageTimeoutMs,
-      });
+      let response = await gotoDetailPage();
 
       let accessState = await waitForBotChallengeClearance(
         page,
@@ -193,10 +205,7 @@ export class DetailEnrichmentService {
 
       if (accessState === 'challenge' || accessState === 'blocked') {
         await page.waitForTimeout(2_500);
-        response = await page.goto(item.source_url, {
-          waitUntil: 'domcontentloaded',
-          timeout: pageTimeoutMs,
-        });
+        response = await gotoDetailPage();
         accessState = await waitForBotChallengeClearance(
           page,
           blockHandlingConfig,

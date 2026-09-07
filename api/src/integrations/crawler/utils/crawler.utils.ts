@@ -11,11 +11,43 @@ export function crawlTimestamp(): string {
 // wrong, so they must be classified the same as an HTTP-level networkError
 // (see crawler.service.ts's scrapeListingPages catch block) rather than
 // falling through to the generic "scraper is broken" 3-strike counter.
+// "interrupted by another navigation" is a managed-browser (Bright Data)
+// specific case: their fleet does its own server-side challenge-solving while
+// our goto() is pending, and finishing that triggers an internal reload that
+// races the original navigation -- purely a timing artifact, not a real
+// failure, and a retry lands after their unlocking has already completed.
 const TRANSIENT_NAVIGATION_ERROR_PATTERN =
-  /net::ERR_|NS_ERROR_|Timeout \d+ms exceeded/i;
+  /net::ERR_|NS_ERROR_|Timeout \d+ms exceeded|interrupted by another navigation/i;
 
 export function isTransientNavigationError(message: string): boolean {
   return TRANSIENT_NAVIGATION_ERROR_PATTERN.test(message);
+}
+
+// Shared by every page.goto() call in the crawler (listing pages, url_param
+// pagination, detail pages) -- retries on a transient navigation error (see
+// TRANSIENT_NAVIGATION_ERROR_PATTERN above), rethrows immediately for
+// anything else (a real HTTP response, or a non-network exception).
+export async function retryTransient<T>(
+  action: () => Promise<T>,
+  maxAttempts: number,
+  delayMs: number,
+  onRetry: (attempt: number, message: string) => void,
+): Promise<T> {
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await action();
+    } catch (err) {
+      lastErr = err;
+      const message = err instanceof Error ? err.message : String(err);
+      if (!isTransientNavigationError(message) || attempt === maxAttempts) {
+        throw err;
+      }
+      onRetry(attempt, message);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+  throw lastErr;
 }
 
 export function contentHash(obj: Record<string, unknown>): string {

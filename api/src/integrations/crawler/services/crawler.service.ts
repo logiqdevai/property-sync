@@ -14,6 +14,7 @@ import {
 import {
   crawlTimestamp,
   isTransientNavigationError,
+  retryTransient,
 } from '../utils/crawler.utils';
 import {
   INFINITE_SCROLL_MAX_WAIT_MS,
@@ -331,42 +332,13 @@ export class CrawlerService {
     };
   }
 
-  // Retries an action on connection-level failures (net::ERR_*, handshake/
-  // navigation timeouts) -- these are frequently a single bad moment for the
-  // target site rather than it actually being down, and retrying avoids
-  // inflating the scraper's failure count (or aborting pagination entirely)
-  // over pure flakiness. Anything else (a real HTTP response, or a non-network
-  // exception) is not retried and rethrows immediately.
-  private async retryTransient<T>(
-    action: () => Promise<T>,
-    maxAttempts: number,
-    delayMs: number,
-    onRetry: (attempt: number, message: string) => void,
-  ): Promise<T> {
-    let lastErr: unknown;
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        return await action();
-      } catch (err) {
-        lastErr = err;
-        const message = err instanceof Error ? err.message : String(err);
-        if (!isTransientNavigationError(message) || attempt === maxAttempts) {
-          throw err;
-        }
-        onRetry(attempt, message);
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-      }
-    }
-    throw lastErr;
-  }
-
   private async gotoWithRetry(
     page: Page,
     url: string,
     timeoutMs: number,
     log: (msg: string, data?: Record<string, unknown>) => void,
   ) {
-    return this.retryTransient(
+    return retryTransient(
       () => page.goto(url, { waitUntil: 'domcontentloaded', timeout: timeoutMs }),
       START_PAGE_GOTO_MAX_ATTEMPTS,
       START_PAGE_GOTO_RETRY_DELAY_MS,
@@ -530,7 +502,7 @@ export class CrawlerService {
         ? await page.locator(listingSelector).count().catch(() => 0)
         : 0;
       try {
-        await this.retryTransient(
+        await retryTransient(
           () => btn.click({ timeout: 8000 }),
           PAGINATION_CLICK_MAX_ATTEMPTS,
           PAGINATION_CLICK_RETRY_DELAY_MS,
@@ -622,10 +594,17 @@ export class CrawlerService {
       const paramName = pagination.url_param ?? 'page';
       const url = new URL(page.url());
       url.searchParams.set(paramName, String(pageNum + 2));
-      const response = await page.goto(url.href, {
-        waitUntil: 'domcontentloaded',
-        timeout: crawlerConfig.page_timeout_ms,
-      });
+      const response = await retryTransient(
+        () =>
+          page.goto(url.href, {
+            waitUntil: 'domcontentloaded',
+            timeout: crawlerConfig.page_timeout_ms,
+          }),
+        START_PAGE_GOTO_MAX_ATTEMPTS,
+        START_PAGE_GOTO_RETRY_DELAY_MS,
+        (attempt, message) =>
+          log('navigate_retry', { attempt, message, url: url.href }),
+      );
       await waitForBotChallengeClearance(
         page,
         blockHandlingConfig,
@@ -766,7 +745,7 @@ export class CrawlerService {
       }
 
       try {
-        await this.retryTransient(
+        await retryTransient(
           () => nextControl.click({ timeout: 8000 }),
           PAGINATION_CLICK_MAX_ATTEMPTS,
           PAGINATION_CLICK_RETRY_DELAY_MS,
