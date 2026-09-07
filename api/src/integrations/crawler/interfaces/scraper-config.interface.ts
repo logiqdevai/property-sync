@@ -1,3 +1,5 @@
+import type { Page } from 'playwright';
+
 export type FieldType = 'text' | 'href' | 'src' | 'background_image';
 
 export interface FieldDef {
@@ -79,4 +81,9 @@ export interface PaginationAdvanceResult {
   advanced: boolean;
   networkError?: boolean;
   errorMessage?: string;
+  // Set only when a dead managed-browser session forced a reconnect mid-
+  // pagination (see CrawlerService.reconnectManagedPage) -- the caller must
+  // use this Page (and its BrowserContext) for every subsequent operation
+  // instead of the one it originally passed in, which is now closed.
+  page?: Page;
 }

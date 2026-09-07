@@ -13,10 +13,12 @@ import {
 } from '../interfaces/scraper-config.interface';
 import {
   crawlTimestamp,
+  isManagedSessionDeadError,
   isTransientNavigationError,
   retryTransient,
 } from '../utils/crawler.utils';
 import {
+  CONTEXT_CLOSE_TIMEOUT_MS,
   INFINITE_SCROLL_MAX_WAIT_MS,
   INFINITE_SCROLL_POLL_INTERVAL_MS,
   INFINITE_SCROLL_STEP_VIEWPORT_RATIO,
@@ -34,6 +36,7 @@ import {
 import { BlockHandlingConfig } from '../block-handling/block-handling.interface';
 import { CrawlerDebugService } from './crawler-debug.service';
 import { FieldExtractionService } from './field-extraction.service';
+import { StealthBrowserService } from './stealth-browser.service';
 
 export interface CrawlRunOptions {
   onPageComplete?: () => void | Promise<void>;
@@ -48,7 +51,30 @@ export class CrawlerService {
     private readonly fieldExtractionService: FieldExtractionService,
     private readonly crawlerDebugService: CrawlerDebugService,
     private readonly platformConfigService: PlatformConfigService,
+    private readonly stealthBrowserService: StealthBrowserService,
   ) {}
+
+  // The listing-page walk holds ONE managed-browser session for its whole
+  // (potentially 30+ page) pagination run -- long enough to realistically hit
+  // Bright Data's 5-minute-inactivity or 60-minute-hard-cap session limits
+  // (confirmed in production: "Target page, context or browser has been
+  // closed" mid-walk, after successfully processing 8+ pages). Unlike the
+  // detail-page worker pool, there's no queue to hand off to another lane --
+  // recover in place by closing the dead context+browser, opening a fresh
+  // session, and letting the caller resume pagination from exactly the URL
+  // it was trying to reach.
+  private async reconnectManagedPage(deadPage: Page): Promise<Page> {
+    this.logger.warn('Managed browser session died mid-crawl — reconnecting');
+    const deadContext = deadPage.context();
+    await this.stealthBrowserService
+      .closeContext(deadContext, CONTEXT_CLOSE_TIMEOUT_MS)
+      .catch(() => undefined);
+    const { page: newPage } = await this.stealthBrowserService.newStealthPage(
+      undefined,
+      { useManagedBrowser: true, blockImages: true },
+    );
+    return newPage;
+  }
 
   async runCrawl(
     config: ScraperConfig,
@@ -103,12 +129,15 @@ export class CrawlerService {
 
     try {
       log('navigate', { url: config.start_url });
-      const response = await this.gotoWithRetry(
+      const initialGoto = await this.gotoWithRetry(
         page,
         config.start_url,
         crawlerConfig.page_timeout_ms,
         log,
+        useManagedBrowser,
       );
+      page = initialGoto.page;
+      const response = initialGoto.response;
 
       await waitForBotChallengeClearance(
         page,
@@ -298,7 +327,11 @@ export class CrawlerService {
           crawlerConfig,
           config.listing_selector,
           blockHandlingConfig,
+          useManagedBrowser,
         );
+        if (advanceResult.page) {
+          page = advanceResult.page;
+        }
         if (!advanceResult.advanced) {
           if (advanceResult.networkError) {
             // A real HTTP failure mid-pagination (e.g. a 5xx on page N) is not the
@@ -359,14 +392,33 @@ export class CrawlerService {
     url: string,
     timeoutMs: number,
     log: (msg: string, data?: Record<string, unknown>) => void,
+    useManagedBrowser?: boolean,
   ) {
-    return retryTransient(
-      () =>
-        page.goto(url, { waitUntil: 'domcontentloaded', timeout: timeoutMs }),
-      START_PAGE_GOTO_MAX_ATTEMPTS,
-      START_PAGE_GOTO_RETRY_DELAY_MS,
-      (attempt, message) => log('navigate_retry', { attempt, message }),
-    );
+    try {
+      const response = await retryTransient(
+        () =>
+          page.goto(url, {
+            waitUntil: 'domcontentloaded',
+            timeout: timeoutMs,
+          }),
+        START_PAGE_GOTO_MAX_ATTEMPTS,
+        START_PAGE_GOTO_RETRY_DELAY_MS,
+        (attempt, message) => log('navigate_retry', { attempt, message }),
+      );
+      return { page, response };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (!useManagedBrowser || !isManagedSessionDeadError(message)) {
+        throw err;
+      }
+      log('managed_session_reconnect', { reason: message, url });
+      const freshPage = await this.reconnectManagedPage(page);
+      const response = await freshPage.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: timeoutMs,
+      });
+      return { page: freshPage, response };
+    }
   }
 
   // Card-level image extraction (field.image and the broader per-card img/
@@ -437,6 +489,7 @@ export class CrawlerService {
     crawlerConfig: ResolvedCrawlerConfig,
     listingSelector?: string,
     blockHandlingConfig?: BlockHandlingConfig,
+    useManagedBrowser?: boolean,
   ): Promise<PaginationAdvanceResult> {
     if (
       pagination.type === 'next_button' ||
@@ -631,19 +684,43 @@ export class CrawlerService {
       const paramName = pagination.url_param ?? 'page';
       const url = new URL(page.url());
       url.searchParams.set(paramName, String(pageNum + 2));
-      const response = await retryTransient(
-        () =>
-          page.goto(url.href, {
-            waitUntil: 'domcontentloaded',
-            timeout: crawlerConfig.page_timeout_ms,
-          }),
-        START_PAGE_GOTO_MAX_ATTEMPTS,
-        START_PAGE_GOTO_RETRY_DELAY_MS,
-        (attempt, message) =>
-          log('navigate_retry', { attempt, message, url: url.href }),
-      );
+
+      let activePage = page;
+      let reconnected = false;
+      let response;
+      try {
+        response = await retryTransient(
+          () =>
+            activePage.goto(url.href, {
+              waitUntil: 'domcontentloaded',
+              timeout: crawlerConfig.page_timeout_ms,
+            }),
+          START_PAGE_GOTO_MAX_ATTEMPTS,
+          START_PAGE_GOTO_RETRY_DELAY_MS,
+          (attempt, message) =>
+            log('navigate_retry', { attempt, message, url: url.href }),
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (!useManagedBrowser || !isManagedSessionDeadError(message)) {
+          throw err;
+        }
+        // The session died mid-pagination -- url_param pagination can resume
+        // exactly where it left off (unlike next_button/infinite_scroll,
+        // which have no direct-access URL to jump back to), so reconnect and
+        // retry this SAME target page on a fresh session instead of failing
+        // the whole crawl over what's otherwise a recoverable timing issue.
+        log('managed_session_reconnect', { reason: message, url: url.href });
+        activePage = await this.reconnectManagedPage(page);
+        reconnected = true;
+        response = await activePage.goto(url.href, {
+          waitUntil: 'domcontentloaded',
+          timeout: crawlerConfig.page_timeout_ms,
+        });
+      }
+
       await waitForBotChallengeClearance(
-        page,
+        activePage,
         blockHandlingConfig,
         Math.min(15_000, crawlerConfig.page_timeout_ms),
       );
@@ -654,9 +731,10 @@ export class CrawlerService {
           advanced: false,
           networkError: true,
           errorMessage: `HTTP ${status} on ${url.href} while paginating to page ${pageNum + 2}`,
+          ...(reconnected && { page: activePage }),
         };
       }
-      return { advanced: true };
+      return { advanced: true, ...(reconnected && { page: activePage }) };
     }
 
     return { advanced: false };
