@@ -7,6 +7,7 @@ import { GcsFolders } from '@/shared/config/gcs-folders';
 import {
   CONTEXT_CLOSE_TIMEOUT_MS,
   DETAIL_HTML_UPLOAD_TIMEOUT_MS,
+  MANAGED_BROWSER_CHALLENGE_WAIT_MS,
   MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS,
   START_PAGE_GOTO_MAX_ATTEMPTS,
   START_PAGE_GOTO_RETRY_DELAY_MS,
@@ -298,17 +299,24 @@ export class DetailEnrichmentService {
     // detail_concurrency slot) open for the rest of the crawl run --
     // confirmed via a run where exactly this hung a single item for 45
     // minutes and then starved every subsequent connectOverCDP() attempt of
-    // a free session for the remaining retries.
-    const DETAIL_PAGE_HARD_TIMEOUT_MS = Math.max(pageTimeoutMs * 4, 120_000);
+    // a free session for the remaining retries. Sized to comfortably cover
+    // the worst case: 3 goto retries at pageTimeoutMs each + 2 retry delays +
+    // up to two MANAGED_BROWSER_CHALLENGE_WAIT_MS challenge waits.
+    const DETAIL_PAGE_HARD_TIMEOUT_MS = Math.max(pageTimeoutMs * 5, 120_000);
 
     const work = (async (): Promise<DetailEnrichmentResult> => {
       try {
         let response = await gotoDetailPage();
 
+        const challengeWaitMs = Math.min(
+          useManagedBrowser ? MANAGED_BROWSER_CHALLENGE_WAIT_MS : 15_000,
+          pageTimeoutMs,
+        );
+
         let accessState = await waitForBotChallengeClearance(
           page,
           blockHandlingConfig,
-          Math.min(15_000, pageTimeoutMs),
+          challengeWaitMs,
         );
 
         if (accessState === 'challenge' || accessState === 'blocked') {
@@ -317,7 +325,7 @@ export class DetailEnrichmentService {
           accessState = await waitForBotChallengeClearance(
             page,
             blockHandlingConfig,
-            Math.min(15_000, pageTimeoutMs),
+            challengeWaitMs,
           );
         }
 
