@@ -23,6 +23,32 @@ export function isTransientNavigationError(message: string): boolean {
   return TRANSIENT_NAVIGATION_ERROR_PATTERN.test(message);
 }
 
+// Bright Data's Browser API kills a whole session (not just one navigation)
+// in a few documented cases (docs.brightdata.com/scraping-automation/
+// scraping-browser/error-codes):
+//   - network_inactivity_timeout: "Session terminated after 5 minutes of no
+//     network activity."
+//   - session_timeout: "Session reached the 60-minute limit."
+//   - navigate_domains_limit: "Session limited to one domain" -- e.g. a
+//     detail page that redirects off-domain before we detect and exclude it
+//     (see isDetailPageRedirectAway) can trip this on an already-reused
+//     session.
+//   - proxy_timeout / page_navigated_error: proxy-layer failures that leave
+//     the session unusable.
+// Playwright surfaces the session already being gone as generic CDP-session
+// errors rather than always echoing Bright Data's own wording, so this also
+// matches the standard "the connection/target is gone" shapes. Retrying the
+// SAME page.goto() on a connection killed for one of these reasons is
+// pointless -- every attempt fails identically -- the caller must close this
+// Browser and open a brand new one (see StealthBrowserService.
+// openManagedBrowser) instead of retrying in place.
+const MANAGED_SESSION_DEAD_ERROR_PATTERN =
+  /network_inactivity_timeout|session_timeout|navigate_domains_limit|proxy_timeout|page_navigated_error|Session terminated|reached the 60-minute limit|Target (page, context or browser )?has been closed|Target closed|Session closed|Browser closed|Connection closed|WebSocket.*closed/i;
+
+export function isManagedSessionDeadError(message: string): boolean {
+  return MANAGED_SESSION_DEAD_ERROR_PATTERN.test(message);
+}
+
 // Shared by every page.goto() call in the crawler (listing pages, url_param
 // pagination, detail pages) -- retries on a transient navigation error (see
 // TRANSIENT_NAVIGATION_ERROR_PATTERN above), rethrows immediately for
@@ -331,13 +357,16 @@ export function extractSourcePropertyIds(
       ),
   );
 
-  const segments = sourceUrl.split('/').filter(Boolean).map((segment) => {
-    try {
-      return decodeURIComponent(segment);
-    } catch {
-      return segment;
-    }
-  });
+  const segments = sourceUrl
+    .split('/')
+    .filter(Boolean)
+    .map((segment) => {
+      try {
+        return decodeURIComponent(segment);
+      } catch {
+        return segment;
+      }
+    });
   const last = segments[segments.length - 1] ?? 'unknown';
   const prev = segments[segments.length - 2];
   let property_id = last;

@@ -40,6 +40,22 @@ export interface NewStealthPageOptions {
   blockImages?: boolean;
 }
 
+// Bright Data's documented Browser API session limits (docs.brightdata.com/
+// scraping-automation/scraping-browser/error-codes), confirmed via their own
+// error-code reference:
+//   - network_inactivity_timeout: "Session terminated after 5 minutes of no
+//     network activity."
+//   - session_timeout: "Session reached the 60-minute limit."
+//   - navigate_domains_limit: "Session limited to one domain" -- a session
+//     must never navigate cross-origin; Bright Data's own FAQ confirms
+//     "unlimited navigations within the same domain" is the intended reuse
+//     pattern (open one session per domain/crawl, not one per page, and not
+//     one shared forever across unrelated domains/crawls).
+// Rotate proactively well inside the 60-minute cap so a caller reusing one
+// managed Browser across many pages (see DetailEnrichmentService's worker
+// pool) never gets killed by Bright Data mid-item.
+export const MANAGED_SESSION_MAX_AGE_MS = 45 * 60_000;
+
 @Injectable()
 export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(StealthBrowserService.name);
@@ -62,22 +78,44 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  // Convenience wrapper for one-off managed-browser usage (a single session
+  // used for exactly one page, e.g. the listing-page walk): connects (or
+  // reuses the shared local browser) and builds a context+page in one call.
+  // Callers that need to reuse ONE managed session across MANY pages of the
+  // same domain (e.g. per-item detail-page enrichment) should call
+  // openManagedBrowser() once and newStealthPageOnBrowser() per page instead
+  // -- see MANAGED_SESSION_MAX_AGE_MS and DetailEnrichmentService.
   async newStealthPage(
     contextOptions?: Partial<BrowserContextOptions>,
     options?: NewStealthPageOptions,
   ): Promise<StealthPageSession> {
     const browser = options?.useManagedBrowser
-      ? await this.connectManagedBrowser()
+      ? await this.openManagedBrowser()
       : await this.ensureBrowser();
 
     if (!options?.useManagedBrowser) this.contextsSinceLaunch++;
 
+    return this.newStealthPageOnBrowser(browser, contextOptions, options);
+  }
+
+  // Builds a context+page on an ALREADY-CONNECTED browser (local or managed).
+  // Does not touch connection lifecycle -- the caller owns connecting and
+  // eventually closing `browser` (via closeContext for a one-off page, or
+  // directly for a reused/pooled connection).
+  async newStealthPageOnBrowser(
+    browser: Browser,
+    contextOptions?: Partial<BrowserContextOptions>,
+    options?: Pick<NewStealthPageOptions, 'useManagedBrowser' | 'blockImages'>,
+  ): Promise<StealthPageSession> {
     // Bright Data's Scraping Browser rejects any attempt to override the
     // Accept-Language/Accept headers over CDP ("Overriding Accept-Language,
     // Accept headers forbidden" -- Page.navigate fails outright before
     // navigating) since their fleet already sets realistic headers itself as
     // part of the anti-detection service. Only strip it for the managed
-    // browser -- the local Chromium still wants it.
+    // browser -- the local Chromium still wants it. (Alternative: enable
+    // "Custom headers and cookies" in the Bright Data zone config instead of
+    // stripping -- see their custom_headers error code -- not done here to
+    // keep zone config untouched.)
     const { extraHTTPHeaders, ...managedSafeStealthOptions } =
       STEALTH_CONTEXT_OPTIONS;
     const baseContextOptions = options?.useManagedBrowser
@@ -108,17 +146,22 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
   async closeContext(
     context: BrowserContext,
     timeoutMs = 10_000,
+    options?: { closeBrowser?: boolean },
   ): Promise<void> {
-    // A managed-browser context owns its own dedicated remote connection (see
-    // connectManagedBrowser) rather than the shared local one -- close that
-    // connection too, or the Bright Data session stays open until it times out
-    // on their end instead of ending cleanly here.
     const browser = context.browser();
     await Promise.race([
       context.close().catch(() => undefined),
       new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
     ]);
-    if (browser && browser !== this.browser) {
+    // A managed-browser context owns its own dedicated remote connection (see
+    // openManagedBrowser) rather than the shared local one -- close that
+    // connection too by default, or the Bright Data session stays open until
+    // it times out on their end instead of ending cleanly here. Pooled
+    // callers reusing one Browser across many pages (see
+    // DetailEnrichmentService's worker lanes) pass closeBrowser: false and
+    // close the browser themselves only when rotating/finishing the lane.
+    const closeBrowser = options?.closeBrowser ?? true;
+    if (closeBrowser && browser && browser !== this.browser) {
       await browser.close().catch(() => undefined);
     }
   }
@@ -161,21 +204,19 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
     return this.browser;
   }
 
-  // Bright Data's Scraping Browser is billed/tracked per-session, and kills a
-  // session on "Network Inactivity Timeout" once it sees a gap with no real
-  // network traffic (e.g. during pure DOM extraction between navigations).
-  // Reusing one connection app-wide -- like the local Chromium below -- means
-  // ANY idle gap across ANY concurrent crawl kills the shared session and
-  // poisons every other context riding on it (confirmed via Bright Data's own
-  // /browser_sessions log: a single crawl doing 19+ page navigations and 180+
-  // detail-page visits showed only 3 total sessions, two dead on
-  // network_inactivity_timeout). So: one fresh connection per newStealthPage()
-  // call here, closed by closeContext() when that context is done -- never
-  // cached or reused across calls.
-  private async connectManagedBrowser(): Promise<Browser> {
-    const endpoint = this.configService.get<string>(
-      'BRIGHT_DATA_CDP_ENDPOINT',
-    );
+  // Opens a fresh Bright Data Browser API connection. Per their FAQ, one
+  // session supports "unlimited navigations within the same domain" -- so
+  // this is meant to be opened ONCE and reused across every page of one
+  // crawl run / one worker lane (see MANAGED_SESSION_MAX_AGE_MS for the
+  // rotation ceiling), never cached app-wide across unrelated crawls (that
+  // caused every idle gap anywhere to kill the shared session -- confirmed
+  // via Bright Data's own /browser_sessions log showing network_inactivity_
+  // timeout deaths) and never reconnected per-page (that caused a storm of
+  // connectOverCDP calls that started timing out under load -- confirmed via
+  // a run where every retry after the first failed on `client_timeout`-shaped
+  // "Timeout 30000ms exceeded" connect errors).
+  async openManagedBrowser(): Promise<Browser> {
+    const endpoint = this.configService.get<string>('BRIGHT_DATA_CDP_ENDPOINT');
     if (!endpoint) {
       throw new Error(
         'BRIGHT_DATA_CDP_ENDPOINT is not set but a scraper requested the managed browser (use_managed_browser=true)',

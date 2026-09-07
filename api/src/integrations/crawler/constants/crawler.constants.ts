@@ -46,3 +46,10 @@ export const START_PAGE_GOTO_RETRY_DELAY_MS = 3_000;
 // one-off site slowness, not evidence pagination has actually ended.
 export const PAGINATION_CLICK_MAX_ATTEMPTS = 3;
 export const PAGINATION_CLICK_RETRY_DELAY_MS = 3_000;
+// Bright Data's own docs and code examples set page.goto() timeouts to 2
+// minutes for the Scraping Browser specifically: "Default timeouts (30s) are
+// too short -- complex anti-bot procedures take time," with "anything below
+// 60 seconds risks premature timeouts on difficult sites." The platform-wide
+// page_timeout_ms default (30s) is fine for the local Chromium; every
+// managed-browser navigation should use at least this floor instead.
+export const MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS = 120_000;

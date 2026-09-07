@@ -86,3 +86,61 @@ the least effort for the reliability gained — it replaces both root causes
 (IP + fingerprint) in one paid integration instead of stacking two partial
 fixes (#2 + #3). Worth prototyping against `openhousechania.com` specifically
 since it's the confirmed, reproducible test case.
+
+## Update 2026-09-07: went with #1 (Bright Data), confirmed constraints
+
+Implemented via `Scraper.use_managed_browser` + `StealthBrowserService` /
+`docs/proxy-cost-analysis.md`. Getting this reliable took several rounds of
+real production failures. Confirmed facts about Bright Data's Browser API,
+sourced from `docs.brightdata.com` (FAQ, error-codes, code-examples pages)
+and their own `/browser_sessions` account API — **not** from the
+`brightdata/skills` GitHub repo, which contradicts the official docs on
+session reuse (claims "one navigation per session" and a 30-minute cap; the
+official docs' own code examples reuse one connection across multiple
+`page.goto()` calls to different URLs, and error-codes gives 60 minutes) —
+trust docs.brightdata.com over that repo if they conflict again:
+
+- **One session = one domain, reusable across many pages of it.** Bright
+  Data's own "Browser Cache" example reuses one `browser` across a loop of
+  `page.goto()` calls to different URLs. Navigating to a different **domain**
+  mid-session hits `navigate_domains_limit` ("Session limited to one
+  domain") — open a new session per domain/crawl, not per page, and not one
+  shared forever across unrelated domains (that was our first bug: one
+  connection cached app-wide for the process's whole lifetime).
+- **5-minute inactivity kill**: `network_inactivity_timeout` — "Session
+  terminated after 5 minutes of no network activity." A page stuck doing pure
+  DOM work (e.g. `page.evaluate()`, which has no built-in Playwright timeout)
+  with no new HTTP requests can silently burn this budget.
+- **60-minute hard cap**: `session_timeout` — "Session reached the 60-minute
+  limit," regardless of activity. Any connection reused across many pages
+  (our detail-page worker pool) must proactively rotate well inside this
+  (`MANAGED_SESSION_MAX_AGE_MS`, currently 45 min) or Bright Data kills it
+  out from under you mid-batch.
+- **30s connection handshake timeout** (`client_timeout`): a brand new
+  `connectOverCDP()` that can't establish within 30s fails outright. We hit
+  this in a cascade after the inactivity/hang bugs above left orphaned
+  sessions eating the account's concurrency budget — fixing the leaks (below)
+  resolved it without needing to raise this timeout.
+- **`page.goto()` needs a ≥2-minute timeout, not the default 30s.** Bright
+  Data's own docs/examples set this explicitly: "Default timeouts (30s) are
+  too short — complex anti-bot procedures take time," and "anything below 60
+  seconds risks premature timeouts on difficult sites." We were using the
+  platform's normal 30s default for managed-browser crawls too; now
+  `MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS` (120s) floors it for managed crawls
+  only.
+- **Custom headers change billing.** Overriding `Accept-Language`/`Accept` is
+  rejected outright unless "Custom headers and cookies" is enabled on the
+  zone — and enabling that shifts billing from success-only to charging for
+  100% of requests. We strip those two headers for managed crawls instead of
+  touching the zone setting.
+- **`page.route()` resource blocking is officially supported** for Playwright
+  specifically — our image-blocking optimization (see
+  `docs/proxy-cost-analysis.md`) uses their own documented pattern verbatim.
+
+Net result: one dead connection (from a hung item, an off-domain redirect
+tripping `navigate_domains_limit`, or just old age) now only costs the one
+item it was processing — `isManagedSessionDeadError` in `crawler.utils.ts`
+detects the shape of these errors and the detail-page worker pool
+(`DetailEnrichmentService.enrichDetailPages`) rotates to a fresh connection
+immediately rather than retrying a connection that will fail identically
+forever.

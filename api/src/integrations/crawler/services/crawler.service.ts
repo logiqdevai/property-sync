@@ -20,6 +20,7 @@ import {
   INFINITE_SCROLL_MAX_WAIT_MS,
   INFINITE_SCROLL_POLL_INTERVAL_MS,
   INFINITE_SCROLL_STEP_VIEWPORT_RATIO,
+  MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS,
   PAGINATION_CLICK_MAX_ATTEMPTS,
   PAGINATION_CLICK_RETRY_DELAY_MS,
   SHARED_PLACEHOLDER_IMAGE_MIN_OCCURRENCES,
@@ -56,7 +57,13 @@ export class CrawlerService {
     blockHandlingConfig?: BlockHandlingConfig,
   ): Promise<CrawlResult> {
     return this.diagnosticsCaptureService.run(diagnosticsCtx, (page) =>
-      this.scrapeListingPages(page, config, options, blockHandlingConfig),
+      this.scrapeListingPages(
+        page,
+        config,
+        options,
+        blockHandlingConfig,
+        diagnosticsCtx.useManagedBrowser,
+      ),
     );
   }
 
@@ -65,8 +72,24 @@ export class CrawlerService {
     config: ScraperConfig,
     options?: CrawlRunOptions,
     blockHandlingConfig?: BlockHandlingConfig,
+    useManagedBrowser?: boolean,
   ): Promise<CrawlResult> {
-    const crawlerConfig = await this.platformConfigService.getCrawlerConfig();
+    // Bright Data's own docs/examples set a 2-minute page.goto() timeout for
+    // the Scraping Browser specifically ("default 30s is too short -- complex
+    // anti-bot procedures take time") -- override the platform default just
+    // for managed-browser crawls; every crawlerConfig.page_timeout_ms read
+    // below picks this up automatically.
+    const rawCrawlerConfig =
+      await this.platformConfigService.getCrawlerConfig();
+    const crawlerConfig = useManagedBrowser
+      ? {
+          ...rawCrawlerConfig,
+          page_timeout_ms: Math.max(
+            rawCrawlerConfig.page_timeout_ms,
+            MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS,
+          ),
+        }
+      : rawCrawlerConfig;
     const steps: CrawlStep[] = [];
     const items: CrawlItem[] = [];
     let success = false;
@@ -96,8 +119,7 @@ export class CrawlerService {
       await this.dismissCookieConsent(page);
 
       const accessState = await classifyPageAccess(page, blockHandlingConfig);
-      const blocked =
-        accessState === 'blocked' || accessState === 'challenge';
+      const blocked = accessState === 'blocked' || accessState === 'challenge';
 
       if (blocked || (response && !response.ok())) {
         const status = blocked ? 403 : response!.status();
@@ -339,7 +361,8 @@ export class CrawlerService {
     log: (msg: string, data?: Record<string, unknown>) => void,
   ) {
     return retryTransient(
-      () => page.goto(url, { waitUntil: 'domcontentloaded', timeout: timeoutMs }),
+      () =>
+        page.goto(url, { waitUntil: 'domcontentloaded', timeout: timeoutMs }),
       START_PAGE_GOTO_MAX_ATTEMPTS,
       START_PAGE_GOTO_RETRY_DELAY_MS,
       (attempt, message) => log('navigate_retry', { attempt, message }),
@@ -372,7 +395,9 @@ export class CrawlerService {
 
     const placeholders = new Set(
       [...counts.entries()]
-        .filter(([, count]) => count >= SHARED_PLACEHOLDER_IMAGE_MIN_OCCURRENCES)
+        .filter(
+          ([, count]) => count >= SHARED_PLACEHOLDER_IMAGE_MIN_OCCURRENCES,
+        )
         .map(([url]) => url),
     );
     if (placeholders.size === 0) return;
@@ -380,7 +405,10 @@ export class CrawlerService {
     let affectedItems = 0;
     for (const item of items) {
       let affected = false;
-      if (typeof item.raw.image === 'string' && placeholders.has(item.raw.image)) {
+      if (
+        typeof item.raw.image === 'string' &&
+        placeholders.has(item.raw.image)
+      ) {
         item.raw.image = null;
         affected = true;
       }
@@ -499,7 +527,10 @@ export class CrawlerService {
         return { advanced: false };
       }
       const prevCount = listingSelector
-        ? await page.locator(listingSelector).count().catch(() => 0)
+        ? await page
+            .locator(listingSelector)
+            .count()
+            .catch(() => 0)
         : 0;
       try {
         await retryTransient(
@@ -535,7 +566,10 @@ export class CrawlerService {
       pagination.type === 'INFINITE_SCROLL'
     ) {
       const prevCount = listingSelector
-        ? await page.locator(listingSelector).count().catch(() => 0)
+        ? await page
+            .locator(listingSelector)
+            .count()
+            .catch(() => 0)
         : 0;
 
       let grew = await this.waitForInfiniteScrollGrowth(
@@ -584,7 +618,10 @@ export class CrawlerService {
       log('infinite_scroll_grew', {
         prevCount,
         count: listingSelector
-          ? await page.locator(listingSelector).count().catch(() => prevCount)
+          ? await page
+              .locator(listingSelector)
+              .count()
+              .catch(() => prevCount)
           : prevCount,
       });
       return { advanced: true };
@@ -694,7 +731,9 @@ export class CrawlerService {
         ];
         for (const button of document.querySelectorAll('button')) {
           const text = (button.textContent ?? '').trim().toLowerCase();
-          if (labels.some((label) => text === label || text.startsWith(label))) {
+          if (
+            labels.some((label) => text === label || text.startsWith(label))
+          ) {
             button.click();
             return true;
           }
@@ -791,7 +830,12 @@ export class CrawlerService {
         continue;
       }
 
-      if (urlChanged && fingerprintBefore && listingSelector && !fingerprintChanged) {
+      if (
+        urlChanged &&
+        fingerprintBefore &&
+        listingSelector &&
+        !fingerprintChanged
+      ) {
         await this.waitForListingFingerprintChange(
           page,
           listingSelector,
