@@ -8,6 +8,9 @@ export interface DiagnosticsRunContext {
   mode: DiagnosticsMode;
   retryNumber?: number;
   workerId?: string;
+  // See NewStealthPageOptions on StealthBrowserService -- routes this crawl
+  // through the managed remote browser and skips image bytes.
+  useManagedBrowser?: boolean;
 }
 
 export interface DiagnosticsOutcome {

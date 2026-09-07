@@ -4,6 +4,7 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   Browser,
   BrowserContext,
@@ -24,13 +25,32 @@ export interface StealthPageSession {
   page: Page;
 }
 
+export interface NewStealthPageOptions {
+  // Route this page through the managed remote browser (BRIGHT_DATA_CDP_ENDPOINT)
+  // instead of the shared local Chromium. Only worth it for agencies whose
+  // bot-protection blocks our datacenter IP/fingerprint outright -- see
+  // SourceAgency.use_managed_browser and docs/crawler-bot-detection-blocking.md.
+  useManagedBrowser?: boolean;
+  // Abort image/media/font requests. The scraper only ever reads an <img>'s `src`
+  // attribute (a URL string already present in the unloaded DOM) -- it never
+  // needs the actual pixel bytes, and images are consistently 90%+ of a page's
+  // transfer weight (see docs/proxy-cost-analysis.md). Real image bytes are
+  // fetched later, separately, via plain fetch() when actually needed (e.g.
+  // WatermarkRemovalService), so this loses no data.
+  blockImages?: boolean;
+}
+
 @Injectable()
 export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(StealthBrowserService.name);
   private browser: Browser | null = null;
   private contextsSinceLaunch = 0;
+  private managedBrowser: Browser | null = null;
 
-  constructor(private readonly platformConfigService: PlatformConfigService) {}
+  constructor(
+    private readonly platformConfigService: PlatformConfigService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async onModuleInit(): Promise<void> {
     await this.ensureBrowser();
@@ -41,13 +61,22 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
       await this.browser.close().catch(() => undefined);
       this.browser = null;
     }
+    if (this.managedBrowser) {
+      await this.managedBrowser.close().catch(() => undefined);
+      this.managedBrowser = null;
+    }
   }
 
   async newStealthPage(
     contextOptions?: Partial<BrowserContextOptions>,
+    options?: NewStealthPageOptions,
   ): Promise<StealthPageSession> {
-    const browser = await this.ensureBrowser();
-    this.contextsSinceLaunch++;
+    const browser = options?.useManagedBrowser
+      ? await this.ensureManagedBrowser()
+      : await this.ensureBrowser();
+
+    if (!options?.useManagedBrowser) this.contextsSinceLaunch++;
+
     const context = await browser.newContext({
       ...STEALTH_CONTEXT_OPTIONS,
       ...contextOptions,
@@ -55,6 +84,17 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
     await applyStealthInitScript(context);
     const page = await context.newPage();
     trackDocumentResponses(page);
+
+    if (options?.blockImages) {
+      await page.route('**/*', (route) => {
+        const type = route.request().resourceType();
+        if (type === 'image' || type === 'media' || type === 'font') {
+          return route.abort();
+        }
+        return route.continue();
+      });
+    }
+
     return { context, page };
   }
 
@@ -104,5 +144,32 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
 
     this.logger.log('Chromium launched for crawl worker');
     return this.browser;
+  }
+
+  // Bright Data's Scraping Browser is a remote CDP endpoint -- there's no local
+  // process to launch, and no launch args to pass (their fleet manages its own
+  // fingerprinting/proxying). One connection is reused across contexts the same
+  // way the local browser is; a dropped connection reconnects lazily on next use.
+  private async ensureManagedBrowser(): Promise<Browser> {
+    if (this.managedBrowser?.isConnected()) {
+      return this.managedBrowser;
+    }
+    if (this.managedBrowser) {
+      await this.managedBrowser.close().catch(() => undefined);
+      this.managedBrowser = null;
+    }
+
+    const endpoint = this.configService.get<string>(
+      'BRIGHT_DATA_CDP_ENDPOINT',
+    );
+    if (!endpoint) {
+      throw new Error(
+        'BRIGHT_DATA_CDP_ENDPOINT is not set but a scraper requested the managed browser (use_managed_browser=true)',
+      );
+    }
+
+    this.managedBrowser = await chromium.connectOverCDP(endpoint);
+    this.logger.log('Connected to managed (Bright Data) browser');
+    return this.managedBrowser;
   }
 }

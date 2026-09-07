@@ -30,6 +30,15 @@ export class UpdateScraperDto {
 
   @ApiProperty({
     required: false,
+    description:
+      'When true, crawls route through the managed remote browser (Bright Data Scraping Browser) instead of the local Chromium, and skip downloading image bytes. Only turn this on for scrapers whose target blocks our datacenter IP/fingerprint outright.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  use_managed_browser?: boolean;
+
+  @ApiProperty({
+    required: false,
     enum: DiagnosticsMode,
     description: "Debugging depth for this scraper's crawl runs",
   })

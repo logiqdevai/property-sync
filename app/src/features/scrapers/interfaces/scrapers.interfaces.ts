@@ -53,6 +53,7 @@ export interface Scraper {
   version_count: number;
   status: ScraperStatus;
   self_healing_enabled: boolean;
+  use_managed_browser: boolean;
   diagnostics_mode: DiagnosticsMode;
   normalize_limit: number | null;
   health: ScraperHealth;
@@ -82,6 +83,7 @@ export interface CreateScraperVersionPayload {
 export interface UpdateScraperPayload {
   status?: ScraperStatus;
   self_healing_enabled?: boolean;
+  use_managed_browser?: boolean;
   diagnostics_mode?: DiagnosticsMode;
   normalize_limit?: number | null;
   validation_rules?: Record<string, unknown>;

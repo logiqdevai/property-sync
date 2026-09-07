@@ -242,6 +242,7 @@ exports.Prisma.ScraperScalarFieldEnum = {
   version_count: 'version_count',
   status: 'status',
   self_healing_enabled: 'self_healing_enabled',
+  use_managed_browser: 'use_managed_browser',
   diagnostics_mode: 'diagnostics_mode',
   health: 'health',
   success_rate: 'success_rate',

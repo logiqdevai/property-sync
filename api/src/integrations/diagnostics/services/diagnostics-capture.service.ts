@@ -69,12 +69,18 @@ export class DiagnosticsCaptureService {
     const harPath = path.join(workDir, 'network.har');
     await mkdir(fullDebug ? videoDir : workDir, { recursive: true });
 
-    const { context, page } = await this.stealthBrowserService.newStealthPage({
-      ...(fullDebug ? { recordVideo: { dir: videoDir } } : {}),
-      ...(fullDebug
-        ? { recordHar: { path: harPath, content: 'embed' as const } }
-        : {}),
-    });
+    const { context, page } = await this.stealthBrowserService.newStealthPage(
+      {
+        ...(fullDebug ? { recordVideo: { dir: videoDir } } : {}),
+        ...(fullDebug
+          ? { recordHar: { path: harPath, content: 'embed' as const } }
+          : {}),
+      },
+      {
+        useManagedBrowser: ctx.useManagedBrowser,
+        blockImages: ctx.useManagedBrowser,
+      },
+    );
 
     const consoleEntries: ConsoleEntry[] = [];
     const pushConsoleEntry = (type: string, text: string) => {

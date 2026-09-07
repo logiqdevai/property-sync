@@ -277,6 +277,32 @@ export default function ScraperDetailPage() {
               <Switch.Content>Enabled</Switch.Content>
             </Switch>
           </div>
+
+          <div className="flex flex-col gap-1.5 justify-center">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">
+              Managed browser (Bright Data)
+            </span>
+            <Switch
+              isSelected={scraper.use_managed_browser}
+              isDisabled={updateScraper.isPending}
+              onChange={(isSelected) =>
+                updateScraper.mutate({
+                  id: scraper.id,
+                  payload: { use_managed_browser: isSelected },
+                })
+              }
+            >
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+              <Switch.Content>Enabled</Switch.Content>
+            </Switch>
+            <span className="text-xs text-muted">
+              Routes crawls through a proxied remote browser instead of the local one, and skips
+              image downloads. Turn on only for scrapers blocked by anti-bot protection — costs
+              money per crawl.
+            </span>
+          </div>
         </div>
       </div>
 

@@ -551,6 +551,14 @@ model Scraper {
   version_count        Int             @default(0) // convenience counter, incremented on new versions
   status               ScraperStatus   @default(TESTING)
   self_healing_enabled Boolean         @default(true) // whether self-heal is allowed to auto-apply fixes
+  // When true, this scraper's crawls (listing pages + detail pages) route through
+  // the managed remote browser (Bright Data Scraping Browser, via
+  // BRIGHT_DATA_CDP_ENDPOINT) instead of the shared local Chromium, and skip
+  // downloading image bytes (only the img `src` URL is ever needed -- see
+  // StealthBrowserService). For scrapers whose target blocks our datacenter
+  // IP/fingerprint outright (see docs/crawler-bot-detection-blocking.md and
+  // docs/proxy-cost-analysis.md) -- most scrapers never need this.
+  use_managed_browser  Boolean         @default(false)
   diagnostics_mode     DiagnosticsMode @default(PRODUCTION) // debugging depth for this scraper's crawl runs
   health               ScraperHealth   @default(GOOD) // cached rollup, recomputed by a background job (spec section 18)
   success_rate         Decimal?        @db.Decimal(5, 2) // cached % over trailing window

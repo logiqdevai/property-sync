@@ -285,6 +285,9 @@ export class ScrapersService {
           ...(dto.self_healing_enabled !== undefined && {
             self_healing_enabled: dto.self_healing_enabled,
           }),
+          ...(dto.use_managed_browser !== undefined && {
+            use_managed_browser: dto.use_managed_browser,
+          }),
           ...(dto.diagnostics_mode !== undefined && {
             diagnostics_mode: dto.diagnostics_mode,
           }),
@@ -332,6 +335,9 @@ export class ScrapersService {
           ...(dto.status !== undefined && { status: dto.status }),
           ...(dto.self_healing_enabled !== undefined && {
             self_healing_enabled: dto.self_healing_enabled,
+          }),
+          ...(dto.use_managed_browser !== undefined && {
+            use_managed_browser: dto.use_managed_browser,
           }),
           ...(dto.diagnostics_mode !== undefined && {
             diagnostics_mode: dto.diagnostics_mode,

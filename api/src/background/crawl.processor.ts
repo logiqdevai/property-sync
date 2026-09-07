@@ -192,6 +192,8 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         );
       }
 
+      const useManagedBrowser = scraper.use_managed_browser;
+
       const diagnosticsCtx: DiagnosticsRunContext = {
         crawlRunId,
         scraperId: scraper.id,
@@ -200,6 +202,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         mode: scraper.diagnostics_mode,
         retryNumber: attempt - 1,
         workerId: job.id ? String(job.id) : undefined,
+        useManagedBrowser,
       };
 
       const heartbeat = async () => {
@@ -235,6 +238,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
               DETAIL_ENRICHMENT_SOFT_STOP_BUFFER_MS,
             onBatchComplete: heartbeat,
             blockHandlingConfig,
+            useManagedBrowser,
           },
         ),
         crawl_job_timeout_ms,

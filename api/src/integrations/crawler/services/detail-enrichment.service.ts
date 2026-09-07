@@ -42,6 +42,9 @@ export interface DetailEnrichmentOptions {
   deadlineAt?: number;
   onBatchComplete?: () => void | Promise<void>;
   blockHandlingConfig?: BlockHandlingConfig;
+  // See NewStealthPageOptions on StealthBrowserService -- routes every detail
+  // page through the managed remote browser and skips image bytes.
+  useManagedBrowser?: boolean;
 }
 
 @Injectable()
@@ -86,6 +89,7 @@ export class DetailEnrichmentService {
             page_timeout_ms,
             sourceAgencyId,
             options?.blockHandlingConfig,
+            options?.useManagedBrowser,
           ),
         ),
       );
@@ -154,6 +158,7 @@ export class DetailEnrichmentService {
     pageTimeoutMs: number,
     sourceAgencyId?: string,
     blockHandlingConfig?: BlockHandlingConfig,
+    useManagedBrowser?: boolean,
   ): Promise<DetailEnrichmentResult> {
     const empty: DetailEnrichmentResult = {
       images: [],
@@ -169,7 +174,10 @@ export class DetailEnrichmentService {
       raw_html_path: null,
     };
 
-    const { context, page } = await this.stealthBrowserService.newStealthPage();
+    const { context, page } = await this.stealthBrowserService.newStealthPage(
+      undefined,
+      { useManagedBrowser, blockImages: useManagedBrowser },
+    );
 
     try {
       let response = await page.goto(item.source_url, {

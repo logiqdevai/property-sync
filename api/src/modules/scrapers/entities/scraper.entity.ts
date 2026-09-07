@@ -28,6 +28,9 @@ export class Scraper {
   @ApiProperty()
   self_healing_enabled: boolean;
 
+  @ApiProperty()
+  use_managed_browser: boolean;
+
   @ApiProperty({
     enum: DiagnosticsMode,
     example: DiagnosticsMode.PRODUCTION,
