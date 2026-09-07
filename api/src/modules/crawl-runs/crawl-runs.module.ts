@@ -8,6 +8,7 @@ import { CrawlProcessor } from '@/background/crawl.processor';
 import { CrawlSchedulerCron } from '@/background/crawl-scheduler.cron';
 import { ScraperHealthCron } from '@/background/scraper-health.cron';
 import { CrawlRunWatchdogCron } from '@/background/crawl-run-watchdog.cron';
+import { NormalizationWatchdogCron } from '@/background/normalization-watchdog.cron';
 import { ScraperFailureHandlerService } from '@/background/scraper-failure-handler.service';
 import { ScraperGenerationModule } from '@/modules/scraper-generation/scraper-generation.module';
 import { PropertiesModule } from '@/modules/properties/properties.module';
@@ -34,6 +35,7 @@ import { CrawlRunsService } from './crawl-runs.service';
     CrawlSchedulerCron,
     ScraperHealthCron,
     CrawlRunWatchdogCron,
+    NormalizationWatchdogCron,
     ScraperFailureHandlerService,
   ],
   exports: [CrawlRunsService],
