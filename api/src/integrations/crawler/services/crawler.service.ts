@@ -22,7 +22,6 @@ import {
   INFINITE_SCROLL_MAX_WAIT_MS,
   INFINITE_SCROLL_POLL_INTERVAL_MS,
   INFINITE_SCROLL_STEP_VIEWPORT_RATIO,
-  MANAGED_BROWSER_CHALLENGE_WAIT_MS,
   MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS,
   PAGINATION_CLICK_MAX_ATTEMPTS,
   PAGINATION_CLICK_RETRY_DELAY_MS,
@@ -143,10 +142,14 @@ export class CrawlerService {
       await waitForBotChallengeClearance(
         page,
         blockHandlingConfig,
-        Math.min(
-          useManagedBrowser ? MANAGED_BROWSER_CHALLENGE_WAIT_MS : 20_000,
-          crawlerConfig.page_timeout_ms,
-        ),
+        // Confirmed live: Bright Data's challenge-solving on this exact site
+        // took ~22s in a normal case but a real failed production run logged
+        // 4 internal navigations and ran the full 64s -- session-to-session
+        // variance means the wait needs the SAME budget as the page load
+        // itself (crawlerConfig.page_timeout_ms), not a smaller sub-ceiling.
+        useManagedBrowser
+          ? crawlerConfig.page_timeout_ms
+          : Math.min(20_000, crawlerConfig.page_timeout_ms),
       );
 
       await this.dismissCookieConsent(page);
@@ -726,10 +729,9 @@ export class CrawlerService {
       await waitForBotChallengeClearance(
         activePage,
         blockHandlingConfig,
-        Math.min(
-          useManagedBrowser ? MANAGED_BROWSER_CHALLENGE_WAIT_MS : 15_000,
-          crawlerConfig.page_timeout_ms,
-        ),
+        useManagedBrowser
+          ? crawlerConfig.page_timeout_ms
+          : Math.min(15_000, crawlerConfig.page_timeout_ms),
       );
       if (response && !response.ok()) {
         const status = response.status();

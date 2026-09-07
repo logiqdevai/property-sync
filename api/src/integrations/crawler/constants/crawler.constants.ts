@@ -53,12 +53,12 @@ export const PAGINATION_CLICK_RETRY_DELAY_MS = 3_000;
 // page_timeout_ms default (30s) is fine for the local Chromium; every
 // managed-browser navigation should use at least this floor instead.
 export const MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS = 120_000;
-// Confirmed via a real production capture: Cloudflare's challenge can report
-// "Verification successful. Waiting for <site> to respond" in the page body
-// while its <title> is still "Just a moment..." -- our classifier correctly
-// still reads that as 'challenge', but the redirect to real content is
-// already in flight and normally completes within seconds. The platform
-// default challenge-wait ceiling (20s/15s, independent of page_timeout_ms)
-// is tuned for a local browser's fast redirect; Bright Data's extra network
-// hops need more real time for that same sequence to finish.
-export const MANAGED_BROWSER_CHALLENGE_WAIT_MS = 60_000;
+// Confirmed live and via production logs: Bright Data's own challenge-solving
+// for a Cloudflare "Just a moment..." interstitial took ~22s in a normal
+// run, but a real failed production run logged 4 internal navigations and
+// ran the full 64s before we gave up -- session-to-session variance is wide
+// enough that the challenge-clearance wait needs the SAME budget as the page
+// load itself (page_timeout_ms) for managed-browser crawls, not a smaller
+// fixed sub-ceiling (the platform default 20s/15s, which is fine for a local
+// browser's near-instant redirect). See waitForBotChallengeClearance call
+// sites in crawler.service.ts and detail-enrichment.service.ts.
