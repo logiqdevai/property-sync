@@ -107,26 +107,38 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
     contextOptions?: Partial<BrowserContextOptions>,
     options?: Pick<NewStealthPageOptions, 'useManagedBrowser' | 'blockImages'>,
   ): Promise<StealthPageSession> {
-    // Bright Data's Scraping Browser rejects any attempt to override the
-    // Accept-Language/Accept headers over CDP ("Overriding Accept-Language,
-    // Accept headers forbidden" -- Page.navigate fails outright before
-    // navigating) since their fleet already sets realistic headers itself as
-    // part of the anti-detection service. Only strip it for the managed
-    // browser -- the local Chromium still wants it. (Alternative: enable
-    // "Custom headers and cookies" in the Bright Data zone config instead of
-    // stripping -- see their custom_headers error code -- not done here to
-    // keep zone config untouched.)
-    const { extraHTTPHeaders, ...managedSafeStealthOptions } =
-      STEALTH_CONTEXT_OPTIONS;
-    const baseContextOptions = options?.useManagedBrowser
-      ? managedSafeStealthOptions
-      : STEALTH_CONTEXT_OPTIONS;
-
-    const context = await browser.newContext({
-      ...baseContextOptions,
-      ...contextOptions,
-    });
-    await applyStealthInitScript(context);
+    // None of our own stealth overrides apply to the managed browser -- Bright
+    // Data's fleet already runs a real, current, non-headless-fingerprinted
+    // browser as its core product, and every override we add on top is a
+    // chance to introduce a fingerprint inconsistency their otherwise-clean
+    // environment wouldn't have. Confirmed via a real production capture that
+    // openhousechania.com's Cloudflare challenge never cleared through the
+    // managed browser despite Bright Data reporting the CAPTCHA as solved on
+    // their end -- two concrete mismatches were found:
+    //   - STEALTH_UA hardcodes "Chrome/149"; Bright Data's real browser
+    //     reports 152 (per our own DiagnosticsPackage.browser_version). The
+    //     userAgent context option only overrides the header string, not
+    //     Client Hints (Sec-CH-UA / navigator.userAgentData), which keep
+    //     reporting the real 152 -- exactly the UA-vs-Client-Hints mismatch
+    //     already identified and fixed for the LOCAL browser (see
+    //     stealth.utils.ts's STEALTH_UA comment) but never applied here.
+    //   - applyStealthInitScript's navigator.webdriver patch is a redundant,
+    //     Function.prototype.toString-detectable monkey-patch on a browser
+    //     that (per Bright Data's whole product pitch) shouldn't expose that
+    //     tell natively in the first place -- the original bot-detection
+    //     diagnosis (docs/crawler-bot-detection-blocking.md) flagged this
+    //     exact risk before Bright Data was ever introduced.
+    // extraHTTPHeaders is separately forbidden outright by their CDP
+    // ("Overriding Accept-Language, Accept headers forbidden").
+    const context = options?.useManagedBrowser
+      ? await browser.newContext(contextOptions)
+      : await browser.newContext({
+          ...STEALTH_CONTEXT_OPTIONS,
+          ...contextOptions,
+        });
+    if (!options?.useManagedBrowser) {
+      await applyStealthInitScript(context);
+    }
     const page = await context.newPage();
     trackDocumentResponses(page);
 
