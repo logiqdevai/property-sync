@@ -65,30 +65,34 @@ export class CrawlSchedulerCron {
         continue;
       }
 
-      const hasActiveRun = await this.crawlRunsService.hasActiveRunForAgency(
-        agency.id,
-      );
-      if (hasActiveRun) {
-        continue;
-      }
-
-      const scraper = await this.prisma.scraper.findFirst({
-        where: {
-          source_agency_id: agency.id,
-          status: { in: [ScraperStatus.ACTIVE, ScraperStatus.TESTING] },
-        },
-        orderBy: { updated_at: 'desc' },
-        select: { id: true },
-      });
-
-      if (!scraper) {
-        this.logger.warn(
-          `agency ${agency.id}: no scraper for agency — skipping`,
-        );
-        continue;
-      }
-
+      // Each agency is handled independently -- a thrown error here (DB hiccup,
+      // etc.) must not abort the loop, or every other agency due in this same
+      // one-minute tick gets silently orphaned (isCronDue's window is only 60s,
+      // so a skipped agency gets no retry until its next scheduled day).
       try {
+        const hasActiveRun = await this.crawlRunsService.hasActiveRunForAgency(
+          agency.id,
+        );
+        if (hasActiveRun) {
+          continue;
+        }
+
+        const scraper = await this.prisma.scraper.findFirst({
+          where: {
+            source_agency_id: agency.id,
+            status: { in: [ScraperStatus.ACTIVE, ScraperStatus.TESTING] },
+          },
+          orderBy: { updated_at: 'desc' },
+          select: { id: true },
+        });
+
+        if (!scraper) {
+          this.logger.warn(
+            `agency ${agency.id}: no scraper for agency — skipping`,
+          );
+          continue;
+        }
+
         await this.crawlRunsService.enqueue(agency.id, scraper.id);
         this.logger.log(`scheduled crawl enqueued for agency ${agency.id}`);
       } catch (error) {
