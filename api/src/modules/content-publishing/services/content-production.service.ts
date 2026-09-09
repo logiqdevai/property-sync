@@ -719,6 +719,12 @@ export class ContentProductionService {
     }
   }
 
+  // Resolves tracker/content-publishing-config context for every property with
+  // a fixed, small number of batched queries instead of two sequential
+  // round-trips per property -- the previous per-property loop made this
+  // O(n) sequential awaits, which for large bulk selections (100+ properties)
+  // blocked the caller (the produce-content HTTP request, before it could
+  // even enqueue the BullMQ job) for minutes.
   private async groupByTrackerConfig(properties: PropertyContentRow[]) {
     type Group = {
       userId: string;
@@ -729,12 +735,113 @@ export class ContentProductionService {
     };
 
     const groups = new Map<string, Group>();
+    if (!properties.length) return [];
+
+    const canonicalIds = [
+      ...new Set(properties.map((p) => p.canonical_property_id)),
+    ];
+    const canonicals = await this.prisma.property.findMany({
+      where: { id: { in: canonicalIds } },
+      include: {
+        source_links: {
+          orderBy: [{ is_primary_source: 'desc' }, { created_at: 'asc' }],
+          include: { source_property: { select: { source_agency_id: true } } },
+          take: 1,
+        },
+      },
+    });
+    const canonicalById = new Map(canonicals.map((c) => [c.id, c]));
+
+    const sourceAgencyIdByProperty = new Map<string, string>();
+    for (const property of properties) {
+      const sourceAgencyId =
+        canonicalById.get(property.canonical_property_id)?.source_links[0]
+          ?.source_property.source_agency_id;
+      if (sourceAgencyId) {
+        sourceAgencyIdByProperty.set(property.id, sourceAgencyId);
+      }
+    }
+
+    const userIds = [...new Set(properties.map((p) => p.user_id))];
+    const sourceAgencyIds = [...new Set(sourceAgencyIdByProperty.values())];
+    const trackers = sourceAgencyIds.length
+      ? await this.prisma.userTrackedAgency.findMany({
+          where: {
+            user_id: { in: userIds },
+            source_agency_id: { in: sourceAgencyIds },
+          },
+          include: {
+            source_agency: { select: { content_language: true } },
+            content_publishing_config: {
+              include: {
+                outputs: { include: { ai_title_family: true } },
+                ai_title_families: true,
+              },
+            },
+          },
+        })
+      : [];
+    const trackerByUserAndAgency = new Map(
+      trackers.map((t) => [`${t.user_id}:${t.source_agency_id}`, t]),
+    );
 
     for (const property of properties) {
-      const context = await this.resolveContextForProperty(property);
-      const key = context
-        ? `${context.trackerId}:${context.config?.id ?? 'none'}`
-        : `none:${property.id}`;
+      let context: {
+        trackerId: string;
+        contentLanguage: ContentLanguage;
+        config: ContentPublishingConfigWithRelations | null;
+        resolveReason: string;
+      };
+
+      const sourceAgencyId = sourceAgencyIdByProperty.get(property.id);
+      const tracker = sourceAgencyId
+        ? trackerByUserAndAgency.get(`${property.user_id}:${sourceAgencyId}`)
+        : undefined;
+
+      if (!canonicalById.has(property.canonical_property_id)) {
+        this.logger.warn(
+          `[resolveContext] property=${property.id} canonical property missing`,
+        );
+        context = {
+          trackerId: 'none',
+          contentLanguage: ContentLanguage.EL,
+          config: null,
+          resolveReason: 'Canonical property missing',
+        };
+      } else if (!sourceAgencyId) {
+        this.logger.warn(
+          `[resolveContext] property=${property.id} no source_links/source_agency_id`,
+        );
+        context = {
+          trackerId: 'none',
+          contentLanguage: ContentLanguage.EL,
+          config: null,
+          resolveReason:
+            'Property has no source agency link; cannot resolve content publishing config',
+        };
+      } else if (!tracker) {
+        this.logger.warn(
+          `[resolveContext] property=${property.id} no UserTrackedAgency for sourceAgency=${sourceAgencyId}`,
+        );
+        context = {
+          trackerId: 'none',
+          contentLanguage: ContentLanguage.EL,
+          config: null,
+          resolveReason: `No tracked agency for source agency ${sourceAgencyId}`,
+        };
+      } else {
+        const config = tracker.content_publishing_config;
+        context = {
+          trackerId: tracker.id,
+          contentLanguage: tracker.source_agency.content_language,
+          config,
+          resolveReason: config
+            ? 'ok'
+            : `No content publishing config on tracker ${tracker.id}`,
+        };
+      }
+
+      const key = `${context.trackerId}:${context.config?.id ?? 'none'}`;
 
       const existing = groups.get(key);
       if (existing) {
@@ -744,10 +851,10 @@ export class ContentProductionService {
 
       groups.set(key, {
         userId: property.user_id,
-        contentLanguage: context?.contentLanguage ?? ContentLanguage.EL,
-        config: context?.config ?? null,
+        contentLanguage: context.contentLanguage,
+        config: context.config,
         properties: [property],
-        resolveReason: context?.resolveReason ?? 'Unknown resolve failure',
+        resolveReason: context.resolveReason,
       });
     }
 
@@ -939,89 +1046,4 @@ export class ContentProductionService {
     return integration?.api_key_secret ?? null;
   }
 
-  private async resolveContextForProperty(userProperty: PropertyContentRow) {
-
-    const canonical = await this.prisma.property.findUnique({
-      where: { id: userProperty.canonical_property_id },
-      include: {
-        source_links: {
-          orderBy: [{ is_primary_source: 'desc' }, { created_at: 'asc' }],
-          include: {
-            source_property: {
-              select: { source_agency_id: true },
-            },
-          },
-          take: 1,
-        },
-      },
-    });
-
-    if (!canonical) {
-      this.logger.warn(
-        `[resolveContext] property=${userProperty.id} canonical property missing`,
-      );
-      return {
-        trackerId: 'none',
-        contentLanguage: ContentLanguage.EL,
-        config: null as ContentPublishingConfigWithRelations | null,
-        resolveReason: 'Canonical property missing',
-      };
-    }
-
-    const sourceAgencyId =
-      canonical.source_links[0]?.source_property.source_agency_id;
-    if (!sourceAgencyId) {
-      this.logger.warn(
-        `[resolveContext] property=${userProperty.id} no source_links/source_agency_id`,
-      );
-      return {
-        trackerId: 'none',
-        contentLanguage: ContentLanguage.EL,
-        config: null as ContentPublishingConfigWithRelations | null,
-        resolveReason:
-          'Property has no source agency link; cannot resolve content publishing config',
-      };
-    }
-
-    const tracker = await this.prisma.userTrackedAgency.findUnique({
-      where: {
-        user_id_source_agency_id: {
-          user_id: userProperty.user_id,
-          source_agency_id: sourceAgencyId,
-        },
-      },
-      include: {
-        source_agency: { select: { content_language: true } },
-        content_publishing_config: {
-          include: {
-            outputs: { include: { ai_title_family: true } },
-            ai_title_families: true,
-          },
-        },
-      },
-    });
-
-    if (!tracker) {
-      this.logger.warn(
-        `[resolveContext] property=${userProperty.id} no UserTrackedAgency for sourceAgency=${sourceAgencyId}`,
-      );
-      return {
-        trackerId: 'none',
-        contentLanguage: ContentLanguage.EL,
-        config: null as ContentPublishingConfigWithRelations | null,
-        resolveReason: `No tracked agency for source agency ${sourceAgencyId}`,
-      };
-    }
-
-    const config = tracker.content_publishing_config;
-
-    return {
-      trackerId: tracker.id,
-      contentLanguage: tracker.source_agency.content_language,
-      config,
-      resolveReason: config
-        ? 'ok'
-        : `No content publishing config on tracker ${tracker.id}`,
-    };
-  }
 }
