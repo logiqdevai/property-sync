@@ -157,12 +157,20 @@ export class CrawlerService {
       const accessState = await classifyPageAccess(page, blockHandlingConfig);
       const blocked = accessState === 'blocked' || accessState === 'challenge';
 
-      if (blocked || (response && !response.ok())) {
+      // response is the HTTP status from the ORIGINAL page.goto() -- for a
+      // Cloudflare-challenged site that response can be a stale 403 from the
+      // interstitial even after the challenge has since cleared in place (no
+      // further navigation, so the response object never updates). Confirmed
+      // in production: a run classified accessState 'ok' (280 real listing
+      // cards in the captured HTML, real page title) yet still failed here
+      // because response.status() was still 403 from the original challenge
+      // page. Trust the fresh content classification over the stale response
+      // once it's unambiguously 'ok'; still fail on a non-ok response for
+      // 'blocked'/'challenge'/'pending', where content didn't confirm clean.
+      if (blocked || (accessState !== 'ok' && response && !response.ok())) {
         const status = blocked ? 403 : response!.status();
         networkError = true;
-        errorSummary = `HTTP ${status} on ${config.start_url}${
-          accessState !== 'ok' ? ` (${accessState})` : ''
-        }`;
+        errorSummary = `HTTP ${status} on ${config.start_url} (${accessState})`;
         log('network_error', { status, blocked, accessState });
         return {
           items,
@@ -733,13 +741,26 @@ export class CrawlerService {
           ? crawlerConfig.page_timeout_ms
           : Math.min(15_000, crawlerConfig.page_timeout_ms),
       );
-      if (response && !response.ok()) {
-        const status = response.status();
-        log('network_error', { status, url: url.href });
+      // Same reasoning as the initial navigate check above: response is the
+      // HTTP status from THIS goto(), which can be a stale 403 from a
+      // Cloudflare challenge that has since cleared in place. Re-classify the
+      // current content before trusting it.
+      const pageAccessState = await classifyPageAccess(
+        activePage,
+        blockHandlingConfig,
+      );
+      const pageBlocked =
+        pageAccessState === 'blocked' || pageAccessState === 'challenge';
+      if (
+        pageBlocked ||
+        (pageAccessState !== 'ok' && response && !response.ok())
+      ) {
+        const status = pageBlocked ? 403 : (response?.status() ?? 0);
+        log('network_error', { status, url: url.href, pageAccessState });
         return {
           advanced: false,
           networkError: true,
-          errorMessage: `HTTP ${status} on ${url.href} while paginating to page ${pageNum + 2}`,
+          errorMessage: `HTTP ${status} on ${url.href} while paginating to page ${pageNum + 2} (${pageAccessState})`,
           ...(reconnected && { page: activePage }),
         };
       }

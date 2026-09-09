@@ -342,9 +342,15 @@ export class DetailEnrichmentService {
           };
         }
 
-        if (response && !response.ok()) {
-          return { ...empty, error: `HTTP ${response.status()}` };
-        }
+        // No response.ok() check here: by this point accessState is
+        // guaranteed 'ok' (every other value already returned above), and
+        // response is the HTTP status from THIS page's goto() -- which can
+        // be a stale 403 from a Cloudflare challenge that has since cleared
+        // in place (no further navigation, so the response object never
+        // updates). Confirmed in production: a listing page with accessState
+        // 'ok' and 280 real listing cards in its captured HTML still had
+        // response.status() === 403 from the original challenge page. Trust
+        // the fresh content classification, not the stale response.
 
         const finalUrl = page.url();
         if (isDetailPageRedirectAway(item.source_url, finalUrl)) {
