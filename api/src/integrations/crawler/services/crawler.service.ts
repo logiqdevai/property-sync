@@ -137,7 +137,11 @@ export class CrawlerService {
         useManagedBrowser,
       );
       page = initialGoto.page;
-      const response = initialGoto.response;
+      let response = initialGoto.response;
+
+      const challengeWaitMs = useManagedBrowser
+        ? crawlerConfig.page_timeout_ms
+        : Math.min(20_000, crawlerConfig.page_timeout_ms);
 
       await waitForBotChallengeClearance(
         page,
@@ -147,14 +151,44 @@ export class CrawlerService {
         // 4 internal navigations and ran the full 64s -- session-to-session
         // variance means the wait needs the SAME budget as the page load
         // itself (crawlerConfig.page_timeout_ms), not a smaller sub-ceiling.
-        useManagedBrowser
-          ? crawlerConfig.page_timeout_ms
-          : Math.min(20_000, crawlerConfig.page_timeout_ms),
+        challengeWaitMs,
       );
 
       await this.dismissCookieConsent(page);
 
-      const accessState = await classifyPageAccess(page, blockHandlingConfig);
+      let accessState = await classifyPageAccess(page, blockHandlingConfig);
+
+      // One retry of the whole navigation on a non-ok classification --
+      // covers a transient origin-side hiccup as well as any residual
+      // challenge fluctuation, the same resilience pattern already proven in
+      // DetailEnrichmentService for detail pages. Confirmed in production:
+      // a run's captured HTML had the real page title but a completely empty
+      // body, with the console showing repeated HTTP 522 ("origin connection
+      // timed out") errors right before we gave up -- Cloudflare itself
+      // reporting the SITE's origin server, not any bot check, failed to
+      // respond in time. That's a transient condition worth one retry, not
+      // an immediate failure.
+      if (accessState !== 'ok') {
+        log('access_not_ok_retry', { accessState });
+        await page.waitForTimeout(2_500);
+        const retryGoto = await this.gotoWithRetry(
+          page,
+          config.start_url,
+          crawlerConfig.page_timeout_ms,
+          log,
+          useManagedBrowser,
+        );
+        page = retryGoto.page;
+        response = retryGoto.response;
+        await waitForBotChallengeClearance(
+          page,
+          blockHandlingConfig,
+          challengeWaitMs,
+        );
+        await this.dismissCookieConsent(page);
+        accessState = await classifyPageAccess(page, blockHandlingConfig);
+      }
+
       const blocked = accessState === 'blocked' || accessState === 'challenge';
 
       // response is the HTTP status from the ORIGINAL page.goto() -- for a
@@ -734,21 +768,46 @@ export class CrawlerService {
         });
       }
 
+      const paginationChallengeWaitMs = useManagedBrowser
+        ? crawlerConfig.page_timeout_ms
+        : Math.min(15_000, crawlerConfig.page_timeout_ms);
+
       await waitForBotChallengeClearance(
         activePage,
         blockHandlingConfig,
-        useManagedBrowser
-          ? crawlerConfig.page_timeout_ms
-          : Math.min(15_000, crawlerConfig.page_timeout_ms),
+        paginationChallengeWaitMs,
       );
       // Same reasoning as the initial navigate check above: response is the
       // HTTP status from THIS goto(), which can be a stale 403 from a
       // Cloudflare challenge that has since cleared in place. Re-classify the
       // current content before trusting it.
-      const pageAccessState = await classifyPageAccess(
+      let pageAccessState = await classifyPageAccess(
         activePage,
         blockHandlingConfig,
       );
+
+      // One retry of this page's navigation on a non-ok classification -- see
+      // the identical retry on the initial navigate above for why (a
+      // transient origin-side hiccup, e.g. Cloudflare 522, shouldn't fail the
+      // whole crawl on the first miss).
+      if (pageAccessState !== 'ok') {
+        log('access_not_ok_retry', { url: url.href, pageAccessState });
+        await activePage.waitForTimeout(2_500);
+        response = await activePage.goto(url.href, {
+          waitUntil: 'domcontentloaded',
+          timeout: crawlerConfig.page_timeout_ms,
+        });
+        await waitForBotChallengeClearance(
+          activePage,
+          blockHandlingConfig,
+          paginationChallengeWaitMs,
+        );
+        pageAccessState = await classifyPageAccess(
+          activePage,
+          blockHandlingConfig,
+        );
+      }
+
       const pageBlocked =
         pageAccessState === 'blocked' || pageAccessState === 'challenge';
       if (

@@ -321,7 +321,17 @@ export class DetailEnrichmentService {
           challengeWaitMs,
         );
 
-        if (accessState === 'challenge' || accessState === 'blocked') {
+        // 'pending' retried too, not just challenge/blocked: confirmed in
+        // production on the listing walk that a transient origin-side hiccup
+        // (Cloudflare HTTP 522 "origin connection timed out" on the resource
+        // that populates the page's content, not any bot check) leaves the
+        // page with a real title but an empty body -- classified 'pending',
+        // not 'challenge'/'blocked' -- and is worth exactly this same retry.
+        if (
+          accessState === 'challenge' ||
+          accessState === 'blocked' ||
+          accessState === 'pending'
+        ) {
           await page.waitForTimeout(2_500);
           response = await gotoDetailPage();
           accessState = await waitForBotChallengeClearance(
