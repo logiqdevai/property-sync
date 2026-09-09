@@ -619,6 +619,33 @@ export class DetailEnrichmentService {
             if (readDataCoords(document.querySelector(sel))) break;
           }
 
+          // Leaflet-based map widgets (as opposed to a Google Maps embed)
+          // commonly stash both coordinates in a single comma-separated
+          // attribute on the map container instead of two separate
+          // data-lat/data-lng attributes, e.g.
+          // <div id="contact-map" data-default-coords="35.5442,24.0588">.
+          if (latitude == null || longitude == null) {
+            const readCombinedCoords = (attr: string): boolean => {
+              const el = document.querySelector(`[${attr}]`);
+              const raw = el?.getAttribute(attr);
+              if (!raw) return false;
+              const parts = raw.split(',').map((part) => part.trim());
+              if (parts.length !== 2) return false;
+              return acceptCoords(parseCoord(parts[0]), parseCoord(parts[1]));
+            };
+            const combinedCoordAttrs = [
+              'data-default-coords',
+              'data-coords',
+              'data-coordinates',
+              'data-latlng',
+              'data-lat-lng',
+              'data-position',
+            ];
+            for (const attr of combinedCoordAttrs) {
+              if (readCombinedCoords(attr)) break;
+            }
+          }
+
           if (latitude == null || longitude == null) {
             for (const el of Array.from(
               document.querySelectorAll(
