@@ -32,6 +32,8 @@ import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/se
 import { CmsSyncAdapterFactory } from '@/modules/cms-sync/services/cms-sync-adapter.factory';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
+import { ContentPublishingConfigService } from '@/modules/content-publishing/services/content-publishing-config.service';
+import { ContentPublishingConfigWithRelations } from '@/modules/content-publishing/interfaces/content-publishing.interface';
 import { GcsFolders } from '@/shared/config/gcs-folders';
 import {
   UserPropertyMapQueryType,
@@ -40,11 +42,16 @@ import {
 import { AdminUserPropertyQueryType } from './dto/admin-user-property-query.schema';
 import { UpdateUserPropertyDto } from './dto/update-user-property.dto';
 import {
+  ContentLanguage,
+  ContentType,
+  DescriptionProductionStrategy,
   IntegrationType,
   JobStatus,
   Prisma,
   Property,
+  PropertyLocalizedContent,
   PropertyStatus,
+  TitleProductionStrategy,
   UserProperty,
 } from 'generated/prisma';
 import {
@@ -152,6 +159,7 @@ export class UserPropertiesService {
     private readonly dewatermarkOrchestrator: DewatermarkOrchestratorService,
     private readonly watermarkRemovalService: WatermarkRemovalService,
     private readonly contentProductionService: ContentProductionService,
+    private readonly contentPublishingConfigService: ContentPublishingConfigService,
     @InjectQueue(WATERMARK_REMOVAL_QUEUE)
     private readonly watermarkRemovalQueue: Queue<WatermarkRemovalJobData>,
     @InjectQueue(CONTENT_PRODUCTION_QUEUE)
@@ -502,6 +510,86 @@ export class UserPropertiesService {
     };
   }
 
+  // The "Localized content" UI shows one title+description per output
+  // language, but production doesn't always write a row keyed by that exact
+  // language: a TRANSLATE description can be pivoted through another
+  // language (config.outputs[].description_content_language) to reuse one
+  // already-translated text across several output languages instead of
+  // re-translating it per language, and an ORIGINAL strategy never writes a
+  // row at all -- it means "use the property's own title/description
+  // directly". Resolve both cases the same way content-resolution.service.ts
+  // does for the EstateWeb ad payload, so what the dashboard displays always
+  // matches what actually gets synced/shown, instead of only ever showing
+  // real data for languages whose strategy happens to write to their own
+  // language slot.
+  private resolveLocalizedContentsForDisplay(
+    userProperty: {
+      id: string;
+      title: string;
+      description: string | null;
+    },
+    rawRows: PropertyLocalizedContent[],
+    config: ContentPublishingConfigWithRelations | null,
+  ): PropertyLocalizedContent[] {
+    if (!config || !config.outputs.length) return rawRows;
+
+    const byKey = new Map(
+      rawRows.map((row) => [`${row.content_type}:${row.language}`, row]),
+    );
+
+    const resolveRow = (
+      contentType: ContentType,
+      outputLanguage: ContentLanguage,
+      strategy: TitleProductionStrategy | DescriptionProductionStrategy,
+      lookupLanguage: ContentLanguage,
+      original: string | null,
+    ): PropertyLocalizedContent | null => {
+      if (strategy === 'ORIGINAL') {
+        if (!original?.trim()) return null;
+        const existing = byKey.get(`${contentType}:${lookupLanguage}`);
+        return {
+          id: existing?.id ?? `original-${contentType}-${outputLanguage}`,
+          user_property_id: userProperty.id,
+          content_type: contentType,
+          language: outputLanguage,
+          production: 'ORIGINAL',
+          text: original,
+          is_stale: false,
+          created_at: existing?.created_at ?? new Date(),
+          updated_at: existing?.updated_at ?? new Date(),
+        };
+      }
+      const localizedRow = byKey.get(`${contentType}:${lookupLanguage}`);
+      if (!localizedRow?.text?.trim()) return null;
+      return { ...localizedRow, language: outputLanguage };
+    };
+
+    const resolved: PropertyLocalizedContent[] = [];
+    for (const output of config.outputs) {
+      const titleRow = resolveRow(
+        ContentType.TITLE,
+        output.language,
+        output.title_strategy,
+        output.language,
+        userProperty.title,
+      );
+      if (titleRow) resolved.push(titleRow);
+
+      const descriptionLanguage: ContentLanguage =
+        output.description_content_language ?? output.language;
+      const descriptionRow = resolveRow(
+        ContentType.DESCRIPTION,
+        output.language,
+        output.description_strategy,
+        descriptionLanguage,
+        userProperty.description,
+      );
+      if (descriptionRow) resolved.push(descriptionRow);
+    }
+
+    return resolved;
+  }
+
   async findOne(userId: string, id: string) {
     const userProperty = await this.prisma.userProperty.findFirst({
       where: { id, user_id: userId },
@@ -576,6 +664,7 @@ export class UserPropertiesService {
             },
           },
           select: {
+            id: true,
             text_truncate_pieces: true,
             integration_link: {
               select: {
@@ -588,13 +677,21 @@ export class UserPropertiesService {
         })
       : null;
 
+    const contentConfig = tracker
+      ? await this.contentPublishingConfigService.getByTrackerId(tracker.id)
+      : null;
+
     return serializePropertyForApi({
       ...rest,
       duplicate_group_id: canonical_property.duplicate_group_id,
       source_agency: resolveSourceAgency(canonical_property.source_links),
       source_links: canonical_property.source_links,
       history: canonical_property.history,
-      localized_contents,
+      localized_contents: this.resolveLocalizedContentsForDisplay(
+        { id: rest.id, title: rest.title, description: rest.description },
+        localized_contents,
+        contentConfig,
+      ),
       text_truncate_pieces: tracker?.text_truncate_pieces ?? [],
       integration_email:
         tracker?.integration_link?.user_integration?.email ?? null,
@@ -3763,6 +3860,7 @@ export class UserPropertiesService {
             },
           },
           select: {
+            id: true,
             integration_link: {
               select: {
                 user_integration: {
@@ -3774,6 +3872,10 @@ export class UserPropertiesService {
         })
       : null;
 
+    const contentConfig = tracker
+      ? await this.contentPublishingConfigService.getByTrackerId(tracker.id)
+      : null;
+
     return serializePropertyForApi({
       ...rest,
       user,
@@ -3781,7 +3883,11 @@ export class UserPropertiesService {
       source_agency: resolveSourceAgency(canonical_property.source_links),
       source_links: canonical_property.source_links,
       history: canonical_property.history,
-      localized_contents,
+      localized_contents: this.resolveLocalizedContentsForDisplay(
+        { id: rest.id, title: rest.title, description: rest.description },
+        localized_contents,
+        contentConfig,
+      ),
       integration_email:
         tracker?.integration_link?.user_integration?.email ?? null,
       integration_property: integrationProperty
