@@ -1157,7 +1157,12 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       const image = images[index];
       try {
         const buffer = await this.downloadImage(image.url);
-        if (!buffer?.length) continue;
+        if (!buffer?.length) {
+          this.logger.warn(
+            `[uploadImages] empty/unreachable source image for property=${propertyId} user_property=${userPropertyId}: ${image.url}`,
+          );
+          continue;
+        }
 
         const payload: EstateWebUploadImagePayload = {
           filename: image.filename,
@@ -1176,11 +1181,19 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         );
         sourceByFilename.set(image.filename, image.url);
         uploadedCount += 1;
-      } catch {
+      } catch (error) {
+        this.logger.warn(
+          `[uploadImages] failed to upload source image for property=${propertyId} user_property=${userPropertyId} url=${image.url}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 
-    if (uploadedCount === 0) return;
+    if (uploadedCount === 0) {
+      this.logger.warn(
+        `[uploadImages] 0/${images.length} source images uploaded for property=${propertyId} user_property=${userPropertyId}`,
+      );
+      return;
+    }
 
     try {
       await this.syncIntegrationPropertyImages({
@@ -1412,10 +1425,18 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   private async downloadImage(url: string): Promise<Buffer | null> {
     try {
       const response = await fetch(url);
-      if (!response.ok) return null;
+      if (!response.ok) {
+        this.logger.warn(
+          `[downloadImage] ${response.status} ${response.statusText} for ${url}`,
+        );
+        return null;
+      }
       const arrayBuffer = await response.arrayBuffer();
       return Buffer.from(arrayBuffer);
-    } catch {
+    } catch (error) {
+      this.logger.warn(
+        `[downloadImage] failed to fetch ${url}: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return null;
     }
   }
