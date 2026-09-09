@@ -43,4 +43,28 @@ export class CreateScraperDto {
   @IsOptional()
   @IsObject()
   config?: Record<string, unknown>;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      'Overrides PlatformConfig.crawler_job_timeout_ms (ms) for this scraper only. Null/omit = use the platform default.',
+    example: 3_600_000,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(60_000)
+  crawl_job_timeout_ms?: number | null;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      'Overrides PlatformConfig.crawler_detail_concurrency for this scraper only. Null/omit = use the platform default.',
+    example: 5,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  detail_concurrency?: number | null;
 }

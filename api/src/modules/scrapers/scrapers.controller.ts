@@ -54,6 +54,8 @@ export class ScrapersController {
   @ApiQuery({ name: 'status', required: false, enum: ScraperStatus })
   @ApiQuery({ name: 'health', required: false, enum: ScraperHealth })
   @ApiQuery({ name: 'source_agency_id', required: false, type: String })
+  @ApiQuery({ name: 'today_from', required: false, type: String })
+  @ApiQuery({ name: 'today_to', required: false, type: String })
   findAll(
     @Query(new ZodValidationPipe(ScraperQuerySchema)) query: ScraperQueryType,
   ) {

@@ -565,6 +565,15 @@ model Scraper {
   avg_runtime_ms       Int? // cached average CrawlRun duration
   consecutive_failures Int             @default(0) // reset to 0 on any SUCCESS CrawlRun
   normalize_limit      Int? // max SourceProperties to AI-normalize per crawl; null = unlimited
+  // Per-scraper overrides for the platform-wide crawler defaults
+  // (PlatformConfig.crawler_job_timeout_ms / crawler_detail_concurrency).
+  // Null = use the platform default. Exists because a single global timeout
+  // can't fit every site: a heavily bot-protected target can need a much
+  // longer detail-enrichment budget (or higher concurrency to compensate)
+  // than a fast, unprotected one -- and raising the global default to cover
+  // the slowest site would needlessly slow down/loosen every other crawl.
+  crawl_job_timeout_ms Int? // ms; overrides PlatformConfig.crawler_job_timeout_ms for this scraper's runs
+  detail_concurrency   Int? // overrides PlatformConfig.crawler_detail_concurrency for this scraper's runs
   last_success_at      DateTime?
   last_failure_at      DateTime?
   created_at           DateTime        @default(now())

@@ -15,7 +15,13 @@ import {
   type CrawlRunTimelineRow,
   type CrawlRunTimelineRunEntry,
 } from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
-import { formatDateTime } from "@/lib/date";
+import {
+  formatDateTime,
+  getTodayIso,
+  parseIsoDateParts,
+  shiftIsoDate,
+  getLocalDayRangeIso,
+} from "@/lib/date";
 import { formatDuration } from "@/lib/duration";
 
 const HOUR_MARKS = [0, 3, 6, 9, 12, 15, 18, 21, 24];
@@ -34,33 +40,12 @@ function pad2(value: number) {
   return String(value).padStart(2, "0");
 }
 
-// All date math below is done with local Date components (getFullYear/getMonth/getDate
+// All date math is done with local Date components (getFullYear/getMonth/getDate
 // and the (y, m, d) constructor), never toISOString/UTC helpers, so the chart's day
 // boundaries, hour ticks and "now" line all line up with the viewer's own clock.
-function toLocalIsoDate(d: Date) {
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-}
-
-function getTodayIso() {
-  return toLocalIsoDate(new Date());
-}
-
-function parseIsoDateParts(date: string) {
-  const [y, m, d] = date.split("-").map(Number);
-  return { y, m, d };
-}
-
-function shiftIsoDate(date: string, deltaDays: number) {
-  const { y, m, d } = parseIsoDateParts(date);
-  return toLocalIsoDate(new Date(y, m - 1, d + deltaDays));
-}
-
 function getLocalDayRangeMs(date: string) {
-  const { y, m, d } = parseIsoDateParts(date);
-  return {
-    from: new Date(y, m - 1, d, 0, 0, 0, 0).getTime(),
-    to: new Date(y, m - 1, d + 1, 0, 0, 0, 0).getTime(),
-  };
+  const range = getLocalDayRangeIso(date);
+  return { from: Date.parse(range.from), to: Date.parse(range.to) };
 }
 
 function formatHourLabel(hour: number) {
@@ -201,12 +186,19 @@ export function CrawlRunsTimeline() {
           >
             <ChevronLeft className="size-4" />
           </Button>
-          <DatePickerField aria-label="Timeline date" value={date} onChange={setDate} className="w-40" />
+          <DatePickerField
+            aria-label="Timeline date"
+            value={date}
+            onChange={(next) => setDate(next > getTodayIso() ? getTodayIso() : next)}
+            maxValue={getTodayIso()}
+            className="w-40"
+          />
           <Button
             variant="ghost"
             size="sm"
             aria-label="Next day"
             className="min-w-8 px-2"
+            isDisabled={isToday}
             onPress={() => setDate((d) => shiftIsoDate(d, 1))}
           >
             <ChevronRight className="size-4" />

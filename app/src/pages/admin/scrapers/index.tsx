@@ -22,6 +22,7 @@ import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { ScraperForm } from "./components/scraper-form";
 import { ScraperStatusChip } from "./components/scraper-status-chip";
 import { ScraperHealthChip } from "./components/scraper-health-chip";
+import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import {
   useCreateScraper,
   useDeleteScraper,
@@ -37,7 +38,7 @@ import {
 } from "@/features/scrapers/interfaces/scrapers.interfaces";
 import { ScraperStatusFilterOptions } from "@/config/constants/dropdowns/scrapers/scraper-status-filter.options";
 import { ScraperHealthFilterOptions } from "@/config/constants/dropdowns/scrapers/scraper-health-filter.options";
-import { formatDate } from "@/lib/date";
+import { formatDate, getTodayIso, getLocalDayRangeIso } from "@/lib/date";
 import { useDebouncedValue } from "./hooks/use-debounced-value";
 
 const SCRAPER_DELETE_ACTIONS: TableRowAction[] = [
@@ -59,17 +60,19 @@ export default function ScrapersListPage() {
   const [deleteScraperId, setDeleteScraperId] = useState<string | null>(null);
   const debouncedSearch = useDebouncedValue(search, 300);
 
-  const query = useMemo<ScraperListQuery>(
-    () => ({
+  const query = useMemo<ScraperListQuery>(() => {
+    const { from, to } = getLocalDayRangeIso(getTodayIso());
+    return {
       page,
       limit: 20,
+      today_from: from,
+      today_to: to,
       ...(debouncedSearch && { search: debouncedSearch }),
       ...(status !== "all" && { status }),
       ...(health !== "all" && { health }),
       ...(agencyId !== "all" && { source_agency_id: agencyId }),
-    }),
-    [page, debouncedSearch, status, health, agencyId],
-  );
+    };
+  }, [page, debouncedSearch, status, health, agencyId]);
 
   const { data, isPending } = useScrapers(query);
   const { data: agenciesData } = useAgencies({ limit: 100 });
@@ -223,7 +226,7 @@ export default function ScrapersListPage() {
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={6} />
+        <TableSkeleton rows={8} columns={7} />
       ) : scrapers.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No scrapers found.
@@ -248,17 +251,18 @@ export default function ScrapersListPage() {
                       </Checkbox.Content>
                     </Checkbox>
                   </Table.Column>
+                  <Table.Column>#</Table.Column>
                   <Table.Column isRowHeader>Name</Table.Column>
                   <Table.Column>Agency</Table.Column>
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Health</Table.Column>
-                  <Table.Column>Success rate</Table.Column>
+                  <Table.Column>Today&apos;s crawl</Table.Column>
                   <Table.Column>Last success</Table.Column>
                   <Table.Column>Last failure</Table.Column>
                   <Table.Column>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
-                  {scrapers.map((scraper) => (
+                  {scrapers.map((scraper, index) => (
                     <Table.Row
                       key={scraper.id}
                       id={scraper.id}
@@ -277,6 +281,9 @@ export default function ScrapersListPage() {
                             </Checkbox.Control>
                           </Checkbox.Content>
                         </Checkbox>
+                      </Table.Cell>
+                      <Table.Cell className="text-muted font-mono text-xs">
+                        {pagination ? (pagination.page - 1) * pagination.limit + index + 1 : index + 1}
                       </Table.Cell>
                       <Table.Cell>
                         <div className="flex flex-col">
@@ -316,7 +323,11 @@ export default function ScrapersListPage() {
                         <ScraperHealthChip health={scraper.health} />
                       </Table.Cell>
                       <Table.Cell>
-                        {scraper.success_rate !== null ? `${scraper.success_rate}%` : "—"}
+                        {scraper.today_crawl_run ? (
+                          <CrawlRunStatusChip status={scraper.today_crawl_run.status} />
+                        ) : (
+                          <span className="text-xs text-muted">Not run</span>
+                        )}
                       </Table.Cell>
                       <Table.Cell>{formatDate(scraper.last_success_at)}</Table.Cell>
                       <Table.Cell>{formatDate(scraper.last_failure_at)}</Table.Cell>

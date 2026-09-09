@@ -44,6 +44,8 @@ export default function ScraperDetailPage() {
   const [compareA, setCompareA] = useState<string | null>(null);
   const [compareB, setCompareB] = useState<string | null>(null);
   const [normalizeLimitDraft, setNormalizeLimitDraft] = useState<string | null>(null);
+  const [crawlJobTimeoutDraft, setCrawlJobTimeoutDraft] = useState<string | null>(null);
+  const [detailConcurrencyDraft, setDetailConcurrencyDraft] = useState<string | null>(null);
 
   const { data: scraper, isPending, isError, error } = useScraper(id!);
   const { data: versions } = useScraperVersions(id!);
@@ -256,6 +258,81 @@ export default function ScraperDetailPage() {
             />
             <span className="text-xs text-muted">
               Max listings AI-normalized per crawl. Empty = unlimited.
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="scraper-crawl-job-timeout">Crawl job timeout (minutes)</Label>
+            <Input
+              id="scraper-crawl-job-timeout"
+              type="number"
+              min={1}
+              step={1}
+              value={
+                crawlJobTimeoutDraft ??
+                (scraper.crawl_job_timeout_ms !== null
+                  ? String(Math.round(scraper.crawl_job_timeout_ms / 60_000))
+                  : "")
+              }
+              onChange={(e) => setCrawlJobTimeoutDraft(e.target.value)}
+              onBlur={() => {
+                if (crawlJobTimeoutDraft === null) return;
+                const raw = crawlJobTimeoutDraft.trim();
+                const minutes = raw === "" ? null : Number(raw);
+                setCrawlJobTimeoutDraft(null);
+                if (raw !== "" && (!Number.isInteger(minutes) || (minutes as number) < 1)) {
+                  return;
+                }
+                const next = minutes === null ? null : minutes * 60_000;
+                if (next === scraper.crawl_job_timeout_ms) return;
+                updateScraper.mutate({
+                  id: scraper.id,
+                  payload: { crawl_job_timeout_ms: next },
+                });
+              }}
+              placeholder="Platform default (30)"
+              disabled={updateScraper.isPending}
+              fullWidth
+            />
+            <span className="text-xs text-muted">
+              Per-phase budget for this scraper's listing walk and detail enrichment. Raise for
+              slow/heavily bot-protected sites. Empty = platform default.
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="scraper-detail-concurrency">Detail page concurrency</Label>
+            <Input
+              id="scraper-detail-concurrency"
+              type="number"
+              min={1}
+              step={1}
+              value={
+                detailConcurrencyDraft ??
+                (scraper.detail_concurrency !== null ? String(scraper.detail_concurrency) : "")
+              }
+              onChange={(e) => setDetailConcurrencyDraft(e.target.value)}
+              onBlur={() => {
+                if (detailConcurrencyDraft === null) return;
+                const raw = detailConcurrencyDraft.trim();
+                const next = raw === "" ? null : Number(raw);
+                setDetailConcurrencyDraft(null);
+                if (raw !== "" && (!Number.isInteger(next) || (next as number) < 1)) {
+                  return;
+                }
+                if (next === scraper.detail_concurrency) return;
+                updateScraper.mutate({
+                  id: scraper.id,
+                  payload: { detail_concurrency: next },
+                });
+              }}
+              placeholder="Platform default"
+              disabled={updateScraper.isPending}
+              fullWidth
+            />
+            <span className="text-xs text-muted">
+              Parallel detail pages for this scraper only. Higher = faster crawls but more
+              concurrent Bright Data sessions (cost). Empty = platform default.
             </span>
           </div>
 

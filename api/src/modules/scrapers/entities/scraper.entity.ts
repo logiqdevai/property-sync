@@ -57,6 +57,20 @@ export class Scraper {
   })
   normalize_limit: number | null;
 
+  @ApiProperty({
+    nullable: true,
+    description:
+      'Overrides PlatformConfig.crawler_job_timeout_ms (ms) for this scraper only. Null = use the platform default.',
+  })
+  crawl_job_timeout_ms: number | null;
+
+  @ApiProperty({
+    nullable: true,
+    description:
+      'Overrides PlatformConfig.crawler_detail_concurrency for this scraper only. Null = use the platform default.',
+  })
+  detail_concurrency: number | null;
+
   @ApiProperty({ nullable: true })
   last_success_at: Date | null;
 

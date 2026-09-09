@@ -67,4 +67,30 @@ export class UpdateScraperDto {
   @IsOptional()
   @IsObject()
   validation_rules?: Record<string, unknown>;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      'Overrides PlatformConfig.crawler_job_timeout_ms (ms) for this scraper only. Null = use the platform default. Raise this for slow/heavily bot-protected sites whose crawls legitimately need more than the global budget.',
+    example: 3_600_000,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsInt()
+  @Min(60_000)
+  crawl_job_timeout_ms?: number | null;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      'Overrides PlatformConfig.crawler_detail_concurrency for this scraper only. Null = use the platform default.',
+    example: 5,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsInt()
+  @Min(1)
+  detail_concurrency?: number | null;
 }

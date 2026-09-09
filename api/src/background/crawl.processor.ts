@@ -83,8 +83,6 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
 
   private async processCrawlJob(job: Job<CrawlJobData>): Promise<void> {
     const { crawlRunId, jobLogId } = job.data;
-    const { crawl_job_timeout_ms } =
-      await this.platformConfigService.getCrawlerConfig();
     this.logger.log(`crawl job received: ${crawlRunId}`);
 
     if (!crawlRunId) {
@@ -194,6 +192,17 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
 
       const useManagedBrowser = scraper.use_managed_browser;
 
+      const platformCrawlerConfig =
+        await this.platformConfigService.getCrawlerConfig();
+      // A single global timeout/concurrency can't fit every site: a heavily
+      // bot-protected target can legitimately need far more time (or more
+      // parallel lanes) per detail page than a fast, unprotected one --
+      // raising the platform default to cover the slowest scraper would
+      // needlessly loosen every other crawl's budget too.
+      const crawl_job_timeout_ms =
+        scraper.crawl_job_timeout_ms ?? platformCrawlerConfig.crawl_job_timeout_ms;
+      const detailConcurrencyOverride = scraper.detail_concurrency ?? undefined;
+
       const diagnosticsCtx: DiagnosticsRunContext = {
         crawlRunId,
         scraperId: scraper.id,
@@ -239,6 +248,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
             onBatchComplete: heartbeat,
             blockHandlingConfig,
             useManagedBrowser,
+            detailConcurrencyOverride,
           },
         ),
         crawl_job_timeout_ms,

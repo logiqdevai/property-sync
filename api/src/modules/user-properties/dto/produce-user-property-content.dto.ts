@@ -49,8 +49,8 @@ export class ProduceUserPropertyContentDto {
 
   @ApiPropertyOptional({
     description:
-      'After successful production, enqueue EstateWeb CRM sync so language ads update',
-    default: true,
+      'After successful production, also push language ads to EstateWeb CRM (separate from the dedicated Push to CRM action; requires the property already be linked to a CMS property, otherwise that property is reported as cms_failed even though its content was produced)',
+    default: false,
   })
   @IsOptional()
   @IsBoolean()

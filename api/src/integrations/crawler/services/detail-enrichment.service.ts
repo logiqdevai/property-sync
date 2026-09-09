@@ -54,6 +54,9 @@ export interface DetailEnrichmentOptions {
   // See NewStealthPageOptions on StealthBrowserService -- routes every detail
   // page through the managed remote browser and skips image bytes.
   useManagedBrowser?: boolean;
+  // Per-scraper override for PlatformConfig.crawler_detail_concurrency
+  // (Scraper.detail_concurrency). Undefined = use the platform default.
+  detailConcurrencyOverride?: number;
 }
 
 @Injectable()
@@ -74,8 +77,13 @@ export class DetailEnrichmentService {
   ): Promise<void> {
     if (items.length === 0) return;
 
-    const { detail_concurrency, detail_delay_ms, page_timeout_ms } =
-      await this.platformConfigService.getCrawlerConfig();
+    const {
+      detail_concurrency: platformDetailConcurrency,
+      detail_delay_ms,
+      page_timeout_ms,
+    } = await this.platformConfigService.getCrawlerConfig();
+    const detail_concurrency =
+      options?.detailConcurrencyOverride ?? platformDetailConcurrency;
 
     this.logger.log(
       `Enriching ${items.length} detail pages (concurrency: ${detail_concurrency})`,

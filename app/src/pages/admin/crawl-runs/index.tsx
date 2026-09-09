@@ -12,7 +12,7 @@ import {
   type Selection,
 } from "@heroui/react";
 import { DatePickerField } from "@/components/ui/date-picker-field";
-import { Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
@@ -32,7 +32,7 @@ import {
   type CrawlRunStatus,
 } from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
 import { CrawlRunStatusFilterOptions } from "@/config/constants/dropdowns/agencies/crawl-run-status-filter.options";
-import { formatDateTime } from "@/lib/date";
+import { formatDateTime, getTodayIso, shiftIsoDate, getLocalDayRangeIso } from "@/lib/date";
 import { formatDuration } from "@/lib/duration";
 
 const CRAWL_RUN_DELETE_ACTIONS: TableRowAction[] = [
@@ -45,14 +45,6 @@ const CRAWL_RUN_TAB_KEYS = {
 } as const;
 
 type CrawlRunTabKey = (typeof CRAWL_RUN_TAB_KEYS)[keyof typeof CRAWL_RUN_TAB_KEYS];
-
-function toStartOfDayIso(date: string) {
-  return new Date(`${date}T00:00:00.000Z`).toISOString();
-}
-
-function toEndOfDayIso(date: string) {
-  return new Date(`${date}T23:59:59.999Z`).toISOString();
-}
 
 function formatUsd(value: string | null) {
   if (!value) return "$0.000000";
@@ -71,25 +63,31 @@ export default function CrawlRunsListPage() {
   const [agencyId, setAgencyId] = useState<string | "all">("all");
   const [scraperId, setScraperId] = useState<string | "all">("all");
   const [userId, setUserId] = useState<string | "all">("all");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [day, setDay] = useState(getTodayIso());
   const [page, setPage] = useState(1);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deleteCrawlRunId, setDeleteCrawlRunId] = useState<string | null>(null);
 
-  const query = useMemo<CrawlRunListQuery>(
-    () => ({
+  const isToday = day === getTodayIso();
+
+  const query = useMemo<CrawlRunListQuery>(() => {
+    const { from, to } = getLocalDayRangeIso(day);
+    return {
       page,
-      limit: 20,
+      limit: 100,
+      date_from: from,
+      date_to: to,
       ...(status !== "all" && { status }),
       ...(agencyId !== "all" && { agency_id: agencyId }),
       ...(scraperId !== "all" && { scraper_id: scraperId }),
       ...(userId !== "all" && { user_id: userId }),
-      ...(dateFrom && { date_from: toStartOfDayIso(dateFrom) }),
-      ...(dateTo && { date_to: toEndOfDayIso(dateTo) }),
-    }),
-    [page, status, agencyId, scraperId, userId, dateFrom, dateTo],
-  );
+    };
+  }, [page, status, agencyId, scraperId, userId, day]);
+
+  const goToDay = (next: string) => {
+    setPage(1);
+    setDay(next > getTodayIso() ? getTodayIso() : next);
+  };
 
   const { data, isPending } = useCrawlRuns(query);
   const { data: agenciesData } = useAgencies({ limit: 100 });
@@ -289,29 +287,46 @@ export default function CrawlRunsListPage() {
           </Select.Popover>
         </Select>
 
-        <DatePickerField
-          aria-label="From date"
-          value={dateFrom}
-          onChange={(next) => {
-            setPage(1);
-            setDateFrom(next);
-          }}
-        />
-        <DatePickerField
-          aria-label="To date"
-          value={dateTo}
-          onChange={(next) => {
-            setPage(1);
-            setDateTo(next);
-          }}
-        />
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="Previous day"
+            className="min-w-8 px-2"
+            onPress={() => goToDay(shiftIsoDate(day, -1))}
+          >
+            <ChevronLeft className="size-4" />
+          </Button>
+          <DatePickerField
+            aria-label="Day"
+            value={day}
+            onChange={goToDay}
+            maxValue={getTodayIso()}
+            className="w-40"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="Next day"
+            className="min-w-8 px-2"
+            isDisabled={isToday}
+            onPress={() => goToDay(shiftIsoDate(day, 1))}
+          >
+            <ChevronRight className="size-4" />
+          </Button>
+          {!isToday && (
+            <Button variant="secondary" size="sm" onPress={() => goToDay(getTodayIso())}>
+              Today
+            </Button>
+          )}
+        </div>
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={8} />
+        <TableSkeleton rows={8} columns={9} />
       ) : runs.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
-          No crawl runs found.
+          No crawl runs found for this day.
         </div>
       ) : (
         <div className="rounded-xl border border-border bg-surface overflow-hidden">
@@ -333,6 +348,7 @@ export default function CrawlRunsListPage() {
                       </Checkbox.Content>
                     </Checkbox>
                   </Table.Column>
+                  <Table.Column>#</Table.Column>
                   <Table.Column isRowHeader>Agency</Table.Column>
                   <Table.Column>Scraper</Table.Column>
                   <Table.Column>Status</Table.Column>
@@ -343,7 +359,7 @@ export default function CrawlRunsListPage() {
                   <Table.Column>Actions</Table.Column>
                 </Table.Header>
                 <Table.Body>
-                  {runs.map((run) => (
+                  {runs.map((run, index) => (
                     <Table.Row
                       key={run.id}
                       id={run.id}
@@ -362,6 +378,9 @@ export default function CrawlRunsListPage() {
                             </Checkbox.Control>
                           </Checkbox.Content>
                         </Checkbox>
+                      </Table.Cell>
+                      <Table.Cell className="text-muted font-mono text-xs">
+                        {pagination ? (pagination.page - 1) * pagination.limit + index + 1 : index + 1}
                       </Table.Cell>
                       <Table.Cell>
                         <span className="font-medium text-foreground">

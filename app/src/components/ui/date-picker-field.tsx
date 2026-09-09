@@ -8,6 +8,7 @@ type DatePickerFieldProps = {
   onChange: (value: string) => void;
   "aria-label": string;
   className?: string;
+  maxValue?: string;
 };
 
 function toCalendarDate(value: string): CalendarDate | null {
@@ -24,12 +25,14 @@ export const DatePickerField: FC<DatePickerFieldProps> = ({
   onChange,
   "aria-label": ariaLabel,
   className,
+  maxValue,
 }) => {
   return (
     <DatePicker
       aria-label={ariaLabel}
       value={toCalendarDate(value)}
       onChange={(date) => onChange(date?.toString() ?? "")}
+      maxValue={maxValue ? (toCalendarDate(maxValue) ?? undefined) : undefined}
       className={cn("w-52", className)}
     >
       <DateField.Group fullWidth>

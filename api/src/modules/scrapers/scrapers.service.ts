@@ -53,8 +53,44 @@ export class ScrapersService {
       this.prisma.scraper.count({ where }),
     ]);
 
+    const todayFrom =
+      query.today_from ??
+      new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`);
+    const todayTo =
+      query.today_to ?? new Date(todayFrom.getTime() + 24 * 60 * 60 * 1000);
+
+    const todayRuns =
+      items.length === 0
+        ? []
+        : await this.prisma.crawlRun.findMany({
+            where: {
+              scraper_id: { in: items.map((item) => item.id) },
+              created_at: { gte: todayFrom, lt: todayTo },
+            },
+            select: {
+              id: true,
+              scraper_id: true,
+              status: true,
+              started_at: true,
+              finished_at: true,
+              created_at: true,
+            },
+            orderBy: { created_at: 'desc' },
+          });
+
+    const todayRunByScraperId = new Map<string, (typeof todayRuns)[number]>();
+    for (const run of todayRuns) {
+      if (!run.scraper_id || todayRunByScraperId.has(run.scraper_id)) continue;
+      todayRunByScraperId.set(run.scraper_id, run);
+    }
+
+    const data = items.map((item) => ({
+      ...item,
+      today_crawl_run: todayRunByScraperId.get(item.id) ?? null,
+    }));
+
     return {
-      data: items,
+      data,
       pagination: {
         page: query.page,
         limit: query.limit,
@@ -92,6 +128,12 @@ export class ScrapersService {
           ...(dto.normalize_limit !== undefined && {
             normalize_limit: dto.normalize_limit,
           }),
+          ...(dto.crawl_job_timeout_ms !== undefined && {
+            crawl_job_timeout_ms: dto.crawl_job_timeout_ms,
+          }),
+          ...(dto.detail_concurrency !== undefined && {
+            detail_concurrency: dto.detail_concurrency,
+          }),
         },
         include: {
           active_version: true,
@@ -108,6 +150,12 @@ export class ScrapersService {
           status: ScraperStatus.TESTING,
           ...(dto.normalize_limit !== undefined && {
             normalize_limit: dto.normalize_limit,
+          }),
+          ...(dto.crawl_job_timeout_ms !== undefined && {
+            crawl_job_timeout_ms: dto.crawl_job_timeout_ms,
+          }),
+          ...(dto.detail_concurrency !== undefined && {
+            detail_concurrency: dto.detail_concurrency,
           }),
         },
       });
@@ -294,6 +342,12 @@ export class ScrapersService {
           ...(dto.normalize_limit !== undefined && {
             normalize_limit: dto.normalize_limit,
           }),
+          ...(dto.crawl_job_timeout_ms !== undefined && {
+            crawl_job_timeout_ms: dto.crawl_job_timeout_ms,
+          }),
+          ...(dto.detail_concurrency !== undefined && {
+            detail_concurrency: dto.detail_concurrency,
+          }),
         },
         include: {
           active_version: true,
@@ -344,6 +398,12 @@ export class ScrapersService {
           }),
           ...(dto.normalize_limit !== undefined && {
             normalize_limit: dto.normalize_limit,
+          }),
+          ...(dto.crawl_job_timeout_ms !== undefined && {
+            crawl_job_timeout_ms: dto.crawl_job_timeout_ms,
+          }),
+          ...(dto.detail_concurrency !== undefined && {
+            detail_concurrency: dto.detail_concurrency,
           }),
         },
         include: {

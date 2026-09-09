@@ -1,3 +1,5 @@
+import type { CrawlRunStatus } from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
+
 export const ScraperStatuses = {
   ACTIVE: "ACTIVE",
   INACTIVE: "INACTIVE",
@@ -34,6 +36,15 @@ export const ScraperVersionCreatedBys = {
 export type ScraperVersionCreatedBy =
   (typeof ScraperVersionCreatedBys)[keyof typeof ScraperVersionCreatedBys];
 
+export interface ScraperTodayCrawlRun {
+  id: string;
+  scraper_id: string | null;
+  status: CrawlRunStatus;
+  started_at: string | null;
+  finished_at: string | null;
+  created_at: string;
+}
+
 export interface ScraperVersion {
   id: string;
   scraper_id: string;
@@ -56,6 +67,8 @@ export interface Scraper {
   use_managed_browser: boolean;
   diagnostics_mode: DiagnosticsMode;
   normalize_limit: number | null;
+  crawl_job_timeout_ms: number | null;
+  detail_concurrency: number | null;
   health: ScraperHealth;
   success_rate: number | null;
   avg_runtime_ms: number | null;
@@ -66,6 +79,7 @@ export interface Scraper {
   updated_at: string;
   active_version?: ScraperVersion | null;
   source_agency?: { id?: string; name: string; base_url?: string };
+  today_crawl_run?: ScraperTodayCrawlRun | null;
 }
 
 export interface CreateScraperPayload {
@@ -86,6 +100,8 @@ export interface UpdateScraperPayload {
   use_managed_browser?: boolean;
   diagnostics_mode?: DiagnosticsMode;
   normalize_limit?: number | null;
+  crawl_job_timeout_ms?: number | null;
+  detail_concurrency?: number | null;
   validation_rules?: Record<string, unknown>;
 }
 
@@ -96,6 +112,8 @@ export interface ScraperListQuery {
   status?: ScraperStatus;
   health?: ScraperHealth;
   source_agency_id?: string;
+  today_from?: string;
+  today_to?: string;
 }
 
 export interface PaginationMeta {

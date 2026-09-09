@@ -28,7 +28,11 @@ export const ProduceContentModal: FC<ProduceContentModalProps> = ({
   const [runAiTitles, setRunAiTitles] = useState(true);
   const [useAiBatch, setUseAiBatch] = useState(false);
   const [regenerate, setRegenerate] = useState(true);
-  const [pushToCrm, setPushToCrm] = useState(true);
+  // Off by default: CRM push is a separate, dedicated action ("Push to
+  // CRM"). Defaulting this on made content production fail outright for any
+  // property not yet linked to a CMS property, even though the content
+  // itself was produced fine.
+  const [pushToCrm, setPushToCrm] = useState(false);
 
   useEffect(() => {
     if (!state.isOpen) return;
@@ -36,7 +40,7 @@ export const ProduceContentModal: FC<ProduceContentModalProps> = ({
     setRunAiTitles(true);
     setUseAiBatch(false);
     setRegenerate(true);
-    setPushToCrm(true);
+    setPushToCrm(false);
   }, [state.isOpen]);
 
   const canSubmit = runTranslations || runAiTitles;

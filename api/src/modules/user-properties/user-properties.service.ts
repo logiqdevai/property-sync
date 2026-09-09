@@ -1102,7 +1102,11 @@ export class UserPropertiesService {
 
     const runTranslations = options.runTranslations ?? true;
     const runAiTitles = options.runAiTitles ?? true;
-    const pushToCrm = options.pushToCrm ?? true;
+    // CRM sync is a separate, dedicated action (pushToCrm()/push-to-cms
+    // button) -- defaulting this to true made "Produce content" fail a
+    // property outright (cms_failed) just because it wasn't linked to a CMS
+    // property yet, even though its translations/titles were produced fine.
+    const pushToCrm = options.pushToCrm ?? false;
     const useAiBatch = options.useAiBatch ?? false;
     const regenerate = options.regenerate ?? true;
 

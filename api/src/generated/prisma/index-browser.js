@@ -249,6 +249,8 @@ exports.Prisma.ScraperScalarFieldEnum = {
   avg_runtime_ms: 'avg_runtime_ms',
   consecutive_failures: 'consecutive_failures',
   normalize_limit: 'normalize_limit',
+  crawl_job_timeout_ms: 'crawl_job_timeout_ms',
+  detail_concurrency: 'detail_concurrency',
   last_success_at: 'last_success_at',
   last_failure_at: 'last_failure_at',
   created_at: 'created_at',
