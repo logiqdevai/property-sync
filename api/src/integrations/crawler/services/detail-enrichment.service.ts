@@ -487,11 +487,33 @@ export class DetailEnrichmentService {
           ) {
             const el = document.querySelector(cfg.external_id_selector);
             const text = cleanText(el?.textContent);
-            const stripped = text.replace(
-              /^(?:Property\s*ID|Κωδ(?:ικός)?(?:\s+ακινήτου)?|Code|Ref(?:erence)?)\.?\s*[:：\-]?\s*/i,
+            // Strip a KNOWN label word first where present (handles clean
+            // "Property ID: 988" / "Κωδικός: 988" cases with zero
+            // false-positive risk). This list can never cover every
+            // agency's wording though (a new site's own label -- "Αρ.
+            // Ακινήτου", "Listing #", whatever -- needs no code change): the
+            // fallback below extracts an ID-code-SHAPED token (letters/
+            // digits/hyphens containing at least one digit, e.g. "988",
+            // "PI-4423", "ΜΙ23623" -- same shape as crawler.utils.ts's
+            // ID_CODE, used for the analogous free-text scan) from whatever
+            // text is left, so any label -- known or not -- gets skipped
+            // rather than captured, as long as the label itself has no
+            // digits in it. This only works because external_id_selector is
+            // expected to point at a SMALL, dedicated ID widget (see
+            // scraper-generation/mcp-crawl SKILL.md) rather than a
+            // sentence -- run against free-form prose, the same code-shape
+            // match can false-positive on an unrelated number (e.g.
+            // "3-bedroom"), which is exactly why the free-text scanner in
+            // crawler.utils.ts additionally requires a recognized label
+            // before it'll match anything.
+            const withoutKnownLabel = text.replace(
+              /^(?:Property\s*ID|Κωδ(?:ικός)?(?:\s+ακινήτου)?|Code|Ref(?:erence)?|ID)\.?\s*[:：\-]?\s*/i,
               '',
             );
-            externalId = stripped || null;
+            const codeMatch = (withoutKnownLabel || text).match(
+              /(?=[A-Za-zΑ-Ωα-ω0-9-]*\d)[A-Za-zΑ-Ωα-ω0-9]+(?:-[A-Za-zΑ-Ωα-ω0-9]+)*/,
+            );
+            externalId = codeMatch?.[0] || withoutKnownLabel || null;
           }
 
           let titleText: string | null = null;
