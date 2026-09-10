@@ -11,6 +11,7 @@ const statusColor: Record<CmsSyncStatus, "success" | "default" | "warning" | "da
   [CmsSyncStatuses.SUCCESS]: "success",
   [CmsSyncStatuses.FAILED]: "danger",
   [CmsSyncStatuses.RETRYING]: "warning",
+  [CmsSyncStatuses.CANCELLED]: "default",
 };
 
 interface CmsSyncStatusChipProps {

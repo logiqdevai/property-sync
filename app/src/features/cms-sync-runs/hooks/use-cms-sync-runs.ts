@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import {
+  cancelUserCmsSyncRuns,
   deleteAdminCmsSyncRun,
   deleteAdminCmsSyncRuns,
   getAdminCmsSyncRun,
@@ -8,11 +9,13 @@ import {
   getAdminCmsSyncRuns,
   getUserCmsSyncRun,
   getUserCmsSyncRuns,
+  resumeUserCmsSyncRuns,
   retryAdminCmsSyncRun,
   rerunAdminCmsSyncRun,
 } from "../services/cms-sync-runs.services";
 import type {
   AdminCmsSyncRunListQuery,
+  CmsSyncRunBulkActionPayload,
   CmsSyncRunListQuery,
   DeleteCmsSyncRunsPayload,
 } from "../interfaces/cms-sync-runs.interfaces";
@@ -35,6 +38,60 @@ export const useUserCmsSyncRun = (id: string) => {
       return status === CmsSyncStatuses.PENDING || status === CmsSyncStatuses.RETRYING
         ? 2000
         : false;
+    },
+  });
+};
+
+export const useCancelUserCmsSyncRuns = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CmsSyncRunBulkActionPayload) => cancelUserCmsSyncRuns(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["cmsSyncRuns"] });
+      toast({
+        title: "Sync runs cancelled",
+        description:
+          result.failed.length > 0
+            ? `Cancelled ${result.cancelled.length}. ${result.failed.length} could not be cancelled.`
+            : `${result.cancelled.length} ${result.cancelled.length === 1 ? "run" : "runs"} cancelled.`,
+        duration: 2500,
+        variant: result.failed.length > 0 ? "warning" : "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not cancel sync runs",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useResumeUserCmsSyncRuns = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CmsSyncRunBulkActionPayload) => resumeUserCmsSyncRuns(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["cmsSyncRuns"] });
+      toast({
+        title: "Sync runs resumed",
+        description:
+          result.failed.length > 0
+            ? `Resumed ${result.resumed.length}. ${result.failed.length} could not be resumed.`
+            : `${result.resumed.length} ${result.resumed.length === 1 ? "run" : "runs"} queued to resume.`,
+        duration: 2500,
+        variant: result.failed.length > 0 ? "warning" : "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not resume sync runs",
+        description: error.message,
+        variant: "error",
+      });
     },
   });
 };

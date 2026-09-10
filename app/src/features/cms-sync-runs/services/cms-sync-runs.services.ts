@@ -2,11 +2,14 @@ import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
 import type {
   AdminCmsSyncRunListQuery,
+  CancelCmsSyncRunsResult,
   CmsSyncRun,
+  CmsSyncRunBulkActionPayload,
   CmsSyncRunListQuery,
   DeleteCmsSyncRunsPayload,
   EstateWebIntegrationOption,
   PaginatedResponse,
+  ResumeCmsSyncRunsResult,
 } from "../interfaces/cms-sync-runs.interfaces";
 
 export const getUserCmsSyncRuns = async (
@@ -27,6 +30,32 @@ export const getUserCmsSyncRun = async (id: string): Promise<CmsSyncRun> => {
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to fetch sync run. Please try again.",
+    );
+  }
+};
+
+export const cancelUserCmsSyncRuns = async (
+  payload: CmsSyncRunBulkActionPayload,
+): Promise<CancelCmsSyncRunsResult> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.cmsSyncRuns.bulkCancel, payload);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ?? "Failed to cancel sync runs. Please try again.",
+    );
+  }
+};
+
+export const resumeUserCmsSyncRuns = async (
+  payload: CmsSyncRunBulkActionPayload,
+): Promise<ResumeCmsSyncRunsResult> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.cmsSyncRuns.bulkResume, payload);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ?? "Failed to resume sync runs. Please try again.",
     );
   }
 };

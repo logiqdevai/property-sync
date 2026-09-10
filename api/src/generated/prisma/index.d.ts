@@ -536,7 +536,8 @@ export const CmsSyncStatus: {
   PENDING: 'PENDING',
   SUCCESS: 'SUCCESS',
   FAILED: 'FAILED',
-  RETRYING: 'RETRYING'
+  RETRYING: 'RETRYING',
+  CANCELLED: 'CANCELLED'
 };
 
 export type CmsSyncStatus = (typeof CmsSyncStatus)[keyof typeof CmsSyncStatus]

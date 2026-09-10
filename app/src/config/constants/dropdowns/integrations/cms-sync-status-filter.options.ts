@@ -9,4 +9,5 @@ export const CmsSyncStatusFilterOptions: { id: CmsSyncStatus | "all"; label: str
   { id: CmsSyncStatuses.SUCCESS, label: "Success" },
   { id: CmsSyncStatuses.FAILED, label: "Failed" },
   { id: CmsSyncStatuses.RETRYING, label: "Retrying" },
+  { id: CmsSyncStatuses.CANCELLED, label: "Cancelled" },
 ];

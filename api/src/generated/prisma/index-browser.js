@@ -920,7 +920,8 @@ exports.CmsSyncStatus = exports.$Enums.CmsSyncStatus = {
   PENDING: 'PENDING',
   SUCCESS: 'SUCCESS',
   FAILED: 'FAILED',
-  RETRYING: 'RETRYING'
+  RETRYING: 'RETRYING',
+  CANCELLED: 'CANCELLED'
 };
 
 exports.PropertyStatus = exports.$Enums.PropertyStatus = {

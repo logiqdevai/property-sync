@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -16,6 +24,7 @@ import {
   UserCmsSyncRunQuerySchema,
   UserCmsSyncRunQueryType,
 } from './dto/cms-sync-run-query.schema';
+import { DeleteCmsSyncRunsDto } from './dto/delete-cms-sync-runs.dto';
 
 @ApiTags('CMS Sync Runs')
 @ApiBearerAuth()
@@ -47,8 +56,40 @@ export class CmsSyncRunsController {
     return this.cmsSyncRunsService.findAllForUser(userId, query);
   }
 
+  @Post('bulk-cancel')
+  @ApiOperation({
+    summary:
+      'Cancel multiple pending/retrying CMS sync runs for the current user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Cancelled ids and any that could not be cancelled',
+  })
+  bulkCancel(
+    @Body() dto: DeleteCmsSyncRunsDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.cmsSyncRunsService.cancelMany(userId, dto.cms_sync_run_ids);
+  }
+
+  @Post('bulk-resume')
+  @ApiOperation({
+    summary:
+      'Resume (retry) multiple failed/retrying/cancelled CMS sync runs for the current user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Resumed ids and any that could not be resumed',
+  })
+  bulkResume(
+    @Body() dto: DeleteCmsSyncRunsDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.cmsSyncRunsService.resumeMany(userId, dto.cms_sync_run_ids);
+  }
+
   @Get(':id')
-  @ApiOperation({ summary: "Get a single CMS sync run for the current user" })
+  @ApiOperation({ summary: 'Get a single CMS sync run for the current user' })
   @ApiResponse({ status: 200, description: 'CMS sync run detail' })
   @ApiResponse({ status: 404, description: 'CMS sync run not found' })
   @ApiParam({ name: 'id', type: String })

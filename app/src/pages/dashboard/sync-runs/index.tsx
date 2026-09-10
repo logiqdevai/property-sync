@@ -1,10 +1,17 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Table, Select, ListBox, Pagination } from "@heroui/react";
+import { Table, Select, ListBox, Pagination, Checkbox, type Selection } from "@heroui/react";
+import { Ban, RotateCcw } from "lucide-react";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
+import type { TableRowActionEntry } from "@/components/ui/table-row-actions-menu";
 import { useUserIntegrationConnections } from "@/features/user-integrations/hooks/use-user-integrations";
-import { useUserCmsSyncRuns } from "@/features/cms-sync-runs/hooks/use-cms-sync-runs";
+import {
+  useUserCmsSyncRuns,
+  useCancelUserCmsSyncRuns,
+  useResumeUserCmsSyncRuns,
+} from "@/features/cms-sync-runs/hooks/use-cms-sync-runs";
 import type {
   CmsSyncStatus,
   CmsSyncRunListQuery,
@@ -53,18 +60,67 @@ export default function DashboardSyncRunsPage() {
 
   const { data, isPending } = useUserCmsSyncRuns(query);
   const { data: connections } = useUserIntegrationConnections();
+  const cancelRuns = useCancelUserCmsSyncRuns();
+  const resumeRuns = useResumeUserCmsSyncRuns();
 
-  const runs = data?.data ?? [];
+  const runs = useMemo(() => data?.data ?? [], [data?.data]);
   const pagination = data?.pagination;
   const integrationConnections = (connections ?? []).filter(
     (connection) => connection.integration_target.integration_type === IntegrationTypes.ESTATEWEB,
   );
 
+  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
+  const selectedIds = useMemo(
+    () =>
+      selectedKeys === "all"
+        ? new Set(runs.map((run) => run.id))
+        : new Set([...selectedKeys].map(String)),
+    [selectedKeys, runs],
+  );
+  const selectedCount = selectedIds.size;
+  const clearSelection = () => setSelectedKeys(new Set());
+
+  const bulkActions: TableRowActionEntry[] = [
+    {
+      id: "cancel",
+      label: "Cancel",
+      icon: Ban,
+      variant: "danger",
+      isDisabled: selectedCount < 1 || cancelRuns.isPending,
+    },
+    {
+      id: "resume",
+      label: "Resume",
+      icon: RotateCcw,
+      isDisabled: selectedCount < 1 || resumeRuns.isPending,
+    },
+  ];
+
+  const handleBulkAction = async (actionId: string) => {
+    const ids = Array.from(selectedIds);
+    if (actionId === "cancel") {
+      await cancelRuns.mutateAsync({ cms_sync_run_ids: ids });
+      clearSelection();
+      return;
+    }
+    if (actionId === "resume") {
+      await resumeRuns.mutateAsync({ cms_sync_run_ids: ids });
+      clearSelection();
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-2xl font-semibold tracking-tight text-foreground">Sync runs</p>
-        <p className="text-sm text-muted">CMS push outcomes for your connected integrations.</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div>
+          <p className="text-2xl font-semibold tracking-tight text-foreground">Sync runs</p>
+          <p className="text-sm text-muted">CMS push outcomes for your connected integrations.</p>
+        </div>
+        <BulkActionsMenu
+          label={selectedCount > 0 ? `Actions (${selectedCount})` : "Actions"}
+          actions={bulkActions}
+          onAction={handleBulkAction}
+        />
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -147,8 +203,22 @@ export default function DashboardSyncRunsPage() {
         <div className="rounded-xl border border-border bg-surface overflow-hidden">
           <Table>
             <Table.ScrollContainer>
-              <Table.Content aria-label="Sync runs">
+              <Table.Content
+                aria-label="Sync runs"
+                selectionMode="multiple"
+                selectedKeys={selectedKeys}
+                onSelectionChange={setSelectedKeys}
+              >
                 <Table.Header>
+                  <Table.Column className="pr-0">
+                    <Checkbox aria-label="Select all sync runs on this page" slot="selection">
+                      <Checkbox.Content>
+                        <Checkbox.Control>
+                          <Checkbox.Indicator />
+                        </Checkbox.Control>
+                      </Checkbox.Content>
+                    </Checkbox>
+                  </Table.Column>
                   <Table.Column isRowHeader>Agency</Table.Column>
                   <Table.Column>Integration</Table.Column>
                   <Table.Column>Status</Table.Column>
@@ -163,6 +233,19 @@ export default function DashboardSyncRunsPage() {
                 <Table.Body>
                   {runs.map((run) => (
                     <Table.Row key={run.id} id={run.id}>
+                      <Table.Cell className="pr-0">
+                        <Checkbox
+                          aria-label={`Select sync run for ${run.crawl_run?.source_agency?.name ?? run.id}`}
+                          slot="selection"
+                          variant="secondary"
+                        >
+                          <Checkbox.Content>
+                            <Checkbox.Control>
+                              <Checkbox.Indicator />
+                            </Checkbox.Control>
+                          </Checkbox.Content>
+                        </Checkbox>
+                      </Table.Cell>
                       <Table.Cell>
                         <button
                           type="button"

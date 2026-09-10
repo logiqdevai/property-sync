@@ -5,6 +5,7 @@ export const CmsSyncStatuses = {
   SUCCESS: "SUCCESS",
   FAILED: "FAILED",
   RETRYING: "RETRYING",
+  CANCELLED: "CANCELLED",
 } as const;
 
 export type CmsSyncStatus = (typeof CmsSyncStatuses)[keyof typeof CmsSyncStatuses];
@@ -97,6 +98,20 @@ export interface EstateWebIntegrationOption {
 
 export interface DeleteCmsSyncRunsPayload {
   cms_sync_run_ids: string[];
+}
+
+export interface CmsSyncRunBulkActionPayload {
+  cms_sync_run_ids: string[];
+}
+
+export interface CancelCmsSyncRunsResult {
+  cancelled: string[];
+  failed: Array<{ id: string; error: string }>;
+}
+
+export interface ResumeCmsSyncRunsResult {
+  resumed: string[];
+  failed: Array<{ id: string; error: string }>;
 }
 
 export interface PaginationMeta {

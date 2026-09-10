@@ -210,6 +210,8 @@ export const ApiRoutes = {
         prefix: "/cms-sync-runs",
         list: "/cms-sync-runs",
         detail: (id: string) => `/cms-sync-runs/${id}`,
+        bulkCancel: "/cms-sync-runs/bulk-cancel",
+        bulkResume: "/cms-sync-runs/bulk-resume",
     },
     costLogs: {
         prefix: "/cost-logs",

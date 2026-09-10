@@ -17,6 +17,23 @@ import { PaginatedResult } from './interfaces/cms-sync-run.interface';
 
 const DEFAULT_MAX_ATTEMPTS = 3;
 
+// PENDING/RETRYING are the only states with a live (or about-to-be-live)
+// BullMQ job worth removing -- SUCCESS/FAILED/CANCELLED have none (BullMQ
+// jobs are added with removeOnComplete/removeOnFail: true, see
+// enqueueCmsSyncJob below).
+const CANCELLABLE_STATUSES: CmsSyncStatus[] = [
+  CmsSyncStatus.PENDING,
+  CmsSyncStatus.RETRYING,
+];
+// What "Resume" (re-run the existing retry() flow) accepts as a starting
+// point -- a cancelled run has never actually run to completion, so it's
+// just as resumable as a failed one.
+const RESUMABLE_STATUSES: CmsSyncStatus[] = [
+  CmsSyncStatus.FAILED,
+  CmsSyncStatus.RETRYING,
+  CmsSyncStatus.CANCELLED,
+];
+
 const emptyPage = (page: number, limit: number): PaginatedResult<any> => ({
   data: [],
   pagination: {
@@ -203,15 +220,46 @@ export class CmsSyncRunsService {
   }
 
   async retry(id: string) {
+    await this.performRetry(id);
+    return this.findOneById(id);
+  }
+
+  // User-facing counterpart of retry() -- same underlying flow (also used
+  // as "Resume" for a cancelled run, see RESUMABLE_STATUSES), just scoped
+  // to runs the current user actually owns.
+  async resumeForUser(userId: string, id: string) {
+    await this.assertOwnedByUser(userId, id);
+    await this.performRetry(id);
+    return this.findOneForUser(userId, id);
+  }
+
+  async resumeMany(userId: string, ids: string[]) {
+    const uniqueIds = [...new Set(ids)];
+    const resumed: string[] = [];
+    const failed: Array<{ id: string; error: string }> = [];
+
+    for (const id of uniqueIds) {
+      try {
+        await this.resumeForUser(userId, id);
+        resumed.push(id);
+      } catch (error) {
+        failed.push({
+          id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    return { resumed, failed };
+  }
+
+  private async performRetry(id: string) {
     const run = await this.prisma.cmsSyncRun.findUnique({ where: { id } });
     if (!run) throw new NotFoundException('CMS sync run not found');
 
-    if (
-      run.status !== CmsSyncStatus.FAILED &&
-      run.status !== CmsSyncStatus.RETRYING
-    ) {
+    if (!RESUMABLE_STATUSES.includes(run.status)) {
       throw new BadRequestException(
-        'Only failed or retrying CMS sync runs can be retried',
+        'Only failed, retrying, or cancelled CMS sync runs can be retried/resumed',
       );
     }
 
@@ -222,8 +270,73 @@ export class CmsSyncRunsService {
 
     await this.resetForRetry(id, maxAttempts);
     await this.enqueueCmsSyncJob(run);
+  }
 
-    return this.findOneById(id);
+  private async assertOwnedByUser(userId: string, id: string) {
+    const run = await this.prisma.cmsSyncRun.findFirst({
+      where: { id, user_integration: { user_id: userId } },
+      select: { id: true },
+    });
+    if (!run) throw new NotFoundException('CMS sync run not found');
+  }
+
+  async cancel(userId: string, id: string) {
+    await this.assertOwnedByUser(userId, id);
+
+    const run = await this.prisma.cmsSyncRun.findUnique({ where: { id } });
+    if (!run) throw new NotFoundException('CMS sync run not found');
+
+    if (!CANCELLABLE_STATUSES.includes(run.status)) {
+      throw new BadRequestException(
+        'Only pending or retrying CMS sync runs can be cancelled',
+      );
+    }
+
+    // Best-effort: a job already ACTIVE (mid-flight) can't be force-killed
+    // cleanly (same caveat as CrawlRunsService.cancel) -- the worker may
+    // still finish it, but the DB row below is marked CANCELLED regardless
+    // so the UI stops treating it as pending either way.
+    await this.cmsSyncQueue
+      .getJob(`cms-sync-${id}`)
+      .then((job) => job?.remove())
+      .catch(() => undefined);
+
+    const updated = await this.prisma.cmsSyncRun.updateMany({
+      where: { id, status: { in: CANCELLABLE_STATUSES } },
+      data: {
+        status: CmsSyncStatus.CANCELLED,
+        error_message: 'Cancelled by user',
+        finished_at: new Date(),
+      },
+    });
+
+    if (updated.count === 0) {
+      throw new BadRequestException(
+        'CMS sync run is no longer pending or retrying',
+      );
+    }
+
+    return this.findOneForUser(userId, id);
+  }
+
+  async cancelMany(userId: string, ids: string[]) {
+    const uniqueIds = [...new Set(ids)];
+    const cancelled: string[] = [];
+    const failed: Array<{ id: string; error: string }> = [];
+
+    for (const id of uniqueIds) {
+      try {
+        await this.cancel(userId, id);
+        cancelled.push(id);
+      } catch (error) {
+        failed.push({
+          id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    return { cancelled, failed };
   }
 
   async rerun(id: string) {
@@ -281,7 +394,9 @@ export class CmsSyncRunsService {
     payload: Prisma.JsonValue | null;
   }) {
     const payload =
-      run.payload && typeof run.payload === 'object' && !Array.isArray(run.payload)
+      run.payload &&
+      typeof run.payload === 'object' &&
+      !Array.isArray(run.payload)
         ? (run.payload as Record<string, unknown>)
         : {};
 
@@ -491,7 +606,9 @@ export class CmsSyncRunsService {
     },
   >(run: T): Promise<T> {
     const response =
-      run.response && typeof run.response === 'object' && !Array.isArray(run.response)
+      run.response &&
+      typeof run.response === 'object' &&
+      !Array.isArray(run.response)
         ? (run.response as {
             operation_results?: Array<Record<string, unknown>>;
             [key: string]: unknown;
@@ -504,7 +621,12 @@ export class CmsSyncRunsService {
 
     const crawlRunId = run.crawl_run_id;
     // No crawl to attach property history against (backfill/manual push).
-    if (!crawlRunId || !response || !operationResults || operationResults.length === 0) {
+    if (
+      !crawlRunId ||
+      !response ||
+      !operationResults ||
+      operationResults.length === 0
+    ) {
       return run;
     }
 
@@ -566,7 +688,9 @@ export class CmsSyncRunsService {
         ...response,
         operation_results: operationResults.map((op) => {
           const userPropertyId =
-            typeof op.user_property_id === 'string' ? op.user_property_id : null;
+            typeof op.user_property_id === 'string'
+              ? op.user_property_id
+              : null;
           const canonicalId = userPropertyId
             ? canonicalByUserProperty.get(userPropertyId)
             : undefined;

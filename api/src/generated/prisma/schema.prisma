@@ -247,6 +247,7 @@ enum CmsSyncStatus {
   SUCCESS
   FAILED
   RETRYING
+  CANCELLED
 }
 
 // New: spec section 14 Property History -- every detectable change to a Property over time.
