@@ -15,6 +15,8 @@ import {
 } from './dto/cms-sync-run-query.schema';
 import { PaginatedResult } from './interfaces/cms-sync-run.interface';
 
+const DEFAULT_MAX_ATTEMPTS = 3;
+
 const emptyPage = (page: number, limit: number): PaginatedResult<any> => ({
   data: [],
   pagination: {
@@ -309,7 +311,13 @@ export class CmsSyncRunsService {
         user_integration_id: run.user_integration_id,
         crawl_run_id: run.crawl_run_id,
       },
-      { jobId, removeOnComplete: true, removeOnFail: true },
+      {
+        jobId,
+        attempts: DEFAULT_MAX_ATTEMPTS,
+        backoff: { type: 'exponential', delay: 5000 },
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
     );
   }
 

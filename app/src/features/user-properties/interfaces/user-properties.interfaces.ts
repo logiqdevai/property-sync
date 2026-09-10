@@ -210,6 +210,17 @@ export interface PushUserPropertiesToCrmResult {
   failed: Array<{ user_property_id: string; error: string }>;
 }
 
+export interface PushUserPropertiesImagesToCrmPayload {
+  ids: string[];
+}
+
+export interface PushUserPropertiesImagesToCrmResult {
+  job_log_id: string;
+  enqueued: number;
+  message: string;
+  failed: Array<{ user_property_id: string; error: string }>;
+}
+
 export interface UpdateEstateWebSitesPayload {
   ids: string[];
   sites: Array<{

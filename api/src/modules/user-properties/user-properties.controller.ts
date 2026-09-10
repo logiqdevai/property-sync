@@ -317,6 +317,22 @@ export class UserPropertiesController {
     return this.userPropertiesService.pushToCrm(userId, dto.ids);
   }
 
+  @Post('push-images-to-cms')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ApiOperation({
+    summary:
+      'Enqueue background push of each property\'s scraped images to its linked EstateWeb CMS (5 parallel workers)',
+  })
+  @ApiResponse({ status: 202, description: 'Image push to CMS job enqueued' })
+  @ApiResponse({ status: 400, description: 'Cannot push images to CMS' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  pushImagesToCrmMany(
+    @CurrentUser('id') userId: string,
+    @Body() dto: DeleteUserPropertiesDto,
+  ) {
+    return this.userPropertiesService.pushImagesToCrm(userId, dto.ids);
+  }
+
   @Post('produce-content')
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
@@ -541,6 +557,18 @@ export class UserPropertiesController {
   @ApiResponse({ status: 404, description: 'Saved property not found' })
   pushToCrm(@CurrentUser('id') userId: string, @Param('id') id: string) {
     return this.userPropertiesService.pushToCrm(userId, id);
+  }
+
+  @Post(':id/push-images-to-cms')
+  @ApiOperation({
+    summary:
+      "Push this property's scraped images to its linked EstateWeb CMS",
+  })
+  @ApiResponse({ status: 200, type: UserPropertyEntity })
+  @ApiResponse({ status: 400, description: 'Cannot push images to CMS' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  pushImagesToCrm(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    return this.userPropertiesService.pushImagesToCrm(userId, id);
   }
 
   @Post(':id/migrate-integration-images')

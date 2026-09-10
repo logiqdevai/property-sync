@@ -835,7 +835,13 @@ export class CmsSyncOrchestratorService {
         user_integration_id: params.userIntegrationId,
         crawl_run_id: params.crawlRunId,
       },
-      { jobId, removeOnComplete: true, removeOnFail: true },
+      {
+        jobId,
+        attempts: DEFAULT_MAX_ATTEMPTS,
+        backoff: { type: 'exponential', delay: 5000 },
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
     );
     return true;
   }

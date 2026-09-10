@@ -10,6 +10,7 @@ import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
   CONTENT_PRODUCTION_QUEUE,
+  CREATE_INTEGRATION_IMAGES_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
   DELETE_INTEGRATION_IMAGES_QUEUE,
   ESTATEWEB_SITES_UPDATE_QUEUE,
@@ -120,6 +121,10 @@ import {
   MigrateIntegrationImagesJobResult,
 } from './interfaces/migrate-integration-images-job.interface';
 import {
+  CreateIntegrationImagesJobData,
+  CreateIntegrationImagesJobResult,
+} from './interfaces/create-integration-images-job.interface';
+import {
   RenormalizationJobData,
   RenormalizationJobResult,
 } from './interfaces/renormalization-job.interface';
@@ -178,6 +183,8 @@ export class UserPropertiesService {
     private readonly deleteIntegrationImagesQueue: Queue<DeleteIntegrationImagesJobData>,
     @InjectQueue(MIGRATE_INTEGRATION_IMAGES_QUEUE)
     private readonly migrateIntegrationImagesQueue: Queue<MigrateIntegrationImagesJobData>,
+    @InjectQueue(CREATE_INTEGRATION_IMAGES_QUEUE)
+    private readonly createIntegrationImagesQueue: Queue<CreateIntegrationImagesJobData>,
     @InjectQueue(GEOCODE_MISSING_COORDINATES_QUEUE)
     private readonly geocodeCoordinatesQueue: Queue<GeocodeCoordinatesJobData>,
     @InjectQueue(RESOLVE_ESTATEWEB_LOCATION_QUEUE)
@@ -2229,6 +2236,193 @@ export class UserPropertiesService {
 
     await this.runCreateIntegrationImages(userProperty, imageIndexes);
     return this.findOne(userId, id);
+  }
+
+  // Pushes every scraped Property.images entry (no per-image selection) --
+  // used by the quick "Push images to CRM" action on the properties list
+  // and detail pages, as opposed to createIntegrationImages() which uploads
+  // an explicit, user-picked subset from the image gallery. Returns false
+  // when the property has no scraped images to push.
+  async createAllIntegrationImagesForUserProperty(
+    userId: string,
+    userPropertyId: string,
+  ): Promise<boolean> {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id: userPropertyId, user_id: userId },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+        images: true,
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const propertyImages = Array.isArray(userProperty.images)
+      ? userProperty.images.filter(
+          (item): item is string => typeof item === 'string' && item.length > 0,
+        )
+      : [];
+
+    if (propertyImages.length === 0) {
+      return false;
+    }
+
+    const allIndexes = propertyImages.map((_, index) => index);
+    await this.runCreateIntegrationImages(userProperty, allIndexes);
+    return true;
+  }
+
+  async pushImagesToCrm(userId: string, ids: string | string[]) {
+    const idList = [...new Set(Array.isArray(ids) ? ids : [ids])];
+    if (idList.length === 0) {
+      throw new BadRequestException('No properties selected');
+    }
+
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: idList }, user_id: userId },
+      select: { id: true, integration_property_id: true, images: true },
+    });
+
+    if (properties.length === 0) {
+      throw new NotFoundException('Property not found');
+    }
+
+    // Same rationale as pushToCrm(): a single property uploads fast enough to
+    // run inline and hand back the updated property; a larger selection is
+    // enqueued in the background to avoid blocking the request.
+    if (idList.length === 1) {
+      try {
+        const created = await this.createAllIntegrationImagesForUserProperty(
+          userId,
+          idList[0],
+        );
+        if (!created) {
+          throw new BadRequestException(
+            'Property has no scraped images to push',
+          );
+        }
+        return this.findOne(userId, idList[0]);
+      } catch (error) {
+        if (error instanceof BadRequestException) throw error;
+        const message = error instanceof Error ? error.message : String(error);
+        throw new BadRequestException(message);
+      }
+    }
+
+    const byId = new Map(properties.map((property) => [property.id, property]));
+    const enqueueIds: string[] = [];
+    const failed: Array<{ user_property_id: string; error: string }> = [];
+
+    for (const id of idList) {
+      const property = byId.get(id);
+      if (!property) {
+        failed.push({ user_property_id: id, error: 'Property not found' });
+        continue;
+      }
+
+      if (!property.integration_property_id) {
+        failed.push({
+          user_property_id: id,
+          error: 'Property is not linked to a CMS',
+        });
+        continue;
+      }
+
+      const hasImages =
+        Array.isArray(property.images) &&
+        property.images.some(
+          (item) => typeof item === 'string' && item.length > 0,
+        );
+      if (!hasImages) {
+        failed.push({
+          user_property_id: id,
+          error: 'Property has no scraped images to push',
+        });
+        continue;
+      }
+
+      enqueueIds.push(id);
+    }
+
+    if (enqueueIds.length === 0) {
+      const firstError = failed[0]?.error ?? 'No properties could be updated';
+      throw new BadRequestException(
+        failed.length === 1
+          ? firstError
+          : `None of the ${idList.length} properties could be updated. ${firstError}`,
+      );
+    }
+
+    const initialResult: CreateIntegrationImagesJobResult = {
+      total: enqueueIds.length,
+      processed: 0,
+      created: 0,
+      skipped: 0,
+      failed: failed.length,
+      items: failed.map((row) => ({
+        user_property_id: row.user_property_id,
+        status: 'failed' as const,
+        error: row.error,
+      })),
+      logs: [
+        `enqueued user=${userId} properties=${enqueueIds.length}`,
+      ],
+    };
+
+    const payload = {
+      user_id: userId,
+      user_property_ids: enqueueIds,
+      total: enqueueIds.length,
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: CREATE_INTEGRATION_IMAGES_QUEUE,
+        job_name: 'create-integration-images',
+        status: JobStatus.WAITING,
+        payload: payload as object,
+        result: initialResult as object,
+      },
+    });
+
+    this.logger.log(
+      `[pushImagesToCrm] queued job_log=${jobLog.id} user=${userId} ids=${enqueueIds.length}`,
+    );
+
+    await this.createIntegrationImagesQueue.addBulk(
+      enqueueIds.map((userPropertyId) => {
+        const jobData: CreateIntegrationImagesJobData = {
+          job_log_id: jobLog.id,
+          user_id: userId,
+          user_property_id: userPropertyId,
+          total: enqueueIds.length,
+        };
+        return {
+          name: 'create-integration-images',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${userPropertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
+
+    return {
+      job_log_id: jobLog.id,
+      enqueued: enqueueIds.length,
+      failed,
+      message:
+        'Image push to CMS started in the background. Track progress in Job queue.',
+    };
   }
 
   async updateIntegrationImages(

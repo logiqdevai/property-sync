@@ -7,6 +7,8 @@ import type {
   PaginatedResponse,
   PushUserPropertiesToCrmPayload,
   PushUserPropertiesToCrmResult,
+  PushUserPropertiesImagesToCrmPayload,
+  PushUserPropertiesImagesToCrmResult,
   SplitUserPropertiesPayload,
   SplitUserPropertiesResult,
   UpdateEstateWebSitesPayload,
@@ -158,6 +160,15 @@ export const pushUserPropertyToCrm = async (id: string): Promise<UserProperty> =
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to push property to CMS.");
+  }
+};
+
+export const pushUserPropertyImagesToCrm = async (id: string): Promise<UserPropertyDetail> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.userProperties.pushImagesToCrm(id));
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to push images to CMS.");
   }
 };
 
@@ -358,6 +369,20 @@ export const pushUserPropertiesToCrm = async (
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to push properties to CMS.");
+  }
+};
+
+export const pushUserPropertiesImagesToCrm = async (
+  payload: PushUserPropertiesImagesToCrmPayload,
+): Promise<UserProperty | PushUserPropertiesImagesToCrmResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.bulkPushImagesToCrm,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to push images to CMS.");
   }
 };
 

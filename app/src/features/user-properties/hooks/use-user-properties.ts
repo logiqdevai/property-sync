@@ -16,6 +16,8 @@ import {
   getUserProperty,
   pushUserPropertiesToCrm,
   pushUserPropertyToCrm,
+  pushUserPropertiesImagesToCrm,
+  pushUserPropertyImagesToCrm,
   migrateAdminUserPropertyIntegrationImages,
   migrateUserPropertyIntegrationImages,
   deleteAdminUserPropertyIntegrationImages,
@@ -51,6 +53,8 @@ import type {
   DedupeUserPropertiesPayload,
   PushUserPropertiesToCrmPayload,
   PushUserPropertiesToCrmResult,
+  PushUserPropertiesImagesToCrmPayload,
+  PushUserPropertiesImagesToCrmResult,
   UpdateEstateWebSitesPayload,
   UpdateSalesPricesPayload,
   SyncCrmClientNotesPayload,
@@ -169,6 +173,31 @@ export const usePushUserPropertyToCrm = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not push to CMS",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const usePushUserPropertyImagesToCrm = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => pushUserPropertyImagesToCrm(id),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["userProperties", "detail", data.id], data);
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      toast({
+        title: "Images pushed to CRM",
+        description: "Scraped photos were uploaded to the linked EstateWeb CMS.",
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not push images to CMS",
         description: error.message,
         variant: "error",
       });
@@ -559,6 +588,46 @@ export const usePushUserPropertiesToCrm = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not push to CMS",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const usePushUserPropertiesImagesToCrm = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: PushUserPropertiesImagesToCrmPayload) =>
+      pushUserPropertiesImagesToCrm(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+
+      if ("job_log_id" in result) {
+        const bulk = result as PushUserPropertiesImagesToCrmResult;
+        toast({
+          title: "Image push to CRM queued",
+          description:
+            bulk.failed.length > 0
+              ? `Queued ${bulk.enqueued}. ${bulk.failed.length} failed.`
+              : `${bulk.enqueued} ${bulk.enqueued === 1 ? "property" : "properties"} will have their images pushed in the background.`,
+          duration: 2500,
+          variant: bulk.failed.length > 0 ? "warning" : "success",
+        });
+        return;
+      }
+
+      toast({
+        title: "Images pushed to CRM",
+        description: "Scraped photos were uploaded to the linked EstateWeb CMS.",
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not push images to CMS",
         description: error.message,
         variant: "error",
       });

@@ -223,6 +223,7 @@ export const ApiRoutes = {
         detail: (id: string) => `/properties/${id}`,
         resync: (id: string) => `/properties/${id}/resync`,
         pushToCrm: (id: string) => `/properties/${id}/push-to-cms`,
+        pushImagesToCrm: (id: string) => `/properties/${id}/push-images-to-cms`,
         migrateIntegrationImages: (id: string) =>
             `/properties/${id}/migrate-integration-images`,
         deleteIntegrationImages: (id: string) =>
@@ -235,6 +236,7 @@ export const ApiRoutes = {
             `/properties/${id}/remove-watermark-images`,
         bulkRemoveWatermarkImages: "/properties/remove-watermark-images",
         bulkPushToCrm: "/properties/push-to-cms",
+        bulkPushImagesToCrm: "/properties/push-images-to-cms",
         bulkDelete: "/properties/bulk-delete",
         dedupeGroups: "/properties/dedupe-groups",
         bulkSplit: "/properties/bulk-split",

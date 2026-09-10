@@ -16,5 +16,6 @@ export const RENORMALIZATION_QUEUE = 'renormalization';
 export const NORMALIZATION_QUEUE = 'normalization';
 export const DELETE_INTEGRATION_IMAGES_QUEUE = 'delete-integration-images';
 export const MIGRATE_INTEGRATION_IMAGES_QUEUE = 'migrate-integration-images';
+export const CREATE_INTEGRATION_IMAGES_QUEUE = 'create-integration-images';
 export const GEOCODE_MISSING_COORDINATES_QUEUE = 'geocode-missing-coordinates';
 export const RESOLVE_ESTATEWEB_LOCATION_QUEUE = 'resolve-estateweb-location';

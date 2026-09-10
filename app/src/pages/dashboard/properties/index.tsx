@@ -61,6 +61,8 @@ import {
   useProduceUserPropertyContent,
   usePushUserPropertiesToCrm,
   usePushUserPropertyToCrm,
+  usePushUserPropertiesImagesToCrm,
+  usePushUserPropertyImagesToCrm,
   useRemoveUserPropertiesWatermarkImages,
   useRenormalizeUserProperties,
   useGeocodeMissingCoordinates,
@@ -138,6 +140,12 @@ const PROPERTY_MIGRATE_CMS_IMAGES_ACTION: TableRowAction = {
   icon: Images,
 };
 
+const PROPERTY_PUSH_IMAGES_ACTION: TableRowAction = {
+  id: "push-images-to-crm",
+  label: "Push images to CRM",
+  icon: Upload,
+};
+
 const PROPERTY_REMOVE_WATERMARK_ACTION: TableRowAction = {
   id: "remove-watermarks",
   label: "Remove watermarks",
@@ -168,6 +176,7 @@ function buildPropertyRowActions(options: {
   canDelete: boolean;
   hasIntegration: boolean;
   pushPending: boolean;
+  pushImagesPending: boolean;
   producePending: boolean;
   renormalizePending: boolean;
   updateSalesPricesPending: boolean;
@@ -181,6 +190,7 @@ function buildPropertyRowActions(options: {
     canDelete,
     hasIntegration,
     pushPending,
+    pushImagesPending,
     producePending,
     renormalizePending,
     updateSalesPricesPending,
@@ -191,6 +201,10 @@ function buildPropertyRowActions(options: {
   } = options;
 
   const imageItems: TableRowAction[] = [
+    {
+      ...PROPERTY_PUSH_IMAGES_ACTION,
+      isDisabled: !hasIntegration || pushImagesPending,
+    },
     {
       ...PROPERTY_REMOVE_WATERMARK_ACTION,
       isDisabled: !hasIntegration || removeWatermarksPending,
@@ -401,6 +415,8 @@ export default function DashboardPropertiesListPage() {
   const truncateDescriptions = useTruncateUserPropertyDescriptions();
   const pushToCrm = usePushUserPropertyToCrm();
   const pushSelectedToCrm = usePushUserPropertiesToCrm();
+  const pushImagesToCrm = usePushUserPropertyImagesToCrm();
+  const pushSelectedImagesToCrm = usePushUserPropertiesImagesToCrm();
   const removeWatermarks = useRemoveUserPropertiesWatermarkImages();
   const produceContent = useProduceUserPropertyContent();
   const updateStatus = useUpdateUserPropertyStatus();
@@ -511,6 +527,12 @@ export default function DashboardPropertiesListPage() {
 
   const bulkActions = useMemo<TableRowActionEntry[]>(() => {
     const imageItems: TableRowAction[] = [
+      {
+        id: "push-images-to-crm",
+        label: "Push images to CRM",
+        icon: Upload,
+        isDisabled: selectedLinkedCount < 1 || pushSelectedImagesToCrm.isPending,
+      },
       {
         id: "remove-watermarks",
         label: "Remove watermarks",
@@ -678,6 +700,7 @@ export default function DashboardPropertiesListPage() {
     duplicateGroup,
     produceContent.isPending,
     pushSelectedToCrm.isPending,
+    pushSelectedImagesToCrm.isPending,
     removeWatermarks.isPending,
     renormalize.isPending,
     bulkDeleteCmsImages.isPending,
@@ -743,6 +766,10 @@ export default function DashboardPropertiesListPage() {
     }
     if (actionId === "push-to-crm") {
       void handleBulkPushToCrm();
+      return;
+    }
+    if (actionId === "push-images-to-crm") {
+      void handleBulkPushImagesToCrm();
       return;
     }
     if (actionId === "manage-estateweb-sites") {
@@ -886,6 +913,11 @@ export default function DashboardPropertiesListPage() {
 
   const handleBulkPushToCrm = async () => {
     await pushSelectedToCrm.mutateAsync({ ids: Array.from(selectedIds) });
+    clearSelection();
+  };
+
+  const handleBulkPushImagesToCrm = async () => {
+    await pushSelectedImagesToCrm.mutateAsync({ ids: Array.from(selectedIds) });
     clearSelection();
   };
 
@@ -1324,6 +1356,9 @@ export default function DashboardPropertiesListPage() {
                 hasIntegration: Boolean(property.integration_property_id),
                 pushPending:
                   pushToCrm.isPending && pushToCrm.variables === property.id,
+                pushImagesPending:
+                  pushImagesToCrm.isPending &&
+                  pushImagesToCrm.variables === property.id,
                 producePending: produceContent.isPending,
                 renormalizePending: renormalize.isPending,
                 updateSalesPricesPending: updateSalesPrices.isPending,
@@ -1355,6 +1390,10 @@ export default function DashboardPropertiesListPage() {
                   onAction={(actionId) => {
                     if (actionId === "push-to-crm") {
                       pushToCrm.mutate(property.id);
+                      return;
+                    }
+                    if (actionId === "push-images-to-crm") {
+                      pushImagesToCrm.mutate(property.id);
                       return;
                     }
                     if (actionId === "produce-content") {
@@ -1448,6 +1487,9 @@ export default function DashboardPropertiesListPage() {
                         pushPending:
                           pushToCrm.isPending &&
                           pushToCrm.variables === property.id,
+                        pushImagesPending:
+                          pushImagesToCrm.isPending &&
+                          pushImagesToCrm.variables === property.id,
                         producePending: produceContent.isPending,
                         renormalizePending: renormalize.isPending,
                         updateSalesPricesPending: updateSalesPrices.isPending,
@@ -1567,6 +1609,10 @@ export default function DashboardPropertiesListPage() {
                             onAction={(actionId) => {
                               if (actionId === "push-to-crm") {
                                 pushToCrm.mutate(property.id);
+                                return;
+                              }
+                              if (actionId === "push-images-to-crm") {
+                                pushImagesToCrm.mutate(property.id);
                                 return;
                               }
                               if (actionId === "produce-content") {
