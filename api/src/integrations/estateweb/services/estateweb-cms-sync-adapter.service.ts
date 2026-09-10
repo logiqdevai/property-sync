@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { NotificationType, Prisma, UserProperty } from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
+import { isLikelyImageBuffer } from '@/shared/utils/images/image-signature.utils';
 import {
   CmsPushCreateResult,
   CmsSyncAdapter,
@@ -140,7 +141,12 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       ads: payload.ads ?? [],
     });
 
-    await this.uploadImages(userIntegrationId, result.id, userProperty.id, userProperty.images);
+    await this.uploadImages(
+      userIntegrationId,
+      result.id,
+      userProperty.id,
+      userProperty.images,
+    );
 
     return { integration_property_id: String(result.id) };
   }
@@ -203,9 +209,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     });
   }
 
-  async ensureImagesCached(
-    params: CmsSyncBackfillImagesParams,
-  ): Promise<void> {
+  async ensureImagesCached(params: CmsSyncBackfillImagesParams): Promise<void> {
     try {
       const propertyId = Number(params.crmPropertyId);
       if (!Number.isFinite(propertyId)) return;
@@ -843,7 +847,11 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
 
     if (
       !forceRecalc &&
-      isSalePriceStartWithinMarkupRange(userProperty.price_start, basePrice, sales)
+      isSalePriceStartWithinMarkupRange(
+        userProperty.price_start,
+        basePrice,
+        sales,
+      )
     ) {
       return;
     }
@@ -920,12 +928,11 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       price,
       price_final: 0,
       price_web: priceWeb,
-      sqm: userProperty?.square_meters
-        ? Number(userProperty.square_meters)
-        : 0,
+      sqm: userProperty?.square_meters ? Number(userProperty.square_meters) : 0,
       distance_airport:
         sanitizeEstateWebDistance(userProperty?.distance_airport) ?? '',
-      distance_port: sanitizeEstateWebDistance(userProperty?.distance_port) ?? '',
+      distance_port:
+        sanitizeEstateWebDistance(userProperty?.distance_port) ?? '',
       distance_beach:
         sanitizeEstateWebDistance(userProperty?.distance_beach) ?? '',
       description,
@@ -1038,10 +1045,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   }
 
   private resolveEstateWebCode(userProperty?: UserProperty): string {
-    const candidates = [
-      userProperty?.internal_id,
-      userProperty?.property_id,
-    ];
+    const candidates = [userProperty?.internal_id, userProperty?.property_id];
     for (const candidate of candidates) {
       if (!candidate) continue;
       // Strip stray leading punctuation (e.g. a scraped "#1987") and any
@@ -1416,8 +1420,7 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       if (match?.[1]) {
         ext = match[1].toLowerCase();
       }
-    } catch {
-    }
+    } catch {}
     const stamp = `${Date.now()}${String(index).padStart(3, '0')}${Math.floor(Math.random() * 900 + 100)}`;
     return `${propertyId}-${stamp}${ext}`;
   }
@@ -1432,7 +1435,17 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         return null;
       }
       const arrayBuffer = await response.arrayBuffer();
-      return Buffer.from(arrayBuffer);
+      const buffer = Buffer.from(arrayBuffer);
+      // Some bot-protection layers return HTTP 200 with a tiny HTML
+      // captcha/redirect page instead of the real image -- response.ok
+      // alone can't catch that. See image-signature.utils.ts for why.
+      if (!isLikelyImageBuffer(buffer)) {
+        this.logger.warn(
+          `[downloadImage] response for ${url} doesn't look like a real image (likely a bot-protection page) -- skipping`,
+        );
+        return null;
+      }
+      return buffer;
     } catch (error) {
       this.logger.warn(
         `[downloadImage] failed to fetch ${url}: ${error instanceof Error ? error.message : String(error)}`,

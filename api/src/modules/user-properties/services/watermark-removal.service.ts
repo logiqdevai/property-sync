@@ -9,6 +9,7 @@ import { DewatermarkOrchestratorService } from '@/integrations/dewatermark/servi
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
 import { GcsService } from '@/integrations/storage/gcs/services/gcs.service';
 import { GcsFolders } from '@/shared/config/gcs-folders';
+import { isLikelyImageBuffer } from '@/shared/utils/images/image-signature.utils';
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import { CostLogsService } from '@/modules/cost-logs/cost-logs.service';
 import { CostOperationType, IntegrationType, Prisma } from 'generated/prisma';
@@ -177,7 +178,11 @@ export class WatermarkRemovalService {
       detail?: string,
     ): Promise<T> => {
       const started = Date.now();
-      const entry: WatermarkRemovalStepLog = { step, status: 'started', detail };
+      const entry: WatermarkRemovalStepLog = {
+        step,
+        status: 'started',
+        detail,
+      };
       steps.push(entry);
       this.logger.log(
         `[job=${data.job_log_id} image=${imageId}] ${step} started${detail ? ` (${detail})` : ''}`,
@@ -406,12 +411,11 @@ export class WatermarkRemovalService {
     imageId: number;
     sourceImage: string;
   }): Promise<void> {
-    const integrationProperty = await this.prisma.integrationProperty.findUnique(
-      {
+    const integrationProperty =
+      await this.prisma.integrationProperty.findUnique({
         where: { id: params.integrationPropertyId },
         select: { images: true },
-      },
-    );
+      });
 
     if (!integrationProperty) {
       throw new NotFoundException('Integration property not found');
@@ -424,7 +428,9 @@ export class WatermarkRemovalService {
       params.sourceImage,
     );
     if (!images) {
-      throw new NotFoundException('CRM image not found in integration property');
+      throw new NotFoundException(
+        'CRM image not found in integration property',
+      );
     }
 
     await this.prisma.integrationProperty.update({
@@ -466,7 +472,17 @@ export class WatermarkRemovalService {
         return null;
       }
       const arrayBuffer = await response.arrayBuffer();
-      return Buffer.from(arrayBuffer);
+      const buffer = Buffer.from(arrayBuffer);
+      // Some bot-protection layers return HTTP 200 with a tiny HTML
+      // captcha/redirect page instead of the real image -- response.ok
+      // alone can't catch that. See image-signature.utils.ts for why.
+      if (!isLikelyImageBuffer(buffer)) {
+        this.logger.warn(
+          `Source image download for ${url} doesn't look like a real image (likely a bot-protection page) -- skipping`,
+        );
+        return null;
+      }
+      return buffer;
     } catch (error) {
       this.logger.warn(
         `Source image download failed for ${url}: ${formatError(error)}`,
