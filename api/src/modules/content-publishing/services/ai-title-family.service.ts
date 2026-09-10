@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ContentLanguage, CostOperationType, IntegrationType } from 'generated/prisma';
+import {
+  ContentLanguage,
+  CostOperationType,
+  IntegrationType,
+} from 'generated/prisma';
 import { AiService } from '@/integrations/ai/services/ai.service';
 import { AiDefaults } from '@/integrations/ai/utils/ai.config';
 import { CostLogsService } from '@/modules/cost-logs/cost-logs.service';
@@ -71,7 +75,10 @@ export class AiTitleFamilyService {
       userPropertyId: input.userPropertyId,
     });
 
-    const titles = this.parseTitlesResponse(result.response, input.targetLanguages);
+    const titles = this.parseTitlesResponse(
+      result.response,
+      input.targetLanguages,
+    );
     return this.applySquareMetersGuard(
       titles,
       input.facts,
@@ -94,9 +101,7 @@ export class AiTitleFamilyService {
     apiKey?: string;
     chunkSize?: number;
     userId?: string | null;
-  }): Promise<
-    Map<string, Partial<Record<ContentLanguage, string>>>
-  > {
+  }): Promise<Map<string, Partial<Record<ContentLanguage, string>>>> {
     const out = new Map<string, Partial<Record<ContentLanguage, string>>>();
     if (!input.targetLanguages.length || !input.items.length) return out;
 
@@ -149,7 +154,9 @@ export class AiTitleFamilyService {
         totalCost: result.usage.totalCost,
         userPropertyId:
           chunk.length === 1 ? chunk[0].userPropertyId : undefined,
-        metadata: { user_property_ids: chunk.map((item) => item.userPropertyId) },
+        metadata: {
+          user_property_ids: chunk.map((item) => item.userPropertyId),
+        },
       });
 
       const parsed = this.parseMultiPropertyTitlesResponse(
@@ -164,11 +171,7 @@ export class AiTitleFamilyService {
         const facts = factsByPropertyId.get(propertyId) ?? {};
         out.set(
           propertyId,
-          this.applySquareMetersGuard(
-            titles,
-            facts,
-            input.writingLanguage,
-          ),
+          this.applySquareMetersGuard(titles, facts, input.writingLanguage),
         );
       }
     }
@@ -183,7 +186,8 @@ export class AiTitleFamilyService {
   ): Partial<Record<ContentLanguage, string>> {
     const missing = Object.entries(titles).filter(
       ([, title]) =>
-        Boolean(title) && !titleIncludesSquareMeters(title!, facts.square_meters),
+        Boolean(title) &&
+        !titleIncludesSquareMeters(title!, facts.square_meters),
     );
     if (missing.length) {
       this.logger.warn(
@@ -242,10 +246,23 @@ export class AiTitleFamilyService {
         : (parsed as Record<string, unknown>);
 
     const out = new Map<string, Partial<Record<ContentLanguage, string>>>();
-    const expected = new Set(expectedPropertyIds);
 
-    for (const [propertyId, value] of Object.entries(properties)) {
-      if (!expected.has(propertyId)) continue;
+    // Properties are matched by POSITION (the P<n> tag the prompt assigned,
+    // e.g. "P1" -> expectedPropertyIds[0]), never by asking the model to
+    // echo the real UUID back verbatim -- confirmed in production that a
+    // model can silently drop/alter a character of a 36-char UUID when
+    // copying it (one specific property id consistently came back missing
+    // its last character, e.g. "...434a" -> "...434"), which made every
+    // title for that property silently vanish since nothing matched by
+    // exact string equality. A short "P<n>" tag is far less likely to get
+    // mangled, and position-based lookup means it doesn't matter even if it
+    // does.
+    for (const [key, value] of Object.entries(properties)) {
+      const match = key.match(/^P?(\d+)$/i);
+      if (!match) continue;
+      const index = Number(match[1]) - 1;
+      const propertyId = expectedPropertyIds[index];
+      if (!propertyId) continue;
       if (!value || typeof value !== 'object') continue;
       out.set(
         propertyId,

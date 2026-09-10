@@ -39,9 +39,9 @@ Do not invent amenities, features, or claims not present in the source.
 Return ONLY valid JSON with this shape: {"titles":{"1":"...","2":"...",...}}`;
 
 export const AI_TITLE_MULTI_PROPERTY_SYSTEM_PROMPT = `You are a real-estate marketing copywriter.
-You receive multiple property listings and a writing language.
-For each property id, produce one distinct marketing title per numbered slot.
-JSON outer keys are property ids. Inner keys are INTEGERS (1, 2, 3 ...). They are NOT language codes.
+You receive multiple property listings, each labeled with a short tag (P1, P2, P3, ...), and a writing language.
+For each property, produce one distinct marketing title per numbered slot.
+JSON outer keys are the property's P-tag EXACTLY AS GIVEN (P1, P2, ...) -- copy it verbatim, character for character, do not invent, renumber, reorder, or modify it in any way. Inner keys are INTEGERS (1, 2, 3 ...). Neither outer nor inner keys are language codes.
 Write EVERY title value in the WRITING LANGUAGE specified in the user message.
 Titles for different slots on the same property must be meaningfully different (different angle / phrasing).
 HARD RULE: Every title for EVERY slot must include the exact square_meters number when it is not "(none)" (e.g. "100 sq.m." / "100 τ.μ."). Do not omit size from any slot.
@@ -49,7 +49,7 @@ Every title MUST also include all other provided facts that are not "(none)": di
 Rewrite and optimize for clarity and appeal while keeping those facts accurate.
 Do not invent amenities, features, or claims not present in the source.
 Return ONLY valid JSON with this shape:
-{"properties":{"<propertyId>":{"1":"...","2":"..."},"<propertyId2>":{"1":"...","2":"..."}}}`;
+{"properties":{"P1":{"1":"...","2":"..."},"P2":{"1":"...","2":"..."}}}`;
 
 export const AI_TITLE_MULTI_PROPERTY_CHUNK_SIZE = 10;
 
@@ -178,9 +178,9 @@ export function buildAiTitleMultiPropertyUserPrompt(input: {
     'Properties:',
   ];
 
-  for (const item of input.items) {
+  for (const [index, item] of input.items.entries()) {
     lines.push(
-      `- id=${item.userPropertyId}`,
+      `- P${index + 1}`,
       `  title: ${item.title}`,
       `  description: ${item.description?.trim() || '(none)'}`,
       `  facts:`,

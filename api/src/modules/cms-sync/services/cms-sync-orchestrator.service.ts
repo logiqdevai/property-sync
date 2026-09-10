@@ -421,7 +421,11 @@ export class CmsSyncOrchestratorService {
     batches_enqueued: number;
     failed: Array<{ user_property_id: string; error: string }>;
   }> {
-    const ids = [...new Set(Array.isArray(userPropertyIds) ? userPropertyIds : [userPropertyIds])];
+    const ids = [
+      ...new Set(
+        Array.isArray(userPropertyIds) ? userPropertyIds : [userPropertyIds],
+      ),
+    ];
     if (ids.length === 0) {
       throw new Error('No properties selected');
     }
@@ -474,6 +478,18 @@ export class CmsSyncOrchestratorService {
             'Content AI batch pending; CMS sync deferred until batch completes',
         });
       }
+      // produced.failed carries the REAL reason a property didn't become
+      // ready (AI title generation failure, missing publishing config,
+      // etc.) -- surface it instead of letting the property silently vanish
+      // from eligibleProperties and falling through to the generic "No
+      // properties could be pushed" message below, which was hiding exactly
+      // this kind of failure.
+      for (const item of produced.failed) {
+        failed.push({
+          user_property_id: item.user_property_id,
+          error: `Content production failed: ${item.error}`,
+        });
+      }
       eligibleProperties = userProperties.filter((property) =>
         readySet.has(property.id),
       );
@@ -511,9 +527,8 @@ export class CmsSyncOrchestratorService {
         continue;
       }
 
-      const operation: CmsSyncOperationType = userProperty.integration_property_id
-        ? 'UPDATE'
-        : 'CREATE';
+      const operation: CmsSyncOperationType =
+        userProperty.integration_property_id ? 'UPDATE' : 'CREATE';
 
       let entry = byTracker.get(sourceAgencyId);
       if (!entry) {
@@ -725,7 +740,9 @@ export class CmsSyncOrchestratorService {
     options?: ProcessTrackerBatchOptions,
   ): Promise<boolean> {
     const tracker = trackerGroup.tracker;
-    const logLabel = crawlRunId ? `Crawl ${crawlRunId}` : `Tracker ${tracker.id} (no crawl)`;
+    const logLabel = crawlRunId
+      ? `Crawl ${crawlRunId}`
+      : `Tracker ${tracker.id} (no crawl)`;
 
     const heldBack = trackerGroup.affected.filter(
       (a) =>
@@ -749,7 +766,9 @@ export class CmsSyncOrchestratorService {
     );
 
     if (filtered.length === 0) {
-      this.logger.log(`${logLabel}: tracker ${tracker.id} has no CMS operations`);
+      this.logger.log(
+        `${logLabel}: tracker ${tracker.id} has no CMS operations`,
+      );
       return false;
     }
 
