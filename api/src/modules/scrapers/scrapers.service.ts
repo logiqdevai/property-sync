@@ -414,7 +414,7 @@ export class ScrapersService {
     });
   }
 
-  async runNow(id: string) {
+  async runNow(id: string, skipSpikeCheck?: boolean) {
     const scraper = await this.ensureExists(id);
     const tracker = await this.prisma.userTrackedAgency.findFirst({
       where: {
@@ -428,6 +428,7 @@ export class ScrapersService {
       scraper.source_agency_id,
       scraper.id,
       tracker?.id,
+      skipSpikeCheck,
     );
   }
 

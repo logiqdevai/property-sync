@@ -12,6 +12,7 @@ import { ScraperStatusChip } from "./components/scraper-status-chip";
 import { ScraperHealthChip } from "./components/scraper-health-chip";
 import { ScraperVersionForm } from "./components/scraper-version-form";
 import { DuplicateScraperForm } from "./components/duplicate-scraper-form";
+import { RunScraperDialog } from "./components/run-scraper-dialog";
 import {
   useActivateScraperVersion,
   useCreateScraperVersion,
@@ -40,6 +41,7 @@ export default function ScraperDetailPage() {
   const newVersionModal = useOverlayState();
   const deleteConfirm = useOverlayState();
   const duplicateModal = useOverlayState();
+  const runNowModal = useOverlayState();
 
   const [compareA, setCompareA] = useState<string | null>(null);
   const [compareB, setCompareB] = useState<string | null>(null);
@@ -116,9 +118,7 @@ export default function ScraperDetailPage() {
           ariaLabel={`Actions for scraper ${scraper.name}`}
           onAction={(actionId) => {
             if (actionId === "run-now") {
-              runNow.mutate(scraper.id, {
-                onSuccess: (run) => navigate(Routes.admin.crawlRuns.detail(run.id)),
-              });
+              runNowModal.open();
             } else if (actionId === "duplicate") {
               duplicateModal.open();
             } else if (actionId === "delete") {
@@ -634,6 +634,18 @@ export default function ScraperDetailPage() {
           await deleteScraper.mutateAsync(scraper.id);
           navigate(Routes.admin.scrapers.list);
         }}
+      />
+
+      <RunScraperDialog
+        state={runNowModal}
+        scraperName={scraper.name}
+        isPending={runNow.isPending}
+        onConfirm={({ skip_spike_check }) =>
+          runNow.mutateAsync(
+            { id: scraper.id, skip_spike_check },
+            { onSuccess: (run) => navigate(Routes.admin.crawlRuns.detail(run.id)) },
+          )
+        }
       />
     </div>
   );

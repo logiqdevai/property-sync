@@ -26,6 +26,7 @@ import { CreateScraperDto } from './dto/create-scraper.dto';
 import { CreateScraperVersionDto } from './dto/create-scraper-version.dto';
 import { DuplicateScraperDto } from './dto/duplicate-scraper.dto';
 import { UpdateScraperDto } from './dto/update-scraper.dto';
+import { RunScraperDto } from './dto/run-scraper.dto';
 import {
   ScraperQuerySchema,
   ScraperQueryType,
@@ -160,8 +161,8 @@ export class ScrapersController {
   @ApiOperation({ summary: 'Manually trigger a crawl run' })
   @ApiResponse({ status: 201, type: CrawlRun })
   @ApiResponse({ status: 404, description: 'Scraper not found' })
-  runNow(@Param('id') id: string) {
-    return this.scrapersService.runNow(id);
+  runNow(@Param('id') id: string, @Body() dto: RunScraperDto) {
+    return this.scrapersService.runNow(id, dto.skip_spike_check);
   }
 
   @Delete(':id')

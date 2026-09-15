@@ -1745,7 +1745,7 @@ export class PropertyNormalizationService {
       }),
       this.prisma.crawlRun.findUnique({
         where: { id: crawlRunId },
-        select: { total_found: true },
+        select: { total_found: true, metadata: true },
       }),
       this.prisma.crawlRun.aggregate({
         where: {
@@ -1776,10 +1776,20 @@ export class PropertyNormalizationService {
       return { removedCount: 0, totalTracked, affected: [] };
     }
 
+    // Set on the CrawlRun via RunScraperDto.skip_spike_check when an admin manually
+    // confirms a large listings drop is legitimate (e.g. a real agency cleanup) --
+    // bypasses both the incomplete-crawl coverage guard and the spike notification
+    // below for this run only. See ScrapersController#runNow / CrawlRunsService#enqueue.
+    const skipSpikeCheck =
+      typeof crawlRun?.metadata === 'object' &&
+      crawlRun.metadata !== null &&
+      (crawlRun.metadata as Record<string, unknown>).skip_spike_check === true;
+
     const foundThisCrawl = crawlRun?.total_found ?? 0;
     const baseline = recentCoverage._max.total_found ?? totalTracked;
     const coverageRatio = baseline > 0 ? foundThisCrawl / baseline : 1;
     const incompleteCoverage =
+      !skipSpikeCheck &&
       baseline >= CRAWL_REMOVAL_COVERAGE_MIN_BASELINE &&
       coverageRatio < CRAWL_REMOVAL_COVERAGE_RATIO_THRESHOLD;
 
@@ -1883,7 +1893,11 @@ export class PropertyNormalizationService {
       removedCount > PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD ||
       removalRatio > PROPERTY_REMOVAL_SPIKE_RATIO_THRESHOLD;
 
-    if (isSpike) {
+    if (isSpike && skipSpikeCheck) {
+      this.logger.warn(
+        `Crawl ${crawlRunId}: removal spike (${removedCount}/${totalTracked}) — notification suppressed (skip_spike_check)`,
+      );
+    } else if (isSpike) {
       const agency = await this.prisma.sourceAgency.findUnique({
         where: { id: sourceAgencyId },
         select: { name: true },

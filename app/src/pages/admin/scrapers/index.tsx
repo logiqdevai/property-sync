@@ -20,6 +20,7 @@ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TableRowActionsMenu, type TableRowAction } from "@/components/ui/table-row-actions-menu";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { ScraperForm } from "./components/scraper-form";
+import { RunScraperDialog } from "./components/run-scraper-dialog";
 import { ScraperStatusChip } from "./components/scraper-status-chip";
 import { ScraperHealthChip } from "./components/scraper-health-chip";
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
@@ -52,6 +53,7 @@ export default function ScrapersListPage() {
   const createModal = useOverlayState();
   const deleteConfirm = useOverlayState();
   const bulkDeleteConfirm = useOverlayState();
+  const runNowModal = useOverlayState();
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<ScraperStatus | "all">("all");
@@ -60,6 +62,7 @@ export default function ScrapersListPage() {
   const [page, setPage] = useState(1);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deleteScraperId, setDeleteScraperId] = useState<string | null>(null);
+  const [runNowScraper, setRunNowScraper] = useState<{ id: string; name: string } | null>(null);
   const debouncedSearch = useDebouncedValue(search, 300);
 
   const query = useMemo<ScraperListQuery>(() => {
@@ -339,10 +342,8 @@ export default function ScrapersListPage() {
                           actions={SCRAPER_ROW_ACTIONS}
                           onAction={(actionId) => {
                             if (actionId === "run-now") {
-                              runScraperNow.mutate(scraper.id, {
-                                onSuccess: (run) =>
-                                  navigate(Routes.admin.crawlRuns.detail(run.id)),
-                              });
+                              setRunNowScraper({ id: scraper.id, name: scraper.name });
+                              runNowModal.open();
                               return;
                             }
                             if (actionId !== "delete") return;
@@ -458,6 +459,17 @@ export default function ScrapersListPage() {
         onConfirm={handleBulkDelete}
         isPending={deleteScrapers.isPending}
       />
+
+      {runNowScraper && (
+        <RunScraperDialog
+          state={runNowModal}
+          scraperName={runNowScraper.name}
+          isPending={runScraperNow.isPending}
+          onConfirm={({ skip_spike_check }) =>
+            runScraperNow.mutateAsync({ id: runNowScraper.id, skip_spike_check })
+          }
+        />
+      )}
     </div>
   );
 }

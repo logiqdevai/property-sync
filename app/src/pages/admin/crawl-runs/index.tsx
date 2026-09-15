@@ -417,10 +417,7 @@ export default function CrawlRunsListPage() {
                           onAction={(actionId) => {
                             if (actionId === "run-now") {
                               if (!run.scraper_id) return;
-                              runScraperNow.mutate(run.scraper_id, {
-                                onSuccess: (newRun) =>
-                                  navigate(Routes.admin.crawlRuns.detail(newRun.id)),
-                              });
+                              runScraperNow.mutate({ id: run.scraper_id });
                               return;
                             }
                             if (actionId !== "delete") return;

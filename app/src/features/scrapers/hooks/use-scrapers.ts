@@ -115,7 +115,8 @@ export const useRunScraperNow = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => runScraperNow(id),
+    mutationFn: ({ id, skip_spike_check }: { id: string; skip_spike_check?: boolean }) =>
+      runScraperNow(id, { skip_spike_check }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scrapers"] });
       queryClient.invalidateQueries({ queryKey: ["crawlRuns"] });

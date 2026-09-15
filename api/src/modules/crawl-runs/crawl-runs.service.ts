@@ -61,6 +61,7 @@ export class CrawlRunsService {
     sourceAgencyId: string,
     scraperId?: string,
     userTrackedAgencyId?: string,
+    skipSpikeCheck?: boolean,
   ) {
     const activeRun = await this.prisma.crawlRun.findFirst({
       where: {
@@ -98,6 +99,7 @@ export class CrawlRunsService {
         scraper_id: scraperId ?? null,
         user_tracked_agency_id: userTrackedAgencyId ?? null,
         status: CrawlRunStatus.QUEUED,
+        ...(skipSpikeCheck && { metadata: { skip_spike_check: true } }),
       },
     });
 

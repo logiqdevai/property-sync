@@ -93,9 +93,12 @@ export const updateScraper = async (
   }
 };
 
-export const runScraperNow = async (id: string): Promise<CrawlRun> => {
+export const runScraperNow = async (
+  id: string,
+  options?: { skip_spike_check?: boolean },
+): Promise<CrawlRun> => {
   try {
-    const response = await axiosInstance.post(ApiRoutes.admin.scrapers.runNow(id));
+    const response = await axiosInstance.post(ApiRoutes.admin.scrapers.runNow(id), options ?? {});
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to run scraper. Please try again.");
