@@ -12,13 +12,13 @@ import {
   type Selection,
 } from "@heroui/react";
 import { DatePickerField } from "@/components/ui/date-picker-field";
-import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trash2, Play } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { TableRowActionsMenu, type TableRowAction } from "@/components/ui/table-row-actions-menu";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
-import { useScrapers } from "@/features/scrapers/hooks/use-scrapers";
+import { useRunScraperNow, useScrapers } from "@/features/scrapers/hooks/use-scrapers";
 import { useAdminUsers } from "@/features/users/hooks/use-admin-users";
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import { CrawlRunsTimeline } from "./components/crawl-runs-timeline";
@@ -35,9 +35,12 @@ import { CrawlRunStatusFilterOptions } from "@/config/constants/dropdowns/agenci
 import { formatDateTime, getTodayIso, shiftIsoDate, getLocalDayRangeIso } from "@/lib/date";
 import { formatDuration } from "@/lib/duration";
 
-const CRAWL_RUN_DELETE_ACTIONS: TableRowAction[] = [
-  { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
-];
+function getCrawlRunRowActions(canRunScraper: boolean, isRunPending: boolean): TableRowAction[] {
+  return [
+    { id: "run-now", label: "Run scraper", icon: Play, isDisabled: !canRunScraper || isRunPending },
+    { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
+  ];
+}
 
 const CRAWL_RUN_TAB_KEYS = {
   table: "table",
@@ -95,6 +98,7 @@ export default function CrawlRunsListPage() {
   const { data: usersData } = useAdminUsers({ limit: 100 });
   const deleteCrawlRun = useDeleteCrawlRun();
   const deleteCrawlRuns = useDeleteCrawlRuns();
+  const runScraperNow = useRunScraperNow();
 
   const runs = data?.data ?? [];
   const pagination = data?.pagination;
@@ -409,8 +413,16 @@ export default function CrawlRunsListPage() {
                       <Table.Cell>{formatDuration(run.duration_ms)}</Table.Cell>
                       <Table.Cell>
                         <TableRowActionsMenu
-                          actions={CRAWL_RUN_DELETE_ACTIONS}
+                          actions={getCrawlRunRowActions(!!run.scraper_id, runScraperNow.isPending)}
                           onAction={(actionId) => {
+                            if (actionId === "run-now") {
+                              if (!run.scraper_id) return;
+                              runScraperNow.mutate(run.scraper_id, {
+                                onSuccess: (newRun) =>
+                                  navigate(Routes.admin.crawlRuns.detail(newRun.id)),
+                              });
+                              return;
+                            }
                             if (actionId !== "delete") return;
                             setDeleteCrawlRunId(run.id);
                             deleteConfirm.open();

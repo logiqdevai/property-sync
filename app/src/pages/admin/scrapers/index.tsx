@@ -12,7 +12,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Search, Plus, Trash2, ExternalLink } from "lucide-react";
+import { Search, Plus, Trash2, ExternalLink, Play } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -28,6 +28,7 @@ import {
   useDeleteScraper,
   useDeleteScrapers,
   useDuplicateScraper,
+  useRunScraperNow,
   useScrapers,
 } from "@/features/scrapers/hooks/use-scrapers";
 import { parseOptionalNormalizeLimit } from "@/features/scrapers/validation-schemas/scrapers.schema";
@@ -41,7 +42,8 @@ import { ScraperHealthFilterOptions } from "@/config/constants/dropdowns/scraper
 import { formatDate, getTodayIso, getLocalDayRangeIso } from "@/lib/date";
 import { useDebouncedValue } from "./hooks/use-debounced-value";
 
-const SCRAPER_DELETE_ACTIONS: TableRowAction[] = [
+const SCRAPER_ROW_ACTIONS: TableRowAction[] = [
+  { id: "run-now", label: "Run now", icon: Play },
   { id: "delete", label: "Delete", variant: "danger", icon: Trash2 },
 ];
 
@@ -80,6 +82,7 @@ export default function ScrapersListPage() {
   const duplicateScraper = useDuplicateScraper();
   const deleteScraper = useDeleteScraper();
   const deleteScrapers = useDeleteScrapers();
+  const runScraperNow = useRunScraperNow();
 
   const scrapers = data?.data ?? [];
   const pagination = data?.pagination;
@@ -333,8 +336,15 @@ export default function ScrapersListPage() {
                       <Table.Cell>{formatDate(scraper.last_failure_at)}</Table.Cell>
                       <Table.Cell>
                         <TableRowActionsMenu
-                          actions={SCRAPER_DELETE_ACTIONS}
+                          actions={SCRAPER_ROW_ACTIONS}
                           onAction={(actionId) => {
+                            if (actionId === "run-now") {
+                              runScraperNow.mutate(scraper.id, {
+                                onSuccess: (run) =>
+                                  navigate(Routes.admin.crawlRuns.detail(run.id)),
+                              });
+                              return;
+                            }
                             if (actionId !== "delete") return;
                             setDeleteScraperId(scraper.id);
                             deleteConfirm.open();
