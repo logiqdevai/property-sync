@@ -51,6 +51,7 @@ export interface CrawlerConfigFieldDef {
     | "crawler_worker_concurrency"
     | "crawler_job_timeout_ms"
     | "crawler_chromium_max_contexts_before_restart"
+    | "crawler_max_concurrent_browser_pages"
     | "normalization_ai_raw_description_max_chars"
     | "dewatermark_cost_per_image"
     | "google_translate_cost_per_million_chars"
@@ -117,7 +118,7 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
     key: "crawler_worker_concurrency",
     group: CrawlerConfigGroups.WORKER,
     label: "Crawl worker concurrency",
-    defaultValue: 5,
+    defaultValue: 3,
     min: 1,
     hint: "Number of crawl jobs processed concurrently by the worker.",
   },
@@ -136,6 +137,14 @@ export const CRAWLER_CONFIG_FIELDS: CrawlerConfigFieldDef[] = [
     defaultValue: 250,
     min: 1,
     hint: "Browser contexts created before recycling the shared Chromium instance.",
+  },
+  {
+    key: "crawler_max_concurrent_browser_pages",
+    group: CrawlerConfigGroups.WORKER,
+    label: "Max concurrent browser pages",
+    defaultValue: 8,
+    min: 1,
+    hint: "Hard cap on browser contexts/pages open at once across ALL running crawl and detail-enrichment jobs platform-wide (local Chromium and managed browser alike) — the main lever to keep memory bounded when several agencies' crawls overlap.",
   },
   {
     key: "normalization_ai_raw_description_max_chars",

@@ -19,6 +19,7 @@ import {
   applyStealthInitScript,
 } from '../utils/stealth.utils';
 import { trackDocumentResponses } from '../block-handling/block-handling.utils';
+import { AsyncSemaphore } from '../utils/async-semaphore.util';
 
 export interface StealthPageSession {
   context: BrowserContext;
@@ -61,6 +62,18 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(StealthBrowserService.name);
   private browser: Browser | null = null;
   private contextsSinceLaunch = 0;
+
+  // Bounds how many browser contexts/pages -- local Chromium AND managed
+  // (Bright Data) alike -- can be open at once across every concurrently
+  // running crawl/detail-enrichment job, platform-wide. Per-job concurrency
+  // (crawl_worker_concurrency, detail_concurrency) only bounds each job in
+  // isolation; nothing previously capped their SUM, so several agencies'
+  // crawls landing in the same scheduler jitter window could stack enough
+  // simultaneous pages to exhaust container memory -- confirmed in production
+  // via a JS heap OOM during the nightly crawl batch. See
+  // PlatformConfig.crawler_max_concurrent_browser_pages.
+  private readonly pageSemaphore = new AsyncSemaphore();
+  private readonly pageReleasers = new WeakMap<BrowserContext, () => void>();
 
   constructor(
     private readonly platformConfigService: PlatformConfigService,
@@ -130,29 +143,50 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
     //     exact risk before Bright Data was ever introduced.
     // extraHTTPHeaders is separately forbidden outright by their CDP
     // ("Overriding Accept-Language, Accept headers forbidden").
-    const context = options?.useManagedBrowser
-      ? await browser.newContext(contextOptions)
-      : await browser.newContext({
-          ...STEALTH_CONTEXT_OPTIONS,
-          ...contextOptions,
+    const { max_concurrent_browser_pages } =
+      await this.platformConfigService.getCrawlerConfig();
+    const release = await this.pageSemaphore.acquire(
+      max_concurrent_browser_pages,
+    );
+
+    let context: BrowserContext | undefined;
+    try {
+      context = options?.useManagedBrowser
+        ? await browser.newContext(contextOptions)
+        : await browser.newContext({
+            ...STEALTH_CONTEXT_OPTIONS,
+            ...contextOptions,
+          });
+      // Tracked immediately so a failure below is still cleaned up via
+      // closeContext by any caller that catches and closes on error -- only
+      // an outright newContext() failure (nothing to attach the releaser to)
+      // falls through to the catch's own release() call.
+      this.pageReleasers.set(context, release);
+
+      if (!options?.useManagedBrowser) {
+        await applyStealthInitScript(context);
+      }
+      const page = await context.newPage();
+      trackDocumentResponses(page);
+
+      if (options?.blockImages) {
+        await page.route('**/*', (route) => {
+          const type = route.request().resourceType();
+          if (type === 'image' || type === 'media' || type === 'font') {
+            return route.abort();
+          }
+          return route.continue();
         });
-    if (!options?.useManagedBrowser) {
-      await applyStealthInitScript(context);
-    }
-    const page = await context.newPage();
-    trackDocumentResponses(page);
+      }
 
-    if (options?.blockImages) {
-      await page.route('**/*', (route) => {
-        const type = route.request().resourceType();
-        if (type === 'image' || type === 'media' || type === 'font') {
-          return route.abort();
-        }
-        return route.continue();
-      });
+      return { context, page };
+    } catch (error) {
+      if (context) {
+        await context.close().catch(() => undefined);
+      }
+      release();
+      throw error;
     }
-
-    return { context, page };
   }
 
   async closeContext(
@@ -165,6 +199,7 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
       context.close().catch(() => undefined),
       new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
     ]);
+    this.pageReleasers.get(context)?.();
     // A managed-browser context owns its own dedicated remote connection (see
     // openManagedBrowser) rather than the shared local one -- close that
     // connection too by default, or the Bright Data session stays open until

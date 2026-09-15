@@ -689,6 +689,7 @@ exports.Prisma.PlatformConfigScalarFieldEnum = {
   crawler_worker_concurrency: 'crawler_worker_concurrency',
   crawler_job_timeout_ms: 'crawler_job_timeout_ms',
   crawler_chromium_max_contexts_before_restart: 'crawler_chromium_max_contexts_before_restart',
+  crawler_max_concurrent_browser_pages: 'crawler_max_concurrent_browser_pages',
   normalization_ai_raw_description_max_chars: 'normalization_ai_raw_description_max_chars',
   dewatermark_cost_per_image: 'dewatermark_cost_per_image',
   google_translate_cost_per_million_chars: 'google_translate_cost_per_million_chars',

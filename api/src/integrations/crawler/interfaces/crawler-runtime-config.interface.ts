@@ -8,4 +8,5 @@ export interface ResolvedCrawlerConfig {
   crawl_worker_concurrency: number;
   crawl_job_timeout_ms: number;
   chromium_max_contexts_before_restart: number;
+  max_concurrent_browser_pages: number;
 }

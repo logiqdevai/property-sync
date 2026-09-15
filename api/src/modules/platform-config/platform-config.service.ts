@@ -6,6 +6,7 @@ import {
   DEFAULT_CRAWL_WORKER_CONCURRENCY,
   DEFAULT_DETAIL_CONCURRENCY,
   DEFAULT_DETAIL_DELAY_MS,
+  DEFAULT_MAX_CONCURRENT_BROWSER_PAGES,
   DEFAULT_MAX_PAGES,
   DEFAULT_PAGE_TIMEOUT_MS,
   DEFAULT_SCROLL_PAUSE_MS,
@@ -59,6 +60,9 @@ export class PlatformConfigService {
       chromium_max_contexts_before_restart:
         row?.crawler_chromium_max_contexts_before_restart ??
         DEFAULT_CHROMIUM_MAX_CONTEXTS_BEFORE_RESTART,
+      max_concurrent_browser_pages:
+        row?.crawler_max_concurrent_browser_pages ??
+        DEFAULT_MAX_CONCURRENT_BROWSER_PAGES,
     };
   }
 

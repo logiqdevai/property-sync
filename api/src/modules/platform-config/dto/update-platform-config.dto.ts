@@ -110,6 +110,18 @@ export class UpdatePlatformConfigDto {
   @ApiPropertyOptional({
     nullable: true,
     description:
+      'Max browser contexts/pages open at once across ALL concurrently running crawl/detail-enrichment jobs (local Chromium and managed browser alike); null resets to the in-code default',
+    example: 8,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsInt()
+  @Min(1)
+  crawler_max_concurrent_browser_pages?: number | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
       'Max characters of raw_description sent to AI during normalization (full text still stored on Property)',
     example: 2000,
   })

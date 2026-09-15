@@ -11,7 +11,13 @@ export const INFINITE_SCROLL_POLL_INTERVAL_MS = 400;
 export const INFINITE_SCROLL_STEP_VIEWPORT_RATIO = 0.75;
 export const DEFAULT_DETAIL_CONCURRENCY = 2;
 export const DEFAULT_DETAIL_DELAY_MS = 1_500;
-export const DEFAULT_CRAWL_WORKER_CONCURRENCY = 5;
+// Lowered from 5 after a production JS heap OOM (2026-09-15): that many
+// concurrent crawl jobs, each opening its own detail-enrichment pages on top
+// of the listing-page walk, exhausted an 8GB container when several
+// agencies' scheduled crawls landed in the same jitter window. See also
+// DEFAULT_MAX_CONCURRENT_BROWSER_PAGES, which now caps the platform-wide sum
+// regardless of this per-worker value.
+export const DEFAULT_CRAWL_WORKER_CONCURRENCY = 3;
 export const DEFAULT_CRAWL_JOB_TIMEOUT_MS = 30 * 60_000;
 // A crashed worker (OOM kill, restart) leaves its job's BullMQ lock unrenewed, so
 // BullMQ's stalled-job check hands it to the next available worker for a fresh
@@ -22,6 +28,15 @@ export const DEFAULT_CRAWL_JOB_TIMEOUT_MS = 30 * 60_000;
 export const DEFAULT_CRAWL_JOB_ATTEMPTS = 3;
 export const DEFAULT_CRAWL_JOB_BACKOFF_MS = 60_000;
 export const DEFAULT_CHROMIUM_MAX_CONTEXTS_BEFORE_RESTART = 250;
+// Confirmed via production incident: DEFAULT_CRAWL_WORKER_CONCURRENCY (5)
+// crawl jobs, each running its own detail-enrichment lanes on top of the
+// listing-page walk, landed in the same scheduler jitter window and stacked
+// enough simultaneous browser contexts/pages to blow the container's 8GB
+// limit with a JS heap OOM. Per-job concurrency knobs only bound one job at
+// a time; this caps the SUM across every job platform-wide (see
+// StealthBrowserService.pageSemaphore). Sized conservatively below the prior
+// unbounded worst case (5 workers x up to 3 detail lanes each = 15).
+export const DEFAULT_MAX_CONCURRENT_BROWSER_PAGES = 8;
 export const CONTEXT_CLOSE_TIMEOUT_MS = 10_000;
 export const DETAIL_ENRICHMENT_SOFT_STOP_BUFFER_MS = 15_000;
 export const DETAIL_HTML_UPLOAD_TIMEOUT_MS = 30_000;

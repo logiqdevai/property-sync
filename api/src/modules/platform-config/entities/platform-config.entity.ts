@@ -63,6 +63,12 @@ export class PlatformConfig {
     nullable: true,
     description: 'Null means the default value is used',
   })
+  crawler_max_concurrent_browser_pages: number | null;
+
+  @ApiProperty({
+    nullable: true,
+    description: 'Null means the default value is used',
+  })
   normalization_ai_raw_description_max_chars: number | null;
 
   @ApiProperty({

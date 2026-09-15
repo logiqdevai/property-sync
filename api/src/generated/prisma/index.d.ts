@@ -46924,6 +46924,7 @@ export namespace Prisma {
     crawler_worker_concurrency: number | null
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
+    crawler_max_concurrent_browser_pages: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
@@ -46940,6 +46941,7 @@ export namespace Prisma {
     crawler_worker_concurrency: number | null
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
+    crawler_max_concurrent_browser_pages: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
@@ -46957,6 +46959,7 @@ export namespace Prisma {
     crawler_worker_concurrency: number | null
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
+    crawler_max_concurrent_browser_pages: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
@@ -46977,6 +46980,7 @@ export namespace Prisma {
     crawler_worker_concurrency: number | null
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
+    crawler_max_concurrent_browser_pages: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
@@ -46997,6 +47001,7 @@ export namespace Prisma {
     crawler_worker_concurrency: number
     crawler_job_timeout_ms: number
     crawler_chromium_max_contexts_before_restart: number
+    crawler_max_concurrent_browser_pages: number
     normalization_ai_raw_description_max_chars: number
     dewatermark_cost_per_image: number
     google_translate_cost_per_million_chars: number
@@ -47018,6 +47023,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: true
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
+    crawler_max_concurrent_browser_pages?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
     google_translate_cost_per_million_chars?: true
@@ -47034,6 +47040,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: true
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
+    crawler_max_concurrent_browser_pages?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
     google_translate_cost_per_million_chars?: true
@@ -47051,6 +47058,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: true
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
+    crawler_max_concurrent_browser_pages?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
     google_translate_cost_per_million_chars?: true
@@ -47071,6 +47079,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: true
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
+    crawler_max_concurrent_browser_pages?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
     google_translate_cost_per_million_chars?: true
@@ -47091,6 +47100,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: true
     crawler_job_timeout_ms?: true
     crawler_chromium_max_contexts_before_restart?: true
+    crawler_max_concurrent_browser_pages?: true
     normalization_ai_raw_description_max_chars?: true
     dewatermark_cost_per_image?: true
     google_translate_cost_per_million_chars?: true
@@ -47198,6 +47208,7 @@ export namespace Prisma {
     crawler_worker_concurrency: number | null
     crawler_job_timeout_ms: number | null
     crawler_chromium_max_contexts_before_restart: number | null
+    crawler_max_concurrent_browser_pages: number | null
     normalization_ai_raw_description_max_chars: number | null
     dewatermark_cost_per_image: Decimal | null
     google_translate_cost_per_million_chars: Decimal | null
@@ -47237,6 +47248,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: boolean
     crawler_job_timeout_ms?: boolean
     crawler_chromium_max_contexts_before_restart?: boolean
+    crawler_max_concurrent_browser_pages?: boolean
     normalization_ai_raw_description_max_chars?: boolean
     dewatermark_cost_per_image?: boolean
     google_translate_cost_per_million_chars?: boolean
@@ -47257,6 +47269,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: boolean
     crawler_job_timeout_ms?: boolean
     crawler_chromium_max_contexts_before_restart?: boolean
+    crawler_max_concurrent_browser_pages?: boolean
     normalization_ai_raw_description_max_chars?: boolean
     dewatermark_cost_per_image?: boolean
     google_translate_cost_per_million_chars?: boolean
@@ -47277,6 +47290,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: boolean
     crawler_job_timeout_ms?: boolean
     crawler_chromium_max_contexts_before_restart?: boolean
+    crawler_max_concurrent_browser_pages?: boolean
     normalization_ai_raw_description_max_chars?: boolean
     dewatermark_cost_per_image?: boolean
     google_translate_cost_per_million_chars?: boolean
@@ -47297,6 +47311,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: boolean
     crawler_job_timeout_ms?: boolean
     crawler_chromium_max_contexts_before_restart?: boolean
+    crawler_max_concurrent_browser_pages?: boolean
     normalization_ai_raw_description_max_chars?: boolean
     dewatermark_cost_per_image?: boolean
     google_translate_cost_per_million_chars?: boolean
@@ -47306,7 +47321,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "normalization_ai_raw_description_max_chars" | "dewatermark_cost_per_image" | "google_translate_cost_per_million_chars" | "azure_translate_cost_per_million_chars" | "translation_provider" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
+  export type PlatformConfigOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "crawler_max_pages" | "crawler_page_timeout_ms" | "crawler_selector_timeout_ms" | "crawler_scroll_pause_ms" | "crawler_detail_concurrency" | "crawler_detail_delay_ms" | "crawler_worker_concurrency" | "crawler_job_timeout_ms" | "crawler_chromium_max_contexts_before_restart" | "crawler_max_concurrent_browser_pages" | "normalization_ai_raw_description_max_chars" | "dewatermark_cost_per_image" | "google_translate_cost_per_million_chars" | "azure_translate_cost_per_million_chars" | "translation_provider" | "created_at" | "updated_at", ExtArgs["result"]["platformConfig"]>
 
   export type $PlatformConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "PlatformConfig"
@@ -47322,6 +47337,7 @@ export namespace Prisma {
       crawler_worker_concurrency: number | null
       crawler_job_timeout_ms: number | null
       crawler_chromium_max_contexts_before_restart: number | null
+      crawler_max_concurrent_browser_pages: number | null
       normalization_ai_raw_description_max_chars: number | null
       dewatermark_cost_per_image: Prisma.Decimal | null
       google_translate_cost_per_million_chars: Prisma.Decimal | null
@@ -47762,6 +47778,7 @@ export namespace Prisma {
     readonly crawler_worker_concurrency: FieldRef<"PlatformConfig", 'Int'>
     readonly crawler_job_timeout_ms: FieldRef<"PlatformConfig", 'Int'>
     readonly crawler_chromium_max_contexts_before_restart: FieldRef<"PlatformConfig", 'Int'>
+    readonly crawler_max_concurrent_browser_pages: FieldRef<"PlatformConfig", 'Int'>
     readonly normalization_ai_raw_description_max_chars: FieldRef<"PlatformConfig", 'Int'>
     readonly dewatermark_cost_per_image: FieldRef<"PlatformConfig", 'Decimal'>
     readonly google_translate_cost_per_million_chars: FieldRef<"PlatformConfig", 'Decimal'>
@@ -50001,6 +50018,7 @@ export namespace Prisma {
     crawler_worker_concurrency: 'crawler_worker_concurrency',
     crawler_job_timeout_ms: 'crawler_job_timeout_ms',
     crawler_chromium_max_contexts_before_restart: 'crawler_chromium_max_contexts_before_restart',
+    crawler_max_concurrent_browser_pages: 'crawler_max_concurrent_browser_pages',
     normalization_ai_raw_description_max_chars: 'normalization_ai_raw_description_max_chars',
     dewatermark_cost_per_image: 'dewatermark_cost_per_image',
     google_translate_cost_per_million_chars: 'google_translate_cost_per_million_chars',
@@ -54191,6 +54209,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: IntNullableFilter<"PlatformConfig"> | number | null
     crawler_job_timeout_ms?: IntNullableFilter<"PlatformConfig"> | number | null
     crawler_chromium_max_contexts_before_restart?: IntNullableFilter<"PlatformConfig"> | number | null
+    crawler_max_concurrent_browser_pages?: IntNullableFilter<"PlatformConfig"> | number | null
     normalization_ai_raw_description_max_chars?: IntNullableFilter<"PlatformConfig"> | number | null
     dewatermark_cost_per_image?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
@@ -54211,6 +54230,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrderInput | SortOrder
     crawler_job_timeout_ms?: SortOrderInput | SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrderInput | SortOrder
+    crawler_max_concurrent_browser_pages?: SortOrderInput | SortOrder
     normalization_ai_raw_description_max_chars?: SortOrderInput | SortOrder
     dewatermark_cost_per_image?: SortOrderInput | SortOrder
     google_translate_cost_per_million_chars?: SortOrderInput | SortOrder
@@ -54234,6 +54254,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: IntNullableFilter<"PlatformConfig"> | number | null
     crawler_job_timeout_ms?: IntNullableFilter<"PlatformConfig"> | number | null
     crawler_chromium_max_contexts_before_restart?: IntNullableFilter<"PlatformConfig"> | number | null
+    crawler_max_concurrent_browser_pages?: IntNullableFilter<"PlatformConfig"> | number | null
     normalization_ai_raw_description_max_chars?: IntNullableFilter<"PlatformConfig"> | number | null
     dewatermark_cost_per_image?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: DecimalNullableFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
@@ -54254,6 +54275,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrderInput | SortOrder
     crawler_job_timeout_ms?: SortOrderInput | SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrderInput | SortOrder
+    crawler_max_concurrent_browser_pages?: SortOrderInput | SortOrder
     normalization_ai_raw_description_max_chars?: SortOrderInput | SortOrder
     dewatermark_cost_per_image?: SortOrderInput | SortOrder
     google_translate_cost_per_million_chars?: SortOrderInput | SortOrder
@@ -54282,6 +54304,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     crawler_job_timeout_ms?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     crawler_chromium_max_contexts_before_restart?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
+    crawler_max_concurrent_browser_pages?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     normalization_ai_raw_description_max_chars?: IntNullableWithAggregatesFilter<"PlatformConfig"> | number | null
     dewatermark_cost_per_image?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: DecimalNullableWithAggregatesFilter<"PlatformConfig"> | Decimal | DecimalJsLike | number | string | null
@@ -58451,6 +58474,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: number | null
     crawler_job_timeout_ms?: number | null
     crawler_chromium_max_contexts_before_restart?: number | null
+    crawler_max_concurrent_browser_pages?: number | null
     normalization_ai_raw_description_max_chars?: number | null
     dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
@@ -58471,6 +58495,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: number | null
     crawler_job_timeout_ms?: number | null
     crawler_chromium_max_contexts_before_restart?: number | null
+    crawler_max_concurrent_browser_pages?: number | null
     normalization_ai_raw_description_max_chars?: number | null
     dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
@@ -58491,6 +58516,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
+    crawler_max_concurrent_browser_pages?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -58511,6 +58537,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
+    crawler_max_concurrent_browser_pages?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -58531,6 +58558,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: number | null
     crawler_job_timeout_ms?: number | null
     crawler_chromium_max_contexts_before_restart?: number | null
+    crawler_max_concurrent_browser_pages?: number | null
     normalization_ai_raw_description_max_chars?: number | null
     dewatermark_cost_per_image?: Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: Decimal | DecimalJsLike | number | string | null
@@ -58551,6 +58579,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
+    crawler_max_concurrent_browser_pages?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -58571,6 +58600,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
     crawler_chromium_max_contexts_before_restart?: NullableIntFieldUpdateOperationsInput | number | null
+    crawler_max_concurrent_browser_pages?: NullableIntFieldUpdateOperationsInput | number | null
     normalization_ai_raw_description_max_chars?: NullableIntFieldUpdateOperationsInput | number | null
     dewatermark_cost_per_image?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     google_translate_cost_per_million_chars?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -61900,6 +61930,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrder
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
+    crawler_max_concurrent_browser_pages?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
@@ -61919,6 +61950,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrder
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
+    crawler_max_concurrent_browser_pages?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
@@ -61936,6 +61968,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrder
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
+    crawler_max_concurrent_browser_pages?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
@@ -61956,6 +61989,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrder
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
+    crawler_max_concurrent_browser_pages?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder
@@ -61975,6 +62009,7 @@ export namespace Prisma {
     crawler_worker_concurrency?: SortOrder
     crawler_job_timeout_ms?: SortOrder
     crawler_chromium_max_contexts_before_restart?: SortOrder
+    crawler_max_concurrent_browser_pages?: SortOrder
     normalization_ai_raw_description_max_chars?: SortOrder
     dewatermark_cost_per_image?: SortOrder
     google_translate_cost_per_million_chars?: SortOrder

@@ -1321,6 +1321,7 @@ model PlatformConfig {
   crawler_worker_concurrency                   Int?
   crawler_job_timeout_ms                       Int?
   crawler_chromium_max_contexts_before_restart Int?
+  crawler_max_concurrent_browser_pages         Int?
   normalization_ai_raw_description_max_chars   Int?
   dewatermark_cost_per_image                   Decimal? @db.Decimal(12, 6)
   google_translate_cost_per_million_chars      Decimal? @db.Decimal(12, 6)
