@@ -344,7 +344,14 @@ export class CrawlerService {
                 /* keep as-is */
               }
             }
-            if (!sourceUrl) sourceUrl = currentUrl;
+            if (!sourceUrl) {
+              // A card matched listing_selector but has no extractable link (e.g. a
+              // promo tile or malformed markup). Falling back to the listing page's
+              // own URL would fabricate a fake "property" pointing at the listing
+              // page itself -- skip it instead.
+              log('card_missing_url', { index: i });
+              continue;
+            }
             items.push({ source_url: sourceUrl, raw });
           } catch (cardErr) {
             const message =
