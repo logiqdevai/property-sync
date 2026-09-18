@@ -27,7 +27,11 @@ export interface PaginationConfig {
 
 export interface DetailPageConfig {
   image_selector?: string;
-  image_type?: 'src' | 'background_image';
+  // 'href' reads the matched element's own href attribute -- for lightbox/gallery
+  // patterns where a thumbnail <img> is wrapped in an <a href="full-size.jpg">
+  // and only the anchor exposes the full-resolution URL (the <img src> is a tiny
+  // thumbnail). Point image_selector at the anchor itself in that case.
+  image_type?: 'src' | 'background_image' | 'href';
   description_selector?: string;
   specs_selector?: string;
   features_selector?: string;

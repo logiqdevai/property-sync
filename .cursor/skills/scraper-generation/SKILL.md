@@ -100,7 +100,7 @@ type PaginationType = 'next_button' | 'load_more' | 'infinite_scroll' | 'url_par
 interface PaginationConfig { type: PaginationType; selector?: string; url_param?: string }
 
 interface DetailPageConfig {
-  image_selector?: string; image_type?: 'src' | 'background_image';
+  image_selector?: string; image_type?: 'src' | 'background_image' | 'href';
   description_selector?: string;
   specs_selector?: string; features_selector?: string;
   external_id_source?: 'url_path' | 'selector'; external_id_selector?: string;
@@ -138,6 +138,15 @@ Notes that aren't obvious from the types alone:
 - Coordinates: the production `DetailEnrichmentService` auto-extracts lat/lng from map embeds, data
   attributes, and embedded scripts **unconditionally**, regardless of what's in `config` — don't bother
   adding a coordinates field to the config, it isn't read for that.
+- **Lightbox/gallery detail pages** — a common legacy pattern wraps each gallery thumbnail in
+  `<a href="full-size.jpg"><img src="tiny-thumbnail.jpg"></a>` (jQuery Lightbox-style plugins, often
+  `rel="lightbox[...]"` on the anchor) where the visible `<img>` is only a small thumbnail and the
+  real full-resolution URL lives in the anchor's `href`. Detect this by checking whether a gallery
+  thumbnail's `<img>` filename looks like a downsized variant (e.g. an `xs`/`thumb`/size suffix) of a
+  different, unlinked full-size file — if so, point `detail_page.image_selector` at the **anchor**
+  (e.g. `a[rel^="lightbox"]`) with `image_type: 'href'` instead of at the `<img>`. A single such
+  selector/anchor set can often replace a separate "hero image" selector entirely if every gallery
+  photo (including the first) is wrapped the same way — check before assuming you need both.
 
 ## 5. Field-name conventions that feed normalization directly
 

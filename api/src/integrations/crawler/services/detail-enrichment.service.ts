@@ -417,7 +417,10 @@ export class DetailEnrichmentService {
           if (cfg?.image_selector) {
             const type = cfg.image_type ?? 'src';
             document.querySelectorAll(cfg.image_selector).forEach((el) => {
-              if (type === 'background_image') {
+              if (type === 'href') {
+                const href = el.getAttribute('href');
+                pushImage(href ? new URL(href, document.baseURI).toString() : null);
+              } else if (type === 'background_image') {
                 const match = (el.getAttribute('style') || '').match(
                   /background-image:\s*url\(['"]?(.*?)['"]?\)/,
                 );
