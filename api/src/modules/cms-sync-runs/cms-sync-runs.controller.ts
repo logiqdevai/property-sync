@@ -25,6 +25,7 @@ import {
   UserCmsSyncRunQueryType,
 } from './dto/cms-sync-run-query.schema';
 import { DeleteCmsSyncRunsDto } from './dto/delete-cms-sync-runs.dto';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('CMS Sync Runs')
 @ApiBearerAuth()
@@ -56,6 +57,7 @@ export class CmsSyncRunsController {
     return this.cmsSyncRunsService.findAllForUser(userId, query);
   }
 
+  @Audited({ action: 'cms_sync_run.bulk_cancel', entity: 'CmsSyncRun', ids: { body: 'cms_sync_run_ids' } })
   @Post('bulk-cancel')
   @ApiOperation({
     summary:
@@ -72,6 +74,7 @@ export class CmsSyncRunsController {
     return this.cmsSyncRunsService.cancelMany(userId, dto.cms_sync_run_ids);
   }
 
+  @Audited({ action: 'cms_sync_run.bulk_resume', entity: 'CmsSyncRun', ids: { body: 'cms_sync_run_ids' } })
   @Post('bulk-resume')
   @ApiOperation({
     summary:

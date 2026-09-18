@@ -85,6 +85,7 @@
     "jimp": "^1.6.1",
     "latest": "^0.2.0",
     "luxon": "^3.7.1",
+    "nestjs-cls": "^6.3.0",
     "node-telegram-bot-api": "^0.66.0",
     "openai": "^6.46.0",
     "otp-generator": "^4.0.1",

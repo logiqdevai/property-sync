@@ -25,6 +25,7 @@ import { UsersService } from './users.service';
 import { UserQuerySchema, UserQueryType } from './dto/user-query.schema';
 import { UpdateAdminUserDto } from './dto/update-admin-user.dto';
 import { User } from './entities/user.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -58,6 +59,7 @@ export class AdminUsersController {
     return this.usersService.findOneAdmin(id);
   }
 
+  @Audited({ action: 'user.admin_update', entity: 'User', ids: { param: 'id' } })
   @Patch(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Update a user' })
@@ -73,6 +75,7 @@ export class AdminUsersController {
     return this.usersService.updateAdmin(id, actorId, dto);
   }
 
+  @Audited({ action: 'user.admin_delete', entity: 'User', ids: { param: 'id' } })
   @Delete(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete a user' })

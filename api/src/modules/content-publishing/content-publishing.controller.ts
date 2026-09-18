@@ -19,6 +19,8 @@ import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { UpsertContentPublishingConfigDto } from './dto/upsert-content-publishing-config.dto';
 import { ContentPublishingConfigEntity } from './entities/content-publishing-config.entity';
 import { ContentPublishingConfigService } from './services/content-publishing-config.service';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
+import { contentPublishingConfigOfCurrentUser } from '@/modules/activity-logs/entities/audit-id-resolvers';
 
 @ApiTags('Content Publishing')
 @ApiBearerAuth()
@@ -45,6 +47,7 @@ export class ContentPublishingController {
     );
   }
 
+  @Audited({ action: 'content_publishing.upsert', entity: 'ContentPublishingConfig', ids: contentPublishingConfigOfCurrentUser })
   @Put()
   @ApiOperation({
     summary: 'Create or replace content publishing config for a tracked agency',
@@ -62,6 +65,7 @@ export class ContentPublishingController {
     );
   }
 
+  @Audited({ action: 'content_publishing.delete', entity: 'ContentPublishingConfig', ids: contentPublishingConfigOfCurrentUser })
   @Delete()
   @HttpCode(204)
   @ApiOperation({ summary: 'Delete content publishing config' })

@@ -9,8 +9,11 @@ import {
 } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { Request } from 'express';
+import { SkipAudit } from '@/modules/activity-logs/decorators/audited.decorator';
 import { OpenAiWebhooksService } from './openai-webhooks.service';
 
+// Machine-to-machine webhook, not a UI action.
+@SkipAudit()
 @ApiExcludeController()
 @Controller('webhooks/openai')
 export class OpenAiWebhooksController {

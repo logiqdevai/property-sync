@@ -28,6 +28,8 @@ import { UpdateAgencyVisibilityDto } from './dto/update-agency-visibility.dto';
 import { UpdateTrackerAdminSettingsDto } from './dto/update-tracker-admin-settings.dto';
 import { AgencyQuerySchema, AgencyQueryType } from './dto/agency-query.schema';
 import { Agency } from './entities/agency.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
+import { trackedAgencyOfAdminTarget } from '@/modules/activity-logs/entities/audit-id-resolvers';
 
 @ApiTags('Agencies')
 @ApiBearerAuth()
@@ -63,6 +65,7 @@ export class AgenciesController {
     return this.agenciesService.findOne(id);
   }
 
+  @Audited({ action: 'agency.create', entity: 'SourceAgency' })
   @Post()
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Create an agency' })
@@ -72,6 +75,7 @@ export class AgenciesController {
     return this.agenciesService.create(dto);
   }
 
+  @Audited({ action: 'agency.tracker_settings_update', entity: 'UserTrackedAgency', ids: trackedAgencyOfAdminTarget })
   @Patch(':id/trackers/:userId')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -87,6 +91,7 @@ export class AgenciesController {
     return this.agenciesService.updateTrackerAdminSettings(id, userId, dto);
   }
 
+  @Audited({ action: 'agency.update', entity: 'SourceAgency', ids: { param: 'id' } })
   @Patch(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Update an agency' })
@@ -96,6 +101,7 @@ export class AgenciesController {
     return this.agenciesService.update(id, dto);
   }
 
+  @Audited({ action: 'agency.visibility_update', entity: 'SourceAgency', ids: { param: 'id' } })
   @Patch(':id/visibility')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Update agency visibility flags' })
@@ -107,6 +113,7 @@ export class AgenciesController {
     return this.agenciesService.updateVisibility(id, dto);
   }
 
+  @Audited({ action: 'agency.delete', entity: 'SourceAgency', ids: { param: 'id' } })
   @Delete(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({

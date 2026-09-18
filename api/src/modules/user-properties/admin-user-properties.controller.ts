@@ -40,6 +40,7 @@ import { RemoveWatermarkImagesResponseEntity } from './entities/remove-watermark
 import { TruncateUserPropertyDescriptionsDto } from './dto/truncate-user-property-descriptions.dto';
 import { MigrateIntegrationImagesDto } from './dto/migrate-integration-images.dto';
 import { UserPropertyEntity } from './entities/user-property.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('Admin User Properties')
 @ApiBearerAuth()
@@ -137,6 +138,7 @@ export class AdminUserPropertiesController {
     return this.userPropertiesService.adminCount(query);
   }
 
+  @Audited({ action: 'user_property.bulk_delete', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('bulk-delete')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete multiple user properties' })
@@ -146,6 +148,7 @@ export class AdminUserPropertiesController {
     return this.userPropertiesService.adminRemoveMany(dto.ids);
   }
 
+  @Audited({ action: 'user_property.truncate_descriptions', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('truncate-descriptions')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -162,6 +165,7 @@ export class AdminUserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.dedupe_groups', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('dedupe-groups')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -177,6 +181,7 @@ export class AdminUserPropertiesController {
     return this.userPropertiesService.adminDedupeGroups(dto.ids);
   }
 
+  @Audited({ action: 'user_property.bulk_split', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('bulk-split')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -200,6 +205,7 @@ export class AdminUserPropertiesController {
     return this.userPropertiesService.adminFindOne(id);
   }
 
+  @Audited({ action: 'user_property.migrate_integration_images', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/migrate-integration-images')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -219,6 +225,7 @@ export class AdminUserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.delete_integration_images', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/delete-integration-images')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -237,6 +244,7 @@ export class AdminUserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.create_integration_images', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/create-integration-images')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -256,6 +264,7 @@ export class AdminUserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.update_integration_images', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/update-integration-images')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -280,6 +289,7 @@ export class AdminUserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.remove_watermark_images', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/remove-watermark-images')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -299,6 +309,7 @@ export class AdminUserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.delete', entity: 'UserProperty', ids: { param: 'id' } })
   @Delete(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete a user property' })

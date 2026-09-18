@@ -185,9 +185,12 @@ export class EmailAuthService {
       throw new NotFoundException('User not found');
     }
 
+    // actor_id marks the token as impersonation so the activity log can attribute every action
+    // taken with it to the admin instead of the impersonated user.
     const token = await this.jwtService.signToken({
       id: user.id,
       role: actorRole,
+      actor_id: actorId,
     });
 
     const expires_in = this.jwtService.getExpirationTime(token);

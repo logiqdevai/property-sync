@@ -41,6 +41,7 @@ import {
 import { SetEstateWebSessionDto } from './dto/admin-estateweb-session.dto';
 import { AdminEstateWebBulkUpdateSitesDto } from './dto/admin-estateweb-bulk-sites.dto';
 import { AdminEstateWebBulkDeleteByCodesDto } from './dto/admin-estateweb-bulk-delete-by-codes.dto';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('Admin EstateWeb')
 @ApiBearerAuth()
@@ -67,6 +68,7 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Audited({ action: 'estateweb.session_set', entity: 'UserIntegration', ids: { param: 'userIntegrationId' } })
   @Post('integrations/:userIntegrationId/session')
   @ApiOperation({
     summary: 'Set EstateWeb session cookie and bearer token for an integration',
@@ -82,6 +84,7 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Audited({ action: 'estateweb.session_invalidate', entity: 'UserIntegration', ids: { param: 'userIntegrationId' } })
   @Delete('integrations/:userIntegrationId/session')
   @ApiOperation({ summary: 'Invalidate stored EstateWeb session' })
   invalidateSession(@Param('userIntegrationId') userIntegrationId: string) {
@@ -90,6 +93,7 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Audited({ action: 'estateweb.session_test' })
   @Post('integrations/:userIntegrationId/session/test')
   @ApiOperation({
     summary: 'Test EstateWeb connection via stored email/password login',
@@ -201,6 +205,7 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Audited({ action: 'estateweb.bulk_update_sites' })
   @Post('integrations/:userIntegrationId/properties/bulk-update-sites')
   @ApiOperation({
     summary:
@@ -218,6 +223,7 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Audited({ action: 'estateweb.bulk_delete_by_codes' })
   @Post('integrations/:userIntegrationId/properties/bulk-delete-by-codes')
   @ApiOperation({
     summary: 'Delete every EstateWeb property matching the given codes',
@@ -257,6 +263,7 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Audited({ action: 'estateweb.property_create' })
   @Post('integrations/:userIntegrationId/properties')
   @ApiOperation({ summary: 'Create a property in EstateWeb CMS' })
   createProperty(
@@ -269,6 +276,7 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Audited({ action: 'estateweb.property_update' })
   @Patch('integrations/:userIntegrationId/properties/:propertyId')
   @ApiOperation({ summary: 'Update a property in EstateWeb CMS' })
   updateProperty(
@@ -283,6 +291,7 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Audited({ action: 'estateweb.note_create' })
   @Post('integrations/:userIntegrationId/properties/:propertyId/notes')
   @ApiOperation({
     summary: 'Add a note to a property in EstateWeb CMS (POST /propertynote)',
@@ -300,6 +309,7 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Audited({ action: 'estateweb.note_delete' })
   @Delete('integrations/:userIntegrationId/notes/:noteId')
   @ApiOperation({
     summary:
@@ -316,6 +326,7 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Audited({ action: 'estateweb.image_upload' })
   @Post('integrations/:userIntegrationId/properties/:propertyId/images')
   @ApiOperation({ summary: 'Upload a property image to EstateWeb CMS' })
   @ApiConsumes('multipart/form-data')
@@ -360,6 +371,7 @@ export class AdminEstateWebPropertiesController {
     );
   }
 
+  @Audited({ action: 'estateweb.image_delete' })
   @Delete('integrations/:userIntegrationId/images/:imageId')
   @ApiOperation({ summary: 'Delete a property image from EstateWeb CMS' })
   @ApiResponse({ status: 200, description: 'Deleted image id' })

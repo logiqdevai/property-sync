@@ -43,6 +43,7 @@ export const Routes = {
         costLogs: {
             list: "/admin/cost-logs",
         },
+        activityLog: "/admin/activity-log",
         syncRuns: {
             list: "/admin/sync-runs",
             detail: (id: string) => `/admin/sync-runs/${id}`,

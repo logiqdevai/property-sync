@@ -29,6 +29,8 @@ import {
   BrowseAgencyQuerySchema,
   BrowseAgencyQueryType,
 } from './dto/agency-query.schema';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
+import { trackedAgencyOfCurrentUser } from '@/modules/activity-logs/entities/audit-id-resolvers';
 
 @ApiTags('User Agencies')
 @ApiBearerAuth()
@@ -53,6 +55,7 @@ export class UserTrackedAgenciesController {
     return this.userTrackedAgenciesService.findAll(userId, query);
   }
 
+  @Audited({ action: 'tracked_agency.bulk_tracking' })
   @Post('bulk-tracking')
   @ApiOperation({
     summary: 'Track, untrack, or update preferences for many agencies',
@@ -65,6 +68,7 @@ export class UserTrackedAgenciesController {
     return this.userTrackedAgenciesService.bulkTracking(userId, dto);
   }
 
+  @Audited({ action: 'tracked_agency.track', entity: 'UserTrackedAgency', ids: trackedAgencyOfCurrentUser })
   @Post(':agencyId/track')
   @ApiOperation({ summary: 'Track an agency' })
   @ApiResponse({ status: 201, description: 'Tracked agency created' })
@@ -78,6 +82,7 @@ export class UserTrackedAgenciesController {
     return this.userTrackedAgenciesService.track(userId, agencyId, dto);
   }
 
+  @Audited({ action: 'tracked_agency.update', entity: 'UserTrackedAgency', ids: trackedAgencyOfCurrentUser })
   @Patch(':agencyId/track')
   @ApiOperation({ summary: 'Update tracking preferences' })
   @ApiResponse({ status: 200, description: 'Tracking preferences updated' })
@@ -94,6 +99,7 @@ export class UserTrackedAgenciesController {
     );
   }
 
+  @Audited({ action: 'tracked_agency.untrack', entity: 'UserTrackedAgency', ids: trackedAgencyOfCurrentUser })
   @Delete(':agencyId/track')
   @HttpCode(204)
   @ApiOperation({ summary: 'Stop tracking an agency' })
@@ -117,6 +123,7 @@ export class UserTrackedAgenciesController {
     return this.userTrackedAgenciesService.getIntegrationLink(userId, agencyId);
   }
 
+  @Audited({ action: 'tracked_agency.integration_link', entity: 'UserTrackedAgency', ids: trackedAgencyOfCurrentUser })
   @Put(':agencyId/track/integration')
   @ApiOperation({ summary: 'Link an integration to a tracked agency (1:1)' })
   @ApiResponse({ status: 200, description: 'Integration linked' })
@@ -141,6 +148,7 @@ export class UserTrackedAgenciesController {
     );
   }
 
+  @Audited({ action: 'tracked_agency.integration_unlink', entity: 'UserTrackedAgency', ids: trackedAgencyOfCurrentUser })
   @Delete(':agencyId/track/integration')
   @HttpCode(204)
   @ApiOperation({ summary: 'Unlink integration from a tracked agency' })

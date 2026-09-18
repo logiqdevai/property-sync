@@ -34,6 +34,7 @@ import {
   GenerationRunQueryType,
 } from './dto/generation-run-query.schema';
 import { ScraperGenerationRun } from './entities/generation-run.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('Scraper Generation')
 @ApiBearerAuth()
@@ -69,6 +70,7 @@ export class ScraperGenerationController {
     return this.scraperGenerationService.findOne(id);
   }
 
+  @Audited({ action: 'scraper_generation.create', entity: 'ScraperGenerationRun' })
   @Post()
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -86,6 +88,7 @@ export class ScraperGenerationController {
     return this.scraperGenerationService.create(dto, userId);
   }
 
+  @Audited({ action: 'scraper_generation.approve', entity: 'ScraperGenerationRun', ids: { param: 'id' } })
   @Post(':id/approve')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -100,6 +103,7 @@ export class ScraperGenerationController {
     return this.scraperGenerationService.approve(id);
   }
 
+  @Audited({ action: 'scraper_generation.reject', entity: 'ScraperGenerationRun', ids: { param: 'id' } })
   @Post(':id/reject')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Reject a generation run' })
@@ -109,6 +113,7 @@ export class ScraperGenerationController {
     return this.scraperGenerationService.reject(id, dto);
   }
 
+  @Audited({ action: 'scraper_generation.cancel', entity: 'ScraperGenerationRun', ids: { param: 'id' } })
   @Post(':id/cancel')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Cancel a QUEUED or RUNNING generation run' })
@@ -121,6 +126,7 @@ export class ScraperGenerationController {
     return this.scraperGenerationService.cancel(id);
   }
 
+  @Audited({ action: 'scraper_generation.retry', entity: 'ScraperGenerationRun', ids: { param: 'id' } })
   @Post(':id/retry')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -136,6 +142,7 @@ export class ScraperGenerationController {
     return this.scraperGenerationService.retry(id, dto);
   }
 
+  @Audited({ action: 'scraper_generation.delete', entity: 'ScraperGenerationRun', ids: { param: 'id' } })
   @Delete(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({

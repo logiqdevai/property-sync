@@ -38,6 +38,7 @@ import { DeletePropertiesDto } from './dto/delete-properties.dto';
 import { ResolveEstateWebLocationsDto } from './dto/resolve-estateweb-locations.dto';
 import { TruncatePropertyDescriptionsDto } from './dto/truncate-property-descriptions.dto';
 import { PropertyEntity } from './entities/property.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('Properties')
 @ApiBearerAuth()
@@ -160,6 +161,7 @@ export class PropertiesController {
     return this.propertiesService.findAllForMap(query);
   }
 
+  @Audited({ action: 'property.merge', entity: 'Property', ids: { body: 'property_ids' } })
   @Post('merge')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Merge properties into a duplicate group' })
@@ -170,6 +172,7 @@ export class PropertiesController {
     return this.propertiesService.merge(dto);
   }
 
+  @Audited({ action: 'property.bulk_delete', entity: 'Property', ids: { body: 'property_ids' } })
   @Post('bulk-delete')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete multiple properties' })
@@ -179,6 +182,7 @@ export class PropertiesController {
     return this.propertiesService.removeMany(dto.property_ids);
   }
 
+  @Audited({ action: 'property.truncate_descriptions', entity: 'Property', ids: { body: 'property_ids' } })
   @Post('truncate-descriptions')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -195,6 +199,7 @@ export class PropertiesController {
     );
   }
 
+  @Audited({ action: 'property.dedupe_groups', entity: 'Property', ids: { body: 'property_ids' } })
   @Post('dedupe-groups')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -210,6 +215,7 @@ export class PropertiesController {
     return this.propertiesService.dedupeGroups(dto.property_ids);
   }
 
+  @Audited({ action: 'property.bulk_split', entity: 'Property', ids: { body: 'property_ids' } })
   @Post('bulk-split')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Remove selected properties from their duplicate groups' })
@@ -223,6 +229,7 @@ export class PropertiesController {
     return this.propertiesService.splitMany(dto.property_ids);
   }
 
+  @Audited({ action: 'property.geocode_missing_coordinates' })
   @Post('geocode-missing-coordinates')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -235,6 +242,7 @@ export class PropertiesController {
     return this.propertiesService.geocodeMissingCoordinates();
   }
 
+  @Audited({ action: 'property.resolve_estateweb_locations', entity: 'Property', ids: { body: 'property_ids' } })
   @Post('resolve-estateweb-locations')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -255,6 +263,7 @@ export class PropertiesController {
     return this.propertiesService.findOne(id);
   }
 
+  @Audited({ action: 'property.split', entity: 'Property', ids: { param: 'id' } })
   @Post(':id/split')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Remove property from its duplicate group' })
@@ -264,6 +273,7 @@ export class PropertiesController {
     return this.propertiesService.split(id);
   }
 
+  @Audited({ action: 'property.delete', entity: 'Property', ids: { param: 'id' } })
   @Delete(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete a property' })

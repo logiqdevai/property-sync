@@ -12,6 +12,7 @@ import { RolesGuard } from '@/shared/guards/roles.guard';
 import { Roles } from '@/shared/decorators/roles.decorator';
 import { AuthRole } from 'generated/prisma';
 import { CmsSyncOrchestratorService } from './services/cms-sync-orchestrator.service';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 class LinkAndBackfillDto {
   user_integration_id!: string;
@@ -28,6 +29,7 @@ export class AdminCmsSyncController {
     private readonly cmsSyncOrchestratorService: CmsSyncOrchestratorService,
   ) {}
 
+  @Audited({ action: 'cms_sync.backfill', entity: 'UserTrackedAgency', ids: { param: 'userTrackedAgencyId' } })
   @Post('backfill/:userTrackedAgencyId')
   @ApiOperation({
     summary: 'Enqueue a backfill CMS sync for a tracked agency',
@@ -41,6 +43,7 @@ export class AdminCmsSyncController {
     return { ok: true };
   }
 
+  @Audited({ action: 'cms_sync.link_and_backfill', entity: 'UserTrackedAgency', ids: { param: 'userTrackedAgencyId' } })
   @Post('link-and-backfill/:userTrackedAgencyId')
   @ApiOperation({
     summary: 'Link a tracked agency to an integration and enqueue backfill',

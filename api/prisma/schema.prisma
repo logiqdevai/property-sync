@@ -1351,3 +1351,77 @@ model Document {
   @@index([user_uuid])
   @@map("documents")
 }
+
+enum ActivityOutcome {
+  SUCCESS
+  FAILURE
+}
+
+enum ActivityChangeOperation {
+  CREATE
+  UPDATE
+  DELETE
+  ACTION
+}
+
+/// One row per user-initiated, data-changing request (see docs/ACTIVITY-LOG.md). Deliberately has
+/// no FKs to users: logs are kept forever and must survive user deletion, so actor/user columns
+/// are plain strings with denormalized email/role captured at write time.
+model ActivityLog {
+  id                  String          @id @default(uuid())
+  request_id          String?
+  action              String // dot-string, e.g. "user_property.update"
+  category            String
+  method              String
+  route               String // Nest route pattern, e.g. /properties/:id
+  path                String // concrete path incl. ids
+  status_code         Int?
+  outcome             ActivityOutcome
+  error_message       String?
+  duration_ms         Int?
+  actor_id            String? // the REAL actor (admin when impersonating)
+  actor_email         String?
+  actor_role          String?
+  effective_user_id   String? // account whose data was acted on
+  is_impersonated     Boolean         @default(false)
+  ip                  String?
+  user_agent          String?
+  client_route        String?
+  client_session_id   String?
+  request_body        Json?
+  request_query       Json?
+  job_log_id          String?
+  affected_count      Int             @default(0)
+  snapshots_truncated Boolean         @default(false)
+  created_at          DateTime        @default(now())
+
+  changes ActivityLogChange[]
+
+  @@index([created_at(sort: Desc)])
+  @@index([actor_id, created_at(sort: Desc)])
+  @@index([effective_user_id, created_at(sort: Desc)])
+  @@index([action, created_at(sort: Desc)])
+  @@index([category, created_at(sort: Desc)])
+  @@index([outcome, created_at(sort: Desc)])
+  @@map("activity_logs")
+}
+
+/// One row per affected entity of an ActivityLog (keeps bulk operations out of a giant JSON blob).
+/// before/after are redacted snapshots; changes is `[{ path, from, to, redacted? }]`.
+model ActivityLogChange {
+  id              String                  @id @default(uuid())
+  activity_log_id String
+  entity_type     String
+  entity_id       String
+  operation       ActivityChangeOperation
+  before          Json?
+  after           Json?
+  changes         Json                    @default("[]")
+  created_at      DateTime                @default(now())
+
+  activity_log ActivityLog @relation(fields: [activity_log_id], references: [id], onDelete: Cascade)
+
+  @@index([activity_log_id])
+  @@index([entity_type, entity_id, created_at(sort: Desc)])
+  @@map("activity_log_changes")
+}

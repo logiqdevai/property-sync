@@ -27,12 +27,14 @@ import { AuthRole } from 'generated/prisma';
 import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('Email Authentication')
 @Controller('auth/email')
 export class EmailAuthController {
   constructor(private readonly authService: EmailAuthService) {}
 
+  @Audited({ action: 'auth.register', entity: 'User', resultIds: { path: 'user.id' } })
   @Post('register')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)
@@ -54,6 +56,7 @@ export class EmailAuthController {
     return this.authService.registerWithEmail(dto);
   }
 
+  @Audited({ action: 'auth.login' })
   @Post('login')
   @ApiOperation({ summary: 'Login user with email and password' })
   @ApiBody({ type: LoginEmailDto })
@@ -66,6 +69,7 @@ export class EmailAuthController {
     return this.authService.loginWithEmail(dto);
   }
 
+  @Audited({ action: 'auth.waitlist' })
   @Post('/waitlist')
   @ApiOperation({ summary: 'Waitlist a user with ref code' })
   @ApiBody({ type: WaitlistDto })
@@ -78,6 +82,7 @@ export class EmailAuthController {
     return this.authService.waitlist(dto);
   }
 
+  @Audited({ action: 'auth.forgot_password' })
   @Post('forgot-password')
   @ApiOperation({ summary: 'Request a password reset email' })
   @ApiBody({ type: ForgotPasswordDto })
@@ -89,6 +94,7 @@ export class EmailAuthController {
     return this.authService.forgotPassword(dto);
   }
 
+  @Audited({ action: 'auth.reset_password' })
   @Post('reset-password')
   @ApiOperation({ summary: 'Set a new password using a reset token' })
   @ApiBody({ type: ResetPasswordDto })
@@ -107,6 +113,7 @@ export class EmailAuthController {
     return this.authService.validatePasswordResetToken(token);
   }
 
+  @Audited({ action: 'auth.admin_send_password_reset', entity: 'User', ids: { param: 'userId' } })
   @Post('users/:userId/password-reset')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)
@@ -118,6 +125,7 @@ export class EmailAuthController {
     return this.authService.sendPasswordResetForUser(userId);
   }
 
+  @Audited({ action: 'auth.admin_impersonate', entity: 'User', ids: { param: 'userId' } })
   @Post(':userId/admin-login')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)

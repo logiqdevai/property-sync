@@ -12,6 +12,8 @@ import { AuthRole, NotificationType } from 'generated/prisma';
 import { NotificationSettingsService } from './notification-settings.service';
 import { UpdateNotificationSettingDto } from './dto/update-notification-setting.dto';
 import { NotificationSetting } from './entities/notification-setting.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
+import { notificationSettingByType } from '@/modules/activity-logs/entities/audit-id-resolvers';
 
 @ApiTags('Notification Settings')
 @ApiBearerAuth()
@@ -32,6 +34,7 @@ export class NotificationSettingsController {
     return this.notificationSettingsService.findAll();
   }
 
+  @Audited({ action: 'notification_setting.update', entity: 'NotificationSetting', ids: notificationSettingByType })
   @Patch(':type')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Update the alerting preference for a notification type' })

@@ -12,6 +12,8 @@ import { AuthRole } from 'generated/prisma';
 import { PlatformConfigService } from './platform-config.service';
 import { UpdatePlatformConfigDto } from './dto/update-platform-config.dto';
 import { PlatformConfig } from './entities/platform-config.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
+import { platformConfigSingleton } from '@/modules/activity-logs/entities/audit-id-resolvers';
 
 @ApiTags('Platform Config')
 @ApiBearerAuth()
@@ -30,6 +32,7 @@ export class PlatformConfigController {
     return this.platformConfigService.getRaw();
   }
 
+  @Audited({ action: 'platform_config.update', entity: 'PlatformConfig', ids: platformConfigSingleton })
   @Patch()
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Update platform config' })

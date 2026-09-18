@@ -39,6 +39,10 @@ async function bootstrap() {
       'Authorization',
       'X-Requested-With',
       'Access-Control-Allow-Origin',
+      // Sent by the app's axios interceptor; recorded on every activity log entry.
+      'X-Request-Id',
+      'X-Client-Route',
+      'X-Session-Id',
     ],
   });
 

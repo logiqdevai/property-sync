@@ -209,6 +209,15 @@ export class ContentProductionService {
     for (const group of groups) {
       if (!group.config) {
         for (const property of group.properties) {
+          // A tracker with no content publishing config is a supported state:
+          // there is nothing to produce and the CMS push falls back to the
+          // legacy broadcast (ContentResolutionService.resolveAdMaps). Marking
+          // these failed would drop them from the crawl's CMS sync entirely, so
+          // they would never be pushed or flagged pending_crm_update.
+          if (group.trackerResolved) {
+            readyIds.add(property.id);
+            continue;
+          }
           const error =
             group.resolveReason ||
             'No content publishing config for this property agency';
@@ -221,12 +230,9 @@ export class ContentProductionService {
       }
 
       if (!group.config.is_enabled) {
+        // Same as no config: resolveAdMaps treats a disabled config as legacy broadcast.
         for (const property of group.properties) {
-          const error = 'Content publishing config is disabled';
-          failedMap.set(property.id, error);
-          this.logger.warn(
-            `[produceForUserProperties] skip/fail property=${property.id}: ${error}`,
-          );
+          readyIds.add(property.id);
         }
         continue;
       }
@@ -732,6 +738,7 @@ export class ContentProductionService {
       config: ContentPublishingConfigWithRelations | null;
       properties: PropertyContentRow[];
       resolveReason: string;
+      trackerResolved: boolean;
     };
 
     const groups = new Map<string, Group>();
@@ -791,6 +798,7 @@ export class ContentProductionService {
         contentLanguage: ContentLanguage;
         config: ContentPublishingConfigWithRelations | null;
         resolveReason: string;
+        trackerResolved: boolean;
       };
 
       const sourceAgencyId = sourceAgencyIdByProperty.get(property.id);
@@ -807,6 +815,7 @@ export class ContentProductionService {
           contentLanguage: ContentLanguage.EL,
           config: null,
           resolveReason: 'Canonical property missing',
+          trackerResolved: false,
         };
       } else if (!sourceAgencyId) {
         this.logger.warn(
@@ -818,6 +827,7 @@ export class ContentProductionService {
           config: null,
           resolveReason:
             'Property has no source agency link; cannot resolve content publishing config',
+          trackerResolved: false,
         };
       } else if (!tracker) {
         this.logger.warn(
@@ -828,6 +838,7 @@ export class ContentProductionService {
           contentLanguage: ContentLanguage.EL,
           config: null,
           resolveReason: `No tracked agency for source agency ${sourceAgencyId}`,
+          trackerResolved: false,
         };
       } else {
         const config = tracker.content_publishing_config;
@@ -838,6 +849,7 @@ export class ContentProductionService {
           resolveReason: config
             ? 'ok'
             : `No content publishing config on tracker ${tracker.id}`,
+          trackerResolved: true,
         };
       }
 
@@ -855,6 +867,7 @@ export class ContentProductionService {
         config: context.config,
         properties: [property],
         resolveReason: context.resolveReason,
+        trackerResolved: context.trackerResolved,
       });
     }
 

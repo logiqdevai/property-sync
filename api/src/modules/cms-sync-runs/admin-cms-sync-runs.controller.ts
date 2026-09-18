@@ -29,6 +29,7 @@ import {
   AdminCmsSyncRunQueryType,
 } from './dto/cms-sync-run-query.schema';
 import { DeleteCmsSyncRunsDto } from './dto/delete-cms-sync-runs.dto';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('CMS Sync Runs')
 @ApiBearerAuth()
@@ -71,6 +72,7 @@ export class AdminCmsSyncRunsController {
     return this.cmsSyncRunsService.listEstateWebIntegrations(query);
   }
 
+  @Audited({ action: 'cms_sync_run.bulk_delete', entity: 'CmsSyncRun', ids: { body: 'cms_sync_run_ids' } })
   @Post('bulk-delete')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete multiple CMS sync runs' })
@@ -89,6 +91,7 @@ export class AdminCmsSyncRunsController {
     return this.cmsSyncRunsService.findOneById(id);
   }
 
+  @Audited({ action: 'cms_sync_run.retry', entity: 'CmsSyncRun', ids: { param: 'id' } })
   @Post(':id/retry')
   @ApiOperation({ summary: 'Retry a failed CMS sync run' })
   @ApiResponse({ status: 200, description: 'CMS sync run retried' })
@@ -97,6 +100,7 @@ export class AdminCmsSyncRunsController {
     return this.cmsSyncRunsService.retry(id);
   }
 
+  @Audited({ action: 'cms_sync_run.rerun', entity: 'CmsSyncRun', ids: { param: 'id' } })
   @Post(':id/rerun')
   @ApiOperation({
     summary: 'Rerun a finished CMS sync run with all stored operations',
@@ -108,6 +112,7 @@ export class AdminCmsSyncRunsController {
     return this.cmsSyncRunsService.rerun(id);
   }
 
+  @Audited({ action: 'cms_sync_run.delete', entity: 'CmsSyncRun', ids: { param: 'id' } })
   @Delete(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete a CMS sync run' })

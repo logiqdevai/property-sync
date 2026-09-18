@@ -71,6 +71,12 @@ export const ApiRoutes = {
             prefix: "/admin/cost-logs",
             list: "/admin/cost-logs",
         },
+        activityLogs: {
+            prefix: "/admin/activity-logs",
+            list: "/admin/activity-logs",
+            facets: "/admin/activity-logs/facets",
+            detail: (id: string) => `/admin/activity-logs/${id}`,
+        },
         cmsSyncRuns: {
             prefix: "/admin/cms-sync-runs",
             list: "/admin/cms-sync-runs",

@@ -39,6 +39,8 @@ import {
   MaskedUserIntegrationEntity,
   UserIntegrationSettingsEntity,
 } from './entities/user-integration.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
+import { integrationSettingsOfAdminTarget } from '@/modules/activity-logs/entities/audit-id-resolvers';
 
 @ApiTags('Integration Targets')
 @ApiBearerAuth()
@@ -78,6 +80,7 @@ export class IntegrationTargetsController {
     return this.integrationTargetsService.findOne(id);
   }
 
+  @Audited({ action: 'integration_target.create', entity: 'IntegrationTarget' })
   @Post()
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Create an integration target' })
@@ -86,6 +89,7 @@ export class IntegrationTargetsController {
     return this.integrationTargetsService.create(dto);
   }
 
+  @Audited({ action: 'integration_target.update', entity: 'IntegrationTarget', ids: { param: 'id' } })
   @Patch(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Update an integration target' })
@@ -94,6 +98,7 @@ export class IntegrationTargetsController {
     return this.integrationTargetsService.update(id, dto);
   }
 
+  @Audited({ action: 'integration_target.visibility_update', entity: 'IntegrationTarget', ids: { param: 'id' } })
   @Patch(':id/visibility')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Toggle integration target visibility' })
@@ -105,6 +110,7 @@ export class IntegrationTargetsController {
     return this.integrationTargetsService.updateVisibility(id, dto);
   }
 
+  @Audited({ action: 'integration_target.account_create', entity: 'UserIntegration' })
   @Post(':id/accounts')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Create a user connection on behalf of a user' })
@@ -116,6 +122,7 @@ export class IntegrationTargetsController {
     return this.integrationTargetsService.createAccount(id, dto);
   }
 
+  @Audited({ action: 'integration_target.account_update', entity: 'UserIntegration', ids: { param: 'userIntegrationId' } })
   @Patch(':id/accounts/:userIntegrationId')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Update a user connection on behalf of a user' })
@@ -146,6 +153,7 @@ export class IntegrationTargetsController {
     return this.integrationTargetsService.getUserSettings(id, userId);
   }
 
+  @Audited({ action: 'integration_target.user_settings_update', entity: 'UserIntegrationSettings', ids: integrationSettingsOfAdminTarget })
   @Patch(':id/users/:userId/settings')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -162,6 +170,7 @@ export class IntegrationTargetsController {
     return this.integrationTargetsService.updateUserSettings(id, userId, dto);
   }
 
+  @Audited({ action: 'integration_target.delete', entity: 'IntegrationTarget', ids: { param: 'id' } })
   @Delete(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete an integration target without connections' })

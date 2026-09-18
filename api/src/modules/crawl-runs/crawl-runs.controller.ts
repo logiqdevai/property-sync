@@ -31,6 +31,7 @@ import {
   CrawlRunTimelineQueryType,
 } from './dto/crawl-run-timeline-query.schema';
 import { CrawlRun } from './entities/crawl-run.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('Crawl Runs')
 @ApiBearerAuth()
@@ -86,6 +87,7 @@ export class CrawlRunsController {
     return this.crawlRunsService.timeline(query);
   }
 
+  @Audited({ action: 'crawl_run.bulk_delete', entity: 'CrawlRun', ids: { body: 'crawl_run_ids' } })
   @Post('bulk-delete')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete multiple crawl runs' })
@@ -106,6 +108,7 @@ export class CrawlRunsController {
     return this.crawlRunsService.findOne(id);
   }
 
+  @Audited({ action: 'crawl_run.rerun', entity: 'CrawlRun', ids: { param: 'id' } })
   @Post(':id/rerun')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Re-enqueue a crawl run with the same attribution' })
@@ -115,6 +118,7 @@ export class CrawlRunsController {
     return this.crawlRunsService.rerun(id);
   }
 
+  @Audited({ action: 'crawl_run.cancel', entity: 'CrawlRun', ids: { param: 'id' } })
   @Post(':id/cancel')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Stop a queued or running crawl run' })
@@ -125,6 +129,7 @@ export class CrawlRunsController {
     return this.crawlRunsService.cancel(id);
   }
 
+  @Audited({ action: 'crawl_run.delete', entity: 'CrawlRun', ids: { param: 'id' } })
   @Delete(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete a crawl run' })

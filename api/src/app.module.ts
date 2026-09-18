@@ -32,6 +32,7 @@ import { ConfigModule } from './shared/config/env/env.module';
 import { CmsSyncModule } from './modules/cms-sync/cms-sync.module';
 import { ContentPublishingModule } from './modules/content-publishing/content-publishing.module';
 import { CostLogsModule } from './modules/cost-logs/cost-logs.module';
+import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { CostLogsModule } from './modules/cost-logs/cost-logs.module';
     CmsSyncModule,
     ContentPublishingModule,
     CostLogsModule,
+    ActivityLogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

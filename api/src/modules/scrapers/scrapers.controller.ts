@@ -36,6 +36,7 @@ import { BulkScraperIdsDto } from './dto/bulk-scraper-ids.dto';
 import { Scraper } from './entities/scraper.entity';
 import { ScraperVersion } from './entities/scraper-version.entity';
 import { CrawlRun } from '../crawl-runs/entities/crawl-run.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('Scrapers')
 @ApiBearerAuth()
@@ -70,6 +71,7 @@ export class ScrapersController {
     return this.scrapersService.findAll(query);
   }
 
+  @Audited({ action: 'scraper.bulk_delete', entity: 'Scraper', ids: { body: 'scraper_ids' } })
   @Post('bulk-delete')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete multiple scrapers' })
@@ -83,6 +85,7 @@ export class ScrapersController {
     return this.scrapersService.removeMany(dto.scraper_ids);
   }
 
+  @Audited({ action: 'scraper.bulk_run', entity: 'Scraper', ids: { body: 'scraper_ids' } })
   @Post('bulk-run')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Manually trigger crawl runs for multiple scrapers' })
@@ -92,6 +95,7 @@ export class ScrapersController {
     return this.scrapersService.runMany(dto.scraper_ids);
   }
 
+  @Audited({ action: 'scraper.bulk_stop', entity: 'Scraper', ids: { body: 'scraper_ids' } })
   @Post('bulk-stop')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Stop active crawl runs for multiple scrapers' })
@@ -109,6 +113,7 @@ export class ScrapersController {
     return this.scrapersService.findOne(id);
   }
 
+  @Audited({ action: 'scraper.create', entity: 'Scraper' })
   @Post()
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -119,6 +124,7 @@ export class ScrapersController {
     return this.scrapersService.create(dto);
   }
 
+  @Audited({ action: 'scraper.duplicate', entity: 'Scraper', ids: { param: 'id' } })
   @Post(':id/duplicate')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -142,6 +148,7 @@ export class ScrapersController {
     return this.scrapersService.listVersions(id);
   }
 
+  @Audited({ action: 'scraper.version_create', entity: 'ScraperVersion' })
   @Post(':id/versions')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -152,6 +159,7 @@ export class ScrapersController {
     return this.scrapersService.createVersion(id, dto);
   }
 
+  @Audited({ action: 'scraper.version_activate', entity: 'Scraper', ids: { param: 'id' } })
   @Post(':id/versions/:versionId/activate')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -170,6 +178,7 @@ export class ScrapersController {
     return this.scrapersService.activateVersion(id, versionId);
   }
 
+  @Audited({ action: 'scraper.update', entity: 'Scraper', ids: { param: 'id' } })
   @Patch(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
@@ -181,6 +190,7 @@ export class ScrapersController {
     return this.scrapersService.update(id, dto);
   }
 
+  @Audited({ action: 'scraper.run_now', entity: 'Scraper', ids: { param: 'id' } })
   @Post(':id/run-now')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Manually trigger a crawl run' })
@@ -190,6 +200,7 @@ export class ScrapersController {
     return this.scrapersService.runNow(id, dto.skip_spike_check);
   }
 
+  @Audited({ action: 'scraper.delete', entity: 'Scraper', ids: { param: 'id' } })
   @Delete(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete a scraper' })

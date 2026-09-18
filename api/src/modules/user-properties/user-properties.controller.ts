@@ -53,6 +53,7 @@ import { ProduceUserPropertyContentDto } from './dto/produce-user-property-conte
 import { ProduceUserPropertyContentResponseEntity } from './entities/produce-user-property-content-response.entity';
 import { UpdateUserPropertyStatusDto } from './dto/update-user-property-status.dto';
 import { UpdateUserPropertyStatusResponseEntity } from './entities/update-user-property-status-response.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('User Properties')
 @ApiBearerAuth()
@@ -208,6 +209,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.findAllForMap(userId, query);
   }
 
+  @Audited({ action: 'user_property.bulk_delete', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('bulk-delete')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)
@@ -221,6 +223,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.removeMany(userId, dto.ids);
   }
 
+  @Audited({ action: 'user_property.dedupe_groups', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('dedupe-groups')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)
@@ -241,6 +244,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.dedupeGroups(userId, dto.ids);
   }
 
+  @Audited({ action: 'user_property.bulk_split', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('bulk-split')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)
@@ -262,6 +266,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.splitMany(userId, dto.ids);
   }
 
+  @Audited({ action: 'user_property.truncate_descriptions', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('truncate-descriptions')
   @ApiOperation({
     summary: 'Remove exact text from selected saved property titles and descriptions',
@@ -281,6 +286,7 @@ export class UserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.update_status', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('update-status')
   @ApiOperation({ summary: 'Set status on selected saved properties' })
   @ApiResponse({
@@ -301,6 +307,7 @@ export class UserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.push_to_crm_bulk', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('push-to-cms')
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
@@ -317,6 +324,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.pushToCrm(userId, dto.ids);
   }
 
+  @Audited({ action: 'user_property.push_images_to_crm_bulk', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('push-images-to-cms')
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
@@ -333,6 +341,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.pushImagesToCrm(userId, dto.ids);
   }
 
+  @Audited({ action: 'user_property.produce_content', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('produce-content')
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
@@ -359,6 +368,7 @@ export class UserPropertiesController {
     });
   }
 
+  @Audited({ action: 'user_property.update_estateweb_sites', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('update-estateweb-sites')
   @ApiOperation({
     summary:
@@ -378,6 +388,7 @@ export class UserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.update_sales_prices', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('update-sales-prices')
   @ApiOperation({
     summary:
@@ -393,6 +404,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.updateSalesPricesOnCrm(userId, dto.ids);
   }
 
+  @Audited({ action: 'user_property.sync_crm_client_notes', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('sync-crm-client-notes')
   @ApiOperation({
     summary:
@@ -408,6 +420,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.syncCrmClientNotes(userId, dto.ids);
   }
 
+  @Audited({ action: 'user_property.renormalize', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('renormalize')
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
@@ -424,6 +437,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.renormalizeProperties(userId, dto.ids);
   }
 
+  @Audited({ action: 'user_property.bulk_delete_integration_images', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('bulk-delete-integration-images')
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
@@ -443,6 +457,7 @@ export class UserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.bulk_migrate_integration_images', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('bulk-migrate-integration-images')
   @HttpCode(HttpStatus.ACCEPTED)
   @UseGuards(JwtGuard, RolesGuard)
@@ -466,6 +481,7 @@ export class UserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.bulk_remove_watermark_images', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('remove-watermark-images')
   @ApiOperation({
     summary:
@@ -488,6 +504,7 @@ export class UserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.geocode_missing_coordinates' })
   @Post('geocode-missing-coordinates')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)
@@ -502,6 +519,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.geocodeMissingCoordinates(userId);
   }
 
+  @Audited({ action: 'user_property.resolve_estateweb_locations', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('resolve-estateweb-locations')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)
@@ -527,6 +545,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.findOne(userId, id);
   }
 
+  @Audited({ action: 'user_property.update', entity: 'UserProperty', ids: { param: 'id' } })
   @Patch(':id')
   @ApiOperation({ summary: 'Edit a saved property copy' })
   @ApiResponse({ status: 200, type: UserPropertyEntity })
@@ -539,6 +558,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.update(userId, id, dto);
   }
 
+  @Audited({ action: 'user_property.resync', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/resync')
   @ApiOperation({ summary: 'Overwrite local edits from canonical property' })
   @ApiResponse({ status: 200, type: UserPropertyEntity })
@@ -547,6 +567,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.resync(userId, id);
   }
 
+  @Audited({ action: 'user_property.push_to_crm', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/push-to-cms')
   @ApiOperation({
     summary:
@@ -559,6 +580,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.pushToCrm(userId, id);
   }
 
+  @Audited({ action: 'user_property.push_images_to_crm', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/push-images-to-cms')
   @ApiOperation({
     summary:
@@ -571,6 +593,7 @@ export class UserPropertiesController {
     return this.userPropertiesService.pushImagesToCrm(userId, id);
   }
 
+  @Audited({ action: 'user_property.migrate_integration_images', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/migrate-integration-images')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)
@@ -594,6 +617,7 @@ export class UserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.delete_integration_images', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/delete-integration-images')
   @ApiOperation({
     summary: 'Delete selected CMS images via the linked integration adapter',
@@ -613,6 +637,7 @@ export class UserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.create_integration_images', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/create-integration-images')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)
@@ -636,6 +661,7 @@ export class UserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.update_integration_images', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/update-integration-images')
   @ApiOperation({
     summary:
@@ -661,6 +687,7 @@ export class UserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.remove_watermark_images', entity: 'UserProperty', ids: { param: 'id' } })
   @Post(':id/remove-watermark-images')
   @ApiOperation({
     summary:
@@ -681,6 +708,7 @@ export class UserPropertiesController {
     );
   }
 
+  @Audited({ action: 'user_property.delete', entity: 'UserProperty', ids: { param: 'id' } })
   @Delete(':id')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(AuthRole.ADMIN)

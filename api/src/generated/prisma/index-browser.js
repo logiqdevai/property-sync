@@ -711,6 +711,47 @@ exports.Prisma.DocumentScalarFieldEnum = {
   created_at: 'created_at'
 };
 
+exports.Prisma.ActivityLogScalarFieldEnum = {
+  id: 'id',
+  request_id: 'request_id',
+  action: 'action',
+  category: 'category',
+  method: 'method',
+  route: 'route',
+  path: 'path',
+  status_code: 'status_code',
+  outcome: 'outcome',
+  error_message: 'error_message',
+  duration_ms: 'duration_ms',
+  actor_id: 'actor_id',
+  actor_email: 'actor_email',
+  actor_role: 'actor_role',
+  effective_user_id: 'effective_user_id',
+  is_impersonated: 'is_impersonated',
+  ip: 'ip',
+  user_agent: 'user_agent',
+  client_route: 'client_route',
+  client_session_id: 'client_session_id',
+  request_body: 'request_body',
+  request_query: 'request_query',
+  job_log_id: 'job_log_id',
+  affected_count: 'affected_count',
+  snapshots_truncated: 'snapshots_truncated',
+  created_at: 'created_at'
+};
+
+exports.Prisma.ActivityLogChangeScalarFieldEnum = {
+  id: 'id',
+  activity_log_id: 'activity_log_id',
+  entity_type: 'entity_type',
+  entity_id: 'entity_id',
+  operation: 'operation',
+  before: 'before',
+  after: 'after',
+  changes: 'changes',
+  created_at: 'created_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1019,6 +1060,18 @@ exports.DocumentType = exports.$Enums.DocumentType = {
   OTHER: 'OTHER'
 };
 
+exports.ActivityOutcome = exports.$Enums.ActivityOutcome = {
+  SUCCESS: 'SUCCESS',
+  FAILURE: 'FAILURE'
+};
+
+exports.ActivityChangeOperation = exports.$Enums.ActivityChangeOperation = {
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE',
+  ACTION: 'ACTION'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   IntegrationTarget: 'IntegrationTarget',
@@ -1054,7 +1107,9 @@ exports.Prisma.ModelName = {
   CostLog: 'CostLog',
   IntegrationProperty: 'IntegrationProperty',
   PlatformConfig: 'PlatformConfig',
-  Document: 'Document'
+  Document: 'Document',
+  ActivityLog: 'ActivityLog',
+  ActivityLogChange: 'ActivityLogChange'
 };
 
 /**

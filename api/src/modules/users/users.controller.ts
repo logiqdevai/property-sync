@@ -11,6 +11,8 @@ import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { UpdateMeDto } from './dto/update-me.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
+import { currentUser } from '@/modules/activity-logs/entities/audit-id-resolvers';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -27,6 +29,7 @@ export class UsersController {
     return this.usersService.findById(id);
   }
 
+  @Audited({ action: 'user.update_me', entity: 'User', ids: currentUser })
   @Patch('me')
   @ApiOperation({ summary: 'Update the currently authenticated user profile' })
   @ApiResponse({ status: 200, description: 'Updated user', type: User })
@@ -35,6 +38,7 @@ export class UsersController {
     return this.usersService.updateMe(id, dto);
   }
 
+  @Audited({ action: 'user.change_password', entity: 'User', ids: currentUser })
   @Post('me/change-password')
   @ApiOperation({
     summary: 'Change password for the currently authenticated user',

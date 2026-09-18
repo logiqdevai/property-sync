@@ -24,6 +24,7 @@ import { JobsService } from './jobs.service';
 import { JobLogQuerySchema, JobLogQueryType } from './dto/job-log-query.schema';
 import { DeleteJobLogsDto } from './dto/delete-job-logs.dto';
 import { JobLog } from './entities/job-log.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('Jobs')
 @ApiBearerAuth()
@@ -48,6 +49,7 @@ export class JobsController {
     return this.jobsService.findAll(query);
   }
 
+  @Audited({ action: 'job.bulk_delete', entity: 'JobLog', ids: { body: 'job_ids' } })
   @Post('bulk-delete')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete multiple job logs' })
@@ -66,6 +68,7 @@ export class JobsController {
     return this.jobsService.findOne(id);
   }
 
+  @Audited({ action: 'job.retry', entity: 'JobLog', ids: { param: 'id' } })
   @Post(':id/retry')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Retry a failed or completed job' })
@@ -75,6 +78,7 @@ export class JobsController {
     return this.jobsService.retry(id);
   }
 
+  @Audited({ action: 'job.stop', entity: 'JobLog', ids: { param: 'id' } })
   @Post(':id/stop')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Stop a queued or running job' })
@@ -85,6 +89,7 @@ export class JobsController {
     return this.jobsService.stop(id);
   }
 
+  @Audited({ action: 'job.delete', entity: 'JobLog', ids: { param: 'id' } })
   @Delete(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete a job log' })

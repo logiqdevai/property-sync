@@ -4,6 +4,7 @@ import { JwtGuard } from '@/shared/guards/jwt.guard';
 import { CurrentUser } from '@/shared/decorators/current-user.decorator';
 import { BulkSetAiBatchDto } from './dto/bulk-set-ai-batch.dto';
 import { ContentPublishingConfigService } from './services/content-publishing-config.service';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('Content Publishing')
 @ApiBearerAuth()
@@ -14,6 +15,7 @@ export class ContentPublishingBulkController {
     private readonly contentPublishingConfigService: ContentPublishingConfigService,
   ) {}
 
+  @Audited({ action: 'content_publishing.bulk_set_ai_batch' })
   @Patch('bulk-ai-batch')
   @ApiOperation({
     summary:

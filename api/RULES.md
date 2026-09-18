@@ -100,3 +100,34 @@ a JSON blob mutated under `SELECT ... FOR UPDATE`. `normalization-chunk.processo
 `estateweb-bulk-delete-by-codes.processor.ts`, and `estateweb-bulk-sites-by-codes.processor.ts`
 use `jobLog.findUnique`/similar per-item update patterns as of this writing and haven't been
 audited for the same risk — worth checking before they hit the same wall at scale.
+
+---
+
+## Activity Log
+
+### Every mutating route needs `@Audited` or `@SkipAudit`
+
+**Do:**
+```ts
+@Audited({ action: 'user_property.update', entity: 'UserProperty', ids: { param: 'id' } })
+@Patch(':id')
+update(...) {}
+```
+
+**Why:** the global `ActivityLogInterceptor` logs every non-GET request generically, but only routes
+carrying `@Audited` get a stable action name and before/after entity snapshots. Routes with neither
+decorator fail `activity-logs/activity-log-coverage.spec.ts`. Use `@SkipAudit()` only for
+machine-to-machine routes (webhooks) — never to hide a UI action.
+
+### Never let a secret column into a snapshot
+
+When you add an entity to `ENTITY_REGISTRY` (`modules/activity-logs/entities/entity-registry.ts`),
+list **every** credential/secret column in its `omit`. Snapshots are stored forever and shown to
+admins; redaction by key name is a safety net, not the primary defense.
+
+### Never store a response body in the log
+
+Login and reveal-secrets responses contain tokens/plaintext secrets. The interceptor only reads
+`job_log_id`, ids for `resultIds`, and `user.{id,email,role}` from responses — keep it that way.
+
+See `docs/ACTIVITY-LOG.md`.

@@ -27,6 +27,7 @@ import {
 } from './dto/source-property-query.schema';
 import { DeleteSourcePropertiesDto } from './dto/delete-source-properties.dto';
 import { SourcePropertyEntity } from './entities/source-property.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('Source Properties')
 @ApiBearerAuth()
@@ -80,6 +81,7 @@ export class SourcePropertiesController {
     return this.sourcePropertiesService.count(query);
   }
 
+  @Audited({ action: 'source_property.bulk_delete', entity: 'SourceProperty', ids: { body: 'source_property_ids' } })
   @Post('bulk-delete')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete multiple source properties' })
@@ -97,6 +99,7 @@ export class SourcePropertiesController {
     return this.sourcePropertiesService.findOne(id);
   }
 
+  @Audited({ action: 'source_property.delete', entity: 'SourceProperty', ids: { param: 'id' } })
   @Delete(':id')
   @Roles(AuthRole.ADMIN)
   @ApiOperation({ summary: 'Delete a source property' })

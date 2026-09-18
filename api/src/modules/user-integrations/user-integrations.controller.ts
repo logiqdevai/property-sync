@@ -34,6 +34,8 @@ import {
   UserIntegrationSecretsEntity,
   UserIntegrationSettingsEntity,
 } from './entities/user-integration-connection.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
+import { integrationSettingsOfCurrentUser } from '@/modules/activity-logs/entities/audit-id-resolvers';
 
 @ApiTags('Integrations')
 @ApiBearerAuth()
@@ -60,6 +62,7 @@ export class UserIntegrationsController {
     return this.userIntegrationsService.findUserConnections(userId);
   }
 
+  @Audited({ action: 'integration_connection.create', entity: 'UserIntegration' })
   @Post('connections')
   @ApiOperation({ summary: 'Connect to an integration target' })
   @ApiResponse({ status: 201, type: UserIntegrationConnectionEntity })
@@ -73,6 +76,7 @@ export class UserIntegrationsController {
     return this.userIntegrationsService.createConnection(userId, role, dto);
   }
 
+  @Audited({ action: 'integration_connection.update', entity: 'UserIntegration', ids: { param: 'id' } })
   @Patch('connections/:id')
   @ApiOperation({ summary: 'Update an integration connection' })
   @ApiResponse({ status: 200, type: UserIntegrationConnectionEntity })
@@ -86,6 +90,7 @@ export class UserIntegrationsController {
     return this.userIntegrationsService.updateConnection(userId, role, id, dto);
   }
 
+  @Audited({ action: 'integration_connection.status_update', entity: 'UserIntegration', ids: { param: 'id' } })
   @Patch('connections/:id/status')
   @ApiOperation({ summary: 'Enable or disable an integration connection' })
   @ApiResponse({ status: 200, type: UserIntegrationConnectionEntity })
@@ -104,6 +109,7 @@ export class UserIntegrationsController {
     );
   }
 
+  @Audited({ action: 'integration_connection.default_update', entity: 'UserIntegration', ids: { param: 'id' } })
   @Patch('connections/:id/default')
   @UseGuards(RolesGuard)
   @Roles(AuthRole.ADMIN)
@@ -139,6 +145,7 @@ export class UserIntegrationsController {
     return this.userIntegrationsService.getSettings(userId, targetId);
   }
 
+  @Audited({ action: 'integration_settings.update', entity: 'UserIntegrationSettings', ids: integrationSettingsOfCurrentUser })
   @Patch('targets/:targetId/settings')
   @ApiOperation({
     summary:
@@ -154,6 +161,9 @@ export class UserIntegrationsController {
     return this.userIntegrationsService.updateSettings(userId, targetId, dto);
   }
 
+  // A sensitive read: audited even though it's a GET. The response (plaintext secrets) is never
+  // stored -- the interceptor only records request data and entity snapshots.
+  @Audited({ action: 'integration_connection.reveal_secrets', entity: 'UserIntegration', ids: { param: 'id' } })
   @Get('connections/:id/secrets')
   @UseGuards(RolesGuard)
   @Roles(AuthRole.ADMIN)
@@ -175,6 +185,7 @@ export class UserIntegrationsController {
     );
   }
 
+  @Audited({ action: 'integration_connection.delete', entity: 'UserIntegration', ids: { param: 'id' } })
   @Delete('connections/:id')
   @HttpCode(204)
   @ApiOperation({ summary: 'Disconnect an integration' })

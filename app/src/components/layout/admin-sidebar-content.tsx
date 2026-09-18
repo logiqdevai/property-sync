@@ -1,7 +1,9 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Building2, Bot, Sparkles, Activity, ListTodo, Home, Bell, Plug, Users, ArrowLeft, FileSearch, Settings, RefreshCw, DollarSign } from 'lucide-react';
+import { LayoutDashboard, Building2, Bot, Sparkles, Activity, ListTodo, Home, Bell, Plug, Users, ArrowLeft, FileSearch, Settings, RefreshCw, DollarSign, ScrollText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes/routes';
+import { useAuthStore } from '@/stores/auth';
+import { RoleTypes, type RoleType } from '@/features/user/interfaces/user.interface';
 import { useUnreadNotificationsCount } from '@/features/notifications/hooks/use-notifications';
 
 interface AdminSidebarContentProps {
@@ -9,7 +11,15 @@ interface AdminSidebarContentProps {
   onNavigate?: () => void;
 }
 
-const navItems = [
+const navItems: {
+  label: string;
+  icon: React.ElementType;
+  href: string;
+  end: boolean;
+  showUnreadBadge?: boolean;
+  /** When set, the item is only shown to these roles (SUPER_ADMIN always sees it). */
+  roles?: RoleType[];
+}[] = [
   { label: 'Dashboard', icon: LayoutDashboard, href: Routes.admin.root, end: true },
   { label: 'Users', icon: Users, href: Routes.admin.users.list, end: false },
   { label: 'Integration Targets', icon: Plug, href: Routes.admin.integrationTargets.list, end: false },
@@ -18,6 +28,7 @@ const navItems = [
   { label: 'Scrapers', icon: Bot, href: Routes.admin.scrapers.list, end: false },
   { label: 'Crawl Runs', icon: Activity, href: Routes.admin.crawlRuns.list, end: false },
   { label: 'Cost Logs', icon: DollarSign, href: Routes.admin.costLogs.list, end: false },
+  { label: 'Activity Log', icon: ScrollText, href: Routes.admin.activityLog, end: false, roles: [RoleTypes.ADMIN] },
   { label: 'Job Queue', icon: ListTodo, href: Routes.admin.jobs.list, end: false },
   { label: 'Diagnostics', icon: FileSearch, href: Routes.admin.diagnostics.list, end: false },
   { label: 'Properties', icon: Home, href: Routes.admin.properties.list, end: false },
@@ -106,6 +117,10 @@ function NavItem({
 
 export default function AdminSidebarContent({ collapsed, onNavigate }: AdminSidebarContentProps) {
   const { data: unreadCount = 0 } = useUnreadNotificationsCount();
+  const role = useAuthStore((state) => state.role);
+  const visibleNavItems = navItems.filter(
+    (item) => !item.roles || role === RoleTypes.SUPER_ADMIN || (role && item.roles.includes(role)),
+  );
 
   return (
     <ul className="space-y-0.5">
@@ -117,7 +132,7 @@ export default function AdminSidebarContent({ collapsed, onNavigate }: AdminSide
         collapsed={collapsed}
         onNavigate={onNavigate}
       />
-      {navItems.map(({ label, icon, href, end, showUnreadBadge }) => (
+      {visibleNavItems.map(({ label, icon, href, end, showUnreadBadge }) => (
         <NavItem
           key={href}
           label={label}

@@ -33,6 +33,7 @@ import {
 import { DeleteNotificationsDto } from './dto/delete-notifications.dto';
 import { SendTelegramTestDto } from './dto/send-telegram-test.dto';
 import { Notification } from './entities/notification.entity';
+import { Audited } from '@/modules/activity-logs/decorators/audited.decorator';
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
@@ -59,6 +60,7 @@ export class NotificationsController {
     return this.notificationsService.findAll(query);
   }
 
+  @Audited({ action: 'notification.mark_all_read' })
   @Patch('read-all')
   @ApiOperation({ summary: 'Mark all notifications as read' })
   @ApiResponse({ status: 200, description: 'Count of updated notifications' })
@@ -66,6 +68,7 @@ export class NotificationsController {
     return this.notificationsService.markAllRead();
   }
 
+  @Audited({ action: 'notification.bulk_delete', entity: 'Notification', ids: { body: 'ids' } })
   @Post('bulk-delete')
   @ApiOperation({ summary: 'Delete multiple notifications' })
   @ApiResponse({ status: 200, description: 'Count of deleted notifications' })
@@ -73,6 +76,7 @@ export class NotificationsController {
     return this.notificationsService.removeMany(dto.ids);
   }
 
+  @Audited({ action: 'notification.telegram_test' })
   @Post('telegram/test')
   @ApiOperation({
     summary: 'Send a test message to the configured Telegram chat',
@@ -83,6 +87,7 @@ export class NotificationsController {
     return this.notificationsService.sendTelegramTest(dto.message);
   }
 
+  @Audited({ action: 'notification.mark_read', entity: 'Notification', ids: { param: 'id' } })
   @Patch(':id/read')
   @ApiOperation({ summary: 'Mark a notification as read' })
   @ApiResponse({ status: 200, type: Notification })
@@ -91,6 +96,7 @@ export class NotificationsController {
     return this.notificationsService.markRead(id);
   }
 
+  @Audited({ action: 'notification.delete', entity: 'Notification', ids: { param: 'id' } })
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a notification' })
   @ApiResponse({ status: 200, description: 'Deleted' })
