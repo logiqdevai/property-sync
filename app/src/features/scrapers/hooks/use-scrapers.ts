@@ -11,9 +11,12 @@ import {
   getScraperVersions,
   getScrapers,
   runScraperNow,
+  runScrapers,
+  stopScrapers,
   updateScraper,
 } from "../services/scrapers.services";
 import type {
+  BulkScraperIdsPayload,
   CreateScraperPayload,
   CreateScraperVersionPayload,
   DeleteScrapersPayload,
@@ -179,6 +182,73 @@ export const useDeleteScrapers = () => {
     onError: (error: any) => {
       toast({
         title: "Could not delete scrapers",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useRunScrapers = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: BulkScraperIdsPayload) => runScrapers(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["scrapers"] });
+      queryClient.invalidateQueries({ queryKey: ["crawlRuns"] });
+      if (result.failed.length === 0) {
+        toast({
+          title: `${result.started} crawl run${result.started === 1 ? "" : "s"} triggered`,
+          duration: 2000,
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: `${result.started} crawl run${result.started === 1 ? "" : "s"} triggered, ${result.failed.length} failed`,
+          description: result.failed[0]?.error,
+          variant: "error",
+        });
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Could not run scrapers",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useStopScrapers = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: BulkScraperIdsPayload) => stopScrapers(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["scrapers"] });
+      queryClient.invalidateQueries({ queryKey: ["crawlRuns"] });
+      if (result.failed.length === 0) {
+        toast({
+          title:
+            result.stopped === 0
+              ? "No active crawl runs to stop"
+              : `${result.stopped} crawl run${result.stopped === 1 ? "" : "s"} stopped`,
+          duration: 2000,
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: `${result.stopped} crawl run${result.stopped === 1 ? "" : "s"} stopped, ${result.failed.length} failed`,
+          description: result.failed[0]?.error,
+          variant: "error",
+        });
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Could not stop scrapers",
         description: error.message,
         variant: "error",
       });

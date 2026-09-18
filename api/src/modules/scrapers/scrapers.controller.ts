@@ -32,6 +32,7 @@ import {
   ScraperQueryType,
 } from './dto/scraper-query.schema';
 import { DeleteScrapersDto } from './dto/delete-scrapers.dto';
+import { BulkScraperIdsDto } from './dto/bulk-scraper-ids.dto';
 import { Scraper } from './entities/scraper.entity';
 import { ScraperVersion } from './entities/scraper-version.entity';
 import { CrawlRun } from '../crawl-runs/entities/crawl-run.entity';
@@ -74,6 +75,24 @@ export class ScrapersController {
   @ApiResponse({ status: 404, description: 'One or more scrapers not found' })
   removeMany(@Body() dto: DeleteScrapersDto) {
     return this.scrapersService.removeMany(dto.scraper_ids);
+  }
+
+  @Post('bulk-run')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Manually trigger crawl runs for multiple scrapers' })
+  @ApiResponse({ status: 201, description: 'Crawl runs triggered where possible' })
+  @ApiResponse({ status: 404, description: 'One or more scrapers not found' })
+  runMany(@Body() dto: BulkScraperIdsDto) {
+    return this.scrapersService.runMany(dto.scraper_ids);
+  }
+
+  @Post('bulk-stop')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({ summary: 'Stop active crawl runs for multiple scrapers' })
+  @ApiResponse({ status: 200, description: 'Active crawl runs stopped where possible' })
+  @ApiResponse({ status: 404, description: 'One or more scrapers not found' })
+  stopMany(@Body() dto: BulkScraperIdsDto) {
+    return this.scrapersService.stopMany(dto.scraper_ids);
   }
 
   @Get(':id')

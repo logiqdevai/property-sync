@@ -432,6 +432,84 @@ export class ScrapersService {
     );
   }
 
+  async runMany(scraperIds: string[], skipSpikeCheck?: boolean) {
+    const uniqueIds = [...new Set(scraperIds)];
+    const count = await this.prisma.scraper.count({
+      where: { id: { in: uniqueIds } },
+    });
+
+    if (count !== uniqueIds.length) {
+      throw new NotFoundException('One or more scrapers not found');
+    }
+
+    const results = await Promise.allSettled(
+      uniqueIds.map((id) => this.runNow(id, skipSpikeCheck)),
+    );
+
+    const failed: Array<{ id: string; error: string }> = [];
+    let started = 0;
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        started += 1;
+      } else {
+        failed.push({
+          id: uniqueIds[index],
+          error:
+            result.reason instanceof Error
+              ? result.reason.message
+              : 'Failed to run scraper',
+        });
+      }
+    });
+
+    return { started, failed };
+  }
+
+  async stopMany(scraperIds: string[]) {
+    const uniqueIds = [...new Set(scraperIds)];
+    const count = await this.prisma.scraper.count({
+      where: { id: { in: uniqueIds } },
+    });
+
+    if (count !== uniqueIds.length) {
+      throw new NotFoundException('One or more scrapers not found');
+    }
+
+    const activeRuns = await this.prisma.crawlRun.findMany({
+      where: {
+        scraper_id: { in: uniqueIds },
+        status: { in: ACTIVE_CRAWL_RUN_STATUSES },
+      },
+      select: { id: true, scraper_id: true },
+    });
+
+    if (activeRuns.length === 0) {
+      return { stopped: 0, failed: [] };
+    }
+
+    const results = await Promise.allSettled(
+      activeRuns.map((run) => this.crawlRunsService.cancel(run.id)),
+    );
+
+    const failed: Array<{ id: string; error: string }> = [];
+    let stopped = 0;
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        stopped += 1;
+      } else {
+        failed.push({
+          id: activeRuns[index].scraper_id ?? activeRuns[index].id,
+          error:
+            result.reason instanceof Error
+              ? result.reason.message
+              : 'Failed to stop scraper',
+        });
+      }
+    });
+
+    return { stopped, failed };
+  }
+
   async remove(id: string) {
     await this.ensureExists(id);
     await this.ensureNoActiveCrawlRuns([id]);

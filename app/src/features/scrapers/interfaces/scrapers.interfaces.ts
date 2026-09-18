@@ -134,6 +134,25 @@ export interface DeleteScrapersPayload {
   scraper_ids: string[];
 }
 
+export interface BulkScraperIdsPayload {
+  scraper_ids: string[];
+}
+
+export interface BulkScraperActionFailure {
+  id: string;
+  error: string;
+}
+
+export interface BulkRunScrapersResult {
+  started: number;
+  failed: BulkScraperActionFailure[];
+}
+
+export interface BulkStopScrapersResult {
+  stopped: number;
+  failed: BulkScraperActionFailure[];
+}
+
 export interface DuplicateScraperPayload {
   source_agency_id: string;
 }

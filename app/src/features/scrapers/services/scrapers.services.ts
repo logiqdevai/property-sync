@@ -2,6 +2,9 @@ import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
 import type { CrawlRun } from "@/features/crawl-runs/interfaces/crawl-runs.interfaces";
 import type {
+  BulkRunScrapersResult,
+  BulkScraperIdsPayload,
+  BulkStopScrapersResult,
   CreateScraperPayload,
   CreateScraperVersionPayload,
   DeleteScrapersPayload,
@@ -135,5 +138,27 @@ export const deleteScrapers = async (
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to delete scrapers. Please try again.");
+  }
+};
+
+export const runScrapers = async (
+  payload: BulkScraperIdsPayload,
+): Promise<BulkRunScrapersResult> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.scrapers.bulkRun, payload);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to run scrapers. Please try again.");
+  }
+};
+
+export const stopScrapers = async (
+  payload: BulkScraperIdsPayload,
+): Promise<BulkStopScrapersResult> => {
+  try {
+    const response = await axiosInstance.post(ApiRoutes.admin.scrapers.bulkStop, payload);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error?.response?.data?.message || "Failed to stop scrapers. Please try again.");
   }
 };

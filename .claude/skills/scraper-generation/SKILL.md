@@ -180,6 +180,41 @@ Playwright's locator engine. Write a throwaway script (delete it after, don't co
 - Visit one real detail-page URL and check `description_selector`, `price_selector`,
   `location_selector`, `external_id_selector`, and image gallery unique count.
 
+### 6a. Ground-truth cross-check: ask the user for a known example property
+
+Before trusting `external_id_selector`/`price_selector` (or any detail-page field selector), **ask the
+user for one example property URL from the agency plus that property's real ID and price as shown on
+the page**. A selector can be syntactically valid and still resolve to the wrong element — e.g. it
+matches a different row/column than intended — without erroring anywhere. The only real proof is
+resolving the selector against a page whose correct answer you already know, then confirming the
+extracted text equals it exactly (not "looks plausible").
+
+Practical technique (mirrors how `samoshouse.gr`'s `Λ-1242` / `10.000,00` example was verified):
+
+1. `curl -sL -A "Mozilla/5.0 ..." "<detail-page-url>" -o page.html` — always send a real browser
+   `User-Agent`; some sites block/serve minimal content to bare `curl`.
+2. **Check the charset before grepping.** Legacy sites (old ASP/PHP builds especially) often declare
+   `<meta charset="iso-8859-7">` or `windows-1253` (Greek), `windows-1252` (Latin), etc. — not UTF-8.
+   Grepping/reading the raw bytes on a non-UTF8 page mangles or hides multi-byte text entirely. Convert
+   first: `iconv -f ISO-8859-7 -t UTF-8 page.html > page.utf8.html` (swap the source encoding to match
+   the declared `charset`), then work from the converted file.
+3. Locate the selector's target text in the converted HTML and manually walk the DOM ancestry the
+   selector describes (`tbody:nth-of-type(2) tr:nth-child(1) .Label1`, etc.) against the *actual* markup.
+4. **Implicit `<tbody>` gotcha** — `detail_page` selectors run inside a real browser DOM
+   (`page.evaluate()` → `document.querySelector`, per §6), which follows the HTML5 tree-construction
+   algorithm: any `<tr>` that appears directly under a `<table>` *before* an explicit `<tbody>` tag gets
+   auto-wrapped into an **implicit first `<tbody>`**, and the next explicit `<tbody>` in the source
+   becomes `nth-of-type(2)`, not `nth-of-type(1)`. Raw HTML source never shows this auto-inserted tag —
+   counting literal `<tbody>` occurrences in the page text will get the index wrong. You have to reason
+   about the parsed tree (or confirm live via a throwaway Playwright `page.evaluate` call), not just
+   grep the source. This is exactly what made `tbody:nth-of-type(1) tr:nth-child(1) .Label1` correctly
+   resolve to the property code row and `tbody:nth-of-type(2) tr:nth-child(1) .Label1` resolve to the
+   price row on `samoshouse.gr`, even though both rows sit in the same `<table>` with only one literal
+   `<tbody>` tag in the source.
+5. Confirm the resolved text equals the user-supplied ground truth (ID and price) exactly before
+   marking the scraper/field as verified. If it doesn't match, don't guess-adjust the selector — re-walk
+   the DOM ancestry against the real markup.
+
 ## 7. Write to the DB
 
 Insert `Scraper` + `ScraperVersion` in one transaction, mirroring what
@@ -306,6 +341,9 @@ freshly enqueued job — it's both safer and less code.
   `auto_update_to_crm` first and telling the user.
 - Writing a scraper config without running it through real Playwright first — curl-only "it should work"
   is not verification.
+- Trusting a detail-page selector because it "looks right" without cross-checking its resolved text
+  against a user-supplied example property's real ID/price (§6a) — and counting literal `<tbody>` tags
+  in raw HTML source instead of reasoning about the browser's auto-inserted implicit `<tbody>` (§6a).
 - Leaving throwaway verification scripts committed inside `scripts/scraper-generator/`.
 - Bootstrapping the full NestJS app or hand-reconstructing service DI graphs to "just fix it now" —
   mirror the real enqueue path instead (§9).

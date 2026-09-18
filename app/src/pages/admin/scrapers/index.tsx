@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Button,
   Checkbox,
   Table,
   Select,
@@ -12,11 +11,12 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { Search, Plus, Trash2, ExternalLink, Play } from "lucide-react";
+import { Search, Plus, Trash2, ExternalLink, Play, Square } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import { TableRowActionsMenu, type TableRowAction } from "@/components/ui/table-row-actions-menu";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { ScraperForm } from "./components/scraper-form";
@@ -30,7 +30,9 @@ import {
   useDeleteScrapers,
   useDuplicateScraper,
   useRunScraperNow,
+  useRunScrapers,
   useScrapers,
+  useStopScrapers,
 } from "@/features/scrapers/hooks/use-scrapers";
 import { parseOptionalNormalizeLimit } from "@/features/scrapers/validation-schemas/scrapers.schema";
 import {
@@ -53,6 +55,8 @@ export default function ScrapersListPage() {
   const createModal = useOverlayState();
   const deleteConfirm = useOverlayState();
   const bulkDeleteConfirm = useOverlayState();
+  const bulkRunConfirm = useOverlayState();
+  const bulkStopConfirm = useOverlayState();
   const runNowModal = useOverlayState();
 
   const [search, setSearch] = useState("");
@@ -86,6 +90,8 @@ export default function ScrapersListPage() {
   const deleteScraper = useDeleteScraper();
   const deleteScrapers = useDeleteScrapers();
   const runScraperNow = useRunScraperNow();
+  const runScrapers = useRunScrapers();
+  const stopScrapers = useStopScrapers();
 
   const scrapers = data?.data ?? [];
   const pagination = data?.pagination;
@@ -97,6 +103,21 @@ export default function ScrapersListPage() {
     return new Set([...selectedKeys].map(String));
   }, [selectedKeys, scrapers]);
   const selectedCount = selectedIds.size;
+
+  const bulkActions = useMemo<TableRowAction[]>(
+    () => [
+      { id: "run", label: "Run selected", icon: Play, isDisabled: selectedCount < 1 },
+      { id: "stop", label: "Stop selected", icon: Square, isDisabled: selectedCount < 1 },
+      {
+        id: "delete",
+        label: "Delete selected",
+        variant: "danger",
+        icon: Trash2,
+        isDisabled: selectedCount < 1,
+      },
+    ],
+    [selectedCount],
+  );
 
   const clearSelection = () => setSelectedKeys(new Set());
 
@@ -119,6 +140,16 @@ export default function ScrapersListPage() {
     clearSelection();
   };
 
+  const handleBulkRun = async () => {
+    await runScrapers.mutateAsync({ scraper_ids: Array.from(selectedIds) });
+    clearSelection();
+  };
+
+  const handleBulkStop = async () => {
+    await stopScrapers.mutateAsync({ scraper_ids: Array.from(selectedIds) });
+    clearSelection();
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -127,13 +158,20 @@ export default function ScrapersListPage() {
           <p className="text-sm text-muted">Version-controlled listing scrapers per agency.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="danger"
+          <BulkActionsMenu
+            label={selectedCount > 0 ? `Actions (${selectedCount})` : "Actions"}
+            actions={bulkActions}
             isDisabled={selectedCount < 1}
-            onPress={bulkDeleteConfirm.open}
-          >
-            Delete selected ({selectedCount})
-          </Button>
+            onAction={(actionId) => {
+              if (actionId === "run") {
+                bulkRunConfirm.open();
+              } else if (actionId === "stop") {
+                bulkStopConfirm.open();
+              } else if (actionId === "delete") {
+                bulkDeleteConfirm.open();
+              }
+            }}
+          />
           <ActionButtonWithPending onPress={createModal.open} idleLeading={<Plus className="h-4 w-4" />}>
             New scraper
           </ActionButtonWithPending>
@@ -458,6 +496,24 @@ export default function ScrapersListPage() {
         confirmLabel="Delete"
         onConfirm={handleBulkDelete}
         isPending={deleteScrapers.isPending}
+      />
+
+      <ConfirmationDialog
+        state={bulkRunConfirm}
+        title="Run selected scrapers now?"
+        description={`This triggers an immediate crawl for ${selectedCount} scrapers, outside their normal schedule. Scrapers that already have an active crawl are skipped.`}
+        confirmLabel="Run now"
+        onConfirm={handleBulkRun}
+        isPending={runScrapers.isPending}
+      />
+
+      <ConfirmationDialog
+        state={bulkStopConfirm}
+        title="Stop selected scrapers?"
+        description={`This cancels the currently queued or running crawl for each of the ${selectedCount} selected scrapers. Scrapers with no active crawl are left untouched.`}
+        confirmLabel="Stop"
+        onConfirm={handleBulkStop}
+        isPending={stopScrapers.isPending}
       />
 
       {runNowScraper && (

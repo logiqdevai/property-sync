@@ -45,6 +45,8 @@ export const ApiRoutes = {
             runNow: (id: string) => `/admin/scrapers/${id}/run-now`,
             duplicate: (id: string) => `/admin/scrapers/${id}/duplicate`,
             bulkDelete: "/admin/scrapers/bulk-delete",
+            bulkRun: "/admin/scrapers/bulk-run",
+            bulkStop: "/admin/scrapers/bulk-stop",
         },
         generationRuns: {
             prefix: "/admin/generation-runs",
