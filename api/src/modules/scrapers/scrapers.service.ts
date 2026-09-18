@@ -31,6 +31,12 @@ export class ScrapersService {
   ) {}
 
   async findAll(query: ScraperQueryType): Promise<PaginatedResult<any>> {
+    const todayFrom =
+      query.today_from ??
+      new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`);
+    const todayTo =
+      query.today_to ?? new Date(todayFrom.getTime() + 24 * 60 * 60 * 1000);
+
     const where = {
       ...(query.search && {
         name: { contains: query.search, mode: 'insensitive' as const },
@@ -40,6 +46,18 @@ export class ScrapersService {
       ...(query.source_agency_id && {
         source_agency_id: query.source_agency_id,
       }),
+      ...(query.today_crawl_status === 'NOT_RUN' && {
+        crawl_runs: { none: { created_at: { gte: todayFrom, lt: todayTo } } },
+      }),
+      ...(query.today_crawl_status &&
+        query.today_crawl_status !== 'NOT_RUN' && {
+          crawl_runs: {
+            some: {
+              created_at: { gte: todayFrom, lt: todayTo },
+              status: query.today_crawl_status,
+            },
+          },
+        }),
     };
 
     const [items, total] = await Promise.all([
@@ -52,12 +70,6 @@ export class ScrapersService {
       }),
       this.prisma.scraper.count({ where }),
     ]);
-
-    const todayFrom =
-      query.today_from ??
-      new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`);
-    const todayTo =
-      query.today_to ?? new Date(todayFrom.getTime() + 24 * 60 * 60 * 1000);
 
     const todayRuns =
       items.length === 0

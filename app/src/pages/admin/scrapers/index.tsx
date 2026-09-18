@@ -39,9 +39,11 @@ import {
   type ScraperHealth,
   type ScraperListQuery,
   type ScraperStatus,
+  type TodayCrawlStatus,
 } from "@/features/scrapers/interfaces/scrapers.interfaces";
 import { ScraperStatusFilterOptions } from "@/config/constants/dropdowns/scrapers/scraper-status-filter.options";
 import { ScraperHealthFilterOptions } from "@/config/constants/dropdowns/scrapers/scraper-health-filter.options";
+import { TodayCrawlStatusFilterOptions } from "@/config/constants/dropdowns/scrapers/today-crawl-status-filter.options";
 import { formatDate, getTodayIso, getLocalDayRangeIso } from "@/lib/date";
 import { useDebouncedValue } from "./hooks/use-debounced-value";
 
@@ -63,6 +65,7 @@ export default function ScrapersListPage() {
   const [status, setStatus] = useState<ScraperStatus | "all">("all");
   const [health, setHealth] = useState<ScraperHealth | "all">("all");
   const [agencyId, setAgencyId] = useState<string | "all">("all");
+  const [todayCrawlStatus, setTodayCrawlStatus] = useState<TodayCrawlStatus | "all">("all");
   const [page, setPage] = useState(1);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deleteScraperId, setDeleteScraperId] = useState<string | null>(null);
@@ -80,8 +83,9 @@ export default function ScrapersListPage() {
       ...(status !== "all" && { status }),
       ...(health !== "all" && { health }),
       ...(agencyId !== "all" && { source_agency_id: agencyId }),
+      ...(todayCrawlStatus !== "all" && { today_crawl_status: todayCrawlStatus }),
     };
-  }, [page, debouncedSearch, status, health, agencyId]);
+  }, [page, debouncedSearch, status, health, agencyId, todayCrawlStatus]);
 
   const { data, isPending } = useScrapers(query);
   const { data: agenciesData } = useAgencies({ limit: 100 });
@@ -262,6 +266,30 @@ export default function ScrapersListPage() {
               {agencies.map((agency) => (
                 <ListBox.Item key={agency.id} id={agency.id}>
                   {agency.name}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
+
+        <Select
+          aria-label="Filter by today's crawl status"
+          selectedKey={todayCrawlStatus}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setTodayCrawlStatus(key as TodayCrawlStatus | "all");
+          }}
+          className="w-48"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {TodayCrawlStatusFilterOptions.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
                 </ListBox.Item>
               ))}
             </ListBox>

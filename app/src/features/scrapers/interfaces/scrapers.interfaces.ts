@@ -105,6 +105,12 @@ export interface UpdateScraperPayload {
   validation_rules?: Record<string, unknown>;
 }
 
+export const TodayCrawlStatuses = {
+  NOT_RUN: "NOT_RUN",
+} as const;
+
+export type TodayCrawlStatus = CrawlRunStatus | typeof TodayCrawlStatuses.NOT_RUN;
+
 export interface ScraperListQuery {
   page?: number;
   limit?: number;
@@ -114,6 +120,7 @@ export interface ScraperListQuery {
   source_agency_id?: string;
   today_from?: string;
   today_to?: string;
+  today_crawl_status?: TodayCrawlStatus;
 }
 
 export interface PaginationMeta {

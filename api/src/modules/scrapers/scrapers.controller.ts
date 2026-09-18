@@ -58,6 +58,12 @@ export class ScrapersController {
   @ApiQuery({ name: 'source_agency_id', required: false, type: String })
   @ApiQuery({ name: 'today_from', required: false, type: String })
   @ApiQuery({ name: 'today_to', required: false, type: String })
+  @ApiQuery({
+    name: 'today_crawl_status',
+    required: false,
+    description: "CrawlRunStatus, or 'NOT_RUN' for scrapers with no crawl run today",
+    type: String,
+  })
   findAll(
     @Query(new ZodValidationPipe(ScraperQuerySchema)) query: ScraperQueryType,
   ) {

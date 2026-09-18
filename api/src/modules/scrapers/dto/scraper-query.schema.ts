@@ -1,5 +1,7 @@
 import { z } from 'zod';
-import { ScraperStatus, ScraperHealth } from 'generated/prisma';
+import { ScraperStatus, ScraperHealth, CrawlRunStatus } from 'generated/prisma';
+
+export const TODAY_CRAWL_STATUS_NOT_RUN = 'NOT_RUN' as const;
 
 export const ScraperQuerySchema = z.object({
   page: z
@@ -26,6 +28,12 @@ export const ScraperQuerySchema = z.object({
     .datetime()
     .optional()
     .transform((v) => (v ? new Date(v) : undefined)),
+  // Filters scrapers by their today_crawl_run status. 'NOT_RUN' means no crawl_run
+  // was created for the scraper within [today_from, today_to) -- used to find
+  // scrapers that haven't run yet today so they can be bulk-run.
+  today_crawl_status: z
+    .union([z.literal(TODAY_CRAWL_STATUS_NOT_RUN), z.nativeEnum(CrawlRunStatus)])
+    .optional(),
 });
 
 export type ScraperQueryType = z.infer<typeof ScraperQuerySchema>;

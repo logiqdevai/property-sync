@@ -187,33 +187,33 @@ user for one example property URL from the agency plus that property's real ID a
 the page**. A selector can be syntactically valid and still resolve to the wrong element — e.g. it
 matches a different row/column than intended — without erroring anywhere. The only real proof is
 resolving the selector against a page whose correct answer you already know, then confirming the
-extracted text equals it exactly (not "looks plausible").
+extracted text equals it exactly (not "looks plausible"). This applies to any site's markup — don't
+special-case it to one platform or layout.
 
-Practical technique (mirrors how `samoshouse.gr`'s `Λ-1242` / `10.000,00` example was verified):
+Practical technique:
 
 1. `curl -sL -A "Mozilla/5.0 ..." "<detail-page-url>" -o page.html` — always send a real browser
    `User-Agent`; some sites block/serve minimal content to bare `curl`.
-2. **Check the charset before grepping.** Legacy sites (old ASP/PHP builds especially) often declare
-   `<meta charset="iso-8859-7">` or `windows-1253` (Greek), `windows-1252` (Latin), etc. — not UTF-8.
-   Grepping/reading the raw bytes on a non-UTF8 page mangles or hides multi-byte text entirely. Convert
-   first: `iconv -f ISO-8859-7 -t UTF-8 page.html > page.utf8.html` (swap the source encoding to match
-   the declared `charset`), then work from the converted file.
-3. Locate the selector's target text in the converted HTML and manually walk the DOM ancestry the
-   selector describes (`tbody:nth-of-type(2) tr:nth-child(1) .Label1`, etc.) against the *actual* markup.
-4. **Implicit `<tbody>` gotcha** — `detail_page` selectors run inside a real browser DOM
-   (`page.evaluate()` → `document.querySelector`, per §6), which follows the HTML5 tree-construction
+2. **Check the declared charset before grepping.** Older/legacy sites sometimes serve a non-UTF-8
+   `<meta charset>` (e.g. an ISO-8859-x or windows-125x variant for a non-Latin alphabet). Grepping or
+   reading raw bytes on a non-UTF8 page mangles or hides multi-byte text. If the charset isn't UTF-8,
+   convert first (`iconv -f <declared-charset> -t UTF-8 page.html > page.utf8.html`) and work from the
+   converted file.
+3. Locate the target text in the (converted) HTML and manually walk the DOM ancestry the selector
+   describes, step by step, against the *actual* markup on that specific page — don't assume the
+   structure from a similar-looking site or from memory of a different agency's layout.
+4. **Table selectors — implicit `<tbody>` gotcha.** `detail_page` selectors run inside a real browser
+   DOM (`page.evaluate()` → `document.querySelector`, per §6), which follows the HTML5 tree-construction
    algorithm: any `<tr>` that appears directly under a `<table>` *before* an explicit `<tbody>` tag gets
-   auto-wrapped into an **implicit first `<tbody>`**, and the next explicit `<tbody>` in the source
-   becomes `nth-of-type(2)`, not `nth-of-type(1)`. Raw HTML source never shows this auto-inserted tag —
-   counting literal `<tbody>` occurrences in the page text will get the index wrong. You have to reason
-   about the parsed tree (or confirm live via a throwaway Playwright `page.evaluate` call), not just
-   grep the source. This is exactly what made `tbody:nth-of-type(1) tr:nth-child(1) .Label1` correctly
-   resolve to the property code row and `tbody:nth-of-type(2) tr:nth-child(1) .Label1` resolve to the
-   price row on `samoshouse.gr`, even though both rows sit in the same `<table>` with only one literal
-   `<tbody>` tag in the source.
+   auto-wrapped into an **implicit first `<tbody>`**, shifting every explicit `<tbody>` after it one
+   index later (`nth-of-type(2)`, not `nth-of-type(1)`). Raw HTML source never shows this auto-inserted
+   tag, so counting literal `<tbody>` occurrences in the page text gets the index wrong whenever a
+   selector uses `tbody:nth-of-type(N)`. Reason about the parsed tree (or confirm live via a throwaway
+   Playwright `page.evaluate` call) instead of trusting a literal tag count from curl'd source. This only
+   applies when the config actually targets table rows this way — irrelevant for div/list-based markup.
 5. Confirm the resolved text equals the user-supplied ground truth (ID and price) exactly before
    marking the scraper/field as verified. If it doesn't match, don't guess-adjust the selector — re-walk
-   the DOM ancestry against the real markup.
+   the DOM ancestry against that page's real markup.
 
 ## 7. Write to the DB
 
@@ -342,8 +342,9 @@ freshly enqueued job — it's both safer and less code.
 - Writing a scraper config without running it through real Playwright first — curl-only "it should work"
   is not verification.
 - Trusting a detail-page selector because it "looks right" without cross-checking its resolved text
-  against a user-supplied example property's real ID/price (§6a) — and counting literal `<tbody>` tags
-  in raw HTML source instead of reasoning about the browser's auto-inserted implicit `<tbody>` (§6a).
+  against a user-supplied example property's real ID/price (§6a) — and, for table-based markup, counting
+  literal `<tbody>` tags in raw HTML source instead of reasoning about the browser's auto-inserted
+  implicit `<tbody>` (§6a).
 - Leaving throwaway verification scripts committed inside `scripts/scraper-generator/`.
 - Bootstrapping the full NestJS app or hand-reconstructing service DI graphs to "just fix it now" —
   mirror the real enqueue path instead (§9).
