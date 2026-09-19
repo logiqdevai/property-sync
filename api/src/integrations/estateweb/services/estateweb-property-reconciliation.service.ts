@@ -9,6 +9,8 @@ import { resolveEstateWebScopeId } from '../utils/estateweb-catalog.util';
 import {
   EstateWebPropertyListItem,
 } from '../interfaces/estateweb-property.interface';
+import { resolveSaleBasePrice } from '@/modules/user-integrations/utils/sales-pricing.util';
+import { buildEstateWebReconcileCodes } from '../utils/estateweb-property-code.util';
 import { EstateWebIntegrationResolverService } from './estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from './estateweb-property.service';
 
@@ -77,20 +79,29 @@ export class EstateWebPropertyReconciliationService {
     catalog: EstateWebPropertyCatalog,
     crawlRunId?: string | null,
   ): Promise<ReconcileCreateOutcome> {
-    const internalId = this.normalizeCode(userProperty.internal_id);
-    if (!internalId) {
-      return { matched: false, shouldUpdate: false };
+    // Look up the code we actually push (sanitized internal_id, falling back to
+    // property_id), not just the raw internal_id -- otherwise a listing we already
+    // created is invisible here whenever the two differ, and a retry duplicates it.
+    let listing: EstateWebPropertyListItem | undefined;
+    for (const code of buildEstateWebReconcileCodes(
+      userProperty.internal_id,
+      userProperty.property_id,
+    )) {
+      const candidate = catalog.byCode.get(code);
+      if (!candidate) continue;
+
+      if (this.isDefiniteCodeCollision(userProperty, candidate)) {
+        this.logger.warn(
+          `Refusing EstateWeb reconciliation for user property ${userProperty.id}: code "${code}" exists on listing ${candidate.id} but identity fields conflict`,
+        );
+        continue;
+      }
+
+      listing = candidate;
+      break;
     }
 
-    const listing = catalog.byCode.get(internalId);
     if (!listing) {
-      return { matched: false, shouldUpdate: false };
-    }
-
-    if (this.isDefiniteCodeCollision(userProperty, listing)) {
-      this.logger.warn(
-        `Refusing EstateWeb reconciliation for user property ${userProperty.id}: internal_id "${internalId}" exists on listing ${listing.id} but identity fields conflict`,
-      );
       return { matched: false, shouldUpdate: false };
     }
 
@@ -127,10 +138,19 @@ export class EstateWebPropertyReconciliationService {
       return true;
     }
 
+    // The price we push is resolveSaleBasePrice(price, price_web, sqm), which can
+    // legitimately differ from the raw `price` (e.g. `price` was mis-parsed as the
+    // sqm figure). Accept a match on either, or we'd refuse our own listing.
+    const pushedPrice = resolveSaleBasePrice(
+      userProperty.price,
+      userProperty.price_web,
+      userProperty.square_meters,
+    );
     if (
       userProperty.price != null &&
       listing.price != null &&
-      !this.pricesEqual(userProperty.price, listing.price)
+      !this.pricesEqual(userProperty.price, listing.price) &&
+      !this.pricesEqual(pushedPrice, listing.price)
     ) {
       return true;
     }
@@ -203,7 +223,7 @@ export class EstateWebPropertyReconciliationService {
   }
 
   private pricesEqual(
-    left: UserProperty['price'],
+    left: UserProperty['price'] | number,
     right: number | undefined,
   ): boolean {
     const a = left != null ? Number(left) : null;

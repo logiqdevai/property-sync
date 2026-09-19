@@ -178,6 +178,25 @@ Together, `resolveEstateWebLocation('Χανιά', 'Αποκορώνας')` now r
 
 ---
 
+## Root cause #10 — Google's forward geocoding names the prefecture "Νομός <Genitive>", which never equals a catalog segment (found 2026-09-19, fixing `user_properties.id = 02c5f549-9afe-4e1b-ae37-38105bb25169`)
+
+`user_properties.id = 02c5f549-9afe-4e1b-ae37-38105bb25169` (samoshouse.gr ref `Λ-1293`, city `ΒΑΘΥ`, district `ΚΟΚΚΑΡΙ`, **no coordinates, no address**) had `estateweb_location_id = 100010` — **Βαθύ, Lasithi, Crete** — for a plot in Kokkari, **Samos**. The admin "Resolve EstateWeb locations" action returned it unchanged/no-op, same as #9: the code was confidently computing the wrong answer. The canonical `Property` (`11727d4f-5c56-410c-87d3-46acf968b72c`) carried the same wrong id, so a re-sync would have re-imported it.
+
+- The catalog has 12 nationwide `"Βαθύ"` nodes and **no Κοκκάρι node**, so the only thing that can disambiguate is the region hint from Google.
+- With no coordinates, the job **forward-geocodes** `"ΚΟΚΚΑΡΙ, ΒΑΘΥ, GR"`. Google answers `Κοκκάρι / Νομός Σάμου` — the legacy prefecture in **genitive with a "Νομός" prefix**. Reverse-geocoding (coordinates present) instead yields plain `Σάμος` (admin_level_4), which is why this never showed up on coordinate-bearing rows.
+- `filterByPreferredPath` matches by exact segment equality: `"νομος σαμου"` ≠ catalog `"σαμος"`, so the hint matched nothing, was skipped, and `pickMostSpecific` chose the deepest `Βαθύ` by tree shape (Lasithi). Verified: same resolver with `['Σάμος']` → `107876`; with `['Νομός Σάμου']` → `100010`.
+
+### Fix
+`expandGoogleAdminSegment()` in `estateweb-location-lookup.util.ts`, applied to every Google segment before it becomes a hint: strips a leading `Νομός ` / `Περιφερειακή Ενότητα ` and derives the nominative by trying genitive→nominative rewrites (`-ου→-ος/-ο/-ι`, `-ης→-η/-α`, `-ας→-α`, `-ων→-α/-ες`), **keeping only candidates that are a real catalog prefecture segment** (`PREFECTURE_SEGMENTS`, path[1]; 54 of them) so it can't invent matches. Irregular ones added to `CITY_ALIASES`: `δωδεκανησου→δωδεκανησα`, `πελλης→πελης` (catalog spells it with one λ), `πειραιως→πειραιας`. Regression tests added (Samos case + a table of 14 prefectures).
+
+### Data fix (2026-09-19)
+Guarded transaction: `user_properties` + canonical `properties` `100010 → 107876` (`Νησιά Αιγαίου » Σάμος » Βαθύ`), `pending_crm_update = true` on the user row, `property_history` entry on the canonical row.
+
+### Not done: sweep
+~701 `Property` / ~662 `UserProperty` rows with an id set have no coordinates and so go through the forward-geocode path. Only those whose city/district is a **nationwide homonym** could be wrong. A sweep needs a Google call per row (dry-run diff first, as in #8/#9) — not run.
+
+---
+
 ## Current architecture summary
 
 ```

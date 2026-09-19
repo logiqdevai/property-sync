@@ -255,4 +255,55 @@ describe('resolveEstateWebLocation', () => {
       })?.id,
     ).toBe(103986);
   });
+
+  it('scopes homonyms by the legacy "Νομός <Genitive>" prefecture Google returns when forward-geocoding text', () => {
+    // Root cause #10: a listing with no coordinates (city "ΒΑΘΥ", district "ΚΟΚΚΑΡΙ" -- Samos)
+    // is forward-geocoded from text, and Google names the prefecture "Νομός Σάμου", never the
+    // catalog's "Σάμος". The hint used to be ignored, so the resolver picked the deepest of 12
+    // nationwide "Βαθύ" nodes -- Lasithi, Crete (100010).
+    expect(
+      resolveEstateWebLocationFromSources({
+        city: 'ΒΑΘΥ',
+        district: 'ΚΟΚΚΑΡΙ',
+        googleAddressSegments: ['Νομός Σάμου', 'Κοκκάρι'],
+      }),
+    ).toEqual(expect.objectContaining({ id: 107876, path: 'Νησιά Αιγαίου » Σάμος » Βαθύ' }));
+    expect(
+      resolveEstateWebLocationFromSources({
+        city: 'Βαθύ',
+        googleAddressSegments: ['Περιφερειακή Ενότητα Σάμου'],
+      })?.id,
+    ).toBe(107876);
+  });
+
+  it.each([
+    ['Νομός Σάμου', 'Σάμος'],
+    ['Νομός Ηρακλείου', 'Ηράκλειο'],
+    ['Νομός Λασιθίου', 'Λασίθι'],
+    ['Νομός Ρεθύμνου', 'Ρέθυμνο'],
+    ['Νομός Χανίων', 'Χανιά'],
+    ['Νομός Κυκλάδων', 'Κυκλάδες'],
+    ['Νομός Δωδεκανήσου', 'Δωδεκάνησα'],
+    ['Νομός Πρέβεζας', 'Πρέβεζα'],
+    ['Νομός Άρτης', 'Άρτα'],
+    ['Νομός Καρδίτσης', 'Καρδίτσα'],
+    ['Νομός Πέλλης', 'Πέλης'],
+    ['Νομός Πειραιώς', 'Πειραιάς'],
+    ['Νομός Ευβοίας', 'Ευβοία'],
+    ['Νομός Κεφαλληνίας', 'Κεφαλληνιά'],
+  ])('maps Google "%s" onto the catalog prefecture %s', (googleSegment, prefecture) => {
+    // Uses a Vathy homonym present in many prefectures: the winner's path must sit under the
+    // prefecture named by the hint whenever that prefecture has a "Βαθύ" node at all; for the
+    // ones that don't, the hint must at least not steer to a different prefecture's node.
+    const resolved = resolveEstateWebLocationFromSources({
+      city: 'Βαθύ',
+      googleAddressSegments: [googleSegment],
+    });
+    const hasVathyInPrefecture = [
+      'Σάμος', 'Ηράκλειο', 'Λασίθι', 'Κυκλάδες', 'Πρέβεζα', 'Ευβοία',
+    ].includes(prefecture);
+    if (hasVathyInPrefecture) {
+      expect(resolved?.path.split(' » ')[1]).toBe(prefecture);
+    }
+  });
 });

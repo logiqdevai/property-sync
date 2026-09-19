@@ -33,6 +33,7 @@ import { resolveEstateWebLocationFromSources } from '../utils/estateweb-location
 import { resolveEstateWebScopeId } from '../utils/estateweb-catalog.util';
 import { getEstateWebInitFieldsForType } from '../utils/estateweb-init-lookup.util';
 import { buildEstateWebImageUrl } from '../utils/estateweb-image-url.util';
+import { resolveEstateWebCode } from '../utils/estateweb-property-code.util';
 import { resolveEstateWebPushSitesForTracker } from '../utils/estateweb-integration-settings.util';
 import {
   computeSalePriceStart,
@@ -125,13 +126,26 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       payload,
     );
 
+    // The CRM record now exists. Persist the link BEFORE any follow-up step: if a
+    // later step throws, the sync run is retried, and a retry that doesn't know this
+    // listing exists would create yet another copy of it in the CRM.
+    await this.linkCreatedProperty(userProperty, result.id);
+
+    // The note is cosmetic. A failure here must not fail the whole CREATE -- the
+    // listing already exists, and failing would send the retry back through CREATE.
     const propertyNote = options?.propertyNote?.trim();
     if (propertyNote) {
-      await this.estateWebPropertyService.createPropertyNote(
-        userIntegrationId,
-        result.id,
-        { note: propertyNote },
-      );
+      try {
+        await this.estateWebPropertyService.createPropertyNote(
+          userIntegrationId,
+          result.id,
+          { note: propertyNote },
+        );
+      } catch (error) {
+        this.logger.warn(
+          `Failed to add CRM note for user_property=${userProperty.id} integration_property_id=${result.id}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
     }
 
     await this.persistIntegrationPropertySites({
@@ -149,6 +163,23 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     );
 
     return { integration_property_id: String(result.id) };
+  }
+
+  private async linkCreatedProperty(
+    userProperty: UserProperty,
+    crmPropertyId: number,
+  ): Promise<void> {
+    try {
+      await this.prisma.userProperty.updateMany({
+        where: { id: userProperty.id, user_id: userProperty.user_id },
+        data: { integration_property_id: String(crmPropertyId) },
+      });
+    } catch (error) {
+      // Best effort: the caller stamps the same id once pushCreate returns.
+      this.logger.warn(
+        `Failed to persist integration_property_id=${crmPropertyId} for user_property=${userProperty.id} right after CREATE: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 
   async pushUpdate(
@@ -1045,22 +1076,10 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   }
 
   private resolveEstateWebCode(userProperty?: UserProperty): string {
-    const candidates = [userProperty?.internal_id, userProperty?.property_id];
-    for (const candidate of candidates) {
-      if (!candidate) continue;
-      // Strip stray leading punctuation (e.g. a scraped "#1987") and any
-      // internal whitespace (e.g. a scraped "AP 419") before validating, so
-      // a fixable value doesn't degrade to an empty code.
-      const sanitized = String(candidate)
-        .trim()
-        .replace(/^[^A-Za-z0-9]+/, '')
-        .replace(/\s+/g, '')
-        .slice(0, 64);
-      if (/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(sanitized)) {
-        return sanitized;
-      }
-    }
-    return '';
+    return resolveEstateWebCode(
+      userProperty?.internal_id,
+      userProperty?.property_id,
+    );
   }
 
   private resolveLocationId(userProperty?: UserProperty): number | null {

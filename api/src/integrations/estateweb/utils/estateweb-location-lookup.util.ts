@@ -115,6 +115,11 @@ const CITY_ALIASES: Record<string, string> = {
   // ESTATEWEB-LOCATION-ACCURACY-FIXES.md.
   αποκορωνας: 'αποκορωνου',
   αποκορωνα: 'αποκορωνου',
+  // Irregular genitive -> catalog-prefecture pairs no suffix rewrite can bridge (see
+  // expandGoogleAdminSegment and root cause #10 in ESTATEWEB-LOCATION-ACCURACY-FIXES.md).
+  δωδεκανησου: 'δωδεκανησα',
+  πελλης: 'πελης', // catalog spells it "Πέλης" (single λ)
+  πειραιως: 'πειραιας',
   malia: 'μαλια',
   stalis: 'σταλιδα',
   mesampelies: 'μεσαμπελιες',
@@ -321,6 +326,63 @@ function guessGreekGenitive(normalized: string): string | null {
     return normalized.slice(0, -2) + 'ου';
   }
   return null;
+}
+
+// Every catalog prefecture-level segment (path[1], e.g. "Σάμος" in "Νησιά Αιγαίου » Σάμος"),
+// used to validate candidate nominatives derived from Google's legacy "Νομός <Genitive>" form.
+const PREFECTURE_SEGMENTS = new Set<string>(
+  ESTATEWEB_LOCATIONS.map((loc) => LOCATION_NORMALIZED_SEGMENTS.get(loc.id)?.[1]).filter(
+    (segment): segment is string => !!segment,
+  ),
+);
+
+// Genitive -> nominative rewrites seen across Greek prefecture names. Unlike the
+// municipality case there's no single regular rule (Σάμου->Σάμος, Ηρακλείου->Ηράκλειο,
+// Χανίων->Χανιά, Κυκλάδων->Κυκλάδες, Ρεθύμνου->Ρέθυμνο, Λασιθίου->Λασίθι, Λευκάδας->Λευκάδα,
+// Ξάνθης->Ξάνθη), so every plausible rewrite is generated and only the ones that name a real
+// catalog prefecture segment are kept.
+const GENITIVE_TO_NOMINATIVE_REWRITES: Array<[suffix: string, replacements: string[]]> = [
+  ['ου', ['ος', 'ο', 'ι']],
+  ['ης', ['η', 'α']],
+  ['ας', ['α']],
+  ['ων', ['α', 'ες']],
+];
+
+const GOOGLE_ADMIN_PREFIXES = ['νομος ', 'περιφερειακη ενοτητα '];
+
+/**
+ * Google's forward geocoding (address text, no coordinates) names the prefecture in its
+ * legacy form -- "Νομός Σάμου" (administrative_area_level_3) -- which never equals a catalog
+ * path segment ("Σάμος"), so the whole hint was silently ignored and the resolver fell back
+ * to picking a same-named homonym by tree depth (root cause #10 in
+ * ESTATEWEB-LOCATION-ACCURACY-FIXES.md). Returns the segment itself plus, when it has a
+ * "Νομός"/"Περιφερειακή Ενότητα" prefix, the bare genitive and any nominative that resolves
+ * to a real catalog prefecture.
+ */
+function expandGoogleAdminSegment(normalized: string): string[] {
+  const out = [normalized];
+  const prefix = GOOGLE_ADMIN_PREFIXES.find((p) => normalized.startsWith(p));
+  if (!prefix) return out;
+
+  const bare = normalized.slice(prefix.length).trim();
+  if (!bare) return out;
+  out.push(bare);
+
+  const candidates = new Set<string>();
+  const alias = CITY_ALIASES[bare];
+  if (alias) candidates.add(alias);
+  for (const [suffix, replacements] of GENITIVE_TO_NOMINATIVE_REWRITES) {
+    if (!bare.endsWith(suffix) || bare.length <= suffix.length + 1) continue;
+    for (const replacement of replacements) {
+      candidates.add(bare.slice(0, -suffix.length) + replacement);
+    }
+  }
+  for (const candidate of candidates) {
+    if (PREFECTURE_SEGMENTS.has(candidate) && !out.includes(candidate)) {
+      out.push(candidate);
+    }
+  }
+  return out;
 }
 
 function expandCityLabels(city?: string | null): {
@@ -733,7 +795,9 @@ export function resolveEstateWebLocationFromSources(input: {
   );
   if (input.googleAddressSegments?.length) {
     const normalizedSegments = input.googleAddressSegments
-      .map((segment) => normalizeEstateWebPlaceLabel(segment))
+      .flatMap((segment) =>
+        expandGoogleAdminSegment(normalizeEstateWebPlaceLabel(segment)),
+      )
       .filter(
         (segment, index, all) =>
           segment && all.indexOf(segment) === index,

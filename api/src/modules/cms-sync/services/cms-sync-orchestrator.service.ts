@@ -7,6 +7,7 @@ import { CmsSyncRunsService } from '@/modules/cms-sync-runs/cms-sync-runs.servic
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
 import { isNotFoundEstateWebError } from '@/integrations/estateweb/utils/estateweb-error.util';
+import { buildEstateWebOwnershipCodes } from '@/integrations/estateweb/utils/estateweb-property-code.util';
 import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
 import {
   AffectedUserProperty,
@@ -923,9 +924,7 @@ export class CmsSyncOrchestratorService {
       // correcting internal_id for an already-pushed property makes every
       // already-linked EstateWeb listing look "not ours" on its next sync
       // and creates a duplicate instead of updating the existing one.
-      const candidates = [internalId, propertyId]
-        .map((value) => value?.trim().toLowerCase())
-        .filter((value): value is string => Boolean(value));
+      const candidates = buildEstateWebOwnershipCodes(internalId, propertyId);
       if (candidates.length === 0) {
         return true;
       }

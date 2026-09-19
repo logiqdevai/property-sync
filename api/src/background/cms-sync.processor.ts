@@ -30,6 +30,7 @@ import {
   EstateWebPropertyCatalog,
   EstateWebPropertyReconciliationService,
 } from '@/integrations/estateweb/services/estateweb-property-reconciliation.service';
+import { buildEstateWebOwnershipCodes } from '@/integrations/estateweb/utils/estateweb-property-code.util';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
 import { EstateWebClientsService } from '@/integrations/estateweb/services/estateweb-clients.service';
@@ -406,8 +407,21 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       ...(propertyNote ? { propertyNote } : {}),
     };
 
+    // The batch payload freezes the operation type when the batch is built. By the time
+    // it runs (a retry after a partial CREATE, a second run queued for the same
+    // property, a manual re-queue) the property may already be linked to a CRM
+    // listing -- a CREATE then would add another copy, so run it as an UPDATE instead
+    // (which still verifies the linked listing is really ours before touching it).
+    let operationType = operation.operation;
+    if (operationType === 'CREATE' && userProperty.integration_property_id) {
+      this.logger.warn(
+        `CMS sync op: property=${operation.user_property_id} queued as CREATE but already linked to integration_property_id=${userProperty.integration_property_id}; running as UPDATE to avoid a duplicate`,
+      );
+      operationType = 'UPDATE';
+    }
+
     try {
-      switch (operation.operation) {
+      switch (operationType) {
         case 'CREATE': {
           if (!reconciliationCatalog) {
             return {
@@ -671,9 +685,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       // correcting internal_id for an already-pushed property makes every
       // already-linked EstateWeb listing look "not ours" on its next sync
       // and creates a duplicate instead of updating the existing one.
-      const candidates = [internalId, propertyId]
-        .map((value) => value?.trim().toLowerCase())
-        .filter((value): value is string => Boolean(value));
+      const candidates = buildEstateWebOwnershipCodes(internalId, propertyId);
       if (candidates.length === 0) {
         return true;
       }
