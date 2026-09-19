@@ -3707,7 +3707,12 @@ export class UserPropertiesService {
   }
 
   private normalizeComparableValue(value: unknown): string {
-    if (value === null || value === undefined) {
+    if (
+      value === null ||
+      value === undefined ||
+      value === Prisma.JsonNull ||
+      value === Prisma.DbNull
+    ) {
       return '';
     }
     if (value instanceof Prisma.Decimal) {
@@ -3740,15 +3745,28 @@ export class UserPropertiesService {
 
   private mergeImagesPreservingProcessed(
     existingImages: unknown,
-    nextImages: Prisma.JsonValue | undefined,
-  ): Prisma.JsonValue | undefined {
-    if (!Array.isArray(nextImages) || !Array.isArray(existingImages)) {
-      return nextImages;
-    }
-
+    nextImages: Prisma.JsonValue | typeof Prisma.JsonNull | undefined,
+  ): Prisma.JsonValue | typeof Prisma.JsonNull | undefined {
     const isProcessed = (url: unknown): url is string =>
       typeof url === 'string' &&
       url.includes(`/${GcsFolders.propertyImages}/`);
+
+    // The source lost all its photos: drop the stale raw URLs (e.g. a placeholder
+    // banner) but keep GCS-processed copies -- those were paid for and may be
+    // what's live in the CRM, so a scrape that comes back empty must not erase them.
+    const nextIsEmpty =
+      nextImages === undefined ||
+      nextImages === Prisma.JsonNull ||
+      (Array.isArray(nextImages) && nextImages.length === 0);
+    if (nextIsEmpty) {
+      if (!Array.isArray(existingImages)) return nextImages;
+      const kept = existingImages.filter(isProcessed);
+      return kept.length > 0 ? kept : Prisma.JsonNull;
+    }
+
+    if (!Array.isArray(nextImages) || !Array.isArray(existingImages)) {
+      return nextImages;
+    }
 
     return nextImages.map((url, index) => {
       const existingUrl = existingImages[index];
@@ -3807,7 +3825,10 @@ export class UserPropertiesService {
       ),
       price_web: property.price_web,
       features: property.features ?? undefined,
-      images: property.images ?? undefined,
+      // JsonNull (not undefined) so a source that loses all its photos clears
+      // them here too -- `undefined` means "leave untouched" to Prisma and would
+      // keep stale images (e.g. a placeholder banner) on the user property forever.
+      images: property.images ?? Prisma.JsonNull,
       normalized_data: property.normalized_data ?? undefined,
       duplicate_group_id: property.duplicate_group_id,
       last_synced_at: new Date(),
