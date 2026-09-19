@@ -20,13 +20,19 @@ export type EstateWebDuplicatePropertiesModalState = ReturnType<typeof useOverla
 
 const NONE_SELECTED = "";
 
+// Copies the EstateWeb listing ids of the extra copies (everything except the listing
+// linked to a saved property) -- the ones to delete in "Manage EstateWeb properties".
+const CRM_EXTRA_COPY_IDS = "crm_extra_copy_ids";
+
 const CopyIdFieldOptions = [
   { id: "user_property_id", label: "User property IDs" },
   { id: "internal_id", label: "Internal IDs" },
   { id: "property_id", label: "Property IDs" },
+  { id: CRM_EXTRA_COPY_IDS, label: "EstateWeb IDs to delete (extra copies)" },
 ] as const;
 
 type CopyIdField = (typeof CopyIdFieldOptions)[number]["id"];
+type ListingCopyField = Exclude<CopyIdField, typeof CRM_EXTRA_COPY_IDS>;
 
 function integrationLabel(integration: { userEmail: string; email: string | null }) {
   return integration.email ? `${integration.userEmail} (${integration.email})` : integration.userEmail;
@@ -38,9 +44,19 @@ function sanitizeFilenamePart(value: string) {
 
 function getCopyFieldValue(
   listing: EstateWebDuplicatePropertyListing,
-  field: CopyIdField,
+  field: ListingCopyField,
 ): string | null {
   return listing[field];
+}
+
+// The listing linked to a saved property is the keeper; every other listing sharing the
+// code is an extra copy. A group with no linked listing has no safe keeper to pick, so it
+// returns null and is left out rather than risking deleting every copy.
+function getExtraCopyIds(group: EstateWebDuplicatePropertyGroup): string[] | null {
+  if (!group.listings.some((listing) => listing.user_property_id)) return null;
+  return group.listings
+    .filter((listing) => !listing.user_property_id)
+    .map((listing) => String(listing.id));
 }
 
 function getGroupPropertyIds(group: EstateWebDuplicatePropertyGroup): string[] {
@@ -104,7 +120,7 @@ export function EstateWebDuplicatePropertiesModal({
   const selectedIntegration =
     integrations?.find((integration) => integration.id === selectedIntegrationId) ?? null;
 
-  const groups = duplicates ?? [];
+  const groups = useMemo(() => duplicates ?? [], [duplicates]);
 
   const stats = useMemo(() => {
     const groupCount = groups.length;
@@ -128,12 +144,29 @@ export function EstateWebDuplicatePropertiesModal({
     [groups],
   );
 
+  const extraCopies = useMemo(() => {
+    const ids: string[] = [];
+    let skippedGroups = 0;
+    for (const group of groups) {
+      const groupIds = getExtraCopyIds(group);
+      if (groupIds === null) {
+        skippedGroups += 1;
+        continue;
+      }
+      ids.push(...groupIds);
+    }
+    return { ids: [...new Set(ids)], skippedGroups };
+  }, [groups]);
+
+  const isCopyingExtraCopies = copyIdField === CRM_EXTRA_COPY_IDS;
+
   const copyValues = useMemo(() => {
+    if (copyIdField === CRM_EXTRA_COPY_IDS) return extraCopies.ids;
     const values = rows
       .map((row) => getCopyFieldValue(row, copyIdField))
       .filter((value): value is string => Boolean(value));
     return [...new Set(values)];
-  }, [rows, copyIdField]);
+  }, [rows, copyIdField, extraCopies]);
 
   const handleDownload = () => {
     const lines = rows.map((row) => {
@@ -157,7 +190,9 @@ export function EstateWebDuplicatePropertiesModal({
     }
 
     try {
-      await navigator.clipboard.writeText(copyValues.join("\n"));
+      // Extra-copy ids are pasted into the bulk delete tool, which takes a comma-separated
+      // list; the other fields keep one value per line.
+      await navigator.clipboard.writeText(copyValues.join(isCopyingExtraCopies ? "," : "\n"));
       setCopyFeedback(`Copied ${copyValues.length} ${CopyIdFieldOptions.find((option) => option.id === copyIdField)?.label.toLowerCase() ?? "IDs"}.`);
     } catch {
       setCopyFeedback("Could not copy to clipboard.");
@@ -320,6 +355,19 @@ export function EstateWebDuplicatePropertiesModal({
                               Copy IDs
                             </Button>
                           </div>
+
+                          {isCopyingExtraCopies ? (
+                            <p className="text-sm text-muted">
+                              {extraCopies.ids.length} extra{" "}
+                              {extraCopies.ids.length === 1 ? "copy" : "copies"} to delete (the
+                              listing linked to a saved property is always kept).
+                              {extraCopies.skippedGroups > 0
+                                ? ` ${extraCopies.skippedGroups} ${
+                                    extraCopies.skippedGroups === 1 ? "code" : "codes"
+                                  } skipped: no listing is linked to a saved property, so there is no safe copy to keep.`
+                                : ""}
+                            </p>
+                          ) : null}
 
                           {copyFeedback ? (
                             <p className="text-sm text-muted">{copyFeedback}</p>

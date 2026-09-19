@@ -197,6 +197,27 @@ Guarded transaction: `user_properties` + canonical `properties` `100010 → 1078
 
 ---
 
+## Root cause #11 — Samos villages the catalog doesn't have, on an agency whose region only the agency itself knows (found 2026-09-19, samoshouse.gr; **not fixed in code**)
+
+Client reported `Λ-969, Λ-1198, Λ-1120, Λ-28, Λ-19, Λ-1308, Λ-1235` (tracker `48e9b8fa-d21f-497f-9fe7-5db0bcd6485c`) as wrong. Sizing the agency: **37 of 141** samoshouse properties sit outside Samos (104 are correct). They are Samos towns/villages — `ΚΑΡΛΟΒΑΣΙ` + `ΜΕΣΑΙΟ`/`ΑΛΩΝΑΚΙ`/`ΑΓ. ΘΕΟΔΩΡΟΙ`/`ΠΟΤΑΜΙ`/`ΑΜΜΟΥΔΙΕΣ`, `ΒΑΘΥ`, `ΠΥΘΑΓΟΡΕΙΟ`/`ΠΥΡΓΟΣ`, `ΑΓ.ΚΩΝ/ΝΟΣ` — resolved to Thessaloniki, Arta, Corinthia, Evia, W. Attica, Crete, Ilia, Phthiotida. **None of the 141 has coordinates or an address**, and the description text never says "Σάμος"; the only region signal is the agency itself.
+
+Three mechanisms combine:
+1. **Unique-district fallback.** In `resolveByDistrict`, `!anyKnownCity || districtMatches.length === 1` accepts a district that has exactly one catalog node nationwide even when the scraped city is a known place elsewhere. `ΚΑΡΛΟΒΑΣΙ / ΜΕΣΑΙΟ`: the catalog's only `Μεσαίο` is in Thessaloniki (Karlovasi's village isn't catalogued), so it beats the known Samos `Καρλόβασι` (107877).
+2. **Polluted forward-geocode hints.** For a bare ambiguous name Google's results merge several homonyms' components (root cause #4's merge is right for reverse geocoding, wrong here): `ΒΑΘΥ, ΒΑΘΥ, GR` → `["Εύβοια","Νομός Σάμου","Μήλος","Βαθύ"]`, and Google's *top* hit is Evia. `ΑΛΩΝΑΚΙ, ΚΑΡΛΟΒΑΣΙ` → `["Νομός Σάμου","Άρτα","Νέο Καρλόβασι","Αλωνάκι"]`; the stray `Άρτα` narrows the many `Αλωνάκι` nodes to the single Arta one and mechanism 1 accepts it. For `Λ-19`/`Λ-28` the **un-hinted** resolver gives the right `Σάμος » Καρλόβασι`; the hinted (admin/async) job overwrites it with Arta.
+3. **Catalog gaps.** Samos has only `Βαθύ` 107876, `Καρλόβασι` 107877, `Πυθαγόρειο` 107879 — no `Αλωνάκι`, `Μεσαίο` or `Άγιος Κωνσταντίνος`.
+
+**Tried and reverted:** "if the district's only match is in a different prefecture than the known city, use the city". It fixes samoshouse but the old-vs-new run over **all 4,126 properties changed 90 rows in 12 agencies, many of them regressions** (`Γλυφάδα / Άνω Γλυφάδα` → Komotini, `Κυψέλη / Νέα Κυψέλη` → Troizinia, `Πεύκη`→Trikala, `Δάφνη`→Sitia, `Αγία Παρασκευή`→Heraklion). Reason: the catalog's *city* node is often itself the homonym (bare municipality names aren't indexed when a homonym exists — `γλυφαδα` maps only to the Komotini village), so from two text labels alone the resolver cannot tell which one is right.
+
+**Missing signal (not built):** an agency region prior — e.g. the dominant prefecture of the agency's other properties (samoshouse: 104/141 Samos), used only to break ties between candidate nodes. Needs a design decision; it changes behaviour for every agency.
+
+**Before changing shared resolver logic, always run the old-vs-new diff over every `properties` row** (load `git show HEAD:…util.ts` as a temp sibling file, compare `resolveEstateWebLocationFromSources` per row, review every changed group). The spec alone passed 32/32 on the bad rule.
+
+**Do not run the admin "Resolve EstateWeb locations" action on samoshouse rows** until this is resolved — the hinted job produces the Arta/Evia results above.
+
+**Data fix applied 2026-09-19** (guarded transaction, dry-run first, per the #8/#9/#10 pattern): the 37 off-Samos `user_properties` (+ their 37 canonical `properties`, none shared with other users) set to `Σάμος » Καρλόβασι` 107877 (24), `Σάμος » Βαθύ` 107876 (6), `Σάμος » Πυθαγόρειο` 107879 (3) and the prefecture node `Σάμος` 603 (4 × `Άγιος Κωνσταντίνος`, which has no Samos catalog node); `pending_crm_update = true` on the user rows and a `property_history` entry (`UPDATED`, `estateweb_location_id`) on each canonical row. All 141 samoshouse properties are now under Samos. The CRM listings keep the old location until each is pushed (tracker has `auto_update_to_crm = false`, so use "Push to CRM").
+
+---
+
 ## Current architecture summary
 
 ```
