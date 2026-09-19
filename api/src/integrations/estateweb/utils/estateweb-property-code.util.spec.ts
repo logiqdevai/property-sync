@@ -11,6 +11,15 @@ describe('estateweb-property-code.util', () => {
       expect(resolveEstateWebCode('#1987', null)).toBe('1987');
     });
 
+    it('strips a non-ASCII (Greek) letter prefix, e.g. "Λ-1296" is stored as "1296"', () => {
+      expect(resolveEstateWebCode('Λ-1296', 'Λ-1296')).toBe('1296');
+      // ...so reconciliation must look up "1296", not the raw "λ-1296".
+      expect(buildEstateWebReconcileCodes('Λ-1296', 'Λ-1296')).toEqual([
+        '1296',
+        'λ-1296',
+      ]);
+    });
+
     it('falls back to property_id when internal_id is missing or unusable', () => {
       expect(resolveEstateWebCode(null, 'abc-123')).toBe('abc-123');
       expect(resolveEstateWebCode('###', 'abc-123')).toBe('abc-123');
