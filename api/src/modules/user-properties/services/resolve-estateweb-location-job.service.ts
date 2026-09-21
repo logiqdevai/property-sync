@@ -35,22 +35,27 @@ export class ResolveEstateWebLocationJobService {
     city: string | null;
     postal_code: string | null;
     country: string | null;
-  }): Promise<string[]> {
+  }): Promise<{ segments: string[]; coordinatePrefectures: string[] }> {
     if (fields.latitude != null && fields.longitude != null) {
       const details = await this.googleMapsService.reverseGeocode(
         Number(fields.latitude),
         Number(fields.longitude),
       );
-      return details?.adminSegments ?? [];
+      return {
+        segments: details?.adminSegments ?? [],
+        coordinatePrefectures: details?.prefectureSegments ?? [],
+      };
     }
 
     const addressText = buildAddressText(fields);
-    if (!addressText) return [];
+    if (!addressText) return { segments: [], coordinatePrefectures: [] };
 
     const details = await this.googleMapsService.geocodeAddressDetailed(
       addressText,
     );
-    return details?.adminSegments ?? [];
+    // Forward-geocoding ambiguous text can merge several homonyms' regions (root cause #11),
+    // so it never yields a hard prefecture constraint.
+    return { segments: details?.adminSegments ?? [], coordinatePrefectures: [] };
   }
 
   async processProperty(
@@ -82,15 +87,15 @@ export class ResolveEstateWebLocationJobService {
     }
 
     try {
-      const googleAddressSegments =
-        await this.resolveGoogleAddressSegments(property);
+      const google = await this.resolveGoogleAddressSegments(property);
 
       const resolved = resolveEstateWebLocationFromSources({
         city: property.city,
         district: property.district,
         title: property.title,
         description: property.description,
-        googleAddressSegments,
+        googleAddressSegments: google.segments,
+        googleCoordinatePrefectures: google.coordinatePrefectures,
       });
 
       if (!resolved) {
@@ -146,15 +151,15 @@ export class ResolveEstateWebLocationJobService {
     }
 
     try {
-      const googleAddressSegments =
-        await this.resolveGoogleAddressSegments(property);
+      const google = await this.resolveGoogleAddressSegments(property);
 
       const resolved = resolveEstateWebLocationFromSources({
         city: property.city,
         district: property.district,
         title: property.title,
         description: property.description,
-        googleAddressSegments,
+        googleAddressSegments: google.segments,
+        googleCoordinatePrefectures: google.coordinatePrefectures,
       });
 
       if (!resolved) {

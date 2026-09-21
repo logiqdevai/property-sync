@@ -306,4 +306,61 @@ describe('resolveEstateWebLocation', () => {
       expect(resolved?.path.split(' » ')[1]).toBe(prefecture);
     }
   });
+  it('rejects city homonyms outside the prefecture the coordinates reverse-geocode to', () => {
+    // Root cause #12: city "Φούρνοι" only names Samos/Argolida/Achaia/Evia/Phthiotida nodes --
+    // the Lasithi village is catalogued as "Φουρνή". Hints are soft, so a Κρήτη/Λασίθι hint
+    // that matched none of them was dropped and Samos (107898) won even with perfect coords.
+    const googleAddressSegments = [
+      'Αποκεντρωμένη Διοίκηση Κρήτης', 'Κρήτη', 'Λασίθι', 'Δήμος Αγίου Νικολάου',
+      'Νεάπολη', 'Τοπική Κοινότητα Φουρνής', 'Φουρνή',
+    ];
+    expect(
+      resolveEstateWebLocationFromSources({
+        city: 'Φούρνοι',
+        title: 'House of 80m2 for sale and restoration in Fourni, Lassithi',
+        googleAddressSegments,
+        googleCoordinatePrefectures: ['Λασίθι'],
+      }),
+    ).toEqual(
+      expect.objectContaining({ id: 100216, path: 'Κρήτη » Λασίθι » Δήμος Αγίου Νικολάου » Φουρνή' }),
+    );
+    // Forward-geocoded segments (no coordinate prefectures) stay a soft preference.
+    expect(
+      resolveEstateWebLocationFromSources({ city: 'Φούρνοι', googleAddressSegments })?.id,
+    ).toBe(107898);
+  });
+
+  it('keeps text that pins a single prefecture when the coordinates point elsewhere', () => {
+    // Real rows: "Χανιά / Ακρωτήρι" with a point near Thessaloniki, and "Κόρινθος" with a
+    // point in Patras -- bad geocodes, not homonyms.
+    expect(
+      resolveEstateWebLocationFromSources({
+        city: 'Χανιά',
+        district: 'Ακρωτήρι',
+        googleAddressSegments: ['Κεντρική Μακεδονία', 'Θεσσαλονίκη', 'Βόλβη', 'Μικρή Βόλβη'],
+        googleCoordinatePrefectures: ['Θεσσαλονίκη'],
+      })?.id,
+    ).toBe(100606);
+    expect(
+      resolveEstateWebLocationFromSources({
+        city: 'Κόρινθος',
+        googleAddressSegments: ['Δυτικής Ελλάδας', 'Αχαΐα', 'Πάτρα', 'ΔΗΜΟΣ ΠΑΤΡΕΩΝ'],
+        googleCoordinatePrefectures: ['Αχαΐα'],
+      })?.id,
+    ).toBe(110010);
+  });
+
+  it('does not treat a district as unique just because the prefecture filter removed its homonyms', () => {
+    expect(
+      resolveEstateWebLocationFromSources({
+        city: 'Πειραιάς - Κέντρο',
+        district: 'Κέντρο - Λιμάνι',
+        googleAddressSegments: [
+          'Αποκεντρωμένη Διοίκηση Αττικής', 'Αττική', 'Περιφερειακή Ενότητα Πειραιώς',
+          'Πειραιάς', 'ΔΗΜΟΣ ΠΕΙΡΑΙΩΣ',
+        ],
+        googleCoordinatePrefectures: ['Περιφερειακή Ενότητα Πειραιώς'],
+      })?.id,
+    ).toBe(113138);
+  });
 });

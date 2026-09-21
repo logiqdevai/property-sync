@@ -214,6 +214,11 @@ const DISTRICT_EXPANSIONS: Record<string, string[]> = {
 
 export type EstateWebLocationResolveHints = {
   preferredPathSegments?: string[];
+  // Catalog prefecture segments (path[1]) the property is KNOWN to be in -- only derived from
+  // Google reverse-geocoding the property's own coordinates. Unlike preferredPathSegments
+  // (soft: a segment that would empty the candidate list is skipped), candidates outside all
+  // of these are rejected outright. See root cause #12 in ESTATEWEB-LOCATION-ACCURACY-FIXES.md.
+  requiredPrefectureSegments?: string[];
 };
 
 const PERIPHERAL_CITY_LABELS = new Set([
@@ -480,10 +485,33 @@ function expandDistrictLabels(district?: string | null): string[] {
   return labels;
 }
 
+// The catalog splits Attica into four prefectures, which Google's names don't line up with
+// (a Piraeus or East Attica point can come back with just "Αθήνα") -- treat them as one
+// region for the hard prefecture constraint.
+const ATTICA_PREFECTURE_SEGMENTS = ['αθηνα', 'ανατολικη αττικη', 'δυτικη αττικη', 'πειραιας'];
+
+function isInRequiredPrefecture(
+  loc: EstateWebLocation,
+  requiredPrefectureSegments: string[],
+): boolean {
+  const prefecture = LOCATION_NORMALIZED_SEGMENTS.get(loc.id)?.[1];
+  if (!prefecture) return false;
+  if (requiredPrefectureSegments.includes(prefecture)) return true;
+  return (
+    ATTICA_PREFECTURE_SEGMENTS.includes(prefecture) &&
+    requiredPrefectureSegments.some((s) => ATTICA_PREFECTURE_SEGMENTS.includes(s))
+  );
+}
+
 function filterByPreferredPath(
   candidates: EstateWebLocation[],
-  preferredPathSegments?: string[],
+  hints?: EstateWebLocationResolveHints,
 ): EstateWebLocation[] {
+  const required = hints?.requiredPrefectureSegments;
+  if (required?.length) {
+    candidates = candidates.filter((loc) => isInRequiredPrefecture(loc, required));
+  }
+  const preferredPathSegments = hints?.preferredPathSegments;
   if (!preferredPathSegments?.length || candidates.length <= 1) {
     return candidates;
   }
@@ -561,7 +589,7 @@ function resolveParentheticalDistrict(
   district: string,
   cityLabels: string[],
   preferPeripheral: boolean,
-  preferredPathSegments?: string[],
+  hints?: EstateWebLocationResolveHints,
 ): EstateWebLocation | undefined {
   const parsed = parseParentheticalParts(district);
   if (!parsed) return undefined;
@@ -578,11 +606,11 @@ function resolveParentheticalDistrict(
   // a same-level id tie-break purely by having a smaller id.
   const outerMatches = filterByPreferredPath(
     matchesForLabel(parsed.outer),
-    preferredPathSegments,
+    hints,
   );
   const innerMatches = filterByPreferredPath(
     matchesForLabel(parsed.inner),
-    preferredPathSegments,
+    hints,
   );
 
   const related = resolveRelatedToAnchor(outerMatches, innerMatches);
@@ -592,7 +620,7 @@ function resolveParentheticalDistrict(
     outerNorm,
     [innerNorm, ...cityLabels],
     preferPeripheral,
-    preferredPathSegments,
+    hints,
   );
   if (scopedOuter) return scopedOuter;
 
@@ -629,12 +657,10 @@ function resolveByDistrict(
   districtLabel: string,
   cityLabels: string[],
   preferPeripheral: boolean,
-  preferredPathSegments?: string[],
+  hints?: EstateWebLocationResolveHints,
 ): EstateWebLocation | undefined {
-  const districtMatches = filterByPreferredPath(
-    LOCATION_BY_NORMALIZED_NAME.get(districtLabel) ?? [],
-    preferredPathSegments,
-  );
+  const allDistrictMatches = LOCATION_BY_NORMALIZED_NAME.get(districtLabel) ?? [];
+  const districtMatches = filterByPreferredPath(allDistrictMatches, hints);
   if (districtMatches.length === 0) return undefined;
 
   if (cityLabels.length === 0) {
@@ -647,13 +673,21 @@ function resolveByDistrict(
     if (preferPeripheral) {
       scoped = excludeUnderCanonicalCity(scoped, cityLabel);
     }
-    scoped = filterByPreferredPath(scoped, preferredPathSegments);
+    scoped = filterByPreferredPath(scoped, hints);
     const picked = pickMostSpecific(scoped);
     if (picked) return picked;
   }
 
   const anyKnownCity = cityLabels.some(isKnownCatalogLabel);
-  if (!anyKnownCity || districtMatches.length === 1) {
+  // Judge uniqueness without requiredPrefectureSegments: a name left with one node only
+  // because the prefecture filter removed its homonyms (e.g. "Κέντρο" -> just Athens'
+  // Παγκράτι » Κέντρο) says nothing about the scraped city being wrong.
+  const uniqueDistrict =
+    districtMatches.length === 1 &&
+    filterByPreferredPath(allDistrictMatches, {
+      preferredPathSegments: hints?.preferredPathSegments,
+    }).length === 1;
+  if (!anyKnownCity || uniqueDistrict) {
     const fallback = pickMostSpecific(districtMatches);
     // The bare-municipality-name indexing above means a district label can now resolve
     // to a municipality node that is the ANCESTOR of an already-known, more specific city
@@ -696,7 +730,6 @@ export function resolveEstateWebLocation(
   district?: string | null,
   hints?: EstateWebLocationResolveHints,
 ): EstateWebLocation | undefined {
-  const preferredPathSegments = hints?.preferredPathSegments;
   const { labels: cityLabels, preferPeripheral } = expandCityLabels(city);
   const districtLabels = expandDistrictLabels(district);
 
@@ -705,7 +738,7 @@ export function resolveEstateWebLocation(
       districtLabel,
       cityLabels,
       preferPeripheral,
-      preferredPathSegments,
+      hints,
     );
     if (byDistrict) return byDistrict;
   }
@@ -715,7 +748,7 @@ export function resolveEstateWebLocation(
       district,
       cityLabels,
       preferPeripheral,
-      preferredPathSegments,
+      hints,
     );
     if (byParenthetical) return byParenthetical;
   }
@@ -732,14 +765,14 @@ export function resolveEstateWebLocation(
         right,
         [left, ...cityLabels],
         false,
-        preferredPathSegments,
+        hints,
       );
       if (byCompound) return byCompound;
       const leftAsDistrict = resolveByDistrict(
         left,
         cityLabels,
         preferPeripheral,
-        preferredPathSegments,
+        hints,
       );
       if (leftAsDistrict) return leftAsDistrict;
     }
@@ -748,7 +781,7 @@ export function resolveEstateWebLocation(
   for (const cityLabel of cityLabels) {
     const cityMatches = filterByPreferredPath(
       LOCATION_BY_NORMALIZED_NAME.get(cityLabel) ?? [],
-      preferredPathSegments,
+      hints,
     );
     if (cityMatches.length > 0) {
       return pickCanonicalCity(cityMatches);
@@ -785,6 +818,12 @@ export function resolveEstateWebLocationFromSources(input: {
   // path segments directly often enough to scope correctly (e.g. administrative_area_level_3
   // "Θεσσαλονίκη" matches the catalog's prefecture segment even with no "Δήμος" anywhere).
   googleAddressSegments?: string[] | null;
+  // Google's administrative_area_level_3 (prefecture) names from reverse-geocoding the
+  // property's own coordinates. When the scraped text is ambiguous across prefectures, these
+  // become a hard constraint (requiredPrefectureSegments) instead of a soft preference. Never
+  // pass forward-geocoded names here: ambiguous text merges several homonyms' regions
+  // (root cause #11).
+  googleCoordinatePrefectures?: string[] | null;
 }): EstateWebLocation | undefined {
   const preferredPathSegments = inferPreferredPathSegments(
     input.title,
@@ -793,6 +832,8 @@ export function resolveEstateWebLocationFromSources(input: {
     input.city,
     input.district,
   );
+  let googleSegments: string[] = [];
+  let requiredPrefectureSegments: string[] = [];
   if (input.googleAddressSegments?.length) {
     const normalizedSegments = input.googleAddressSegments
       .flatMap((segment) =>
@@ -807,6 +848,24 @@ export function resolveEstateWebLocationFromSources(input: {
         (segment) => !preferredPathSegments.includes(segment),
       ),
     );
+    googleSegments = normalizedSegments;
+  }
+  if (input.googleCoordinatePrefectures?.length) {
+    const coordinatePrefectures = input.googleCoordinatePrefectures
+      .flatMap((segment) =>
+        expandGoogleAdminSegment(normalizeEstateWebPlaceLabel(segment)),
+      )
+      .filter((segment) => PREFECTURE_SEGMENTS.has(segment));
+    // Coordinates can be wrong too (some were forward-geocoded from ambiguous text, or sit on
+    // a generic city-centre point). Only let them overrule text that doesn't already pin a
+    // single prefecture on its own -- "Χανιά / Ακρωτήρι" with a point in Thessaloniki keeps
+    // Chania; "Φούρνοι" (Samos, Argolida, Evia, ...) with a point in Lasithi does not.
+    if (
+      coordinatePrefectures.length > 0 &&
+      textCandidatePrefectures(input.city, input.district).size !== 1
+    ) {
+      requiredPrefectureSegments = coordinatePrefectures;
+    }
   }
   const latinRaw =
     !!input.rawLocation && isMostlyLatinLabel(input.rawLocation);
@@ -821,7 +880,10 @@ export function resolveEstateWebLocationFromSources(input: {
   ) {
     preferredPathSegments.push('λασιθι');
   }
-  const hints: EstateWebLocationResolveHints = { preferredPathSegments };
+  const hints: EstateWebLocationResolveHints = {
+    preferredPathSegments,
+    requiredPrefectureSegments,
+  };
 
   const primary = resolveEstateWebLocation(input.city, input.district, hints);
 
@@ -839,6 +901,22 @@ export function resolveEstateWebLocationFromSources(input: {
   }
   if (primary) return primary;
   if (fromRaw) return fromRaw;
+
+  // The scraped city/district text only matched homonyms outside the prefecture the
+  // coordinates are in (e.g. city "Φούρνοι" -> only Samos/Argolida/Evia/... nodes, while the
+  // coordinates are in Lasithi, where the catalog spells the village "Φουρνή"). Google named
+  // the real place, so take the most specific Google segment (they're ordered broad-to-
+  // specific) that has a catalog node inside the known prefecture.
+  if (requiredPrefectureSegments.length > 0) {
+    for (let i = googleSegments.length - 1; i >= 0; i--) {
+      const named = filterByPreferredPath(
+        LOCATION_BY_NORMALIZED_NAME.get(googleSegments[i]) ?? [],
+        hints,
+      );
+      const best = pickMostSpecific(named);
+      if (best) return best;
+    }
+  }
 
   const placeText = [input.title, input.description]
     .filter(Boolean)
@@ -862,7 +940,10 @@ export function resolveEstateWebLocationFromSources(input: {
   if (preferredPathSegments.length > 0) {
     for (const segment of preferredPathSegments) {
       const cityNode = (LOCATION_BY_NORMALIZED_NAME.get(segment) ?? []).find(
-        (loc) => loc.is_city,
+        (loc) =>
+          loc.is_city &&
+          (!requiredPrefectureSegments.length ||
+            isInRequiredPrefecture(loc, requiredPrefectureSegments)),
       );
       if (cityNode) return cityNode;
     }
@@ -878,14 +959,48 @@ export function resolveEstateWebLocationFromSources(input: {
     // name exactly matches one of the hint segments -- still never guesses a
     // same-named-but-wrong-region homonym, since every candidate here was named by a real
     // hint segment (Google ground truth or a region regex), not picked blind.
-    const namedMatches = preferredPathSegments.flatMap(
-      (segment) => LOCATION_BY_NORMALIZED_NAME.get(segment) ?? [],
+    const namedMatches = preferredPathSegments.flatMap((segment) =>
+      filterByPreferredPath(LOCATION_BY_NORMALIZED_NAME.get(segment) ?? [], {
+        requiredPrefectureSegments,
+      }),
     );
     const bestNamed = pickMostSpecific(namedMatches);
     if (bestNamed) return bestNamed;
   }
 
   return undefined;
+}
+
+/**
+ * Prefectures the scraped city/district text could refer to on its own: the district nodes
+ * scoped by the city when the two agree (same pairing resolveByDistrict tries first),
+ * otherwise every catalog node either label names.
+ */
+function textCandidatePrefectures(
+  city?: string | null,
+  district?: string | null,
+): Set<string> {
+  const { labels: cityLabels } = expandCityLabels(city);
+  const districtLabels = expandDistrictLabels(district);
+  const prefecturesOf = (locs: EstateWebLocation[]) =>
+    new Set(
+      locs
+        .map((loc) => LOCATION_NORMALIZED_SEGMENTS.get(loc.id)?.[1])
+        .filter((segment): segment is string => !!segment),
+    );
+
+  for (const districtLabel of districtLabels) {
+    const districtMatches = LOCATION_BY_NORMALIZED_NAME.get(districtLabel) ?? [];
+    for (const cityLabel of cityLabels) {
+      const scoped = districtMatches.filter((loc) => matchesCity(loc, cityLabel));
+      if (scoped.length > 0) return prefecturesOf(scoped);
+    }
+  }
+  return prefecturesOf(
+    [...districtLabels, ...cityLabels].flatMap(
+      (label) => LOCATION_BY_NORMALIZED_NAME.get(label) ?? [],
+    ),
+  );
 }
 
 function isMostlyLatinLabel(value: string): boolean {

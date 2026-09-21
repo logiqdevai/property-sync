@@ -1,6 +1,6 @@
 # EstateWeb Location Resolution — Accuracy Debugging Session
 
-**Date:** 2026-08-31 (updated 2026-09-02 — root cause #8 + its backfill; updated 2026-09-03 — root cause #9 + its backfill)
+**Date:** 2026-08-31 (updated 2026-09-02 — root cause #8 + its backfill; updated 2026-09-03 — root cause #9 + its backfill; updated 2026-09-21 — root cause #12)
 **Status:** ✅ Root causes fixed and verified against production data. One optional follow-up (AI tie-break) not started. Root cause #8's backfill (2026-09-02) and root cause #9's backfill (2026-09-03) are complete.
 **Related doc:** `docs/ESTATEWEB-LOCATION-MAPPING.md` (original build/handoff doc — read that first for the base architecture; this doc covers a follow-up debugging session that found and fixed several correctness bugs in what that doc shipped).
 
@@ -215,6 +215,26 @@ Three mechanisms combine:
 **Do not run the admin "Resolve EstateWeb locations" action on samoshouse rows** until this is resolved — the hinted job produces the Arta/Evia results above.
 
 **Data fix applied 2026-09-19** (guarded transaction, dry-run first, per the #8/#9/#10 pattern): the 37 off-Samos `user_properties` (+ their 37 canonical `properties`, none shared with other users) set to `Σάμος » Καρλόβασι` 107877 (24), `Σάμος » Βαθύ` 107876 (6), `Σάμος » Πυθαγόρειο` 107879 (3) and the prefecture node `Σάμος` 603 (4 × `Άγιος Κωνσταντίνος`, which has no Samos catalog node); `pending_crm_update = true` on the user rows and a `property_history` entry (`UPDATED`, `estateweb_location_id`) on each canonical row. All 141 samoshouse properties are now under Samos. The CRM listings keep the old location until each is pushed (tracker has `auto_update_to_crm = false`, so use "Push to CRM").
+
+---
+
+## Root cause #12 — hints are soft, so coordinates that contradict EVERY text candidate were ignored (found 2026-09-21, fixing agency refs `16242`, `631`, `16327`, `16233`)
+
+Four listings in **Φουρνή, Lasithi** (coords `35.2591, 25.6625`, city `Φούρνοι`, no district) had `estateweb_location_id = 107898` (`Νησιά Αιγαίου » Σάμος » Δήμος Φούρνων » Φούρνοι`); correct is `100216` (`Κρήτη » Λασίθι » Δήμος Αγίου Νικολάου » Φουρνή`). "Resolve EstateWeb locations" returned *unchanged*, although Google's reverse geocode was exact: `Κρήτη / Λασίθι / Δήμος Αγίου Νικολάου / Νεάπολη / Φουρνή`.
+
+- The catalog calls the Lasithi village `Φουρνή`; `Φούρνοι` only names nodes in Samos, Argolida, Achaia, Evia, Phthiotida — none in Crete.
+- `filterByPreferredPath` is **soft**: a hint segment that would empty the candidate list is skipped. Every Google segment contradicted every candidate, so all were skipped and `pickCanonicalCity` picked the smallest id → Samos. The last-resort branch that would have used Google's own `Φουρνή` was never reached, because the city step "succeeded".
+
+### Fix
+- `GoogleMapsService` also returns `prefectureSegments` — only `administrative_area_level_3` (the Περιφερειακή Ενότητα level in Greece). **Not** all admin segments: in Attica the *locality* `Ηράκλειο` equals the Crete prefecture's name.
+- The job passes them as `googleCoordinatePrefectures` **only on the reverse-geocode (coordinates) path**. Forward-geocoded text is polluted by homonyms (#11), so it stays soft.
+- `resolveEstateWebLocationFromSources` turns them into a **hard** `requiredPrefectureSegments` constraint (applied inside `filterByPreferredPath`, so every step sees it; the four Attica catalog prefectures count as one region), **only when the text is ambiguous**: `textCandidatePrefectures(city, district)` spans ≠ 1 prefecture. Coordinates are sometimes junk (Σικυώνα rows sit on a generic Athens-centre point, `Χανιά / Ακρωτήρι` has a point near Thessaloniki, `Κόρινθος` one in Patras); text that pins one prefecture wins over them.
+- When the text finds nothing inside the required prefecture, the most specific Google segment (they are broad-to-specific) with a catalog node inside it is used, before the title patterns / last resort.
+- `resolveByDistrict`'s "district is unique nationwide" fallback judges uniqueness **without** the hard filter; otherwise `Κέντρο` filtered down to Athens' `Παγκράτι » Κέντρο` beat `Πειραιάς - Κέντρο`.
+- The synchronous creation-time resolver (no Google) is unchanged: 0 diffs over all rows.
+
+### Old-vs-new diff (all 4,142 `properties`, real reverse-geocodes of all 2,555 distinct coordinates)
+191 rows change when the job re-runs. Reviewed per group: nearly all fix a same-name wrong-region or coarse pick — `Φούρνοι` Samos→Φουρνή, `Κλίμα`/`Κάμιλα`/`Πιτσινιά` Heraklion town→Φαιστός villages, `… / Αρκάδι` Heraklion→Rethymno villages, `Θεολόγος Φθιώτιδας` Lasithi→Phthiotida, `Λιβάδι Παρνασσού` Arcadia→Boeotia, `Κρήτη` (id 4)→the specific village, `Ηράκλειο` listings whose titles say "Agios Nikolaos"→Agios Nikolaos. A few are neutral (junk coords where the old answer was wrong too, e.g. `Κάβος Ίσθμια` Aegina→Corfu). The regressions of earlier drafts (all admin segments as the constraint; no text-ambiguity guard; unique-district after hard filter) are spec cases now.
 
 ---
 

@@ -15,6 +15,10 @@ export interface GoogleGeocodeDetails {
     // "Δήμος" word at all), so restricting to it left the vast majority of addresses with
     // no usable hint.
     adminSegments: string[];
+    // Just the administrative_area_level_3 names -- in Greece that's the prefecture /
+    // regional unit ("Λασίθι", "Κορινθία", "Περιφερειακή Ενότητα Πειραιώς"), unlike
+    // adminSegments, where a locality can share a prefecture's name ("Ηράκλειο" Attica).
+    prefectureSegments: string[];
     formattedAddress: string | null;
 }
 
@@ -132,10 +136,19 @@ export class GoogleMapsService {
             }
         }
 
+        const prefectureSegments = [
+            ...new Set(
+                components
+                    .filter((component) => component.types.includes('administrative_area_level_3'))
+                    .map((component) => component.long_name),
+            ),
+        ];
+
         return {
             lat,
             lng,
             adminSegments,
+            prefectureSegments,
             formattedAddress: result.formatted_address ?? null,
         };
     }
