@@ -25,6 +25,8 @@ import {
   EstateWebPropertyListQuery,
   EstateWebPropertyListResponse,
   EstateWebPropertyResponse,
+  EstateWebReorderImageItem,
+  EstateWebReorderImagesPayload,
   EstateWebUpdatePropertyPayload,
   EstateWebUploadImagePayload,
   EstateWebUpdateImagePayload,
@@ -51,6 +53,7 @@ import {
 import { listEstateWebLocationCatalog } from '../utils/estateweb-location-lookup.util';
 import {
   assertValidCreatePayload,
+  assertValidImageReorder,
   assertValidImageUpload,
   assertValidListQuery,
   assertValidPropertyId,
@@ -392,6 +395,38 @@ export class EstateWebPropertyService {
           propertyId,
           formData,
         });
+      },
+    );
+  }
+
+  /**
+   * PATCH /api/property/:id/img -- bulk-sets the gallery order. EstateWeb
+   * echoes back the `{ id, zindex }` list it applied.
+   */
+  reorderPropertyImages(
+    userIntegrationId: string,
+    propertyId: number | string,
+    payload: EstateWebReorderImagesPayload,
+  ): Promise<EstateWebReorderImageItem[]> {
+    return this.runValidatedOperation(
+      userIntegrationId,
+      'reorder-property-images',
+      () => {
+        assertValidPropertyId(propertyId);
+        assertValidImageReorder(payload);
+
+        return this.estateWebClientService.request<EstateWebReorderImageItem[]>(
+          userIntegrationId,
+          {
+            method: 'PATCH',
+            path: this.estateWebConfig
+              .getConfig()
+              .apiPaths.propertyImage(propertyId),
+            operation: 'reorder-property-images',
+            propertyId,
+            body: payload,
+          },
+        );
       },
     );
   }

@@ -10,6 +10,7 @@ import {
   EstateWebCreatePropertyPayload,
   EstateWebPropertyAd,
   EstateWebPropertyListQuery,
+  EstateWebReorderImagesPayload,
   EstateWebUpdatePropertyPayload,
   EstateWebUploadImagePayload,
 } from '../interfaces/estateweb-property.interface';
@@ -314,6 +315,47 @@ export function assertValidImageUpload(
       NotificationType.ESTATEWEB_VALIDATION_FAILED,
       HttpStatus.BAD_REQUEST,
     );
+  }
+}
+
+export function assertValidImageReorder(
+  payload: EstateWebReorderImagesPayload,
+): void {
+  const items = payload?.data;
+
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new EstateWebException(
+      'EstateWeb image reorder requires a non-empty data array',
+      NotificationType.ESTATEWEB_VALIDATION_FAILED,
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+
+  const seenIds = new Set<number>();
+  for (const item of items) {
+    if (
+      !Number.isInteger(item?.id) ||
+      item.id <= 0 ||
+      !Number.isInteger(item?.zindex) ||
+      item.zindex < 0
+    ) {
+      throw new EstateWebException(
+        'EstateWeb image reorder items require a positive integer id and a non-negative integer zindex',
+        NotificationType.ESTATEWEB_VALIDATION_FAILED,
+        HttpStatus.BAD_REQUEST,
+        { item },
+      );
+    }
+
+    if (seenIds.has(item.id)) {
+      throw new EstateWebException(
+        'EstateWeb image reorder contains a duplicate image id',
+        NotificationType.ESTATEWEB_VALIDATION_FAILED,
+        HttpStatus.BAD_REQUEST,
+        { imageId: item.id },
+      );
+    }
+    seenIds.add(item.id);
   }
 }
 

@@ -2453,6 +2453,29 @@ export class UserPropertiesService {
     return this.findOne(userId, id);
   }
 
+  async reorderIntegrationImages(
+    userId: string,
+    id: string,
+    imageIds: number[],
+  ) {
+    const userProperty = await this.prisma.userProperty.findFirst({
+      where: { id, user_id: userId },
+      select: {
+        id: true,
+        user_id: true,
+        canonical_property_id: true,
+        integration_property_id: true,
+      },
+    });
+
+    if (!userProperty) {
+      throw new NotFoundException('Property not found');
+    }
+
+    await this.runReorderIntegrationImages(userProperty, imageIds);
+    return this.findOne(userId, id);
+  }
+
   async adminUpdateIntegrationImages(
     id: string,
     imageIds: number[],
@@ -2816,6 +2839,49 @@ export class UserPropertiesService {
     try {
       const adapter = this.cmsSyncAdapterFactory.getAdapter(integrationType);
       await adapter.deleteImages({
+        userIntegrationId,
+        crmPropertyId: userProperty.integration_property_id,
+        userPropertyId: userProperty.id,
+        imageIds: uniqueIds,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(message);
+    }
+  }
+
+  private async runReorderIntegrationImages(
+    userProperty: {
+      id: string;
+      user_id: string;
+      canonical_property_id: string;
+      integration_property_id: string | null;
+    },
+    imageIds: number[],
+  ) {
+    if (!userProperty.integration_property_id) {
+      throw new BadRequestException('Property is not linked to a CMS');
+    }
+
+    const uniqueIds = [
+      ...new Set(imageIds.filter((id) => Number.isInteger(id) && id > 0)),
+    ];
+    if (uniqueIds.length === 0) {
+      throw new BadRequestException('No valid image ids provided');
+    }
+
+    const { userIntegrationId, integrationType } =
+      await this.resolveCmsIntegrationForProperty(userProperty);
+
+    if (integrationType !== IntegrationType.ESTATEWEB) {
+      throw new BadRequestException(
+        'Image reordering is only supported for EstateWeb',
+      );
+    }
+
+    try {
+      const adapter = this.cmsSyncAdapterFactory.getAdapter(integrationType);
+      await adapter.reorderImages({
         userIntegrationId,
         crmPropertyId: userProperty.integration_property_id,
         userPropertyId: userProperty.id,

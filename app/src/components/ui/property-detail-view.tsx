@@ -8,6 +8,7 @@ import {
   Calendar,
   ExternalLink,
   Eye,
+  ArrowUpDown,
   Images,
   Mail,
   MapPin,
@@ -29,6 +30,7 @@ import {
 } from "@/components/ui/estateweb-image-options-modal";
 import { RemoveWatermarkModal } from "@/components/ui/remove-watermark-modal";
 import { MigrateIntegrationImagesModal } from "@/components/ui/migrate-integration-images-modal";
+import { PropertyImagesReorderGrid } from "@/components/ui/property-images-reorder-grid";
 import type { TableRowAction } from "@/components/ui/table-row-actions-menu";
 import type { MigrateIntegrationImagesMode } from "@/features/user-properties/interfaces/user-properties.interfaces";
 import type {
@@ -262,16 +264,19 @@ function PropertyImagesGrid({
   canUpdateEstateWebImageOptions = false,
   canRemoveWatermark = false,
   canMigrateIntegrationImages = false,
+  canReorderIntegrationImages = false,
   onDeleteSelected,
   onCreateSelected,
   onUpdateEstateWebImageOptions,
   onRemoveWatermark,
   onMigrateIntegrationImages,
+  onReorderIntegrationImages,
   isDeletePending = false,
   isCreatePending = false,
   isUpdateEstateWebImageOptionsPending = false,
   isRemoveWatermarkPending = false,
   isMigrateIntegrationImagesPending = false,
+  isReorderPending = false,
 }: {
   images: PropertyDisplayImage[];
   fallbackImages: string[];
@@ -281,6 +286,7 @@ function PropertyImagesGrid({
   canUpdateEstateWebImageOptions?: boolean;
   canRemoveWatermark?: boolean;
   canMigrateIntegrationImages?: boolean;
+  canReorderIntegrationImages?: boolean;
   onDeleteSelected?: (imageIds: number[]) => Promise<void> | void;
   onCreateSelected?: (imageIndexes: number[]) => Promise<void> | void;
   onUpdateEstateWebImageOptions?: (
@@ -294,13 +300,16 @@ function PropertyImagesGrid({
   onMigrateIntegrationImages?: (
     mode: MigrateIntegrationImagesMode,
   ) => Promise<void> | void;
+  onReorderIntegrationImages?: (imageIds: number[]) => Promise<void> | void;
   isDeletePending?: boolean;
   isCreatePending?: boolean;
   isUpdateEstateWebImageOptionsPending?: boolean;
   isRemoveWatermarkPending?: boolean;
   isMigrateIntegrationImagesPending?: boolean;
+  isReorderPending?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(
     new Set(),
   );
@@ -315,7 +324,13 @@ function PropertyImagesGrid({
     isCreatePending ||
     isUpdateEstateWebImageOptionsPending ||
     isRemoveWatermarkPending ||
-    isMigrateIntegrationImagesPending;
+    isMigrateIntegrationImagesPending ||
+    isReorderPending;
+  const canReorder =
+    canReorderIntegrationImages &&
+    Boolean(onReorderIntegrationImages) &&
+    images.length > 1 &&
+    images.every((image) => image.crmImageId != null);
   const canSelect =
     selectable &&
     images.length > 0 &&
@@ -326,7 +341,7 @@ function PropertyImagesGrid({
       (canRemoveWatermark && Boolean(onRemoveWatermark)));
   const canMigrate =
     canMigrateIntegrationImages && Boolean(onMigrateIntegrationImages);
-  const showToolbar = canSelect || canMigrate;
+  const showToolbar = canSelect || canMigrate || canReorder;
   const allSelected =
     canSelect &&
     images.length > 0 &&
@@ -467,6 +482,29 @@ function PropertyImagesGrid({
     await onMigrateIntegrationImages(mode);
   };
 
+  const handleReorderSave = async (imageIds: number[]) => {
+    if (!onReorderIntegrationImages) return;
+    try {
+      await onReorderIntegrationImages(imageIds);
+      setIsReordering(false);
+    } catch {
+      // The mutation hook already surfaced the error; stay in reorder mode so the
+      // user's arrangement isn't lost.
+    }
+  };
+
+  if (isReordering && canReorder) {
+    return (
+      <PropertyImagesReorderGrid
+        images={images}
+        title={title}
+        isPending={isReorderPending}
+        onSave={handleReorderSave}
+        onCancel={() => setIsReordering(false)}
+      />
+    );
+  }
+
   return (
     <div className="@container flex flex-col gap-3">
       {showToolbar ? (
@@ -480,6 +518,21 @@ function PropertyImagesGrid({
               onPress={allSelected ? deselectAll : selectAll}
             >
               {allSelected ? "Deselect all" : "Select all"}
+            </Button>
+          ) : null}
+          {canReorder ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              isDisabled={isPending}
+              onPress={() => {
+                setSelectedIndexes(new Set());
+                setIsReordering(true);
+              }}
+            >
+              <ArrowUpDown className="size-4" />
+              Reorder
             </Button>
           ) : null}
           {showActionsMenu ? (
@@ -664,6 +717,9 @@ interface PropertyDetailViewProps {
     mode: MigrateIntegrationImagesMode,
   ) => Promise<void> | void;
   isMigratingIntegrationImages?: boolean;
+  canReorderIntegrationImages?: boolean;
+  onReorderIntegrationImages?: (imageIds: number[]) => Promise<void> | void;
+  isReorderingIntegrationImages?: boolean;
 }
 
 export function PropertyDetailView({
@@ -690,6 +746,9 @@ export function PropertyDetailView({
   onMigrateIntegrationImages,
   isRemovingWatermark = false,
   isMigratingIntegrationImages = false,
+  canReorderIntegrationImages = false,
+  onReorderIntegrationImages,
+  isReorderingIntegrationImages = false,
 }: PropertyDetailViewProps) {
   const sourceLinks = property.source_links ?? [];
   const cmsFieldEntries = (property.cms_fields ?? []) as CmsPropertyFieldEntry[];
@@ -1171,6 +1230,9 @@ export function PropertyDetailView({
             onUpdateEstateWebImageOptions={onUpdateEstateWebImageOptions}
             onRemoveWatermark={onRemoveWatermark}
             onMigrateIntegrationImages={onMigrateIntegrationImages}
+            canReorderIntegrationImages={canReorderIntegrationImages}
+            onReorderIntegrationImages={onReorderIntegrationImages}
+            isReorderPending={isReorderingIntegrationImages}
             isDeletePending={isDeletingIntegrationImages}
             isCreatePending={isCreatingIntegrationImages}
             isUpdateEstateWebImageOptionsPending={

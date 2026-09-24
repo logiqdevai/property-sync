@@ -9,6 +9,7 @@ import {
   CmsSyncCreateImagesParams,
   CmsSyncDeleteImagesParams,
   CmsSyncPushOptions,
+  CmsSyncReorderImagesParams,
   CmsSyncUpdateImagesParams,
 } from '@/modules/cms-sync/interfaces/cms-sync-adapter.interface';
 import { CmsPropertyFieldEntry } from '@/modules/properties/interfaces/cms-property.interface';
@@ -395,6 +396,37 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         imageId,
       );
     }
+
+    await this.syncIntegrationPropertyImages({
+      userIntegrationId: params.userIntegrationId,
+      userPropertyId: params.userPropertyId,
+      estateWebPropertyId: params.crmPropertyId,
+    });
+  }
+
+  async reorderImages(params: CmsSyncReorderImagesParams): Promise<void> {
+    const orderedIds = [
+      ...new Set(
+        params.imageIds
+          .map((id) => Number(id))
+          .filter((id) => Number.isInteger(id) && id > 0),
+      ),
+    ];
+    if (orderedIds.length === 0) {
+      throw new EstateWebException(
+        'No valid CMS image ids provided',
+        NotificationType.ESTATEWEB_VALIDATION_FAILED,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.estateWebPropertyService.reorderPropertyImages(
+      params.userIntegrationId,
+      params.crmPropertyId,
+      {
+        data: orderedIds.map((id, index) => ({ id, zindex: index + 1 })),
+      },
+    );
 
     await this.syncIntegrationPropertyImages({
       userIntegrationId: params.userIntegrationId,

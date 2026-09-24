@@ -232,6 +232,15 @@ export interface EstateWebUpdateImagePayload {
   zindex?: number;
 }
 
+export interface EstateWebReorderImageItem {
+  id: number;
+  zindex: number;
+}
+
+export interface EstateWebReorderImagesPayload {
+  data: EstateWebReorderImageItem[];
+}
+
 export interface EstateWebCreatePropertyResponse {
   id: number;
   code?: string;

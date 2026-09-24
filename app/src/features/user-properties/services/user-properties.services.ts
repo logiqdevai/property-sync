@@ -38,6 +38,7 @@ import type {
   UserPropertyMapResponse,
   TruncateUserPropertyDescriptionsPayload,
   TruncateUserPropertyDescriptionsResult,
+  ReorderIntegrationImagesPayload,
   UpdateIntegrationImagesPayload,
   MigrateIntegrationImagesPayload,
   RemoveWatermarkImagesPayload,
@@ -287,6 +288,23 @@ export const updateUserPropertyIntegrationImages = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to update CMS image options.",
+    );
+  }
+};
+
+export const reorderUserPropertyIntegrationImages = async (
+  id: string,
+  payload: ReorderIntegrationImagesPayload,
+): Promise<UserPropertyDetail> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.reorderIntegrationImages(id),
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to reorder CMS images.",
     );
   }
 };

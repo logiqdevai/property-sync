@@ -28,6 +28,7 @@ import {
   useDeleteUserPropertyIntegrationImages,
   useCreateUserPropertyIntegrationImages,
   useUpdateUserPropertyIntegrationImages,
+  useReorderUserPropertyIntegrationImages,
   useRemoveUserPropertyWatermarkImages,
   useRemoveUserPropertiesWatermarkImages,
   useProduceUserPropertyContent,
@@ -135,6 +136,7 @@ export default function DashboardPropertyDetailPage() {
   const deleteIntegrationImages = useDeleteUserPropertyIntegrationImages();
   const createIntegrationImages = useCreateUserPropertyIntegrationImages();
   const updateIntegrationImages = useUpdateUserPropertyIntegrationImages();
+  const reorderIntegrationImages = useReorderUserPropertyIntegrationImages();
   const removeWatermarkImages = useRemoveUserPropertyWatermarkImages();
   const removeWatermarksByCount = useRemoveUserPropertiesWatermarkImages();
   const produceContent = useProduceUserPropertyContent();
@@ -561,6 +563,14 @@ export default function DashboardPropertyDetailPage() {
           });
         }}
         isUpdatingEstateWebImageOptions={updateIntegrationImages.isPending}
+        canReorderIntegrationImages={Boolean(property.integration_property_id)}
+        onReorderIntegrationImages={async (imageIds) => {
+          await reorderIntegrationImages.mutateAsync({
+            id: property.id,
+            image_ids: imageIds,
+          });
+        }}
+        isReorderingIntegrationImages={reorderIntegrationImages.isPending}
         canCreateIntegrationImages={isAdmin}
         onCreateIntegrationImages={
           isAdmin
@@ -600,6 +610,7 @@ export default function DashboardPropertyDetailPage() {
               deleteIntegrationImages.isPending ||
               createIntegrationImages.isPending ||
               updateIntegrationImages.isPending ||
+              reorderIntegrationImages.isPending ||
               removeWatermarkImages.isPending ||
               removeWatermarksByCount.isPending ||
               produceContent.isPending ||

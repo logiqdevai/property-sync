@@ -34,6 +34,7 @@ import {
 import { AdminEstateWebPropertiesService } from './admin-estateweb-properties.service';
 import { AdminEstateWebPropertyImageDto } from './dto/admin-estateweb-property-image.dto';
 import { AdminEstateWebPropertyNoteDto } from './dto/admin-estateweb-property-note.dto';
+import { AdminEstateWebReorderImagesDto } from './dto/admin-estateweb-reorder-images.dto';
 import {
   AdminEstateWebPropertyListQuerySchema,
   AdminEstateWebPropertyListQueryType,
@@ -368,6 +369,27 @@ export class AdminEstateWebPropertiesController {
         zindex: dto.zindex,
       },
       file.mimetype,
+    );
+  }
+
+  @Audited({ action: 'estateweb.image_reorder' })
+  @Patch('integrations/:userIntegrationId/properties/:propertyId/images')
+  @ApiOperation({
+    summary: 'Change property image order in EstateWeb CMS (PATCH /property/{id}/img)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Applied list of { id, zindex }',
+  })
+  reorderPropertyImages(
+    @Param('userIntegrationId') userIntegrationId: string,
+    @Param('propertyId') propertyId: string,
+    @Body() dto: AdminEstateWebReorderImagesDto,
+  ) {
+    return this.adminEstateWebPropertiesService.reorderPropertyImages(
+      userIntegrationId,
+      propertyId,
+      { data: dto.data.map(({ id, zindex }) => ({ id, zindex })) },
     );
   }
 

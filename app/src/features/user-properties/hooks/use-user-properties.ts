@@ -25,6 +25,7 @@ import {
   createAdminUserPropertyIntegrationImages,
   createUserPropertyIntegrationImages,
   updateAdminUserPropertyIntegrationImages,
+  reorderUserPropertyIntegrationImages,
   updateUserPropertyIntegrationImages,
   removeAdminUserPropertyWatermarkImages,
   removeUserPropertyWatermarkImages,
@@ -63,6 +64,7 @@ import type {
   BulkMigrateIntegrationImagesPayload,
   SplitUserPropertiesPayload,
   TruncateUserPropertyDescriptionsPayload,
+  ReorderIntegrationImagesPayload,
   UpdateIntegrationImagesPayload,
   MigrateIntegrationImagesPayload,
   RemoveWatermarkImagesPayload,
@@ -382,6 +384,35 @@ export const useCreateAdminUserPropertyIntegrationImages = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not upload photos",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useReorderUserPropertyIntegrationImages = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...payload
+    }: { id: string } & ReorderIntegrationImagesPayload) =>
+      reorderUserPropertyIntegrationImages(id, payload),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["userProperties", "detail", data.id], data);
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+      toast({
+        title: "Image order saved",
+        description: "The new order was applied in your CRM.",
+        duration: 2500,
+        variant: "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not reorder images",
         description: error.message,
         variant: "error",
       });

@@ -242,6 +242,8 @@ export const ApiRoutes = {
             `/properties/${id}/create-integration-images`,
         updateIntegrationImages: (id: string) =>
             `/properties/${id}/update-integration-images`,
+        reorderIntegrationImages: (id: string) =>
+            `/properties/${id}/reorder-integration-images`,
         removeWatermarkImages: (id: string) =>
             `/properties/${id}/remove-watermark-images`,
         bulkRemoveWatermarkImages: "/properties/remove-watermark-images",

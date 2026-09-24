@@ -346,6 +346,11 @@ export interface UpdateIntegrationImagesPayload {
   show_on_foreign_agents: boolean;
 }
 
+export interface ReorderIntegrationImagesPayload {
+  /** CMS image ids in the desired display order (first = cover). */
+  image_ids: number[];
+}
+
 export interface RemoveWatermarkImagesPayload {
   image_ids?: string[];
   image_count?: number;

@@ -28,6 +28,14 @@ export interface CmsSyncUpdateImagesParams {
   show_on_foreign_agents: boolean;
 }
 
+export interface CmsSyncReorderImagesParams {
+  userIntegrationId: string;
+  crmPropertyId: string;
+  userPropertyId: string;
+  /** CMS image ids in their desired display order (first = cover). */
+  imageIds: Array<number | string>;
+}
+
 export interface CmsSyncPushSiteOverride {
   selected: boolean;
   name: string;
@@ -73,6 +81,7 @@ export interface CmsSyncAdapter {
   deleteImages(params: CmsSyncDeleteImagesParams): Promise<void>;
   createImages(params: CmsSyncCreateImagesParams): Promise<void>;
   updateImages(params: CmsSyncUpdateImagesParams): Promise<void>;
+  reorderImages(params: CmsSyncReorderImagesParams): Promise<void>;
   /**
    * Best-effort image repair for already-linked CMS listings:
    * - If CMS has no images and local source urls exist, upload them and cache ids

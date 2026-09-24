@@ -31,6 +31,7 @@ import { DeleteUserPropertiesDto } from './dto/delete-user-properties.dto';
 import { ResolveEstateWebLocationsDto } from './dto/resolve-estateweb-locations.dto';
 import { DeleteIntegrationImagesDto } from './dto/delete-integration-images.dto';
 import { CreateIntegrationImagesDto } from './dto/create-integration-images.dto';
+import { ReorderIntegrationImagesDto } from './dto/reorder-integration-images.dto';
 import { UpdateIntegrationImagesDto } from './dto/update-integration-images.dto';
 import {
   BulkRemoveWatermarkImagesDto,
@@ -684,6 +685,27 @@ export class UserPropertiesController {
         show_on_groups: dto.show_on_groups,
         show_on_foreign_agents: dto.show_on_foreign_agents,
       },
+    );
+  }
+
+  @Audited({ action: 'user_property.reorder_integration_images', entity: 'UserProperty', ids: { param: 'id' } })
+  @Post(':id/reorder-integration-images')
+  @ApiOperation({
+    summary:
+      'Reorder CMS images (first = cover) via the linked EstateWeb integration',
+  })
+  @ApiResponse({ status: 200, type: UserPropertyEntity })
+  @ApiResponse({ status: 400, description: 'Cannot reorder images' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  reorderIntegrationImages(
+    @CurrentUser('id') userId: string,
+    @Param('id') id: string,
+    @Body() dto: ReorderIntegrationImagesDto,
+  ) {
+    return this.userPropertiesService.reorderIntegrationImages(
+      userId,
+      id,
+      dto.image_ids,
     );
   }
 

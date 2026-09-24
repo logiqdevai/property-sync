@@ -17,6 +17,7 @@ import {
   EstateWebPropertyListItem,
   EstateWebPropertyListQuery,
   EstateWebPropertySite,
+  EstateWebReorderImagesPayload,
   EstateWebUpdatePropertyPayload,
   EstateWebUploadImagePayload,
 } from '@/integrations/estateweb/interfaces/estateweb-property.interface';
@@ -599,6 +600,18 @@ export class AdminEstateWebPropertiesService {
       image,
       payload,
       mimeType,
+    );
+  }
+
+  reorderPropertyImages(
+    userIntegrationId: string,
+    propertyId: string,
+    payload: EstateWebReorderImagesPayload,
+  ) {
+    return this.estateWebPropertyService.reorderPropertyImages(
+      userIntegrationId,
+      propertyId,
+      payload,
     );
   }
 
