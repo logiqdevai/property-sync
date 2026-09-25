@@ -1,4 +1,5 @@
 import {
+  isBotChallengeUrl,
   isDetailPageRedirectAway,
   normalizeUrlPath,
 } from './crawler.utils';
@@ -35,6 +36,19 @@ describe('isDetailPageRedirectAway', () => {
         'https://www.euroland-crete.com/property/new-slug/',
       ),
     ).toBe(false);
+  });
+
+  it('does not treat a bot-challenge interstitial as a redirect away', () => {
+    expect(
+      isDetailPageRedirectAway(
+        'https://lafazanihomes.com/property/foo/',
+        'https://lafazanihomes.com/.well-known/sgcaptcha/?r=%2Fproperty%2Ffoo%2F',
+      ),
+    ).toBe(false);
+    expect(isBotChallengeUrl('https://x.com/.well-known/sgcaptcha/?r=1')).toBe(
+      true,
+    );
+    expect(isBotChallengeUrl('https://x.com/property/foo/')).toBe(false);
   });
 
   it('flags cross-origin redirects', () => {

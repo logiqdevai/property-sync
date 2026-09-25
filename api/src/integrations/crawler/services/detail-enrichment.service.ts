@@ -21,6 +21,7 @@ import {
   waitForBotChallengeClearance,
 } from '../block-handling/block-handling.utils';
 import {
+  isBotChallengeUrl,
   isDetailPageRedirectAway,
   isManagedSessionDeadError,
   mergeImagesDedupingSizeVariants,
@@ -371,6 +372,15 @@ export class DetailEnrichmentService {
         // the fresh content classification, not the stale response.
 
         const finalUrl = page.url();
+        // Landing on a bot-challenge URL means we were blocked, not that the
+        // listing is gone: no excludeFromCrawl, so the crawl loop keeps the
+        // existing SourceProperty alive instead of letting it read as removed.
+        if (isBotChallengeUrl(finalUrl)) {
+          return {
+            ...empty,
+            error: 'access barrier: challenge',
+          };
+        }
         if (isDetailPageRedirectAway(item.source_url, finalUrl)) {
           return {
             ...empty,

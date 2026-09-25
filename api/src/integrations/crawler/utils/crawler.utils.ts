@@ -183,10 +183,23 @@ export function normalizeUrlPath(pathname: string): string {
   return trimmed.length > 0 ? trimmed : '/';
 }
 
+// A bot-management interstitial (SiteGround sgcaptcha, Cloudflare /cdn-cgi/)
+// is a transient block, NOT the listing being gone -- the URL it lands on must
+// never be read as "this listing redirects to a different page".
+export function isBotChallengeUrl(url: string): boolean {
+  try {
+    const { pathname } = new URL(url);
+    return /^\/(\.well-known\/sgcaptcha|cdn-cgi\/)/i.test(pathname);
+  } catch {
+    return false;
+  }
+}
+
 export function isDetailPageRedirectAway(
   sourceUrl: string,
   finalUrl: string,
 ): boolean {
+  if (isBotChallengeUrl(finalUrl)) return false;
   try {
     const source = new URL(sourceUrl);
     const final = new URL(finalUrl);

@@ -35,6 +35,7 @@ import {
 import {
   CRAWL_REMOVAL_COVERAGE_MIN_BASELINE,
   CRAWL_REMOVAL_COVERAGE_RATIO_THRESHOLD,
+  CRAWL_REMOVAL_MASS_RATIO_THRESHOLD,
   PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD,
   PROPERTY_REMOVAL_SPIKE_RATIO_THRESHOLD,
 } from '@/modules/notifications/constants/notification.constants';
@@ -1807,6 +1808,41 @@ export class PropertyNormalizationService {
         severity: NotificationSeverity.WARNING,
         title: `Property removal spike detected — ${agencyName} (incomplete crawl)`,
         message: `Crawl found only ${foundThisCrawl} of ~${baseline} listings (30-day high-water mark); skipped marking ${candidates.length} missing properties as removed.`,
+        source_agency_id: sourceAgencyId,
+        scraper_id: scraperId,
+        crawl_run_id: crawlRunId,
+      });
+      return { removedCount: 0, totalTracked, affected: [] };
+    }
+
+    // Independent of total_found, which counts raw scraped items and so still
+    // looks "complete" when most of them were dropped after scraping (e.g. detail
+    // pages excluded/blocked -- the lafazanihomes incident, 278 live listings
+    // unpublished off a 347-item crawl). Judge by what this run actually left
+    // un-refreshed among the agency's live properties.
+    const liveTracked = agencyProperties.filter(
+      (property) => property.status !== PropertyStatus.REMOVED,
+    ).length;
+    const massRemoval =
+      !skipSpikeCheck &&
+      candidates.length > PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD &&
+      liveTracked > 0 &&
+      candidates.length / liveTracked > CRAWL_REMOVAL_MASS_RATIO_THRESHOLD;
+
+    if (massRemoval) {
+      this.logger.warn(
+        `Crawl ${crawlRunId}: skipping removal detection — would remove ${candidates.length}/${liveTracked} live properties`,
+      );
+      const agency = await this.prisma.sourceAgency.findUnique({
+        where: { id: sourceAgencyId },
+        select: { name: true },
+      });
+      const agencyName = agency?.name ?? 'Unknown agency';
+      this.notificationsService.create({
+        type: NotificationType.PROPERTY_REMOVAL_SPIKE,
+        severity: NotificationSeverity.WARNING,
+        title: `Property removal spike detected — ${agencyName} (removals held back)`,
+        message: `Crawl left ${candidates.length} of ${liveTracked} live properties un-refreshed; skipped marking them removed. Re-run with skip_spike_check if the drop is legitimate.`,
         source_agency_id: sourceAgencyId,
         scraper_id: scraperId,
         crawl_run_id: crawlRunId,

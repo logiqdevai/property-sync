@@ -113,4 +113,13 @@ export const DEFAULT_BLOCK_RULES: BlockRule[] = [
     pattern: '/cdn-cgi/challenge-platform/|challenges\\.cloudflare\\.com|cf_chl_opt',
     regex: true,
   },
+  {
+    // SiteGround's bot interstitial: a JS challenge served at
+    // /.well-known/sgcaptcha/ that bounces back to the original URL once solved.
+    id: 'siteground-sgcaptcha-path',
+    signal: 'challenge',
+    source: 'path',
+    pattern: '^/\\.well-known/sgcaptcha',
+    regex: true,
+  },
 ];
