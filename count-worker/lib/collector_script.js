@@ -31,12 +31,12 @@ function collectorScript(appBase, token) {
 
   // ---- talk to the app ----
   const api = async (path, body) => {
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 18; i++) {   // 18 tries x 10 s = waits up to 3 minutes for the app to come back (e.g. a redeploy)
       try {
         const r = await fetch(APP + path, { method: body ? 'POST' : 'GET', headers: { Authorization: 'Bearer ' + TOKEN, 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' });
         if (r.status === 401) throw new Error('unauthorized: wrong token');
         return await r.json();
-      } catch (e) { if (String(e.message).startsWith('unauthorized')) throw e; say("can't reach the app, retrying… (" + (i + 1) + '/6)', '#fbbf24'); await sleep(10000); }
+      } catch (e) { if (String(e.message).startsWith('unauthorized')) throw e; say("can't reach the app, retrying… (" + (i + 1) + "/18)", '#fbbf24'); await sleep(10000); }
     }
     throw new Error('app unreachable');
   };
@@ -95,7 +95,7 @@ function collectorScript(appBase, token) {
       }
       await api('/collector/result', { results: [res] }); S.done++; S.requests++;
       if (S.requests % 150 === 0) { for (let s = 240; s > 0 && !S.stop; s--) { say('short pause to stay polite… ' + s + 's', '#fbbf24'); await sleep(1000); } }
-      await sleep(3000 + Math.random() * 1500);
+      const pc = j.pace || [3000, 4500]; await sleep(pc[0] + Math.random() * (pc[1] - pc[0]));
     }
     if (S.stop) say('stopped. Paste the script again to continue.', '#fbbf24');
   } catch (e) { say('Stopped: ' + e.message, '#f87171'); }

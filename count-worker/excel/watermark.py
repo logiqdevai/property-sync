@@ -117,7 +117,7 @@ def local_main(todo, done_n):
             except Exception: pass
         return out
     n = 0
-    with ThreadPoolExecutor(4) as pool:
+    with ThreadPoolExecutor(max(4, 2 * so.intra_op_num_threads)) as pool:
         for i in range(0, len(todo), 8):
             batch = todo[i:i + 8]
             if DRY: n += len(batch); print('progress', n, flush=True); continue

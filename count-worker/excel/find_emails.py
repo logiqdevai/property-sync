@@ -208,5 +208,5 @@ if __name__ == '__main__':
         with lock:
             open(OUT, 'a', encoding='utf-8').write(json.dumps(r, ensure_ascii=False) + '\n'); n[0] += 1
             if n[0] % 100 == 0: print('progress', n[0], 'of', len(todo), flush=True)
-    with ThreadPoolExecutor(28) as ex: list(ex.map(work, todo))
+    with ThreadPoolExecutor(int(os.environ.get('SCAN_THREADS') or 28)) as ex: list(ex.map(work, todo))
     print('DONE', n[0], flush=True)

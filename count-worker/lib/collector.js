@@ -8,11 +8,13 @@
 //   areas : every area page (?page=N) -> agencies (id, name, profile, location, phones, website)
 //   sale  : every agency profile with ?listingType=sale -> sale-listing count + 3 sample photos
 const LEASE_MS = 5 * 60 * 1000;
+const PACES = { slow: [5000, 8000], normal: [3000, 4500], fast: [1500, 2500] };      // pause between two Spiti24 pages, in ms
 
 class Collector {
-  constructor(store) { this.store = store; this.leases = new Map(); this.samples = []; this.lastSeen = 0; this.lastIp = null; }
+  constructor(store) { this.store = store; this.leases = new Map(); this.samples = []; this.recent = []; this.lastSeen = 0; this.lastIp = null; }
   get run() { return this.store.state.run || null; }
   _save() { this.store.markDirty('state'); }
+  _recent(item) { this.recent.unshift(item); if (this.recent.length > 15) this.recent.pop(); }
   _units(run) { return (run.areaPagesDone || 0) + (run.saleDone || 0); }
 
   start(opts = {}) {
@@ -22,7 +24,7 @@ class Collector {
       phase: 'index', areas: [], areaPagesDone: 0, salePending: [], saleTotal: 0, saleDone: 0, newIds: [], newAgents: 0, updatedAgents: 0, blocks: 0, failures: 0, lastBlock: null,
       limitAreas: opts.limitAreas || null, limitSale: opts.limitSale || null, onlyAreas: Array.isArray(opts.onlyAreas) && opts.onlyAreas.length ? opts.onlyAreas : null,          // test options (small dry runs)
     };
-    this.store.state.run = run; this.leases.clear(); this.samples = [];
+    this.store.state.run = run; this.leases.clear(); this.samples = []; this.recent = [];
     if (!run.wantAgents) this._beginSale(run);
     this._save(); return this.status();
   }
@@ -60,7 +62,8 @@ class Collector {
         tasks.push({ t: 'sale', id, profile: ag.profile }); this._lease('s:' + id); if (tasks.length >= n) break;
       }
     }
-    return { done: false, phase: run.phase, tasks };
+    const pace = ((this.store.state.settings || {}).collect) || 'normal';
+    return { done: false, phase: run.phase, tasks, pace: PACES[pace] || PACES.normal };
   }
 
   result(items) {
@@ -82,6 +85,7 @@ class Collector {
           if (res === 'new') { run.newAgents++; run.newIds.push(String(ag.id)); } else if (res === 'updated') run.updatedAgents++;
         }
         a.lastPage = Math.max(a.lastPage || 1, r.lastPage || 1); a.next = Math.max(a.next, r.page + 1); run.areaPagesDone++;
+        this._recent({ name: a.name + ' · page ' + r.page, sm: (r.agents || []).length + ' agencies read', ic: '≡', cls: 'good', rt: String((r.agents || []).length) });
         if (!(r.agents || []).length || r.page >= a.lastPage) a.done = true;
         if (run.areas.every(x => x.done)) { if (run.wantSale) this._beginSale(run); else this._finish(run); }
       } else if (r.t === 'sale') {
@@ -94,6 +98,7 @@ class Collector {
           run.saleDone++; if (!run.salePending.length) this._finish(run); continue;
         }
         this.store.setSale(r.id, r.gone ? { n: 0, imgs: [], gone: true } : { n: r.n, imgs: r.imgs || [] });
+        { const ag = this.store.agentById.get(String(r.id)); this._recent({ name: ag ? ag.name : String(r.id), sm: r.gone ? 'agency page no longer exists on Spiti24' : 'properties for sale on Spiti24', ic: r.gone ? '?' : '✓', cls: r.gone ? 'mut' : 'good', rt: r.gone ? '' : String(r.n) }); }
         const i = run.salePending.indexOf(String(r.id)); if (i >= 0) run.salePending.splice(i, 1);
         run.saleDone++; if (!run.salePending.length) this._finish(run);
       }
@@ -112,7 +117,7 @@ class Collector {
   status() {
     const run = this.run; const now = Date.now();
     const seenAgo = this.lastSeen ? Math.round((now - this.lastSeen) / 1000) : null;
-    if (!run) return { active: false, hasRun: false, agentsTotal: this.store.agents.length, saleTotal: Object.keys(this.store.sale).length, seenAgoSeconds: seenAgo };
+    if (!run) return { active: false, hasRun: false, agentsTotal: this.store.agents.length, saleTotal: Object.keys(this.store.sale).length, seenAgoSeconds: seenAgo, history: [], recent: [] };
     const areasTotal = run.areas.length, areasDone = run.areas.filter(a => a.done).length;
     let estAreaPages = 0, doneAreaPages = run.areaPagesDone || 0;
     for (const a of run.areas) estAreaPages += a.lastPage ? a.lastPage : 1;
@@ -125,7 +130,7 @@ class Collector {
       areas: { total: areasTotal, done: areasDone, pagesDone: doneAreaPages, pagesKnown: estAreaPages },
       agentsTotal: this.store.agents.length, newAgents: run.newAgents, updatedAgents: run.updatedAgents,
       sale: { total: run.saleTotal, done: run.saleDone, remaining: run.salePending.length }, blocks: run.blocks, failures: run.failures, lastBlock: run.lastBlock,
-      seenAgoSeconds: seenAgo, collectorOnline: seenAgo != null && seenAgo < 90, unitsPerMinute: rate ? +rate.toFixed(2) : null, etaSeconds, saleTotalStored: Object.keys(this.store.sale).length,
+      seenAgoSeconds: seenAgo, history: this.samples.slice(-240).map(s => ({ t: s.t, d: s.u })), recent: this.recent, collectorOnline: seenAgo != null && seenAgo < 90, unitsPerMinute: rate ? +rate.toFixed(2) : null, etaSeconds, saleTotalStored: Object.keys(this.store.sale).length,
     };
   }
 }

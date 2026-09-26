@@ -12,10 +12,10 @@ Open `https://YOUR-DOMAIN/?token=AUTH_TOKEN`. **Download Excel** builds the work
 | 2 | Website check (DNS) | server | which agency websites still exist; finds hosts that only work with/without `www` |
 | 3 | Websites & emails | server (`excel/find_emails.py`) | reads each site's contact pages, obeys robots.txt, stops at bot checks, keeps each site's robots.txt for stage 5 |
 | 4 | Web archive | server (`excel/wayback_emails.py`) | emails from Internet-Archive copies of sites that block automated visits (may be old: the Excel marks them with the snapshot date) |
-| 5 | Own-website property counts | server (Playwright/Chrome, `worker.js`) | the "for sale" total read from each agency's own site |
-| 6 | Watermark check | server (`excel/watermark.py`) | **Free, no API key.** The 3 sample photos of each agency go through a free open-source watermark model (`prithivMLmods/Watermark-Detection-SigLIP2`, Apache-2.0, converted to ONNX at image build) and a small classifier fitted on the manual by-eye verdicts (`excel/wm_model.json`). Y = overlay on 2-3 photos, P = on 1, N = none seen. ~8 agencies per minute per worker thread incl. downloads. Optional alternative engine: an AI vision model with `ANTHROPIC_API_KEY` + `WM_ENGINE=ai` (paid). |
+| 5 | Watermark check | server (`excel/watermark.py`) | **Free, no API key.** The 3 sample photos of each agency go through a free open-source watermark model (`prithivMLmods/Watermark-Detection-SigLIP2`, Apache-2.0, converted to ONNX at image build) and a small classifier fitted on the manual by-eye verdicts (`excel/wm_model.json`). Y = overlay on 2-3 photos, P = on 1, N = none seen. ~8 agencies per minute per worker thread incl. downloads. Optional alternative engine: an AI vision model with `ANTHROPIC_API_KEY` + `WM_ENGINE=ai` (paid). |
+| 6 | Own-website property counts | server (Playwright/Chrome, `worker.js`) | the "for sale" total read from each agency's own site |
 
-**Run all server stages** chains 2 -> 3 -> 4 -> 5 -> 6. Every stage is resumable and can be started/stopped on its own.
+**Run all server stages** chains 2 -> 3 -> 4 -> 5 (watermark) -> 6 (own-website counts). Every stage is resumable and can be started/stopped on its own.
 
 ### Running the Spiti24 collection (stage 1)
 1. On the dashboard press **Start collection** (new agencies + missing counts) or **Refresh everything**.
@@ -31,6 +31,9 @@ For a completely fresh run (all agencies, counts, emails, own-website counts and
 2. starts the Spiti24 collection (step 1 - paste the collector script in a Chrome tab as above; it resumes after blocks or restarts);
 3. **when the collection has finished it runs stages 2-6 by itself** (a collection that was stopped by hand does not continue).
 The blue/amber bar on the dashboard shows step 1 or 2. Until agencies exist the Excel download answers "nothing to export yet". To go back to the old data, stop the app, copy the files from `/data/backups/<time>/` back (`*.json`, `*.jsonl`, `decisions.txt` into `/data/xl/`, `results.jsonl` into `/data/`, `state.json` into `/data/`) and start it again. The single-stage buttons ("Refresh everything", "Rescan all", "Recount all") still exist for redoing just one part.
+
+### Speed settings (dashboard, each step's tab: "⚡ Run N at the same time")
+Website check 5-100 (default 30), emails 4-60 (28), web archive 1-8 (4), watermark 1-8 (2), own-website counts 1-6 (2; each needs ~0.4 GB memory), Spiti24 pace slow/normal/fast (default normal, 3-4.5 s per page; faster = Spiti24 blocks sooner). Saved in `state.json`, so they survive restarts; they apply the next time a step is started (the Spiti24 pace applies from the next page). The helper script in the Spiti24 tab waits up to 3 minutes for the app to come back (e.g. during a redeploy).
 
 ## Deploy (Railway or Coolify)
 Build pack: Dockerfile, Base/Root directory `/count-worker`, port 3000 (Railway sets `PORT` itself).

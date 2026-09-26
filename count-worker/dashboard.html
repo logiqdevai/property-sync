@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Agency site counter</title>
 <style>
+
 :root{
   --bg:#0a0f1e; --bg2:#0e1530; --card:#121a33; --card2:#182242; --line:rgba(255,255,255,.07);
   --text:#e9edfa; --muted:#8e99ba; --accent:#6e8bff; --accent2:#a78bfa;
@@ -133,75 +134,52 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
 .how ol{margin:4px 0 0 18px;padding:0} .how b{color:var(--text)} .how a{color:var(--accent)}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:700;box-shadow:var(--shadow);z-index:99;display:none;max-width:90vw}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+/* tabs + step views */
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 20px;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:16px;position:sticky;top:8px;z-index:20;box-shadow:var(--shadow)}
+.tab{border:0;background:transparent;color:var(--muted);padding:9px 13px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;font-family:inherit}
+.tab:hover{color:var(--text);background:var(--card2)}
+.tab.on{background:var(--accent);color:#fff}
+.sd{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none;opacity:.55}
+.sd.run{background:var(--good);opacity:1;animation:pulse 1.4s ease-in-out infinite} .sd.done{background:var(--info);opacity:1} .sd.bad{background:var(--bad);opacity:1} .sd.warn{background:var(--warn);opacity:1}
+.tab.on .sd{box-shadow:0 0 0 2px rgba(255,255,255,.35)}
+#sd_overview{display:none}
+@keyframes pulse{50%{opacity:.3}}
+.view{display:none} .view.on{display:block;animation:in .35s ease both}
+.vhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 4px} .vhead h2{margin:0;font-size:19px;letter-spacing:.1px}
+.vdesc{color:var(--muted);font-size:13px;margin:0 0 12px;line-height:1.5}
+.view .acts{margin:0 0 8px}
+.view .note{font-size:13px;color:var(--muted);margin:0 0 6px;min-height:1.2em}
+.view .note.err{color:var(--bad)}
+.sc.click{cursor:pointer;transition:transform .15s ease,box-shadow .15s ease} .sc.click:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(110,139,255,.2)}
+.tot{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:0}
+.one{grid-template-columns:1fr;margin-top:16px}
+.scbar.alert{border-color:rgba(248,113,113,.5);background:rgba(248,113,113,.10);cursor:pointer}
+.feed li .badge{margin-left:6px}
+.speed{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;font-size:13px;color:var(--muted)}
+.speed input,.speed select{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:13px;font-family:inherit}
+.speed input{width:72px}
+.speed .hint{font-size:12px}
+
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6e8bff"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs></svg>
 <div class="wrap" id="app">
   <header>
-    <h1>Agency site counter <small id="sub">counting each agency's own website</small></h1>
+    <h1>Agency site counter <small id="sub">Spiti24 agencies · emails · property counts</small></h1>
     <div class="hdrbtns">
-      <a class="pill btn" id="dl" href="#" download="spiti24-agencies.xlsx" title="The full agency list as Excel, with the property counts found so far">⬇ Download Excel</a>
+      <a class="pill btn" id="dl" href="#" download="spiti24-agencies.xlsx" title="The full agency list as Excel, with everything found so far">⬇ Download Excel</a>
       <div class="pill" id="pill"><span class="dot"></span><span id="pilltxt">Connecting…</span></div>
     </div>
   </header>
   <div class="banner" id="banner">Can't reach the worker right now – retrying every few seconds. The numbers below are the last ones received.</div>
-
-  <div class="sec"><h2>Pipeline</h2><div><button class="b p" id="runall" title="Runs: website check → websites &amp; emails → web archive → own-website counts → watermark check. The Spiti24 collection needs your browser, so it is started separately.">▶ Run all server stages</button> <button class="b d" id="scratch" title="Backs up everything, erases it and redoes the whole job: Spiti24 collection first, then all server stages automatically.">⟲ Start everything from scratch</button></div></div>
   <div class="scbar" id="scratchbar" style="display:none"></div>
-  <div class="stages" id="stagecards"></div>
-  <div class="sec"><h2>Own-website property counts · live</h2></div>
-  <div class="grid hero">
-    <section class="card ringbox" aria-label="Overall progress">
-      <div class="ring" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="ringbox">
-        <svg viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6e8bff"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>
-          <circle class="track" cx="100" cy="100" r="84"/><circle class="bar glow" id="ring" cx="100" cy="100" r="84"/></svg>
-        <div class="center"><div class="pct"><span id="pct">0</span><span class="sign">%</span></div><div class="sub" id="ofn">0 of 0 agencies</div></div>
-      </div>
-      <div class="strip" id="strip"><i id="stripfill"></i></div>
-      <div class="sub" id="lastsite">waiting for the first result…</div>
-    </section>
-
-    <section class="card eta" aria-label="Time remaining">
-      <div>
-        <h2>Time remaining</h2>
-        <div class="count" id="count">--</div>
-        <div class="sub" id="finish">estimating…</div>
-      </div>
-      <div class="chips">
-        <div class="chip">Speed <b id="rate">–</b> sites/min</div>
-        <div class="chip">Remaining <b id="remain">–</b></div>
-        <div class="chip">Running for <b id="elapsed">–</b></div>
-      </div>
-      <div>
-        <h2 style="margin-bottom:4px">Speed (sites per minute)</h2>
-        <svg class="spark" id="spark" viewBox="0 0 600 96" preserveAspectRatio="none"></svg>
-      </div>
-    </section>
-  </div>
-
-  <div class="grid stats" id="stats"></div>
-
-  <div class="grid two">
-    <section class="card">
-      <h2>Confidence of the counts found</h2>
-      <div class="stack" id="stack"></div>
-      <div class="legend" id="legend"></div>
-      <div class="sub" style="margin-top:14px" id="reviewnote"></div>
-      <h2 style="margin-top:22px">Now above 70 on their own site</h2>
-      <div class="hl"><div class="n" id="over70">0</div><div class="t" id="over70t">agencies whose own website shows more than 70 sale listings</div></div>
-      <div class="sub" style="margin-top:10px"><b id="new70" style="color:var(--text)">0</b> of them were at 70 or fewer on Spiti24 (newly qualifying)</div>
-      <ul class="feed" id="new70list" style="margin-top:12px;max-height:210px"></ul>
-    </section>
-    <section class="card">
-      <h2>Latest results</h2>
-      <ul class="feed" id="feed"></ul>
-    </section>
-  </div>
-
+  <div class="scbar alert" id="alertbar" style="display:none"></div>
+  <nav class="tabs" id="tabs"></nav>
+  <div id="views"></div>
   <div class="toast" id="toast"></div>
-  <footer id="foot">Data refreshes every 3 seconds · nothing on this page is stored</footer>
+  <footer id="foot">This page updates every 3 seconds · nothing on this page is stored</footer>
 </div>
-
 <script>
 (function(){
   var $ = function(id){ return document.getElementById(id); };
@@ -214,7 +192,7 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
   $('dl').addEventListener('click', function(e){
     e.preventDefault(); var b = $('dl'); if (b.dataset.busy) return;
     b.dataset.busy = '1'; b.innerHTML = '⏳ Building Excel…'; b.setAttribute('aria-disabled', 'true');
-    var reset = function(){ delete b.dataset.busy; b.setAttribute('aria-disabled', 'false'); if (last) render(last); else b.innerHTML = '⬇ Download Excel'; };
+    var reset = function(){ delete b.dataset.busy; b.setAttribute('aria-disabled', 'false'); b.innerHTML = '⬇ Download Excel'; };
     fetch('/spiti24-agencies.xlsx', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(function(r){
       if (!r.ok) return r.text().then(function(t){ throw new Error(t || ('HTTP ' + r.status)); });
       return r.blob();
@@ -230,7 +208,7 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
     document.getElementById('go').onclick = function(){ var v = document.getElementById('tk').value.trim(); if (v) { try { sessionStorage.setItem('tok', v); } catch(e){} location.search = '?token=' + encodeURIComponent(v); } };
   }
 
-  var RING = 2 * Math.PI * 84, shown = {}, last = null, fetchedAt = 0, failures = 0;
+  var RING = 2 * Math.PI * 84, shown = {}, last = null, P = null, fetchedAt = 0, failures = 0, etaBase = {};
   var lang = (navigator.language || 'en');
   // pop-up when Spiti24 blocks the collection (needs a person): asked for once, when the operator presses a collection button
   var blockedNow = false;
@@ -266,7 +244,7 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
 
   // ----- sparkline -----
-  function spark(svg, vals, color){
+  function spark(svg, vals, color, uid){
     var W = 600, H = 96, pad = 8;
     if (!vals || vals.length < 2) { svg.innerHTML = '<text x="300" y="52" text-anchor="middle">collecting data…</text>'; return; }
     var max = Math.max.apply(null, vals.concat([1])) * 1.15, n = vals.length;
@@ -274,8 +252,8 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
     var line = pts.map(function(p, i){ return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
     var area = line + ' L' + pts[n - 1][0].toFixed(1) + ' ' + (H - pad) + ' L' + pts[0][0].toFixed(1) + ' ' + (H - pad) + ' Z';
     var grid = [0.25, 0.5, 0.75].map(function(f){ var y = H - pad - (H - 2 * pad) * f; return '<line class="grid" x1="0" x2="' + W + '" y1="' + y + '" y2="' + y + '"/>'; }).join('');
-    svg.innerHTML = '<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + color + '" stop-opacity=".45"/><stop offset="1" stop-color="' + color + '" stop-opacity="0"/></linearGradient></defs>' +
-      grid + '<path class="area" d="' + area + '"/><path class="line" style="stroke:' + color + '" d="' + line + '"/>' +
+    svg.innerHTML = '<defs><linearGradient id="sg_' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + color + '" stop-opacity=".45"/><stop offset="1" stop-color="' + color + '" stop-opacity="0"/></linearGradient></defs>' +
+      grid + '<path class="area" style="fill:url(#sg_' + uid + ')" d="' + area + '"/><path class="line" style="stroke:' + color + '" d="' + line + '"/>' +
       '<text x="6" y="12">' + max.toFixed(1) + '</text>';
   }
   function speedSeries(h){
@@ -288,126 +266,114 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
     return out.slice(k);
   }
 
-  // ----- render -----
+  // ================= the steps =================
+  var STEPS = [
+    { id: 'collect', tab: '1 · Spiti24', title: '1 · Spiti24 agencies &amp; sale counts', unit: 'pages/min', desc: 'Runs in <b>your own Chrome tab</b> on spiti24.gr (its bot protection blocks servers). The app keeps the queue, so it can stop and resume any time.' },
+    { id: 'dns', tab: '2 · Website check', title: '2 · Website check', unit: 'sites/min', desc: 'Finds which agency websites no longer exist, so they are not visited or shown as working links.' },
+    { id: 'scan', tab: '3 · Emails', title: '3 · Websites &amp; emails', unit: 'sites/min', desc: 'Visits each agency site and reads its contact pages for public emails. Respects robots.txt; stops at bot checks.' },
+    { id: 'wayback', tab: '4 · Web archive', title: '4 · Web archive', unit: 'sites/min', desc: 'Looks for emails in archived copies of sites that block automated visits (may be years old, marked in the Excel).' },
+    { id: 'watermark', tab: '5 · Watermarks', title: '5 · Watermark check', unit: 'agencies/min', desc: 'Checks 3 photos of each agency for a logo or name stamped on them (Y = on most photos, P = on one, N = none). Free, runs inside the app.' },
+    { id: 'own', tab: '6 · Own-website counts', title: '6 · Own-website property counts', unit: 'sites/min', desc: 'Reads the “for sale” total from each agency’s own website in a headless Chrome.' },
+  ];
+  var IDS = STEPS.map(function(s){ return s.id; });
   var STAT = [
     ['ok', 'Counted', 'good'], ['no_count_found', 'No count found', 'warn'], ['blocked', 'Blocked by site', 'bad'],
     ['no_listing_page', 'No listing page', 'mut'], ['robots', 'Disallowed (robots.txt)', 'mut'], ['error', 'Errors (retried)', 'bad']
-  ];
-  var built = false;
-  function build(){
-    var box = $('stats'); box.innerHTML = '';
-    STAT.forEach(function(s){ var c = el('section', 'card stat c-' + s[2]); c.id = 'st_' + s[0];
-      c.innerHTML = '<div class="n" id="stn_' + s[0] + '">0</div><div class="l">' + s[1] + '</div><div class="bar"><i id="stb_' + s[0] + '"></i></div>'; box.appendChild(c); });
-    built = true;
-  }
-  var seenIds = {};
-  function icon(r){
-    if (r.status === 'ok') return r.conf === 'high' ? ['✓', 'good'] : r.conf === 'medium' ? ['✓', 'good'] : ['~', 'warn'];
-    if (r.status === 'blocked') return ['⛔', 'bad'];
-    if (String(r.status).indexOf('error') === 0) return ['!', 'bad'];
-    return ['?', 'mut'];
-  }
-  function row(r, keyPrefix){
-    var ic = icon(r), li = el('li'); var arrow = '', cls = 'eq';
-    if (r.n != null) { if (r.n > r.spiti24) { arrow = '▲'; cls = 'up'; } else if (r.n < r.spiti24) { arrow = '▼'; cls = 'down'; } else { arrow = '='; } }
-    li.innerHTML = '<div class="ic ' + ic[1] + '">' + ic[0] + '</div><div style="min-width:0"><div class="nm">' + esc(r.name) + (r.conf ? '<span class="badge ' + r.conf + '">' + r.conf + '</span>' : '') + (r.review ? '<span class="badge low">review</span>' : '') +
-      '</div><div class="sm">' + (r.n != null ? 'Spiti24 ' + fmtNum(r.spiti24) + ' → own site <b>' + fmtNum(r.n) + '</b>' : (String(r.status).indexOf('error') === 0 ? 'could not open the site (will be retried)' : esc(String(r.status).replace(/_/g, ' '))) + ' · Spiti24 ' + fmtNum(r.spiti24)) + '</div></div>' +
-      '<div class="rt ' + cls + '">' + (r.n != null ? arrow + ' ' + fmtNum(r.n - r.spiti24 > 0 ? r.n - r.spiti24 : r.spiti24 - r.n) : '') + '</div>';
-    return li;
-  }
-  function renderList(ul, items, empty){
-    if (!items || !items.length) { ul.innerHTML = '<li class="empty" style="display:block;background:none;border:0;animation:none">' + empty + '</li>'; ul.dataset.sig = ''; return; }
-    var sig = items.map(function(r){ return r.id + ':' + r.status + ':' + r.n; }).join('|'); if (ul.dataset.sig === sig) return; ul.dataset.sig = sig;
-    ul.innerHTML = ''; items.forEach(function(r){ ul.appendChild(row(r)); });
-  }
-
-  function render(d){
-    if (!built) build();
-    var done = d.done || 0, total = d.total || 1, pct = Math.min(100, d.percent != null ? d.percent : 100 * done / total);
-    $('ring').style.strokeDashoffset = (RING * (1 - pct / 100)).toFixed(2);
-    // the own-website stage can be idle (never started / stopped), running, or complete: "finished" only when every target really has a result
-    var complete = !d.running && total > 0 && done >= total, idle = !d.running && !complete;
-    d.finished = complete; d.idle = idle;
-    $('stripfill').style.width = pct + '%'; $('strip').classList.toggle('stopped', !d.running);
-    $('ringbox').setAttribute('aria-valuenow', pct.toFixed(1));
-    tween($('pct'), pct, 1); $('ofn').textContent = fmtNum(done) + ' of ' + fmtNum(total) + ' agencies';
-    document.title = (blockedNow ? '⛔ Action needed · ' : '') + (d.finished ? 'Done' : Math.floor(pct) + '%') + ' · Agency counter';
-    var lr = d.recent && d.recent[0]; $('lastsite').textContent = lr ? 'latest: ' + lr.name : 'waiting for the first result…';
-    if (!$('dl').dataset.busy) { $('dl').innerHTML = '⬇ Download Excel'; $('dl').setAttribute('aria-disabled', 'false'); }
-
-    // status pill
-    var pill = $('pill'); pill.className = 'pill';
-    if (failures > 1) { pill.classList.add('offline'); $('pilltxt').textContent = 'Offline · retrying'; }
-    else if (d.finished) { pill.classList.add('done'); $('pilltxt').textContent = 'Own-site counts finished'; }
-    else if (d.idle) { $('pilltxt').textContent = 'Idle – nothing running'; pill.classList.add('done'); }
-    else if (d.draining) { pill.classList.add('warn'); $('pilltxt').textContent = 'Restarting (memory guard)'; }
-    else { $('pilltxt').textContent = 'Running · ' + (d.settings ? d.settings.WORKERS : '?') + ' workers'; }
-
-    // eta
-    $('rate').textContent = d.sitesPerMinute != null ? d.sitesPerMinute.toFixed(1) : '–';
-    tween($('remain'), d.remaining || 0);
-    if (d.startedAtMs) $('elapsed').textContent = durText((d.serverTime - d.startedAtMs) / 1000);
-    if (d.finished) { $('count').innerHTML = '0<span class="u">s</span>'; $('finish').textContent = 'all agencies processed'; }
-    else if (d.idle) { $('count').textContent = '--'; $('finish').textContent = 'not running – press Start in the pipeline above'; }
-    else if (d.finishAtMs) { $('finish').textContent = 'about ' + new Date(d.finishAtMs).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' }) + ' (your local time)'; }
-    else { $('count').textContent = '--'; $('finish').textContent = 'estimating… (needs about 10 finished sites)'; }
-    spark($('spark'), speedSeries(d.history || []), '#6e8bff');
-
-    // stat cards
-    var a = d.agg || { status: {}, conf: {} }, denom = Math.max(1, done);
-    STAT.forEach(function(s){ var v = a.status[s[0]] || 0; tween($('stn_' + s[0]), v); $('stb_' + s[0]).style.width = (100 * v / Math.max(1, total)).toFixed(1) + '%'; });
-
-    // confidence
-    var c = a.conf || {}, tot = (c.high || 0) + (c.medium || 0) + (c.low || 0) || 1;
-    var COL = { high: 'var(--good)', medium: 'var(--info)', low: 'var(--warn)' };
-    $('stack').innerHTML = ['high', 'medium', 'low'].map(function(k){ return '<i style="width:' + (100 * (c[k] || 0) / tot).toFixed(1) + '%;background:' + COL[k] + '"></i>'; }).join('');
-    $('legend').innerHTML = [['high', 'High (clean sale total)'], ['medium', 'Medium'], ['low', 'Low (estimate)']].map(function(k){ return '<span><s style="background:' + COL[k[0]] + '"></s>' + k[1] + ' <b>' + fmtNum(c[k[0]] || 0) + '</b></span>'; }).join('');
-    $('reviewnote').innerHTML = '<b style="color:var(--text)">' + fmtNum(a.review || 0) + '</b> counts are flagged “needs review” (several different totals, or only an estimate)';
-
-    tween($('over70'), a.over70 || 0); tween($('new70'), a.newOver70 || 0);
-    renderList($('new70list'), d.newOver70List, 'None yet – they show up here as soon as one is found.');
-    renderList($('feed'), d.recent, 'Waiting for results…');
-    $('foot').textContent = 'Memory: Node heap ' + fmtNum(d.heapMB) + ' MB · process ' + fmtNum(d.memoryMB) + ' MB · refreshes every 3 s · nothing on this page is stored';
-  }
-
-  // smooth per-second countdown between polls
-  setInterval(function(){
-    if (!last || last.finished || last.etaSeconds == null || failures > 1) return;
-    var left = last.etaSeconds - (Date.now() - fetchedAt) / 1000; $('count').innerHTML = durHtml(left);
-  }, 1000);
-
-  function poll(){
-    fetch('/status', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(function(r){
-      if (r.status === 401) { try { sessionStorage.removeItem('tok'); } catch(e){} location.search = ''; throw new Error('unauthorized'); }
-      if (!r.ok) throw new Error('http ' + r.status); return r.json();
-    }).then(function(d){
-      failures = 0; $('banner').classList.remove('show'); last = d; fetchedAt = Date.now(); render(d);
-    }).catch(function(){ failures++; if (failures > 1) { $('banner').classList.add('show'); if (last) render(last); } })
-    .then(function(){ setTimeout(poll, 3000); });
-  }
-  // ================= pipeline stage cards =================
-  var P = null;
-  var STAGES = [
-    { id: 'collect', title: '1 · Spiti24 agencies &amp; sale counts', desc: 'Runs in <b>your own Chrome tab</b> on spiti24.gr (its bot protection blocks servers). The app keeps the queue, so it can stop and resume any time.' },
-    { id: 'dns', title: '2 · Website check', desc: 'Finds which agency websites no longer exist, so they are not visited or shown as working links.' },
-    { id: 'scan', title: '3 · Websites &amp; emails', desc: 'Visits each agency site and reads its contact pages for public emails. Respects robots.txt; stops at bot checks.' },
-    { id: 'wayback', title: '4 · Web archive', desc: 'Looks for emails in archived copies of sites that block automated visits (may be years old, marked in the Excel).' },
-    { id: 'own', title: '5 · Own-website property counts', desc: 'Reads the “for sale” total from each agency’s own website in a headless Chrome.' },
-    { id: 'watermark', title: '6 · Watermark check', desc: 'Checks 3 photos of each agency for a logo or name stamped on them (Y = on most photos, P = on one, N = none). Free, runs inside the app.' },
   ];
   var btn = {};
   function toast(m){ var t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toast.h); toast.h = setTimeout(function(){ t.style.display = 'none'; }, 7000); }
   function post(path, body){ return fetch(path, { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'content-type': 'application/json' }, body: JSON.stringify(body || {}) }).then(function(r){ return r.json(); }); }
   function act(path, body, msg){ return post(path, body).then(function(j){ if (j && j.ok === false && j.error) toast(j.error); else if (msg) toast(msg); pollPipe(); }).catch(function(e){ toast('Failed: ' + e.message); }); }
-  function mk(id, label, cls, fn){ var b = document.createElement('button'); b.className = 'b ' + (cls || ''); b.innerHTML = label; b.onclick = fn; $('acts_' + id).appendChild(b); (btn[id] = btn[id] || {})[label] = b; return b; }
-  function buildCards(){
-    var box = $('stagecards'); box.innerHTML = '';
-    STAGES.forEach(function(s){
-      var c = el('section', 'sc'); c.id = 'sc_' + s.id;
-      c.innerHTML = '<div class="top"><h3>' + s.title + '</h3><span class="tag" id="tag_' + s.id + '">–</span></div><div class="desc">' + s.desc + '</div><div class="sbar" id="bar_' + s.id + '"><i></i></div><div class="nums" id="nums_' + s.id + '"></div><div class="note" id="note_' + s.id + '"></div>' +
-        (s.id === 'collect' ? '<div class="how" id="how_collect" style="display:none"><b>How to start it (about a minute):</b><ol><li>Press <b>Copy collector script</b> below.</li><li>In Google Chrome open <a href="https://www.spiti24.gr/mesitika-grafeia" target="_blank" rel="noopener">spiti24.gr/mesitika-grafeia</a> (tick “I am human” if it appears).</li><li>Press <b>F12</b>, click the <b>Console</b> tab, click inside it, press <b>Ctrl+V</b> and then <b>Enter</b>. (If Chrome blocks pasting, type <b>allow pasting</b>, press Enter, and paste again.) If Chrome asks to <b>show notifications</b>, click <b>Allow</b>: it will alert you when Spiti24 stops the collection.</li><li>Keep that Chrome tab open. When Spiti24 stops it (this happens now and then): reload the tab, tick “I am human”, wait a few minutes and do step 3 again. Nothing is lost.</li></ol></div>' : '') + '<div class="acts" id="acts_' + s.id + '"></div>';
-      box.appendChild(c);
+  function mk(id, label, cls, fn){ var b = document.createElement('button'); b.className = 'b ' + (cls || ''); b.innerHTML = label; b.onclick = fn; $(id + '_acts').appendChild(b); (btn[id] = btn[id] || {})[label] = b; return b; }
+  function setBtns(id, running, disabledStart){
+    var m = btn[id] || {}; Object.keys(m).forEach(function(k){ var b = m[k]; if (k.indexOf('Stop') >= 0) b.disabled = !running; else if (k.indexOf('Copy') >= 0) b.disabled = false; else b.disabled = running || !!disabledStart; });
+  }
+
+  // ---------- building the page ----------
+  function statsHtml(id){ return '<div class="grid stats" id="' + id + '_stats"></div>'; }
+  function stackHtml(id, title){ return '<section class="card"><h2>' + title + '</h2><div class="stack" id="' + id + '_stack"></div><div class="legend" id="' + id + '_legend"></div></section>'; }
+  function extrasHtml(id){
+    if (id === 'own') return '<section class="card"><h2>Confidence of the counts found</h2><div class="stack" id="own_stack"></div><div class="legend" id="own_legend"></div><div class="sub" style="margin-top:14px" id="own_reviewnote"></div>' +
+      '<h2 style="margin-top:22px">Now above 70 on their own site</h2><div class="hl"><div class="n" id="own_over70">0</div><div class="t">agencies whose own website shows more than 70 sale listings</div></div>' +
+      '<div class="sub" style="margin-top:10px"><b id="own_new70" style="color:var(--text)">0</b> of them were at 70 or fewer on Spiti24 (newly qualifying)</div><ul class="feed" id="own_new70list" style="margin-top:12px;max-height:210px"></ul></section>';
+    if (id === 'scan') return stackHtml('scan', 'Outcome of the website visits');
+    if (id === 'watermark') return stackHtml('watermark', 'Split of the verdicts');
+    return '';
+  }
+  function stepView(s){
+    var id = s.id, ex = extrasHtml(id);
+    var v = el('section', 'view'); v.id = 'view_' + id;
+    v.innerHTML = '<div class="vhead"><h2>' + s.title + '</h2><span class="tag" id="' + id + '_tag">–</span></div><div class="vdesc">' + s.desc + '</div>' +
+      '<div class="acts" id="' + id + '_acts"></div><div class="speed" id="' + id + '_speed"></div><div class="note" id="' + id + '_note"></div>' +
+      (id === 'collect' ? '<div class="how" id="how_collect" style="display:none;margin-bottom:12px"><b>How to start it (about a minute):</b><ol><li>Press <b>Copy collector script</b> below.</li><li>In Google Chrome open <a href="https://www.spiti24.gr/mesitika-grafeia" target="_blank" rel="noopener">spiti24.gr/mesitika-grafeia</a> (tick “I am human” if it appears).</li><li>Press <b>F12</b>, click the <b>Console</b> tab, click inside it, press <b>Ctrl+V</b> and then <b>Enter</b>. (If Chrome blocks pasting, type <b>allow pasting</b>, press Enter, and paste again.) If Chrome asks to <b>show notifications</b>, click <b>Allow</b>: it will alert you when Spiti24 stops the collection.</li><li>Keep that Chrome tab open. When Spiti24 stops it (this happens now and then): reload the tab, tick “I am human”, wait a few minutes and do step 3 again. Nothing is lost.</li></ol></div>' : '') +
+      '<div class="grid hero" style="margin-top:12px">' +
+        '<section class="card ringbox" aria-label="Progress"><div class="ring" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="' + id + '_ringbox"><svg viewBox="0 0 200 200"><circle class="track" cx="100" cy="100" r="84"/><circle class="bar glow" id="' + id + '_ring" cx="100" cy="100" r="84"/></svg>' +
+          '<div class="center"><div class="pct"><span id="' + id + '_pct">0</span><span class="sign">%</span></div><div class="sub" id="' + id + '_ofn">–</div></div></div>' +
+          '<div class="strip" id="' + id + '_strip"><i id="' + id + '_stripfill"></i></div><div class="sub" id="' + id + '_last"></div></section>' +
+        '<section class="card eta" aria-label="Time remaining"><div><h2>Time remaining</h2><div class="count" id="' + id + '_count">--</div><div class="sub" id="' + id + '_finish"></div></div>' +
+          '<div class="chips"><div class="chip">Speed <b id="' + id + '_rate">–</b> <span>' + s.unit + '</span></div><div class="chip">Remaining <b id="' + id + '_remain">–</b></div><div class="chip">Running for <b id="' + id + '_elapsed">–</b></div></div>' +
+          '<div><h2 style="margin-bottom:4px">Speed (' + s.unit + ')</h2><svg class="spark" id="' + id + '_spark" viewBox="0 0 600 96" preserveAspectRatio="none"></svg></div></section>' +
+      '</div>' + statsHtml(id) +
+      '<div class="grid ' + (ex ? 'two' : 'one') + '">' + ex + '<section class="card"><h2>Latest results</h2><ul class="feed" id="' + id + '_feed"></ul></section></div>';
+    return v;
+  }
+  function overviewView(){
+    var v = el('section', 'view'); v.id = 'view_overview';
+    v.innerHTML = '<div class="sec" style="margin-top:0"><h2>Overview</h2><div><button class="b p" id="runall" title="Runs steps 2 to 6 one after another. Step 1 needs your Chrome tab and is started from its own tab.">▶ Run all server stages</button> <button class="b d" id="scratch" title="Backs up everything, erases it and redoes the whole job: Spiti24 collection first, then all server stages automatically.">⟲ Start everything from scratch</button></div></div>' +
+      '<div class="grid stats tot" id="ov_totals"></div><div class="sec"><h2>Steps</h2></div><div class="stages" id="ov_cards"></div>';
+    var box = v.querySelector('#ov_cards');
+    STEPS.forEach(function(s){
+      var c = el('section', 'sc click'); c.id = 'oc_' + s.id;
+      c.innerHTML = '<div class="top"><h3>' + s.title + '</h3><span class="tag" id="oc_' + s.id + '_tag">–</span></div><div class="sbar" id="oc_' + s.id + '_bar"><i></i></div><div class="nums" id="oc_' + s.id + '_nums"></div><div class="note" id="oc_' + s.id + '_note"></div>';
+      c.onclick = function(){ location.hash = s.id; }; box.appendChild(c);
     });
+    return v;
+  }
+  // ---------- speed settings: how many things a step does at the same time ----------
+  var running = {};
+  var HINT = {
+    collect: 'Faster = Spiti24 stops the collection sooner.',
+    dns: function(l){ return 'Higher = faster (' + l[0] + '–' + l[1] + ').'; },
+    scan: function(l){ return 'Higher = faster (' + l[0] + '–' + l[1] + ').'; },
+    wayback: 'The Internet Archive limits speed: more than 4 may get refused (1–8).',
+    watermark: function(l, s){ return 'Higher = faster if the server has spare CPU (' + l[0] + '–' + l[1] + '; this server has ' + s.cpus + ' CPUs).'; },
+    own: function(l, s){ var rec = Math.min(l[1], Math.max(1, Math.floor((s.memoryMB - 700) / 450))); return 'Each one needs about 0.4 GB of server memory (this server has ' + (s.memoryMB / 1024).toFixed(1) + ' GB, so up to ' + rec + ' is recommended).'; }
+  };
+  function buildSpeed(){
+    IDS.forEach(function(id){
+      var box = $(id + '_speed'); if (!box) return;
+      box.innerHTML = '<span>⚡ ' + (id === 'collect' ? 'Pace' : 'Run') + '</span>' +
+        (id === 'collect' ? '<select id="' + id + '_par"><option value="slow">Slow</option><option value="normal">Normal</option><option value="fast">Fast</option></select>' : '<input type="number" step="1" id="' + id + '_par"><span>at the same time</span>') +
+        '<button class="b" id="' + id + '_parsave">Save</button><span class="hint" id="' + id + '_parhint"></span>';
+      var inp = $(id + '_par'); inp.oninput = inp.onchange = function(){ inp.dataset.dirty = '1'; };
+      $(id + '_parsave').onclick = function(){
+        var v = id === 'collect' ? inp.value : parseInt(inp.value);
+        post('/pipeline/settings', { stage: id, value: v }).then(function(j){
+          if (j && j.ok === false) { toast(j.error); return; }
+          delete inp.dataset.dirty;
+          toast(id === 'collect' ? 'Saved – it takes effect from the next page.' : (running[id] ? 'Saved. It applies the next time you press Start (press Stop, then Start – nothing is lost).' : 'Saved.'));
+          pollPipe();
+        }).catch(function(e){ toast('Failed: ' + e.message); });
+      };
+    });
+  }
+  function paintSpeed(){
+    var S = P.settings || {}, L = P.limits || {}, srv = P.server || {};
+    IDS.forEach(function(id){
+      var inp = $(id + '_par'); if (!inp || S[id] == null) return;
+      if (L[id]) { inp.min = L[id][0]; inp.max = L[id][1]; }
+      if (!inp.dataset.dirty && document.activeElement !== inp) inp.value = S[id];
+      var h = HINT[id]; $(id + '_parhint').textContent = typeof h === 'function' ? h(L[id] || [0, 0], srv) : (h || '');
+    });
+  }
+  function buildUI(){
+    var tabs = $('tabs'), views = $('views'); tabs.innerHTML = ''; views.innerHTML = '';
+    [{ id: 'overview', tab: 'Overview' }].concat(STEPS).forEach(function(s){
+      var b = el('button', 'tab', '<span class="sd" id="sd_' + s.id + '"></span>' + s.tab); b.id = 'tab_' + s.id; b.onclick = function(){ location.hash = s.id; }; tabs.appendChild(b);
+    });
+    views.appendChild(overviewView()); STEPS.forEach(function(s){ views.appendChild(stepView(s)); });
+
+    // ----- buttons live in the tab of their step -----
     mk('collect', '▶ Start collection', 'p', function(){ askNotify(); act('/collector/start', { mode: 'new' }, 'Collection queued. Now copy the script and run it in your Spiti24 tab.'); });
     mk('collect', '⟳ Refresh everything', '', function(){ askNotify(); if (confirm('Re-read ALL agencies and ALL sale counts from Spiti24? This takes many hours with several blocks.')) act('/collector/start', { mode: 'all' }, 'Full refresh queued.'); });
     mk('collect', '📋 Copy collector script', '', function(){
@@ -424,70 +390,191 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
       if (id === 'watermark') mk(id, '🔍 Dry run', '', function(){ act('/pipeline/start', { stage: id, dry: true }, 'Dry run: builds the photo sheets only, no AI call, no cost.'); });
       mk(id, '■ Stop', 'd', function(){ act('/pipeline/stop', { stage: id }); });
     });
+    buildSpeed();
     $('scratch').onclick = function(){
       askNotify();
       var t = window.prompt('START FROM SCRATCH\n\nThis makes a backup, then ERASES all collected data (agencies, sale counts, emails, watermark verdicts, own-website counts) and starts everything again:\n1) the Spiti24 collection (you paste a script in your Chrome tab; many hours, several blocks)\n2) all server stages then run by themselves.\n\nType RESTART to confirm:');
       if (t && t.trim().toUpperCase() === 'RESTART') act('/pipeline/scratch', { confirm: true }, 'Started from scratch (old data backed up). Now copy the collector script in step 1 and run it in your Spiti24 tab.');
     };
     $('runall').onclick = function(){ act('/pipeline/run-all', {}, 'Running the server stages one after another.'); };
+    $('alertbar').onclick = function(){ location.hash = 'collect'; };
   }
-  function setStage(id, tag, cls, pctv, barCls, nums, note, isErr){
-    var t = $('tag_' + id); t.textContent = tag; t.className = 'tag ' + (cls || '');
-    var b = $('bar_' + id); b.className = 'sbar ' + (barCls || ''); b.firstChild.style.width = Math.max(0, Math.min(100, pctv)).toFixed(1) + '%';
-    $('nums_' + id).innerHTML = nums; var n = $('note_' + id); n.textContent = note || ''; n.className = 'note' + (isErr ? ' err' : '');
+  function show(id){
+    if (id !== 'overview' && IDS.indexOf(id) < 0) id = 'overview';
+    ['overview'].concat(IDS).forEach(function(k){ $('view_' + k).classList.toggle('on', k === id); $('tab_' + k).classList.toggle('on', k === id); });
   }
-  function eta(sec){ return sec != null ? ' · about <b>' + durText(sec) + '</b> left' : ''; }
-  function setBtns(id, running, disabledStart){
-    var m = btn[id] || {}; Object.keys(m).forEach(function(k){ var b = m[k]; if (k.indexOf('Stop') >= 0) b.disabled = !running; else if (k.indexOf('Copy') >= 0) b.disabled = false; else b.disabled = running || !!disabledStart; });
-  }
-  function renderPipeline(){
-    if (!P) return; var S = P.stages, c = P.collector || {}, cnt = P.counts || {};
-    // 1 collector
-    var run = c.active, online = c.collectorOnline;
-    blockedNow = !!(c.lastBlock && run); if (blockedNow && !c.lastBlock.notified) alertBlock(c.lastBlock.at);        // the Spiti24 tab already showed its own notification when it could
-    if (!c.hasRun) setStage('collect', 'Idle', '', 0, '', 'Stored: <b>' + fmtNum(cnt.agents) + '</b> agencies · <b>' + fmtNum(cnt.sale) + '</b> sale counts', 'No collection run started in this app yet. The data shown is the snapshot the app was installed with.');
-    else {
-      var ph = c.phase, ov = ph === 'index' ? 1 : ph === 'areas' ? 30 * (c.areas.pagesDone / Math.max(1, c.areas.pagesKnown)) : ph === 'sale' ? 30 + 70 * (c.sale.done / Math.max(1, c.sale.total)) : 100;
-      var tg = c.lastBlock && run ? ['Blocked', 'bad'] : run ? (online ? ['Running', 'run'] : ['Waiting for your browser', 'warn']) : (c.stopped ? ['Stopped', 'warn'] : ['Done', 'done']);
-      setStage('collect', tg[0], tg[1], ov, run && online ? 'run' : (!run && !c.stopped ? 'done' : ''),
-        'Step <b>' + (ph === 'index' ? 'reading the area list' : ph === 'areas' ? 'agency lists' : ph === 'sale' ? 'sale counts' : 'finished') + '</b> · areas <b>' + c.areas.done + '/' + c.areas.total + '</b> · agencies <b>' + fmtNum(c.agentsTotal) + '</b> (+' + c.newAgents + ' new) · sale counts <b>' + fmtNum(c.sale.done) + '/' + fmtNum(c.sale.total) + '</b>' + (c.unitsPerMinute ? ' · ' + c.unitsPerMinute + ' pages/min' : '') + eta(run && online ? c.etaSeconds : null),
-        c.lastBlock && run ? 'Spiti24 stopped it at ' + new Date(c.lastBlock.at).toLocaleTimeString(lang) + ' (normal). In the Chrome tab: reload, tick “I am human”, wait a few minutes, then paste the script again. Nothing is lost.' : (run && !online ? 'No Chrome tab is connected' + (c.seenAgoSeconds != null ? ' (last seen ' + durText(c.seenAgoSeconds) + ' ago)' : '') + '. Follow “How to start it” in this box.' : (c.failures ? c.failures + ' page(s) could not be read and were retried.' : '')), !!(c.lastBlock && run));
+  window.addEventListener('hashchange', function(){ show(location.hash.slice(1)); });
+
+  // ---------- painting ----------
+  function paintStats(boxId, items){
+    var box = $(boxId), sig = items.map(function(i){ return i[0]; }).join('|');
+    if (box.dataset.sig !== sig) {
+      box.dataset.sig = sig; box.innerHTML = '';
+      items.forEach(function(it, i){ var c = el('section', 'card stat c-' + it[2]);
+        c.innerHTML = '<div class="n" id="' + boxId + '_n' + i + '">0</div><div class="l">' + esc(it[0]) + '</div><div class="bar"' + (it[3] ? '' : ' style="visibility:hidden"') + '><i id="' + boxId + '_b' + i + '"></i></div>'; box.appendChild(c); });
     }
-    $('how_collect').style.display = (!c.hasRun || (run && !online)) ? 'block' : 'none';
-    setBtns('collect', run && online, false); if (btn.collect) { btn.collect['■ Stop'].disabled = !run; btn.collect['▶ Start collection'].disabled = !!(run && online); }
-    // 2-4,6 server stages
-    ['dns', 'scan', 'wayback', 'watermark'].forEach(function(id){
-      var st = S[id], r = st.status === 'running', pend = st.pending || 0, tot = st.total || 0, dn = st.done || 0;
-      var tg = r ? ['Running', 'run'] : st.status === 'done' ? ['Done', 'done'] : st.status === 'error' ? ['Error', 'bad'] : (st.status === 'stopped' || st.status === 'interrupted') ? ['Stopped', 'warn'] : st.status === 'waiting' ? ['Not available', 'warn'] : (pend > 0 ? ['Ready', ''] : ['Nothing to do', '']);
-      var nums = (r || st.status === 'done' || st.status === 'stopped' || st.status === 'interrupted') && tot ? '<b>' + fmtNum(dn) + ' / ' + fmtNum(tot) + '</b>' + (st.perMinute ? ' · ' + st.perMinute + ' per min' : '') + eta(r ? st.etaSeconds : null) : 'Waiting to process: <b>' + fmtNum(pend) + '</b>';
-      if (id === 'watermark') nums += ' · engine: <b>' + (P.wmEngine === 'local' ? 'free built-in model' : P.wmEngine === 'ai' ? 'AI service (API key)' : 'none') + '</b>';
-      setStage(id, tg[0], tg[1], tot ? 100 * dn / tot : 0, r ? 'run' : st.status === 'done' ? 'done' : '', nums, st.error ? 'Something went wrong: ' + st.error + ' — press Start to try again.' : (st.note || ''), st.status === 'error');
-      setBtns(id, r, false);
+    items.forEach(function(it, i){ tween($(boxId + '_n' + i), it[1] || 0); if (it[3]) $(boxId + '_b' + i).style.width = Math.min(100, 100 * (it[1] || 0) / it[3]).toFixed(1) + '%'; });
+  }
+  function paintFeed(ulId, items, empty){
+    var ul = $(ulId);
+    if (!items || !items.length) { ul.innerHTML = '<li class="empty" style="display:block;background:none;border:0;animation:none">' + empty + '</li>'; ul.dataset.sig = ''; return; }
+    var sig = JSON.stringify(items); if (ul.dataset.sig === sig) return; ul.dataset.sig = sig; ul.innerHTML = '';
+    items.forEach(function(r){
+      var li = el('li'); li.innerHTML = '<div class="ic ' + (r.cls || 'mut') + '">' + esc(r.ic || '•') + '</div><div style="min-width:0"><div class="nm">' + esc(r.name) + (r.badges || '') + '</div><div class="sm">' + (r.smHtml != null ? r.smHtml : esc(r.sm || '')) + '</div></div><div class="rt ' + (r.rtCls || '') + '">' + esc(r.rt || '') + '</div>';
+      ul.appendChild(li);
     });
+  }
+  function paintStack(id, items){                                    // items: [label, value, colour]
+    var tot = items.reduce(function(s, i){ return s + (i[1] || 0); }, 0) || 1;
+    $(id + '_stack').innerHTML = items.map(function(i){ return '<i style="width:' + (100 * (i[1] || 0) / tot).toFixed(1) + '%;background:' + i[2] + '"></i>'; }).join('');
+    $(id + '_legend').innerHTML = items.map(function(i){ return '<span><s style="background:' + i[2] + '"></s>' + esc(i[0]) + ' <b>' + fmtNum(i[1] || 0) + '</b></span>'; }).join('');
+  }
+  function paintStep(id, m){
+    var p = function(k){ return $(id + '_' + k); };
+    var pct = Math.max(0, Math.min(100, m.pct || 0));
+    p('ring').style.strokeDashoffset = (RING * (1 - pct / 100)).toFixed(2);
+    tween(p('pct'), pct, 1); p('ofn').textContent = m.ofn || '';
+    p('stripfill').style.width = pct + '%'; p('strip').classList.toggle('stopped', !m.running);
+    p('ringbox').setAttribute('aria-valuenow', pct.toFixed(1)); p('last').textContent = m.last || '';
+    etaBase[id] = m.running && m.etaSeconds != null ? { s: m.etaSeconds, at: Date.now() } : null;
+    if (m.complete) { p('count').innerHTML = '0<span class="u">s</span>'; p('finish').textContent = 'finished'; }
+    else if (!m.running) { p('count').textContent = '--'; p('finish').textContent = 'not running'; }
+    else if (m.etaSeconds != null) { p('count').innerHTML = durHtml(m.etaSeconds); p('finish').textContent = 'about ' + new Date(Date.now() + m.etaSeconds * 1000).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' }) + ' (your local time)'; }
+    else { p('count').textContent = '--'; p('finish').textContent = 'estimating…'; }
+    p('rate').textContent = m.rate != null ? (+m.rate).toFixed(1) : '–';
+    tween(p('remain'), m.remaining || 0); p('elapsed').textContent = m.elapsed != null ? durText(m.elapsed) : '–';
+    spark(p('spark'), speedSeries(m.hist || []), '#6e8bff', id);
+    paintStats(id + '_stats', m.stats || []);
+    paintFeed(id + '_feed', m.feed || [], m.emptyFeed || 'Nothing yet.');
+    var t = $(id + '_tag'); t.textContent = m.tag[0]; t.className = 'tag ' + (m.tag[1] || '');
+    var n = $(id + '_note'); n.textContent = m.note || ''; n.className = 'note' + (m.noteErr ? ' err' : '');
+    // overview card + tab dot
+    var ct = $('oc_' + id + '_tag'); ct.textContent = m.tag[0]; ct.className = 'tag ' + (m.tag[1] || '');
+    var cb = $('oc_' + id + '_bar'); cb.className = 'sbar ' + (m.running ? 'run' : m.complete ? 'done' : ''); cb.firstChild.style.width = pct.toFixed(1) + '%';
+    $('oc_' + id + '_nums').innerHTML = '<b>' + esc(m.ofn || '') + '</b>' + (m.running && m.etaSeconds != null ? ' · about <b>' + durText(m.etaSeconds) + '</b> left' : '');
+    $('oc_' + id + '_note').textContent = m.noteErr ? (m.note || '') : ''; $('oc_' + id + '_note').className = 'note' + (m.noteErr ? ' err' : '');
+    $('sd_' + id).className = 'sd ' + (m.tag[1] || '');
+  }
+
+  // ---------- models: what each step shows ----------
+  function since(a, b){ return a ? ((b ? new Date(b).getTime() : Date.now()) - new Date(a).getTime()) / 1000 : null; }
+  function mCollect(){
+    var c = P.collector || {}, cnt = P.counts || {}, run = c.active, online = c.collectorOnline, m = { running: !!(run && online), how: false };
+    m.how = !c.hasRun || !!(run && !online);
+    if (!c.hasRun) return Object.assign(m, { tag: ['Idle', ''], pct: 0, ofn: 'not started', remaining: 0, hist: [], feed: [], emptyFeed: 'Nothing collected in this app yet.',
+      stats: [['Agencies stored', cnt.agents, 'info', null], ['Property counts stored', cnt.sale, 'good', cnt.agents]], note: 'No collection has been run yet. The numbers shown are the starting data that came with the app.' });
+    var ph = c.phase, ov = ph === 'index' ? 1 : ph === 'areas' ? 30 * (c.areas.pagesDone / Math.max(1, c.areas.pagesKnown)) : ph === 'sale' ? 30 + 70 * (c.sale.done / Math.max(1, c.sale.total)) : 100;
+    var tg = c.lastBlock && run ? ['Blocked', 'bad'] : run ? (online ? ['Running', 'run'] : ['Waiting for your browser', 'warn']) : (c.stopped ? ['Stopped', 'warn'] : ['Done', 'done']);
+    var note = c.lastBlock && run ? 'Spiti24 stopped it at ' + new Date(c.lastBlock.at).toLocaleTimeString(lang) + ' (normal). In the Chrome tab: reload, tick “I am human”, wait a few minutes, then paste the script again. Nothing is lost.'
+      : (run && !online ? 'No Chrome tab is connected' + (c.seenAgoSeconds != null ? ' (last seen ' + durText(c.seenAgoSeconds) + ' ago)' : '') + '. Follow “How to start it” below.' : (c.failures ? c.failures + ' page(s) could not be read and were retried.' : ''));
+    return Object.assign(m, { tag: tg, pct: ov, complete: !run && !c.stopped && ph === 'done', note: note, noteErr: !!(c.lastBlock && run),
+      ofn: ph === 'sale' ? fmtNum(c.sale.done) + ' of ' + fmtNum(c.sale.total) + ' sale counts' : ph === 'areas' ? fmtNum(c.areas.done) + ' of ' + fmtNum(c.areas.total) + ' areas' : ph === 'index' ? 'reading the area list' : 'finished',
+      last: c.recent && c.recent[0] ? 'latest: ' + c.recent[0].name : '', etaSeconds: run && online ? c.etaSeconds : null, rate: c.unitsPerMinute,
+      remaining: ph === 'sale' ? c.sale.remaining : Math.max(0, (c.areas.pagesKnown || 0) - (c.areas.pagesDone || 0)), elapsed: since(c.startedAt, run ? null : c.finishedAt),
+      hist: c.history || [], feed: c.recent || [], emptyFeed: 'Waiting for the first results…',
+      stats: [['Areas done', c.areas.done, 'info', c.areas.total], ['Agencies found', c.agentsTotal, 'good', null], ['New agencies', c.newAgents, 'info', null], ['Sale counts read', c.sale.done, 'good', c.sale.total], ['Stopped by Spiti24', c.blocks, 'bad', null], ['Pages retried', c.failures, 'warn', null]] });
+  }
+  function mStage(id){
+    var st = P.stages[id], r = st.status === 'running', pend = st.pending || 0, tot = st.total || 0, dn = st.done || 0, unit = id === 'watermark' ? 'agencies' : 'sites';
+    var tag = r ? ['Running', 'run'] : st.status === 'done' ? ['Done', 'done'] : st.status === 'error' ? ['Error', 'bad'] : (st.status === 'stopped' || st.status === 'interrupted') ? ['Stopped', 'warn'] : st.status === 'waiting' ? ['Not available', 'warn'] : (pend > 0 ? ['Ready', ''] : ['Nothing to do', '']);
+    var active = r || st.status === 'done' || st.status === 'stopped' || st.status === 'interrupted';
+    var ofn = active && tot ? fmtNum(dn) + ' of ' + fmtNum(tot) + ' ' + unit : (st.status === 'done' && !tot ? 'nothing to do' : fmtNum(pend) + ' waiting');
+    var showNote = st.status === 'stopped' || st.status === 'interrupted' || st.status === 'waiting' || (id === 'dns' && st.status !== 'idle');
+    var extra = id === 'watermark' ? 'engine: ' + (P.wmEngine === 'local' ? 'free built-in model' : P.wmEngine === 'ai' ? 'AI service (API key)' : 'none') : '';
+    return { tag: tag, running: r, complete: st.status === 'done', pct: tot ? 100 * dn / tot : (st.status === 'done' ? 100 : 0), ofn: ofn, last: st.recent && st.recent[0] ? 'latest: ' + st.recent[0].name : '',
+      etaSeconds: r ? st.etaSeconds : null, rate: st.perMinute, remaining: r || st.status === 'stopped' ? Math.max(0, tot - dn) : pend, elapsed: since(st.startedAt, r ? null : st.finishedAt),
+      hist: st.history || [], stats: (P.stats && P.stats[id]) || [], feed: st.recent || [], emptyFeed: 'Nothing yet – press Start.',
+      note: st.error ? 'Something went wrong: ' + st.error + ' — press Start to try again.' : [showNote ? st.note : '', extra].filter(Boolean).join(' · '), noteErr: st.status === 'error' };
+  }
+  function ownItem(r){
+    var ic = r.status === 'ok' ? (r.conf === 'low' ? ['~', 'warn'] : ['✓', 'good']) : r.status === 'blocked' ? ['⛔', 'bad'] : String(r.status).indexOf('error') === 0 ? ['!', 'bad'] : ['?', 'mut'];
+    var arrow = '', cls = 'eq';
+    if (r.n != null) { if (r.n > r.spiti24) { arrow = '▲'; cls = 'up'; } else if (r.n < r.spiti24) { arrow = '▼'; cls = 'down'; } else { arrow = '='; } }
+    return { ic: ic[0], cls: ic[1], name: r.name, badges: (r.conf ? '<span class="badge ' + r.conf + '">' + r.conf + '</span>' : '') + (r.review ? '<span class="badge low">review</span>' : ''),
+      smHtml: r.n != null ? 'Spiti24 ' + fmtNum(r.spiti24) + ' → own site <b>' + fmtNum(r.n) + '</b>' : (String(r.status).indexOf('error') === 0 ? 'could not open the site (will be retried)' : esc(String(r.status).replace(/_/g, ' '))) + ' · Spiti24 ' + fmtNum(r.spiti24),
+      rt: r.n != null ? arrow + ' ' + fmtNum(r.n - r.spiti24 > 0 ? r.n - r.spiti24 : r.spiti24 - r.n) : '', rtCls: cls };
+  }
+  function mOwn(){
+    var o = P.own || {}, d = last, orun = !!o.running, done = d ? d.done : (o.done || 0), total = d ? d.total : (o.total || 0);
+    var complete = !orun && total > 0 && done >= total, a = (d && d.agg) || { status: {}, conf: {} };
+    var tag = orun ? ['Running', 'run'] : complete ? ['Done', 'done'] : (P.chain && P.chain.active ? ['Waiting', ''] : (o.remaining ? ['Ready', ''] : ['Nothing to do', '']));
+    return { tag: tag, running: orun, complete: complete, pct: d && d.percent != null ? d.percent : (total ? 100 * done / total : 0), ofn: fmtNum(done) + ' of ' + fmtNum(total) + ' agencies',
+      last: d && d.recent && d.recent[0] ? 'latest: ' + d.recent[0].name : '', etaSeconds: orun && d ? d.etaSeconds : null, rate: d ? d.sitesPerMinute : null, remaining: d ? d.remaining : (o.remaining || 0),
+      elapsed: d && d.startedAtMs && orun ? (d.serverTime - d.startedAtMs) / 1000 : null, hist: (d && d.history) || [],
+      stats: STAT.map(function(s){ return [s[1], a.status[s[0]] || 0, s[2], total]; }), feed: ((d && d.recent) || []).map(ownItem), emptyFeed: 'Waiting for results…', agg: a, note: '' };
+  }
+  function paintOwnExtras(m){
+    var a = m.agg, c = a.conf || {}, COL = { high: 'var(--good)', medium: 'var(--info)', low: 'var(--warn)' };
+    paintStack('own', [['High (clean sale total)', c.high, COL.high], ['Medium', c.medium, COL.medium], ['Low (estimate)', c.low, COL.low]]);
+    $('own_reviewnote').innerHTML = '<b style="color:var(--text)">' + fmtNum(a.review || 0) + '</b> counts are flagged “needs review” (several different totals, or only an estimate)';
+    tween($('own_over70'), a.over70 || 0); tween($('own_new70'), a.newOver70 || 0);
+    paintFeed('own_new70list', ((last && last.newOver70List) || []).map(ownItem), 'None yet – they show up here as soon as one is found.');
+  }
+
+  function renderAll(){
+    if (!P) return;
+    var M = {}; IDS.forEach(function(id){ M[id] = id === 'collect' ? mCollect() : id === 'own' ? mOwn() : mStage(id); });
+    IDS.forEach(function(id){ paintStep(id, M[id]); });
+    $('how_collect').style.display = M.collect.how ? 'block' : 'none';
+    // step-specific extras
+    paintOwnExtras(M.own);
+    var sc = (P.stats && P.stats.scan) || [], wm = (P.stats && P.stats.watermark) || [];
+    if (sc.length) paintStack('scan', [[sc[0][0], sc[0][1], 'var(--good)'], [sc[1][0], sc[1][1], 'var(--bad)'], [sc[2][0], sc[2][1], 'var(--muted)'], [sc[3][0], sc[3][1], 'var(--warn)']]);
+    if (wm.length) paintStack('watermark', [['Logo on most photos (Y)', wm[0][1], 'var(--bad)'], ['Logo on one photo (P)', wm[1][1], 'var(--warn)'], ['No logo seen (N)', wm[2][1], 'var(--good)']]);
+    // buttons
+    var c = P.collector || {}, run = c.active, online = c.collectorOnline;
+    setBtns('collect', run && online, false); if (btn.collect) { btn.collect['■ Stop'].disabled = !run; btn.collect['▶ Start collection'].disabled = !!(run && online); }
+    ['dns', 'scan', 'wayback', 'watermark'].forEach(function(id){ setBtns(id, M[id].running, false); });
+    setBtns('own', M.own.running, false);
     if (btn.watermark) { if (!P.wmEngine) btn.watermark['▶ Start'].disabled = true; if (btn.watermark['🔍 Dry run']) btn.watermark['🔍 Dry run'].style.display = P.wmEngine === 'local' ? 'none' : ''; }
-    // 5 own-website counts (numbers from the live /status payload)
-    var d = last, o = P.own || {}, orun = !!o.running;
-    var odone = d ? d.done : (o.done || 0), ototal = d ? d.total : (o.total || 0);
-    setStage('own', orun ? 'Running' : (ototal && odone >= ototal ? 'Done' : (S.dns && P.chain && P.chain.active ? 'Waiting' : (o.remaining ? 'Ready' : 'Nothing to do'))), orun ? 'run' : (ototal && odone >= ototal ? 'done' : ''), ototal ? 100 * odone / ototal : 0, orun ? 'run' : (ototal && odone >= ototal ? 'done' : ''),
-      '<b>' + fmtNum(odone) + ' / ' + fmtNum(ototal) + '</b> agencies' + (d && orun && d.sitesPerMinute ? ' · ' + d.sitesPerMinute + ' per min' : '') + eta(orun && d ? d.etaSeconds : null), 'Details below.', false);
-    setBtns('own', orun, false);
-    // run all
-    var sc = P.scratch, sb = $('scratchbar');
-    if (sc && sc.active) { sb.style.display = 'block'; sb.innerHTML = sc.phase === 'collect'
-      ? '<b>Started from scratch · step 1 of 2:</b> collecting agencies and sale counts from Spiti24. Copy the collector script and run it in your Chrome tab (card 1 below). When it has finished, the other stages start by themselves. The old data is backed up in <code>/data/backups/' + sc.backup + '</code>.'
-      : '<b>Started from scratch · step 2 of 2:</b> the server stages are running one after another (website check → emails → web archive → own-website counts → watermark check).'; }
-    else if (sc && sc.phase === 'finished') { sb.style.display = 'block'; sb.innerHTML = '<b>Restart from scratch finished</b> (' + String(sc.finishedAt || '').replace('T', ' ').slice(0, 16) + ' UTC). The Excel now holds the new data.'; }
+    IDS.forEach(function(id){ running[id] = !!M[id].running; }); paintSpeed();
+    // overview totals
+    var cnt = P.counts || {}, own = M.own, ownTotal = (P.own && P.own.total) || 0;
+    paintStats('ov_totals', [['Agencies', cnt.agents, 'info', null], ['With a website', cnt.withSite, 'info', cnt.agents], ['Agencies with an email', cnt.withEmail, 'good', cnt.agents],
+      ['Own-website counted', last ? last.done : 0, 'good', ownTotal], ['Watermark checked', cnt.decisions, 'good', null], ['70+ sales and no watermark', cnt.over70NoWm, 'good', null]]);
+    // scratch + alert bars
+    var s = P.scratch, sb = $('scratchbar');
+    if (s && s.active) { sb.style.display = 'block'; sb.innerHTML = s.phase === 'collect'
+      ? '<b>Started from scratch · step 1 of 2:</b> collecting agencies and sale counts from Spiti24. Open the <b>1 · Spiti24</b> tab, copy the collector script and run it in your Chrome tab. When it has finished, the other stages start by themselves. The old data is backed up in <code>/data/backups/' + s.backup + '</code>.'
+      : '<b>Started from scratch · step 2 of 2:</b> the server stages are running one after another (website check → emails → web archive → watermark check → own-website counts).'; }
+    else if (s && s.phase === 'finished') { sb.style.display = 'block'; sb.innerHTML = '<b>Restart from scratch finished</b> (' + String(s.finishedAt || '').replace('T', ' ').slice(0, 16) + ' UTC). The Excel now holds the new data.'; }
     else sb.style.display = 'none';
+    blockedNow = !!(c.lastBlock && run); if (blockedNow && !c.lastBlock.notified) alertBlock(c.lastBlock.at);        // the Spiti24 tab already showed its own notification when it could
+    var ab = $('alertbar'); ab.style.display = blockedNow ? 'block' : 'none'; if (blockedNow) ab.innerHTML = '<b>Action needed:</b> Spiti24 stopped the collection. Click here to see what to do.';
     var ch = P.chain, ca = ch && ch.active; $('runall').disabled = !!ca; $('runall').innerHTML = ca ? '⏳ Running stages…' : '▶ Run all server stages';
+    // header pill + page title
+    var runningIds = IDS.filter(function(id){ return M[id].running; }), pill = $('pill'); pill.className = 'pill';
+    if (failures > 1) { pill.classList.add('offline'); $('pilltxt').textContent = 'Offline · retrying'; }
+    else if (blockedNow) { pill.classList.add('warn'); $('pilltxt').textContent = 'Action needed – Spiti24 stopped the collection'; }
+    else if (last && last.draining) { pill.classList.add('warn'); $('pilltxt').textContent = 'Restarting (memory guard)'; }
+    else if (runningIds.length) { $('pilltxt').textContent = 'Running · ' + runningIds.map(function(id){ return 'step ' + (IDS.indexOf(id) + 1); }).join(', '); }
+    else { $('pilltxt').textContent = 'Idle – nothing running'; pill.classList.add('done'); }
+    document.title = (blockedNow ? '⛔ Action needed · ' : '') + (runningIds.length ? Math.floor(M[runningIds[0]].pct) + '% · ' + STEPS[IDS.indexOf(runningIds[0])].tab : 'Agency site counter');
+    if (last) $('foot').textContent = 'Memory: Node heap ' + fmtNum(last.heapMB) + ' MB · process ' + fmtNum(last.memoryMB) + ' MB · refreshes every 3 s · nothing on this page is stored';
+  }
+
+  // smooth per-second countdown between polls
+  setInterval(function(){
+    IDS.forEach(function(id){ var b = etaBase[id]; if (!b || failures > 1) return; var left = b.s - (Date.now() - b.at) / 1000; if (left >= 0) $(id + '_count').innerHTML = durHtml(left); });
+  }, 1000);
+
+  function poll(){
+    fetch('/status', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(function(r){
+      if (r.status === 401) { try { sessionStorage.removeItem('tok'); } catch(e){} location.search = ''; throw new Error('unauthorized'); }
+      if (!r.ok) throw new Error('http ' + r.status); return r.json();
+    }).then(function(d){
+      failures = 0; $('banner').classList.remove('show'); last = d; fetchedAt = Date.now(); renderAll();
+    }).catch(function(){ failures++; if (failures > 1) { $('banner').classList.add('show'); renderAll(); } })
+    .then(function(){ setTimeout(poll, 3000); });
   }
   function pollPipe(){
-    fetch('/pipeline/status', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){ if (j) { P = j; renderPipeline(); } }).catch(function(){});
+    fetch('/pipeline/status', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){ if (j) { P = j; renderAll(); } }).catch(function(){});
   }
-  buildCards(); pollPipe(); setInterval(pollPipe, 3000);
+  buildUI(); show(location.hash.slice(1)); pollPipe(); setInterval(pollPipe, 3000); poll();
   // a hidden tab has its timers slowed down by Chrome; a worker keeps the check running so the block notification is not late
   try { var ticker = new Worker(URL.createObjectURL(new Blob(['setInterval(function(){postMessage(1)},3000)']))); ticker.onmessage = function(){ if (document.hidden) pollPipe(); }; } catch (e) {}
-  build(); poll();
 })();
+
 </script>
 </body>
 </html>

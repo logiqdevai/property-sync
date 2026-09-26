@@ -327,6 +327,7 @@ function startServer() {
         if (u.pathname === '/pipeline/stop') return reply(200, pipeline.stop(String(b.stage || '')));
         if (u.pathname === '/pipeline/run-all') return reply(200, pipeline.runAll());
         if (u.pathname === '/pipeline/scratch') return reply(200, pipeline.scratch(b));
+        if (u.pathname === '/pipeline/settings') return reply(200, pipeline.setSetting(String(b.stage || ''), b.value));
         return reply(404, { error: 'not found' });
       }).catch(e => reply(400, { error: e.message }));
       return;
@@ -334,7 +335,7 @@ function startServer() {
     if (u.pathname.startsWith('/collector/')) return collectorHttp.handle(req, res, u, { collector, isAuthed: ok, tokenOf: r => (new URL(r.url, 'http://x').searchParams.get('token') || String(r.headers.authorization || '').replace(/^Bearer /, '')) });
     if (u.pathname === '/' || u.pathname === '/dashboard') { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }); return res.end(DASHBOARD_HTML); }   // the page holds no data; it fetches /status with the token
     if (!ok(req)) { res.writeHead(TOKEN ? 401 : 503); return res.end(TOKEN ? 'unauthorized' : 'set AUTH_TOKEN to enable /status and /results.jsonl'); }
-    if (u.pathname === '/status') { res.writeHead(200, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ ...stats, remaining: queue.length, ...eta(), memoryMB: Math.round(process.memoryUsage().rss / 1e6), heapMB: Math.round(process.memoryUsage().heapUsed / 1e6), draining, settings: { WORKERS, GAP, SITE_GAP, SETTLE, SCROLL }, ...dash(), collector: collector.status() }, null, 1)); }
+    if (u.pathname === '/status') { res.writeHead(200, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ ...stats, remaining: queue.length, ...eta(), memoryMB: Math.round(process.memoryUsage().rss / 1e6), heapMB: Math.round(process.memoryUsage().heapUsed / 1e6), draining, settings: { WORKERS: pipeline.setting('own'), GAP, SITE_GAP, SETTLE, SCROLL }, ...dash(), collector: collector.status() }, null, 1)); }
     if (u.pathname === '/spiti24-agencies.xlsx') {
       if (!store.agents.length) { res.writeHead(409, { 'content-type': 'text/plain; charset=utf-8' }); return res.end('Nothing to export yet: the Spiti24 collection has not produced any agencies (data was reset, or the collection has not started).'); }
       buildExcel().then(file => {
@@ -384,8 +385,8 @@ function rebuildOwn() {
 async function runOwn() {
   if (ownRunning) return; ownRunning = true; stopRequested = false; draining = false; rebuildOwn();
   stats.running = true; stats.processed = 0; stats.byStatus = {}; stats.byConfidence = {}; stats.startedAt = new Date().toISOString(); stats.finishedAt = null; startMs = Date.now();
-  console.log(`own-site stage: targets ${TARGETS.length} | already done ${done.size} | queued ${queue.length} | workers ${WORKERS}`);
-  await Promise.all(Array.from({ length: WORKERS }, (_, i) => sleep(i * 4000).then(() => worker(i))));
+  console.log(`own-site stage: targets ${TARGETS.length} | already done ${done.size} | queued ${queue.length} | workers ${pipeline.setting('own')}`);
+  await Promise.all(Array.from({ length: pipeline.setting('own') }, (_, i) => sleep(i * 4000).then(() => worker(i))));
   if (draining && queue.length) { if (browser) await browser.close().catch(() => {}); process.exit(3); }      // memory guard tripped: exit non-zero => the platform restarts it and it resumes
   ownRunning = false; stats.running = false; stats.finishedAt = new Date().toISOString();
   if (!TEST && !stopRequested) fs.writeFileSync(path.join(DATA, 'DONE'), stats.finishedAt);
@@ -414,7 +415,7 @@ const pipeline = new Pipeline({ store, collector, dataDir: DATA, excelDir: path.
 
 (async () => {
   booted = true;
-  console.log(`agents ${store.agents.length} | own-site targets ${TARGETS.length} | already done ${done.size} | queued ${queue.length} | workers ${WORKERS} | data dir ${DATA}`);
+  console.log(`agents ${store.agents.length} | own-site targets ${TARGETS.length} | already done ${done.size} | queued ${queue.length} | workers ${pipeline.setting('own')} | data dir ${DATA}`);
   if (!TEST) startServer();
   pipeline.resumeChainIfNeeded();
   // the counting stage resumes by itself after a (re)start, as it always did; set AUTOSTART_OWN=0 to start it from the dashboard only
