@@ -8,7 +8,17 @@ function collectorScript(appBase, token) {
   if (location.hostname !== 'www.spiti24.gr') { alert('Open https://www.spiti24.gr/mesitika-grafeia in this tab first, then paste the script again.'); return; }
   if (window.__s24collector && window.__s24collector.running) { console.log('The collector is already running in this tab.'); return; }
   const S = window.__s24collector = { running: true, stop: false, requests: 0, done: 0 };
-  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  // pauses are timed by a small background worker: Chrome slows the page's own timers to about one per minute when the tab is hidden
+  const sleep = (() => {
+    let w = null, dead = false, id = 0; const waits = new Map();
+    try {
+      w = new Worker(URL.createObjectURL(new Blob(['onmessage=e=>setTimeout(()=>postMessage(e.data.id),e.data.ms)'])));
+      w.onmessage = e => { const f = waits.get(e.data); if (f) { waits.delete(e.data); f(); } };
+      w.onerror = () => { dead = true; waits.forEach(f => f()); waits.clear(); };
+    } catch (e) { dead = true; }
+    return ms => (dead || !w) ? new Promise(r => setTimeout(r, ms)) : new Promise(r => { const i = ++id; waits.set(i, r); w.postMessage({ id: i, ms }); });
+  })();
+  try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch (e) {}
   const BLOCK = /Pardon Our Interruption|hcaptcha/i;
 
   // ---- small status box (bottom right) ----
@@ -78,8 +88,10 @@ function collectorScript(appBase, token) {
       say((task.t === 'index' ? 'reading the area list' : task.t === 'area' ? 'area ' + task.name + ' · page ' + task.page : 'agency ' + task.id) + ' · done this session: ' + S.done);
       let res; try { res = task.t === 'index' ? await doIndex() : task.t === 'area' ? await doArea(task) : await doSale(task); } catch (e) { res = { t: task.t, id: task.id, failed: true, url: task.url, page: task.page }; }
       if (res.blocked) {
-        await api('/collector/event', { kind: 'block', status: res.blocked, what: task.t + ' ' + (task.id || task.url || '') });
-        say('BLOCKED by spiti24.gr. Reload this page, solve the captcha, wait a while, then paste the script again. Nothing is lost.', '#f87171'); break;
+        let notified = false;
+        try { if ('Notification' in window && Notification.permission === 'granted') { const nb = new Notification('Spiti24 stopped the collection', { body: 'Action needed: reload the Spiti24 tab, tick “I am human”, wait a few minutes and paste the script again.', tag: 'spiti24-block', requireInteraction: true }); nb.onclick = () => { window.focus(); nb.close(); }; notified = true; } } catch (e) {}
+        await api('/collector/event', { kind: 'block', status: res.blocked, what: task.t + ' ' + (task.id || task.url || ''), notified });
+        say('Spiti24 stopped it. Reload this page, tick “I am human”, wait a few minutes, then paste the script again. Nothing is lost.', '#f87171'); break;
       }
       await api('/collector/result', { results: [res] }); S.done++; S.requests++;
       if (S.requests % 150 === 0) { for (let s = 240; s > 0 && !S.stop; s--) { say('short pause to stay polite… ' + s + 's', '#fbbf24'); await sleep(1000); } }

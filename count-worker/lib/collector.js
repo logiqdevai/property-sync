@@ -104,7 +104,7 @@ class Collector {
 
   event(e) {
     this.lastSeen = Date.now(); const run = this.run; if (!run) return { ok: false };
-    if (e.kind === 'block') { run.blocks++; run.lastBlock = { at: new Date().toISOString(), status: e.status || null, what: e.what || null }; }
+    if (e.kind === 'block') { run.blocks++; run.lastBlock = { at: new Date().toISOString(), status: e.status || null, what: e.what || null, notified: !!e.notified }; }
     else if (e.kind === 'start' || e.kind === 'resume') run.lastBlock = null;
     this.store.state.collectorEvent = { kind: e.kind, at: new Date().toISOString() }; this._save(); return { ok: true };
   }

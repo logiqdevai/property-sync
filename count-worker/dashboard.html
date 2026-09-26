@@ -232,6 +232,14 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
 
   var RING = 2 * Math.PI * 84, shown = {}, last = null, fetchedAt = 0, failures = 0;
   var lang = (navigator.language || 'en');
+  // pop-up when Spiti24 blocks the collection (needs a person): asked for once, when the operator presses a collection button
+  var blockedNow = false;
+  function askNotify(){ try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch (e) {} }
+  function alertBlock(at){
+    var seen = ''; try { seen = localStorage.getItem('blockAlerted') || ''; } catch (e) {}
+    if (seen === at) return; try { localStorage.setItem('blockAlerted', at); } catch (e) {}
+    try { if ('Notification' in window && Notification.permission === 'granted') { var nb = new Notification('Spiti24 stopped the collection', { body: 'Action needed: reload the Spiti24 tab, tick “I am human”, wait a few minutes and paste the script again.', tag: 'spiti24-block', requireInteraction: true }); nb.onclick = function(){ window.focus(); nb.close(); }; } } catch (e) {}
+  }
   function fmtNum(n){ return (n == null || isNaN(n)) ? '–' : Math.round(n).toLocaleString(lang); }
   function fmtDur(s){
     if (s == null || !isFinite(s)) return null; s = Math.max(0, Math.round(s));
@@ -323,7 +331,7 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
     $('stripfill').style.width = pct + '%'; $('strip').classList.toggle('stopped', !d.running);
     $('ringbox').setAttribute('aria-valuenow', pct.toFixed(1));
     tween($('pct'), pct, 1); $('ofn').textContent = fmtNum(done) + ' of ' + fmtNum(total) + ' agencies';
-    document.title = (d.finished ? 'Done' : Math.floor(pct) + '%') + ' · Agency counter';
+    document.title = (blockedNow ? '⛔ Action needed · ' : '') + (d.finished ? 'Done' : Math.floor(pct) + '%') + ' · Agency counter';
     var lr = d.recent && d.recent[0]; $('lastsite').textContent = lr ? 'latest: ' + lr.name : 'waiting for the first result…';
     if (!$('dl').dataset.busy) { $('dl').innerHTML = '⬇ Download Excel'; $('dl').setAttribute('aria-disabled', 'false'); }
 
@@ -397,12 +405,13 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
     STAGES.forEach(function(s){
       var c = el('section', 'sc'); c.id = 'sc_' + s.id;
       c.innerHTML = '<div class="top"><h3>' + s.title + '</h3><span class="tag" id="tag_' + s.id + '">–</span></div><div class="desc">' + s.desc + '</div><div class="sbar" id="bar_' + s.id + '"><i></i></div><div class="nums" id="nums_' + s.id + '"></div><div class="note" id="note_' + s.id + '"></div>' +
-        (s.id === 'collect' ? '<div class="how" id="how_collect" style="display:none"><b>How to start it (about a minute):</b><ol><li>Press <b>Copy collector script</b> below.</li><li>In Google Chrome open <a href="https://www.spiti24.gr/mesitika-grafeia" target="_blank" rel="noopener">spiti24.gr/mesitika-grafeia</a> (tick “I am human” if it appears).</li><li>Press <b>F12</b>, click the <b>Console</b> tab, click inside it, press <b>Ctrl+V</b> and then <b>Enter</b>. (If Chrome blocks pasting, type <b>allow pasting</b>, press Enter, and paste again.)</li><li>Keep that Chrome tab open. When Spiti24 stops it (this happens now and then): reload the tab, tick “I am human”, wait a few minutes and do step 3 again. Nothing is lost.</li></ol></div>' : '') + '<div class="acts" id="acts_' + s.id + '"></div>';
+        (s.id === 'collect' ? '<div class="how" id="how_collect" style="display:none"><b>How to start it (about a minute):</b><ol><li>Press <b>Copy collector script</b> below.</li><li>In Google Chrome open <a href="https://www.spiti24.gr/mesitika-grafeia" target="_blank" rel="noopener">spiti24.gr/mesitika-grafeia</a> (tick “I am human” if it appears).</li><li>Press <b>F12</b>, click the <b>Console</b> tab, click inside it, press <b>Ctrl+V</b> and then <b>Enter</b>. (If Chrome blocks pasting, type <b>allow pasting</b>, press Enter, and paste again.) If Chrome asks to <b>show notifications</b>, click <b>Allow</b>: it will alert you when Spiti24 stops the collection.</li><li>Keep that Chrome tab open. When Spiti24 stops it (this happens now and then): reload the tab, tick “I am human”, wait a few minutes and do step 3 again. Nothing is lost.</li></ol></div>' : '') + '<div class="acts" id="acts_' + s.id + '"></div>';
       box.appendChild(c);
     });
-    mk('collect', '▶ Start collection', 'p', function(){ act('/collector/start', { mode: 'new' }, 'Collection queued. Now copy the script and run it in your Spiti24 tab.'); });
-    mk('collect', '⟳ Refresh everything', '', function(){ if (confirm('Re-read ALL agencies and ALL sale counts from Spiti24? This takes many hours with several blocks.')) act('/collector/start', { mode: 'all' }, 'Full refresh queued.'); });
+    mk('collect', '▶ Start collection', 'p', function(){ askNotify(); act('/collector/start', { mode: 'new' }, 'Collection queued. Now copy the script and run it in your Spiti24 tab.'); });
+    mk('collect', '⟳ Refresh everything', '', function(){ askNotify(); if (confirm('Re-read ALL agencies and ALL sale counts from Spiti24? This takes many hours with several blocks.')) act('/collector/start', { mode: 'all' }, 'Full refresh queued.'); });
     mk('collect', '📋 Copy collector script', '', function(){
+      askNotify();
       fetch('/collector/script', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(function(r){ return r.text(); }).then(function(t){
         (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ toast('Script copied. Open spiti24.gr, press F12 → Console, paste, Enter.'); }, function(){ window.prompt('Copy this script (Ctrl+C):', t); });
       });
@@ -416,6 +425,7 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
       mk(id, '■ Stop', 'd', function(){ act('/pipeline/stop', { stage: id }); });
     });
     $('scratch').onclick = function(){
+      askNotify();
       var t = window.prompt('START FROM SCRATCH\n\nThis makes a backup, then ERASES all collected data (agencies, sale counts, emails, watermark verdicts, own-website counts) and starts everything again:\n1) the Spiti24 collection (you paste a script in your Chrome tab; many hours, several blocks)\n2) all server stages then run by themselves.\n\nType RESTART to confirm:');
       if (t && t.trim().toUpperCase() === 'RESTART') act('/pipeline/scratch', { confirm: true }, 'Started from scratch (old data backed up). Now copy the collector script in step 1 and run it in your Spiti24 tab.');
     };
@@ -434,6 +444,7 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
     if (!P) return; var S = P.stages, c = P.collector || {}, cnt = P.counts || {};
     // 1 collector
     var run = c.active, online = c.collectorOnline;
+    blockedNow = !!(c.lastBlock && run); if (blockedNow && !c.lastBlock.notified) alertBlock(c.lastBlock.at);        // the Spiti24 tab already showed its own notification when it could
     if (!c.hasRun) setStage('collect', 'Idle', '', 0, '', 'Stored: <b>' + fmtNum(cnt.agents) + '</b> agencies · <b>' + fmtNum(cnt.sale) + '</b> sale counts', 'No collection run started in this app yet. The data shown is the snapshot the app was installed with.');
     else {
       var ph = c.phase, ov = ph === 'index' ? 1 : ph === 'areas' ? 30 * (c.areas.pagesDone / Math.max(1, c.areas.pagesKnown)) : ph === 'sale' ? 30 + 70 * (c.sale.done / Math.max(1, c.sale.total)) : 100;
@@ -473,6 +484,8 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
     fetch('/pipeline/status', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){ if (j) { P = j; renderPipeline(); } }).catch(function(){});
   }
   buildCards(); pollPipe(); setInterval(pollPipe, 3000);
+  // a hidden tab has its timers slowed down by Chrome; a worker keeps the check running so the block notification is not late
+  try { var ticker = new Worker(URL.createObjectURL(new Blob(['setInterval(function(){postMessage(1)},3000)']))); ticker.onmessage = function(){ if (document.hidden) pollPipe(); }; } catch (e) {}
   build(); poll();
 })();
 </script>
