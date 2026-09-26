@@ -1,0 +1,9 @@
+{
+  "name": "agency-site-counter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reads the 'for sale' property count from each agency's own website (headless Chrome, robots.txt respected)",
+  "main": "worker.js",
+  "scripts": { "start": "node worker.js", "test": "node worker.js --test 5" },
+  "dependencies": { "playwright": "1.61.1" }
+}
