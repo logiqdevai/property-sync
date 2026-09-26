@@ -12,8 +12,10 @@ let chromium; try { ({ chromium } = require('playwright')); } catch (e) { ({ chr
 const TEST = process.argv.includes('--test'); const TEST_N = TEST ? parseInt(process.argv[process.argv.indexOf('--test') + 1]) || 5 : 0;
 const DATA = process.env.DATA_DIR || (TEST ? '.' : '/data');
 const WORKERS = parseInt(process.env.WORKERS || (TEST ? '1' : '2'));
-const GAP = parseInt(process.env.PAGE_GAP_MS || '3000');       // pause between page loads on the same site
-const SITE_GAP = parseInt(process.env.SITE_GAP_MS || '1500');  // pause between sites per worker
+const GAP = parseInt(process.env.PAGE_GAP_MS || '2000');       // pause between page loads on the same site (~1 request per 2-3 s per site)
+const SITE_GAP = parseInt(process.env.SITE_GAP_MS || '800');   // pause between sites per worker
+const SETTLE = parseInt(process.env.SETTLE_MS || '1500');      // wait after a page loads, for its scripts to render the list
+const SCROLL = parseInt(process.env.SCROLL_MS || '600');       // wait after scrolling to the bottom (lazy-loaded results)
 const MAXP = parseInt(process.env.MAX_LISTING_PAGES || '4');
 const RECYCLE = parseInt(process.env.RECYCLE_EVERY || '40');   // fresh browser context every N sites (keeps memory flat)
 const SITE_TIMEOUT = parseInt(process.env.SITE_TIMEOUT_MS || '120000');
@@ -79,7 +81,7 @@ function extract(text) {
 
 async function gotoSafe(page, url) {
   const resp = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
-  await sleep(2200);
+  await sleep(SETTLE);
   return resp;
 }
 
@@ -121,7 +123,7 @@ async function processSite(page, t) {
     try {
       const r = await gotoSafe(page, c.url);
       if (r && r.status() >= 400 && ![403, 429].includes(r.status())) { rec.visited.push({ url: c.url, http: r.status() }); continue; }
-      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)).catch(() => {}); await sleep(1000);
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)).catch(() => {}); await sleep(SCROLL);
       const txt = await page.evaluate(() => (document.body ? document.body.innerText : '')).catch(() => '');
       const title = await page.title().catch(() => '');
       if (BLOCK.test(title) || (BLOCK.test(txt.slice(0, 700)) && txt.length < 1200)) { rec.visited.push({ url: c.url, blocked: true }); continue; }
@@ -216,6 +218,14 @@ async function worker(wid) {
   if (ctx) await ctx.close().catch(() => {});
 }
 
+// live estimate from the speed of THIS run so far (not meaningful until ~20 sites are done)
+function eta() {
+  const mins = (Date.now() - new Date(stats.startedAt).getTime()) / 60000;
+  if (stats.processed < 20 || mins <= 0) return { sitesPerMinute: null, etaHours: null };
+  const rate = stats.processed / mins;
+  return { sitesPerMinute: +rate.toFixed(2), etaHours: +(queue.length / rate / 60).toFixed(2) };
+}
+
 // ---------- tiny HTTP server ----------
 function startServer() {
   const ok = req => { if (!TOKEN) return false; const u = new URL(req.url, 'http://x'); return u.searchParams.get('token') === TOKEN || (req.headers.authorization || '') === 'Bearer ' + TOKEN; };
@@ -223,7 +233,7 @@ function startServer() {
     const u = new URL(req.url, 'http://x');
     if (u.pathname === '/health') { res.writeHead(200); return res.end('ok'); }
     if (!ok(req)) { res.writeHead(TOKEN ? 401 : 503); return res.end(TOKEN ? 'unauthorized' : 'set AUTH_TOKEN to enable /status and /results.jsonl'); }
-    if (u.pathname === '/status') { res.writeHead(200, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ ...stats, remaining: queue.length, memoryMB: Math.round(process.memoryUsage().rss / 1e6) }, null, 1)); }
+    if (u.pathname === '/status') { res.writeHead(200, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ ...stats, remaining: queue.length, ...eta(), memoryMB: Math.round(process.memoryUsage().rss / 1e6), settings: { WORKERS, GAP, SITE_GAP, SETTLE, SCROLL } }, null, 1)); }
     if (u.pathname === '/results.jsonl') { res.writeHead(200, { 'content-type': 'application/x-ndjson' }); return fs.existsSync(OUT) ? fs.createReadStream(OUT).pipe(res) : res.end(''); }
     res.writeHead(404); res.end('not found');
   }).listen(PORT, () => console.log('http on', PORT, TOKEN ? '(token set)' : '(NO AUTH_TOKEN: only /health is served)'));

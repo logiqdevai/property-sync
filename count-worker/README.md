@@ -12,10 +12,16 @@ and it **stops at any bot-check / captcha page** (records `blocked`, never tries
 2. Coolify -> New Resource -> Application -> your repo -> **Build Pack: Dockerfile**. If it is a sub-folder set *Base Directory* to `/count-worker`. **Port: 3000**.
 3. **Environment variables**
    - `AUTH_TOKEN` = a long random string (required; without it results/status are not served, only `/health`)
-   - `WORKERS` = `2` (default). Each worker uses roughly 0.5 GB of RAM. Raise to 3 only if the host has spare memory.
+   - `WORKERS` = `2` (default) -> the whole list in about **3.5 hours**. `3` -> about 2.4 hours. Measured peak memory with 2 workers was ~0.7 GB (about 0.3-0.4 GB per extra worker).
+   - optional pacing: `PAGE_GAP_MS` (2000), `SITE_GAP_MS` (800), `SETTLE_MS` (1500), `SCROLL_MS` (600). Higher numbers = gentler on the sites but slower.
 4. **Storage**: add a persistent volume mounted at `/data` (results + resume state live there).
 5. **Advanced -> Resource limits**: set a **memory limit of 2 GB** (and 1-2 CPUs). This keeps a runaway Chrome from taking the whole server down.
 6. Deploy. Health check is `GET /health`.
+
+## Deploy on Railway instead
+New service from the GitHub repo -> Settings -> Source -> **Root Directory `/count-worker`** (the `Dockerfile` is detected automatically) -> Variables: `AUTH_TOKEN` (+ optional `WORKERS`; Railway sets `PORT` itself) ->
+add a **Volume** mounted at `/data` -> Settings -> Networking: **Generate Domain** -> Settings -> Deploy: **Healthcheck Path `/health`**. Railway has no per-service memory cap to set (it bills per minute for what is used).
+The Dockerfile has no `VOLUME` instruction on purpose (Railway does not allow it).
 
 ## Watching it / getting the results
 - Progress: `https://YOUR-DOMAIN/status?token=AUTH_TOKEN` (processed, remaining, counts by status/confidence, memory)
@@ -23,7 +29,8 @@ and it **stops at any bot-check / captcha page** (records `blocked`, never tries
 - No domain? In Coolify open the app's Terminal and run `cat /data/results.jsonl`.
 - It is finished when `remaining` is 0 and a file `/data/DONE` exists (the container keeps serving the results afterwards; stop or delete it when you are done).
 
-Expect roughly 6-8 hours at `WORKERS=2` (about 25-30 s per site) - only a rough estimate.
+Timing (measured on 24 random sites, then extrapolated): 2 workers = 8.1 s per site overall -> about 3.5 hours for all 1,649; 3 workers = 5.3 s per site -> about 2.4 hours.
+This is an extrapolation from a small sample, so treat it as roughly 3-4.5 hours. `/status` shows a live `etaHours` (based on this run's real speed once ~20 sites are done).
 
 ## Result fields
 `status`: `ok` (a number was found) | `no_count_found` | `no_listing_page` | `blocked` (bot check) | `robots` | `error:*`.
