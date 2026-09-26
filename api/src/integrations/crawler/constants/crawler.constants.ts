@@ -77,3 +77,13 @@ export const MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS = 120_000;
 // fixed sub-ceiling (the platform default 20s/15s, which is fine for a local
 // browser's near-instant redirect). See waitForBotChallengeClearance call
 // sites in crawler.service.ts and detail-enrichment.service.ts.
+
+// Residential proxies are slower than a direct connection and may have to
+// clear a bot challenge first, so proxy-browser navigations get a longer floor
+// than the local default -- but far below MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS
+// (Bright Data solves captchas remotely; here the challenge is JS-only).
+export const PROXY_BROWSER_MIN_PAGE_TIMEOUT_MS = 60_000;
+// Ceiling on how long to wait for a bot challenge to clear on a proxy page
+// (the local-browser defaults, 15-20s, are too short for a cold-context solve
+// over a residential proxy).
+export const PROXY_BROWSER_CHALLENGE_WAIT_MS = 45_000;

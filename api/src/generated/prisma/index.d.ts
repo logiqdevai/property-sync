@@ -509,7 +509,8 @@ export const IntegrationType: {
   DEEPSEEK: 'DEEPSEEK',
   DEWATERMARK: 'DEWATERMARK',
   GOOGLE_TRANSLATE: 'GOOGLE_TRANSLATE',
-  AZURE: 'AZURE'
+  AZURE: 'AZURE',
+  WEBSHARE: 'WEBSHARE'
 };
 
 export type IntegrationType = (typeof IntegrationType)[keyof typeof IntegrationType]
@@ -528,6 +529,7 @@ export const CostOperationType: {
   TITLE_GENERATION: 'TITLE_GENERATION',
   TRANSLATION: 'TRANSLATION',
   DEWATERMARK: 'DEWATERMARK',
+  PROXY: 'PROXY',
   OTHER: 'OTHER'
 };
 
@@ -15546,6 +15548,7 @@ export namespace Prisma {
     status: $Enums.ScraperStatus | null
     self_healing_enabled: boolean | null
     use_managed_browser: boolean | null
+    use_proxy_browser: boolean | null
     diagnostics_mode: $Enums.DiagnosticsMode | null
     health: $Enums.ScraperHealth | null
     success_rate: Decimal | null
@@ -15569,6 +15572,7 @@ export namespace Prisma {
     status: $Enums.ScraperStatus | null
     self_healing_enabled: boolean | null
     use_managed_browser: boolean | null
+    use_proxy_browser: boolean | null
     diagnostics_mode: $Enums.DiagnosticsMode | null
     health: $Enums.ScraperHealth | null
     success_rate: Decimal | null
@@ -15592,6 +15596,7 @@ export namespace Prisma {
     status: number
     self_healing_enabled: number
     use_managed_browser: number
+    use_proxy_browser: number
     diagnostics_mode: number
     health: number
     success_rate: number
@@ -15637,6 +15642,7 @@ export namespace Prisma {
     status?: true
     self_healing_enabled?: true
     use_managed_browser?: true
+    use_proxy_browser?: true
     diagnostics_mode?: true
     health?: true
     success_rate?: true
@@ -15660,6 +15666,7 @@ export namespace Prisma {
     status?: true
     self_healing_enabled?: true
     use_managed_browser?: true
+    use_proxy_browser?: true
     diagnostics_mode?: true
     health?: true
     success_rate?: true
@@ -15683,6 +15690,7 @@ export namespace Prisma {
     status?: true
     self_healing_enabled?: true
     use_managed_browser?: true
+    use_proxy_browser?: true
     diagnostics_mode?: true
     health?: true
     success_rate?: true
@@ -15793,6 +15801,7 @@ export namespace Prisma {
     status: $Enums.ScraperStatus
     self_healing_enabled: boolean
     use_managed_browser: boolean
+    use_proxy_browser: boolean
     diagnostics_mode: $Enums.DiagnosticsMode
     health: $Enums.ScraperHealth
     success_rate: Decimal | null
@@ -15835,6 +15844,7 @@ export namespace Prisma {
     status?: boolean
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: boolean
     health?: boolean
     success_rate?: boolean
@@ -15867,6 +15877,7 @@ export namespace Prisma {
     status?: boolean
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: boolean
     health?: boolean
     success_rate?: boolean
@@ -15892,6 +15903,7 @@ export namespace Prisma {
     status?: boolean
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: boolean
     health?: boolean
     success_rate?: boolean
@@ -15917,6 +15929,7 @@ export namespace Prisma {
     status?: boolean
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: boolean
     health?: boolean
     success_rate?: boolean
@@ -15931,7 +15944,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type ScraperOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "name" | "active_version_id" | "version_count" | "status" | "self_healing_enabled" | "use_managed_browser" | "diagnostics_mode" | "health" | "success_rate" | "avg_runtime_ms" | "consecutive_failures" | "normalize_limit" | "crawl_job_timeout_ms" | "detail_concurrency" | "last_success_at" | "last_failure_at" | "created_at" | "updated_at", ExtArgs["result"]["scraper"]>
+  export type ScraperOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "name" | "active_version_id" | "version_count" | "status" | "self_healing_enabled" | "use_managed_browser" | "use_proxy_browser" | "diagnostics_mode" | "health" | "success_rate" | "avg_runtime_ms" | "consecutive_failures" | "normalize_limit" | "crawl_job_timeout_ms" | "detail_concurrency" | "last_success_at" | "last_failure_at" | "created_at" | "updated_at", ExtArgs["result"]["scraper"]>
   export type ScraperInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     active_version?: boolean | Scraper$active_versionArgs<ExtArgs>
@@ -15973,6 +15986,7 @@ export namespace Prisma {
       status: $Enums.ScraperStatus
       self_healing_enabled: boolean
       use_managed_browser: boolean
+      use_proxy_browser: boolean
       diagnostics_mode: $Enums.DiagnosticsMode
       health: $Enums.ScraperHealth
       success_rate: Prisma.Decimal | null
@@ -16424,6 +16438,7 @@ export namespace Prisma {
     readonly status: FieldRef<"Scraper", 'ScraperStatus'>
     readonly self_healing_enabled: FieldRef<"Scraper", 'Boolean'>
     readonly use_managed_browser: FieldRef<"Scraper", 'Boolean'>
+    readonly use_proxy_browser: FieldRef<"Scraper", 'Boolean'>
     readonly diagnostics_mode: FieldRef<"Scraper", 'DiagnosticsMode'>
     readonly health: FieldRef<"Scraper", 'ScraperHealth'>
     readonly success_rate: FieldRef<"Scraper", 'Decimal'>
@@ -52214,6 +52229,7 @@ export namespace Prisma {
     status: 'status',
     self_healing_enabled: 'self_healing_enabled',
     use_managed_browser: 'use_managed_browser',
+    use_proxy_browser: 'use_proxy_browser',
     diagnostics_mode: 'diagnostics_mode',
     health: 'health',
     success_rate: 'success_rate',
@@ -54206,6 +54222,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFilter<"Scraper"> | $Enums.ScraperStatus
     self_healing_enabled?: BoolFilter<"Scraper"> | boolean
     use_managed_browser?: BoolFilter<"Scraper"> | boolean
+    use_proxy_browser?: BoolFilter<"Scraper"> | boolean
     diagnostics_mode?: EnumDiagnosticsModeFilter<"Scraper"> | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFilter<"Scraper"> | $Enums.ScraperHealth
     success_rate?: DecimalNullableFilter<"Scraper"> | Decimal | DecimalJsLike | number | string | null
@@ -54237,6 +54254,7 @@ export namespace Prisma {
     status?: SortOrder
     self_healing_enabled?: SortOrder
     use_managed_browser?: SortOrder
+    use_proxy_browser?: SortOrder
     diagnostics_mode?: SortOrder
     health?: SortOrder
     success_rate?: SortOrderInput | SortOrder
@@ -54271,6 +54289,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFilter<"Scraper"> | $Enums.ScraperStatus
     self_healing_enabled?: BoolFilter<"Scraper"> | boolean
     use_managed_browser?: BoolFilter<"Scraper"> | boolean
+    use_proxy_browser?: BoolFilter<"Scraper"> | boolean
     diagnostics_mode?: EnumDiagnosticsModeFilter<"Scraper"> | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFilter<"Scraper"> | $Enums.ScraperHealth
     success_rate?: DecimalNullableFilter<"Scraper"> | Decimal | DecimalJsLike | number | string | null
@@ -54302,6 +54321,7 @@ export namespace Prisma {
     status?: SortOrder
     self_healing_enabled?: SortOrder
     use_managed_browser?: SortOrder
+    use_proxy_browser?: SortOrder
     diagnostics_mode?: SortOrder
     health?: SortOrder
     success_rate?: SortOrderInput | SortOrder
@@ -54333,6 +54353,7 @@ export namespace Prisma {
     status?: EnumScraperStatusWithAggregatesFilter<"Scraper"> | $Enums.ScraperStatus
     self_healing_enabled?: BoolWithAggregatesFilter<"Scraper"> | boolean
     use_managed_browser?: BoolWithAggregatesFilter<"Scraper"> | boolean
+    use_proxy_browser?: BoolWithAggregatesFilter<"Scraper"> | boolean
     diagnostics_mode?: EnumDiagnosticsModeWithAggregatesFilter<"Scraper"> | $Enums.DiagnosticsMode
     health?: EnumScraperHealthWithAggregatesFilter<"Scraper"> | $Enums.ScraperHealth
     success_rate?: DecimalNullableWithAggregatesFilter<"Scraper"> | Decimal | DecimalJsLike | number | string | null
@@ -58310,6 +58331,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -58341,6 +58363,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -58368,6 +58391,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -58399,6 +58423,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -58428,6 +58453,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -58449,6 +58475,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -58472,6 +58499,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -62998,6 +63026,7 @@ export namespace Prisma {
     status?: SortOrder
     self_healing_enabled?: SortOrder
     use_managed_browser?: SortOrder
+    use_proxy_browser?: SortOrder
     diagnostics_mode?: SortOrder
     health?: SortOrder
     success_rate?: SortOrder
@@ -63031,6 +63060,7 @@ export namespace Prisma {
     status?: SortOrder
     self_healing_enabled?: SortOrder
     use_managed_browser?: SortOrder
+    use_proxy_browser?: SortOrder
     diagnostics_mode?: SortOrder
     health?: SortOrder
     success_rate?: SortOrder
@@ -63054,6 +63084,7 @@ export namespace Prisma {
     status?: SortOrder
     self_healing_enabled?: SortOrder
     use_managed_browser?: SortOrder
+    use_proxy_browser?: SortOrder
     diagnostics_mode?: SortOrder
     health?: SortOrder
     success_rate?: SortOrder
@@ -71185,6 +71216,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -71214,6 +71246,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -71592,6 +71625,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFilter<"Scraper"> | $Enums.ScraperStatus
     self_healing_enabled?: BoolFilter<"Scraper"> | boolean
     use_managed_browser?: BoolFilter<"Scraper"> | boolean
+    use_proxy_browser?: BoolFilter<"Scraper"> | boolean
     diagnostics_mode?: EnumDiagnosticsModeFilter<"Scraper"> | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFilter<"Scraper"> | $Enums.ScraperHealth
     success_rate?: DecimalNullableFilter<"Scraper"> | Decimal | DecimalJsLike | number | string | null
@@ -73314,6 +73348,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -73344,6 +73379,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -73514,6 +73550,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -73544,6 +73581,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -73860,6 +73898,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -73890,6 +73929,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -73921,6 +73961,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -73950,6 +73991,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -74034,6 +74076,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -74064,6 +74107,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -74101,6 +74145,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -74130,6 +74175,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -74204,6 +74250,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -74234,6 +74281,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -74355,6 +74403,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -74385,6 +74434,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -74610,6 +74660,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -74640,6 +74691,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -75135,6 +75187,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -75165,6 +75218,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -75486,6 +75540,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -75516,6 +75571,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -75671,6 +75727,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -75701,6 +75758,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -76226,6 +76284,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -76256,6 +76315,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -76444,6 +76504,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -76474,6 +76535,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -81686,6 +81748,7 @@ export namespace Prisma {
     status?: $Enums.ScraperStatus
     self_healing_enabled?: boolean
     use_managed_browser?: boolean
+    use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
     health?: $Enums.ScraperHealth
     success_rate?: Decimal | DecimalJsLike | number | string | null
@@ -81823,6 +81886,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -81852,6 +81916,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
@@ -81880,6 +81945,7 @@ export namespace Prisma {
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
     self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
+    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
     health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
     success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null

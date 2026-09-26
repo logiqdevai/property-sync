@@ -15,6 +15,8 @@ import type {
 import { CostOperationTypeFilterOptions } from "@/config/constants/dropdowns/cost-logs/cost-operation-type-filter.options";
 import { CostProviderFilterOptions } from "@/config/constants/dropdowns/cost-logs/cost-provider-filter.options";
 import { formatDateTime } from "@/lib/date";
+import { formatBytes } from "@/lib/bytes";
+import { WebshareUsageCard } from "./components/webshare-usage-card";
 
 function toStartOfDayIso(date: string) {
   return new Date(`${date}T00:00:00.000Z`).toISOString();
@@ -52,6 +54,9 @@ function formatQuantity(row: {
   if (row.operation_type === "DEWATERMARK") {
     return row.unit_count !== null ? `${row.unit_count} image(s)` : "—";
   }
+  if (row.operation_type === "PROXY") {
+    return row.input_quantity !== null ? formatBytes(row.input_quantity) : "—";
+  }
   if (row.operation_type === "TRANSLATION") {
     return row.input_quantity !== null ? `${row.input_quantity} chars` : "—";
   }
@@ -66,6 +71,9 @@ function formatOperationQuantityLine(
   if (!quantity) return null;
   if (operation === "DEWATERMARK") {
     return quantity.unit_count ? `${formatNumber(quantity.unit_count)} image(s)` : null;
+  }
+  if (operation === "PROXY") {
+    return quantity.input_quantity ? formatBytes(quantity.input_quantity) : null;
   }
   if (operation === "TRANSLATION") {
     return quantity.input_quantity ? `${formatNumber(quantity.input_quantity)} chars` : null;
@@ -114,10 +122,12 @@ export default function CostLogsListPage() {
       <div>
         <p className="text-2xl font-semibold tracking-tight text-foreground">Cost logs</p>
         <p className="text-sm text-muted">
-          Billable operations across AI normalization, title generation, translation, and
-          dewatermarking.
+          Billable operations across AI normalization, title generation, translation,
+          dewatermarking, and proxy bandwidth.
         </p>
       </div>
+
+      <WebshareUsageCard />
 
       <div className="flex items-stretch gap-3 flex-wrap">
         <div className="rounded-xl border border-border bg-surface p-5 flex flex-col gap-2 w-fit">

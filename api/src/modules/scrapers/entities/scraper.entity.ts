@@ -31,6 +31,9 @@ export class Scraper {
   @ApiProperty()
   use_managed_browser: boolean;
 
+  @ApiProperty()
+  use_proxy_browser: boolean;
+
   @ApiProperty({
     enum: DiagnosticsMode,
     example: DiagnosticsMode.PRODUCTION,

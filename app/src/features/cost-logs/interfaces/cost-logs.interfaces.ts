@@ -5,6 +5,7 @@ export const CostOperationTypes = {
   TITLE_GENERATION: "TITLE_GENERATION",
   TRANSLATION: "TRANSLATION",
   DEWATERMARK: "DEWATERMARK",
+  PROXY: "PROXY",
   OTHER: "OTHER",
 } as const;
 
@@ -19,6 +20,7 @@ export const CostProviders = {
   DEWATERMARK: "DEWATERMARK",
   GOOGLE_TRANSLATE: "GOOGLE_TRANSLATE",
   AZURE: "AZURE",
+  WEBSHARE: "WEBSHARE",
 } as const;
 
 export type CostProvider = (typeof CostProviders)[keyof typeof CostProviders];
@@ -67,6 +69,25 @@ export interface CostLogListResponse extends PaginatedResponse<CostLog> {
   total_cost: string | null;
   by_operation: Record<string, string>;
   quantity_by_operation: Record<string, CostLogOperationQuantity>;
+}
+
+export interface WebshareUsage {
+  configured: boolean;
+  plan?: {
+    id: number;
+    proxy_type: string;
+    proxy_subtype: string;
+    monthly_price: number;
+  };
+  period_start?: string;
+  period_end?: string;
+  limit_bytes?: number | null;
+  used_bytes?: number;
+  remaining_bytes?: number | null;
+  percent_used?: number | null;
+  requests_total?: number;
+  requests_failed?: number;
+  fetched_at?: string;
 }
 
 export type { PaginationMeta };

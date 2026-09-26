@@ -79,6 +79,7 @@ export class DiagnosticsCaptureService {
       {
         useManagedBrowser: ctx.useManagedBrowser,
         blockImages: ctx.useManagedBrowser,
+        proxySession: ctx.proxySession,
       },
     );
 

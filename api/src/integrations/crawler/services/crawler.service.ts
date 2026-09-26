@@ -23,6 +23,8 @@ import {
   INFINITE_SCROLL_POLL_INTERVAL_MS,
   INFINITE_SCROLL_STEP_VIEWPORT_RATIO,
   MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS,
+  PROXY_BROWSER_CHALLENGE_WAIT_MS,
+  PROXY_BROWSER_MIN_PAGE_TIMEOUT_MS,
   PAGINATION_CLICK_MAX_ATTEMPTS,
   PAGINATION_CLICK_RETRY_DELAY_MS,
   SHARED_PLACEHOLDER_IMAGE_MIN_OCCURRENCES,
@@ -37,6 +39,7 @@ import { BlockHandlingConfig } from '../block-handling/block-handling.interface'
 import { CrawlerDebugService } from './crawler-debug.service';
 import { FieldExtractionService } from './field-extraction.service';
 import { StealthBrowserService } from './stealth-browser.service';
+import { ProxyBrowserSession } from '../interfaces/proxy-browser-session.interface';
 
 export interface CrawlRunOptions {
   onPageComplete?: () => void | Promise<void>;
@@ -89,6 +92,7 @@ export class CrawlerService {
         options,
         blockHandlingConfig,
         diagnosticsCtx.useManagedBrowser,
+        diagnosticsCtx.proxySession,
       ),
     );
   }
@@ -99,6 +103,7 @@ export class CrawlerService {
     options?: CrawlRunOptions,
     blockHandlingConfig?: BlockHandlingConfig,
     useManagedBrowser?: boolean,
+    proxySession?: ProxyBrowserSession,
   ): Promise<CrawlResult> {
     // Bright Data's own docs/examples set a 2-minute page.goto() timeout for
     // the Scraping Browser specifically ("default 30s is too short -- complex
@@ -115,7 +120,15 @@ export class CrawlerService {
             MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS,
           ),
         }
-      : rawCrawlerConfig;
+      : proxySession
+        ? {
+            ...rawCrawlerConfig,
+            page_timeout_ms: Math.max(
+              rawCrawlerConfig.page_timeout_ms,
+              PROXY_BROWSER_MIN_PAGE_TIMEOUT_MS,
+            ),
+          }
+        : rawCrawlerConfig;
     const steps: CrawlStep[] = [];
     const items: CrawlItem[] = [];
     let success = false;
@@ -141,7 +154,10 @@ export class CrawlerService {
 
       const challengeWaitMs = useManagedBrowser
         ? crawlerConfig.page_timeout_ms
-        : Math.min(20_000, crawlerConfig.page_timeout_ms);
+        : Math.min(
+            proxySession ? PROXY_BROWSER_CHALLENGE_WAIT_MS : 20_000,
+            crawlerConfig.page_timeout_ms,
+          );
 
       await waitForBotChallengeClearance(
         page,
@@ -384,6 +400,7 @@ export class CrawlerService {
           config.listing_selector,
           blockHandlingConfig,
           useManagedBrowser,
+          proxySession,
         );
         if (advanceResult.page) {
           page = advanceResult.page;
@@ -546,6 +563,7 @@ export class CrawlerService {
     listingSelector?: string,
     blockHandlingConfig?: BlockHandlingConfig,
     useManagedBrowser?: boolean,
+    proxySession?: ProxyBrowserSession,
   ): Promise<PaginationAdvanceResult> {
     if (
       pagination.type === 'next_button' ||
@@ -777,7 +795,10 @@ export class CrawlerService {
 
       const paginationChallengeWaitMs = useManagedBrowser
         ? crawlerConfig.page_timeout_ms
-        : Math.min(15_000, crawlerConfig.page_timeout_ms);
+        : Math.min(
+            proxySession ? PROXY_BROWSER_CHALLENGE_WAIT_MS : 15_000,
+            crawlerConfig.page_timeout_ms,
+          );
 
       await waitForBotChallengeClearance(
         activePage,

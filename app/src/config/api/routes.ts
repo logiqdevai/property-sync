@@ -70,6 +70,7 @@ export const ApiRoutes = {
         costLogs: {
             prefix: "/admin/cost-logs",
             list: "/admin/cost-logs",
+            webshareUsage: "/admin/cost-logs/webshare-usage",
         },
         activityLogs: {
             prefix: "/admin/activity-logs",

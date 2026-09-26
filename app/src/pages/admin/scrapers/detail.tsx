@@ -380,6 +380,33 @@ export default function ScraperDetailPage() {
               money per crawl.
             </span>
           </div>
+
+          <div className="flex flex-col gap-1.5 justify-center">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted">
+              Residential proxy (Webshare)
+            </span>
+            <Switch
+              isSelected={scraper.use_proxy_browser}
+              isDisabled={updateScraper.isPending || scraper.use_managed_browser}
+              onChange={(isSelected) =>
+                updateScraper.mutate({
+                  id: scraper.id,
+                  payload: { use_proxy_browser: isSelected },
+                })
+              }
+            >
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+              <Switch.Content>Enabled</Switch.Content>
+            </Switch>
+            <span className="text-xs text-muted">
+              Crawls run in our own browser through a residential proxy, with images, media and
+              trackers blocked to save bandwidth. Property photos are still downloaded directly,
+              never through the proxy. Uses the Webshare monthly bandwidth (see Cost logs); ignored
+              while the managed browser is on.
+            </span>
+          </div>
         </div>
       </div>
 

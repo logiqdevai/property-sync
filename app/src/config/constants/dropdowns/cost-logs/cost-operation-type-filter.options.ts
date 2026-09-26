@@ -9,5 +9,6 @@ export const CostOperationTypeFilterOptions: { id: CostOperationType | "all"; la
   { id: CostOperationTypes.TITLE_GENERATION, label: "Title generation" },
   { id: CostOperationTypes.TRANSLATION, label: "Translation" },
   { id: CostOperationTypes.DEWATERMARK, label: "Dewatermark" },
+  { id: CostOperationTypes.PROXY, label: "Proxy" },
   { id: CostOperationTypes.OTHER, label: "Other" },
 ];

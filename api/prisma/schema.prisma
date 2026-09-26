@@ -218,6 +218,7 @@ enum IntegrationType {
   DEWATERMARK
   GOOGLE_TRANSLATE
   AZURE
+  WEBSHARE
 }
 
 enum TranslationProvider {
@@ -231,6 +232,7 @@ enum CostOperationType {
   TITLE_GENERATION
   TRANSLATION
   DEWATERMARK
+  PROXY
   OTHER
 }
 
@@ -560,6 +562,12 @@ model Scraper {
   // IP/fingerprint outright (see docs/crawler-bot-detection-blocking.md and
   // docs/proxy-cost-analysis.md) -- most scrapers never need this.
   use_managed_browser  Boolean         @default(false)
+  // When true, this scraper's crawls (listing + detail pages) run in our own local Chromium
+  // routed through a Webshare residential proxy (see WebshareModule), with images/media/fonts and
+  // known trackers blocked to save the plan's small bandwidth allowance. Property image bytes are
+  // NOT proxied -- they are downloaded later with plain fetch(). Ignored when use_managed_browser
+  // is also true (the managed browser wins).
+  use_proxy_browser    Boolean         @default(false)
   diagnostics_mode     DiagnosticsMode @default(PRODUCTION) // debugging depth for this scraper's crawl runs
   health               ScraperHealth   @default(GOOD) // cached rollup, recomputed by a background job (spec section 18)
   success_rate         Decimal?        @db.Decimal(5, 2) // cached % over trailing window

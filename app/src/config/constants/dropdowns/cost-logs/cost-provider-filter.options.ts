@@ -9,4 +9,5 @@ export const CostProviderFilterOptions: { id: CostProvider | "all"; label: strin
   { id: CostProviders.GOOGLE_TRANSLATE, label: "Google Translate" },
   { id: CostProviders.AZURE, label: "Azure Translator" },
   { id: CostProviders.DEWATERMARK, label: "Dewatermark" },
+  { id: CostProviders.WEBSHARE, label: "Webshare" },
 ];

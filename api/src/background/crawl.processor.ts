@@ -2,7 +2,10 @@ import { Logger, OnModuleInit } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { CRAWL_QUEUE, OPENAI_BATCH_QUEUE } from '@/core/queues/queues.constants';
+import {
+  CRAWL_QUEUE,
+  OPENAI_BATCH_QUEUE,
+} from '@/core/queues/queues.constants';
 import {
   DEFAULT_CRAWL_WORKER_CONCURRENCY,
   DETAIL_ENRICHMENT_SOFT_STOP_BUFFER_MS,
@@ -10,7 +13,16 @@ import {
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import { CrawlerService } from '@/integrations/crawler/services/crawler.service';
 import { DetailEnrichmentService } from '@/integrations/crawler/services/detail-enrichment.service';
-import { ScraperConfig } from '@/integrations/crawler/interfaces/scraper-config.interface';
+import {
+  CrawlResult,
+  ScraperConfig,
+} from '@/integrations/crawler/interfaces/scraper-config.interface';
+import {
+  createProxyBrowserSession,
+  ProxyBrowserSession,
+} from '@/integrations/crawler/interfaces/proxy-browser-session.interface';
+import { WebshareProxyService } from '@/integrations/webshare/services/webshare-proxy.service';
+import { WebshareUsageService } from '@/modules/cost-logs/services/webshare-usage.service';
 import { DiagnosticsRunContext } from '@/integrations/diagnostics/interfaces/diagnostics.interfaces';
 import {
   contentHash,
@@ -51,6 +63,8 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
     private readonly notificationsService: NotificationsService,
     private readonly scraperFailureHandler: ScraperFailureHandlerService,
     private readonly platformConfigService: PlatformConfigService,
+    private readonly webshareProxyService: WebshareProxyService,
+    private readonly webshareUsageService: WebshareUsageService,
   ) {
     super();
   }
@@ -191,6 +205,11 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       }
 
       const useManagedBrowser = scraper.use_managed_browser;
+      // The managed (Bright Data) browser wins if both flags are set.
+      const proxySession =
+        scraper.use_proxy_browser && !useManagedBrowser
+          ? await this.openProxySession(scraper.id)
+          : undefined;
 
       const platformCrawlerConfig =
         await this.platformConfigService.getCrawlerConfig();
@@ -200,7 +219,8 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       // raising the platform default to cover the slowest scraper would
       // needlessly loosen every other crawl's budget too.
       const crawl_job_timeout_ms =
-        scraper.crawl_job_timeout_ms ?? platformCrawlerConfig.crawl_job_timeout_ms;
+        scraper.crawl_job_timeout_ms ??
+        platformCrawlerConfig.crawl_job_timeout_ms;
       const detailConcurrencyOverride = scraper.detail_concurrency ?? undefined;
 
       const diagnosticsCtx: DiagnosticsRunContext = {
@@ -212,6 +232,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         retryNumber: attempt - 1,
         workerId: job.id ? String(job.id) : undefined,
         useManagedBrowser,
+        proxySession,
       };
 
       const heartbeat = async () => {
@@ -221,39 +242,51 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         });
       };
 
-      const blockHandlingConfig = buildBlockHandlingConfig(
-        run.source_agency,
-      );
+      const blockHandlingConfig = buildBlockHandlingConfig(run.source_agency);
 
-      const crawlResult = await this.withTimeout(
-        this.crawlerService.runCrawl(
-          config,
-          diagnosticsCtx,
-          { onPageComplete: heartbeat },
-          blockHandlingConfig,
-        ),
-        crawl_job_timeout_ms,
-        `crawl timed out after ${crawl_job_timeout_ms}ms`,
-      );
-      await this.withTimeout(
-        this.detailEnrichmentService.enrichDetailPages(
-          crawlResult.items,
-          config.detail_page,
-          run.source_agency_id,
-          {
-            deadlineAt:
-              Date.now() +
-              crawl_job_timeout_ms -
-              DETAIL_ENRICHMENT_SOFT_STOP_BUFFER_MS,
-            onBatchComplete: heartbeat,
+      let crawlResult: CrawlResult;
+      try {
+        crawlResult = await this.withTimeout(
+          this.crawlerService.runCrawl(
+            config,
+            diagnosticsCtx,
+            { onPageComplete: heartbeat },
             blockHandlingConfig,
-            useManagedBrowser,
-            detailConcurrencyOverride,
-          },
-        ),
-        crawl_job_timeout_ms,
-        `detail enrichment timed out after ${crawl_job_timeout_ms}ms`,
-      );
+          ),
+          crawl_job_timeout_ms,
+          `crawl timed out after ${crawl_job_timeout_ms}ms`,
+        );
+        await this.withTimeout(
+          this.detailEnrichmentService.enrichDetailPages(
+            crawlResult.items,
+            config.detail_page,
+            run.source_agency_id,
+            {
+              deadlineAt:
+                Date.now() +
+                crawl_job_timeout_ms -
+                DETAIL_ENRICHMENT_SOFT_STOP_BUFFER_MS,
+              onBatchComplete: heartbeat,
+              blockHandlingConfig,
+              useManagedBrowser,
+              proxySession,
+              detailConcurrencyOverride,
+            },
+          ),
+          crawl_job_timeout_ms,
+          `detail enrichment timed out after ${crawl_job_timeout_ms}ms`,
+        );
+      } finally {
+        // Log proxy bandwidth whether the crawl succeeded or failed -- a failed
+        // crawl still spent it.
+        if (proxySession) {
+          await this.recordProxyUsage(proxySession, {
+            crawlRunId,
+            scraperId: scraper.id,
+            sourceAgencyId: run.source_agency_id,
+          });
+        }
+      }
 
       const seenUrls = new Set<string>();
       let totalCreated = 0;
@@ -681,5 +714,74 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
     });
 
     return jobLog.id;
+  }
+
+  // Keep this much of the Webshare plan in reserve: below it, proxy crawls are
+  // refused instead of starting one that could run the allowance dry.
+  private static readonly PROXY_MIN_REMAINING_BYTES = 20 * 1024 * 1024;
+
+  // Picks ONE Webshare proxy for the whole crawl (same exit IP for the listing
+  // walk and every detail page, so a cleared bot challenge stays valid) and
+  // caps the crawl at what is left of the plan.
+  private async openProxySession(
+    scraperId: string,
+  ): Promise<ProxyBrowserSession> {
+    if (!this.webshareProxyService.isConfigured()) {
+      throw new Error(
+        'Scraper has use_proxy_browser=true but WEBSHARE_API_KEY is not set',
+      );
+    }
+
+    let maxBytes = Infinity;
+    try {
+      const usage = await this.webshareUsageService.getUsage();
+      if (
+        usage.remaining_bytes !== null &&
+        usage.remaining_bytes !== undefined
+      ) {
+        if (usage.remaining_bytes < CrawlProcessor.PROXY_MIN_REMAINING_BYTES) {
+          throw new Error(
+            `Webshare bandwidth nearly exhausted (${usage.remaining_bytes} bytes left) -- refusing to start a proxy crawl`,
+          );
+        }
+        maxBytes = usage.remaining_bytes;
+      }
+    } catch (error) {
+      // An unreachable usage endpoint must not block crawling; only the
+      // deliberate "exhausted" refusal above should.
+      if (error instanceof Error && error.message.includes('exhausted')) {
+        throw error;
+      }
+      this.logger.warn(
+        `Could not read Webshare usage before proxy crawl (scraper=${scraperId}): ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+
+    const proxy = await this.webshareProxyService.pickRandomProxy();
+    this.logger.log(
+      `Proxy crawl for scraper ${scraperId} via Webshare ${proxy.id} (${proxy.country_code ?? '??'})`,
+    );
+    return createProxyBrowserSession(
+      this.webshareProxyService.toPlaywrightProxy(proxy),
+      maxBytes,
+    );
+  }
+
+  private async recordProxyUsage(
+    session: ProxyBrowserSession,
+    ctx: { crawlRunId: string; scraperId: string; sourceAgencyId: string },
+  ): Promise<void> {
+    if (session.bytes <= 0) return;
+    await this.webshareUsageService.recordUsage({
+      bytes: session.bytes,
+      requests: session.requests,
+      crawlRunId: ctx.crawlRunId,
+      metadata: {
+        scraper_id: ctx.scraperId,
+        source_agency_id: ctx.sourceAgencyId,
+      },
+    });
   }
 }

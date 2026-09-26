@@ -12,7 +12,11 @@ import { Roles } from '@/shared/decorators/roles.decorator';
 import { AuthRole, CostOperationType, IntegrationType } from 'generated/prisma';
 import { ZodValidationPipe } from '@/shared/pipes/zod.validation.pipe';
 import { CostLogsService } from './cost-logs.service';
-import { CostLogQuerySchema, CostLogQueryType } from './dto/cost-log-query.schema';
+import { WebshareUsageService } from './services/webshare-usage.service';
+import {
+  CostLogQuerySchema,
+  CostLogQueryType,
+} from './dto/cost-log-query.schema';
 
 @ApiTags('Cost Logs')
 @ApiBearerAuth()
@@ -20,7 +24,19 @@ import { CostLogQuerySchema, CostLogQueryType } from './dto/cost-log-query.schem
 @UseGuards(JwtGuard, RolesGuard)
 @Roles(AuthRole.ADMIN, AuthRole.SUPPORT)
 export class CostLogsController {
-  constructor(private readonly costLogsService: CostLogsService) {}
+  constructor(
+    private readonly costLogsService: CostLogsService,
+    private readonly webshareUsageService: WebshareUsageService,
+  ) {}
+
+  @Get('webshare-usage')
+  @ApiOperation({
+    summary: 'Webshare proxy bandwidth: plan limit, used and remaining',
+  })
+  @ApiResponse({ status: 200, description: 'Live Webshare usage' })
+  getWebshareUsage() {
+    return this.webshareUsageService.getUsage();
+  }
 
   @Get()
   @ApiOperation({ summary: 'List cost logs (paginated, filterable)' })
@@ -28,7 +44,11 @@ export class CostLogsController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'user_id', required: false, type: String })
-  @ApiQuery({ name: 'operation_type', required: false, enum: CostOperationType })
+  @ApiQuery({
+    name: 'operation_type',
+    required: false,
+    enum: CostOperationType,
+  })
   @ApiQuery({ name: 'provider', required: false, enum: IntegrationType })
   @ApiQuery({ name: 'date_from', required: false, type: String })
   @ApiQuery({ name: 'date_to', required: false, type: String })

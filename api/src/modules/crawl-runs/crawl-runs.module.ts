@@ -3,6 +3,8 @@ import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import { CRAWL_QUEUE } from '@/core/queues/queues.constants';
 import { CrawlerModule } from '@/integrations/crawler/crawler.module';
+import { WebshareModule } from '@/integrations/webshare/webshare.module';
+import { CostLogsModule } from '@/modules/cost-logs/cost-logs.module';
 import { PlatformConfigModule } from '@/modules/platform-config/platform-config.module';
 import { CrawlProcessor } from '@/background/crawl.processor';
 import { CrawlSchedulerCron } from '@/background/crawl-scheduler.cron';
@@ -21,6 +23,8 @@ import { CrawlRunsService } from './crawl-runs.service';
   imports: [
     PrismaModule,
     CrawlerModule,
+    WebshareModule,
+    CostLogsModule,
     PlatformConfigModule,
     ScraperGenerationModule,
     PropertiesModule,

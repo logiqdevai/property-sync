@@ -20,6 +20,8 @@ import {
 } from '../utils/stealth.utils';
 import { trackDocumentResponses } from '../block-handling/block-handling.utils';
 import { AsyncSemaphore } from '../utils/async-semaphore.util';
+import { ProxyBrowserSession } from '../interfaces/proxy-browser-session.interface';
+import { shouldBlockProxyRequest } from '../utils/proxy-resource-blocking.util';
 
 export interface StealthPageSession {
   context: BrowserContext;
@@ -39,6 +41,13 @@ export interface NewStealthPageOptions {
   // fetched later, separately, via plain fetch() when actually needed (e.g.
   // WatermarkRemovalService), so this loses no data.
   blockImages?: boolean;
+  // Route this page through the crawl's Webshare proxy (Scraper.use_proxy_browser)
+  // in our OWN local Chromium -- a dedicated browser launched with the proxy, so
+  // the shared no-proxy browser is never affected. Implies aggressive resource
+  // blocking (images/media/fonts + trackers, see proxy-resource-blocking.util)
+  // because the plan's bandwidth is tiny. Image bytes are never proxied: the
+  // app downloads them later with plain fetch(), outside any browser.
+  proxySession?: ProxyBrowserSession;
 }
 
 // Bright Data's documented Browser API session limits (docs.brightdata.com/
@@ -74,6 +83,10 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
   // PlatformConfig.crawler_max_concurrent_browser_pages.
   private readonly pageSemaphore = new AsyncSemaphore();
   private readonly pageReleasers = new WeakMap<BrowserContext, () => void>();
+  private readonly proxySessions = new WeakMap<
+    BrowserContext,
+    ProxyBrowserSession
+  >();
 
   constructor(
     private readonly platformConfigService: PlatformConfigService,
@@ -104,9 +117,13 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
   ): Promise<StealthPageSession> {
     const browser = options?.useManagedBrowser
       ? await this.openManagedBrowser()
-      : await this.ensureBrowser();
+      : options?.proxySession
+        ? await this.openProxyBrowser(options.proxySession)
+        : await this.ensureBrowser();
 
-    if (!options?.useManagedBrowser) this.contextsSinceLaunch++;
+    if (!options?.useManagedBrowser && !options?.proxySession) {
+      this.contextsSinceLaunch++;
+    }
 
     return this.newStealthPageOnBrowser(browser, contextOptions, options);
   }
@@ -118,7 +135,10 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
   async newStealthPageOnBrowser(
     browser: Browser,
     contextOptions?: Partial<BrowserContextOptions>,
-    options?: Pick<NewStealthPageOptions, 'useManagedBrowser' | 'blockImages'>,
+    options?: Pick<
+      NewStealthPageOptions,
+      'useManagedBrowser' | 'blockImages' | 'proxySession'
+    >,
   ): Promise<StealthPageSession> {
     // None of our own stealth overrides apply to the managed browser -- Bright
     // Data's fleet already runs a real, current, non-headless-fingerprinted
@@ -151,17 +171,34 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
 
     let context: BrowserContext | undefined;
     try {
+      const proxySession = options?.useManagedBrowser
+        ? undefined
+        : options?.proxySession;
       context = options?.useManagedBrowser
         ? await browser.newContext(contextOptions)
         : await browser.newContext({
             ...STEALTH_CONTEXT_OPTIONS,
             ...contextOptions,
+            // Replay the crawl's cookie jar so a bot challenge cleared by an
+            // earlier page isn't paid for (in proxy bandwidth) again.
+            ...(proxySession && proxySession.cookies.length > 0
+              ? {
+                  storageState: {
+                    cookies: proxySession.cookies,
+                    origins: [],
+                  },
+                }
+              : {}),
           });
       // Tracked immediately so a failure below is still cleaned up via
       // closeContext by any caller that catches and closes on error -- only
       // an outright newContext() failure (nothing to attach the releaser to)
       // falls through to the catch's own release() call.
       this.pageReleasers.set(context, release);
+      if (proxySession) {
+        this.proxySessions.set(context, proxySession);
+        this.trackProxyTraffic(context, proxySession);
+      }
 
       if (!options?.useManagedBrowser) {
         await applyStealthInitScript(context);
@@ -169,7 +206,19 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
       const page = await context.newPage();
       trackDocumentResponses(page);
 
-      if (options?.blockImages) {
+      if (proxySession) {
+        await page.route('**/*', (route) => {
+          const request = route.request();
+          // Budget exhausted: fail fast instead of draining the plan.
+          if (
+            proxySession.bytes >= proxySession.maxBytes ||
+            shouldBlockProxyRequest(request.url(), request.resourceType())
+          ) {
+            return route.abort();
+          }
+          return route.continue();
+        });
+      } else if (options?.blockImages) {
         await page.route('**/*', (route) => {
           const type = route.request().resourceType();
           if (type === 'image' || type === 'media' || type === 'font') {
@@ -195,6 +244,14 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
     options?: { closeBrowser?: boolean },
   ): Promise<void> {
     const browser = context.browser();
+    // Persist this context's cookies (e.g. a cleared bot challenge) into the
+    // crawl's shared jar BEFORE the context is torn down.
+    const proxySession = this.proxySessions.get(context);
+    if (proxySession) {
+      proxySession.cookies = await context
+        .cookies()
+        .catch(() => proxySession.cookies);
+    }
     await Promise.race([
       context.close().catch(() => undefined),
       new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
@@ -249,6 +306,41 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
 
     this.logger.log('Chromium launched for crawl worker');
     return this.browser;
+  }
+
+  // Launches a dedicated local Chromium whose traffic all goes through the
+  // session's Webshare proxy. Dedicated (not the shared browser) so the proxy
+  // never leaks onto other crawls; the caller owns it and closes it -- via
+  // closeContext's default (`browser !== this.browser`) or, for a pooled lane,
+  // browser.close().
+  async openProxyBrowser(session: ProxyBrowserSession): Promise<Browser> {
+    const browser = await chromium.launch({
+      headless: true,
+      args: [...STEALTH_LAUNCH_ARGS],
+      proxy: session.proxy,
+    });
+    this.logger.log('Launched Chromium through Webshare proxy');
+    return browser;
+  }
+
+  // Counts what actually crossed the proxy for the cost log / budget cap.
+  private trackProxyTraffic(
+    context: BrowserContext,
+    session: ProxyBrowserSession,
+  ): void {
+    context.on('requestfinished', (request) => {
+      void request
+        .sizes()
+        .then((sizes) => {
+          session.bytes +=
+            sizes.requestHeadersSize +
+            sizes.requestBodySize +
+            sizes.responseHeadersSize +
+            sizes.responseBodySize;
+          session.requests += 1;
+        })
+        .catch(() => undefined);
+    });
   }
 
   // Opens a fresh Bright Data Browser API connection. Per their FAQ, one

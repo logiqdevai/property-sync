@@ -8,6 +8,8 @@ import {
   CONTEXT_CLOSE_TIMEOUT_MS,
   DETAIL_HTML_UPLOAD_TIMEOUT_MS,
   MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS,
+  PROXY_BROWSER_CHALLENGE_WAIT_MS,
+  PROXY_BROWSER_MIN_PAGE_TIMEOUT_MS,
   START_PAGE_GOTO_MAX_ATTEMPTS,
   START_PAGE_GOTO_RETRY_DELAY_MS,
 } from '../constants/crawler.constants';
@@ -16,6 +18,7 @@ import {
   DetailPageConfig,
 } from '../interfaces/scraper-config.interface';
 import { BlockHandlingConfig } from '../block-handling/block-handling.interface';
+import { ProxyBrowserSession } from '../interfaces/proxy-browser-session.interface';
 import {
   classifyPageAccess,
   waitForBotChallengeClearance,
@@ -55,6 +58,10 @@ export interface DetailEnrichmentOptions {
   // See NewStealthPageOptions on StealthBrowserService -- routes every detail
   // page through the managed remote browser and skips image bytes.
   useManagedBrowser?: boolean;
+  // See NewStealthPageOptions.proxySession -- every detail page runs in a
+  // local Chromium through the crawl's Webshare proxy (same exit IP and
+  // cookie jar as the listing walk), with heavy resources blocked.
+  proxySession?: ProxyBrowserSession;
   // Per-scraper override for PlatformConfig.crawler_detail_concurrency
   // (Scraper.detail_concurrency). Undefined = use the platform default.
   detailConcurrencyOverride?: number;
@@ -95,9 +102,12 @@ export class DetailEnrichmentService {
     // the Scraping Browser specifically ("default 30s is too short -- complex
     // anti-bot procedures take time") -- the platform default is fine for the
     // local Chromium.
+    const proxySession = useManagedBrowser ? undefined : options?.proxySession;
     const effectivePageTimeoutMs = useManagedBrowser
       ? Math.max(page_timeout_ms, MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS)
-      : page_timeout_ms;
+      : proxySession
+        ? Math.max(page_timeout_ms, PROXY_BROWSER_MIN_PAGE_TIMEOUT_MS)
+        : page_timeout_ms;
     const queue = [...items];
     let processedCount = 0;
     let stoppedForDeadline = false;
@@ -180,15 +190,18 @@ export class DetailEnrichmentService {
           const item = queue.shift();
           if (!item) break;
 
-          if (useManagedBrowser) {
+          if (useManagedBrowser || proxySession) {
             const needsRotation =
               !managedBrowser ||
               !managedBrowser.isConnected() ||
               Date.now() - managedBrowserOpenedAt >= MANAGED_SESSION_MAX_AGE_MS;
             if (needsRotation) {
               await closeManagedBrowser();
-              managedBrowser =
-                await this.stealthBrowserService.openManagedBrowser();
+              managedBrowser = proxySession
+                ? await this.stealthBrowserService.openProxyBrowser(
+                    proxySession,
+                  )
+                : await this.stealthBrowserService.openManagedBrowser();
               managedBrowserOpenedAt = Date.now();
             }
           }
@@ -201,6 +214,7 @@ export class DetailEnrichmentService {
             options?.blockHandlingConfig,
             useManagedBrowser,
             managedBrowser ?? undefined,
+            proxySession,
           );
 
           if (
@@ -250,6 +264,7 @@ export class DetailEnrichmentService {
     // reused by the caller's worker lane (see enrichDetailPages) -- close
     // only the context here, never the browser itself.
     pooledBrowser?: Browser,
+    proxySession?: ProxyBrowserSession,
   ): Promise<DetailEnrichmentResult> {
     const empty: DetailEnrichmentResult = {
       images: [],
@@ -269,11 +284,12 @@ export class DetailEnrichmentService {
       ? await this.stealthBrowserService.newStealthPageOnBrowser(
           pooledBrowser,
           undefined,
-          { useManagedBrowser, blockImages: useManagedBrowser },
+          { useManagedBrowser, blockImages: useManagedBrowser, proxySession },
         )
       : await this.stealthBrowserService.newStealthPage(undefined, {
           useManagedBrowser,
           blockImages: useManagedBrowser,
+          proxySession,
         });
 
     const gotoDetailPage = () =>
@@ -322,7 +338,10 @@ export class DetailEnrichmentService {
         // as the page load itself (pageTimeoutMs), not a smaller sub-ceiling.
         const challengeWaitMs = useManagedBrowser
           ? pageTimeoutMs
-          : Math.min(15_000, pageTimeoutMs);
+          : Math.min(
+              proxySession ? PROXY_BROWSER_CHALLENGE_WAIT_MS : 15_000,
+              pageTimeoutMs,
+            );
 
         let accessState = await waitForBotChallengeClearance(
           page,
@@ -429,7 +448,9 @@ export class DetailEnrichmentService {
             document.querySelectorAll(cfg.image_selector).forEach((el) => {
               if (type === 'href') {
                 const href = el.getAttribute('href');
-                pushImage(href ? new URL(href, document.baseURI).toString() : null);
+                pushImage(
+                  href ? new URL(href, document.baseURI).toString() : null,
+                );
               } else if (type === 'background_image') {
                 const match = (el.getAttribute('style') || '').match(
                   /background-image:\s*url\(['"]?(.*?)['"]?\)/,

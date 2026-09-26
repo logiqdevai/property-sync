@@ -39,6 +39,15 @@ export class UpdateScraperDto {
 
   @ApiProperty({
     required: false,
+    description:
+      "When true, crawls run in the local Chromium routed through a Webshare residential proxy, with images/media/fonts and trackers blocked to save bandwidth (property images are still downloaded directly, never through the proxy). Ignored if use_managed_browser is also true. Uses the Webshare plan's limited bandwidth.",
+  })
+  @IsOptional()
+  @IsBoolean()
+  use_proxy_browser?: boolean;
+
+  @ApiProperty({
+    required: false,
     enum: DiagnosticsMode,
     description: "Debugging depth for this scraper's crawl runs",
   })

@@ -348,6 +348,9 @@ export class ScrapersService {
           ...(dto.use_managed_browser !== undefined && {
             use_managed_browser: dto.use_managed_browser,
           }),
+          ...(dto.use_proxy_browser !== undefined && {
+            use_proxy_browser: dto.use_proxy_browser,
+          }),
           ...(dto.diagnostics_mode !== undefined && {
             diagnostics_mode: dto.diagnostics_mode,
           }),
@@ -404,6 +407,9 @@ export class ScrapersService {
           }),
           ...(dto.use_managed_browser !== undefined && {
             use_managed_browser: dto.use_managed_browser,
+          }),
+          ...(dto.use_proxy_browser !== undefined && {
+            use_proxy_browser: dto.use_proxy_browser,
           }),
           ...(dto.diagnostics_mode !== undefined && {
             diagnostics_mode: dto.diagnostics_mode,

@@ -1,6 +1,10 @@
 import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
-import type { CostLogListQuery, CostLogListResponse } from "../interfaces/cost-logs.interfaces";
+import type {
+  CostLogListQuery,
+  CostLogListResponse,
+  WebshareUsage,
+} from "../interfaces/cost-logs.interfaces";
 
 export const getCostLogs = async (
   query?: CostLogListQuery,
@@ -21,5 +25,14 @@ export const getUserCostLogs = async (
     return response.data;
   } catch (error) {
     throw new Error("Failed to fetch cost logs. Please try again.");
+  }
+};
+
+export const getWebshareUsage = async (): Promise<WebshareUsage> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.costLogs.webshareUsage);
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to fetch Webshare usage. Please try again.");
   }
 };
