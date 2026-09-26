@@ -20,27 +20,22 @@ const MAXP = parseInt(process.env.MAX_LISTING_PAGES || '4');
 const RECYCLE = parseInt(process.env.RECYCLE_EVERY || '15');   // fresh browser context every N sites (keeps memory flat)
 const HEAP_GUARD_MB = parseInt(process.env.HEAP_GUARD_MB || '450');   // safety net: if Node's live heap passes this, finish current sites and restart cleanly (progress is saved)
 let draining = false;
-let booted = false;                                              // a crash while starting up must stop the app; afterwards a stray error is logged, not fatal
 process.on('unhandledRejection', e => console.error('unhandledRejection (ignored):', e && e.message ? e.message : e));
-process.on('uncaughtException', e => { console.error('uncaughtException:', e && e.stack ? e.stack : e); if (!booted) process.exit(1); });
+process.on('uncaughtException', e => console.error('uncaughtException (ignored):', e && e.message ? e.message : e));
 const withTimeout = (p, ms, msg) => { let tm; return Promise.race([p, new Promise((_, rej) => { tm = setTimeout(() => rej(new Error(msg)), ms); })]).finally(() => clearTimeout(tm)); };
 const SITE_TIMEOUT = parseInt(process.env.SITE_TIMEOUT_MS || '120000');
 const TOKEN = process.env.AUTH_TOKEN || '';
 const PORT = parseInt(process.env.PORT || '3000');
 const OUT = path.join(DATA, TEST ? 'test_results.jsonl' : 'results.jsonl');
 fs.mkdirSync(DATA, { recursive: true });
-try {                                                                    // fresh /data: start from the own-site counts baked into the image (a running deployment keeps its own file)
-  const seedResults = path.join(process.env.SEED_DIR || path.join(__dirname, 'excel'), 'results_seed.jsonl');
-  const marker = path.join(DATA, 'results_seeded');                       // written once, so a later "start from scratch" is never undone by re-seeding
-  if (!TEST && !fs.existsSync(OUT) && !fs.existsSync(marker) && fs.existsSync(seedResults)) { fs.copyFileSync(seedResults, OUT); fs.writeFileSync(marker, new Date().toISOString()); console.log('own-site results seeded from the image snapshot'); }
-} catch (e) { console.error('results seed failed:', e.message); }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-let TARGETS = [], done = new Set(), queue = [], ownRunning = false, stopRequested = false, _staticRules = null;   // rebuilt by rebuildOwn() from the live data (see 'own-site stage' below)
+let TARGETS = JSON.parse(fs.readFileSync(path.join(__dirname, 'targets.json'), 'utf8'));
+const done = new Set(fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8').split('\n').filter(Boolean).map(l => { try { const r = JSON.parse(l); return String(r.status || '').startsWith('error') ? null : r.id; } catch (e) { return null; } }) : []);   // crashed/timed-out sites (status error:*) are retried after a restart
+let queue = TARGETS.filter(t => !done.has(t.id) && (!process.env.ONLY_IDS || process.env.ONLY_IDS.split(',').includes(t.id))); if (TEST) queue = queue.slice(0, TEST_N);
 // ---- pipeline data store + Spiti24 collector (see lib/) ----
 const { Store } = require('./lib/store'), { Collector } = require('./lib/collector'), collectorHttp = require('./lib/collector_http');
 const store = new Store(DATA, process.env.SEED_DIR || path.join(__dirname, 'excel')), collector = new Collector(store);
-rebuildOwn();
 const stats = { total: TARGETS.length, alreadyDone: done.size, startedAt: new Date().toISOString(), processed: 0, byStatus: {}, byConfidence: {}, running: true, lastId: null };
 
 // ---------- robots.txt (rules for "User-agent: *", longest match wins, Allow wins ties, supports * and $) ----------
@@ -211,7 +206,7 @@ async function newCtx() {
 }
 async function worker(wid) {
   let ctx = null, page = null, n = 0;
-  while (queue.length && !draining && !stopRequested) {
+  while (queue.length && !draining) {
     const t = queue.shift(); if (!t) break;
     try {
       if (!ctx || n % RECYCLE === 0) { if (ctx) await ctx.close().catch(() => {}); ctx = await newCtx(); }
@@ -238,7 +233,7 @@ async function worker(wid) {
 }
 
 // ---------- dashboard data (feeds dashboard.html through /status) ----------
-let startMs = new Date(stats.startedAt).getTime();
+const startMs = new Date(stats.startedAt).getTime();
 const latest = new Map();          // id -> compact summary of the LAST record for that site (a retried error is replaced by its new result)
 const recent = [];                 // last 15 finished sites, newest first
 const newOver70List = [];          // last 10 sites that show >70 on their own site but had <=70 on Spiti24
@@ -318,25 +313,11 @@ function startServer() {
     const u = new URL(req.url, 'http://x');
     if (u.pathname === '/health') { res.writeHead(200); return res.end('ok'); }
     if (u.pathname === '/favicon.ico') { res.writeHead(204); return res.end(); }
-    if (u.pathname.startsWith('/pipeline/')) {
-      if (!ok(req)) { res.writeHead(401); return res.end('unauthorized'); }
-      const reply = (code, obj) => { res.writeHead(code, { 'content-type': 'application/json', 'cache-control': 'no-store' }); res.end(JSON.stringify(obj)); };
-      if (u.pathname === '/pipeline/status') return reply(200, { ...pipeline.status(), collector: collector.status(), own: ownApi.status(), time: Date.now() });
-      collectorHttp.readJson(req).then(b => {
-        if (u.pathname === '/pipeline/start') return reply(200, pipeline.start(String(b.stage || ''), b));
-        if (u.pathname === '/pipeline/stop') return reply(200, pipeline.stop(String(b.stage || '')));
-        if (u.pathname === '/pipeline/run-all') return reply(200, pipeline.runAll());
-        if (u.pathname === '/pipeline/scratch') return reply(200, pipeline.scratch(b));
-        return reply(404, { error: 'not found' });
-      }).catch(e => reply(400, { error: e.message }));
-      return;
-    }
     if (u.pathname.startsWith('/collector/')) return collectorHttp.handle(req, res, u, { collector, isAuthed: ok, tokenOf: r => (new URL(r.url, 'http://x').searchParams.get('token') || String(r.headers.authorization || '').replace(/^Bearer /, '')) });
     if (u.pathname === '/' || u.pathname === '/dashboard') { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }); return res.end(DASHBOARD_HTML); }   // the page holds no data; it fetches /status with the token
     if (!ok(req)) { res.writeHead(TOKEN ? 401 : 503); return res.end(TOKEN ? 'unauthorized' : 'set AUTH_TOKEN to enable /status and /results.jsonl'); }
     if (u.pathname === '/status') { res.writeHead(200, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ ...stats, remaining: queue.length, ...eta(), memoryMB: Math.round(process.memoryUsage().rss / 1e6), heapMB: Math.round(process.memoryUsage().heapUsed / 1e6), draining, settings: { WORKERS, GAP, SITE_GAP, SETTLE, SCROLL }, ...dash(), collector: collector.status() }, null, 1)); }
     if (u.pathname === '/spiti24-agencies.xlsx') {
-      if (!store.agents.length) { res.writeHead(409, { 'content-type': 'text/plain; charset=utf-8' }); return res.end('Nothing to export yet: the Spiti24 collection has not produced any agencies (data was reset, or the collection has not started).'); }
       buildExcel().then(file => {
         res.writeHead(200, { 'content-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'content-disposition': 'attachment; filename="spiti24-agencies.xlsx"', 'content-length': fs.statSync(file).size });
         fs.createReadStream(file).pipe(res);
@@ -348,75 +329,14 @@ function startServer() {
   }).listen(PORT, () => console.log('http on', PORT, TOKEN ? '(token set)' : '(NO AUTH_TOKEN: only /health is served)'));
 }
 
-// ---------- own-site stage: the "for sale" count on each agency's own website ----------
-// Targets come from the live data: agencies with >=1 sale listing on Spiti24 whose website scan finished 'ok' (the site can be read).
-function rulesFromRobots(txt) {                                   // rules of the "User-agent: *" group: [['D','/path'],['A','/x'],...]
-  const out = []; let cur = false, prevUA = false;
-  for (let line of String(txt || '').split('\n')) {
-    line = line.split('#')[0].trim(); const c = line.indexOf(':'); if (!line || c < 0) continue;
-    const k = line.slice(0, c).trim().toLowerCase(), v = line.slice(c + 1).trim();
-    if (k === 'user-agent') { cur = prevUA ? (cur || v === '*') : (v === '*'); prevUA = true; continue; }
-    prevUA = false; if (cur && (k === 'allow' || k === 'disallow') && v) out.push([k === 'allow' ? 'A' : 'D', v]);
-  }
-  return out;
-}
-function staticRules() {                                          // robots rules baked into targets.json for the first snapshot (used until a site is re-scanned)
-  if (!_staticRules) { _staticRules = new Map(); try { for (const t of JSON.parse(fs.readFileSync(path.join(__dirname, 'targets.json'), 'utf8'))) _staticRules.set(String(t.id), t.rules || []); } catch (e) {} }
-  return _staticRules;
-}
-function ownTargets() {
-  const out = [];
-  for (const a of store.agents) {
-    const id = String(a.id), s = store.sale[id], e = store.emails.get(id);
-    if (!s || !(s.n >= 1) || !e || e.status !== 'ok' || !(e.pages || []).length) continue;
-    out.push({ id, name: a.name, site: e.pages[0], spiti24_sales: s.n, rules: store.robots[id] ? rulesFromRobots(store.robots[id]) : (staticRules().get(id) || []) });
-  }
-  const band = n => n >= 41 && n <= 70 ? 0 : n >= 26 && n <= 40 ? 1 : n > 70 ? 2 : n >= 11 ? 3 : 4;          // most useful first: agencies that may cross 70
-  return out.sort((x, y) => band(x.spiti24_sales) - band(y.spiti24_sales) || Number(x.id) - Number(y.id));
-}
-function rebuildOwn() {
-  TARGETS = ownTargets();
-  done = new Set(fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8').split('\n').filter(Boolean).map(l => { try { const r = JSON.parse(l); return String(r.status || '').startsWith('error') ? null : r.id; } catch (e) { return null; } }) : []);
-  queue = TARGETS.filter(t => !done.has(t.id) && (!process.env.ONLY_IDS || process.env.ONLY_IDS.split(',').includes(t.id)));
-  if (TEST) queue = queue.slice(0, TEST_N);
-  try { stats.total = TARGETS.length; stats.alreadyDone = done.size; } catch (e) { /* first call, before stats exists */ }
-}
-async function runOwn() {
-  if (ownRunning) return; ownRunning = true; stopRequested = false; draining = false; rebuildOwn();
-  stats.running = true; stats.processed = 0; stats.byStatus = {}; stats.byConfidence = {}; stats.startedAt = new Date().toISOString(); stats.finishedAt = null; startMs = Date.now();
-  console.log(`own-site stage: targets ${TARGETS.length} | already done ${done.size} | queued ${queue.length} | workers ${WORKERS}`);
-  await Promise.all(Array.from({ length: WORKERS }, (_, i) => sleep(i * 4000).then(() => worker(i))));
-  if (draining && queue.length) { if (browser) await browser.close().catch(() => {}); process.exit(3); }      // memory guard tripped: exit non-zero => the platform restarts it and it resumes
-  ownRunning = false; stats.running = false; stats.finishedAt = new Date().toISOString();
-  if (!TEST && !stopRequested) fs.writeFileSync(path.join(DATA, 'DONE'), stats.finishedAt);
-  console.log('own-site stage finished', JSON.stringify(stats));
-  if (browser) { await browser.close().catch(() => {}); browser = null; }
-  pipeline.onStageEnd('own');
-  if (TEST) process.exit(0);
-}
-const ownApi = {
-  start(opts) {
-    if (ownRunning) return { ok: false, error: 'This step is already running.' };
-    if (opts && opts.refresh && fs.existsSync(OUT)) { fs.renameSync(OUT, OUT + '.' + Date.now() + '.bak'); latest.clear(); recent.length = 0; newOver70List.length = 0; }
-    rebuildOwn(); if (!queue.length) return { ok: false, error: 'Nothing to do – all websites already have a result.' };
-    runOwn(); return { ok: true };
-  },
-  stop() { stopRequested = true; return { ok: true }; },
-  reset(backupDir) {                                              // "start from scratch": keep the counts in the backup folder, then forget them
-    try { if (fs.existsSync(OUT)) { if (backupDir) fs.copyFileSync(OUT, path.join(backupDir, 'results.jsonl')); fs.unlinkSync(OUT); } fs.rmSync(path.join(DATA, 'DONE'), { force: true }); fs.writeFileSync(path.join(DATA, 'results_seeded'), 'reset ' + new Date().toISOString()); } catch (e) { console.error('own-site reset failed:', e.message); }
-    latest.clear(); recent.length = 0; newOver70List.length = 0; history.length = 0; TARGETS = []; queue = []; done = new Set();
-    Object.assign(stats, { running: false, processed: 0, byStatus: {}, byConfidence: {}, total: 0, alreadyDone: 0, startedAt: null, finishedAt: null }); xlsxCache.at = 0;
-  },
-  status() { return { running: ownRunning, remaining: queue.length, total: TARGETS.length, done: doneCount() }; },
-};
-const { Pipeline } = require('./lib/pipeline');
-const pipeline = new Pipeline({ store, collector, dataDir: DATA, excelDir: path.join(__dirname, 'excel'), own: ownApi, python: PYTHON });
-
 (async () => {
-  booted = true;
-  console.log(`agents ${store.agents.length} | own-site targets ${TARGETS.length} | already done ${done.size} | queued ${queue.length} | workers ${WORKERS} | data dir ${DATA}`);
+  console.log(`targets ${TARGETS.length} | already done ${done.size} | queued ${queue.length} | workers ${WORKERS} | data dir ${DATA}`);
   if (!TEST) startServer();
-  pipeline.resumeChainIfNeeded();
-  // the counting stage resumes by itself after a (re)start, as it always did; set AUTOSTART_OWN=0 to start it from the dashboard only
-  if (TEST || (process.env.AUTOSTART_OWN !== '0' && queue.length)) await runOwn(); else stats.running = false;
+  await Promise.all(Array.from({ length: WORKERS }, (_, i) => sleep(i * 4000).then(() => worker(i))));
+  if (draining && queue.length) { if (browser) await browser.close().catch(() => {}); process.exit(3); }      // memory guard tripped: exit non-zero => restart policy relaunches and resumes
+  stats.running = false; stats.finishedAt = new Date().toISOString();
+  if (!TEST) fs.writeFileSync(path.join(DATA, 'DONE'), stats.finishedAt);
+  console.log('FINISHED', JSON.stringify(stats));
+  if (browser) await browser.close().catch(() => {});
+  if (TEST) process.exit(0);                       // in production keep serving /status and /results.jsonl
 })();

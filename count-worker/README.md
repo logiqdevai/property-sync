@@ -1,61 +1,65 @@
-# Agency site counter (Coolify)
+# Spiti24 agency pipeline (Docker app)
 
-Visits the own website of 1,649 real-estate agencies in headless Chrome (Playwright), finds the "for sale" listing page and reads the
-result-count label (e.g. "Βρέθηκαν 91 αποτελέσματα", "1-12 από 56", "1 to 3 out of 81 properties"). One JSON line per site goes to
-`/data/results.jsonl`. It **resumes** after a restart (already-done sites are skipped).
+Does online what was done by hand on a PC: collect the agencies from spiti24.gr, count their sale listings, check each agency's own website (exists? emails? how many properties does it list?),
+check the listing photos for watermarks, and produce the client Excel `spiti24-agencies.xlsx` - with a live dashboard.
 
-Good-citizen rules built in: obeys each site's robots.txt (rules are baked into `targets.json`), ~3 s between pages, 1-2 sites at a time,
-and it **stops at any bot-check / captcha page** (records `blocked`, never tries to solve or bypass it).
+Open `https://YOUR-DOMAIN/?token=AUTH_TOKEN`. **Download Excel** builds the workbook from the app's current data (~10 s). The client needs nothing installed.
 
-## Deploy on Coolify
-1. Put this folder in a Git repo (a new private repo, or a sub-folder of an existing one).
-2. Coolify -> New Resource -> Application -> your repo -> **Build Pack: Dockerfile**. If it is a sub-folder set *Base Directory* to `/count-worker`. **Port: 3000**.
-3. **Environment variables**
-   - `AUTH_TOKEN` = a long random string (required; without it results/status are not served, only `/health`)
-   - `WORKERS` = `2` (default) -> the whole list in about **3.5 hours**. `3` -> about 2.4 hours. Measured peak memory with 2 workers was ~0.7 GB (about 0.3-0.4 GB per extra worker).
-   - optional pacing: `PAGE_GAP_MS` (2000), `SITE_GAP_MS` (800), `SETTLE_MS` (1500), `SCROLL_MS` (600). Higher numbers = gentler on the sites but slower.
-4. **Storage**: add a persistent volume mounted at `/data` (results + resume state live there).
-5. **Advanced -> Resource limits**: set a **memory limit of 2 GB** (and 1-2 CPUs). This keeps a runaway Chrome from taking the whole server down.
-6. Deploy. Health check is `GET /health`.
+## The stages (dashboard "Pipeline")
+| # | Stage | Runs | Notes |
+|---|-------|------|-------|
+| 1 | Spiti24 agencies & sale counts | **the operator's own Chrome tab** on spiti24.gr | spiti24.gr's bot protection (Imperva) blocks server IPs, so a server cannot read it. The app keeps the queue and the data; a script in the operator's browser does the fetching. |
+| 2 | Website check (DNS) | server | which agency websites still exist; finds hosts that only work with/without `www` |
+| 3 | Websites & emails | server (`excel/find_emails.py`) | reads each site's contact pages, obeys robots.txt, stops at bot checks, keeps each site's robots.txt for stage 5 |
+| 4 | Web archive | server (`excel/wayback_emails.py`) | emails from Internet-Archive copies of sites that block automated visits (may be old: the Excel marks them with the snapshot date) |
+| 5 | Own-website property counts | server (Playwright/Chrome, `worker.js`) | the "for sale" total read from each agency's own site |
+| 6 | Watermark check | server (`excel/watermark.py`) | **Free, no API key.** The 3 sample photos of each agency go through a free open-source watermark model (`prithivMLmods/Watermark-Detection-SigLIP2`, Apache-2.0, converted to ONNX at image build) and a small classifier fitted on the manual by-eye verdicts (`excel/wm_model.json`). Y = overlay on 2-3 photos, P = on 1, N = none seen. ~8 agencies per minute per worker thread incl. downloads. Optional alternative engine: an AI vision model with `ANTHROPIC_API_KEY` + `WM_ENGINE=ai` (paid). |
 
-## Deploy on Railway instead
-New service from the GitHub repo -> Settings -> Source -> **Root Directory `/count-worker`** (the `Dockerfile` is detected automatically) -> Variables: `AUTH_TOKEN` (+ optional `WORKERS`; Railway sets `PORT` itself) ->
-add a **Volume** mounted at `/data` -> Settings -> Networking: **Generate Domain** -> Settings -> Deploy: **Healthcheck Path `/health`**. Railway has no per-service memory cap to set (it bills per minute for what is used).
-The Dockerfile has no `VOLUME` instruction on purpose (Railway does not allow it).
+**Run all server stages** chains 2 -> 3 -> 4 -> 5 -> 6. Every stage is resumable and can be started/stopped on its own.
 
-## Restarts and memory (important)
-- Progress is saved after every site; after ANY restart/redeploy it resumes. Sites that ended in `error:*` are retried automatically on the next start.
-- Fixed in v2: Playwright request interception kept ~3 MB of Node heap per site (heap-out-of-memory crash after ~35 sites). Now no interception (images are disabled at browser level),
-  a fresh page per site and a fresh browser context every 15 sites. Measured: Node heap flat at ~60 MB over 57 sites.
-- Safety net: if Node's live heap ever passes `HEAP_GUARD_MB` (450) the worker finishes its current sites and exits with code 3 so the platform restarts it. Set the platform restart policy to **Always**
-  (Railway: Settings -> Deploy -> Restart Policy; the default "On Failure" gives up after 10 retries).
-- `/status` shows `heapMB` and `memoryMB`; if `heapMB` keeps climbing past ~200, tell me.
-- `/results.jsonl` can contain more than one line per site (a retried error) and the last line may be cut if the process was killed: keep the LAST valid line per `id`.
+### Running the Spiti24 collection (stage 1)
+1. On the dashboard press **Start collection** (new agencies + missing counts) or **Refresh everything**.
+2. Press **Copy collector script**.
+3. In Chrome open `https://www.spiti24.gr/mesitika-grafeia` (solve the "I am human" check if shown), press **F12 -> Console**, paste, Enter (if Chrome asks, type `allow pasting` first).
+4. Leave the tab open. The dashboard shows progress; a small box in the tab shows what it is doing. Pace: 3-4.5 s per page, a 4-minute pause every 150 pages.
+5. Spiti24 has blocked after some hundreds of requests in every earlier session. The script stops at the first block, tells the dashboard and **loses nothing**: reload the tab, solve the check, wait a while, paste again. It never tries to bypass the protection.
+Expect the full 4,220 agencies + sale counts to need several sessions. The parsers were validated against the data collected earlier (25/25 agencies identical, sale counts identical or drifting by a few listings).
 
-## Watching it / getting the results
-- **Dashboard (nicest):** `https://YOUR-DOMAIN/?token=AUTH_TOKEN` - live progress ring, a ticking countdown to the finish time, speed chart, counts by status/confidence,
-  the latest results and a list of agencies that are above 70 on their own site. Refreshes every 3 s; opening `/` without a token shows a small token prompt. The page itself contains no data.
-- Raw JSON: `https://YOUR-DOMAIN/status?token=AUTH_TOKEN`
-- Progress (JSON): `https://YOUR-DOMAIN/status?token=AUTH_TOKEN` (processed, remaining, counts by status/confidence, memory)
-- Download: `https://YOUR-DOMAIN/results.jsonl?token=AUTH_TOKEN`  (works any time, also while running)
-- No domain? In Coolify open the app's Terminal and run `cat /data/results.jsonl`.
-- It is finished when `remaining` is 0 and a file `/data/DONE` exists (the container keeps serving the results afterwards; stop or delete it when you are done).
+### Start everything from scratch (button "⟲ Start everything from scratch")
+For a completely fresh run (all agencies, counts, emails, own-website counts and watermark verdicts re-done). Type `RESTART` to confirm. The app then:
+1. copies all current data to `/data/backups/<time>/` (the 3 newest backups are kept) and erases the live data;
+2. starts the Spiti24 collection (step 1 - paste the collector script in a Chrome tab as above; it resumes after blocks or restarts);
+3. **when the collection has finished it runs stages 2-6 by itself** (a collection that was stopped by hand does not continue).
+The blue/amber bar on the dashboard shows step 1 or 2. Until agencies exist the Excel download answers "nothing to export yet". To go back to the old data, stop the app, copy the files from `/data/backups/<time>/` back (`*.json`, `*.jsonl`, `decisions.txt` into `/data/xl/`, `results.jsonl` into `/data/`, `state.json` into `/data/`) and start it again. The single-stage buttons ("Refresh everything", "Rescan all", "Recount all") still exist for redoing just one part.
 
-Timing (measured on 24 random sites, then extrapolated): 2 workers = 8.1 s per site overall -> about 3.5 hours for all 1,649; 3 workers = 5.3 s per site -> about 2.4 hours.
-This is an extrapolation from a small sample, so treat it as roughly 3-4.5 hours. `/status` shows a live `etaHours` (based on this run's real speed once ~20 sites are done).
+## Deploy (Railway or Coolify)
+Build pack: Dockerfile, Base/Root directory `/count-worker`, port 3000 (Railway sets `PORT` itself).
+- **Variables:** `AUTH_TOKEN` (required, long random string). Optional: `WORKERS` (2 = ~3.5 h for the own-site stage, 3 = ~2.4 h), `WM_ENGINE` (`local` = free built-in model, the default; `ai` = paid AI vision with `ANTHROPIC_API_KEY`, `WM_MODEL` default `claude-sonnet-5`), `WM_THREADS` (2), `AUTOSTART_OWN=0` (do not resume the own-site stage by itself after a restart), `PUBLIC_URL` (only if the collector script shows a wrong address), `HEAP_GUARD_MB` (450), pacing `PAGE_GAP_MS` (2000), `SITE_GAP_MS` (800), `SETTLE_MS` (1500), `SCROLL_MS` (600).
+- **Volume:** persistent volume mounted at `/data` (all data and resume state live there; without it a restart begins again from the baked snapshot). No `VOLUME` instruction in the Dockerfile on purpose (Railway forbids it).
+- **Build:** needs internet access during the build (it downloads the ~370 MB watermark model from huggingface.co and converts it; the image is ~4.4 GB). **Coolify:** memory limit 2 GB. **Railway:** Restart Policy *Always*.
+- Health check: `GET /health`.
 
-## Result fields
-`status`: `ok` (a number was found) | `no_count_found` | `no_listing_page` | `blocked` (bot check) | `robots` | `error:*`.
-`best`: `{ n, confidence, url, ctx, pattern, other_numbers, needs_review }`
-- `high`   a total label on a page marked as "for sale"
-- `medium` a total on a generic listing page (may include rentals), or several sale pages gave different totals
-- `low`    only an estimate (property links counted across pagination, "pages x cards")
-- `needs_review: true` -> a person/agent should look at that site.
+## Data
+On first start the snapshot baked into the image (`excel/`: 4,220 agencies, sale counts, watermark verdicts, emails, dead links) is copied to `/data/xl/`. After that the app updates the files in `/data/xl/`
+(same names/formats the Excel builder reads). To re-seed from a newer snapshot: copy the new files into `count-worker/excel/`, redeploy and delete `/data/xl/` (this discards what was collected online).
+`/data/results.jsonl` holds the own-site counts (keep the LAST valid line per `id`); on a fresh `/data` it starts from `excel/results_seed.jsonl` (the counts from the Railway run, 2026-09-26: 1,644 of 1,649 done + 5 retried), so a new deployment only re-visits sites that ended in an error; `/data/state.json` the pipeline/collector bookkeeping, `/data/work/` raw stage output.
 
-## Important caveats
-- A cloud server has a data-centre IP. Some sites that load fine from a home connection may answer `blocked` here - those should be re-checked from a home PC.
-- Counts are "what the site's own for-sale list says". Category-split sites are summed only when the categories are siblings with no parent total.
-- Local test (needs Chrome): `NODE_PATH=<a node_modules with playwright> CHROME_CHANNEL=chrome node worker.js --test 5`
+## Endpoints (token needed except `/` page and `/health`)
+`/status` (own-site stage live numbers) · `/pipeline/status` · `POST /pipeline/start|stop|run-all` · `/collector/*` (used by the collector script) · `/spiti24-agencies.xlsx` · `/results.jsonl` (raw own-site results). Token: `?token=` or `Authorization: Bearer`.
+
+## Own-site stage
+Visits each agency's site in headless Chrome, finds its "for sale" page and reads the result-count label ("Βρέθηκαν 91 αποτελέσματα", "1-12 από 56", "1 to 3 out of 81 properties"); category-split sites are summed only when the categories are siblings with no parent total.
+Targets = agencies with at least one Spiti24 sale listing whose website scan succeeded (1,649 with the current data).
+`status`: `ok` | `no_count_found` | `no_listing_page` | `blocked` (bot check) | `robots` | `error:*`. `best.confidence`: `high` clean sale total, `medium` generic page/differing totals, `low` estimate; `needs_review` marks doubtful ones.
+Good-citizen rules: robots.txt obeyed, ~3 s between pages, stops at bot checks (never bypasses them). A cloud server has a data-centre IP: some sites that load from a home connection may answer "blocked" here.
+Memory: no request interception, a fresh page per site, a fresh context every 15 sites; if Node's heap passes `HEAP_GUARD_MB` the worker exits with code 3 so the platform restarts it (sites ending in `error:*` are retried on restart).
+Local test (needs Chrome): `NODE_PATH=<node_modules with playwright> CHROME_CHANNEL=chrome node worker.js --test 5` (`ONLY_IDS=1,2,3` limits targets).
+
+## Verified / not verified
+Verified: collector against live Spiti24 (areas + profiles), DNS/scan/archive stages, the full "Run all" chain on a 7-agency dataset, Docker image build + container (health, pipeline status 4,220 agencies / 1,649 own targets, Excel identical to the reference workbook except the own-website column, which fills as counts arrive).
+**Watermark accuracy** (5-fold cross-validation on 3,502 agencies with by-eye verdicts, tested on agencies the classifier had not seen): a watermarked agency (Y) was called N in 0% of cases (P in 2.7%), an agency you judged clean (N) was called Y in 0.4% and P in ~15% (P counts as watermarked in the Excel, so the errors go to the safe side); exact match Y 97%, N 84-94% depending on the P threshold. In the container, on 60 agencies whose verdicts were removed and re-judged by the app, 53 matched exactly (the classifier had seen these photos during training, so the CV figure above is the honest one). "N" means no overlay seen on the 3 sample photos at thumbnail size, as in the manual review.
+Re-training: `excel/wm_train.py` (needs the extracted photo embeddings, see `wm_export.py`); retraining is only needed if the portal's photo format changes.
+**Not verified:** the AI engine against the real Anthropic API (needs a key; only tested against a mock).
 
 ## Files
-`Dockerfile`, `package.json`, `worker.js`, `dashboard.html`, `targets.json` (1,649 sites, ordered: 41-70 sales first, then 26-40, 71+, 11-25, 1-10).
+`Dockerfile`, `package.json`, `worker.js`, `dashboard.html`, `targets.json`, `lib/` (store, collector, collector script, HTTP routes, pipeline), `excel/` (Excel builder, stage scripts, baked seed data).

@@ -221,7 +221,7 @@ export default function DashboardAgenciesPage() {
   const bulkAiBatchConfirm = useOverlayState();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20);
+  const [limit, setLimit] = useState(0);
   const [pendingAiBatchValue, setPendingAiBatchValue] = useState<
     boolean | null
   >(null);

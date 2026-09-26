@@ -199,6 +199,21 @@ resolving the selector against a page whose correct answer you already know, the
 extracted text equals it exactly (not "looks plausible"). This applies to any site's markup — don't
 special-case it to one platform or layout.
 
+**Always show the sample property up front — never make the user ask for it.** As soon as you have
+opened any sample listing/detail page (and again whenever you report progress or ask for ground
+truth), print, immediately and without being prompted:
+
+```
+- Listing URL: <FULL detail-page URL, never just the ID or a path>
+- Listing ID (from the URL): <id>
+- Agency code / reference (if the page shows one): <code>
+- Price: <price as displayed> (<m², bedrooms, bathrooms if shown>)
+```
+
+The full clickable URL is mandatory — the user opens it to check the values themselves. An ID alone
+is useless to them. Say plainly that these are what *you* read from the page (a selector sanity
+check), and that an independent example from the user is still the real ground truth.
+
 Practical technique:
 
 1. `curl -sL -A "Mozilla/5.0 ..." "<detail-page-url>" -o page.html` — always send a real browser

@@ -31,6 +31,11 @@ h1 small{color:var(--muted);font-weight:500;font-size:13px}
 .pill.offline .dot{background:var(--bad)} .pill.offline .dot::after{color:var(--bad)}
 .pill.warn .dot{background:var(--warn)} .pill.warn .dot::after{color:var(--warn)}
 .pill.done .dot{background:var(--info)} .pill.done .dot::after{animation:none}
+.hdrbtns{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill.btn{color:var(--text);text-decoration:none;cursor:pointer;border-color:var(--accent);transition:transform .15s ease,box-shadow .15s ease}
+.pill.btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(110,139,255,.25)}
+.pill.btn:active{transform:translateY(0)}
+.pill.btn[aria-disabled="true"]{opacity:.5;pointer-events:none}
 @keyframes ping{0%{transform:scale(.5);opacity:.7}100%{transform:scale(1.6);opacity:0}}
 .grid{display:grid;gap:16px}
 .hero{grid-template-columns:minmax(280px,380px) 1fr}
@@ -100,17 +105,58 @@ h1 small{color:var(--muted);font-weight:500;font-size:13px}
 .login input{width:100%;padding:12px 14px;margin:14px 0;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:14px}
 .login button{padding:11px 20px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;font-size:14px}
 footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
+/* pipeline overview */
+.sec{margin:26px 0 10px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sec h2{margin:0;font-size:13px;letter-spacing:.9px;text-transform:uppercase;color:var(--muted);font-weight:800}
+.stages{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.sc{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+.sc .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.sc h3{margin:0;font-size:15px;font-weight:700}
+.sc .desc{color:var(--muted);font-size:12.5px;line-height:1.45;min-height:2.9em}
+.tag{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:3px 9px;border-radius:99px;white-space:nowrap;background:rgba(142,153,186,.16);color:var(--muted)}
+.tag.run{background:rgba(52,211,153,.16);color:var(--good)} .tag.done{background:rgba(96,165,250,.16);color:var(--info)}
+.tag.warn{background:rgba(251,191,36,.16);color:var(--warn)} .tag.bad{background:rgba(248,113,113,.16);color:var(--bad)}
+.sbar{height:9px;border-radius:99px;background:var(--line);overflow:hidden}
+.sbar i{display:block;height:100%;width:0;border-radius:99px;background:var(--accent);transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.sbar.run i{background:repeating-linear-gradient(45deg,var(--accent) 0 12px,var(--accent2) 12px 24px);background-size:34px 34px;animation:slide 1s linear infinite}
+.sbar.done i{background:var(--good)}
+.sc .nums{display:block;line-height:1.6;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sc .nums b{color:var(--text)}
+.sc .note{font-size:12.5px;color:var(--muted);min-height:1.3em}
+.sc .note.err{color:var(--bad)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+.b{border:1px solid var(--line);background:var(--card);color:var(--text);padding:7px 12px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+.b:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(110,139,255,.22)} .b:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.help{font-size:12.5px;color:var(--muted);line-height:1.55;margin:4px 0 10px}
+.help b{color:var(--text)}
+.intro{margin:0 0 16px;padding:12px 16px;border-radius:14px;border:1px solid var(--line);background:var(--card);font-size:13.5px;line-height:1.6;color:var(--muted)}
+.intro b{color:var(--text)}
+.stat .d{font-size:11.5px;color:var(--muted);line-height:1.4;margin:2px 0 8px}
+.scbar{margin:0 0 12px;padding:10px 14px;border-radius:12px;border:1px solid rgba(251,191,36,.45);background:rgba(251,191,36,.10);font-size:13px;line-height:1.5}
+.b.p{background:var(--accent);border-color:var(--accent);color:#fff} .b.d{border-color:rgba(248,113,113,.5);color:var(--bad)}
+.how{font-size:12.5px;color:var(--muted);line-height:1.55;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.how ol{margin:4px 0 0 18px;padding:0} .how b{color:var(--text)} .how a{color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:700;box-shadow:var(--shadow);z-index:99;display:none;max-width:90vw}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap" id="app">
   <header>
-    <h1>Agency site counter <small id="sub">counting each agency's own website</small></h1>
-    <div class="pill" id="pill"><span class="dot"></span><span id="pilltxt">Connecting…</span></div>
+    <h1>Agency site counter <small id="sub">all Greek real-estate agencies from Spiti24: emails, property counts, watermarks</small></h1>
+    <div class="hdrbtns">
+      <a class="pill btn" id="dl" href="#" download="spiti24-agencies.xlsx" title="Download the full agency list as an Excel file, with everything found so far (takes a few seconds to prepare)">⬇ Download Excel</a>
+      <div class="pill" id="pill"><span class="dot"></span><span id="pilltxt">Connecting…</span></div>
+    </div>
   </header>
-  <div class="banner" id="banner">Can't reach the worker right now – retrying every few seconds. The numbers below are the last ones received.</div>
+  <div class="banner" id="banner">Can't reach the app right now – trying again every few seconds. The numbers below are the last ones received.</div>
+  <section class="intro" id="intro"><b>What is this page?</b> This app builds the Excel list of all real-estate agencies on Spiti24 – name, website, phone, area, number of properties, email addresses, and whether their photos carry a watermark. It does this in the 6 steps below. Press <b>⬇ Download Excel</b> at any time to get the list exactly as it is right now (it is complete when every step says “Done”). <b>▶ Run all server stages</b> does steps 2 to 6 by itself; step 1 needs a person to open a Chrome tab once (the instructions are inside the step 1 box).</section>
 
+  <div class="sec"><h2>Pipeline</h2><div><button class="b p" id="runall" title="Does steps 2 to 6 one after another, by itself. Step 1 (Spiti24) needs a Chrome tab and is started separately.">▶ Run all server stages</button> <button class="b d" id="scratch" title="Redo the whole job from zero. The old data is saved first (backup), then step 1 starts; when it is finished, steps 2 to 6 run by themselves.">⟲ Start everything from scratch</button></div></div>
+  <div class="scbar" id="scratchbar" style="display:none"></div>
+  <div class="stages" id="stagecards"></div>
+  <div class="sec"><h2>Own-website property counts · live</h2></div>
+  <div class="help" style="margin-top:-2px">This is step 5 in detail. For every agency that has a working website, the app opens that website, reads how many properties it lists “for sale”, and compares it with the number shown on Spiti24.</div>
   <div class="grid hero">
     <section class="card ringbox" aria-label="Overall progress">
       <div class="ring" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="ringbox">
@@ -129,12 +175,12 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
         <div class="sub" id="finish">estimating…</div>
       </div>
       <div class="chips">
-        <div class="chip">Speed <b id="rate">–</b> sites/min</div>
+        <div class="chip">Speed <b id="rate">–</b> websites/min</div>
         <div class="chip">Remaining <b id="remain">–</b></div>
         <div class="chip">Running for <b id="elapsed">–</b></div>
       </div>
       <div>
-        <h2 style="margin-bottom:4px">Speed (sites per minute)</h2>
+        <h2 style="margin-bottom:4px">Speed (websites checked per minute)</h2>
         <svg class="spark" id="spark" viewBox="0 0 600 96" preserveAspectRatio="none"></svg>
       </div>
     </section>
@@ -144,22 +190,25 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
 
   <div class="grid two">
     <section class="card">
-      <h2>Confidence of the counts found</h2>
+      <h2>How sure we are about the counts</h2>
+      <div class="help"><b>High</b> = the website clearly says “N properties for sale”. <b>Medium</b> = the number comes from a general page (it may include rentals). <b>Low</b> = only an estimate made by counting the listings.</div>
       <div class="stack" id="stack"></div>
       <div class="legend" id="legend"></div>
       <div class="sub" style="margin-top:14px" id="reviewnote"></div>
       <h2 style="margin-top:22px">Now above 70 on their own site</h2>
       <div class="hl"><div class="n" id="over70">0</div><div class="t" id="over70t">agencies whose own website shows more than 70 sale listings</div></div>
-      <div class="sub" style="margin-top:10px"><b id="new70" style="color:var(--text)">0</b> of them were at 70 or fewer on Spiti24 (newly qualifying)</div>
+      <div class="sub" style="margin-top:10px"><b id="new70" style="color:var(--text)">0</b> of them showed 70 or fewer on Spiti24, so they are “new” above-70 agencies</div>
       <ul class="feed" id="new70list" style="margin-top:12px;max-height:210px"></ul>
     </section>
     <section class="card">
       <h2>Latest results</h2>
+      <div class="help">Each line: the number on Spiti24 → the number found on the agency’s own website. ▲ = its own website shows more, ▼ = fewer. “check by hand” = the number is doubtful.</div>
       <ul class="feed" id="feed"></ul>
     </section>
   </div>
 
-  <footer id="foot">Data refreshes every 3 seconds · nothing on this page is stored</footer>
+  <div class="toast" id="toast"></div>
+  <footer id="foot">This page updates by itself every 3 seconds · it does not store anything</footer>
 </div>
 
 <script>
@@ -169,10 +218,24 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
   var token = params.get('token') || '';
   try { if (token) sessionStorage.setItem('tok', token); else token = sessionStorage.getItem('tok') || ''; } catch(e){}
   if (!token) { showLogin(); return; }
+  $('dl').href = '/spiti24-agencies.xlsx?token=' + encodeURIComponent(token);
+  // building the Excel takes a few seconds on the server, so show progress and any error instead of a silent wait
+  $('dl').addEventListener('click', function(e){
+    e.preventDefault(); var b = $('dl'); if (b.dataset.busy) return;
+    b.dataset.busy = '1'; b.innerHTML = '⏳ Building Excel…'; b.setAttribute('aria-disabled', 'true');
+    var reset = function(){ delete b.dataset.busy; b.setAttribute('aria-disabled', 'false'); if (last) render(last); else b.innerHTML = '⬇ Download Excel'; };
+    fetch('/spiti24-agencies.xlsx', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(function(r){
+      if (!r.ok) return r.text().then(function(t){ throw new Error(t || ('HTTP ' + r.status)); });
+      return r.blob();
+    }).then(function(blob){
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'spiti24-agencies.xlsx';
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000); reset();
+    }).catch(function(err){ b.innerHTML = '⚠ Failed – try again'; b.title = String(err.message).slice(0, 300); setTimeout(reset, 4000); });
+  });
 
   function showLogin(){
-    document.getElementById('app').innerHTML = '<div class="card login"><h1 style="justify-content:center">Agency site counter</h1><div class="sub">Enter the access token (the AUTH_TOKEN of this service)</div>' +
-      '<input id="tk" type="password" placeholder="token" autocomplete="off"><button id="go">Open dashboard</button></div>';
+    document.getElementById('app').innerHTML = '<div class="card login"><h1 style="justify-content:center">Agency site counter</h1><div class="sub">Enter the access code you were given (also called the “token”)</div>' +
+      '<input id="tk" type="password" placeholder="access code" autocomplete="off"><button id="go">Open dashboard</button></div>';
     document.getElementById('go').onclick = function(){ var v = document.getElementById('tk').value.trim(); if (v) { try { sessionStorage.setItem('tok', v); } catch(e){} location.search = '?token=' + encodeURIComponent(v); } };
   }
 
@@ -228,16 +291,19 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
 
   // ----- render -----
   var STAT = [
-    ['ok', 'Counted', 'good'], ['no_count_found', 'No count found', 'warn'], ['blocked', 'Blocked by site', 'bad'],
-    ['no_listing_page', 'No listing page', 'mut'], ['robots', 'Disallowed (robots.txt)', 'mut'], ['error', 'Errors (retried)', 'bad']
+    ['ok', 'Counted', 'good', 'a number of properties was read from the website'], ['no_count_found', 'No count found', 'warn', 'the site opened but does not show a total number of properties'],
+    ['blocked', 'Blocked by site', 'bad', 'the website refused automatic visits (we never try to get around this)'],
+    ['no_listing_page', 'No listing page', 'mut', 'no “for sale” page could be found on the site'], ['robots', 'Site asks us not to visit', 'mut', 'the site’s rules say automatic visitors must stay out, so we do not visit'],
+    ['error', 'Site did not load', 'bad', 'a temporary problem – the app tries again later']
   ];
   var built = false;
   function build(){
     var box = $('stats'); box.innerHTML = '';
     STAT.forEach(function(s){ var c = el('section', 'card stat c-' + s[2]); c.id = 'st_' + s[0];
-      c.innerHTML = '<div class="n" id="stn_' + s[0] + '">0</div><div class="l">' + s[1] + '</div><div class="bar"><i id="stb_' + s[0] + '"></i></div>'; box.appendChild(c); });
+      c.innerHTML = '<div class="n" id="stn_' + s[0] + '">0</div><div class="l">' + s[1] + '</div><div class="d">' + s[3] + '</div><div class="bar"><i id="stb_' + s[0] + '"></i></div>'; box.appendChild(c); });
     built = true;
   }
+  var STATUS_TXT = { no_count_found: 'no total number found', blocked: 'the site refused the visit', no_listing_page: 'no “for sale” page found', robots: 'the site asks robots not to visit' };
   var seenIds = {};
   function icon(r){
     if (r.status === 'ok') return r.conf === 'high' ? ['✓', 'good'] : r.conf === 'medium' ? ['✓', 'good'] : ['~', 'warn'];
@@ -248,8 +314,8 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
   function row(r, keyPrefix){
     var ic = icon(r), li = el('li'); var arrow = '', cls = 'eq';
     if (r.n != null) { if (r.n > r.spiti24) { arrow = '▲'; cls = 'up'; } else if (r.n < r.spiti24) { arrow = '▼'; cls = 'down'; } else { arrow = '='; } }
-    li.innerHTML = '<div class="ic ' + ic[1] + '">' + ic[0] + '</div><div style="min-width:0"><div class="nm">' + esc(r.name) + (r.conf ? '<span class="badge ' + r.conf + '">' + r.conf + '</span>' : '') + (r.review ? '<span class="badge low">review</span>' : '') +
-      '</div><div class="sm">' + (r.n != null ? 'Spiti24 ' + fmtNum(r.spiti24) + ' → own site <b>' + fmtNum(r.n) + '</b>' : (String(r.status).indexOf('error') === 0 ? 'could not open the site (will be retried)' : esc(String(r.status).replace(/_/g, ' '))) + ' · Spiti24 ' + fmtNum(r.spiti24)) + '</div></div>' +
+    li.innerHTML = '<div class="ic ' + ic[1] + '">' + ic[0] + '</div><div style="min-width:0"><div class="nm">' + esc(r.name) + (r.conf ? '<span class="badge ' + r.conf + '">' + r.conf + '</span>' : '') + (r.review ? '<span class="badge low" title="The website showed several different numbers, or we could only estimate">check by hand</span>' : '') +
+      '</div><div class="sm">' + (r.n != null ? 'Spiti24 ' + fmtNum(r.spiti24) + ' → own site <b>' + fmtNum(r.n) + '</b>' : (String(r.status).indexOf('error') === 0 ? 'the site did not load (will be tried again)' : esc(STATUS_TXT[r.status] || String(r.status).replace(/_/g, ' '))) + ' · Spiti24 ' + fmtNum(r.spiti24)) + '</div></div>' +
       '<div class="rt ' + cls + '">' + (r.n != null ? arrow + ' ' + fmtNum(r.n - r.spiti24 > 0 ? r.n - r.spiti24 : r.spiti24 - r.n) : '') + '</div>';
     return li;
   }
@@ -263,26 +329,32 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
     if (!built) build();
     var done = d.done || 0, total = d.total || 1, pct = Math.min(100, d.percent != null ? d.percent : 100 * done / total);
     $('ring').style.strokeDashoffset = (RING * (1 - pct / 100)).toFixed(2);
-    $('stripfill').style.width = pct + '%'; $('strip').classList.toggle('stopped', !!d.finished);
+    // the own-website stage can be idle (never started / stopped), running, or complete: "finished" only when every target really has a result
+    var complete = !d.running && total > 0 && done >= total, idle = !d.running && !complete;
+    d.finished = complete; d.idle = idle;
+    $('stripfill').style.width = pct + '%'; $('strip').classList.toggle('stopped', !d.running);
     $('ringbox').setAttribute('aria-valuenow', pct.toFixed(1));
     tween($('pct'), pct, 1); $('ofn').textContent = fmtNum(done) + ' of ' + fmtNum(total) + ' agencies';
     document.title = (d.finished ? 'Done' : Math.floor(pct) + '%') + ' · Agency counter';
     var lr = d.recent && d.recent[0]; $('lastsite').textContent = lr ? 'latest: ' + lr.name : 'waiting for the first result…';
+    if (!$('dl').dataset.busy) { $('dl').innerHTML = '⬇ Download Excel'; $('dl').setAttribute('aria-disabled', 'false'); }
 
     // status pill
     var pill = $('pill'); pill.className = 'pill';
-    if (failures > 1) { pill.classList.add('offline'); $('pilltxt').textContent = 'Offline · retrying'; }
-    else if (d.finished) { pill.classList.add('done'); $('pilltxt').textContent = 'Finished'; }
-    else if (d.draining) { pill.classList.add('warn'); $('pilltxt').textContent = 'Restarting (memory guard)'; }
-    else { $('pilltxt').textContent = 'Running · ' + (d.settings ? d.settings.WORKERS : '?') + ' workers'; }
+    if (failures > 1) { pill.classList.add('offline'); $('pilltxt').textContent = 'Connection lost – retrying'; }
+    else if (d.finished) { pill.classList.add('done'); $('pilltxt').textContent = 'Step 5 finished (own-website counts)'; }
+    else if (d.idle) { $('pilltxt').textContent = 'Idle – nothing is running right now'; pill.classList.add('done'); }
+    else if (d.draining) { pill.classList.add('warn'); $('pilltxt').textContent = 'Restarting to free memory – normal, it continues by itself'; }
+    else { $('pilltxt').textContent = 'Running · ' + (d.settings ? d.settings.WORKERS : '?') + ' websites at a time'; }
 
     // eta
     $('rate').textContent = d.sitesPerMinute != null ? d.sitesPerMinute.toFixed(1) : '–';
     tween($('remain'), d.remaining || 0);
     if (d.startedAtMs) $('elapsed').textContent = durText((d.serverTime - d.startedAtMs) / 1000);
     if (d.finished) { $('count').innerHTML = '0<span class="u">s</span>'; $('finish').textContent = 'all agencies processed'; }
+    else if (d.idle) { $('count').textContent = '--'; $('finish').textContent = 'not running – press Start in step 5 above'; }
     else if (d.finishAtMs) { $('finish').textContent = 'about ' + new Date(d.finishAtMs).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' }) + ' (your local time)'; }
-    else { $('count').textContent = '--'; $('finish').textContent = 'estimating… (needs about 10 finished sites)'; }
+    else { $('count').textContent = '--'; $('finish').textContent = 'estimating… (needs about 10 finished websites)'; }
     spark($('spark'), speedSeries(d.history || []), '#6e8bff');
 
     // stat cards
@@ -293,13 +365,13 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
     var c = a.conf || {}, tot = (c.high || 0) + (c.medium || 0) + (c.low || 0) || 1;
     var COL = { high: 'var(--good)', medium: 'var(--info)', low: 'var(--warn)' };
     $('stack').innerHTML = ['high', 'medium', 'low'].map(function(k){ return '<i style="width:' + (100 * (c[k] || 0) / tot).toFixed(1) + '%;background:' + COL[k] + '"></i>'; }).join('');
-    $('legend').innerHTML = [['high', 'High (clean sale total)'], ['medium', 'Medium'], ['low', 'Low (estimate)']].map(function(k){ return '<span><s style="background:' + COL[k[0]] + '"></s>' + k[1] + ' <b>' + fmtNum(c[k[0]] || 0) + '</b></span>'; }).join('');
-    $('reviewnote').innerHTML = '<b style="color:var(--text)">' + fmtNum(a.review || 0) + '</b> counts are flagged “needs review” (several different totals, or only an estimate)';
+    $('legend').innerHTML = [['high', 'High (clear total)'], ['medium', 'Medium (may include rentals)'], ['low', 'Low (estimate)']].map(function(k){ return '<span><s style="background:' + COL[k[0]] + '"></s>' + k[1] + ' <b>' + fmtNum(c[k[0]] || 0) + '</b></span>'; }).join('');
+    $('reviewnote').innerHTML = '<b style="color:var(--text)">' + fmtNum(a.review || 0) + '</b> counts are marked “check by hand” (the website showed several different numbers, or we could only estimate)';
 
     tween($('over70'), a.over70 || 0); tween($('new70'), a.newOver70 || 0);
     renderList($('new70list'), d.newOver70List, 'None yet – they show up here as soon as one is found.');
     renderList($('feed'), d.recent, 'Waiting for results…');
-    $('foot').textContent = 'Memory: Node heap ' + fmtNum(d.heapMB) + ' MB · process ' + fmtNum(d.memoryMB) + ' MB · refreshes every 3 s · nothing on this page is stored';
+    $('foot').textContent = 'Server memory in use: ' + fmtNum(d.memoryMB) + ' MB (technical detail – only matters if it keeps growing for hours) · this page updates every 3 seconds';
   }
 
   // smooth per-second countdown between polls
@@ -317,6 +389,109 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
     }).catch(function(){ failures++; if (failures > 1) { $('banner').classList.add('show'); if (last) render(last); } })
     .then(function(){ setTimeout(poll, 3000); });
   }
+  // ================= pipeline stage cards =================
+  var P = null;
+  var STAGES = [
+    { id: 'collect', title: '1 · Spiti24 agencies &amp; property counts', desc: 'Reads the full list of agencies from Spiti24 (name, phone, website, area) and how many properties each one has for sale. Spiti24 does not let servers in, so this one step is done through <b>a Chrome browser on any computer</b> – see “How to run it” in this box. It can be stopped and continued at any time without losing anything.',
+      hint: '<b>Start collection</b> = fetch only what is missing. <b>Refresh everything</b> = read all agencies again. <b>Copy collector script</b> = copies the helper program you paste into Chrome. <b>Stop</b> = pause.' },
+    { id: 'dns', title: '2 · Website check', desc: 'Checks which agency websites still exist (some have expired). Websites that no longer exist are skipped and marked in the Excel.',
+      hint: '<b>Start</b> = run the check. <b>Stop</b> = pause.' },
+    { id: 'scan', title: '3 · Websites &amp; emails', desc: 'Opens each agency website and reads its contact pages to find public email addresses. It follows each website’s rules for automatic visitors and stops if the site shows an “are you a robot?” check.',
+      hint: '<b>Start</b> = scan the websites not scanned yet. <b>Rescan all</b> = visit every website again. <b>Stop</b> = pause.' },
+    { id: 'wayback', title: '4 · Web archive', desc: 'For websites that refuse automatic visits, looks for an email address in old saved copies of the site (from the Internet Archive). These can be years old – the Excel marks them.',
+      hint: '<b>Start</b> = search the archive for the websites that blocked us. <b>Stop</b> = pause.' },
+    { id: 'own', title: '5 · Own-website property counts', desc: 'Reads the number of properties “for sale” shown on each agency’s own website. This fills the “Agency properties (own website)” column of the Excel. It takes a few hours.',
+      hint: '<b>Start</b> = continue where it stopped. <b>Recount all</b> = count every website again from zero (the old counts are kept as a backup). <b>Stop</b> = pause.' },
+    { id: 'watermark', title: '6 · Watermark check', desc: 'Looks at 3 photos of each agency’s properties for a logo or name stamped on them (a “watermark”). <b>Y</b> = on most photos, <b>P</b> = on one photo, <b>N</b> = none seen. It runs free, inside the app.',
+      hint: '<b>Start</b> = check the agencies that have no result yet. <b>Stop</b> = pause.' },
+  ];
+
+  var btn = {};
+  function toast(m){ var t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toast.h); toast.h = setTimeout(function(){ t.style.display = 'none'; }, 7000); }
+  function post(path, body){ return fetch(path, { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'content-type': 'application/json' }, body: JSON.stringify(body || {}) }).then(function(r){ return r.json(); }); }
+  function act(path, body, msg){ return post(path, body).then(function(j){ if (j && j.ok === false && j.error) toast(j.error); else if (msg) toast(msg); pollPipe(); }).catch(function(e){ toast('Failed: ' + e.message); }); }
+  function mk(id, label, cls, fn){ var b = document.createElement('button'); b.className = 'b ' + (cls || ''); b.innerHTML = label; b.onclick = fn; $('acts_' + id).appendChild(b); (btn[id] = btn[id] || {})[label] = b; return b; }
+  function buildCards(){
+    var box = $('stagecards'); box.innerHTML = '';
+    STAGES.forEach(function(s){
+      var c = el('section', 'sc'); c.id = 'sc_' + s.id;
+      c.innerHTML = '<div class="top"><h3>' + s.title + '</h3><span class="tag" id="tag_' + s.id + '">–</span></div><div class="desc">' + s.desc + '</div><div class="sbar" id="bar_' + s.id + '"><i></i></div><div class="nums" id="nums_' + s.id + '"></div><div class="note" id="note_' + s.id + '"></div>' +
+        (s.id === 'collect' ? '<div class="how" id="how_collect" style="display:none"><b>How to run it (about a minute to start):</b><ol><li>Press <b>📋 Copy collector script</b> (below). This copies a small helper program. It runs only in your browser and talks only to this app and to Spiti24.</li><li>In <b>Google Chrome</b> open <a href="https://www.spiti24.gr/mesitika-grafeia" target="_blank" rel="noopener">spiti24.gr/mesitika-grafeia</a>. If Spiti24 shows an “I am human” check, tick it.</li><li>Press the <b>F12</b> key. A panel opens – click its <b>Console</b> tab (a box where Chrome lets you run a helper program).</li><li>Click inside the Console, press <b>Ctrl+V</b> (paste), then <b>Enter</b>. If Chrome says pasting is blocked, type <b>allow pasting</b>, press Enter, then paste again.</li><li>Keep that Chrome tab open; a small box in the tab shows the progress. Spiti24 stops the helper now and then (this is normal): reload the tab, tick the “I am human” check, wait a few minutes and repeat steps 3-4. Nothing already collected is lost.</li></ol></div>' : '') + '<div class="help">' + s.hint + '</div><div class="acts" id="acts_' + s.id + '"></div>';
+      box.appendChild(c);
+    });
+    mk('collect', '▶ Start collection', 'p', function(){ act('/collector/start', { mode: 'new' }, 'Collection queued. Next: follow “How to run it” in step 1 (copy the helper program and paste it in a Chrome tab on spiti24.gr).'); });
+    mk('collect', '⟳ Refresh everything', '', function(){ if (confirm('Read ALL agencies and ALL property counts from Spiti24 again? This takes many hours, and Spiti24 will stop it several times – you just continue after each stop.')) act('/collector/start', { mode: 'all' }, 'Full re-read queued. Next: follow “How to run it” in step 1.'); });
+    mk('collect', '📋 Copy collector script', '', function(){
+      fetch('/collector/script', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(function(r){ return r.text(); }).then(function(t){
+        (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ toast('Copied. Now in Chrome: open spiti24.gr, press F12, click Console, paste (Ctrl+V) and press Enter.'); }, function(){ window.prompt('Automatic copy did not work. Select all of this text, copy it (Ctrl+C) and paste it in the Chrome Console:', t); });
+      });
+    });
+    mk('collect', '■ Stop', 'd', function(){ act('/collector/stop', {}, 'Collection paused. Press “Start collection” to continue later.'); });
+    ['dns', 'scan', 'wayback', 'own', 'watermark'].forEach(function(id){
+      mk(id, '▶ Start', 'p', function(){ act('/pipeline/start', { stage: id }); });
+      if (id === 'scan') mk(id, '⟳ Rescan all', '', function(){ if (confirm('Visit every agency website again to look for emails? This takes a few hours.')) act('/pipeline/start', { stage: id, refresh: true }); });
+      if (id === 'own') mk(id, '⟳ Recount all', '', function(){ if (confirm('Count the properties on every agency website again from zero? This takes a few hours. The current counts are kept as a backup.')) act('/pipeline/start', { stage: id, refresh: true }); });
+      if (id === 'watermark') mk(id, '🔍 Dry run', '', function(){ act('/pipeline/start', { stage: id, dry: true }, 'Test run: only prepares the photos, does not use the paid service.'); });
+      mk(id, '■ Stop', 'd', function(){ act('/pipeline/stop', { stage: id }); });
+    });
+    $('scratch').onclick = function(){
+      var t = window.prompt('START FROM SCRATCH\n\nThis makes a backup, then ERASES all collected data (agencies, sale counts, emails, watermark verdicts, own-website counts) and starts everything again:\n1) the Spiti24 collection (done through a Chrome tab – the instructions appear in step 1; it takes many hours)\n2) steps 2 to 6 then run by themselves.\n\nType RESTART to confirm:');
+      if (t && t.trim().toUpperCase() === 'RESTART') act('/pipeline/scratch', { confirm: true }, 'Started from scratch (the old data was saved first). Next: follow “How to run it” in step 1.');
+    };
+    $('runall').onclick = function(){ act('/pipeline/run-all', {}, 'Steps 2 to 6 are now running one after another.'); };
+  }
+  function setStage(id, tag, cls, pctv, barCls, nums, note, isErr){
+    var t = $('tag_' + id); t.textContent = tag; t.className = 'tag ' + (cls || '');
+    var b = $('bar_' + id); b.className = 'sbar ' + (barCls || ''); b.firstChild.style.width = Math.max(0, Math.min(100, pctv)).toFixed(1) + '%';
+    $('nums_' + id).innerHTML = nums; var n = $('note_' + id); n.textContent = note || ''; n.className = 'note' + (isErr ? ' err' : '');
+  }
+  function eta(sec){ return sec != null ? ' · about <b>' + durText(sec) + '</b> left' : ''; }
+  function setBtns(id, running, disabledStart){
+    var m = btn[id] || {}; Object.keys(m).forEach(function(k){ var b = m[k]; if (k.indexOf('Stop') >= 0) b.disabled = !running; else if (k.indexOf('Copy') >= 0) b.disabled = false; else b.disabled = running || !!disabledStart; });
+  }
+  function renderPipeline(){
+    if (!P) return; var S = P.stages, c = P.collector || {}, cnt = P.counts || {};
+    // 1 collector
+    var run = c.active, online = c.collectorOnline;
+    if (!c.hasRun) setStage('collect', 'Idle', '', 0, '', 'Stored: <b>' + fmtNum(cnt.agents) + '</b> agencies · <b>' + fmtNum(cnt.sale) + '</b> property counts', 'No collection has been run yet. The numbers shown are the starting data that came with the app.');
+    else {
+      var ph = c.phase, ov = ph === 'index' ? 1 : ph === 'areas' ? 30 * (c.areas.pagesDone / Math.max(1, c.areas.pagesKnown)) : ph === 'sale' ? 30 + 70 * (c.sale.done / Math.max(1, c.sale.total)) : 100;
+      var tg = c.lastBlock && run ? ['Blocked', 'bad'] : run ? (online ? ['Running', 'run'] : ['Waiting for your browser', 'warn']) : (c.stopped ? ['Stopped', 'warn'] : ['Done', 'done']);
+      setStage('collect', tg[0], tg[1], ov, run && online ? 'run' : (!run && !c.stopped ? 'done' : ''),
+        'Now: <b>' + (ph === 'index' ? 'reading the list of areas' : ph === 'areas' ? 'reading the agency lists' : ph === 'sale' ? 'reading each agency’s property count' : 'finished') + '</b> · areas <b>' + c.areas.done + '/' + c.areas.total + '</b> · agencies found <b>' + fmtNum(c.agentsTotal) + '</b> (+' + c.newAgents + ' new) · property counts <b>' + fmtNum(c.sale.done) + '/' + fmtNum(c.sale.total) + '</b>' + (c.unitsPerMinute ? ' · ' + c.unitsPerMinute + ' pages per minute' : '') + eta(run && online ? c.etaSeconds : null),
+        c.lastBlock && run ? 'Spiti24 stopped the collection at ' + new Date(c.lastBlock.at).toLocaleTimeString(lang) + ' (this is normal). In the Chrome tab: reload the page, tick the “I am human” check, wait a few minutes, then paste the helper program again (steps 3-4 of “How to run it”). Nothing is lost.' : (run && !online ? 'No Chrome tab is connected right now' + (c.seenAgoSeconds != null ? ' (last seen ' + durText(c.seenAgoSeconds) + ' ago)' : '') + '. Follow “How to run it” in this box.' : (c.failures ? c.failures + ' page(s) could not be read and were retried.' : '')), !!(c.lastBlock && run));
+    }
+    $('how_collect').style.display = (!c.hasRun || (run && !online)) ? 'block' : 'none';
+    setBtns('collect', run && online, false); if (btn.collect) { btn.collect['■ Stop'].disabled = !run; btn.collect['▶ Start collection'].disabled = !!(run && online); }
+    // 2-4,6 server stages
+    ['dns', 'scan', 'wayback', 'watermark'].forEach(function(id){
+      var st = S[id], r = st.status === 'running', pend = st.pending || 0, tot = st.total || 0, dn = st.done || 0;
+      var tg = r ? ['Running', 'run'] : st.status === 'done' ? ['Done', 'done'] : st.status === 'error' ? ['Error', 'bad'] : (st.status === 'stopped' || st.status === 'interrupted') ? ['Stopped', 'warn'] : st.status === 'waiting' ? ['Not available', 'warn'] : (pend > 0 ? ['Ready', ''] : ['Nothing to do', '']);
+      var nums = (r || st.status === 'done' || st.status === 'stopped' || st.status === 'interrupted') && tot ? '<b>' + fmtNum(dn) + ' / ' + fmtNum(tot) + '</b>' + (st.perMinute ? ' · ' + st.perMinute + ' per minute' : '') + eta(r ? st.etaSeconds : null) : 'Still to do: <b>' + fmtNum(pend) + '</b>';
+      if (id === 'watermark') nums += ' · method: <b>' + (P.wmEngine === 'local' ? 'free, built into the app' : P.wmEngine === 'ai' ? 'paid AI service' : 'not available') + '</b>';
+      setStage(id, tg[0], tg[1], tot ? 100 * dn / tot : 0, r ? 'run' : st.status === 'done' ? 'done' : '', nums, st.error ? 'Something went wrong: ' + st.error + ' — press Start to try again. If it keeps failing, send this message to your technical contact.' : (st.note || ''), st.status === 'error');
+      setBtns(id, r, false);
+    });
+    if (btn.watermark) { if (!P.wmEngine) btn.watermark['▶ Start'].disabled = true; if (btn.watermark['🔍 Dry run']) btn.watermark['🔍 Dry run'].style.display = P.wmEngine === 'local' ? 'none' : ''; }
+    // 5 own-website counts (numbers from the live /status payload)
+    var d = last, o = P.own || {}, orun = !!o.running;
+    var odone = d ? d.done : (o.done || 0), ototal = d ? d.total : (o.total || 0);
+    setStage('own', orun ? 'Running' : (ototal && odone >= ototal ? 'Done' : (S.dns && P.chain && P.chain.active ? 'Waiting' : (o.remaining ? 'Ready' : 'Nothing to do'))), orun ? 'run' : (ototal && odone >= ototal ? 'done' : ''), ototal ? 100 * odone / ototal : 0, orun ? 'run' : (ototal && odone >= ototal ? 'done' : ''),
+      '<b>' + fmtNum(odone) + ' / ' + fmtNum(ototal) + '</b> agencies' + (d && orun && d.sitesPerMinute ? ' · ' + d.sitesPerMinute + ' per minute' : '') + eta(orun && d ? d.etaSeconds : null), 'More detail in the live section below.', false);
+    setBtns('own', orun, false);
+    // run all
+    var sc = P.scratch, sb = $('scratchbar');
+    if (sc && sc.active) { sb.style.display = 'block'; sb.innerHTML = sc.phase === 'collect'
+      ? '<b>Started from scratch · part 1 of 2:</b> collecting the agencies and their property counts from Spiti24. Follow “How to run it” in the step 1 box below. When it has finished, steps 2 to 6 start by themselves. The old data is safely saved on the server (folder <code>' + sc.backup + '</code>).'
+      : '<b>Started from scratch · part 2 of 2:</b> steps 2 to 6 are running one after another (website check → emails → web archive → own-website counts → watermark check). Nothing to do but wait.'; }
+    else if (sc && sc.phase === 'finished') { sb.style.display = 'block'; sb.innerHTML = '<b>Restart from scratch finished</b> (' + String(sc.finishedAt || '').replace('T', ' ').slice(0, 16) + ' UTC). The Excel now holds the new data.'; }
+    else sb.style.display = 'none';
+    var ch = P.chain, ca = ch && ch.active; $('runall').disabled = !!ca; $('runall').innerHTML = ca ? '⏳ Running stages…' : '▶ Run all server stages';
+  }
+  function pollPipe(){
+    fetch('/pipeline/status', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){ if (j) { P = j; renderPipeline(); } }).catch(function(){});
+  }
+  buildCards(); pollPipe(); setInterval(pollPipe, 3000);
   build(); poll();
 })();
 </script>
