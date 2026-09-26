@@ -23,8 +23,20 @@ New service from the GitHub repo -> Settings -> Source -> **Root Directory `/cou
 add a **Volume** mounted at `/data` -> Settings -> Networking: **Generate Domain** -> Settings -> Deploy: **Healthcheck Path `/health`**. Railway has no per-service memory cap to set (it bills per minute for what is used).
 The Dockerfile has no `VOLUME` instruction on purpose (Railway does not allow it).
 
+## Restarts and memory (important)
+- Progress is saved after every site; after ANY restart/redeploy it resumes. Sites that ended in `error:*` are retried automatically on the next start.
+- Fixed in v2: Playwright request interception kept ~3 MB of Node heap per site (heap-out-of-memory crash after ~35 sites). Now no interception (images are disabled at browser level),
+  a fresh page per site and a fresh browser context every 15 sites. Measured: Node heap flat at ~60 MB over 57 sites.
+- Safety net: if Node's live heap ever passes `HEAP_GUARD_MB` (450) the worker finishes its current sites and exits with code 3 so the platform restarts it. Set the platform restart policy to **Always**
+  (Railway: Settings -> Deploy -> Restart Policy; the default "On Failure" gives up after 10 retries).
+- `/status` shows `heapMB` and `memoryMB`; if `heapMB` keeps climbing past ~200, tell me.
+- `/results.jsonl` can contain more than one line per site (a retried error) and the last line may be cut if the process was killed: keep the LAST valid line per `id`.
+
 ## Watching it / getting the results
-- Progress: `https://YOUR-DOMAIN/status?token=AUTH_TOKEN` (processed, remaining, counts by status/confidence, memory)
+- **Dashboard (nicest):** `https://YOUR-DOMAIN/?token=AUTH_TOKEN` - live progress ring, a ticking countdown to the finish time, speed chart, counts by status/confidence,
+  the latest results and a list of agencies that are above 70 on their own site. Refreshes every 3 s; opening `/` without a token shows a small token prompt. The page itself contains no data.
+- Raw JSON: `https://YOUR-DOMAIN/status?token=AUTH_TOKEN`
+- Progress (JSON): `https://YOUR-DOMAIN/status?token=AUTH_TOKEN` (processed, remaining, counts by status/confidence, memory)
 - Download: `https://YOUR-DOMAIN/results.jsonl?token=AUTH_TOKEN`  (works any time, also while running)
 - No domain? In Coolify open the app's Terminal and run `cat /data/results.jsonl`.
 - It is finished when `remaining` is 0 and a file `/data/DONE` exists (the container keeps serving the results afterwards; stop or delete it when you are done).
@@ -46,4 +58,4 @@ This is an extrapolation from a small sample, so treat it as roughly 3-4.5 hours
 - Local test (needs Chrome): `NODE_PATH=<a node_modules with playwright> CHROME_CHANNEL=chrome node worker.js --test 5`
 
 ## Files
-`Dockerfile`, `package.json`, `worker.js`, `targets.json` (1,649 sites, ordered: 41-70 sales first, then 26-40, 71+, 11-25, 1-10).
+`Dockerfile`, `package.json`, `worker.js`, `dashboard.html`, `targets.json` (1,649 sites, ordered: 41-70 sales first, then 26-40, 71+, 11-25, 1-10).

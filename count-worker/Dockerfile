@@ -7,13 +7,13 @@ COPY package.json ./
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 RUN npm install --omit=dev --no-audit --no-fund
 
-COPY worker.js targets.json ./
+COPY worker.js dashboard.html targets.json ./
 
 # results + resume state live in /data: mount a persistent volume there (Coolify / Railway settings). No VOLUME instruction on purpose: Railway does not allow it.
 ENV DATA_DIR=/data \
     PORT=3000 \
     WORKERS=2 \
-    NODE_OPTIONS=--max-old-space-size=256
+    NODE_OPTIONS=--max-old-space-size=768
 EXPOSE 3000
 
 # Coolify uses this to know the app is alive

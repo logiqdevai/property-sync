@@ -17,7 +17,12 @@ const SITE_GAP = parseInt(process.env.SITE_GAP_MS || '800');   // pause between 
 const SETTLE = parseInt(process.env.SETTLE_MS || '1500');      // wait after a page loads, for its scripts to render the list
 const SCROLL = parseInt(process.env.SCROLL_MS || '600');       // wait after scrolling to the bottom (lazy-loaded results)
 const MAXP = parseInt(process.env.MAX_LISTING_PAGES || '4');
-const RECYCLE = parseInt(process.env.RECYCLE_EVERY || '40');   // fresh browser context every N sites (keeps memory flat)
+const RECYCLE = parseInt(process.env.RECYCLE_EVERY || '15');   // fresh browser context every N sites (keeps memory flat)
+const HEAP_GUARD_MB = parseInt(process.env.HEAP_GUARD_MB || '450');   // safety net: if Node's live heap passes this, finish current sites and restart cleanly (progress is saved)
+let draining = false;
+process.on('unhandledRejection', e => console.error('unhandledRejection (ignored):', e && e.message ? e.message : e));
+process.on('uncaughtException', e => console.error('uncaughtException (ignored):', e && e.message ? e.message : e));
+const withTimeout = (p, ms, msg) => { let tm; return Promise.race([p, new Promise((_, rej) => { tm = setTimeout(() => rej(new Error(msg)), ms); })]).finally(() => clearTimeout(tm)); };
 const SITE_TIMEOUT = parseInt(process.env.SITE_TIMEOUT_MS || '120000');
 const TOKEN = process.env.AUTH_TOKEN || '';
 const PORT = parseInt(process.env.PORT || '3000');
@@ -26,7 +31,7 @@ fs.mkdirSync(DATA, { recursive: true });
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 let TARGETS = JSON.parse(fs.readFileSync(path.join(__dirname, 'targets.json'), 'utf8'));
-const done = new Set(fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8').split('\n').filter(Boolean).map(l => { try { return JSON.parse(l).id; } catch (e) { return null; } }) : []);
+const done = new Set(fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8').split('\n').filter(Boolean).map(l => { try { const r = JSON.parse(l); return String(r.status || '').startsWith('error') ? null : r.id; } catch (e) { return null; } }) : []);   // crashed/timed-out sites (status error:*) are retried after a restart
 let queue = TARGETS.filter(t => !done.has(t.id) && (!process.env.ONLY_IDS || process.env.ONLY_IDS.split(',').includes(t.id))); if (TEST) queue = queue.slice(0, TEST_N);
 const stats = { total: TARGETS.length, alreadyDone: done.size, startedAt: new Date().toISOString(), processed: 0, byStatus: {}, byConfidence: {}, running: true, lastId: null };
 
@@ -186,36 +191,87 @@ async function processSite(page, t) {
 let browser = null;
 async function getBrowser() {
   if (browser && browser.isConnected()) return browser;
-  browser = await chromium.launch({ headless: true, channel: process.env.CHROME_CHANNEL || undefined, args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--js-flags=--max-old-space-size=384'] });
+  browser = await chromium.launch({ headless: true, channel: process.env.CHROME_CHANNEL || undefined, args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--blink-settings=imagesEnabled=false', '--js-flags=--max-old-space-size=384'] });   // images off at browser level: no per-request objects in Node
   return browser;
 }
 async function newCtx() {
   const b = await getBrowser();
   const ctx = await b.newContext({ locale: 'el-GR', viewport: { width: 1366, height: 900 }, ignoreHTTPSErrors: true });
-  await ctx.route('**/*', r => ['image', 'media', 'font'].includes(r.request().resourceType()) ? r.abort() : r.continue());   // lighter: no images/fonts
+  // NOTE: no ctx.route() interception here. Intercepting every request made Playwright keep one Route/Request object per request in
+  // Node memory for as long as the page lived, which grew the heap ~5 MB per site and crashed the worker (heap out of memory).
   return ctx;
 }
 async function worker(wid) {
   let ctx = null, page = null, n = 0;
-  while (queue.length) {
+  while (queue.length && !draining) {
     const t = queue.shift(); if (!t) break;
     try {
-      if (!ctx || n % RECYCLE === 0) { if (ctx) await ctx.close().catch(() => {}); ctx = await newCtx(); page = await ctx.newPage(); }
-      const rec = await Promise.race([processSite(page, t), sleep(SITE_TIMEOUT).then(() => { throw new Error('site_timeout'); })]);
-      fs.appendFileSync(OUT, JSON.stringify(rec) + '\n');
+      if (!ctx || n % RECYCLE === 0) { if (ctx) await ctx.close().catch(() => {}); ctx = await newCtx(); }
+      page = await ctx.newPage();                                   // a fresh page per site; closing it releases everything Playwright tracked for it
+      let rec;
+      try { rec = await withTimeout(processSite(page, t), SITE_TIMEOUT, 'site_timeout'); }
+      finally { await page.close().catch(() => {}); page = null; }
+      fs.appendFileSync(OUT, JSON.stringify(rec) + '\n'); noteRec(rec);
       stats.byStatus[rec.status] = (stats.byStatus[rec.status] || 0) + 1;
       if (rec.best) stats.byConfidence[rec.best.confidence] = (stats.byConfidence[rec.best.confidence] || 0) + 1;
     } catch (e) {
-      fs.appendFileSync(OUT, JSON.stringify({ id: t.id, name: t.name, site: t.site, spiti24_sales: t.spiti24_sales, status: 'error:' + (e.message || e.name).slice(0, 40), stack: process.env.DEBUG ? String(e.stack).slice(0, 500) : undefined, visited: [], best: null }) + '\n');
+      const errRec = { id: t.id, name: t.name, site: t.site, spiti24_sales: t.spiti24_sales, status: 'error:' + (e.message || e.name).slice(0, 40), stack: process.env.DEBUG ? String(e.stack).slice(0, 500) : undefined, visited: [], best: null }; fs.appendFileSync(OUT, JSON.stringify(errRec) + '\n'); noteRec(errRec);
       stats.byStatus.error = (stats.byStatus.error || 0) + 1;
       try { if (ctx) await ctx.close().catch(() => {}); } catch (x) {} ctx = null; page = null;      // a timeout/crash: start clean
       if (!browser || !browser.isConnected()) browser = null;
     }
     n++; stats.processed++; stats.lastId = t.id;
-    if (stats.processed % 25 === 0) console.log(`[${new Date().toISOString()}] processed ${stats.processed}/${queue.length + stats.processed}`, JSON.stringify(stats.byStatus), JSON.stringify(stats.byConfidence));
+    const heapMB = Math.round(process.memoryUsage().heapUsed / 1e6);
+    if (heapMB > HEAP_GUARD_MB && !draining) { draining = true; console.error(`heap ${heapMB} MB > guard ${HEAP_GUARD_MB} MB: draining, will exit so the platform restarts it (progress is saved)`); }
+    if (stats.processed % 25 === 0) console.log(`[${new Date().toISOString()}] processed ${stats.processed}/${queue.length + stats.processed} | heap ${heapMB} MB | rss ${Math.round(process.memoryUsage().rss / 1e6)} MB`, JSON.stringify(stats.byStatus), JSON.stringify(stats.byConfidence));
     await sleep(SITE_GAP);
   }
   if (ctx) await ctx.close().catch(() => {});
+}
+
+// ---------- dashboard data (feeds dashboard.html through /status) ----------
+const startMs = new Date(stats.startedAt).getTime();
+const latest = new Map();          // id -> compact summary of the LAST record for that site (a retried error is replaced by its new result)
+const recent = [];                 // last 15 finished sites, newest first
+const newOver70List = [];          // last 10 sites that show >70 on their own site but had <=70 on Spiti24
+const history = [];                // one sample every 15 s: t, done, node heap MB, rss MB
+function summarize(rec) {
+  const b = rec.best || null;
+  return { id: rec.id, name: rec.name, spiti24: rec.spiti24_sales, status: String(rec.status || ''), n: b ? b.n : null, conf: b ? b.confidence : null, review: !!(b && b.needs_review),
+    over70: !!(b && b.n > 70 && b.confidence !== 'low'), newOver70: !!(b && b.n > 70 && b.confidence !== 'low' && rec.spiti24_sales <= 70), at: Date.now() };
+}
+function noteRec(rec, seed) {
+  const s = summarize(rec); latest.set(String(rec.id), s);
+  if (seed) return;
+  recent.unshift(s); if (recent.length > 15) recent.pop();
+  if (s.newOver70) { newOver70List.unshift(s); if (newOver70List.length > 10) newOver70List.pop(); }
+}
+(function seedFromFile() {                                       // after a restart the dashboard starts from what is already on disk
+  if (!fs.existsSync(OUT)) return;
+  const seq = [];
+  for (const l of fs.readFileSync(OUT, 'utf8').split('\n')) { if (!l.trim()) continue; try { const r = JSON.parse(l); noteRec(r, true); seq.push(latest.get(String(r.id))); } catch (e) {} }
+  seq.slice(-15).reverse().forEach(s => recent.push({ ...s, at: null }));
+  [...latest.values()].filter(s => s.newOver70).slice(-10).reverse().forEach(s => newOver70List.push({ ...s, at: null }));
+})();
+function doneCount() { let c = 0; for (const s of latest.values()) if (!s.status.startsWith('error')) c++; return c; }
+function sample() { const m = process.memoryUsage(); history.push({ t: Date.now(), d: doneCount(), h: Math.round(m.heapUsed / 1e6), r: Math.round(m.rss / 1e6) }); if (history.length > 1500) history.shift(); }
+sample(); setInterval(sample, 15000).unref();
+function dash() {
+  const agg = { status: {}, conf: {}, review: 0, over70: 0, newOver70: 0 };
+  for (const s of latest.values()) {
+    const k = s.status.startsWith('error') ? 'error' : s.status; agg.status[k] = (agg.status[k] || 0) + 1;
+    if (s.conf) agg.conf[s.conf] = (agg.conf[s.conf] || 0) + 1;
+    if (s.review) agg.review++; if (s.over70) agg.over70++; if (s.newOver70) agg.newOver70++;
+  }
+  const done = doneCount(), total = TARGETS.length, remaining = Math.max(0, total - done), now = Date.now();
+  let rate = null;                                                // speed of the last ~5 minutes; falls back to this run's average
+  const ref = history.find(h => now - h.t <= 5 * 60000 + 20000);
+  if (ref && history.length > 2 && (now - ref.t) > 30000) rate = (done - ref.d) / ((now - ref.t) / 60000);
+  if (!(rate > 0) && stats.processed >= 10) rate = stats.processed / ((now - startMs) / 60000);
+  const etaSeconds = rate > 0 && stats.running ? Math.round(remaining / rate * 60) : null;
+  return { done, total, remaining, percent: +(100 * done / total).toFixed(2), sitesPerMinute: rate > 0 ? +rate.toFixed(2) : null, etaSeconds,
+    etaHours: etaSeconds != null ? +(etaSeconds / 3600).toFixed(2) : null, finishAtMs: etaSeconds != null ? now + etaSeconds * 1000 : null,
+    finished: !stats.running, agg, recent, newOver70List, history: history.slice(-240), serverTime: now, startedAtMs: startMs };
 }
 
 // live estimate from the speed of THIS run so far (not meaningful until ~20 sites are done)
@@ -227,13 +283,17 @@ function eta() {
 }
 
 // ---------- tiny HTTP server ----------
+let DASHBOARD_HTML = '<h1>dashboard.html missing</h1>';
+try { DASHBOARD_HTML = fs.readFileSync(path.join(__dirname, 'dashboard.html'), 'utf8'); } catch (e) { console.error('dashboard.html not found:', e.message); }
 function startServer() {
   const ok = req => { if (!TOKEN) return false; const u = new URL(req.url, 'http://x'); return u.searchParams.get('token') === TOKEN || (req.headers.authorization || '') === 'Bearer ' + TOKEN; };
   http.createServer((req, res) => {
     const u = new URL(req.url, 'http://x');
     if (u.pathname === '/health') { res.writeHead(200); return res.end('ok'); }
+    if (u.pathname === '/favicon.ico') { res.writeHead(204); return res.end(); }
+    if (u.pathname === '/' || u.pathname === '/dashboard') { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }); return res.end(DASHBOARD_HTML); }   // the page holds no data; it fetches /status with the token
     if (!ok(req)) { res.writeHead(TOKEN ? 401 : 503); return res.end(TOKEN ? 'unauthorized' : 'set AUTH_TOKEN to enable /status and /results.jsonl'); }
-    if (u.pathname === '/status') { res.writeHead(200, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ ...stats, remaining: queue.length, ...eta(), memoryMB: Math.round(process.memoryUsage().rss / 1e6), settings: { WORKERS, GAP, SITE_GAP, SETTLE, SCROLL } }, null, 1)); }
+    if (u.pathname === '/status') { res.writeHead(200, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ ...stats, remaining: queue.length, ...eta(), memoryMB: Math.round(process.memoryUsage().rss / 1e6), heapMB: Math.round(process.memoryUsage().heapUsed / 1e6), draining, settings: { WORKERS, GAP, SITE_GAP, SETTLE, SCROLL }, ...dash() }, null, 1)); }
     if (u.pathname === '/results.jsonl') { res.writeHead(200, { 'content-type': 'application/x-ndjson' }); return fs.existsSync(OUT) ? fs.createReadStream(OUT).pipe(res) : res.end(''); }
     res.writeHead(404); res.end('not found');
   }).listen(PORT, () => console.log('http on', PORT, TOKEN ? '(token set)' : '(NO AUTH_TOKEN: only /health is served)'));
@@ -243,6 +303,7 @@ function startServer() {
   console.log(`targets ${TARGETS.length} | already done ${done.size} | queued ${queue.length} | workers ${WORKERS} | data dir ${DATA}`);
   if (!TEST) startServer();
   await Promise.all(Array.from({ length: WORKERS }, (_, i) => sleep(i * 4000).then(() => worker(i))));
+  if (draining && queue.length) { if (browser) await browser.close().catch(() => {}); process.exit(3); }      // memory guard tripped: exit non-zero => restart policy relaunches and resumes
   stats.running = false; stats.finishedAt = new Date().toISOString();
   if (!TEST) fs.writeFileSync(path.join(DATA, 'DONE'), stats.finishedAt);
   console.log('FINISHED', JSON.stringify(stats));
