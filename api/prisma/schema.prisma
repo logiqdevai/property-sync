@@ -132,7 +132,7 @@ enum AiBatchRunStatus {
   CANCELLED
 }
 
-// Separate from CrawlRunStatus: an AI generation/self-heal session has different
+// Separate from CrawlRunStatus: an AI generation session has different
 // terminal states than a production crawl (e.g. AWAITING_REVIEW has no crawl equivalent).
 enum GenerationRunStatus {
   QUEUED
@@ -146,7 +146,6 @@ enum GenerationRunStatus {
 // Why a ScraperGenerationRun was started.
 enum GenerationTrigger {
   MANUAL // user requested a scraper for a new/existing agency
-  SELF_HEAL // triggered automatically after a CrawlRun failure
   SCHEDULED // periodic re-generation/health check
 }
 
@@ -429,16 +428,16 @@ model UserIntegration {
 /// SourceAgency -> ScraperGenerationRun (AI builds a scraper) -> Scraper -> CrawlRun (production run)
 /// -> SourceProperty -> Property.
 model SourceAgency {
-  id                 String           @id @default(uuid())
+  id                 String          @id @default(uuid())
   name               String
-  base_url           String           @unique
+  base_url           String          @unique
   country            String?
   city               String?
-  content_language   ContentLanguage  @default(EL)
-  is_visible         Boolean          @default(true) // not displayed to the user, only to the admin
-  is_enabled         Boolean          @default(true) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin
-  use_ai_batching    Boolean          @default(false)
-  crawl_interval     String           @default("0 */6 * * *")
+  content_language   ContentLanguage @default(EL)
+  is_visible         Boolean         @default(true) // not displayed to the user, only to the admin
+  is_enabled         Boolean         @default(true) // appears to the user for the UserTrackedAgency but cannot be activated, but not to the admin
+  use_ai_batching    Boolean         @default(false)
+  crawl_interval     String          @default("0 */6 * * *")
   notes              String?
   last_success_at    DateTime?
   last_failure_at    DateTime?
@@ -451,8 +450,8 @@ model SourceAgency {
   block_handling_wait_timeout_ms       Int?
   block_handling_min_ready_body_length Int?
 
-  created_at         DateTime         @default(now())
-  updated_at         DateTime         @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   scrapers                Scraper[]
   user_tracked_agencies   UserTrackedAgency[]
@@ -506,14 +505,14 @@ model UserTrackedAgency {
   track_updated_listings     Boolean  @default(true)
   auto_update_to_crm         Boolean  @default(false) // when false, new listings and CRM updates are both held (pending_crm_update) for manual push from Properties
   cms_update_on_hash_only    Boolean  @default(true) // when true, CRM updates only if source content_hash changed
-  remove_watermark             Boolean  @default(false)
-  watermark_image_count        Int      @default(1)
-  watermark_manual_selection   Boolean  @default(false)
-  created_at                   DateTime @default(now())
-  updated_at                   DateTime @updatedAt
+  remove_watermark           Boolean  @default(false)
+  watermark_image_count      Int      @default(1)
+  watermark_manual_selection Boolean  @default(false)
+  created_at                 DateTime @default(now())
+  updated_at                 DateTime @updatedAt
 
-  user                      User                       @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  source_agency             SourceAgency               @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
+  user                      User                              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  source_agency             SourceAgency                      @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
   crawl_runs                CrawlRun[]
   integration_link          UserTrackedAgencyIntegrationLink?
   content_publishing_config ContentPublishingConfig?
@@ -553,7 +552,6 @@ model Scraper {
   active_version_id    String?         @unique // FK to the ScraperVersion currently in use
   version_count        Int             @default(0) // convenience counter, incremented on new versions
   status               ScraperStatus   @default(TESTING)
-  self_healing_enabled Boolean         @default(true) // whether self-heal is allowed to auto-apply fixes
   // When true, this scraper's crawls (listing pages + detail pages) route through
   // the managed remote browser (Bright Data Scraping Browser, via
   // BRIGHT_DATA_CDP_ENDPOINT) instead of the shared local Chromium, and skip
@@ -610,7 +608,7 @@ model Scraper {
 model ScraperGenerationRun {
   id                  String              @id @default(uuid())
   source_agency_id    String
-  scraper_id          String? // set when this run is fixing/updating an existing Scraper (self-heal or manual re-gen)
+  scraper_id          String? // set when this run is fixing/updating an existing Scraper (manual re-gen)
   trigger             GenerationTrigger   @default(MANUAL)
   status              GenerationRunStatus @default(QUEUED)
   prompt              String? // goal/instructions given to the model
@@ -664,7 +662,7 @@ model ComputerUseStep {
 
 /// Immutable, versioned scraper config. This is the single source of truth for "what a scraper
 /// does" -- Scraper.active_version_id points here. New versions are created by generation runs
-/// (AI) or manual edits (human review), enabling rollback and full history / self-healing.
+/// (AI) or manual edits (human review), enabling rollback and full history.
 model ScraperVersion {
   id         String                  @id @default(uuid())
   scraper_id String
@@ -687,7 +685,7 @@ model ScraperVersion {
 
 /// Step-by-step log of a PRODUCTION Playwright execution (not the AI's exploratory computer-use
 /// loop -- see ComputerUseStep for that). Used to detect broken selectors / navigation failures
-/// and feed them into a self-heal ScraperGenerationRun.
+/// and feed them into a follow-up ScraperGenerationRun.
 model ScraperExecutionTrace {
   id            String   @id @default(uuid())
   scraper_id    String
@@ -711,7 +709,7 @@ model ScraperExecutionTrace {
 
 /// One production scraping execution of a Scraper against its SourceAgency. This is the
 /// Playwright run that uses the config from Scraper.active_version -- no AI involved in the
-/// crawl itself, unless normalization (Feature 06) or a failure triggers self-heal.
+/// crawl itself, unless normalization (Feature 06) triggers an AI generation run.
 model CrawlRun {
   id                           String         @id @default(uuid())
   source_agency_id             String
@@ -1029,9 +1027,9 @@ model Property {
   created_at            DateTime       @default(now())
   updated_at            DateTime       @updatedAt
 
-  source_links           PropertySourceLink[]
-  user_property_copies   UserProperty[]
-  history                PropertyHistory[] // spec section 14
+  source_links         PropertySourceLink[]
+  user_property_copies UserProperty[]
+  history              PropertyHistory[] // spec section 14
 
   @@index([listing_type])
   @@index([property_type])
@@ -1044,7 +1042,6 @@ model Property {
   @@index([internal_id])
   @@map("properties")
 }
-
 
 /// Mapping layer between normalized Property and the raw SourceProperty rows it was built from.
 model PropertySourceLink {
@@ -1173,15 +1170,15 @@ model ContentPublishingConfig {
 }
 
 model ContentOutput {
-  id                          String                         @id @default(uuid())
-  config_id                   String
-  language                    ContentLanguage
-  title_strategy              TitleProductionStrategy
-  description_strategy        DescriptionProductionStrategy
+  id                           String                        @id @default(uuid())
+  config_id                    String
+  language                     ContentLanguage
+  title_strategy               TitleProductionStrategy
+  description_strategy         DescriptionProductionStrategy
   description_content_language ContentLanguage?
-  ai_title_family_id          String?
-  created_at                  DateTime                       @default(now())
-  updated_at                  DateTime                       @updatedAt
+  ai_title_family_id           String?
+  created_at                   DateTime                      @default(now())
+  updated_at                   DateTime                      @updatedAt
 
   config          ContentPublishingConfig @relation(fields: [config_id], references: [id], onDelete: Cascade)
   ai_title_family AiTitleFamily?          @relation(fields: [ai_title_family_id], references: [id], onDelete: Restrict)
@@ -1319,7 +1316,7 @@ model IntegrationProperty {
 /// are nullable -- PlatformConfigService resolves nulls to in-code defaults per subsystem, so
 /// this table is never a hard requirement for anything to run.
 model PlatformConfig {
-  id                                           String   @id @default("singleton")
+  id                                           String               @id @default("singleton")
   crawler_max_pages                            Int?
   crawler_page_timeout_ms                      Int?
   crawler_selector_timeout_ms                  Int?
@@ -1331,12 +1328,12 @@ model PlatformConfig {
   crawler_chromium_max_contexts_before_restart Int?
   crawler_max_concurrent_browser_pages         Int?
   normalization_ai_raw_description_max_chars   Int?
-  dewatermark_cost_per_image                   Decimal? @db.Decimal(12, 6)
-  google_translate_cost_per_million_chars      Decimal? @db.Decimal(12, 6)
-  azure_translate_cost_per_million_chars       Decimal? @db.Decimal(12, 6)
+  dewatermark_cost_per_image                   Decimal?             @db.Decimal(12, 6)
+  google_translate_cost_per_million_chars      Decimal?             @db.Decimal(12, 6)
+  azure_translate_cost_per_million_chars       Decimal?             @db.Decimal(12, 6)
   translation_provider                         TranslationProvider?
-  created_at                                   DateTime @default(now())
-  updated_at                                   DateTime @updatedAt
+  created_at                                   DateTime             @default(now())
+  updated_at                                   DateTime             @updatedAt
 
   @@map("platform_config")
 }

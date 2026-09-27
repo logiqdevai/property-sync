@@ -323,7 +323,6 @@ export class ScraperGenerationService {
       where: { id },
       include: {
         steps: { select: { id: true } },
-        scraper: { select: { self_healing_enabled: true } },
       },
     });
 
@@ -334,17 +333,6 @@ export class ScraperGenerationService {
     if (!RETRYABLE_STATUSES.includes(run.status)) {
       throw new BadRequestException(
         'Only FAILED or CANCELLED runs can be retried',
-      );
-    }
-
-    if (
-      run.scraper_id &&
-      run.trigger === GenerationTrigger.SELF_HEAL &&
-      run.scraper &&
-      !run.scraper.self_healing_enabled
-    ) {
-      throw new BadRequestException(
-        'Self-healing is disabled for this scraper',
       );
     }
 
@@ -375,27 +363,6 @@ export class ScraperGenerationService {
     });
 
     return updated;
-  }
-
-  async retryLatestForScraper(
-    scraperId: string,
-    error: string,
-    prompt?: string,
-  ) {
-    const run = await this.prisma.scraperGenerationRun.findFirst({
-      where: {
-        scraper_id: scraperId,
-        status: { in: RETRYABLE_STATUSES },
-        steps: { some: {} },
-      },
-      orderBy: { created_at: 'desc' },
-    });
-
-    if (!run) {
-      return null;
-    }
-
-    return this.retry(run.id, { error, prompt });
   }
 
   async remove(id: string) {

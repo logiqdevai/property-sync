@@ -38,7 +38,7 @@ The application focuses on:
 - Property removal detection
 - Duplicate property entry detection
 - Centralized management
-- AI-assisted scraper generation and self-healing
+- AI-assisted scraper generation
 - Scraper monitoring
 - Manual and scheduled execution
 - High visibility into scraper health
@@ -62,7 +62,7 @@ The system shall:
 - Detect duplicate entries.
 - Keep historical crawl information.
 - Keep historical property-change information (price, images, status).
-- Generate and self-heal scrapers using an AI computer-use agent, with a full replayable audit trail.
+- Generate scrapers using an AI computer-use agent, with a full replayable audit trail.
 - Create and maintain `UserProperty` copies for tracking users, with `PropertyHistory` for every detected change.
 - Provide complete monitoring of every scraper, crawl, job, and generation run.
 - Notify admins of failures and anomalies.
@@ -113,7 +113,7 @@ Recent activity feed, each row deep-linking into the relevant subpage:
 - New listings
 - Removed listings
 - Broken scrapers
-- Recent AI generation/self-heal runs
+- Recent AI generation runs
 
 
 
@@ -142,7 +142,6 @@ Backed by: `Scraper`, `ScraperVersion`
   - **Version history** (`ScraperVersion` list) — diff any two versions' `config`, see `created_by` (AI/USER) and `notes`, roll back by re-activating an older version (`Scraper.active_version_id`)
   - "Run Now" button → creates a `CrawlRun` immediately regardless of schedule (spec §7)
   - "Regenerate / Fix with AI" button → creates a `ScraperGenerationRun` with `trigger: MANUAL`
-  - Toggle `self_healing_enabled`
   - Edit `validation_rules`
 
 
@@ -161,7 +160,7 @@ Backed by: `CrawlRun`, `ScraperExecutionTrace`, `JobLog`
 
 Backed by: `ScraperGenerationRun`, `ComputerUseStep`, `ScraperVersion`
 
-- List / filter by `status` (Queued, Running, Awaiting Review, Success, Failed, Cancelled), `trigger` (Manual, Self-Heal, Scheduled), agency, scraper
+- List / filter by `status` (Queued, Running, Awaiting Review, Success, Failed, Cancelled), `trigger` (Manual, Scheduled), agency, scraper
 - **Session replay view**: every `ComputerUseStep` in order — action type, payload, before/after screenshots (via `Document`), and the model's `model_reasoning` if present. This is the audit trail for "what did the AI actually do."
 - Review screen for runs in `AWAITING_REVIEW`: shows `staged_config`, diffs it against the scraper's current active version, and lets an admin **Approve** (promotes to a new `ScraperVersion` + activates it) or **Reject** (marks `FAILED` with a reason)
 - Manual trigger: "Generate scraper for this agency" (creates a run with no `scraper_id`, i.e. first-time generation)
@@ -282,7 +281,6 @@ Each scraper has:
 - Current Health (Excellent / Good / Warning / Critical / Broken)
 - Configuration (always read from the active version — never edited in place; a config change is a new version)
 - Validation Rules (expected selectors/fields, used to detect breakage)
-- Self-healing toggle (whether a failure is allowed to auto-trigger an AI fix run)
 
 Every config change — whether produced by the AI or a human — is a new immutable `ScraperVersion`, so any scraper can be rolled back to a prior version at any time.
 
@@ -341,8 +339,6 @@ Create / Update / Remove (each change logged to `PropertyHistory`)
 Create or update `UserProperty` for every enabled tracker on the agency (respecting each tracker's own `track_*` prefs), or only the attributed tracker if `user_tracked_agency_id` is set on this `CrawlRun`
 ↓
 Generate reports
-
-If a crawl fails and the scraper's `self_healing_enabled` is true, a `ScraperGenerationRun` with `trigger: SELF_HEAL` is created automatically (see §11).
 
 ---
 
@@ -472,7 +468,6 @@ When a scraper is considered broken:
 - `Scraper.status` is set to `BROKEN`
 - A `Notification` (`type: BROKEN_SCRAPER`) is generated
 - It surfaces on the dashboard and Notifications subpage
-- If `self_healing_enabled` is true, a `ScraperGenerationRun` (`trigger: SELF_HEAL`) is created automatically, billed to an enabled tracker's `UserIntegration` for `ANTHROPIC` when available (see §23)
 - Scheduled execution is suspended (optional, configurable); manual execution and manual "Regenerate with AI" remain available for testing
 
 ---
@@ -565,8 +560,7 @@ Every outbound AI call uses an **active** `UserIntegration` row (`is_active: tru
 | AI feature | Provider | Whose key |
 | --- | --- | --- |
 | Manual scraper generation (`ScraperGenerationRun`, `trigger: MANUAL`) | `ANTHROPIC` | Initiating admin's `UserIntegration` |
-| Self-heal scraper generation (`trigger: SELF_HEAL`) | `ANTHROPIC` | Earliest enabled tracker's `UserIntegration` for that agency |
-| Property normalization | `AiDefaults.provider` (platform default) | `CrawlRun.user_tracked_agency`'s `UserIntegration` if the run is attributed to a tracker, else the agency's earliest enabled tracker (same fallback pattern as self-heal above) |
+| Property normalization | `AiDefaults.provider` (platform default) | `CrawlRun.user_tracked_agency`'s `UserIntegration` if the run is attributed to a tracker, else the agency's earliest enabled tracker |
 | Property normalization (OpenAI Batch path) | Same as above, requires `OPENAI` | Same; `user_integration_id` stored on `CrawlRun.metadata` for webhook completion |
 
 `AiProvider` maps to `IntegrationType` by name (`OPENAI` → `IntegrationType.OPENAI`, etc.). If no suitable active integration exists, the AI step fails or is skipped (raw crawl data may still be saved). `OPENAI_WEBHOOK_SECRET` remains an env var for inbound webhook signature verification only.
@@ -645,7 +639,7 @@ The platform should allow an administrator to:
 - Detect new, updated, and removed listings, with full `PropertyHistory`.
 - Define integration targets and manage connected `UserIntegration` accounts (enable/disable/edit credentials) — required before AI generation or agency tracking with AI normalization.
 - Monitor every crawl, every BullMQ job, and every AI generation session (with full step replay).
-- Detect broken scrapers and have them self-heal automatically, or review/approve AI-proposed fixes manually.
+- Detect broken scrapers and review/approve AI-proposed fixes manually.
 - Review crawl history and property history.
 - Review and act on notifications.
 - Scale to hundreds of agency websites without modifying the core application.

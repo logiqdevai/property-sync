@@ -5,7 +5,6 @@ import { GenerationTriggers, type GenerationTrigger } from "@/features/scraper-g
 
 const triggerColor: Record<GenerationTrigger, "default" | "warning"> = {
   [GenerationTriggers.MANUAL]: "default",
-  [GenerationTriggers.SELF_HEAL]: "warning",
   [GenerationTriggers.SCHEDULED]: "default",
 };
 

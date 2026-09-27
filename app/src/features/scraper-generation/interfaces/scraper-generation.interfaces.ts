@@ -12,7 +12,6 @@ export type GenerationRunStatus =
 
 export const GenerationTriggers = {
   MANUAL: "MANUAL",
-  SELF_HEAL: "SELF_HEAL",
   SCHEDULED: "SCHEDULED",
 } as const;
 

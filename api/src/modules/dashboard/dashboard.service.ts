@@ -261,12 +261,10 @@ export class DashboardService {
 
     for (const run of generationRuns) {
       const agencyName = (run as any).source_agency?.name ?? 'Unknown agency';
-      const triggerLabel =
-        run.trigger === 'SELF_HEAL' ? 'Self-heal' : 'AI generation';
       items.push({
         type: 'generation',
         timestamp: run.created_at,
-        summary: `${triggerLabel} run ${run.status.toLowerCase()} for ${agencyName}`,
+        summary: `AI generation run ${run.status.toLowerCase()} for ${agencyName}`,
         generation_run_id: run.id,
         scraper_id: run.scraper_id ?? undefined,
         source_agency_id: run.source_agency_id,

@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { ScraperGenerationService } from '@/modules/scraper-generation/scraper-generation.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import {
-  GenerationTrigger,
   NotificationSeverity,
   NotificationType,
   ScraperStatus,
@@ -12,19 +10,17 @@ import {
 // Shared between CrawlProcessor (a crawl that failed while its worker was alive)
 // and CrawlRunWatchdogCron (a crawl whose worker died mid-job, discovered later by
 // timestamp alone) so both paths roll up to the same scraper.consecutive_failures /
-// BROKEN / self-heal behavior.
+// BROKEN behavior.
 @Injectable()
 export class ScraperFailureHandlerService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly scraperGenerationService: ScraperGenerationService,
     private readonly notificationsService: NotificationsService,
   ) {}
 
   async handle(params: {
     scraper: {
       id: string;
-      self_healing_enabled: boolean;
       consecutive_failures: number;
     };
     crawlRunId: string;
@@ -33,9 +29,7 @@ export class ScraperFailureHandlerService {
     networkError: boolean;
     // True when the run never actually reached/rendered the target site at all
     // because our own worker crashed/restarted mid-job (CrawlRunWatchdogCron).
-    // Distinct from networkError (target site itself is down/blocking us) --
-    // both mean "not the scraper's config fault", so neither should trigger an
-    // AI self-heal regeneration.
+    // Distinct from networkError (target site itself is down/blocking us).
     infraFailure?: boolean;
     errorMessage: string;
   }): Promise<void> {
@@ -85,28 +79,6 @@ export class ScraperFailureHandlerService {
         scraper_id: params.scraper.id,
         crawl_run_id: params.crawlRunId,
       });
-    }
-
-    if (
-      params.scraper.self_healing_enabled &&
-      !params.networkError &&
-      !params.infraFailure
-    ) {
-      const selfHealPrompt = `Self-heal triggered after crawl failure: ${params.errorMessage}`;
-      const retried = await this.scraperGenerationService.retryLatestForScraper(
-        params.scraper.id,
-        params.errorMessage,
-        selfHealPrompt,
-      );
-
-      if (!retried) {
-        await this.scraperGenerationService.trigger(
-          params.sourceAgencyId,
-          params.scraper.id,
-          GenerationTrigger.SELF_HEAL,
-          selfHealPrompt,
-        );
-      }
     }
   }
 }

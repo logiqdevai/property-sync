@@ -26,9 +26,6 @@ export class Scraper {
   status: ScraperStatus;
 
   @ApiProperty()
-  self_healing_enabled: boolean;
-
-  @ApiProperty()
   use_managed_browser: boolean;
 
   @ApiProperty()

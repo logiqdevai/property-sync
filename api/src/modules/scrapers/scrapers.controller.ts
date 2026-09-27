@@ -183,7 +183,7 @@ export class ScrapersController {
   @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary:
-      'Toggle self_healing_enabled and/or update validation_rules (creates a new version)',
+      'Update scraper settings and/or validation_rules (creates a new version)',
   })
   @ApiResponse({ status: 200, type: Scraper })
   update(@Param('id') id: string, @Body() dto: UpdateScraperDto) {

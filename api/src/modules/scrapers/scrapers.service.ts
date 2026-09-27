@@ -344,9 +344,6 @@ export class ScrapersService {
         where: { id },
         data: {
           ...(dto.status !== undefined && { status: dto.status }),
-          ...(dto.self_healing_enabled !== undefined && {
-            self_healing_enabled: dto.self_healing_enabled,
-          }),
           ...(dto.use_managed_browser !== undefined && {
             use_managed_browser: dto.use_managed_browser,
           }),
@@ -404,9 +401,6 @@ export class ScrapersService {
           active_version_id: newVersion.id,
           version_count: { increment: 1 },
           ...(dto.status !== undefined && { status: dto.status }),
-          ...(dto.self_healing_enabled !== undefined && {
-            self_healing_enabled: dto.self_healing_enabled,
-          }),
           ...(dto.use_managed_browser !== undefined && {
             use_managed_browser: dto.use_managed_browser,
           }),

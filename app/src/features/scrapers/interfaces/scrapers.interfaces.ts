@@ -63,7 +63,6 @@ export interface Scraper {
   active_version_id: string | null;
   version_count: number;
   status: ScraperStatus;
-  self_healing_enabled: boolean;
   use_managed_browser: boolean;
   use_proxy_browser: boolean;
   diagnostics_mode: DiagnosticsMode;
@@ -97,7 +96,6 @@ export interface CreateScraperVersionPayload {
 
 export interface UpdateScraperPayload {
   status?: ScraperStatus;
-  self_healing_enabled?: boolean;
   use_managed_browser?: boolean;
   use_proxy_browser?: boolean;
   diagnostics_mode?: DiagnosticsMode;

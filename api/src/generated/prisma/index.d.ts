@@ -88,21 +88,21 @@ export type ComputerUseStep = $Result.DefaultSelection<Prisma.$ComputerUseStepPa
  * Model ScraperVersion
  * Immutable, versioned scraper config. This is the single source of truth for "what a scraper
  * does" -- Scraper.active_version_id points here. New versions are created by generation runs
- * (AI) or manual edits (human review), enabling rollback and full history / self-healing.
+ * (AI) or manual edits (human review), enabling rollback and full history.
  */
 export type ScraperVersion = $Result.DefaultSelection<Prisma.$ScraperVersionPayload>
 /**
  * Model ScraperExecutionTrace
  * Step-by-step log of a PRODUCTION Playwright execution (not the AI's exploratory computer-use
  * loop -- see ComputerUseStep for that). Used to detect broken selectors / navigation failures
- * and feed them into a self-heal ScraperGenerationRun.
+ * and feed them into a follow-up ScraperGenerationRun.
  */
 export type ScraperExecutionTrace = $Result.DefaultSelection<Prisma.$ScraperExecutionTracePayload>
 /**
  * Model CrawlRun
  * One production scraping execution of a Scraper against its SourceAgency. This is the
  * Playwright run that uses the config from Scraper.active_version -- no AI involved in the
- * crawl itself, unless normalization (Feature 06) or a failure triggers self-heal.
+ * crawl itself, unless normalization (Feature 06) triggers an AI generation run.
  */
 export type CrawlRun = $Result.DefaultSelection<Prisma.$CrawlRunPayload>
 /**
@@ -421,7 +421,6 @@ export type GenerationRunStatus = (typeof GenerationRunStatus)[keyof typeof Gene
 
 export const GenerationTrigger: {
   MANUAL: 'MANUAL',
-  SELF_HEAL: 'SELF_HEAL',
   SCHEDULED: 'SCHEDULED'
 };
 
@@ -15546,7 +15545,6 @@ export namespace Prisma {
     active_version_id: string | null
     version_count: number | null
     status: $Enums.ScraperStatus | null
-    self_healing_enabled: boolean | null
     use_managed_browser: boolean | null
     use_proxy_browser: boolean | null
     diagnostics_mode: $Enums.DiagnosticsMode | null
@@ -15570,7 +15568,6 @@ export namespace Prisma {
     active_version_id: string | null
     version_count: number | null
     status: $Enums.ScraperStatus | null
-    self_healing_enabled: boolean | null
     use_managed_browser: boolean | null
     use_proxy_browser: boolean | null
     diagnostics_mode: $Enums.DiagnosticsMode | null
@@ -15594,7 +15591,6 @@ export namespace Prisma {
     active_version_id: number
     version_count: number
     status: number
-    self_healing_enabled: number
     use_managed_browser: number
     use_proxy_browser: number
     diagnostics_mode: number
@@ -15640,7 +15636,6 @@ export namespace Prisma {
     active_version_id?: true
     version_count?: true
     status?: true
-    self_healing_enabled?: true
     use_managed_browser?: true
     use_proxy_browser?: true
     diagnostics_mode?: true
@@ -15664,7 +15659,6 @@ export namespace Prisma {
     active_version_id?: true
     version_count?: true
     status?: true
-    self_healing_enabled?: true
     use_managed_browser?: true
     use_proxy_browser?: true
     diagnostics_mode?: true
@@ -15688,7 +15682,6 @@ export namespace Prisma {
     active_version_id?: true
     version_count?: true
     status?: true
-    self_healing_enabled?: true
     use_managed_browser?: true
     use_proxy_browser?: true
     diagnostics_mode?: true
@@ -15799,7 +15792,6 @@ export namespace Prisma {
     active_version_id: string | null
     version_count: number
     status: $Enums.ScraperStatus
-    self_healing_enabled: boolean
     use_managed_browser: boolean
     use_proxy_browser: boolean
     diagnostics_mode: $Enums.DiagnosticsMode
@@ -15842,7 +15834,6 @@ export namespace Prisma {
     active_version_id?: boolean
     version_count?: boolean
     status?: boolean
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: boolean
@@ -15875,7 +15866,6 @@ export namespace Prisma {
     active_version_id?: boolean
     version_count?: boolean
     status?: boolean
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: boolean
@@ -15901,7 +15891,6 @@ export namespace Prisma {
     active_version_id?: boolean
     version_count?: boolean
     status?: boolean
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: boolean
@@ -15927,7 +15916,6 @@ export namespace Prisma {
     active_version_id?: boolean
     version_count?: boolean
     status?: boolean
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: boolean
@@ -15944,7 +15932,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type ScraperOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "name" | "active_version_id" | "version_count" | "status" | "self_healing_enabled" | "use_managed_browser" | "use_proxy_browser" | "diagnostics_mode" | "health" | "success_rate" | "avg_runtime_ms" | "consecutive_failures" | "normalize_limit" | "crawl_job_timeout_ms" | "detail_concurrency" | "last_success_at" | "last_failure_at" | "created_at" | "updated_at", ExtArgs["result"]["scraper"]>
+  export type ScraperOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "name" | "active_version_id" | "version_count" | "status" | "use_managed_browser" | "use_proxy_browser" | "diagnostics_mode" | "health" | "success_rate" | "avg_runtime_ms" | "consecutive_failures" | "normalize_limit" | "crawl_job_timeout_ms" | "detail_concurrency" | "last_success_at" | "last_failure_at" | "created_at" | "updated_at", ExtArgs["result"]["scraper"]>
   export type ScraperInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
     active_version?: boolean | Scraper$active_versionArgs<ExtArgs>
@@ -15984,7 +15972,6 @@ export namespace Prisma {
       active_version_id: string | null
       version_count: number
       status: $Enums.ScraperStatus
-      self_healing_enabled: boolean
       use_managed_browser: boolean
       use_proxy_browser: boolean
       diagnostics_mode: $Enums.DiagnosticsMode
@@ -16436,7 +16423,6 @@ export namespace Prisma {
     readonly active_version_id: FieldRef<"Scraper", 'String'>
     readonly version_count: FieldRef<"Scraper", 'Int'>
     readonly status: FieldRef<"Scraper", 'ScraperStatus'>
-    readonly self_healing_enabled: FieldRef<"Scraper", 'Boolean'>
     readonly use_managed_browser: FieldRef<"Scraper", 'Boolean'>
     readonly use_proxy_browser: FieldRef<"Scraper", 'Boolean'>
     readonly diagnostics_mode: FieldRef<"Scraper", 'DiagnosticsMode'>
@@ -52227,7 +52213,6 @@ export namespace Prisma {
     active_version_id: 'active_version_id',
     version_count: 'version_count',
     status: 'status',
-    self_healing_enabled: 'self_healing_enabled',
     use_managed_browser: 'use_managed_browser',
     use_proxy_browser: 'use_proxy_browser',
     diagnostics_mode: 'diagnostics_mode',
@@ -54220,7 +54205,6 @@ export namespace Prisma {
     active_version_id?: StringNullableFilter<"Scraper"> | string | null
     version_count?: IntFilter<"Scraper"> | number
     status?: EnumScraperStatusFilter<"Scraper"> | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFilter<"Scraper"> | boolean
     use_managed_browser?: BoolFilter<"Scraper"> | boolean
     use_proxy_browser?: BoolFilter<"Scraper"> | boolean
     diagnostics_mode?: EnumDiagnosticsModeFilter<"Scraper"> | $Enums.DiagnosticsMode
@@ -54252,7 +54236,6 @@ export namespace Prisma {
     active_version_id?: SortOrderInput | SortOrder
     version_count?: SortOrder
     status?: SortOrder
-    self_healing_enabled?: SortOrder
     use_managed_browser?: SortOrder
     use_proxy_browser?: SortOrder
     diagnostics_mode?: SortOrder
@@ -54287,7 +54270,6 @@ export namespace Prisma {
     name?: StringFilter<"Scraper"> | string
     version_count?: IntFilter<"Scraper"> | number
     status?: EnumScraperStatusFilter<"Scraper"> | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFilter<"Scraper"> | boolean
     use_managed_browser?: BoolFilter<"Scraper"> | boolean
     use_proxy_browser?: BoolFilter<"Scraper"> | boolean
     diagnostics_mode?: EnumDiagnosticsModeFilter<"Scraper"> | $Enums.DiagnosticsMode
@@ -54319,7 +54301,6 @@ export namespace Prisma {
     active_version_id?: SortOrderInput | SortOrder
     version_count?: SortOrder
     status?: SortOrder
-    self_healing_enabled?: SortOrder
     use_managed_browser?: SortOrder
     use_proxy_browser?: SortOrder
     diagnostics_mode?: SortOrder
@@ -54351,7 +54332,6 @@ export namespace Prisma {
     active_version_id?: StringNullableWithAggregatesFilter<"Scraper"> | string | null
     version_count?: IntWithAggregatesFilter<"Scraper"> | number
     status?: EnumScraperStatusWithAggregatesFilter<"Scraper"> | $Enums.ScraperStatus
-    self_healing_enabled?: BoolWithAggregatesFilter<"Scraper"> | boolean
     use_managed_browser?: BoolWithAggregatesFilter<"Scraper"> | boolean
     use_proxy_browser?: BoolWithAggregatesFilter<"Scraper"> | boolean
     diagnostics_mode?: EnumDiagnosticsModeWithAggregatesFilter<"Scraper"> | $Enums.DiagnosticsMode
@@ -58329,7 +58309,6 @@ export namespace Prisma {
     name: string
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -58361,7 +58340,6 @@ export namespace Prisma {
     active_version_id?: string | null
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -58389,7 +58367,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -58421,7 +58398,6 @@ export namespace Prisma {
     active_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -58451,7 +58427,6 @@ export namespace Prisma {
     active_version_id?: string | null
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -58473,7 +58448,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -58497,7 +58471,6 @@ export namespace Prisma {
     active_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -63024,7 +62997,6 @@ export namespace Prisma {
     active_version_id?: SortOrder
     version_count?: SortOrder
     status?: SortOrder
-    self_healing_enabled?: SortOrder
     use_managed_browser?: SortOrder
     use_proxy_browser?: SortOrder
     diagnostics_mode?: SortOrder
@@ -63058,7 +63030,6 @@ export namespace Prisma {
     active_version_id?: SortOrder
     version_count?: SortOrder
     status?: SortOrder
-    self_healing_enabled?: SortOrder
     use_managed_browser?: SortOrder
     use_proxy_browser?: SortOrder
     diagnostics_mode?: SortOrder
@@ -63082,7 +63053,6 @@ export namespace Prisma {
     active_version_id?: SortOrder
     version_count?: SortOrder
     status?: SortOrder
-    self_healing_enabled?: SortOrder
     use_managed_browser?: SortOrder
     use_proxy_browser?: SortOrder
     diagnostics_mode?: SortOrder
@@ -71214,7 +71184,6 @@ export namespace Prisma {
     name: string
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -71244,7 +71213,6 @@ export namespace Prisma {
     active_version_id?: string | null
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -71623,7 +71591,6 @@ export namespace Prisma {
     active_version_id?: StringNullableFilter<"Scraper"> | string | null
     version_count?: IntFilter<"Scraper"> | number
     status?: EnumScraperStatusFilter<"Scraper"> | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFilter<"Scraper"> | boolean
     use_managed_browser?: BoolFilter<"Scraper"> | boolean
     use_proxy_browser?: BoolFilter<"Scraper"> | boolean
     diagnostics_mode?: EnumDiagnosticsModeFilter<"Scraper"> | $Enums.DiagnosticsMode
@@ -73346,7 +73313,6 @@ export namespace Prisma {
     name: string
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -73377,7 +73343,6 @@ export namespace Prisma {
     active_version_id?: string | null
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -73548,7 +73513,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -73579,7 +73543,6 @@ export namespace Prisma {
     active_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -73896,7 +73859,6 @@ export namespace Prisma {
     name: string
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -73927,7 +73889,6 @@ export namespace Prisma {
     active_version_id?: string | null
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -73959,7 +73920,6 @@ export namespace Prisma {
     name: string
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -73989,7 +73949,6 @@ export namespace Prisma {
     name: string
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -74074,7 +74033,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -74105,7 +74063,6 @@ export namespace Prisma {
     active_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -74143,7 +74100,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -74173,7 +74129,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -74248,7 +74203,6 @@ export namespace Prisma {
     name: string
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -74279,7 +74233,6 @@ export namespace Prisma {
     active_version_id?: string | null
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -74401,7 +74354,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -74432,7 +74384,6 @@ export namespace Prisma {
     active_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -74658,7 +74609,6 @@ export namespace Prisma {
     name: string
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -74689,7 +74639,6 @@ export namespace Prisma {
     active_version_id?: string | null
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -75185,7 +75134,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -75216,7 +75164,6 @@ export namespace Prisma {
     active_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -75538,7 +75485,6 @@ export namespace Prisma {
     name: string
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -75569,7 +75515,6 @@ export namespace Prisma {
     active_version_id?: string | null
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -75725,7 +75670,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -75756,7 +75700,6 @@ export namespace Prisma {
     active_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -76282,7 +76225,6 @@ export namespace Prisma {
     name: string
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -76313,7 +76255,6 @@ export namespace Prisma {
     active_version_id?: string | null
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -76502,7 +76443,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -76533,7 +76473,6 @@ export namespace Prisma {
     active_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -81746,7 +81685,6 @@ export namespace Prisma {
     active_version_id?: string | null
     version_count?: number
     status?: $Enums.ScraperStatus
-    self_healing_enabled?: boolean
     use_managed_browser?: boolean
     use_proxy_browser?: boolean
     diagnostics_mode?: $Enums.DiagnosticsMode
@@ -81884,7 +81822,6 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -81914,7 +81851,6 @@ export namespace Prisma {
     active_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
@@ -81943,7 +81879,6 @@ export namespace Prisma {
     active_version_id?: NullableStringFieldUpdateOperationsInput | string | null
     version_count?: IntFieldUpdateOperationsInput | number
     status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    self_healing_enabled?: BoolFieldUpdateOperationsInput | boolean
     use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
     use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
     diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode

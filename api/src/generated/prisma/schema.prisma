@@ -132,7 +132,7 @@ enum AiBatchRunStatus {
   CANCELLED
 }
 
-// Separate from CrawlRunStatus: an AI generation/self-heal session has different
+// Separate from CrawlRunStatus: an AI generation session has different
 // terminal states than a production crawl (e.g. AWAITING_REVIEW has no crawl equivalent).
 enum GenerationRunStatus {
   QUEUED
@@ -146,7 +146,6 @@ enum GenerationRunStatus {
 // Why a ScraperGenerationRun was started.
 enum GenerationTrigger {
   MANUAL // user requested a scraper for a new/existing agency
-  SELF_HEAL // triggered automatically after a CrawlRun failure
   SCHEDULED // periodic re-generation/health check
 }
 
@@ -553,7 +552,6 @@ model Scraper {
   active_version_id    String?         @unique // FK to the ScraperVersion currently in use
   version_count        Int             @default(0) // convenience counter, incremented on new versions
   status               ScraperStatus   @default(TESTING)
-  self_healing_enabled Boolean         @default(true) // whether self-heal is allowed to auto-apply fixes
   // When true, this scraper's crawls (listing pages + detail pages) route through
   // the managed remote browser (Bright Data Scraping Browser, via
   // BRIGHT_DATA_CDP_ENDPOINT) instead of the shared local Chromium, and skip
@@ -610,7 +608,7 @@ model Scraper {
 model ScraperGenerationRun {
   id                  String              @id @default(uuid())
   source_agency_id    String
-  scraper_id          String? // set when this run is fixing/updating an existing Scraper (self-heal or manual re-gen)
+  scraper_id          String? // set when this run is fixing/updating an existing Scraper (manual re-gen)
   trigger             GenerationTrigger   @default(MANUAL)
   status              GenerationRunStatus @default(QUEUED)
   prompt              String? // goal/instructions given to the model
@@ -664,7 +662,7 @@ model ComputerUseStep {
 
 /// Immutable, versioned scraper config. This is the single source of truth for "what a scraper
 /// does" -- Scraper.active_version_id points here. New versions are created by generation runs
-/// (AI) or manual edits (human review), enabling rollback and full history / self-healing.
+/// (AI) or manual edits (human review), enabling rollback and full history.
 model ScraperVersion {
   id         String                  @id @default(uuid())
   scraper_id String
@@ -687,7 +685,7 @@ model ScraperVersion {
 
 /// Step-by-step log of a PRODUCTION Playwright execution (not the AI's exploratory computer-use
 /// loop -- see ComputerUseStep for that). Used to detect broken selectors / navigation failures
-/// and feed them into a self-heal ScraperGenerationRun.
+/// and feed them into a follow-up ScraperGenerationRun.
 model ScraperExecutionTrace {
   id            String   @id @default(uuid())
   scraper_id    String
@@ -711,7 +709,7 @@ model ScraperExecutionTrace {
 
 /// One production scraping execution of a Scraper against its SourceAgency. This is the
 /// Playwright run that uses the config from Scraper.active_version -- no AI involved in the
-/// crawl itself, unless normalization (Feature 06) or a failure triggers self-heal.
+/// crawl itself, unless normalization (Feature 06) triggers an AI generation run.
 model CrawlRun {
   id                           String         @id @default(uuid())
   source_agency_id             String

@@ -22,14 +22,6 @@ export class UpdateScraperDto {
 
   @ApiProperty({
     required: false,
-    description: 'Whether self-heal is allowed to auto-apply fixes',
-  })
-  @IsOptional()
-  @IsBoolean()
-  self_healing_enabled?: boolean;
-
-  @ApiProperty({
-    required: false,
     description:
       'When true, crawls route through the managed remote browser (Bright Data Scraping Browser) instead of the local Chromium, and skip downloading image bytes. Only turn this on for scrapers whose target blocks our datacenter IP/fingerprint outright.',
   })

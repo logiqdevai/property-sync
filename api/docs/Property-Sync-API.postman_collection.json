@@ -3771,7 +3771,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"source_agency_id\": \"string\",\n  \"name\": \"Acme listing scraper\",\n  \"active_version_id\": \"string\",\n  \"version_count\": 1,\n  \"status\": \"TESTING\",\n  \"self_healing_enabled\": true,\n  \"diagnostics_mode\": \"PRODUCTION\",\n  \"health\": \"GOOD\",\n  \"success_rate\": 8307.001890341457,\n  \"avg_runtime_ms\": 4775.016560757011,\n  \"consecutive_failures\": 9155.13177531449,\n  \"normalize_limit\": 7720.476167631778,\n  \"last_success_at\": \"1981-09-28T17:40:18.974Z\",\n  \"last_failure_at\": \"1997-10-27T07:25:27.659Z\",\n  \"created_at\": \"2022-12-06T14:28:20.202Z\",\n  \"updated_at\": \"1947-11-17T14:37:32.193Z\",\n  \"active_version\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"scraper_id\": \"string\",\n    \"version\": 1,\n    \"config\": {},\n    \"created_by\": \"USER\",\n    \"notes\": \"string\",\n    \"created_at\": \"1957-06-03T17:27:09.390Z\",\n    \"updated_at\": \"2004-06-01T07:57:38.674Z\"\n  },\n  \"source_agency\": {\n    \"name\": \"Acme Real Estate\"\n  }\n}",
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"source_agency_id\": \"string\",\n  \"name\": \"Acme listing scraper\",\n  \"active_version_id\": \"string\",\n  \"version_count\": 1,\n  \"status\": \"TESTING\",\n  \"diagnostics_mode\": \"PRODUCTION\",\n  \"health\": \"GOOD\",\n  \"success_rate\": 8307.001890341457,\n  \"avg_runtime_ms\": 4775.016560757011,\n  \"consecutive_failures\": 9155.13177531449,\n  \"normalize_limit\": 7720.476167631778,\n  \"last_success_at\": \"1981-09-28T17:40:18.974Z\",\n  \"last_failure_at\": \"1997-10-27T07:25:27.659Z\",\n  \"created_at\": \"2022-12-06T14:28:20.202Z\",\n  \"updated_at\": \"1947-11-17T14:37:32.193Z\",\n  \"active_version\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"scraper_id\": \"string\",\n    \"version\": 1,\n    \"config\": {},\n    \"created_by\": \"USER\",\n    \"notes\": \"string\",\n    \"created_at\": \"1957-06-03T17:27:09.390Z\",\n    \"updated_at\": \"2004-06-01T07:57:38.674Z\"\n  },\n  \"source_agency\": {\n    \"name\": \"Acme Real Estate\"\n  }\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             }
@@ -3857,7 +3857,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"source_agency_id\": \"string\",\n  \"name\": \"Acme listing scraper\",\n  \"active_version_id\": \"string\",\n  \"version_count\": 1,\n  \"status\": \"TESTING\",\n  \"self_healing_enabled\": true,\n  \"diagnostics_mode\": \"PRODUCTION\",\n  \"health\": \"GOOD\",\n  \"success_rate\": 8307.001890341457,\n  \"avg_runtime_ms\": 4775.016560757011,\n  \"consecutive_failures\": 9155.13177531449,\n  \"normalize_limit\": 7720.476167631778,\n  \"last_success_at\": \"1981-09-28T17:40:18.974Z\",\n  \"last_failure_at\": \"1997-10-27T07:25:27.659Z\",\n  \"created_at\": \"2022-12-06T14:28:20.202Z\",\n  \"updated_at\": \"1947-11-17T14:37:32.193Z\",\n  \"active_version\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"scraper_id\": \"string\",\n    \"version\": 1,\n    \"config\": {},\n    \"created_by\": \"USER\",\n    \"notes\": \"string\",\n    \"created_at\": \"1957-06-03T17:27:09.390Z\",\n    \"updated_at\": \"2004-06-01T07:57:38.674Z\"\n  },\n  \"source_agency\": {\n    \"name\": \"Acme Real Estate\"\n  }\n}",
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"source_agency_id\": \"string\",\n  \"name\": \"Acme listing scraper\",\n  \"active_version_id\": \"string\",\n  \"version_count\": 1,\n  \"status\": \"TESTING\",\n  \"diagnostics_mode\": \"PRODUCTION\",\n  \"health\": \"GOOD\",\n  \"success_rate\": 8307.001890341457,\n  \"avg_runtime_ms\": 4775.016560757011,\n  \"consecutive_failures\": 9155.13177531449,\n  \"normalize_limit\": 7720.476167631778,\n  \"last_success_at\": \"1981-09-28T17:40:18.974Z\",\n  \"last_failure_at\": \"1997-10-27T07:25:27.659Z\",\n  \"created_at\": \"2022-12-06T14:28:20.202Z\",\n  \"updated_at\": \"1947-11-17T14:37:32.193Z\",\n  \"active_version\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"scraper_id\": \"string\",\n    \"version\": 1,\n    \"config\": {},\n    \"created_by\": \"USER\",\n    \"notes\": \"string\",\n    \"created_at\": \"1957-06-03T17:27:09.390Z\",\n    \"updated_at\": \"2004-06-01T07:57:38.674Z\"\n  },\n  \"source_agency\": {\n    \"name\": \"Acme Real Estate\"\n  }\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             },
@@ -3908,9 +3908,9 @@
         },
         {
           "id": "042195ba-ae64-4e99-a83d-8222fcab5dc4",
-          "name": "Toggle self_healing_enabled and/or update validation_rules (creates a new version)",
+          "name": "Update scraper settings and/or validation_rules (creates a new version)",
           "request": {
-            "name": "Toggle self_healing_enabled and/or update validation_rules (creates a new version)",
+            "name": "Update scraper settings and/or validation_rules (creates a new version)",
             "description": {},
             "url": {
               "path": [
@@ -3946,7 +3946,7 @@
             "method": "PATCH",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"ACTIVE\",\n  \"self_healing_enabled\": false,\n  \"diagnostics_mode\": \"PRODUCTION\",\n  \"normalize_limit\": 50,\n  \"validation_rules\": {}\n}",
+              "raw": "{\n  \"status\": \"ACTIVE\",\n  \"diagnostics_mode\": \"PRODUCTION\",\n  \"normalize_limit\": 50,\n  \"validation_rules\": {}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3987,7 +3987,7 @@
                 "method": "PATCH",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"status\": \"ACTIVE\",\n  \"self_healing_enabled\": false,\n  \"diagnostics_mode\": \"PRODUCTION\",\n  \"normalize_limit\": 50,\n  \"validation_rules\": {}\n}",
+                  "raw": "{\n  \"status\": \"ACTIVE\",\n  \"diagnostics_mode\": \"PRODUCTION\",\n  \"normalize_limit\": 50,\n  \"validation_rules\": {}\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -4003,7 +4003,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"source_agency_id\": \"string\",\n  \"name\": \"Acme listing scraper\",\n  \"active_version_id\": \"string\",\n  \"version_count\": 1,\n  \"status\": \"TESTING\",\n  \"self_healing_enabled\": true,\n  \"diagnostics_mode\": \"PRODUCTION\",\n  \"health\": \"GOOD\",\n  \"success_rate\": 8307.001890341457,\n  \"avg_runtime_ms\": 4775.016560757011,\n  \"consecutive_failures\": 9155.13177531449,\n  \"normalize_limit\": 7720.476167631778,\n  \"last_success_at\": \"1981-09-28T17:40:18.974Z\",\n  \"last_failure_at\": \"1997-10-27T07:25:27.659Z\",\n  \"created_at\": \"2022-12-06T14:28:20.202Z\",\n  \"updated_at\": \"1947-11-17T14:37:32.193Z\",\n  \"active_version\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"scraper_id\": \"string\",\n    \"version\": 1,\n    \"config\": {},\n    \"created_by\": \"USER\",\n    \"notes\": \"string\",\n    \"created_at\": \"1957-06-03T17:27:09.390Z\",\n    \"updated_at\": \"2004-06-01T07:57:38.674Z\"\n  },\n  \"source_agency\": {\n    \"name\": \"Acme Real Estate\"\n  }\n}",
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"source_agency_id\": \"string\",\n  \"name\": \"Acme listing scraper\",\n  \"active_version_id\": \"string\",\n  \"version_count\": 1,\n  \"status\": \"TESTING\",\n  \"diagnostics_mode\": \"PRODUCTION\",\n  \"health\": \"GOOD\",\n  \"success_rate\": 8307.001890341457,\n  \"avg_runtime_ms\": 4775.016560757011,\n  \"consecutive_failures\": 9155.13177531449,\n  \"normalize_limit\": 7720.476167631778,\n  \"last_success_at\": \"1981-09-28T17:40:18.974Z\",\n  \"last_failure_at\": \"1997-10-27T07:25:27.659Z\",\n  \"created_at\": \"2022-12-06T14:28:20.202Z\",\n  \"updated_at\": \"1947-11-17T14:37:32.193Z\",\n  \"active_version\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"scraper_id\": \"string\",\n    \"version\": 1,\n    \"config\": {},\n    \"created_by\": \"USER\",\n    \"notes\": \"string\",\n    \"created_at\": \"1957-06-03T17:27:09.390Z\",\n    \"updated_at\": \"2004-06-01T07:57:38.674Z\"\n  },\n  \"source_agency\": {\n    \"name\": \"Acme Real Estate\"\n  }\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             }
@@ -4306,7 +4306,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"source_agency_id\": \"string\",\n  \"name\": \"Acme listing scraper\",\n  \"active_version_id\": \"string\",\n  \"version_count\": 1,\n  \"status\": \"TESTING\",\n  \"self_healing_enabled\": true,\n  \"diagnostics_mode\": \"PRODUCTION\",\n  \"health\": \"GOOD\",\n  \"success_rate\": 8307.001890341457,\n  \"avg_runtime_ms\": 4775.016560757011,\n  \"consecutive_failures\": 9155.13177531449,\n  \"normalize_limit\": 7720.476167631778,\n  \"last_success_at\": \"1981-09-28T17:40:18.974Z\",\n  \"last_failure_at\": \"1997-10-27T07:25:27.659Z\",\n  \"created_at\": \"2022-12-06T14:28:20.202Z\",\n  \"updated_at\": \"1947-11-17T14:37:32.193Z\",\n  \"active_version\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"scraper_id\": \"string\",\n    \"version\": 1,\n    \"config\": {},\n    \"created_by\": \"USER\",\n    \"notes\": \"string\",\n    \"created_at\": \"1957-06-03T17:27:09.390Z\",\n    \"updated_at\": \"2004-06-01T07:57:38.674Z\"\n  },\n  \"source_agency\": {\n    \"name\": \"Acme Real Estate\"\n  }\n}",
+              "body": "{\n  \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n  \"source_agency_id\": \"string\",\n  \"name\": \"Acme listing scraper\",\n  \"active_version_id\": \"string\",\n  \"version_count\": 1,\n  \"status\": \"TESTING\",\n  \"diagnostics_mode\": \"PRODUCTION\",\n  \"health\": \"GOOD\",\n  \"success_rate\": 8307.001890341457,\n  \"avg_runtime_ms\": 4775.016560757011,\n  \"consecutive_failures\": 9155.13177531449,\n  \"normalize_limit\": 7720.476167631778,\n  \"last_success_at\": \"1981-09-28T17:40:18.974Z\",\n  \"last_failure_at\": \"1997-10-27T07:25:27.659Z\",\n  \"created_at\": \"2022-12-06T14:28:20.202Z\",\n  \"updated_at\": \"1947-11-17T14:37:32.193Z\",\n  \"active_version\": {\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"scraper_id\": \"string\",\n    \"version\": 1,\n    \"config\": {},\n    \"created_by\": \"USER\",\n    \"notes\": \"string\",\n    \"created_at\": \"1957-06-03T17:27:09.390Z\",\n    \"updated_at\": \"2004-06-01T07:57:38.674Z\"\n  },\n  \"source_agency\": {\n    \"name\": \"Acme Real Estate\"\n  }\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             },
@@ -5922,7 +5922,7 @@
             },
             {
               "id": "c8b72e14-0a8d-4948-95bd-cc67c51b4b80",
-              "name": "Run is not FAILED or CANCELLED, or self-healing is disabled",
+              "name": "Run is not FAILED or CANCELLED",
               "originalRequest": {
                 "url": {
                   "path": [

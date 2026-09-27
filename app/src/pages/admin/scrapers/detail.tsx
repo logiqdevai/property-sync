@@ -337,25 +337,6 @@ export default function ScraperDetailPage() {
           </div>
 
           <div className="flex flex-col gap-1.5 justify-center">
-            <span className="text-xs font-medium uppercase tracking-wide text-muted">Self-healing</span>
-            <Switch
-              isSelected={scraper.self_healing_enabled}
-              isDisabled={updateScraper.isPending}
-              onChange={(isSelected) =>
-                updateScraper.mutate({
-                  id: scraper.id,
-                  payload: { self_healing_enabled: isSelected },
-                })
-              }
-            >
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-              <Switch.Content>Enabled</Switch.Content>
-            </Switch>
-          </div>
-
-          <div className="flex flex-col gap-1.5 justify-center">
             <span className="text-xs font-medium uppercase tracking-wide text-muted">
               Managed browser (Bright Data)
             </span>

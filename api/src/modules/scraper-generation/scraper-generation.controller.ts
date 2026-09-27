@@ -136,7 +136,7 @@ export class ScraperGenerationController {
   @ApiResponse({ status: 200, type: ScraperGenerationRun })
   @ApiResponse({
     status: 400,
-    description: 'Run is not FAILED or CANCELLED, or self-healing is disabled',
+    description: 'Run is not FAILED or CANCELLED',
   })
   retry(@Param('id') id: string, @Body() dto: RetryGenerationRunDto) {
     return this.scraperGenerationService.retry(id, dto);

@@ -241,7 +241,6 @@ exports.Prisma.ScraperScalarFieldEnum = {
   active_version_id: 'active_version_id',
   version_count: 'version_count',
   status: 'status',
-  self_healing_enabled: 'self_healing_enabled',
   use_managed_browser: 'use_managed_browser',
   use_proxy_browser: 'use_proxy_browser',
   diagnostics_mode: 'diagnostics_mode',
@@ -856,7 +855,6 @@ exports.ScraperHealth = exports.$Enums.ScraperHealth = {
 
 exports.GenerationTrigger = exports.$Enums.GenerationTrigger = {
   MANUAL: 'MANUAL',
-  SELF_HEAL: 'SELF_HEAL',
   SCHEDULED: 'SCHEDULED'
 };
 
