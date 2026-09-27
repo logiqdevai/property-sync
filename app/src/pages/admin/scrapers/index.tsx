@@ -18,7 +18,6 @@ import { ActionButtonWithPending } from "@/components/ui/action-button-with-pend
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { BulkActionsMenu } from "@/components/ui/bulk-actions-menu";
 import { TableRowActionsMenu, type TableRowAction } from "@/components/ui/table-row-actions-menu";
-import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import { ScraperForm } from "./components/scraper-form";
 import { RunScraperDialog } from "./components/run-scraper-dialog";
 import { ScraperStatusChip } from "./components/scraper-status-chip";
@@ -44,8 +43,19 @@ import {
 import { ScraperStatusFilterOptions } from "@/config/constants/dropdowns/scrapers/scraper-status-filter.options";
 import { ScraperHealthFilterOptions } from "@/config/constants/dropdowns/scrapers/scraper-health-filter.options";
 import { TodayCrawlStatusFilterOptions } from "@/config/constants/dropdowns/scrapers/today-crawl-status-filter.options";
+import { formatCrawlIntervalLabel } from "@/config/constants/dropdowns/agencies/crawl-interval-builder.options";
 import { formatDate, getTodayIso, getLocalDayRangeIso } from "@/lib/date";
 import { useDebouncedValue } from "./hooks/use-debounced-value";
+
+// "All" is sent as the API's max page size.
+const ALL_PAGE_SIZE = "all";
+const MAX_PAGE_SIZE = 1000;
+const PAGE_SIZE_OPTIONS = [
+  { id: ALL_PAGE_SIZE, label: "Show all" },
+  { id: "20", label: "20 per page" },
+  { id: "50", label: "50 per page" },
+  { id: "100", label: "100 per page" },
+];
 
 const SCRAPER_ROW_ACTIONS: TableRowAction[] = [
   { id: "run-now", label: "Run now", icon: Play },
@@ -64,9 +74,9 @@ export default function ScrapersListPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<ScraperStatus | "all">("all");
   const [health, setHealth] = useState<ScraperHealth | "all">("all");
-  const [agencyId, setAgencyId] = useState<string | "all">("all");
   const [todayCrawlStatus, setTodayCrawlStatus] = useState<TodayCrawlStatus | "all">("all");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<string>(ALL_PAGE_SIZE);
   const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set());
   const [deleteScraperId, setDeleteScraperId] = useState<string | null>(null);
   const [runNowScraper, setRunNowScraper] = useState<{ id: string; name: string } | null>(null);
@@ -76,19 +86,17 @@ export default function ScrapersListPage() {
     const { from, to } = getLocalDayRangeIso(getTodayIso());
     return {
       page,
-      limit: 20,
+      limit: pageSize === ALL_PAGE_SIZE ? MAX_PAGE_SIZE : Number(pageSize),
       today_from: from,
       today_to: to,
       ...(debouncedSearch && { search: debouncedSearch }),
       ...(status !== "all" && { status }),
       ...(health !== "all" && { health }),
-      ...(agencyId !== "all" && { source_agency_id: agencyId }),
       ...(todayCrawlStatus !== "all" && { today_crawl_status: todayCrawlStatus }),
     };
-  }, [page, debouncedSearch, status, health, agencyId, todayCrawlStatus]);
+  }, [page, pageSize, debouncedSearch, status, health, todayCrawlStatus]);
 
   const { data, isPending } = useScrapers(query);
-  const { data: agenciesData } = useAgencies({ limit: 100 });
   const createScraper = useCreateScraper();
   const duplicateScraper = useDuplicateScraper();
   const deleteScraper = useDeleteScraper();
@@ -99,7 +107,6 @@ export default function ScrapersListPage() {
 
   const scrapers = data?.data ?? [];
   const pagination = data?.pagination;
-  const agencies = agenciesData?.data ?? [];
   const selectedIds = useMemo(() => {
     if (selectedKeys === "all") {
       return new Set(scrapers.map((scraper) => scraper.id));
@@ -246,33 +253,6 @@ export default function ScrapersListPage() {
         </Select>
 
         <Select
-          aria-label="Filter by agency"
-          selectedKey={agencyId}
-          onSelectionChange={(key) => {
-            setPage(1);
-            setAgencyId(key as string | "all");
-          }}
-          className="w-48"
-        >
-          <Select.Trigger>
-            <Select.Value />
-            <Select.Indicator />
-          </Select.Trigger>
-          <Select.Popover>
-            <ListBox>
-              <ListBox.Item key="all" id="all">
-                All agencies
-              </ListBox.Item>
-              {agencies.map((agency) => (
-                <ListBox.Item key={agency.id} id={agency.id}>
-                  {agency.name}
-                </ListBox.Item>
-              ))}
-            </ListBox>
-          </Select.Popover>
-        </Select>
-
-        <Select
           aria-label="Filter by today's crawl status"
           selectedKey={todayCrawlStatus}
           onSelectionChange={(key) => {
@@ -295,10 +275,33 @@ export default function ScrapersListPage() {
             </ListBox>
           </Select.Popover>
         </Select>
+        <Select
+          aria-label="Scrapers per page"
+          selectedKey={pageSize}
+          onSelectionChange={(key) => {
+            setPage(1);
+            setPageSize(String(key));
+          }}
+          className="w-40"
+        >
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              {PAGE_SIZE_OPTIONS.map((option) => (
+                <ListBox.Item key={option.id} id={option.id}>
+                  {option.label}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
       </div>
 
       {isPending ? (
-        <TableSkeleton rows={8} columns={7} />
+        <TableSkeleton rows={8} columns={8} />
       ) : scrapers.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface p-10 text-center text-sm text-muted">
           No scrapers found.
@@ -328,6 +331,7 @@ export default function ScrapersListPage() {
                   <Table.Column>Agency</Table.Column>
                   <Table.Column>Status</Table.Column>
                   <Table.Column>Health</Table.Column>
+                  <Table.Column>Crawl schedule</Table.Column>
                   <Table.Column>Today&apos;s crawl</Table.Column>
                   <Table.Column>Last success</Table.Column>
                   <Table.Column>Last failure</Table.Column>
@@ -393,6 +397,11 @@ export default function ScrapersListPage() {
                       </Table.Cell>
                       <Table.Cell>
                         <ScraperHealthChip health={scraper.health} />
+                      </Table.Cell>
+                      <Table.Cell className="whitespace-nowrap text-sm">
+                        {scraper.source_agency?.crawl_interval
+                          ? formatCrawlIntervalLabel(scraper.source_agency.crawl_interval)
+                          : "—"}
                       </Table.Cell>
                       <Table.Cell>
                         {scraper.today_crawl_run ? (

@@ -93,6 +93,31 @@ export function buildCrawlIntervalCron(state: CrawlIntervalBuilderState): string
   return `0 ${state.hour} * * ${state.weekday}`;
 }
 
+function formatDaysLabel(days: string[]): string {
+  if (days.length === 0) return "";
+  const names = days.map(
+    (day) => CrawlIntervalBuilderWeekdayOptions.find((option) => option.id === day)?.label.slice(0, 3) ?? day,
+  );
+  return ` on ${names.join(", ")}`;
+}
+
+/** Human-friendly label for a crawl cron; falls back to the raw cron if it can't be parsed. */
+export function formatCrawlIntervalLabel(cron: string): string {
+  const state = parseCrawlIntervalBuilderState(cron);
+  if (!state) return cron;
+
+  const hour = `${state.hour.padStart(2, "0")}:00`;
+  if (state.frequency === CrawlIntervalBuilderFrequencies.WEEKLY) {
+    const weekday = CrawlIntervalBuilderWeekdayOptions.find((option) => option.id === state.weekday)?.label;
+    return `Weekly, ${weekday ?? state.weekday} at ${hour}`;
+  }
+  if (state.frequency === CrawlIntervalBuilderFrequencies.DAILY) {
+    return state.days.length === 0 ? `Daily at ${hour}` : `At ${hour}${formatDaysLabel(state.days)}`;
+  }
+  const every = state.hourlyInterval === "1" ? "Every hour" : `Every ${state.hourlyInterval} hours`;
+  return `${every}${formatDaysLabel(state.days)}`;
+}
+
 export function parseCrawlIntervalBuilderState(
   cron: string,
 ): CrawlIntervalBuilderState | null {

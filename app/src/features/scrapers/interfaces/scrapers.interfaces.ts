@@ -79,7 +79,7 @@ export interface Scraper {
   created_at: string;
   updated_at: string;
   active_version?: ScraperVersion | null;
-  source_agency?: { id?: string; name: string; base_url?: string };
+  source_agency?: { id?: string; name: string; base_url?: string; crawl_interval?: string };
   today_crawl_run?: ScraperTodayCrawlRun | null;
 }
 

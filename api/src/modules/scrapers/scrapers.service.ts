@@ -63,7 +63,9 @@ export class ScrapersService {
     const [items, total] = await Promise.all([
       this.prisma.scraper.findMany({
         where,
-        include: { source_agency: { select: { name: true, base_url: true } } },
+        include: {
+          source_agency: { select: { name: true, base_url: true, crawl_interval: true } },
+        },
         skip: (query.page - 1) * query.limit,
         take: query.limit,
         orderBy: { created_at: 'desc' },

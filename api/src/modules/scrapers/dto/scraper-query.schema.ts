@@ -11,7 +11,7 @@ export const ScraperQuerySchema = z.object({
   limit: z
     .string()
     .optional()
-    .transform((v) => (v ? Math.min(parseInt(v, 10), 100) : 20)),
+    .transform((v) => (v ? Math.min(parseInt(v, 10), 1000) : 20)),
   search: z.string().optional(),
   status: z.nativeEnum(ScraperStatus).optional(),
   health: z.nativeEnum(ScraperHealth).optional(),
