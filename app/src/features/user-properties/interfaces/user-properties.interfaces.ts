@@ -122,6 +122,7 @@ export interface UserPropertyListQuery {
   price_min?: number;
   price_max?: number;
   has_duplicate_group?: boolean;
+  has_price?: boolean;
   pushed_to_crm?: boolean;
   pending_crm_update?: boolean;
   agency_id?: string;

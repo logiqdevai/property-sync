@@ -283,6 +283,7 @@ export class UserPropertiesService {
       !!sourceAgencyId ||
       query.has_duplicate_group !== undefined ||
       !!historyFilter;
+    const priceWhere = this.buildPriceWhere(query);
 
     return {
       user_id: userId,
@@ -311,14 +312,7 @@ export class UserPropertiesService {
           ...(historyFilter && { history: historyFilter }),
         },
       }),
-      ...(query.price_min != null || query.price_max != null
-        ? {
-            price: {
-              ...(query.price_min != null ? { gte: query.price_min } : {}),
-              ...(query.price_max != null ? { lte: query.price_max } : {}),
-            },
-          }
-        : {}),
+      ...(priceWhere !== undefined ? { price: priceWhere } : {}),
       ...(!query.change && (query.date_from || query.date_to)
         ? {
             created_at: {
@@ -336,6 +330,31 @@ export class UserPropertiesService {
       ...(query.pending_crm_update !== undefined && {
         pending_crm_update: query.pending_crm_update,
       }),
+    };
+  }
+
+  // has_price === false ("no price") takes precedence over price_min/price_max --
+  // a range filter combined with "must be null" is a contradictory combo the UI
+  // shouldn't produce, so we just drop the range instead of building an
+  // impossible-to-satisfy Prisma filter.
+  private buildPriceWhere(
+    query: Pick<
+      Omit<UserPropertyQueryType, 'page' | 'limit'>,
+      'price_min' | 'price_max' | 'has_price'
+    >,
+  ): Prisma.UserPropertyWhereInput['price'] | undefined {
+    if (query.has_price === false) return null;
+    if (
+      query.price_min == null &&
+      query.price_max == null &&
+      query.has_price !== true
+    ) {
+      return undefined;
+    }
+    return {
+      ...(query.price_min != null && { gte: query.price_min }),
+      ...(query.price_max != null && { lte: query.price_max }),
+      ...(query.has_price === true && { not: null }),
     };
   }
 

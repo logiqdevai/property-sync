@@ -163,6 +163,13 @@ export function extractInternalIdFromText(
 const PRICE_PATTERNS: RegExp[] = [
   /(?:Τιμή|Price)\s*[:：]?\s*(\d[\d.,]*)\s*(€|ευρώ|EUR(?![A-Za-z]))?/iu,
   /(\d[\d.,]*)\s*(€|ευρώ|EUR(?![A-Za-z]))/iu,
+  // Symbol-first mentions with no label, e.g. a title like "..., € 335.000, 119
+  // τ.μ." (common on Greek listing templates that bake price into the card/page
+  // title before the number) -- the pattern above only matches digits-then-symbol
+  // and silently returns null for this order, permanently freezing price at null
+  // (see [[project_price_field_freeze_null_bug]]) whenever nothing else in the
+  // scraped text happens to also restate the price in digit-first order.
+  /(?:€|ευρώ|EUR(?![A-Za-z]))\s*(\d[\d.,]*\d|\d)/iu,
 ];
 
 export function extractPriceFromText(

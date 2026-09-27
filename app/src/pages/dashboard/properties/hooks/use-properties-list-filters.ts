@@ -55,6 +55,7 @@ export type PropertiesListFilters = {
   search: string;
   trackedAgencyId: string | "all";
   duplicateGroup: PropertiesListBoolFilter;
+  hasPrice: PropertiesListBoolFilter;
   pushedToCrm: PropertiesListBoolFilter;
   pendingCrmUpdate: PropertiesListBoolFilter;
   dateFrom: string;
@@ -117,6 +118,7 @@ function parseFilters(searchParams: URLSearchParams): PropertiesListFilters {
     search: searchParams.get("search") ?? "",
     trackedAgencyId: searchParams.get("agency") ?? "all",
     duplicateGroup: parseBoolFilter(searchParams.get("duplicate_group")),
+    hasPrice: parseBoolFilter(searchParams.get("has_price")),
     pushedToCrm: parseBoolFilter(searchParams.get("pushed_to_crm")),
     pendingCrmUpdate: parseBoolFilter(searchParams.get("pending_crm_update")),
     dateFrom: searchParams.get("date_from") ?? "",
@@ -139,6 +141,9 @@ function buildSearchParams(filters: PropertiesListFilters): URLSearchParams {
   }
   if (filters.duplicateGroup !== "all") {
     params.set("duplicate_group", filters.duplicateGroup);
+  }
+  if (filters.hasPrice !== "all") {
+    params.set("has_price", filters.hasPrice);
   }
   if (filters.pushedToCrm !== "all") {
     params.set("pushed_to_crm", filters.pushedToCrm);
@@ -166,6 +171,7 @@ function countActiveFilters(filters: PropertiesListFilters): number {
     filters.change !== "all",
     filters.trackedAgencyId !== "all",
     filters.duplicateGroup !== "all",
+    filters.hasPrice !== "all",
     filters.pushedToCrm !== "all",
     filters.pendingCrmUpdate !== "all",
     Boolean(filters.dateFrom),

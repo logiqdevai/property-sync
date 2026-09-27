@@ -84,6 +84,11 @@ export class UserPropertiesController {
     enum: ['true', 'false'],
   })
   @ApiQuery({
+    name: 'has_price',
+    required: false,
+    enum: ['true', 'false'],
+  })
+  @ApiQuery({
     name: 'pushed_to_crm',
     required: false,
     enum: ['true', 'false'],
@@ -130,6 +135,11 @@ export class UserPropertiesController {
   @ApiQuery({ name: 'price_max', required: false, type: Number })
   @ApiQuery({
     name: 'has_duplicate_group',
+    required: false,
+    enum: ['true', 'false'],
+  })
+  @ApiQuery({
+    name: 'has_price',
     required: false,
     enum: ['true', 'false'],
   })
@@ -185,6 +195,11 @@ export class UserPropertiesController {
   @ApiQuery({ name: 'price_max', required: false, type: Number })
   @ApiQuery({
     name: 'has_duplicate_group',
+    required: false,
+    enum: ['true', 'false'],
+  })
+  @ApiQuery({
+    name: 'has_price',
     required: false,
     enum: ['true', 'false'],
   })

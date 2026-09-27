@@ -36,6 +36,7 @@ export const UserPropertyQuerySchema = z.object({
     .optional()
     .transform((v) => (v ? parseFloat(v) : undefined)),
   has_duplicate_group: booleanQueryParam,
+  has_price: booleanQueryParam,
   pushed_to_crm: booleanQueryParam,
   pending_crm_update: booleanQueryParam,
   agency_id: z.string().uuid().optional(),

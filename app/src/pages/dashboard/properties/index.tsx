@@ -46,6 +46,7 @@ import { PropertyStatusFilterOptions } from "@/config/constants/dropdowns/proper
 import { PropertyChangeFilterOptions } from "@/config/constants/dropdowns/properties/property-change-filter.options";
 import { PropertySortByOptions } from "@/config/constants/dropdowns/properties/property-sort-by.options";
 import { PropertyDuplicateGroupFilterOptions } from "@/config/constants/dropdowns/properties/property-duplicate-group-filter.options";
+import { PropertyHasPriceFilterOptions } from "@/config/constants/dropdowns/properties/property-has-price-filter.options";
 import { PropertyCrmPushFilterOptions } from "@/config/constants/dropdowns/properties/property-crm-push-filter.options";
 import { PropertyPendingCrmUpdateFilterOptions } from "@/config/constants/dropdowns/properties/property-pending-crm-update-filter.options";
 import { OrderDirectionOptions } from "@/config/constants/dropdowns/shared/order-direction.options";
@@ -328,6 +329,7 @@ export default function DashboardPropertiesListPage() {
     search,
     trackedAgencyId,
     duplicateGroup,
+    hasPrice,
     pushedToCrm,
     pendingCrmUpdate,
     dateFrom,
@@ -364,6 +366,9 @@ export default function DashboardPropertiesListPage() {
       ...(duplicateGroup !== "all" && {
         has_duplicate_group: duplicateGroup === "true",
       }),
+      ...(hasPrice !== "all" && {
+        has_price: hasPrice === "true",
+      }),
       ...(pushedToCrm !== "all" && {
         pushed_to_crm: pushedToCrm === "true",
       }),
@@ -383,6 +388,7 @@ export default function DashboardPropertiesListPage() {
       search,
       trackedAgencyId,
       duplicateGroup,
+      hasPrice,
       pushedToCrm,
       pendingCrmUpdate,
       dateFrom,
@@ -1181,6 +1187,30 @@ export default function DashboardPropertiesListPage() {
               <Select.Popover>
                 <ListBox>
                   {PropertyDuplicateGroupFilterOptions.map((option) => (
+                    <ListBox.Item key={option.id} id={option.id}>
+                      {option.label}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
+            <Select
+              aria-label="Filter by price"
+              selectedKey={hasPrice}
+              onSelectionChange={(key) => {
+                setFilters({
+                  hasPrice: key as PropertiesListBoolFilter,
+                });
+              }}
+              className="w-full sm:w-44"
+            >
+              <Select.Trigger>
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {PropertyHasPriceFilterOptions.map((option) => (
                     <ListBox.Item key={option.id} id={option.id}>
                       {option.label}
                     </ListBox.Item>
