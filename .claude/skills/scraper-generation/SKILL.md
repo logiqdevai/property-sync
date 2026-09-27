@@ -242,8 +242,7 @@ Practical technique:
 ## 7. Write to the DB
 
 Insert `Scraper` + `ScraperVersion` in one transaction, mirroring what
-`scripts/scraper-generator/promote/index.js` does for AI-generated configs but with `created_by: 'USER'`
-since it's hand-authored (not produced by the `ComputerUseOrchestratorService` pipeline):
+`scripts/scraper-generator/promote/index.js` does but with `created_by: 'USER'` since it's hand-authored:
 
 ```js
 await client.query('BEGIN');

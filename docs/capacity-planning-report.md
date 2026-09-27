@@ -22,7 +22,7 @@ This matters because most of the report's numbers depend on *which* architecture
 |---|---|---|
 | Browser model | ✅ One shared Chromium singleton (`stealth-browser.service.ts`), relaunched on disconnect | Same — already matches target |
 | Context isolation | ✅ New `BrowserContext` + `Page` per job, closed after use | Same — already matches target |
-| Queue | ✅ BullMQ + Redis, queues: `generation`, `crawl`, `ai-batch-complete` (`queues.constants.ts`) | Same |
+| Queue | ✅ BullMQ + Redis, queues: `crawl`, `ai-batch-complete` (`queues.constants.ts`) | Same |
 | Worker concurrency | ✅ `CRAWL_WORKER_CONCURRENCY` env, default **5** (`crawler.constants.ts:9-11`) | Same mechanism, target suggests 5–10 |
 | Detail-page concurrency | ✅ `CRAWL_DETAIL_CONCURRENCY` env, default **3**, nested inside each crawl job | Not explicitly discussed in target doc |
 | Worker process separation | ❌ Worker runs **in-process** with the API (single `main.ts`, single `Dockerfile`, single `railway.toml`) | ❌ Not yet — target calls for independent worker containers |
@@ -117,7 +117,7 @@ Options considered:
 00:00–03:15  Worker drains queue at concurrency 8 (~13 batches × 15 min)
 03:15–04:00  Automatic retries for any failed jobs (BullMQ backoff, small remaining queue)
 04:00–24:00  Idle / available for: on-demand re-scrapes, a second freshness pass,
-             AI scraper-generation jobs (`generation` queue), ai-batch-complete processing
+             ai-batch-complete processing
 ```
 
 Running the batch overnight (00:00 start) avoids competing with any daytime API traffic on the same container, which matters *specifically because* the worker and API share a process today (§0).
@@ -175,7 +175,7 @@ The inflection points worth remembering: **~250 agencies** is roughly where "jus
            │                               │
            ▼                               ▼
      PostgreSQL (Prisma)              Redis (BullMQ queues:
-     SourceAgency/Scraper/            generation, crawl,
+     SourceAgency/Scraper/            crawl,
      ScraperVersion/results           ai-batch-complete)
 ```
 
@@ -190,7 +190,6 @@ flowchart TB
     end
 
     subgraph Queue["Redis"]
-        Q1[generation queue]
         Q2[crawl queue]
         Q3[ai-batch-complete queue]
         DLQ[dead-letter queue]
@@ -223,7 +222,6 @@ flowchart TB
     W2 -->|write results| PG
     W3 -->|write results| PG
     NestAPI --> PG
-    Q1 --> W1
     Q3 --> NestAPI
     Workers --> Metrics
     Queue --> BullBoard
@@ -232,7 +230,7 @@ flowchart TB
 
 **Component notes:**
 
-- **API service**: unchanged — enqueues crawl jobs, serves the product, handles the AI computer-use scraper-generation pipeline.
+- **API service**: unchanged — enqueues crawl jobs, serves the product.
 - **Redis / BullMQ**: already implemented for the 3 existing queues; add an explicit dead-letter queue for jobs that exhaust retries, so failures are inspectable rather than silently dropped.
 - **Worker fleet**: the structural change — extract `CrawlProcessor` + `StealthBrowserService` into their own deployable (own `Dockerfile`/Railway service), so Railway (or manual ops) can run N replicas, each independently holding one shared Chromium process and its own concurrency setting, all pulling from the same `crawl` queue. BullMQ handles job distribution across replicas automatically.
 - **PostgreSQL**: unchanged structurally; revisit pooling/read replicas only at the 1,000–5,000 agency tier.
@@ -286,7 +284,7 @@ Rough monthly compute envelope at concurrency 8, ~3.25h/day active + idle baseli
 | Worker processes | 1 today; plan to split into an independent worker service before ~500 agencies |
 | Browser architecture | Keep current: 1 shared Chromium + context-per-job. No change needed. |
 | Queue configuration | Keep BullMQ/Redis; add dead-letter queue and verify retry/backoff config (§7 gaps) |
-| Daily schedule | Single enqueue-all-100 batch, continuous drain at concurrency 8 (~3.25h), rest of day free for retries/freshness/generation jobs |
+| Daily schedule | Single enqueue-all-100 batch, continuous drain at concurrency 8 (~3.25h), rest of day free for retries/freshness passes |
 | Resource allocation | No hardware change needed at 100–250 agencies |
 | Scaling strategy | Horizontal worker replicas behind the same BullMQ queue, required by ~500–1,000 agencies (§5) |
 | Production deployment | Split API and worker into separate Railway services as the first structural step — everything else in this report assumes that eventually happens and gets easier once it does |
