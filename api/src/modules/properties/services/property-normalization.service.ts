@@ -1727,6 +1727,25 @@ export class PropertyNormalizationService {
       crawlStartedAt.getTime() - 30 * 24 * 60 * 60 * 1000,
     );
 
+    // An admin-confirmed drop (skip_spike_check) is the new normal: the baseline
+    // must not reach back past it, or every later crawl re-trips the guard until
+    // the pre-drop high-water mark ages out of the 30-day window.
+    const lastConfirmedRun = await this.prisma.crawlRun.findFirst({
+      where: {
+        source_agency_id: sourceAgencyId,
+        status: CrawlRunStatus.SUCCESS,
+        started_at: { gte: coverageLookbackStart, lt: crawlStartedAt },
+        metadata: { path: ['skip_spike_check'], equals: true },
+      },
+      orderBy: { started_at: 'desc' },
+      select: { started_at: true },
+    });
+    const baselineStart =
+      lastConfirmedRun?.started_at &&
+      lastConfirmedRun.started_at > coverageLookbackStart
+        ? lastConfirmedRun.started_at
+        : coverageLookbackStart;
+
     const [agencyProperties, crawlRun, recentCoverage] = await Promise.all([
       this.prisma.property.findMany({
         where: {
@@ -1755,7 +1774,7 @@ export class PropertyNormalizationService {
           id: { not: crawlRunId },
           total_found: { gt: 0 },
           started_at: {
-            gte: coverageLookbackStart,
+            gte: baselineStart,
             lt: crawlStartedAt,
           },
         },
