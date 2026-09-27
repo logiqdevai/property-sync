@@ -26,6 +26,12 @@ import {
 } from '../utils/webshare-proxy-format.util';
 import { WebshareClientService } from './webshare-client.service';
 
+const WEBSHARE_PICK_MAX_ATTEMPTS = 20;
+
+function isUsablePort(port: number): boolean {
+  return Number.isInteger(port) && port > 0 && port <= 65535;
+}
+
 @Injectable()
 export class WebshareProxyService {
   constructor(
@@ -133,10 +139,41 @@ export class WebshareProxyService {
       );
     }
 
-    const page = 1 + Math.floor(Math.random() * head.count);
-    if (page === 1) return head.results[0];
-    const picked = await this.listProxiesPage({ ...base, page });
-    return picked.results[0] ?? head.results[0];
+    // Backbone entries are numbered onto ports 10000+index, so most of a
+    // 200k-entry pool lands above 65535 -- an unusable port (Chromium reports
+    // ERR_PROXY_CONNECTION_FAILED). Re-roll until the port is real.
+    if (isUsablePort(head.results[0].port)) {
+      const page = 1 + Math.floor(Math.random() * head.count);
+      if (page === 1) return head.results[0];
+      const picked = await this.listProxiesPage({ ...base, page });
+      const candidate = picked.results[0];
+      if (candidate && isUsablePort(candidate.port)) return candidate;
+    }
+
+    for (let attempt = 0; attempt < WEBSHARE_PICK_MAX_ATTEMPTS; attempt++) {
+      const page = 1 + Math.floor(Math.random() * head.count);
+      const res = await this.listProxiesPage({ ...base, page });
+      const candidate = res.results[0];
+      if (candidate && isUsablePort(candidate.port)) return candidate;
+    }
+
+    // Unlucky (or a country filter with few low-numbered entries): scan the
+    // start of the list, whose ports are always in range.
+    const firstPage = await this.listProxiesPage({
+      ...base,
+      pageSize: WEBSHARE_DEFAULT_PAGE_SIZE,
+      page: 1,
+    });
+    const usable = firstPage.results.filter((p) => isUsablePort(p.port));
+    if (usable.length > 0) {
+      return usable[Math.floor(Math.random() * usable.length)];
+    }
+    throw new WebshareException(
+      'No Webshare proxies with a usable port available',
+      'WEBSHARE_NO_PROXIES',
+      HttpStatus.SERVICE_UNAVAILABLE,
+      { countryCodes: codes },
+    );
   }
 
   toProxyUrl(
