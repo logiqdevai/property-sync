@@ -1,4 +1,5 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import axios from 'axios';
 import { WebshareConfig } from '../config/webshare.config';
 import {
   WEBSHARE_DEFAULT_PAGE_SIZE,
@@ -26,14 +27,24 @@ import {
 } from '../utils/webshare-proxy-format.util';
 import { WebshareClientService } from './webshare-client.service';
 
-const WEBSHARE_PICK_MAX_ATTEMPTS = 20;
+// How many different exits to try before giving up on a proxy crawl. ~30% of
+// entries the API reports as `valid` are dead (see pickWorkingProxy), so six
+// attempts put the odds of finding none at well under 0.1%.
+const WEBSHARE_PROBE_MAX_ATTEMPTS = 6;
+const WEBSHARE_PROBE_TIMEOUT_MS = 15_000;
 
-function isUsablePort(port: number): boolean {
-  return Number.isInteger(port) && port > 0 && port <= 65535;
-}
+// Statuses that mean the GATEWAY could not serve us, not that the target
+// answered: 407 = the username does not resolve to an exit, 502/503/504 = the
+// exit node is unreachable. Anything else (including a 403/404/405 to our HEAD)
+// proves the tunnel works and is the target's own answer.
+const WEBSHARE_GATEWAY_FAILURE_STATUSES: ReadonlySet<number> = new Set([
+  407, 502, 503, 504,
+]);
 
 @Injectable()
 export class WebshareProxyService {
+  private readonly logger = new Logger(WebshareProxyService.name);
+
   constructor(
     private readonly client: WebshareClientService,
     private readonly config: WebshareConfig,
@@ -139,41 +150,90 @@ export class WebshareProxyService {
       );
     }
 
-    // Backbone entries are numbered onto ports 10000+index, so most of a
-    // 200k-entry pool lands above 65535 -- an unusable port (Chromium reports
-    // ERR_PROXY_CONNECTION_FAILED). Re-roll until the port is real.
-    if (isUsablePort(head.results[0].port)) {
-      const page = 1 + Math.floor(Math.random() * head.count);
-      if (page === 1) return head.results[0];
-      const picked = await this.listProxiesPage({ ...base, page });
-      const candidate = picked.results[0];
-      if (candidate && isUsablePort(candidate.port)) return candidate;
+    const page = 1 + Math.floor(Math.random() * head.count);
+    if (page === 1) return head.results[0];
+    const picked = await this.listProxiesPage({ ...base, page });
+    return picked.results[0] ?? head.results[0];
+  }
+
+  /**
+   * A proxy that is reachable *right now*, for a crawl that cannot recover from
+   * a dead one (the whole run navigates through this single exit).
+   *
+   * `valid: true` from the API is stale: probed live 2026-09-27 over 30 random
+   * entries, only 21 could actually carry traffic -- the rest had the gateway
+   * answer 502 or reset the connection, which surfaces mid-crawl as an opaque
+   * Playwright navigation error. So each candidate is probed with one cheap
+   * HEAD through the proxy and re-rolled until one answers.
+   */
+  async pickWorkingProxy(
+    probeUrl: string,
+    countryCodes?: string[],
+  ): Promise<WebshareProxy> {
+    if (!this.isProbeableUrl(probeUrl)) {
+      this.logger.warn(
+        `Cannot probe proxies against "${probeUrl}" -- picking one unverified`,
+      );
+      return this.pickRandomProxy(countryCodes);
     }
 
-    for (let attempt = 0; attempt < WEBSHARE_PICK_MAX_ATTEMPTS; attempt++) {
-      const page = 1 + Math.floor(Math.random() * head.count);
-      const res = await this.listProxiesPage({ ...base, page });
-      const candidate = res.results[0];
-      if (candidate && isUsablePort(candidate.port)) return candidate;
+    const failures: string[] = [];
+    for (let attempt = 0; attempt < WEBSHARE_PROBE_MAX_ATTEMPTS; attempt++) {
+      const proxy = await this.pickRandomProxy(countryCodes);
+      const failure = await this.probeProxy(proxy, probeUrl);
+      if (!failure) return proxy;
+      failures.push(`${proxy.id}: ${failure}`);
     }
 
-    // Unlucky (or a country filter with few low-numbered entries): scan the
-    // start of the list, whose ports are always in range.
-    const firstPage = await this.listProxiesPage({
-      ...base,
-      pageSize: WEBSHARE_DEFAULT_PAGE_SIZE,
-      page: 1,
-    });
-    const usable = firstPage.results.filter((p) => isUsablePort(p.port));
-    if (usable.length > 0) {
-      return usable[Math.floor(Math.random() * usable.length)];
-    }
     throw new WebshareException(
-      'No Webshare proxies with a usable port available',
-      'WEBSHARE_NO_PROXIES',
+      `No reachable Webshare proxy after ${WEBSHARE_PROBE_MAX_ATTEMPTS} attempts (${failures.join('; ')})`,
+      'WEBSHARE_NO_REACHABLE_PROXY',
       HttpStatus.SERVICE_UNAVAILABLE,
-      { countryCodes: codes },
+      { probeUrl, failures },
     );
+  }
+
+  /** `null` when the proxy carried the request, else a short reason it did not. */
+  private async probeProxy(
+    proxy: WebshareProxy,
+    probeUrl: string,
+  ): Promise<string | null> {
+    const endpoint = toProxyEndpoint(proxy, 'http');
+    try {
+      const response = await axios.request({
+        url: probeUrl,
+        method: 'HEAD',
+        timeout: WEBSHARE_PROBE_TIMEOUT_MS,
+        maxRedirects: 2,
+        validateStatus: () => true,
+        proxy: {
+          protocol: endpoint.protocol,
+          host: endpoint.host,
+          port: endpoint.port,
+          auth: {
+            username: endpoint.username,
+            password: endpoint.password,
+          },
+        },
+      });
+      return WEBSHARE_GATEWAY_FAILURE_STATUSES.has(response.status)
+        ? `gateway returned ${response.status}`
+        : null;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        return error.code ?? error.message;
+      }
+      return error instanceof Error ? error.message : String(error);
+    }
+  }
+
+  private isProbeableUrl(url: string): boolean {
+    try {
+      const { protocol } = new URL(url);
+      return protocol === 'http:' || protocol === 'https:';
+    } catch {
+      return false;
+    }
   }
 
   toProxyUrl(

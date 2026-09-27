@@ -208,7 +208,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       // The managed (Bright Data) browser wins if both flags are set.
       const proxySession =
         scraper.use_proxy_browser && !useManagedBrowser
-          ? await this.openProxySession(scraper.id)
+          ? await this.openProxySession(scraper.id, config.start_url)
           : undefined;
 
       const platformCrawlerConfig =
@@ -720,11 +720,21 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
   // refused instead of starting one that could run the allowance dry.
   private static readonly PROXY_MIN_REMAINING_BYTES = 20 * 1024 * 1024;
 
+  // Most a SINGLE crawl may spend, independent of what the plan has left. The
+  // plan remainder alone is the wrong ceiling: on the current 1 GB/month
+  // residential plan it lets one runaway crawl (a pagination loop, or a site
+  // that turns out to have thousands of listings) swallow the entire month in
+  // one run, taking every other proxy scraper down with it. A normal run of a
+  // few hundred pages with images/media/fonts blocked stays well under this.
+  private static readonly PROXY_MAX_BYTES_PER_CRAWL = 150 * 1024 * 1024;
+
   // Picks ONE Webshare proxy for the whole crawl (same exit IP for the listing
   // walk and every detail page, so a cleared bot challenge stays valid) and
-  // caps the crawl at what is left of the plan.
+  // caps the crawl at the smaller of the per-crawl budget and what is left of
+  // the plan.
   private async openProxySession(
     scraperId: string,
+    probeUrl: string,
   ): Promise<ProxyBrowserSession> {
     if (!this.webshareProxyService.isConfigured()) {
       throw new Error(
@@ -732,7 +742,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       );
     }
 
-    let maxBytes = Infinity;
+    let maxBytes = CrawlProcessor.PROXY_MAX_BYTES_PER_CRAWL;
     try {
       const usage = await this.webshareUsageService.getUsage();
       if (
@@ -744,7 +754,7 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
             `Webshare bandwidth nearly exhausted (${usage.remaining_bytes} bytes left) -- refusing to start a proxy crawl`,
           );
         }
-        maxBytes = usage.remaining_bytes;
+        maxBytes = Math.min(maxBytes, usage.remaining_bytes);
       }
     } catch (error) {
       // An unreachable usage endpoint must not block crawling; only the
@@ -759,9 +769,11 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       );
     }
 
-    const proxy = await this.webshareProxyService.pickRandomProxy();
+    // Probed against the crawl's own start URL, so the exit we commit the whole
+    // run to is known to reach this specific target before Chromium launches.
+    const proxy = await this.webshareProxyService.pickWorkingProxy(probeUrl);
     this.logger.log(
-      `Proxy crawl for scraper ${scraperId} via Webshare ${proxy.id} (${proxy.country_code ?? '??'})`,
+      `Proxy crawl for scraper ${scraperId} via Webshare ${proxy.id} (${proxy.country_code ?? '??'}), budget ${maxBytes} bytes`,
     );
     return createProxyBrowserSession(
       this.webshareProxyService.toPlaywrightProxy(proxy),

@@ -316,7 +316,14 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
   async openProxyBrowser(session: ProxyBrowserSession): Promise<Browser> {
     const browser = await chromium.launch({
       headless: true,
-      args: [...STEALTH_LAUNCH_ARGS],
+      // HTTP/2 is disabled for proxied traffic only. Chromium keeps negotiating
+      // h2 with the origin through the proxy's CONNECT tunnel, and a real
+      // target (hellashomes.gr) reproducibly killed every navigation with
+      // ERR_HTTP2_PROTOCOL_ERROR that way while the very same request over
+      // HTTP/1.1 returned the full page -- through more than 20 different
+      // residential exits, so it is the protocol, not the exit. Costs a little
+      // request parallelism on one crawl; h2 stays on for direct crawls.
+      args: [...STEALTH_LAUNCH_ARGS, '--disable-http2'],
       proxy: session.proxy,
     });
     this.logger.log('Launched Chromium through Webshare proxy');

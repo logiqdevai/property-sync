@@ -12,6 +12,7 @@ export type WebshareErrorCode =
   | 'WEBSHARE_TIMEOUT'
   | 'WEBSHARE_INVALID_RESPONSE'
   | 'WEBSHARE_NO_PROXIES'
+  | 'WEBSHARE_NO_REACHABLE_PROXY'
   | 'WEBSHARE_API_ERROR';
 
 export interface WebshareExceptionBody {

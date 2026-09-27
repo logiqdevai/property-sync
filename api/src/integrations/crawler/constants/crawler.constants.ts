@@ -87,3 +87,13 @@ export const PROXY_BROWSER_MIN_PAGE_TIMEOUT_MS = 60_000;
 // (the local-browser defaults, 15-20s, are too short for a cold-context solve
 // over a residential proxy).
 export const PROXY_BROWSER_CHALLENGE_WAIT_MS = 45_000;
+
+// waitForSelector resolves on the FIRST matching card, but a listing page keeps
+// filling the DOM after that -- so counting immediately undercounts the page.
+// Measured live on hellashomes.gr through a residential proxy: 14 cards the
+// instant the selector matched, 19 a second later, and stable at 19 from then
+// on. Reading the count too early silently drops those listings from the crawl
+// (and, worse, makes a full page look like a partial one downstream). So poll
+// until the count stops growing, then move on.
+export const LISTING_COUNT_SETTLE_POLL_MS = 400;
+export const LISTING_COUNT_SETTLE_MAX_MS = 6_000;

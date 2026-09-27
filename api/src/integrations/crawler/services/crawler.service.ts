@@ -22,6 +22,8 @@ import {
   INFINITE_SCROLL_MAX_WAIT_MS,
   INFINITE_SCROLL_POLL_INTERVAL_MS,
   INFINITE_SCROLL_STEP_VIEWPORT_RATIO,
+  LISTING_COUNT_SETTLE_MAX_MS,
+  LISTING_COUNT_SETTLE_POLL_MS,
   MANAGED_BROWSER_MIN_PAGE_TIMEOUT_MS,
   PROXY_BROWSER_CHALLENGE_WAIT_MS,
   PROXY_BROWSER_MIN_PAGE_TIMEOUT_MS,
@@ -264,11 +266,12 @@ export class CrawlerService {
 
         log(`page_${pageNum}`, { url: currentUrl });
 
-        try {
-          await page.waitForSelector(config.listing_selector, {
-            timeout: crawlerConfig.selector_timeout_ms,
-          });
-        } catch {
+        const cardsAppeared = await this.waitForListingCards(
+          page,
+          config.listing_selector,
+          crawlerConfig.selector_timeout_ms,
+        );
+        if (!cardsAppeared) {
           log('selector_timeout', {
             selector: config.listing_selector,
             page: pageNum,
@@ -282,6 +285,8 @@ export class CrawlerService {
           }
           break;
         }
+
+        await this.settleListingCount(page, config.listing_selector, log);
 
         const cardCount = await page.locator(config.listing_selector).count();
         log('cards_found', { count: cardCount, page: pageNum });
@@ -1051,6 +1056,66 @@ export class CrawlerService {
     }
 
     return page.url() !== urlBefore;
+  }
+
+  // waitForSelector's default state is 'visible', which a real listing card can
+  // legitimately fail: with images blocked (every proxied crawl -- see
+  // proxy-resource-blocking.util) a card whose height comes from its photo can
+  // measure 0px and never count as visible, timing the whole crawl out on a page
+  // that actually rendered. Confirmed live on hellashomes.gr. So fall back to
+  // 'attached': cards present in the DOM are extractable whether or not the
+  // layout gives them a box.
+  private async waitForListingCards(
+    page: Page,
+    listingSelector: string,
+    timeoutMs: number,
+  ): Promise<boolean> {
+    try {
+      await page.waitForSelector(listingSelector, { timeout: timeoutMs });
+      return true;
+    } catch {
+      try {
+        await page.waitForSelector(listingSelector, {
+          timeout: timeoutMs,
+          state: 'attached',
+        });
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  }
+
+  // See LISTING_COUNT_SETTLE_*: wait for the card count to stop growing so the
+  // page is read whole, not mid-render.
+  private async settleListingCount(
+    page: Page,
+    listingSelector: string,
+    log: (event: string, data?: Record<string, unknown>) => void,
+  ): Promise<void> {
+    const deadline = Date.now() + LISTING_COUNT_SETTLE_MAX_MS;
+    let previous = await page
+      .locator(listingSelector)
+      .count()
+      .catch(() => 0);
+    const initial = previous;
+
+    while (Date.now() < deadline) {
+      await page.waitForTimeout(LISTING_COUNT_SETTLE_POLL_MS);
+      const current = await page
+        .locator(listingSelector)
+        .count()
+        .catch(() => previous);
+      if (current === previous) {
+        if (current !== initial) {
+          log('listing_count_settled', { from: initial, to: current });
+        }
+        return;
+      }
+      previous = current;
+    }
+
+    log('listing_count_still_growing', { from: initial, to: previous });
   }
 
   private async waitForListingFingerprintChange(
