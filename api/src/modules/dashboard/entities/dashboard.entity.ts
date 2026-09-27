@@ -5,8 +5,7 @@ export type ActivityFeedType =
   | 'crawl_failed'
   | 'listing_created'
   | 'listing_removed'
-  | 'scraper_broken'
-  | 'generation';
+  | 'scraper_broken';
 
 export class DashboardKpis {
   @ApiProperty()
@@ -64,9 +63,6 @@ export class DashboardKpis {
   queue_failed: number;
 
   @ApiProperty()
-  active_generation_runs: number;
-
-  @ApiProperty()
   active_integrations: number;
 
   @ApiProperty()
@@ -84,7 +80,6 @@ export class ActivityFeedItem {
       'listing_created',
       'listing_removed',
       'scraper_broken',
-      'generation',
     ],
   })
   type: ActivityFeedType;
@@ -97,9 +92,6 @@ export class ActivityFeedItem {
 
   @ApiProperty({ required: false })
   crawl_run_id?: string;
-
-  @ApiProperty({ required: false })
-  generation_run_id?: string;
 
   @ApiProperty({ required: false })
   scraper_id?: string;

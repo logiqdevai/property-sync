@@ -1,7 +1,6 @@
 import fs from 'fs';
-import path from 'path';
 import readline from 'node:readline/promises';
-import { prisma, OUTPUT_DIR, STEPS_DIR, RUN_PATH, VERSION_PATH } from './config.js';
+import { prisma, OUTPUT_DIR, VERSION_PATH } from './config.js';
 
 function readJson(filePath, label) {
   if (!fs.existsSync(filePath)) {
@@ -9,15 +8,6 @@ function readJson(filePath, label) {
     process.exit(1);
   }
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-}
-
-function readSteps() {
-  if (!fs.existsSync(STEPS_DIR)) return [];
-  return fs
-    .readdirSync(STEPS_DIR)
-    .filter(f => f.endsWith('.json'))
-    .sort()
-    .map(f => JSON.parse(fs.readFileSync(path.join(STEPS_DIR, f), 'utf-8')));
 }
 
 // Collects answers via the readline async iterator instead of repeated rl.question() calls:
@@ -49,14 +39,10 @@ async function promptAll(questions) {
 }
 
 async function main() {
-  const run = readJson(RUN_PATH, 'run.json');
   const version = readJson(VERSION_PATH, 'version.json');
-  const steps = readSteps();
 
   console.log(`Loaded from ${OUTPUT_DIR}:`);
-  console.log(`  run.json     -> ${run.id} (${run.status})`);
-  console.log(`  version.json -> ${version.id}`);
-  console.log(`  steps/       -> ${steps.length} step(s)\n`);
+  console.log(`  version.json -> ${version.id}\n`);
 
   const [sourceAgencyId, scraperName] = await promptAll(['SourceAgency.id: ', 'Scraper.name: ']);
 
@@ -96,40 +82,12 @@ async function main() {
       data: { active_version_id: scraperVersion.id, version_count: 1 },
     });
 
-    const generationRun = await tx.scraperGenerationRun.create({
-      data: {
-        source_agency_id: sourceAgencyId,
-        scraper_id: scraper.id,
-        trigger: run.trigger,
-        status: 'SUCCESS',
-        prompt: run.prompt ?? null,
-        staged_config: run.staged_config ?? null,
-        produced_version_id: scraperVersion.id,
-        started_at: run.started_at ? new Date(run.started_at) : null,
-        finished_at: run.finished_at ? new Date(run.finished_at) : null,
-      },
-    });
-
-    for (const step of steps) {
-      await tx.computerUseStep.create({
-        data: {
-          scraper_generation_run_id: generationRun.id,
-          step_index: step.step_index,
-          action_type: step.action_type,
-          action_payload: step.action_payload,
-          model_reasoning: step.model_reasoning || null,
-        },
-      });
-    }
-
-    return { scraper, scraperVersion, generationRun };
+    return { scraper, scraperVersion };
   });
 
   console.log('\nPromoted to production tables:');
   console.log(`  Scraper              ${result.scraper.id}  (${result.scraper.name})`);
   console.log(`  ScraperVersion       ${result.scraperVersion.id}  (v${result.scraperVersion.version}, active)`);
-  console.log(`  ScraperGenerationRun ${result.generationRun.id}  (status=SUCCESS)`);
-  console.log(`  ComputerUseStep      ${steps.length} row(s)`);
 }
 
 main()

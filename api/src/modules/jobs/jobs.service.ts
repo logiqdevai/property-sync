@@ -8,7 +8,6 @@ import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
   CRAWL_QUEUE,
-  GENERATION_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
   CMS_SYNC_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
@@ -39,8 +38,6 @@ const ACTIVE_JOB_STATUSES: JobStatus[] = [
 export class JobsService {
   constructor(
     private readonly prisma: PrismaService,
-    @InjectQueue(GENERATION_QUEUE)
-    private readonly generationQueue: Queue,
     @InjectQueue(CRAWL_QUEUE) private readonly crawlQueue: Queue,
     @InjectQueue(WATERMARK_REMOVAL_QUEUE)
     private readonly watermarkRemovalQueue: Queue,
@@ -625,9 +622,6 @@ export class JobsService {
   }
 
   private resolveQueue(queueName: string): Queue {
-    if (queueName === GENERATION_QUEUE) {
-      return this.generationQueue;
-    }
     if (queueName === CRAWL_QUEUE) {
       return this.crawlQueue;
     }

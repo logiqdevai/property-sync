@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Building2, Bot, Sparkles, Activity, ListTodo, Home, Bell, Plug, Users, ArrowLeft, FileSearch, Settings, RefreshCw, DollarSign, ScrollText } from 'lucide-react';
+import { LayoutDashboard, Building2, Bot, Activity, ListTodo, Home, Bell, Plug, Users, ArrowLeft, FileSearch, Settings, RefreshCw, DollarSign, ScrollText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Routes } from '@/routes/routes';
 import { useAuthStore } from '@/stores/auth';
@@ -24,7 +24,6 @@ const navItems: {
   { label: 'Users', icon: Users, href: Routes.admin.users.list, end: false },
   { label: 'Integration Targets', icon: Plug, href: Routes.admin.integrationTargets.list, end: false },
   { label: 'Agencies', icon: Building2, href: Routes.admin.agencies.list, end: false },
-  { label: 'Generation Runs', icon: Sparkles, href: Routes.admin.generationRuns.list, end: false },
   { label: 'Scrapers', icon: Bot, href: Routes.admin.scrapers.list, end: false },
   { label: 'Crawl Runs', icon: Activity, href: Routes.admin.crawlRuns.list, end: false },
   { label: 'Cost Logs', icon: DollarSign, href: Routes.admin.costLogs.list, end: false },

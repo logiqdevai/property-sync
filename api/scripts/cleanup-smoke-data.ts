@@ -52,12 +52,6 @@ async function main() {
   });
   const propertyIds = [...new Set(propertyLinks.map((l) => l.property_id))];
 
-  const generationRuns = await prisma.scraperGenerationRun.findMany({
-    where: { source_agency_id: { in: agencyIds } },
-    select: { id: true },
-  });
-  const generationRunIds = generationRuns.map((g) => g.id);
-
   await prisma.$transaction(async (tx) => {
     await tx.notification.deleteMany({
       where: {
@@ -99,19 +93,6 @@ async function main() {
     if (scraperIds.length > 0) {
       await tx.scraperExecutionTrace.deleteMany({
         where: { scraper_id: { in: scraperIds } },
-      });
-    }
-
-    if (generationRunIds.length > 0) {
-      await tx.computerUseStep.deleteMany({
-        where: { scraper_generation_run_id: { in: generationRunIds } },
-      });
-      await tx.scraperGenerationRun.updateMany({
-        where: { id: { in: generationRunIds } },
-        data: { produced_version_id: null, scraper_id: null },
-      });
-      await tx.scraperGenerationRun.deleteMany({
-        where: { id: { in: generationRunIds } },
       });
     }
 

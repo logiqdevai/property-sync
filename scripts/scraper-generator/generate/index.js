@@ -182,8 +182,8 @@ async function main() {
     writeVersion(version);
 
     console.log('\nFiles written:');
-    console.log(`  output/run.json          → ScraperGenerationRun (AWAITING_REVIEW)`);
-    console.log(`  output/steps/step_*.json → ComputerUseStep (${stepIndex + 1} steps)`);
+    console.log(`  output/run.json          → generation run summary (awaiting review)`);
+    console.log(`  output/steps/step_*.json → computer-use step log (${stepIndex + 1} steps)`);
     console.log(`  output/version.json      → ScraperVersion\n`);
     console.log('Config:');
     console.log(JSON.stringify(finalConfig, null, 2));

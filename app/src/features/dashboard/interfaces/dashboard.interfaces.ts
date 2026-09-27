@@ -3,8 +3,7 @@ export type ActivityFeedType =
   | "crawl_failed"
   | "listing_created"
   | "listing_removed"
-  | "scraper_broken"
-  | "generation";
+  | "scraper_broken";
 
 export interface DashboardKpis {
   scrapers_total: number;
@@ -25,7 +24,6 @@ export interface DashboardKpis {
   queue_waiting: number;
   queue_active: number;
   queue_failed: number;
-  active_generation_runs: number;
   active_integrations: number;
   total_integrations: number;
   unread_notifications: number;
@@ -36,7 +34,6 @@ export interface ActivityFeedItem {
   timestamp: string;
   summary: string;
   crawl_run_id?: string;
-  generation_run_id?: string;
   scraper_id?: string;
   property_id?: string;
   source_agency_id?: string;

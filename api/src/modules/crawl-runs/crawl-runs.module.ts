@@ -12,7 +12,6 @@ import { ScraperHealthCron } from '@/background/scraper-health.cron';
 import { CrawlRunWatchdogCron } from '@/background/crawl-run-watchdog.cron';
 import { NormalizationWatchdogCron } from '@/background/normalization-watchdog.cron';
 import { ScraperFailureHandlerService } from '@/background/scraper-failure-handler.service';
-import { ScraperGenerationModule } from '@/modules/scraper-generation/scraper-generation.module';
 import { PropertiesModule } from '@/modules/properties/properties.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { CmsSyncModule } from '@/modules/cms-sync/cms-sync.module';
@@ -26,7 +25,6 @@ import { CrawlRunsService } from './crawl-runs.service';
     WebshareModule,
     CostLogsModule,
     PlatformConfigModule,
-    ScraperGenerationModule,
     PropertiesModule,
     NotificationsModule,
     BullModule.registerQueue({ name: CRAWL_QUEUE }),

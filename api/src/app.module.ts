@@ -7,7 +7,6 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { AgenciesModule } from './modules/agencies/agencies.module';
 import { ScrapersModule } from './modules/scrapers/scrapers.module';
-import { ScraperGenerationModule } from './modules/scraper-generation/scraper-generation.module';
 import { CrawlRunsModule } from './modules/crawl-runs/crawl-runs.module';
 import { CmsSyncRunsModule } from './modules/cms-sync-runs/cms-sync-runs.module';
 import { JobsModule } from './modules/jobs/jobs.module';
@@ -48,7 +47,6 @@ import { ActivityLogsModule } from './modules/activity-logs/activity-logs.module
     AgenciesModule,
     ScrapersModule,
     UserIntegrationsModule,
-    ScraperGenerationModule,
     CrawlRunsModule,
     CmsSyncRunsModule,
     JobsModule,

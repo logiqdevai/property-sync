@@ -132,41 +132,6 @@ enum AiBatchRunStatus {
   CANCELLED
 }
 
-// Separate from CrawlRunStatus: an AI generation session has different
-// terminal states than a production crawl (e.g. AWAITING_REVIEW has no crawl equivalent).
-enum GenerationRunStatus {
-  QUEUED
-  RUNNING
-  AWAITING_REVIEW // config produced, not yet promoted to a ScraperVersion
-  SUCCESS
-  FAILED
-  CANCELLED
-}
-
-// Why a ScraperGenerationRun was started.
-enum GenerationTrigger {
-  MANUAL // user requested a scraper for a new/existing agency
-  SCHEDULED // periodic re-generation/health check
-}
-
-// A single computer-use action returned by the model during a generation run.
-enum ComputerActionType {
-  CLICK
-  DOUBLE_CLICK
-  TYPE
-  SCROLL
-  SCROLL_UP
-  SCROLL_DOWN
-  NAVIGATE
-  GO_BACK
-  CLOSE_TAB
-  WAIT
-  KEYPRESS
-  SCREENSHOT
-  DRAG
-  DONE
-}
-
 enum JobStatus {
   WAITING
   ACTIVE
@@ -425,8 +390,7 @@ model UserIntegration {
 // ---------------------------------------------------------------
 
 /// A target website (real-estate agency) to be scraped. Root of the whole pipeline:
-/// SourceAgency -> ScraperGenerationRun (AI builds a scraper) -> Scraper -> CrawlRun (production run)
-/// -> SourceProperty -> Property.
+/// SourceAgency -> Scraper -> CrawlRun (production run) -> SourceProperty -> Property.
 model SourceAgency {
   id                 String          @id @default(uuid())
   name               String
@@ -453,13 +417,12 @@ model SourceAgency {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  scrapers                Scraper[]
-  user_tracked_agencies   UserTrackedAgency[]
-  scraper_generation_runs ScraperGenerationRun[]
-  crawl_runs              CrawlRun[]
-  source_properties       SourceProperty[]
-  notifications           Notification[]
-  block_rules             BlockRule[]
+  scrapers              Scraper[]
+  user_tracked_agencies UserTrackedAgency[]
+  crawl_runs            CrawlRun[]
+  source_properties     SourceProperty[]
+  notifications         Notification[]
+  block_rules           BlockRule[]
 
   @@index([is_visible])
   @@index([is_enabled])
@@ -467,8 +430,8 @@ model SourceAgency {
 }
 
 /// One bot-block/challenge detection rule for a SourceAgency, merged with the built-in
-/// baseline rule set at runtime (see block-handling.constants.ts) by both the Generation
-/// Run and the production crawler/detail-enrichment. Lets each agency's specific
+/// baseline rule set at runtime (see block-handling.constants.ts) by the production
+/// crawler/detail-enrichment. Lets each agency's specific
 /// CloudFront/WAF/challenge quirks (a selector, a path token, a script signature, ...) be
 /// configured as data instead of hardcoded in shared scraping code.
 model BlockRule {
@@ -539,7 +502,7 @@ model UserTrackedAgencyIntegrationLink {
 }
 
 // ---------------------------------------------------------------
-// AI GENERATION LAYER (computer-use loop)
+// SCRAPERS
 // ---------------------------------------------------------------
 
 /// A scraper definition for one agency. Holds NO config directly -- config always lives on the
@@ -589,12 +552,11 @@ model Scraper {
   source_agency  SourceAgency    @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
   active_version ScraperVersion? @relation("ActiveVersion", fields: [active_version_id], references: [id], onDelete: SetNull)
 
-  crawl_runs              CrawlRun[]
-  versions                ScraperVersion[]        @relation("ScraperVersions")
-  execution_traces        ScraperExecutionTrace[]
-  scraper_generation_runs ScraperGenerationRun[]
-  notifications           Notification[]
-  diagnostics_packages    DiagnosticsPackage[]
+  crawl_runs           CrawlRun[]
+  versions             ScraperVersion[]        @relation("ScraperVersions")
+  execution_traces     ScraperExecutionTrace[]
+  notifications        Notification[]
+  diagnostics_packages DiagnosticsPackage[]
 
   @@index([source_agency_id])
   @@index([status])
@@ -602,67 +564,9 @@ model Scraper {
   @@map("scrapers")
 }
 
-/// One AI (or human) session that produces or fixes a scraper config. This is the row that
-/// owns a computer-use loop: it's created, the loop runs (see ComputerUseStep), and it ends
-/// with either a promoted ScraperVersion or a failure.
-model ScraperGenerationRun {
-  id                  String              @id @default(uuid())
-  source_agency_id    String
-  scraper_id          String? // set when this run is fixing/updating an existing Scraper (manual re-gen)
-  trigger             GenerationTrigger   @default(MANUAL)
-  status              GenerationRunStatus @default(QUEUED)
-  prompt              String? // goal/instructions given to the model
-  max_steps           Int? // null = no step limit; set value = hard cap on computer-use loop iterations
-  staged_config       Json? // draft config produced by the model, pending review/promotion
-  produced_version_id String?             @unique // set once staged_config is approved and copied into a ScraperVersion
-  error_message       String?
-  started_at          DateTime?
-  finished_at         DateTime?
-  duration_ms         Int?
-  created_at          DateTime            @default(now())
-  updated_at          DateTime            @updatedAt
-
-  source_agency    SourceAgency    @relation(fields: [source_agency_id], references: [id], onDelete: Cascade)
-  scraper          Scraper?        @relation(fields: [scraper_id], references: [id], onDelete: SetNull)
-  produced_version ScraperVersion? @relation("ProducedVersion", fields: [produced_version_id], references: [id], onDelete: SetNull)
-
-  steps ComputerUseStep[]
-
-  @@index([source_agency_id])
-  @@index([scraper_id])
-  @@index([status])
-  @@map("scraper_generation_runs")
-}
-
-/// A single action in the computer-use loop: model receives a screenshot, returns an action
-/// (click/type/scroll/...), Playwright executes it, a new screenshot is captured. Storing every
-/// step lets you replay a session, debug why the AI navigated somewhere wrong, and show the
-/// user an audit trail of how a scraper config was derived.
-model ComputerUseStep {
-  id                        String             @id @default(uuid())
-  scraper_generation_run_id String
-  step_index                Int // ordering within the run, starting at 0
-  action_type               ComputerActionType
-  action_payload            Json // raw action from the model, e.g. {"x":320,"y":540} or {"text":"..."}
-  screenshot_before_id      String?
-  screenshot_after_id       String?
-  model_reasoning           String? // optional chain-of-thought / rationale text returned by the model
-  created_at                DateTime           @default(now())
-
-  scraper_generation_run ScraperGenerationRun @relation(fields: [scraper_generation_run_id], references: [id], onDelete: Cascade)
-  screenshot_before      Document?            @relation("ComputerUseStepScreenshotBefore", fields: [screenshot_before_id], references: [id], onDelete: SetNull)
-  screenshot_after       Document?            @relation("ComputerUseStepScreenshotAfter", fields: [screenshot_after_id], references: [id], onDelete: SetNull)
-
-  @@index([scraper_generation_run_id])
-  @@index([scraper_generation_run_id, step_index])
-  @@index([screenshot_before_id])
-  @@index([screenshot_after_id])
-  @@map("computer_use_steps")
-}
-
 /// Immutable, versioned scraper config. This is the single source of truth for "what a scraper
-/// does" -- Scraper.active_version_id points here. New versions are created by generation runs
-/// (AI) or manual edits (human review), enabling rollback and full history.
+/// does" -- Scraper.active_version_id points here. New versions are created by manual edits
+/// (human review), enabling rollback and full history.
 model ScraperVersion {
   id         String                  @id @default(uuid())
   scraper_id String
@@ -675,17 +579,15 @@ model ScraperVersion {
 
   scraper Scraper @relation("ScraperVersions", fields: [scraper_id], references: [id], onDelete: Cascade)
 
-  // Back-relations used only to let other models point at "the" active/produced version.
-  active_for_scraper Scraper?              @relation("ActiveVersion")
-  produced_by_run    ScraperGenerationRun? @relation("ProducedVersion")
+  // Back-relation used only to let other models point at "the" active version.
+  active_for_scraper Scraper? @relation("ActiveVersion")
 
   @@unique([scraper_id, version])
   @@map("scraper_versions")
 }
 
-/// Step-by-step log of a PRODUCTION Playwright execution (not the AI's exploratory computer-use
-/// loop -- see ComputerUseStep for that). Used to detect broken selectors / navigation failures
-/// and feed them into a follow-up ScraperGenerationRun.
+/// Step-by-step log of a PRODUCTION Playwright execution. Used to detect broken selectors /
+/// navigation failures.
 model ScraperExecutionTrace {
   id            String   @id @default(uuid())
   scraper_id    String
@@ -1338,7 +1240,7 @@ model PlatformConfig {
   @@map("platform_config")
 }
 
-/// Generic uploaded file record (logos, banners, media, and computer-use screenshots).
+/// Generic uploaded file record (logos, banners, media).
 model Document {
   id         String       @id @default(uuid())
   user_uuid  String
@@ -1349,9 +1251,6 @@ model Document {
   path       String
   type       DocumentType @default(LOGO)
   created_at DateTime     @default(now())
-
-  computer_use_steps_before ComputerUseStep[] @relation("ComputerUseStepScreenshotBefore")
-  computer_use_steps_after  ComputerUseStep[] @relation("ComputerUseStepScreenshotAfter")
 
   @@index([user_uuid])
   @@map("documents")

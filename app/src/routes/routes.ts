@@ -32,10 +32,6 @@ export const Routes = {
             list: "/admin/scrapers",
             detail: (id: string) => `/admin/scrapers/${id}`,
         },
-        generationRuns: {
-            list: "/admin/generation-runs",
-            detail: (id: string) => `/admin/generation-runs/${id}`,
-        },
         crawlRuns: {
             list: "/admin/crawl-runs",
             detail: (id: string) => `/admin/crawl-runs/${id}`,

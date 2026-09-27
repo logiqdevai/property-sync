@@ -3,7 +3,6 @@ import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import {
   CRAWL_QUEUE,
-  GENERATION_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
   CMS_SYNC_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
@@ -22,7 +21,6 @@ import { JobsService } from './jobs.service';
   imports: [
     PrismaModule,
     BullModule.registerQueue(
-      { name: GENERATION_QUEUE },
       { name: CRAWL_QUEUE },
       { name: WATERMARK_REMOVAL_QUEUE },
       { name: CONTENT_PRODUCTION_QUEUE },

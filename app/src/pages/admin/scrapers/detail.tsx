@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Modal, Switch, EmptyState, Select, ListBox, Label, Input, useOverlayState } from "@heroui/react";
-import { ArrowLeft, Bot, Activity, History, Play, Copy, Trash2 } from "lucide-react";
+import { ArrowLeft, Activity, History, Play, Copy, Trash2 } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DetailSkeleton } from "@/components/ui/detail-skeleton";
 import { DetailErrorState } from "@/components/ui/detail-error-state";
@@ -27,9 +27,6 @@ import { parseOptionalJsonConfig } from "@/features/scrapers/validation-schemas/
 import type { ScraperStatus, DiagnosticsMode } from "@/features/scrapers/interfaces/scrapers.interfaces";
 import { ScraperStatusFormOptions } from "@/config/constants/dropdowns/scrapers/scraper-status-form.options";
 import { DiagnosticsModeFormOptions } from "@/config/constants/dropdowns/scrapers/diagnostics-mode-form.options";
-import { GenerationRunStatusChip } from "./components/generation-run-status-chip";
-import { GenerationRunTriggerChip } from "./components/generation-run-trigger-chip";
-import { useGenerationRuns } from "@/features/scraper-generation/hooks/use-scraper-generation";
 import { CrawlRunStatusChip } from "./components/crawl-run-status-chip";
 import { useCrawlRuns } from "@/features/crawl-runs/hooks/use-crawl-runs";
 import { formatDateTime } from "@/lib/date";
@@ -51,7 +48,6 @@ export default function ScraperDetailPage() {
 
   const { data: scraper, isPending, isError, error } = useScraper(id!);
   const { data: versions } = useScraperVersions(id!);
-  const { data: generationRunsData } = useGenerationRuns({ scraper_id: id!, limit: 5 });
   const { data: crawlRunsData } = useCrawlRuns({ scraper_id: id!, limit: 5 });
   const updateScraper = useUpdateScraper();
   const activateVersion = useActivateScraperVersion();
@@ -60,7 +56,6 @@ export default function ScraperDetailPage() {
   const deleteScraper = useDeleteScraper();
   const duplicateScraper = useDuplicateScraper();
 
-  const generationRuns = generationRunsData?.data ?? [];
   const crawlRuns = crawlRunsData?.data ?? [];
 
   const versionA = useMemo(
@@ -507,54 +502,27 @@ export default function ScraperDetailPage() {
         )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-border bg-surface p-6">
-          <p className="mb-3 text-sm font-medium text-foreground">Generation runs</p>
-          {generationRuns.length === 0 ? (
-            <EmptyState>
-              <Bot className="h-6 w-6 text-muted" />
-              <p className="text-sm text-muted mt-2">No generation runs yet for this scraper</p>
-            </EmptyState>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {generationRuns.map((run) => (
-                <button
-                  key={run.id}
-                  onClick={() => navigate(Routes.admin.generationRuns.detail(run.id))}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-left hover:border-accent/50 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <GenerationRunTriggerChip trigger={run.trigger} />
-                    <span className="text-xs text-muted">{formatDateTime(run.created_at)}</span>
-                  </div>
-                  <GenerationRunStatusChip status={run.status} />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="rounded-xl border border-border bg-surface p-6">
-          <p className="mb-3 text-sm font-medium text-foreground">Recent crawl runs</p>
-          {crawlRuns.length === 0 ? (
-            <EmptyState>
-              <Activity className="h-6 w-6 text-muted" />
-              <p className="text-sm text-muted mt-2">No crawl runs yet for this scraper</p>
-            </EmptyState>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {crawlRuns.map((run) => (
-                <button
-                  key={run.id}
-                  onClick={() => navigate(Routes.admin.crawlRuns.detail(run.id))}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-left hover:border-accent/50 transition-colors"
-                >
-                  <span className="text-xs text-muted">{formatDateTime(run.created_at)}</span>
-                  <CrawlRunStatusChip status={run.status} />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="rounded-xl border border-border bg-surface p-6">
+        <p className="mb-3 text-sm font-medium text-foreground">Recent crawl runs</p>
+        {crawlRuns.length === 0 ? (
+          <EmptyState>
+            <Activity className="h-6 w-6 text-muted" />
+            <p className="text-sm text-muted mt-2">No crawl runs yet for this scraper</p>
+          </EmptyState>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {crawlRuns.map((run) => (
+              <button
+                key={run.id}
+                onClick={() => navigate(Routes.admin.crawlRuns.detail(run.id))}
+                className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-left hover:border-accent/50 transition-colors"
+              >
+                <span className="text-xs text-muted">{formatDateTime(run.created_at)}</span>
+                <CrawlRunStatusChip status={run.status} />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <Modal state={newVersionModal}>

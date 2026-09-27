@@ -1,6 +1,6 @@
 # Real Estate Property Aggregation Platform
 
-## Functional Project Specification (v2 — updated for computer-use generation + admin dashboard)
+## Functional Project Specification (v2 — updated for admin dashboard)
 
 # Implementation Scope (Current Phase)
 
@@ -29,7 +29,7 @@ The crawl pipeline **ends** after canonical property changes are recorded and ma
 
 The platform is a centralized property aggregation system that automatically collects real estate listings from multiple public real estate agency websites, normalizes them, and maintains per-user property copies. **CMS push is planned but not part of the current implementation phase** (see Implementation Scope).
 
-The system is designed to support hundreds of independent property sources, with the ability to continuously add new websites over time without changing the core platform. Scrapers themselves can now be **generated and repaired by an AI computer-use agent**, rather than hand-written.
+The system is designed to support hundreds of independent property sources, with the ability to continuously add new websites over time without changing the core platform.
 
 The application focuses on:
 
@@ -62,9 +62,8 @@ The system shall:
 - Detect duplicate entries.
 - Keep historical crawl information.
 - Keep historical property-change information (price, images, status).
-- Generate scrapers using an AI computer-use agent, with a full replayable audit trail.
 - Create and maintain `UserProperty` copies for tracking users, with `PropertyHistory` for every detected change.
-- Provide complete monitoring of every scraper, crawl, job, and generation run.
+- Provide complete monitoring of every scraper, crawl, and job.
 - Notify admins of failures and anomalies.
 - Allow new scrapers to be added independently.
 
@@ -102,7 +101,6 @@ Top-level KPIs:
 - Failed Properties
 - Total Properties
 - Queue Status (waiting / running / failed `JobLog` counts)
-- Active `ScraperGenerationRun`s (computer-use sessions currently running)
 - Active Integration Connections (`UserIntegration` with `is_active: true`) / Total configured — configuration count only; no sync metrics in this phase
 - Unread Notifications count
 
@@ -113,7 +111,6 @@ Recent activity feed, each row deep-linking into the relevant subpage:
 - New listings
 - Removed listings
 - Broken scrapers
-- Recent AI generation runs
 
 
 
@@ -141,7 +138,6 @@ Backed by: `Scraper`, `ScraperVersion`
   - Current health card: `health`, `success_rate`, `avg_runtime_ms`, `consecutive_failures`, `last_success_at`, `last_failure_at`
   - **Version history** (`ScraperVersion` list) — diff any two versions' `config`, see `created_by` (AI/USER) and `notes`, roll back by re-activating an older version (`Scraper.active_version_id`)
   - "Run Now" button → creates a `CrawlRun` immediately regardless of schedule (spec §7)
-  - "Regenerate / Fix with AI" button → creates a `ScraperGenerationRun` with `trigger: MANUAL`
   - Edit `validation_rules`
 
 
@@ -153,17 +149,6 @@ Backed by: `CrawlRun`, `ScraperExecutionTrace`, `JobLog`
 - List / filter by `status`, agency, scraper, date range
 - Detail view: totals (found/created/updated/removed/failed), duration, `error_message`, linked `ScraperExecutionTrace` (step-by-step Playwright log), linked `JobLog` entries
 - "Re-run" action → re-queues the same scraper/agency as a new `CrawlRun`
-
-
-
-### Computer-Use Generation Runs (`/admin/generation-runs`)
-
-Backed by: `ScraperGenerationRun`, `ComputerUseStep`, `ScraperVersion`
-
-- List / filter by `status` (Queued, Running, Awaiting Review, Success, Failed, Cancelled), `trigger` (Manual, Scheduled), agency, scraper
-- **Session replay view**: every `ComputerUseStep` in order — action type, payload, before/after screenshots (via `Document`), and the model's `model_reasoning` if present. This is the audit trail for "what did the AI actually do."
-- Review screen for runs in `AWAITING_REVIEW`: shows `staged_config`, diffs it against the scraper's current active version, and lets an admin **Approve** (promotes to a new `ScraperVersion` + activates it) or **Reject** (marks `FAILED` with a reason)
-- Manual trigger: "Generate scraper for this agency" (creates a run with no `scraper_id`, i.e. first-time generation)
 
 
 
@@ -194,7 +179,7 @@ Backed by: `Property`, `PropertySourceLink`, `PropertyHistory`, `SourceProperty`
 
 Backed by: `IntegrationTarget`, `UserIntegration`
 
-Platform-level integration definitions — CMS destinations (`ESTATEWEB`) and AI provider slots (`OPENAI`, `ANTHROPIC`, `GEMINI`, `DEEPSEEK`). Each `IntegrationTarget` describes a supported integration type; individual user accounts and credentials live on `UserIntegration`. **CMS sync is not executed in the current phase**, but AI provider connections are **actively used** by scraper generation and property normalization (see §23).
+Platform-level integration definitions — CMS destinations (`ESTATEWEB`) and AI provider slots (`OPENAI`, `ANTHROPIC`, `GEMINI`, `DEEPSEEK`). Each `IntegrationTarget` describes a supported integration type; individual user accounts and credentials live on `UserIntegration`. **CMS sync is not executed in the current phase**, but AI provider connections are **actively used** by property normalization (see §23).
 
 - List / search / filter by `integration_type`, `auth_type`, `is_visible`
 - Create / Edit target: `integration_type`, `auth_type`, `base_url` (optional — typically set for CMS targets, omitted for AI API-key slots), `allow_multiple` (whether one user may connect more than once), `is_visible` (whether end users see this target on the Integrations page; admins always see all targets here regardless)
@@ -252,7 +237,6 @@ Admin Users can:
 - Toggle user-catalog visibility (`is_visible`, `is_enabled`)
 - View crawl history
 - View scraper history
-- View AI generation history (see §4.2 Computer-Use Generation Runs)
 
 Users can:
 
@@ -559,13 +543,10 @@ Every outbound AI call uses an **active** `UserIntegration` row (`is_active: tru
 
 | AI feature | Provider | Whose key |
 | --- | --- | --- |
-| Manual scraper generation (`ScraperGenerationRun`, `trigger: MANUAL`) | `ANTHROPIC` | Initiating admin's `UserIntegration` |
 | Property normalization | `AiDefaults.provider` (platform default) | `CrawlRun.user_tracked_agency`'s `UserIntegration` if the run is attributed to a tracker, else the agency's earliest enabled tracker |
 | Property normalization (OpenAI Batch path) | Same as above, requires `OPENAI` | Same; `user_integration_id` stored on `CrawlRun.metadata` for webhook completion |
 
 `AiProvider` maps to `IntegrationType` by name (`OPENAI` → `IntegrationType.OPENAI`, etc.). If no suitable active integration exists, the AI step fails or is skipped (raw crawl data may still be saved). `OPENAI_WEBHOOK_SECRET` remains an env var for inbound webhook signature verification only.
-
-Manual "Generate scraper" requires the admin to have connected Anthropic on Integrations first.
 
 The page lists every visible `IntegrationTarget` (`is_visible: true`) the platform supports and the user's existing connections.
 
@@ -591,7 +572,7 @@ For each `UserIntegration` belonging to the current user:
 1. User picks an available visible `IntegrationTarget`
 2. Form renders credential fields required by that target's `auth_type`
 3. Optional `config` JSON for integration-specific settings (field mapping, category defaults, etc.)
-4. On submit, create `UserIntegration` with `is_active: true` — **no CMS sync job is enqueued**; AI provider connections are immediately eligible for generation/normalization billing
+4. On submit, create `UserIntegration` with `is_active: true` — **no CMS sync job is enqueued**; AI provider connections are immediately eligible for normalization billing
 
 Admins can also manage any user's connection from the Integration Targets subpage (§4.2).
 
@@ -601,7 +582,7 @@ Admins can also manage any user's connection from the Integration Targets subpag
 
 # 24. Logs
 
-Every action should be logged. Examples: Manual crawl, Scheduled crawl, integration connection created/updated/disabled, Property removed, Property updated, UserProperty created/updated, Scraper failure, Job failure, Retry, AI generation run started/completed/failed, Scraper version promoted/rolled back.
+Every action should be logged. Examples: Manual crawl, Scheduled crawl, integration connection created/updated/disabled, Property removed, Property updated, UserProperty created/updated, Scraper failure, Job failure, Retry, Scraper version promoted/rolled back.
 
 ---
 
@@ -615,7 +596,6 @@ The architecture should support:
 - Unlimited scrapers
 - **CMS property synchronization** — see `CMS-SYNCHRONIZATION-SPECIFICATION.MD`
 - Multiple integrations (`IntegrationType` enum is extensible — CMS destinations and AI providers)
-- AI-assisted scraper generation (already modeled)
 - Automatic selector validation (via `validation_rules`)
 - Automatic layout change detection
 - Webhook integrations
@@ -633,13 +613,13 @@ The architecture should support:
 
 The platform should allow an administrator to:
 
-- Add a new agency and attach a dedicated scraper, generated by the AI computer-use agent (using the admin's Anthropic `UserIntegration`) or created manually.
+- Add a new agency and attach a dedicated scraper, created manually.
 - Execute it manually.
 - Schedule automatic crawls (per-agency `crawl_interval`, shared across every tracker — §8).
 - Detect new, updated, and removed listings, with full `PropertyHistory`.
-- Define integration targets and manage connected `UserIntegration` accounts (enable/disable/edit credentials) — required before AI generation or agency tracking with AI normalization.
-- Monitor every crawl, every BullMQ job, and every AI generation session (with full step replay).
-- Detect broken scrapers and review/approve AI-proposed fixes manually.
+- Define integration targets and manage connected `UserIntegration` accounts (enable/disable/edit credentials) — required for agency tracking with AI normalization.
+- Monitor every crawl and every BullMQ job.
+- Detect broken scrapers and fix them manually.
 - Review crawl history and property history.
 - Review and act on notifications.
 - Scale to hundreds of agency websites without modifying the core application.

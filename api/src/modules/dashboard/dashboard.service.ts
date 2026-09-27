@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
   CrawlRunStatus,
-  GenerationRunStatus,
   JobStatus,
   PropertyHistoryEventType,
   ScraperStatus,
@@ -46,7 +45,6 @@ export class DashboardService {
       queueWaiting,
       queueActive,
       queueFailed,
-      activeGenerationRuns,
       activeIntegrations,
       totalIntegrations,
       unreadNotifications,
@@ -54,7 +52,6 @@ export class DashboardService {
       recentPropertyCreated,
       recentPropertyRemoved,
       recentBrokenScrapers,
-      recentGenerationRuns,
     ] = await Promise.all([
       this.prisma.scraper.count(),
       this.prisma.scraper.count({ where: { status: ScraperStatus.ACTIVE } }),
@@ -106,13 +103,6 @@ export class DashboardService {
       this.prisma.jobLog.count({ where: { status: JobStatus.WAITING } }),
       this.prisma.jobLog.count({ where: { status: JobStatus.ACTIVE } }),
       this.prisma.jobLog.count({ where: { status: JobStatus.FAILED } }),
-      this.prisma.scraperGenerationRun.count({
-        where: {
-          status: {
-            in: [GenerationRunStatus.QUEUED, GenerationRunStatus.RUNNING],
-          },
-        },
-      }),
       this.prisma.userIntegration.count({ where: { is_active: true } }),
       this.prisma.userIntegration.count(),
       this.prisma.notification.count({ where: { is_read: false } }),
@@ -148,14 +138,6 @@ export class DashboardService {
           source_agency: { select: { id: true, name: true } },
         },
       }),
-      this.prisma.scraperGenerationRun.findMany({
-        take: ACTIVITY_FETCH_LIMIT,
-        orderBy: { created_at: 'desc' },
-        include: {
-          source_agency: { select: { id: true, name: true } },
-          scraper: { select: { id: true, name: true } },
-        },
-      }),
     ]);
 
     const kpis: DashboardKpis = {
@@ -177,7 +159,6 @@ export class DashboardService {
       queue_waiting: queueWaiting,
       queue_active: queueActive,
       queue_failed: queueFailed,
-      active_generation_runs: activeGenerationRuns,
       active_integrations: activeIntegrations,
       total_integrations: totalIntegrations,
       unread_notifications: unreadNotifications,
@@ -188,7 +169,6 @@ export class DashboardService {
       recentPropertyCreated,
       recentPropertyRemoved,
       recentBrokenScrapers,
-      recentGenerationRuns,
     );
 
     return { kpis, activity };
@@ -203,9 +183,6 @@ export class DashboardService {
       ReturnType<PrismaService['propertyHistory']['findMany']>
     >,
     brokenScrapers: Awaited<ReturnType<PrismaService['scraper']['findMany']>>,
-    generationRuns: Awaited<
-      ReturnType<PrismaService['scraperGenerationRun']['findMany']>
-    >,
   ): ActivityFeedItem[] {
     const items: ActivityFeedItem[] = [];
 
@@ -256,18 +233,6 @@ export class DashboardService {
         summary: `Scraper broken: ${scraper.name} (${agencyName})`,
         scraper_id: scraper.id,
         source_agency_id: scraper.source_agency_id,
-      });
-    }
-
-    for (const run of generationRuns) {
-      const agencyName = (run as any).source_agency?.name ?? 'Unknown agency';
-      items.push({
-        type: 'generation',
-        timestamp: run.created_at,
-        summary: `AI generation run ${run.status.toLowerCase()} for ${agencyName}`,
-        generation_run_id: run.id,
-        scraper_id: run.scraper_id ?? undefined,
-        source_agency_id: run.source_agency_id,
       });
     }
 

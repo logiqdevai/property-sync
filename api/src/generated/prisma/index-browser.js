@@ -257,36 +257,6 @@ exports.Prisma.ScraperScalarFieldEnum = {
   updated_at: 'updated_at'
 };
 
-exports.Prisma.ScraperGenerationRunScalarFieldEnum = {
-  id: 'id',
-  source_agency_id: 'source_agency_id',
-  scraper_id: 'scraper_id',
-  trigger: 'trigger',
-  status: 'status',
-  prompt: 'prompt',
-  max_steps: 'max_steps',
-  staged_config: 'staged_config',
-  produced_version_id: 'produced_version_id',
-  error_message: 'error_message',
-  started_at: 'started_at',
-  finished_at: 'finished_at',
-  duration_ms: 'duration_ms',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
-};
-
-exports.Prisma.ComputerUseStepScalarFieldEnum = {
-  id: 'id',
-  scraper_generation_run_id: 'scraper_generation_run_id',
-  step_index: 'step_index',
-  action_type: 'action_type',
-  action_payload: 'action_payload',
-  screenshot_before_id: 'screenshot_before_id',
-  screenshot_after_id: 'screenshot_after_id',
-  model_reasoning: 'model_reasoning',
-  created_at: 'created_at'
-};
-
 exports.Prisma.ScraperVersionScalarFieldEnum = {
   id: 'id',
   scraper_id: 'scraper_id',
@@ -853,37 +823,6 @@ exports.ScraperHealth = exports.$Enums.ScraperHealth = {
   BROKEN: 'BROKEN'
 };
 
-exports.GenerationTrigger = exports.$Enums.GenerationTrigger = {
-  MANUAL: 'MANUAL',
-  SCHEDULED: 'SCHEDULED'
-};
-
-exports.GenerationRunStatus = exports.$Enums.GenerationRunStatus = {
-  QUEUED: 'QUEUED',
-  RUNNING: 'RUNNING',
-  AWAITING_REVIEW: 'AWAITING_REVIEW',
-  SUCCESS: 'SUCCESS',
-  FAILED: 'FAILED',
-  CANCELLED: 'CANCELLED'
-};
-
-exports.ComputerActionType = exports.$Enums.ComputerActionType = {
-  CLICK: 'CLICK',
-  DOUBLE_CLICK: 'DOUBLE_CLICK',
-  TYPE: 'TYPE',
-  SCROLL: 'SCROLL',
-  SCROLL_UP: 'SCROLL_UP',
-  SCROLL_DOWN: 'SCROLL_DOWN',
-  NAVIGATE: 'NAVIGATE',
-  GO_BACK: 'GO_BACK',
-  CLOSE_TAB: 'CLOSE_TAB',
-  WAIT: 'WAIT',
-  KEYPRESS: 'KEYPRESS',
-  SCREENSHOT: 'SCREENSHOT',
-  DRAG: 'DRAG',
-  DONE: 'DONE'
-};
-
 exports.ScraperVersionCreatedBy = exports.$Enums.ScraperVersionCreatedBy = {
   AI: 'AI',
   USER: 'USER'
@@ -1083,8 +1022,6 @@ exports.Prisma.ModelName = {
   UserTrackedAgency: 'UserTrackedAgency',
   UserTrackedAgencyIntegrationLink: 'UserTrackedAgencyIntegrationLink',
   Scraper: 'Scraper',
-  ScraperGenerationRun: 'ScraperGenerationRun',
-  ComputerUseStep: 'ComputerUseStep',
   ScraperVersion: 'ScraperVersion',
   ScraperExecutionTrace: 'ScraperExecutionTrace',
   CrawlRun: 'CrawlRun',

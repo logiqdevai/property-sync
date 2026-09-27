@@ -38,9 +38,6 @@ function resolveActivityLink(item: ActivityFeedItem): string | null {
   if (item.crawl_run_id) {
     return Routes.admin.crawlRuns.detail(item.crawl_run_id);
   }
-  if (item.generation_run_id) {
-    return Routes.admin.generationRuns.detail(item.generation_run_id);
-  }
   if (item.scraper_id) {
     return Routes.admin.scrapers.detail(item.scraper_id);
   }
@@ -172,7 +169,6 @@ function DashboardBody({
       </KpiSection>
 
       <KpiSection title="AI & Integrations">
-        <KpiCard label="Active generation runs" value={kpis.active_generation_runs} />
         <KpiCard
           label="Integration connections"
           value={kpis.active_integrations}

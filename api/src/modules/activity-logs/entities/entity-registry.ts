@@ -18,7 +18,6 @@ export const ENTITY_REGISTRY = {
   SourceAgency: { delegate: 'sourceAgency' },
   Scraper: { delegate: 'scraper' },
   ScraperVersion: { delegate: 'scraperVersion' },
-  ScraperGenerationRun: { delegate: 'scraperGenerationRun' },
   UserTrackedAgency: { delegate: 'userTrackedAgency' },
   IntegrationTarget: { delegate: 'integrationTarget' },
   UserIntegration: {

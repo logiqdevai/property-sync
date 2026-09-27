@@ -39,15 +39,14 @@ export type UserIntegration = $Result.DefaultSelection<Prisma.$UserIntegrationPa
 /**
  * Model SourceAgency
  * A target website (real-estate agency) to be scraped. Root of the whole pipeline:
- * SourceAgency -> ScraperGenerationRun (AI builds a scraper) -> Scraper -> CrawlRun (production run)
- * -> SourceProperty -> Property.
+ * SourceAgency -> Scraper -> CrawlRun (production run) -> SourceProperty -> Property.
  */
 export type SourceAgency = $Result.DefaultSelection<Prisma.$SourceAgencyPayload>
 /**
  * Model BlockRule
  * One bot-block/challenge detection rule for a SourceAgency, merged with the built-in
- * baseline rule set at runtime (see block-handling.constants.ts) by both the Generation
- * Run and the production crawler/detail-enrichment. Lets each agency's specific
+ * baseline rule set at runtime (see block-handling.constants.ts) by the production
+ * crawler/detail-enrichment. Lets each agency's specific
  * CloudFront/WAF/challenge quirks (a selector, a path token, a script signature, ...) be
  * configured as data instead of hardcoded in shared scraping code.
  */
@@ -70,32 +69,16 @@ export type UserTrackedAgencyIntegrationLink = $Result.DefaultSelection<Prisma.$
  */
 export type Scraper = $Result.DefaultSelection<Prisma.$ScraperPayload>
 /**
- * Model ScraperGenerationRun
- * One AI (or human) session that produces or fixes a scraper config. This is the row that
- * owns a computer-use loop: it's created, the loop runs (see ComputerUseStep), and it ends
- * with either a promoted ScraperVersion or a failure.
- */
-export type ScraperGenerationRun = $Result.DefaultSelection<Prisma.$ScraperGenerationRunPayload>
-/**
- * Model ComputerUseStep
- * A single action in the computer-use loop: model receives a screenshot, returns an action
- * (click/type/scroll/...), Playwright executes it, a new screenshot is captured. Storing every
- * step lets you replay a session, debug why the AI navigated somewhere wrong, and show the
- * user an audit trail of how a scraper config was derived.
- */
-export type ComputerUseStep = $Result.DefaultSelection<Prisma.$ComputerUseStepPayload>
-/**
  * Model ScraperVersion
  * Immutable, versioned scraper config. This is the single source of truth for "what a scraper
- * does" -- Scraper.active_version_id points here. New versions are created by generation runs
- * (AI) or manual edits (human review), enabling rollback and full history.
+ * does" -- Scraper.active_version_id points here. New versions are created by manual edits
+ * (human review), enabling rollback and full history.
  */
 export type ScraperVersion = $Result.DefaultSelection<Prisma.$ScraperVersionPayload>
 /**
  * Model ScraperExecutionTrace
- * Step-by-step log of a PRODUCTION Playwright execution (not the AI's exploratory computer-use
- * loop -- see ComputerUseStep for that). Used to detect broken selectors / navigation failures
- * and feed them into a follow-up ScraperGenerationRun.
+ * Step-by-step log of a PRODUCTION Playwright execution. Used to detect broken selectors /
+ * navigation failures.
  */
 export type ScraperExecutionTrace = $Result.DefaultSelection<Prisma.$ScraperExecutionTracePayload>
 /**
@@ -227,7 +210,7 @@ export type IntegrationProperty = $Result.DefaultSelection<Prisma.$IntegrationPr
 export type PlatformConfig = $Result.DefaultSelection<Prisma.$PlatformConfigPayload>
 /**
  * Model Document
- * Generic uploaded file record (logos, banners, media, and computer-use screenshots).
+ * Generic uploaded file record (logos, banners, media).
  */
 export type Document = $Result.DefaultSelection<Prisma.$DocumentPayload>
 /**
@@ -405,46 +388,6 @@ export const AiBatchRunStatus: {
 };
 
 export type AiBatchRunStatus = (typeof AiBatchRunStatus)[keyof typeof AiBatchRunStatus]
-
-
-export const GenerationRunStatus: {
-  QUEUED: 'QUEUED',
-  RUNNING: 'RUNNING',
-  AWAITING_REVIEW: 'AWAITING_REVIEW',
-  SUCCESS: 'SUCCESS',
-  FAILED: 'FAILED',
-  CANCELLED: 'CANCELLED'
-};
-
-export type GenerationRunStatus = (typeof GenerationRunStatus)[keyof typeof GenerationRunStatus]
-
-
-export const GenerationTrigger: {
-  MANUAL: 'MANUAL',
-  SCHEDULED: 'SCHEDULED'
-};
-
-export type GenerationTrigger = (typeof GenerationTrigger)[keyof typeof GenerationTrigger]
-
-
-export const ComputerActionType: {
-  CLICK: 'CLICK',
-  DOUBLE_CLICK: 'DOUBLE_CLICK',
-  TYPE: 'TYPE',
-  SCROLL: 'SCROLL',
-  SCROLL_UP: 'SCROLL_UP',
-  SCROLL_DOWN: 'SCROLL_DOWN',
-  NAVIGATE: 'NAVIGATE',
-  GO_BACK: 'GO_BACK',
-  CLOSE_TAB: 'CLOSE_TAB',
-  WAIT: 'WAIT',
-  KEYPRESS: 'KEYPRESS',
-  SCREENSHOT: 'SCREENSHOT',
-  DRAG: 'DRAG',
-  DONE: 'DONE'
-};
-
-export type ComputerActionType = (typeof ComputerActionType)[keyof typeof ComputerActionType]
 
 
 export const JobStatus: {
@@ -725,18 +668,6 @@ export type AiBatchRunStatus = $Enums.AiBatchRunStatus
 
 export const AiBatchRunStatus: typeof $Enums.AiBatchRunStatus
 
-export type GenerationRunStatus = $Enums.GenerationRunStatus
-
-export const GenerationRunStatus: typeof $Enums.GenerationRunStatus
-
-export type GenerationTrigger = $Enums.GenerationTrigger
-
-export const GenerationTrigger: typeof $Enums.GenerationTrigger
-
-export type ComputerActionType = $Enums.ComputerActionType
-
-export const ComputerActionType: typeof $Enums.ComputerActionType
-
 export type JobStatus = $Enums.JobStatus
 
 export const JobStatus: typeof $Enums.JobStatus
@@ -1011,26 +942,6 @@ export class PrismaClient<
     * ```
     */
   get scraper(): Prisma.ScraperDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.scraperGenerationRun`: Exposes CRUD operations for the **ScraperGenerationRun** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more ScraperGenerationRuns
-    * const scraperGenerationRuns = await prisma.scraperGenerationRun.findMany()
-    * ```
-    */
-  get scraperGenerationRun(): Prisma.ScraperGenerationRunDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.computerUseStep`: Exposes CRUD operations for the **ComputerUseStep** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more ComputerUseSteps
-    * const computerUseSteps = await prisma.computerUseStep.findMany()
-    * ```
-    */
-  get computerUseStep(): Prisma.ComputerUseStepDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.scraperVersion`: Exposes CRUD operations for the **ScraperVersion** model.
@@ -1734,8 +1645,6 @@ export namespace Prisma {
     UserTrackedAgency: 'UserTrackedAgency',
     UserTrackedAgencyIntegrationLink: 'UserTrackedAgencyIntegrationLink',
     Scraper: 'Scraper',
-    ScraperGenerationRun: 'ScraperGenerationRun',
-    ComputerUseStep: 'ComputerUseStep',
     ScraperVersion: 'ScraperVersion',
     ScraperExecutionTrace: 'ScraperExecutionTrace',
     CrawlRun: 'CrawlRun',
@@ -1777,7 +1686,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "blockRule" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperGenerationRun" | "computerUseStep" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "jobLogItem" | "notification" | "notificationSetting" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "contentPublishingConfig" | "contentOutput" | "aiTitleFamily" | "propertyLocalizedContent" | "aiBatchRun" | "costLog" | "integrationProperty" | "platformConfig" | "document" | "activityLog" | "activityLogChange"
+      modelProps: "user" | "integrationTarget" | "userIntegrationSettings" | "userIntegration" | "sourceAgency" | "blockRule" | "userTrackedAgency" | "userTrackedAgencyIntegrationLink" | "scraper" | "scraperVersion" | "scraperExecutionTrace" | "crawlRun" | "diagnosticsPackage" | "diagnosticsArtifact" | "jobLog" | "jobLogItem" | "notification" | "notificationSetting" | "cmsSyncRun" | "sourceProperty" | "property" | "propertySourceLink" | "propertyHistory" | "userProperty" | "contentPublishingConfig" | "contentOutput" | "aiTitleFamily" | "propertyLocalizedContent" | "aiBatchRun" | "costLog" | "integrationProperty" | "platformConfig" | "document" | "activityLog" | "activityLogChange"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2444,154 +2353,6 @@ export namespace Prisma {
           count: {
             args: Prisma.ScraperCountArgs<ExtArgs>
             result: $Utils.Optional<ScraperCountAggregateOutputType> | number
-          }
-        }
-      }
-      ScraperGenerationRun: {
-        payload: Prisma.$ScraperGenerationRunPayload<ExtArgs>
-        fields: Prisma.ScraperGenerationRunFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.ScraperGenerationRunFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ScraperGenerationRunPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.ScraperGenerationRunFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ScraperGenerationRunPayload>
-          }
-          findFirst: {
-            args: Prisma.ScraperGenerationRunFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ScraperGenerationRunPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.ScraperGenerationRunFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ScraperGenerationRunPayload>
-          }
-          findMany: {
-            args: Prisma.ScraperGenerationRunFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ScraperGenerationRunPayload>[]
-          }
-          create: {
-            args: Prisma.ScraperGenerationRunCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ScraperGenerationRunPayload>
-          }
-          createMany: {
-            args: Prisma.ScraperGenerationRunCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.ScraperGenerationRunCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ScraperGenerationRunPayload>[]
-          }
-          delete: {
-            args: Prisma.ScraperGenerationRunDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ScraperGenerationRunPayload>
-          }
-          update: {
-            args: Prisma.ScraperGenerationRunUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ScraperGenerationRunPayload>
-          }
-          deleteMany: {
-            args: Prisma.ScraperGenerationRunDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.ScraperGenerationRunUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.ScraperGenerationRunUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ScraperGenerationRunPayload>[]
-          }
-          upsert: {
-            args: Prisma.ScraperGenerationRunUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ScraperGenerationRunPayload>
-          }
-          aggregate: {
-            args: Prisma.ScraperGenerationRunAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateScraperGenerationRun>
-          }
-          groupBy: {
-            args: Prisma.ScraperGenerationRunGroupByArgs<ExtArgs>
-            result: $Utils.Optional<ScraperGenerationRunGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.ScraperGenerationRunCountArgs<ExtArgs>
-            result: $Utils.Optional<ScraperGenerationRunCountAggregateOutputType> | number
-          }
-        }
-      }
-      ComputerUseStep: {
-        payload: Prisma.$ComputerUseStepPayload<ExtArgs>
-        fields: Prisma.ComputerUseStepFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.ComputerUseStepFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ComputerUseStepPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.ComputerUseStepFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ComputerUseStepPayload>
-          }
-          findFirst: {
-            args: Prisma.ComputerUseStepFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ComputerUseStepPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.ComputerUseStepFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ComputerUseStepPayload>
-          }
-          findMany: {
-            args: Prisma.ComputerUseStepFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ComputerUseStepPayload>[]
-          }
-          create: {
-            args: Prisma.ComputerUseStepCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ComputerUseStepPayload>
-          }
-          createMany: {
-            args: Prisma.ComputerUseStepCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.ComputerUseStepCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ComputerUseStepPayload>[]
-          }
-          delete: {
-            args: Prisma.ComputerUseStepDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ComputerUseStepPayload>
-          }
-          update: {
-            args: Prisma.ComputerUseStepUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ComputerUseStepPayload>
-          }
-          deleteMany: {
-            args: Prisma.ComputerUseStepDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.ComputerUseStepUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.ComputerUseStepUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ComputerUseStepPayload>[]
-          }
-          upsert: {
-            args: Prisma.ComputerUseStepUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$ComputerUseStepPayload>
-          }
-          aggregate: {
-            args: Prisma.ComputerUseStepAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateComputerUseStep>
-          }
-          groupBy: {
-            args: Prisma.ComputerUseStepGroupByArgs<ExtArgs>
-            result: $Utils.Optional<ComputerUseStepGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.ComputerUseStepCountArgs<ExtArgs>
-            result: $Utils.Optional<ComputerUseStepCountAggregateOutputType> | number
           }
         }
       }
@@ -4636,8 +4397,6 @@ export namespace Prisma {
     userTrackedAgency?: UserTrackedAgencyOmit
     userTrackedAgencyIntegrationLink?: UserTrackedAgencyIntegrationLinkOmit
     scraper?: ScraperOmit
-    scraperGenerationRun?: ScraperGenerationRunOmit
-    computerUseStep?: ComputerUseStepOmit
     scraperVersion?: ScraperVersionOmit
     scraperExecutionTrace?: ScraperExecutionTraceOmit
     crawlRun?: CrawlRunOmit
@@ -4933,7 +4692,6 @@ export namespace Prisma {
   export type SourceAgencyCountOutputType = {
     scrapers: number
     user_tracked_agencies: number
-    scraper_generation_runs: number
     crawl_runs: number
     source_properties: number
     notifications: number
@@ -4943,7 +4701,6 @@ export namespace Prisma {
   export type SourceAgencyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     scrapers?: boolean | SourceAgencyCountOutputTypeCountScrapersArgs
     user_tracked_agencies?: boolean | SourceAgencyCountOutputTypeCountUser_tracked_agenciesArgs
-    scraper_generation_runs?: boolean | SourceAgencyCountOutputTypeCountScraper_generation_runsArgs
     crawl_runs?: boolean | SourceAgencyCountOutputTypeCountCrawl_runsArgs
     source_properties?: boolean | SourceAgencyCountOutputTypeCountSource_propertiesArgs
     notifications?: boolean | SourceAgencyCountOutputTypeCountNotificationsArgs
@@ -4973,13 +4730,6 @@ export namespace Prisma {
    */
   export type SourceAgencyCountOutputTypeCountUser_tracked_agenciesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserTrackedAgencyWhereInput
-  }
-
-  /**
-   * SourceAgencyCountOutputType without action
-   */
-  export type SourceAgencyCountOutputTypeCountScraper_generation_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ScraperGenerationRunWhereInput
   }
 
   /**
@@ -5059,7 +4809,6 @@ export namespace Prisma {
     crawl_runs: number
     versions: number
     execution_traces: number
-    scraper_generation_runs: number
     notifications: number
     diagnostics_packages: number
   }
@@ -5068,7 +4817,6 @@ export namespace Prisma {
     crawl_runs?: boolean | ScraperCountOutputTypeCountCrawl_runsArgs
     versions?: boolean | ScraperCountOutputTypeCountVersionsArgs
     execution_traces?: boolean | ScraperCountOutputTypeCountExecution_tracesArgs
-    scraper_generation_runs?: boolean | ScraperCountOutputTypeCountScraper_generation_runsArgs
     notifications?: boolean | ScraperCountOutputTypeCountNotificationsArgs
     diagnostics_packages?: boolean | ScraperCountOutputTypeCountDiagnostics_packagesArgs
   }
@@ -5108,13 +4856,6 @@ export namespace Prisma {
   /**
    * ScraperCountOutputType without action
    */
-  export type ScraperCountOutputTypeCountScraper_generation_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ScraperGenerationRunWhereInput
-  }
-
-  /**
-   * ScraperCountOutputType without action
-   */
   export type ScraperCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: NotificationWhereInput
   }
@@ -5124,37 +4865,6 @@ export namespace Prisma {
    */
   export type ScraperCountOutputTypeCountDiagnostics_packagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DiagnosticsPackageWhereInput
-  }
-
-
-  /**
-   * Count Type ScraperGenerationRunCountOutputType
-   */
-
-  export type ScraperGenerationRunCountOutputType = {
-    steps: number
-  }
-
-  export type ScraperGenerationRunCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    steps?: boolean | ScraperGenerationRunCountOutputTypeCountStepsArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * ScraperGenerationRunCountOutputType without action
-   */
-  export type ScraperGenerationRunCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRunCountOutputType
-     */
-    select?: ScraperGenerationRunCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * ScraperGenerationRunCountOutputType without action
-   */
-  export type ScraperGenerationRunCountOutputTypeCountStepsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ComputerUseStepWhereInput
   }
 
 
@@ -5551,46 +5261,6 @@ export namespace Prisma {
    */
   export type AiBatchRunCountOutputTypeCountCost_logsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CostLogWhereInput
-  }
-
-
-  /**
-   * Count Type DocumentCountOutputType
-   */
-
-  export type DocumentCountOutputType = {
-    computer_use_steps_before: number
-    computer_use_steps_after: number
-  }
-
-  export type DocumentCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    computer_use_steps_before?: boolean | DocumentCountOutputTypeCountComputer_use_steps_beforeArgs
-    computer_use_steps_after?: boolean | DocumentCountOutputTypeCountComputer_use_steps_afterArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * DocumentCountOutputType without action
-   */
-  export type DocumentCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the DocumentCountOutputType
-     */
-    select?: DocumentCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * DocumentCountOutputType without action
-   */
-  export type DocumentCountOutputTypeCountComputer_use_steps_beforeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ComputerUseStepWhereInput
-  }
-
-  /**
-   * DocumentCountOutputType without action
-   */
-  export type DocumentCountOutputTypeCountComputer_use_steps_afterArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ComputerUseStepWhereInput
   }
 
 
@@ -10700,7 +10370,6 @@ export namespace Prisma {
     updated_at?: boolean
     scrapers?: boolean | SourceAgency$scrapersArgs<ExtArgs>
     user_tracked_agencies?: boolean | SourceAgency$user_tracked_agenciesArgs<ExtArgs>
-    scraper_generation_runs?: boolean | SourceAgency$scraper_generation_runsArgs<ExtArgs>
     crawl_runs?: boolean | SourceAgency$crawl_runsArgs<ExtArgs>
     source_properties?: boolean | SourceAgency$source_propertiesArgs<ExtArgs>
     notifications?: boolean | SourceAgency$notificationsArgs<ExtArgs>
@@ -10778,7 +10447,6 @@ export namespace Prisma {
   export type SourceAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     scrapers?: boolean | SourceAgency$scrapersArgs<ExtArgs>
     user_tracked_agencies?: boolean | SourceAgency$user_tracked_agenciesArgs<ExtArgs>
-    scraper_generation_runs?: boolean | SourceAgency$scraper_generation_runsArgs<ExtArgs>
     crawl_runs?: boolean | SourceAgency$crawl_runsArgs<ExtArgs>
     source_properties?: boolean | SourceAgency$source_propertiesArgs<ExtArgs>
     notifications?: boolean | SourceAgency$notificationsArgs<ExtArgs>
@@ -10793,7 +10461,6 @@ export namespace Prisma {
     objects: {
       scrapers: Prisma.$ScraperPayload<ExtArgs>[]
       user_tracked_agencies: Prisma.$UserTrackedAgencyPayload<ExtArgs>[]
-      scraper_generation_runs: Prisma.$ScraperGenerationRunPayload<ExtArgs>[]
       crawl_runs: Prisma.$CrawlRunPayload<ExtArgs>[]
       source_properties: Prisma.$SourcePropertyPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
@@ -11215,7 +10882,6 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     scrapers<T extends SourceAgency$scrapersArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgency$scrapersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScraperPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     user_tracked_agencies<T extends SourceAgency$user_tracked_agenciesArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgency$user_tracked_agenciesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserTrackedAgencyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    scraper_generation_runs<T extends SourceAgency$scraper_generation_runsArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgency$scraper_generation_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     crawl_runs<T extends SourceAgency$crawl_runsArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgency$crawl_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     source_properties<T extends SourceAgency$source_propertiesArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgency$source_propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SourcePropertyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends SourceAgency$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgency$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -11701,30 +11367,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: UserTrackedAgencyScalarFieldEnum | UserTrackedAgencyScalarFieldEnum[]
-  }
-
-  /**
-   * SourceAgency.scraper_generation_runs
-   */
-  export type SourceAgency$scraper_generation_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunInclude<ExtArgs> | null
-    where?: ScraperGenerationRunWhereInput
-    orderBy?: ScraperGenerationRunOrderByWithRelationInput | ScraperGenerationRunOrderByWithRelationInput[]
-    cursor?: ScraperGenerationRunWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ScraperGenerationRunScalarFieldEnum | ScraperGenerationRunScalarFieldEnum[]
   }
 
   /**
@@ -15853,7 +15495,6 @@ export namespace Prisma {
     crawl_runs?: boolean | Scraper$crawl_runsArgs<ExtArgs>
     versions?: boolean | Scraper$versionsArgs<ExtArgs>
     execution_traces?: boolean | Scraper$execution_tracesArgs<ExtArgs>
-    scraper_generation_runs?: boolean | Scraper$scraper_generation_runsArgs<ExtArgs>
     notifications?: boolean | Scraper$notificationsArgs<ExtArgs>
     diagnostics_packages?: boolean | Scraper$diagnostics_packagesArgs<ExtArgs>
     _count?: boolean | ScraperCountOutputTypeDefaultArgs<ExtArgs>
@@ -15939,7 +15580,6 @@ export namespace Prisma {
     crawl_runs?: boolean | Scraper$crawl_runsArgs<ExtArgs>
     versions?: boolean | Scraper$versionsArgs<ExtArgs>
     execution_traces?: boolean | Scraper$execution_tracesArgs<ExtArgs>
-    scraper_generation_runs?: boolean | Scraper$scraper_generation_runsArgs<ExtArgs>
     notifications?: boolean | Scraper$notificationsArgs<ExtArgs>
     diagnostics_packages?: boolean | Scraper$diagnostics_packagesArgs<ExtArgs>
     _count?: boolean | ScraperCountOutputTypeDefaultArgs<ExtArgs>
@@ -15961,7 +15601,6 @@ export namespace Prisma {
       crawl_runs: Prisma.$CrawlRunPayload<ExtArgs>[]
       versions: Prisma.$ScraperVersionPayload<ExtArgs>[]
       execution_traces: Prisma.$ScraperExecutionTracePayload<ExtArgs>[]
-      scraper_generation_runs: Prisma.$ScraperGenerationRunPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
       diagnostics_packages: Prisma.$DiagnosticsPackagePayload<ExtArgs>[]
     }
@@ -16385,7 +16024,6 @@ export namespace Prisma {
     crawl_runs<T extends Scraper$crawl_runsArgs<ExtArgs> = {}>(args?: Subset<T, Scraper$crawl_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CrawlRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     versions<T extends Scraper$versionsArgs<ExtArgs> = {}>(args?: Subset<T, Scraper$versionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScraperVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     execution_traces<T extends Scraper$execution_tracesArgs<ExtArgs> = {}>(args?: Subset<T, Scraper$execution_tracesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScraperExecutionTracePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    scraper_generation_runs<T extends Scraper$scraper_generation_runsArgs<ExtArgs> = {}>(args?: Subset<T, Scraper$scraper_generation_runsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends Scraper$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, Scraper$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     diagnostics_packages<T extends Scraper$diagnostics_packagesArgs<ExtArgs> = {}>(args?: Subset<T, Scraper$diagnostics_packagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DiagnosticsPackagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -16924,30 +16562,6 @@ export namespace Prisma {
   }
 
   /**
-   * Scraper.scraper_generation_runs
-   */
-  export type Scraper$scraper_generation_runsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunInclude<ExtArgs> | null
-    where?: ScraperGenerationRunWhereInput
-    orderBy?: ScraperGenerationRunOrderByWithRelationInput | ScraperGenerationRunOrderByWithRelationInput[]
-    cursor?: ScraperGenerationRunWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ScraperGenerationRunScalarFieldEnum | ScraperGenerationRunScalarFieldEnum[]
-  }
-
-  /**
    * Scraper.notifications
    */
   export type Scraper$notificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -17011,2506 +16625,6 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ScraperInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model ScraperGenerationRun
-   */
-
-  export type AggregateScraperGenerationRun = {
-    _count: ScraperGenerationRunCountAggregateOutputType | null
-    _avg: ScraperGenerationRunAvgAggregateOutputType | null
-    _sum: ScraperGenerationRunSumAggregateOutputType | null
-    _min: ScraperGenerationRunMinAggregateOutputType | null
-    _max: ScraperGenerationRunMaxAggregateOutputType | null
-  }
-
-  export type ScraperGenerationRunAvgAggregateOutputType = {
-    max_steps: number | null
-    duration_ms: number | null
-  }
-
-  export type ScraperGenerationRunSumAggregateOutputType = {
-    max_steps: number | null
-    duration_ms: number | null
-  }
-
-  export type ScraperGenerationRunMinAggregateOutputType = {
-    id: string | null
-    source_agency_id: string | null
-    scraper_id: string | null
-    trigger: $Enums.GenerationTrigger | null
-    status: $Enums.GenerationRunStatus | null
-    prompt: string | null
-    max_steps: number | null
-    produced_version_id: string | null
-    error_message: string | null
-    started_at: Date | null
-    finished_at: Date | null
-    duration_ms: number | null
-    created_at: Date | null
-    updated_at: Date | null
-  }
-
-  export type ScraperGenerationRunMaxAggregateOutputType = {
-    id: string | null
-    source_agency_id: string | null
-    scraper_id: string | null
-    trigger: $Enums.GenerationTrigger | null
-    status: $Enums.GenerationRunStatus | null
-    prompt: string | null
-    max_steps: number | null
-    produced_version_id: string | null
-    error_message: string | null
-    started_at: Date | null
-    finished_at: Date | null
-    duration_ms: number | null
-    created_at: Date | null
-    updated_at: Date | null
-  }
-
-  export type ScraperGenerationRunCountAggregateOutputType = {
-    id: number
-    source_agency_id: number
-    scraper_id: number
-    trigger: number
-    status: number
-    prompt: number
-    max_steps: number
-    staged_config: number
-    produced_version_id: number
-    error_message: number
-    started_at: number
-    finished_at: number
-    duration_ms: number
-    created_at: number
-    updated_at: number
-    _all: number
-  }
-
-
-  export type ScraperGenerationRunAvgAggregateInputType = {
-    max_steps?: true
-    duration_ms?: true
-  }
-
-  export type ScraperGenerationRunSumAggregateInputType = {
-    max_steps?: true
-    duration_ms?: true
-  }
-
-  export type ScraperGenerationRunMinAggregateInputType = {
-    id?: true
-    source_agency_id?: true
-    scraper_id?: true
-    trigger?: true
-    status?: true
-    prompt?: true
-    max_steps?: true
-    produced_version_id?: true
-    error_message?: true
-    started_at?: true
-    finished_at?: true
-    duration_ms?: true
-    created_at?: true
-    updated_at?: true
-  }
-
-  export type ScraperGenerationRunMaxAggregateInputType = {
-    id?: true
-    source_agency_id?: true
-    scraper_id?: true
-    trigger?: true
-    status?: true
-    prompt?: true
-    max_steps?: true
-    produced_version_id?: true
-    error_message?: true
-    started_at?: true
-    finished_at?: true
-    duration_ms?: true
-    created_at?: true
-    updated_at?: true
-  }
-
-  export type ScraperGenerationRunCountAggregateInputType = {
-    id?: true
-    source_agency_id?: true
-    scraper_id?: true
-    trigger?: true
-    status?: true
-    prompt?: true
-    max_steps?: true
-    staged_config?: true
-    produced_version_id?: true
-    error_message?: true
-    started_at?: true
-    finished_at?: true
-    duration_ms?: true
-    created_at?: true
-    updated_at?: true
-    _all?: true
-  }
-
-  export type ScraperGenerationRunAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which ScraperGenerationRun to aggregate.
-     */
-    where?: ScraperGenerationRunWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ScraperGenerationRuns to fetch.
-     */
-    orderBy?: ScraperGenerationRunOrderByWithRelationInput | ScraperGenerationRunOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: ScraperGenerationRunWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ScraperGenerationRuns from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ScraperGenerationRuns.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned ScraperGenerationRuns
-    **/
-    _count?: true | ScraperGenerationRunCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: ScraperGenerationRunAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: ScraperGenerationRunSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: ScraperGenerationRunMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: ScraperGenerationRunMaxAggregateInputType
-  }
-
-  export type GetScraperGenerationRunAggregateType<T extends ScraperGenerationRunAggregateArgs> = {
-        [P in keyof T & keyof AggregateScraperGenerationRun]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateScraperGenerationRun[P]>
-      : GetScalarType<T[P], AggregateScraperGenerationRun[P]>
-  }
-
-
-
-
-  export type ScraperGenerationRunGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ScraperGenerationRunWhereInput
-    orderBy?: ScraperGenerationRunOrderByWithAggregationInput | ScraperGenerationRunOrderByWithAggregationInput[]
-    by: ScraperGenerationRunScalarFieldEnum[] | ScraperGenerationRunScalarFieldEnum
-    having?: ScraperGenerationRunScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: ScraperGenerationRunCountAggregateInputType | true
-    _avg?: ScraperGenerationRunAvgAggregateInputType
-    _sum?: ScraperGenerationRunSumAggregateInputType
-    _min?: ScraperGenerationRunMinAggregateInputType
-    _max?: ScraperGenerationRunMaxAggregateInputType
-  }
-
-  export type ScraperGenerationRunGroupByOutputType = {
-    id: string
-    source_agency_id: string
-    scraper_id: string | null
-    trigger: $Enums.GenerationTrigger
-    status: $Enums.GenerationRunStatus
-    prompt: string | null
-    max_steps: number | null
-    staged_config: JsonValue | null
-    produced_version_id: string | null
-    error_message: string | null
-    started_at: Date | null
-    finished_at: Date | null
-    duration_ms: number | null
-    created_at: Date
-    updated_at: Date
-    _count: ScraperGenerationRunCountAggregateOutputType | null
-    _avg: ScraperGenerationRunAvgAggregateOutputType | null
-    _sum: ScraperGenerationRunSumAggregateOutputType | null
-    _min: ScraperGenerationRunMinAggregateOutputType | null
-    _max: ScraperGenerationRunMaxAggregateOutputType | null
-  }
-
-  type GetScraperGenerationRunGroupByPayload<T extends ScraperGenerationRunGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<ScraperGenerationRunGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof ScraperGenerationRunGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], ScraperGenerationRunGroupByOutputType[P]>
-            : GetScalarType<T[P], ScraperGenerationRunGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type ScraperGenerationRunSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    source_agency_id?: boolean
-    scraper_id?: boolean
-    trigger?: boolean
-    status?: boolean
-    prompt?: boolean
-    max_steps?: boolean
-    staged_config?: boolean
-    produced_version_id?: boolean
-    error_message?: boolean
-    started_at?: boolean
-    finished_at?: boolean
-    duration_ms?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-    source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
-    scraper?: boolean | ScraperGenerationRun$scraperArgs<ExtArgs>
-    produced_version?: boolean | ScraperGenerationRun$produced_versionArgs<ExtArgs>
-    steps?: boolean | ScraperGenerationRun$stepsArgs<ExtArgs>
-    _count?: boolean | ScraperGenerationRunCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["scraperGenerationRun"]>
-
-  export type ScraperGenerationRunSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    source_agency_id?: boolean
-    scraper_id?: boolean
-    trigger?: boolean
-    status?: boolean
-    prompt?: boolean
-    max_steps?: boolean
-    staged_config?: boolean
-    produced_version_id?: boolean
-    error_message?: boolean
-    started_at?: boolean
-    finished_at?: boolean
-    duration_ms?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-    source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
-    scraper?: boolean | ScraperGenerationRun$scraperArgs<ExtArgs>
-    produced_version?: boolean | ScraperGenerationRun$produced_versionArgs<ExtArgs>
-  }, ExtArgs["result"]["scraperGenerationRun"]>
-
-  export type ScraperGenerationRunSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    source_agency_id?: boolean
-    scraper_id?: boolean
-    trigger?: boolean
-    status?: boolean
-    prompt?: boolean
-    max_steps?: boolean
-    staged_config?: boolean
-    produced_version_id?: boolean
-    error_message?: boolean
-    started_at?: boolean
-    finished_at?: boolean
-    duration_ms?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-    source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
-    scraper?: boolean | ScraperGenerationRun$scraperArgs<ExtArgs>
-    produced_version?: boolean | ScraperGenerationRun$produced_versionArgs<ExtArgs>
-  }, ExtArgs["result"]["scraperGenerationRun"]>
-
-  export type ScraperGenerationRunSelectScalar = {
-    id?: boolean
-    source_agency_id?: boolean
-    scraper_id?: boolean
-    trigger?: boolean
-    status?: boolean
-    prompt?: boolean
-    max_steps?: boolean
-    staged_config?: boolean
-    produced_version_id?: boolean
-    error_message?: boolean
-    started_at?: boolean
-    finished_at?: boolean
-    duration_ms?: boolean
-    created_at?: boolean
-    updated_at?: boolean
-  }
-
-  export type ScraperGenerationRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source_agency_id" | "scraper_id" | "trigger" | "status" | "prompt" | "max_steps" | "staged_config" | "produced_version_id" | "error_message" | "started_at" | "finished_at" | "duration_ms" | "created_at" | "updated_at", ExtArgs["result"]["scraperGenerationRun"]>
-  export type ScraperGenerationRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
-    scraper?: boolean | ScraperGenerationRun$scraperArgs<ExtArgs>
-    produced_version?: boolean | ScraperGenerationRun$produced_versionArgs<ExtArgs>
-    steps?: boolean | ScraperGenerationRun$stepsArgs<ExtArgs>
-    _count?: boolean | ScraperGenerationRunCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type ScraperGenerationRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
-    scraper?: boolean | ScraperGenerationRun$scraperArgs<ExtArgs>
-    produced_version?: boolean | ScraperGenerationRun$produced_versionArgs<ExtArgs>
-  }
-  export type ScraperGenerationRunIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
-    scraper?: boolean | ScraperGenerationRun$scraperArgs<ExtArgs>
-    produced_version?: boolean | ScraperGenerationRun$produced_versionArgs<ExtArgs>
-  }
-
-  export type $ScraperGenerationRunPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "ScraperGenerationRun"
-    objects: {
-      source_agency: Prisma.$SourceAgencyPayload<ExtArgs>
-      scraper: Prisma.$ScraperPayload<ExtArgs> | null
-      produced_version: Prisma.$ScraperVersionPayload<ExtArgs> | null
-      steps: Prisma.$ComputerUseStepPayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      source_agency_id: string
-      scraper_id: string | null
-      trigger: $Enums.GenerationTrigger
-      status: $Enums.GenerationRunStatus
-      prompt: string | null
-      max_steps: number | null
-      staged_config: Prisma.JsonValue | null
-      produced_version_id: string | null
-      error_message: string | null
-      started_at: Date | null
-      finished_at: Date | null
-      duration_ms: number | null
-      created_at: Date
-      updated_at: Date
-    }, ExtArgs["result"]["scraperGenerationRun"]>
-    composites: {}
-  }
-
-  type ScraperGenerationRunGetPayload<S extends boolean | null | undefined | ScraperGenerationRunDefaultArgs> = $Result.GetResult<Prisma.$ScraperGenerationRunPayload, S>
-
-  type ScraperGenerationRunCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<ScraperGenerationRunFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: ScraperGenerationRunCountAggregateInputType | true
-    }
-
-  export interface ScraperGenerationRunDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ScraperGenerationRun'], meta: { name: 'ScraperGenerationRun' } }
-    /**
-     * Find zero or one ScraperGenerationRun that matches the filter.
-     * @param {ScraperGenerationRunFindUniqueArgs} args - Arguments to find a ScraperGenerationRun
-     * @example
-     * // Get one ScraperGenerationRun
-     * const scraperGenerationRun = await prisma.scraperGenerationRun.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends ScraperGenerationRunFindUniqueArgs>(args: SelectSubset<T, ScraperGenerationRunFindUniqueArgs<ExtArgs>>): Prisma__ScraperGenerationRunClient<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one ScraperGenerationRun that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {ScraperGenerationRunFindUniqueOrThrowArgs} args - Arguments to find a ScraperGenerationRun
-     * @example
-     * // Get one ScraperGenerationRun
-     * const scraperGenerationRun = await prisma.scraperGenerationRun.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends ScraperGenerationRunFindUniqueOrThrowArgs>(args: SelectSubset<T, ScraperGenerationRunFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ScraperGenerationRunClient<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first ScraperGenerationRun that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ScraperGenerationRunFindFirstArgs} args - Arguments to find a ScraperGenerationRun
-     * @example
-     * // Get one ScraperGenerationRun
-     * const scraperGenerationRun = await prisma.scraperGenerationRun.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends ScraperGenerationRunFindFirstArgs>(args?: SelectSubset<T, ScraperGenerationRunFindFirstArgs<ExtArgs>>): Prisma__ScraperGenerationRunClient<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first ScraperGenerationRun that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ScraperGenerationRunFindFirstOrThrowArgs} args - Arguments to find a ScraperGenerationRun
-     * @example
-     * // Get one ScraperGenerationRun
-     * const scraperGenerationRun = await prisma.scraperGenerationRun.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends ScraperGenerationRunFindFirstOrThrowArgs>(args?: SelectSubset<T, ScraperGenerationRunFindFirstOrThrowArgs<ExtArgs>>): Prisma__ScraperGenerationRunClient<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more ScraperGenerationRuns that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ScraperGenerationRunFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all ScraperGenerationRuns
-     * const scraperGenerationRuns = await prisma.scraperGenerationRun.findMany()
-     * 
-     * // Get first 10 ScraperGenerationRuns
-     * const scraperGenerationRuns = await prisma.scraperGenerationRun.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const scraperGenerationRunWithIdOnly = await prisma.scraperGenerationRun.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends ScraperGenerationRunFindManyArgs>(args?: SelectSubset<T, ScraperGenerationRunFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a ScraperGenerationRun.
-     * @param {ScraperGenerationRunCreateArgs} args - Arguments to create a ScraperGenerationRun.
-     * @example
-     * // Create one ScraperGenerationRun
-     * const ScraperGenerationRun = await prisma.scraperGenerationRun.create({
-     *   data: {
-     *     // ... data to create a ScraperGenerationRun
-     *   }
-     * })
-     * 
-     */
-    create<T extends ScraperGenerationRunCreateArgs>(args: SelectSubset<T, ScraperGenerationRunCreateArgs<ExtArgs>>): Prisma__ScraperGenerationRunClient<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many ScraperGenerationRuns.
-     * @param {ScraperGenerationRunCreateManyArgs} args - Arguments to create many ScraperGenerationRuns.
-     * @example
-     * // Create many ScraperGenerationRuns
-     * const scraperGenerationRun = await prisma.scraperGenerationRun.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends ScraperGenerationRunCreateManyArgs>(args?: SelectSubset<T, ScraperGenerationRunCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many ScraperGenerationRuns and returns the data saved in the database.
-     * @param {ScraperGenerationRunCreateManyAndReturnArgs} args - Arguments to create many ScraperGenerationRuns.
-     * @example
-     * // Create many ScraperGenerationRuns
-     * const scraperGenerationRun = await prisma.scraperGenerationRun.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many ScraperGenerationRuns and only return the `id`
-     * const scraperGenerationRunWithIdOnly = await prisma.scraperGenerationRun.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends ScraperGenerationRunCreateManyAndReturnArgs>(args?: SelectSubset<T, ScraperGenerationRunCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a ScraperGenerationRun.
-     * @param {ScraperGenerationRunDeleteArgs} args - Arguments to delete one ScraperGenerationRun.
-     * @example
-     * // Delete one ScraperGenerationRun
-     * const ScraperGenerationRun = await prisma.scraperGenerationRun.delete({
-     *   where: {
-     *     // ... filter to delete one ScraperGenerationRun
-     *   }
-     * })
-     * 
-     */
-    delete<T extends ScraperGenerationRunDeleteArgs>(args: SelectSubset<T, ScraperGenerationRunDeleteArgs<ExtArgs>>): Prisma__ScraperGenerationRunClient<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one ScraperGenerationRun.
-     * @param {ScraperGenerationRunUpdateArgs} args - Arguments to update one ScraperGenerationRun.
-     * @example
-     * // Update one ScraperGenerationRun
-     * const scraperGenerationRun = await prisma.scraperGenerationRun.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends ScraperGenerationRunUpdateArgs>(args: SelectSubset<T, ScraperGenerationRunUpdateArgs<ExtArgs>>): Prisma__ScraperGenerationRunClient<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more ScraperGenerationRuns.
-     * @param {ScraperGenerationRunDeleteManyArgs} args - Arguments to filter ScraperGenerationRuns to delete.
-     * @example
-     * // Delete a few ScraperGenerationRuns
-     * const { count } = await prisma.scraperGenerationRun.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends ScraperGenerationRunDeleteManyArgs>(args?: SelectSubset<T, ScraperGenerationRunDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more ScraperGenerationRuns.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ScraperGenerationRunUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many ScraperGenerationRuns
-     * const scraperGenerationRun = await prisma.scraperGenerationRun.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends ScraperGenerationRunUpdateManyArgs>(args: SelectSubset<T, ScraperGenerationRunUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more ScraperGenerationRuns and returns the data updated in the database.
-     * @param {ScraperGenerationRunUpdateManyAndReturnArgs} args - Arguments to update many ScraperGenerationRuns.
-     * @example
-     * // Update many ScraperGenerationRuns
-     * const scraperGenerationRun = await prisma.scraperGenerationRun.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more ScraperGenerationRuns and only return the `id`
-     * const scraperGenerationRunWithIdOnly = await prisma.scraperGenerationRun.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends ScraperGenerationRunUpdateManyAndReturnArgs>(args: SelectSubset<T, ScraperGenerationRunUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one ScraperGenerationRun.
-     * @param {ScraperGenerationRunUpsertArgs} args - Arguments to update or create a ScraperGenerationRun.
-     * @example
-     * // Update or create a ScraperGenerationRun
-     * const scraperGenerationRun = await prisma.scraperGenerationRun.upsert({
-     *   create: {
-     *     // ... data to create a ScraperGenerationRun
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the ScraperGenerationRun we want to update
-     *   }
-     * })
-     */
-    upsert<T extends ScraperGenerationRunUpsertArgs>(args: SelectSubset<T, ScraperGenerationRunUpsertArgs<ExtArgs>>): Prisma__ScraperGenerationRunClient<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of ScraperGenerationRuns.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ScraperGenerationRunCountArgs} args - Arguments to filter ScraperGenerationRuns to count.
-     * @example
-     * // Count the number of ScraperGenerationRuns
-     * const count = await prisma.scraperGenerationRun.count({
-     *   where: {
-     *     // ... the filter for the ScraperGenerationRuns we want to count
-     *   }
-     * })
-    **/
-    count<T extends ScraperGenerationRunCountArgs>(
-      args?: Subset<T, ScraperGenerationRunCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], ScraperGenerationRunCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a ScraperGenerationRun.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ScraperGenerationRunAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends ScraperGenerationRunAggregateArgs>(args: Subset<T, ScraperGenerationRunAggregateArgs>): Prisma.PrismaPromise<GetScraperGenerationRunAggregateType<T>>
-
-    /**
-     * Group by ScraperGenerationRun.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ScraperGenerationRunGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends ScraperGenerationRunGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: ScraperGenerationRunGroupByArgs['orderBy'] }
-        : { orderBy?: ScraperGenerationRunGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, ScraperGenerationRunGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetScraperGenerationRunGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the ScraperGenerationRun model
-   */
-  readonly fields: ScraperGenerationRunFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for ScraperGenerationRun.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__ScraperGenerationRunClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    source_agency<T extends SourceAgencyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SourceAgencyDefaultArgs<ExtArgs>>): Prisma__SourceAgencyClient<$Result.GetResult<Prisma.$SourceAgencyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    scraper<T extends ScraperGenerationRun$scraperArgs<ExtArgs> = {}>(args?: Subset<T, ScraperGenerationRun$scraperArgs<ExtArgs>>): Prisma__ScraperClient<$Result.GetResult<Prisma.$ScraperPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    produced_version<T extends ScraperGenerationRun$produced_versionArgs<ExtArgs> = {}>(args?: Subset<T, ScraperGenerationRun$produced_versionArgs<ExtArgs>>): Prisma__ScraperVersionClient<$Result.GetResult<Prisma.$ScraperVersionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    steps<T extends ScraperGenerationRun$stepsArgs<ExtArgs> = {}>(args?: Subset<T, ScraperGenerationRun$stepsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the ScraperGenerationRun model
-   */
-  interface ScraperGenerationRunFieldRefs {
-    readonly id: FieldRef<"ScraperGenerationRun", 'String'>
-    readonly source_agency_id: FieldRef<"ScraperGenerationRun", 'String'>
-    readonly scraper_id: FieldRef<"ScraperGenerationRun", 'String'>
-    readonly trigger: FieldRef<"ScraperGenerationRun", 'GenerationTrigger'>
-    readonly status: FieldRef<"ScraperGenerationRun", 'GenerationRunStatus'>
-    readonly prompt: FieldRef<"ScraperGenerationRun", 'String'>
-    readonly max_steps: FieldRef<"ScraperGenerationRun", 'Int'>
-    readonly staged_config: FieldRef<"ScraperGenerationRun", 'Json'>
-    readonly produced_version_id: FieldRef<"ScraperGenerationRun", 'String'>
-    readonly error_message: FieldRef<"ScraperGenerationRun", 'String'>
-    readonly started_at: FieldRef<"ScraperGenerationRun", 'DateTime'>
-    readonly finished_at: FieldRef<"ScraperGenerationRun", 'DateTime'>
-    readonly duration_ms: FieldRef<"ScraperGenerationRun", 'Int'>
-    readonly created_at: FieldRef<"ScraperGenerationRun", 'DateTime'>
-    readonly updated_at: FieldRef<"ScraperGenerationRun", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * ScraperGenerationRun findUnique
-   */
-  export type ScraperGenerationRunFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunInclude<ExtArgs> | null
-    /**
-     * Filter, which ScraperGenerationRun to fetch.
-     */
-    where: ScraperGenerationRunWhereUniqueInput
-  }
-
-  /**
-   * ScraperGenerationRun findUniqueOrThrow
-   */
-  export type ScraperGenerationRunFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunInclude<ExtArgs> | null
-    /**
-     * Filter, which ScraperGenerationRun to fetch.
-     */
-    where: ScraperGenerationRunWhereUniqueInput
-  }
-
-  /**
-   * ScraperGenerationRun findFirst
-   */
-  export type ScraperGenerationRunFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunInclude<ExtArgs> | null
-    /**
-     * Filter, which ScraperGenerationRun to fetch.
-     */
-    where?: ScraperGenerationRunWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ScraperGenerationRuns to fetch.
-     */
-    orderBy?: ScraperGenerationRunOrderByWithRelationInput | ScraperGenerationRunOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for ScraperGenerationRuns.
-     */
-    cursor?: ScraperGenerationRunWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ScraperGenerationRuns from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ScraperGenerationRuns.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of ScraperGenerationRuns.
-     */
-    distinct?: ScraperGenerationRunScalarFieldEnum | ScraperGenerationRunScalarFieldEnum[]
-  }
-
-  /**
-   * ScraperGenerationRun findFirstOrThrow
-   */
-  export type ScraperGenerationRunFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunInclude<ExtArgs> | null
-    /**
-     * Filter, which ScraperGenerationRun to fetch.
-     */
-    where?: ScraperGenerationRunWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ScraperGenerationRuns to fetch.
-     */
-    orderBy?: ScraperGenerationRunOrderByWithRelationInput | ScraperGenerationRunOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for ScraperGenerationRuns.
-     */
-    cursor?: ScraperGenerationRunWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ScraperGenerationRuns from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ScraperGenerationRuns.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of ScraperGenerationRuns.
-     */
-    distinct?: ScraperGenerationRunScalarFieldEnum | ScraperGenerationRunScalarFieldEnum[]
-  }
-
-  /**
-   * ScraperGenerationRun findMany
-   */
-  export type ScraperGenerationRunFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunInclude<ExtArgs> | null
-    /**
-     * Filter, which ScraperGenerationRuns to fetch.
-     */
-    where?: ScraperGenerationRunWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ScraperGenerationRuns to fetch.
-     */
-    orderBy?: ScraperGenerationRunOrderByWithRelationInput | ScraperGenerationRunOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing ScraperGenerationRuns.
-     */
-    cursor?: ScraperGenerationRunWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ScraperGenerationRuns from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ScraperGenerationRuns.
-     */
-    skip?: number
-    distinct?: ScraperGenerationRunScalarFieldEnum | ScraperGenerationRunScalarFieldEnum[]
-  }
-
-  /**
-   * ScraperGenerationRun create
-   */
-  export type ScraperGenerationRunCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunInclude<ExtArgs> | null
-    /**
-     * The data needed to create a ScraperGenerationRun.
-     */
-    data: XOR<ScraperGenerationRunCreateInput, ScraperGenerationRunUncheckedCreateInput>
-  }
-
-  /**
-   * ScraperGenerationRun createMany
-   */
-  export type ScraperGenerationRunCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many ScraperGenerationRuns.
-     */
-    data: ScraperGenerationRunCreateManyInput | ScraperGenerationRunCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * ScraperGenerationRun createManyAndReturn
-   */
-  export type ScraperGenerationRunCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * The data used to create many ScraperGenerationRuns.
-     */
-    data: ScraperGenerationRunCreateManyInput | ScraperGenerationRunCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * ScraperGenerationRun update
-   */
-  export type ScraperGenerationRunUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunInclude<ExtArgs> | null
-    /**
-     * The data needed to update a ScraperGenerationRun.
-     */
-    data: XOR<ScraperGenerationRunUpdateInput, ScraperGenerationRunUncheckedUpdateInput>
-    /**
-     * Choose, which ScraperGenerationRun to update.
-     */
-    where: ScraperGenerationRunWhereUniqueInput
-  }
-
-  /**
-   * ScraperGenerationRun updateMany
-   */
-  export type ScraperGenerationRunUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update ScraperGenerationRuns.
-     */
-    data: XOR<ScraperGenerationRunUpdateManyMutationInput, ScraperGenerationRunUncheckedUpdateManyInput>
-    /**
-     * Filter which ScraperGenerationRuns to update
-     */
-    where?: ScraperGenerationRunWhereInput
-    /**
-     * Limit how many ScraperGenerationRuns to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * ScraperGenerationRun updateManyAndReturn
-   */
-  export type ScraperGenerationRunUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * The data used to update ScraperGenerationRuns.
-     */
-    data: XOR<ScraperGenerationRunUpdateManyMutationInput, ScraperGenerationRunUncheckedUpdateManyInput>
-    /**
-     * Filter which ScraperGenerationRuns to update
-     */
-    where?: ScraperGenerationRunWhereInput
-    /**
-     * Limit how many ScraperGenerationRuns to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * ScraperGenerationRun upsert
-   */
-  export type ScraperGenerationRunUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunInclude<ExtArgs> | null
-    /**
-     * The filter to search for the ScraperGenerationRun to update in case it exists.
-     */
-    where: ScraperGenerationRunWhereUniqueInput
-    /**
-     * In case the ScraperGenerationRun found by the `where` argument doesn't exist, create a new ScraperGenerationRun with this data.
-     */
-    create: XOR<ScraperGenerationRunCreateInput, ScraperGenerationRunUncheckedCreateInput>
-    /**
-     * In case the ScraperGenerationRun was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<ScraperGenerationRunUpdateInput, ScraperGenerationRunUncheckedUpdateInput>
-  }
-
-  /**
-   * ScraperGenerationRun delete
-   */
-  export type ScraperGenerationRunDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunInclude<ExtArgs> | null
-    /**
-     * Filter which ScraperGenerationRun to delete.
-     */
-    where: ScraperGenerationRunWhereUniqueInput
-  }
-
-  /**
-   * ScraperGenerationRun deleteMany
-   */
-  export type ScraperGenerationRunDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which ScraperGenerationRuns to delete
-     */
-    where?: ScraperGenerationRunWhereInput
-    /**
-     * Limit how many ScraperGenerationRuns to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * ScraperGenerationRun.scraper
-   */
-  export type ScraperGenerationRun$scraperArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Scraper
-     */
-    select?: ScraperSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Scraper
-     */
-    omit?: ScraperOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperInclude<ExtArgs> | null
-    where?: ScraperWhereInput
-  }
-
-  /**
-   * ScraperGenerationRun.produced_version
-   */
-  export type ScraperGenerationRun$produced_versionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperVersion
-     */
-    select?: ScraperVersionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperVersion
-     */
-    omit?: ScraperVersionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperVersionInclude<ExtArgs> | null
-    where?: ScraperVersionWhereInput
-  }
-
-  /**
-   * ScraperGenerationRun.steps
-   */
-  export type ScraperGenerationRun$stepsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepInclude<ExtArgs> | null
-    where?: ComputerUseStepWhereInput
-    orderBy?: ComputerUseStepOrderByWithRelationInput | ComputerUseStepOrderByWithRelationInput[]
-    cursor?: ComputerUseStepWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ComputerUseStepScalarFieldEnum | ComputerUseStepScalarFieldEnum[]
-  }
-
-  /**
-   * ScraperGenerationRun without action
-   */
-  export type ScraperGenerationRunDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model ComputerUseStep
-   */
-
-  export type AggregateComputerUseStep = {
-    _count: ComputerUseStepCountAggregateOutputType | null
-    _avg: ComputerUseStepAvgAggregateOutputType | null
-    _sum: ComputerUseStepSumAggregateOutputType | null
-    _min: ComputerUseStepMinAggregateOutputType | null
-    _max: ComputerUseStepMaxAggregateOutputType | null
-  }
-
-  export type ComputerUseStepAvgAggregateOutputType = {
-    step_index: number | null
-  }
-
-  export type ComputerUseStepSumAggregateOutputType = {
-    step_index: number | null
-  }
-
-  export type ComputerUseStepMinAggregateOutputType = {
-    id: string | null
-    scraper_generation_run_id: string | null
-    step_index: number | null
-    action_type: $Enums.ComputerActionType | null
-    screenshot_before_id: string | null
-    screenshot_after_id: string | null
-    model_reasoning: string | null
-    created_at: Date | null
-  }
-
-  export type ComputerUseStepMaxAggregateOutputType = {
-    id: string | null
-    scraper_generation_run_id: string | null
-    step_index: number | null
-    action_type: $Enums.ComputerActionType | null
-    screenshot_before_id: string | null
-    screenshot_after_id: string | null
-    model_reasoning: string | null
-    created_at: Date | null
-  }
-
-  export type ComputerUseStepCountAggregateOutputType = {
-    id: number
-    scraper_generation_run_id: number
-    step_index: number
-    action_type: number
-    action_payload: number
-    screenshot_before_id: number
-    screenshot_after_id: number
-    model_reasoning: number
-    created_at: number
-    _all: number
-  }
-
-
-  export type ComputerUseStepAvgAggregateInputType = {
-    step_index?: true
-  }
-
-  export type ComputerUseStepSumAggregateInputType = {
-    step_index?: true
-  }
-
-  export type ComputerUseStepMinAggregateInputType = {
-    id?: true
-    scraper_generation_run_id?: true
-    step_index?: true
-    action_type?: true
-    screenshot_before_id?: true
-    screenshot_after_id?: true
-    model_reasoning?: true
-    created_at?: true
-  }
-
-  export type ComputerUseStepMaxAggregateInputType = {
-    id?: true
-    scraper_generation_run_id?: true
-    step_index?: true
-    action_type?: true
-    screenshot_before_id?: true
-    screenshot_after_id?: true
-    model_reasoning?: true
-    created_at?: true
-  }
-
-  export type ComputerUseStepCountAggregateInputType = {
-    id?: true
-    scraper_generation_run_id?: true
-    step_index?: true
-    action_type?: true
-    action_payload?: true
-    screenshot_before_id?: true
-    screenshot_after_id?: true
-    model_reasoning?: true
-    created_at?: true
-    _all?: true
-  }
-
-  export type ComputerUseStepAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which ComputerUseStep to aggregate.
-     */
-    where?: ComputerUseStepWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ComputerUseSteps to fetch.
-     */
-    orderBy?: ComputerUseStepOrderByWithRelationInput | ComputerUseStepOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: ComputerUseStepWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ComputerUseSteps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ComputerUseSteps.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned ComputerUseSteps
-    **/
-    _count?: true | ComputerUseStepCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: ComputerUseStepAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: ComputerUseStepSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: ComputerUseStepMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: ComputerUseStepMaxAggregateInputType
-  }
-
-  export type GetComputerUseStepAggregateType<T extends ComputerUseStepAggregateArgs> = {
-        [P in keyof T & keyof AggregateComputerUseStep]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateComputerUseStep[P]>
-      : GetScalarType<T[P], AggregateComputerUseStep[P]>
-  }
-
-
-
-
-  export type ComputerUseStepGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ComputerUseStepWhereInput
-    orderBy?: ComputerUseStepOrderByWithAggregationInput | ComputerUseStepOrderByWithAggregationInput[]
-    by: ComputerUseStepScalarFieldEnum[] | ComputerUseStepScalarFieldEnum
-    having?: ComputerUseStepScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: ComputerUseStepCountAggregateInputType | true
-    _avg?: ComputerUseStepAvgAggregateInputType
-    _sum?: ComputerUseStepSumAggregateInputType
-    _min?: ComputerUseStepMinAggregateInputType
-    _max?: ComputerUseStepMaxAggregateInputType
-  }
-
-  export type ComputerUseStepGroupByOutputType = {
-    id: string
-    scraper_generation_run_id: string
-    step_index: number
-    action_type: $Enums.ComputerActionType
-    action_payload: JsonValue
-    screenshot_before_id: string | null
-    screenshot_after_id: string | null
-    model_reasoning: string | null
-    created_at: Date
-    _count: ComputerUseStepCountAggregateOutputType | null
-    _avg: ComputerUseStepAvgAggregateOutputType | null
-    _sum: ComputerUseStepSumAggregateOutputType | null
-    _min: ComputerUseStepMinAggregateOutputType | null
-    _max: ComputerUseStepMaxAggregateOutputType | null
-  }
-
-  type GetComputerUseStepGroupByPayload<T extends ComputerUseStepGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<ComputerUseStepGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof ComputerUseStepGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], ComputerUseStepGroupByOutputType[P]>
-            : GetScalarType<T[P], ComputerUseStepGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type ComputerUseStepSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    scraper_generation_run_id?: boolean
-    step_index?: boolean
-    action_type?: boolean
-    action_payload?: boolean
-    screenshot_before_id?: boolean
-    screenshot_after_id?: boolean
-    model_reasoning?: boolean
-    created_at?: boolean
-    scraper_generation_run?: boolean | ScraperGenerationRunDefaultArgs<ExtArgs>
-    screenshot_before?: boolean | ComputerUseStep$screenshot_beforeArgs<ExtArgs>
-    screenshot_after?: boolean | ComputerUseStep$screenshot_afterArgs<ExtArgs>
-  }, ExtArgs["result"]["computerUseStep"]>
-
-  export type ComputerUseStepSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    scraper_generation_run_id?: boolean
-    step_index?: boolean
-    action_type?: boolean
-    action_payload?: boolean
-    screenshot_before_id?: boolean
-    screenshot_after_id?: boolean
-    model_reasoning?: boolean
-    created_at?: boolean
-    scraper_generation_run?: boolean | ScraperGenerationRunDefaultArgs<ExtArgs>
-    screenshot_before?: boolean | ComputerUseStep$screenshot_beforeArgs<ExtArgs>
-    screenshot_after?: boolean | ComputerUseStep$screenshot_afterArgs<ExtArgs>
-  }, ExtArgs["result"]["computerUseStep"]>
-
-  export type ComputerUseStepSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    scraper_generation_run_id?: boolean
-    step_index?: boolean
-    action_type?: boolean
-    action_payload?: boolean
-    screenshot_before_id?: boolean
-    screenshot_after_id?: boolean
-    model_reasoning?: boolean
-    created_at?: boolean
-    scraper_generation_run?: boolean | ScraperGenerationRunDefaultArgs<ExtArgs>
-    screenshot_before?: boolean | ComputerUseStep$screenshot_beforeArgs<ExtArgs>
-    screenshot_after?: boolean | ComputerUseStep$screenshot_afterArgs<ExtArgs>
-  }, ExtArgs["result"]["computerUseStep"]>
-
-  export type ComputerUseStepSelectScalar = {
-    id?: boolean
-    scraper_generation_run_id?: boolean
-    step_index?: boolean
-    action_type?: boolean
-    action_payload?: boolean
-    screenshot_before_id?: boolean
-    screenshot_after_id?: boolean
-    model_reasoning?: boolean
-    created_at?: boolean
-  }
-
-  export type ComputerUseStepOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "scraper_generation_run_id" | "step_index" | "action_type" | "action_payload" | "screenshot_before_id" | "screenshot_after_id" | "model_reasoning" | "created_at", ExtArgs["result"]["computerUseStep"]>
-  export type ComputerUseStepInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    scraper_generation_run?: boolean | ScraperGenerationRunDefaultArgs<ExtArgs>
-    screenshot_before?: boolean | ComputerUseStep$screenshot_beforeArgs<ExtArgs>
-    screenshot_after?: boolean | ComputerUseStep$screenshot_afterArgs<ExtArgs>
-  }
-  export type ComputerUseStepIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    scraper_generation_run?: boolean | ScraperGenerationRunDefaultArgs<ExtArgs>
-    screenshot_before?: boolean | ComputerUseStep$screenshot_beforeArgs<ExtArgs>
-    screenshot_after?: boolean | ComputerUseStep$screenshot_afterArgs<ExtArgs>
-  }
-  export type ComputerUseStepIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    scraper_generation_run?: boolean | ScraperGenerationRunDefaultArgs<ExtArgs>
-    screenshot_before?: boolean | ComputerUseStep$screenshot_beforeArgs<ExtArgs>
-    screenshot_after?: boolean | ComputerUseStep$screenshot_afterArgs<ExtArgs>
-  }
-
-  export type $ComputerUseStepPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "ComputerUseStep"
-    objects: {
-      scraper_generation_run: Prisma.$ScraperGenerationRunPayload<ExtArgs>
-      screenshot_before: Prisma.$DocumentPayload<ExtArgs> | null
-      screenshot_after: Prisma.$DocumentPayload<ExtArgs> | null
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      scraper_generation_run_id: string
-      step_index: number
-      action_type: $Enums.ComputerActionType
-      action_payload: Prisma.JsonValue
-      screenshot_before_id: string | null
-      screenshot_after_id: string | null
-      model_reasoning: string | null
-      created_at: Date
-    }, ExtArgs["result"]["computerUseStep"]>
-    composites: {}
-  }
-
-  type ComputerUseStepGetPayload<S extends boolean | null | undefined | ComputerUseStepDefaultArgs> = $Result.GetResult<Prisma.$ComputerUseStepPayload, S>
-
-  type ComputerUseStepCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<ComputerUseStepFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: ComputerUseStepCountAggregateInputType | true
-    }
-
-  export interface ComputerUseStepDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ComputerUseStep'], meta: { name: 'ComputerUseStep' } }
-    /**
-     * Find zero or one ComputerUseStep that matches the filter.
-     * @param {ComputerUseStepFindUniqueArgs} args - Arguments to find a ComputerUseStep
-     * @example
-     * // Get one ComputerUseStep
-     * const computerUseStep = await prisma.computerUseStep.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends ComputerUseStepFindUniqueArgs>(args: SelectSubset<T, ComputerUseStepFindUniqueArgs<ExtArgs>>): Prisma__ComputerUseStepClient<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one ComputerUseStep that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {ComputerUseStepFindUniqueOrThrowArgs} args - Arguments to find a ComputerUseStep
-     * @example
-     * // Get one ComputerUseStep
-     * const computerUseStep = await prisma.computerUseStep.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends ComputerUseStepFindUniqueOrThrowArgs>(args: SelectSubset<T, ComputerUseStepFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ComputerUseStepClient<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first ComputerUseStep that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ComputerUseStepFindFirstArgs} args - Arguments to find a ComputerUseStep
-     * @example
-     * // Get one ComputerUseStep
-     * const computerUseStep = await prisma.computerUseStep.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends ComputerUseStepFindFirstArgs>(args?: SelectSubset<T, ComputerUseStepFindFirstArgs<ExtArgs>>): Prisma__ComputerUseStepClient<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first ComputerUseStep that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ComputerUseStepFindFirstOrThrowArgs} args - Arguments to find a ComputerUseStep
-     * @example
-     * // Get one ComputerUseStep
-     * const computerUseStep = await prisma.computerUseStep.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends ComputerUseStepFindFirstOrThrowArgs>(args?: SelectSubset<T, ComputerUseStepFindFirstOrThrowArgs<ExtArgs>>): Prisma__ComputerUseStepClient<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more ComputerUseSteps that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ComputerUseStepFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all ComputerUseSteps
-     * const computerUseSteps = await prisma.computerUseStep.findMany()
-     * 
-     * // Get first 10 ComputerUseSteps
-     * const computerUseSteps = await prisma.computerUseStep.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const computerUseStepWithIdOnly = await prisma.computerUseStep.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends ComputerUseStepFindManyArgs>(args?: SelectSubset<T, ComputerUseStepFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a ComputerUseStep.
-     * @param {ComputerUseStepCreateArgs} args - Arguments to create a ComputerUseStep.
-     * @example
-     * // Create one ComputerUseStep
-     * const ComputerUseStep = await prisma.computerUseStep.create({
-     *   data: {
-     *     // ... data to create a ComputerUseStep
-     *   }
-     * })
-     * 
-     */
-    create<T extends ComputerUseStepCreateArgs>(args: SelectSubset<T, ComputerUseStepCreateArgs<ExtArgs>>): Prisma__ComputerUseStepClient<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many ComputerUseSteps.
-     * @param {ComputerUseStepCreateManyArgs} args - Arguments to create many ComputerUseSteps.
-     * @example
-     * // Create many ComputerUseSteps
-     * const computerUseStep = await prisma.computerUseStep.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends ComputerUseStepCreateManyArgs>(args?: SelectSubset<T, ComputerUseStepCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many ComputerUseSteps and returns the data saved in the database.
-     * @param {ComputerUseStepCreateManyAndReturnArgs} args - Arguments to create many ComputerUseSteps.
-     * @example
-     * // Create many ComputerUseSteps
-     * const computerUseStep = await prisma.computerUseStep.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many ComputerUseSteps and only return the `id`
-     * const computerUseStepWithIdOnly = await prisma.computerUseStep.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends ComputerUseStepCreateManyAndReturnArgs>(args?: SelectSubset<T, ComputerUseStepCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a ComputerUseStep.
-     * @param {ComputerUseStepDeleteArgs} args - Arguments to delete one ComputerUseStep.
-     * @example
-     * // Delete one ComputerUseStep
-     * const ComputerUseStep = await prisma.computerUseStep.delete({
-     *   where: {
-     *     // ... filter to delete one ComputerUseStep
-     *   }
-     * })
-     * 
-     */
-    delete<T extends ComputerUseStepDeleteArgs>(args: SelectSubset<T, ComputerUseStepDeleteArgs<ExtArgs>>): Prisma__ComputerUseStepClient<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one ComputerUseStep.
-     * @param {ComputerUseStepUpdateArgs} args - Arguments to update one ComputerUseStep.
-     * @example
-     * // Update one ComputerUseStep
-     * const computerUseStep = await prisma.computerUseStep.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends ComputerUseStepUpdateArgs>(args: SelectSubset<T, ComputerUseStepUpdateArgs<ExtArgs>>): Prisma__ComputerUseStepClient<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more ComputerUseSteps.
-     * @param {ComputerUseStepDeleteManyArgs} args - Arguments to filter ComputerUseSteps to delete.
-     * @example
-     * // Delete a few ComputerUseSteps
-     * const { count } = await prisma.computerUseStep.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends ComputerUseStepDeleteManyArgs>(args?: SelectSubset<T, ComputerUseStepDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more ComputerUseSteps.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ComputerUseStepUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many ComputerUseSteps
-     * const computerUseStep = await prisma.computerUseStep.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends ComputerUseStepUpdateManyArgs>(args: SelectSubset<T, ComputerUseStepUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more ComputerUseSteps and returns the data updated in the database.
-     * @param {ComputerUseStepUpdateManyAndReturnArgs} args - Arguments to update many ComputerUseSteps.
-     * @example
-     * // Update many ComputerUseSteps
-     * const computerUseStep = await prisma.computerUseStep.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more ComputerUseSteps and only return the `id`
-     * const computerUseStepWithIdOnly = await prisma.computerUseStep.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends ComputerUseStepUpdateManyAndReturnArgs>(args: SelectSubset<T, ComputerUseStepUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one ComputerUseStep.
-     * @param {ComputerUseStepUpsertArgs} args - Arguments to update or create a ComputerUseStep.
-     * @example
-     * // Update or create a ComputerUseStep
-     * const computerUseStep = await prisma.computerUseStep.upsert({
-     *   create: {
-     *     // ... data to create a ComputerUseStep
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the ComputerUseStep we want to update
-     *   }
-     * })
-     */
-    upsert<T extends ComputerUseStepUpsertArgs>(args: SelectSubset<T, ComputerUseStepUpsertArgs<ExtArgs>>): Prisma__ComputerUseStepClient<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of ComputerUseSteps.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ComputerUseStepCountArgs} args - Arguments to filter ComputerUseSteps to count.
-     * @example
-     * // Count the number of ComputerUseSteps
-     * const count = await prisma.computerUseStep.count({
-     *   where: {
-     *     // ... the filter for the ComputerUseSteps we want to count
-     *   }
-     * })
-    **/
-    count<T extends ComputerUseStepCountArgs>(
-      args?: Subset<T, ComputerUseStepCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], ComputerUseStepCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a ComputerUseStep.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ComputerUseStepAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends ComputerUseStepAggregateArgs>(args: Subset<T, ComputerUseStepAggregateArgs>): Prisma.PrismaPromise<GetComputerUseStepAggregateType<T>>
-
-    /**
-     * Group by ComputerUseStep.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {ComputerUseStepGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends ComputerUseStepGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: ComputerUseStepGroupByArgs['orderBy'] }
-        : { orderBy?: ComputerUseStepGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, ComputerUseStepGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetComputerUseStepGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the ComputerUseStep model
-   */
-  readonly fields: ComputerUseStepFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for ComputerUseStep.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__ComputerUseStepClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    scraper_generation_run<T extends ScraperGenerationRunDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ScraperGenerationRunDefaultArgs<ExtArgs>>): Prisma__ScraperGenerationRunClient<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    screenshot_before<T extends ComputerUseStep$screenshot_beforeArgs<ExtArgs> = {}>(args?: Subset<T, ComputerUseStep$screenshot_beforeArgs<ExtArgs>>): Prisma__DocumentClient<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    screenshot_after<T extends ComputerUseStep$screenshot_afterArgs<ExtArgs> = {}>(args?: Subset<T, ComputerUseStep$screenshot_afterArgs<ExtArgs>>): Prisma__DocumentClient<$Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the ComputerUseStep model
-   */
-  interface ComputerUseStepFieldRefs {
-    readonly id: FieldRef<"ComputerUseStep", 'String'>
-    readonly scraper_generation_run_id: FieldRef<"ComputerUseStep", 'String'>
-    readonly step_index: FieldRef<"ComputerUseStep", 'Int'>
-    readonly action_type: FieldRef<"ComputerUseStep", 'ComputerActionType'>
-    readonly action_payload: FieldRef<"ComputerUseStep", 'Json'>
-    readonly screenshot_before_id: FieldRef<"ComputerUseStep", 'String'>
-    readonly screenshot_after_id: FieldRef<"ComputerUseStep", 'String'>
-    readonly model_reasoning: FieldRef<"ComputerUseStep", 'String'>
-    readonly created_at: FieldRef<"ComputerUseStep", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * ComputerUseStep findUnique
-   */
-  export type ComputerUseStepFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepInclude<ExtArgs> | null
-    /**
-     * Filter, which ComputerUseStep to fetch.
-     */
-    where: ComputerUseStepWhereUniqueInput
-  }
-
-  /**
-   * ComputerUseStep findUniqueOrThrow
-   */
-  export type ComputerUseStepFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepInclude<ExtArgs> | null
-    /**
-     * Filter, which ComputerUseStep to fetch.
-     */
-    where: ComputerUseStepWhereUniqueInput
-  }
-
-  /**
-   * ComputerUseStep findFirst
-   */
-  export type ComputerUseStepFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepInclude<ExtArgs> | null
-    /**
-     * Filter, which ComputerUseStep to fetch.
-     */
-    where?: ComputerUseStepWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ComputerUseSteps to fetch.
-     */
-    orderBy?: ComputerUseStepOrderByWithRelationInput | ComputerUseStepOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for ComputerUseSteps.
-     */
-    cursor?: ComputerUseStepWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ComputerUseSteps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ComputerUseSteps.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of ComputerUseSteps.
-     */
-    distinct?: ComputerUseStepScalarFieldEnum | ComputerUseStepScalarFieldEnum[]
-  }
-
-  /**
-   * ComputerUseStep findFirstOrThrow
-   */
-  export type ComputerUseStepFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepInclude<ExtArgs> | null
-    /**
-     * Filter, which ComputerUseStep to fetch.
-     */
-    where?: ComputerUseStepWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ComputerUseSteps to fetch.
-     */
-    orderBy?: ComputerUseStepOrderByWithRelationInput | ComputerUseStepOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for ComputerUseSteps.
-     */
-    cursor?: ComputerUseStepWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ComputerUseSteps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ComputerUseSteps.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of ComputerUseSteps.
-     */
-    distinct?: ComputerUseStepScalarFieldEnum | ComputerUseStepScalarFieldEnum[]
-  }
-
-  /**
-   * ComputerUseStep findMany
-   */
-  export type ComputerUseStepFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepInclude<ExtArgs> | null
-    /**
-     * Filter, which ComputerUseSteps to fetch.
-     */
-    where?: ComputerUseStepWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of ComputerUseSteps to fetch.
-     */
-    orderBy?: ComputerUseStepOrderByWithRelationInput | ComputerUseStepOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing ComputerUseSteps.
-     */
-    cursor?: ComputerUseStepWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` ComputerUseSteps from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` ComputerUseSteps.
-     */
-    skip?: number
-    distinct?: ComputerUseStepScalarFieldEnum | ComputerUseStepScalarFieldEnum[]
-  }
-
-  /**
-   * ComputerUseStep create
-   */
-  export type ComputerUseStepCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepInclude<ExtArgs> | null
-    /**
-     * The data needed to create a ComputerUseStep.
-     */
-    data: XOR<ComputerUseStepCreateInput, ComputerUseStepUncheckedCreateInput>
-  }
-
-  /**
-   * ComputerUseStep createMany
-   */
-  export type ComputerUseStepCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many ComputerUseSteps.
-     */
-    data: ComputerUseStepCreateManyInput | ComputerUseStepCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * ComputerUseStep createManyAndReturn
-   */
-  export type ComputerUseStepCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * The data used to create many ComputerUseSteps.
-     */
-    data: ComputerUseStepCreateManyInput | ComputerUseStepCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * ComputerUseStep update
-   */
-  export type ComputerUseStepUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepInclude<ExtArgs> | null
-    /**
-     * The data needed to update a ComputerUseStep.
-     */
-    data: XOR<ComputerUseStepUpdateInput, ComputerUseStepUncheckedUpdateInput>
-    /**
-     * Choose, which ComputerUseStep to update.
-     */
-    where: ComputerUseStepWhereUniqueInput
-  }
-
-  /**
-   * ComputerUseStep updateMany
-   */
-  export type ComputerUseStepUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update ComputerUseSteps.
-     */
-    data: XOR<ComputerUseStepUpdateManyMutationInput, ComputerUseStepUncheckedUpdateManyInput>
-    /**
-     * Filter which ComputerUseSteps to update
-     */
-    where?: ComputerUseStepWhereInput
-    /**
-     * Limit how many ComputerUseSteps to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * ComputerUseStep updateManyAndReturn
-   */
-  export type ComputerUseStepUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * The data used to update ComputerUseSteps.
-     */
-    data: XOR<ComputerUseStepUpdateManyMutationInput, ComputerUseStepUncheckedUpdateManyInput>
-    /**
-     * Filter which ComputerUseSteps to update
-     */
-    where?: ComputerUseStepWhereInput
-    /**
-     * Limit how many ComputerUseSteps to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * ComputerUseStep upsert
-   */
-  export type ComputerUseStepUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepInclude<ExtArgs> | null
-    /**
-     * The filter to search for the ComputerUseStep to update in case it exists.
-     */
-    where: ComputerUseStepWhereUniqueInput
-    /**
-     * In case the ComputerUseStep found by the `where` argument doesn't exist, create a new ComputerUseStep with this data.
-     */
-    create: XOR<ComputerUseStepCreateInput, ComputerUseStepUncheckedCreateInput>
-    /**
-     * In case the ComputerUseStep was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<ComputerUseStepUpdateInput, ComputerUseStepUncheckedUpdateInput>
-  }
-
-  /**
-   * ComputerUseStep delete
-   */
-  export type ComputerUseStepDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepInclude<ExtArgs> | null
-    /**
-     * Filter which ComputerUseStep to delete.
-     */
-    where: ComputerUseStepWhereUniqueInput
-  }
-
-  /**
-   * ComputerUseStep deleteMany
-   */
-  export type ComputerUseStepDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which ComputerUseSteps to delete
-     */
-    where?: ComputerUseStepWhereInput
-    /**
-     * Limit how many ComputerUseSteps to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * ComputerUseStep.screenshot_before
-   */
-  export type ComputerUseStep$screenshot_beforeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    where?: DocumentWhereInput
-  }
-
-  /**
-   * ComputerUseStep.screenshot_after
-   */
-  export type ComputerUseStep$screenshot_afterArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Document
-     */
-    select?: DocumentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Document
-     */
-    omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    where?: DocumentWhereInput
-  }
-
-  /**
-   * ComputerUseStep without action
-   */
-  export type ComputerUseStepDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepInclude<ExtArgs> | null
   }
 
 
@@ -19734,7 +16848,6 @@ export namespace Prisma {
     updated_at?: boolean
     scraper?: boolean | ScraperDefaultArgs<ExtArgs>
     active_for_scraper?: boolean | ScraperVersion$active_for_scraperArgs<ExtArgs>
-    produced_by_run?: boolean | ScraperVersion$produced_by_runArgs<ExtArgs>
   }, ExtArgs["result"]["scraperVersion"]>
 
   export type ScraperVersionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -19776,7 +16889,6 @@ export namespace Prisma {
   export type ScraperVersionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     scraper?: boolean | ScraperDefaultArgs<ExtArgs>
     active_for_scraper?: boolean | ScraperVersion$active_for_scraperArgs<ExtArgs>
-    produced_by_run?: boolean | ScraperVersion$produced_by_runArgs<ExtArgs>
   }
   export type ScraperVersionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     scraper?: boolean | ScraperDefaultArgs<ExtArgs>
@@ -19790,7 +16902,6 @@ export namespace Prisma {
     objects: {
       scraper: Prisma.$ScraperPayload<ExtArgs>
       active_for_scraper: Prisma.$ScraperPayload<ExtArgs> | null
-      produced_by_run: Prisma.$ScraperGenerationRunPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -20197,7 +17308,6 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     scraper<T extends ScraperDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ScraperDefaultArgs<ExtArgs>>): Prisma__ScraperClient<$Result.GetResult<Prisma.$ScraperPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     active_for_scraper<T extends ScraperVersion$active_for_scraperArgs<ExtArgs> = {}>(args?: Subset<T, ScraperVersion$active_for_scraperArgs<ExtArgs>>): Prisma__ScraperClient<$Result.GetResult<Prisma.$ScraperPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    produced_by_run<T extends ScraperVersion$produced_by_runArgs<ExtArgs> = {}>(args?: Subset<T, ScraperVersion$produced_by_runArgs<ExtArgs>>): Prisma__ScraperGenerationRunClient<$Result.GetResult<Prisma.$ScraperGenerationRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -20647,25 +17757,6 @@ export namespace Prisma {
      */
     include?: ScraperInclude<ExtArgs> | null
     where?: ScraperWhereInput
-  }
-
-  /**
-   * ScraperVersion.produced_by_run
-   */
-  export type ScraperVersion$produced_by_runArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ScraperGenerationRun
-     */
-    select?: ScraperGenerationRunSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ScraperGenerationRun
-     */
-    omit?: ScraperGenerationRunOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ScraperGenerationRunInclude<ExtArgs> | null
-    where?: ScraperGenerationRunWhereInput
   }
 
   /**
@@ -48625,9 +45716,6 @@ export namespace Prisma {
     path?: boolean
     type?: boolean
     created_at?: boolean
-    computer_use_steps_before?: boolean | Document$computer_use_steps_beforeArgs<ExtArgs>
-    computer_use_steps_after?: boolean | Document$computer_use_steps_afterArgs<ExtArgs>
-    _count?: boolean | DocumentCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["document"]>
 
   export type DocumentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -48667,20 +45755,10 @@ export namespace Prisma {
   }
 
   export type DocumentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_uuid" | "filename" | "mimetype" | "size" | "url" | "path" | "type" | "created_at", ExtArgs["result"]["document"]>
-  export type DocumentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    computer_use_steps_before?: boolean | Document$computer_use_steps_beforeArgs<ExtArgs>
-    computer_use_steps_after?: boolean | Document$computer_use_steps_afterArgs<ExtArgs>
-    _count?: boolean | DocumentCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type DocumentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type DocumentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
 
   export type $DocumentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Document"
-    objects: {
-      computer_use_steps_before: Prisma.$ComputerUseStepPayload<ExtArgs>[]
-      computer_use_steps_after: Prisma.$ComputerUseStepPayload<ExtArgs>[]
-    }
+    objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
       user_uuid: string
@@ -49085,8 +46163,6 @@ export namespace Prisma {
    */
   export interface Prisma__DocumentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    computer_use_steps_before<T extends Document$computer_use_steps_beforeArgs<ExtArgs> = {}>(args?: Subset<T, Document$computer_use_steps_beforeArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    computer_use_steps_after<T extends Document$computer_use_steps_afterArgs<ExtArgs> = {}>(args?: Subset<T, Document$computer_use_steps_afterArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ComputerUseStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -49142,10 +46218,6 @@ export namespace Prisma {
      */
     omit?: DocumentOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
      * Filter, which Document to fetch.
      */
     where: DocumentWhereUniqueInput
@@ -49164,10 +46236,6 @@ export namespace Prisma {
      */
     omit?: DocumentOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
      * Filter, which Document to fetch.
      */
     where: DocumentWhereUniqueInput
@@ -49185,10 +46253,6 @@ export namespace Prisma {
      * Omit specific fields from the Document
      */
     omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
     /**
      * Filter, which Document to fetch.
      */
@@ -49238,10 +46302,6 @@ export namespace Prisma {
      */
     omit?: DocumentOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
      * Filter, which Document to fetch.
      */
     where?: DocumentWhereInput
@@ -49290,10 +46350,6 @@ export namespace Prisma {
      */
     omit?: DocumentOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
      * Filter, which Documents to fetch.
      */
     where?: DocumentWhereInput
@@ -49336,10 +46392,6 @@ export namespace Prisma {
      * Omit specific fields from the Document
      */
     omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
     /**
      * The data needed to create a Document.
      */
@@ -49388,10 +46440,6 @@ export namespace Prisma {
      * Omit specific fields from the Document
      */
     omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
     /**
      * The data needed to update a Document.
      */
@@ -49459,10 +46507,6 @@ export namespace Prisma {
      */
     omit?: DocumentOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
      * The filter to search for the Document to update in case it exists.
      */
     where: DocumentWhereUniqueInput
@@ -49489,10 +46533,6 @@ export namespace Prisma {
      */
     omit?: DocumentOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
-    /**
      * Filter which Document to delete.
      */
     where: DocumentWhereUniqueInput
@@ -49513,54 +46553,6 @@ export namespace Prisma {
   }
 
   /**
-   * Document.computer_use_steps_before
-   */
-  export type Document$computer_use_steps_beforeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepInclude<ExtArgs> | null
-    where?: ComputerUseStepWhereInput
-    orderBy?: ComputerUseStepOrderByWithRelationInput | ComputerUseStepOrderByWithRelationInput[]
-    cursor?: ComputerUseStepWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ComputerUseStepScalarFieldEnum | ComputerUseStepScalarFieldEnum[]
-  }
-
-  /**
-   * Document.computer_use_steps_after
-   */
-  export type Document$computer_use_steps_afterArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ComputerUseStep
-     */
-    select?: ComputerUseStepSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ComputerUseStep
-     */
-    omit?: ComputerUseStepOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ComputerUseStepInclude<ExtArgs> | null
-    where?: ComputerUseStepWhereInput
-    orderBy?: ComputerUseStepOrderByWithRelationInput | ComputerUseStepOrderByWithRelationInput[]
-    cursor?: ComputerUseStepWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ComputerUseStepScalarFieldEnum | ComputerUseStepScalarFieldEnum[]
-  }
-
-  /**
    * Document without action
    */
   export type DocumentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -49572,10 +46564,6 @@ export namespace Prisma {
      * Omit specific fields from the Document
      */
     omit?: DocumentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: DocumentInclude<ExtArgs> | null
   }
 
 
@@ -52232,42 +49220,6 @@ export namespace Prisma {
   export type ScraperScalarFieldEnum = (typeof ScraperScalarFieldEnum)[keyof typeof ScraperScalarFieldEnum]
 
 
-  export const ScraperGenerationRunScalarFieldEnum: {
-    id: 'id',
-    source_agency_id: 'source_agency_id',
-    scraper_id: 'scraper_id',
-    trigger: 'trigger',
-    status: 'status',
-    prompt: 'prompt',
-    max_steps: 'max_steps',
-    staged_config: 'staged_config',
-    produced_version_id: 'produced_version_id',
-    error_message: 'error_message',
-    started_at: 'started_at',
-    finished_at: 'finished_at',
-    duration_ms: 'duration_ms',
-    created_at: 'created_at',
-    updated_at: 'updated_at'
-  };
-
-  export type ScraperGenerationRunScalarFieldEnum = (typeof ScraperGenerationRunScalarFieldEnum)[keyof typeof ScraperGenerationRunScalarFieldEnum]
-
-
-  export const ComputerUseStepScalarFieldEnum: {
-    id: 'id',
-    scraper_generation_run_id: 'scraper_generation_run_id',
-    step_index: 'step_index',
-    action_type: 'action_type',
-    action_payload: 'action_payload',
-    screenshot_before_id: 'screenshot_before_id',
-    screenshot_after_id: 'screenshot_after_id',
-    model_reasoning: 'model_reasoning',
-    created_at: 'created_at'
-  };
-
-  export type ComputerUseStepScalarFieldEnum = (typeof ComputerUseStepScalarFieldEnum)[keyof typeof ComputerUseStepScalarFieldEnum]
-
-
   export const ScraperVersionScalarFieldEnum: {
     id: 'id',
     scraper_id: 'scraper_id',
@@ -53068,48 +50020,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'GenerationTrigger'
-   */
-  export type EnumGenerationTriggerFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GenerationTrigger'>
-    
-
-
-  /**
-   * Reference to a field of type 'GenerationTrigger[]'
-   */
-  export type ListEnumGenerationTriggerFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GenerationTrigger[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'GenerationRunStatus'
-   */
-  export type EnumGenerationRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GenerationRunStatus'>
-    
-
-
-  /**
-   * Reference to a field of type 'GenerationRunStatus[]'
-   */
-  export type ListEnumGenerationRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GenerationRunStatus[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'ComputerActionType'
-   */
-  export type EnumComputerActionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ComputerActionType'>
-    
-
-
-  /**
-   * Reference to a field of type 'ComputerActionType[]'
-   */
-  export type ListEnumComputerActionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ComputerActionType[]'>
-    
-
-
-  /**
    * Reference to a field of type 'ScraperVersionCreatedBy'
    */
   export type EnumScraperVersionCreatedByFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScraperVersionCreatedBy'>
@@ -53785,7 +50695,6 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"SourceAgency"> | Date | string
     scrapers?: ScraperListRelationFilter
     user_tracked_agencies?: UserTrackedAgencyListRelationFilter
-    scraper_generation_runs?: ScraperGenerationRunListRelationFilter
     crawl_runs?: CrawlRunListRelationFilter
     source_properties?: SourcePropertyListRelationFilter
     notifications?: NotificationListRelationFilter
@@ -53814,7 +50723,6 @@ export namespace Prisma {
     updated_at?: SortOrder
     scrapers?: ScraperOrderByRelationAggregateInput
     user_tracked_agencies?: UserTrackedAgencyOrderByRelationAggregateInput
-    scraper_generation_runs?: ScraperGenerationRunOrderByRelationAggregateInput
     crawl_runs?: CrawlRunOrderByRelationAggregateInput
     source_properties?: SourcePropertyOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
@@ -53846,7 +50754,6 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"SourceAgency"> | Date | string
     scrapers?: ScraperListRelationFilter
     user_tracked_agencies?: UserTrackedAgencyListRelationFilter
-    scraper_generation_runs?: ScraperGenerationRunListRelationFilter
     crawl_runs?: CrawlRunListRelationFilter
     source_properties?: SourcePropertyListRelationFilter
     notifications?: NotificationListRelationFilter
@@ -54224,7 +51131,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunListRelationFilter
     versions?: ScraperVersionListRelationFilter
     execution_traces?: ScraperExecutionTraceListRelationFilter
-    scraper_generation_runs?: ScraperGenerationRunListRelationFilter
     notifications?: NotificationListRelationFilter
     diagnostics_packages?: DiagnosticsPackageListRelationFilter
   }
@@ -54255,7 +51161,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunOrderByRelationAggregateInput
     versions?: ScraperVersionOrderByRelationAggregateInput
     execution_traces?: ScraperExecutionTraceOrderByRelationAggregateInput
-    scraper_generation_runs?: ScraperGenerationRunOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
     diagnostics_packages?: DiagnosticsPackageOrderByRelationAggregateInput
   }
@@ -54289,7 +51194,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunListRelationFilter
     versions?: ScraperVersionListRelationFilter
     execution_traces?: ScraperExecutionTraceListRelationFilter
-    scraper_generation_runs?: ScraperGenerationRunListRelationFilter
     notifications?: NotificationListRelationFilter
     diagnostics_packages?: DiagnosticsPackageListRelationFilter
   }, "id" | "active_version_id">
@@ -54348,205 +51252,6 @@ export namespace Prisma {
     updated_at?: DateTimeWithAggregatesFilter<"Scraper"> | Date | string
   }
 
-  export type ScraperGenerationRunWhereInput = {
-    AND?: ScraperGenerationRunWhereInput | ScraperGenerationRunWhereInput[]
-    OR?: ScraperGenerationRunWhereInput[]
-    NOT?: ScraperGenerationRunWhereInput | ScraperGenerationRunWhereInput[]
-    id?: StringFilter<"ScraperGenerationRun"> | string
-    source_agency_id?: StringFilter<"ScraperGenerationRun"> | string
-    scraper_id?: StringNullableFilter<"ScraperGenerationRun"> | string | null
-    trigger?: EnumGenerationTriggerFilter<"ScraperGenerationRun"> | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFilter<"ScraperGenerationRun"> | $Enums.GenerationRunStatus
-    prompt?: StringNullableFilter<"ScraperGenerationRun"> | string | null
-    max_steps?: IntNullableFilter<"ScraperGenerationRun"> | number | null
-    staged_config?: JsonNullableFilter<"ScraperGenerationRun">
-    produced_version_id?: StringNullableFilter<"ScraperGenerationRun"> | string | null
-    error_message?: StringNullableFilter<"ScraperGenerationRun"> | string | null
-    started_at?: DateTimeNullableFilter<"ScraperGenerationRun"> | Date | string | null
-    finished_at?: DateTimeNullableFilter<"ScraperGenerationRun"> | Date | string | null
-    duration_ms?: IntNullableFilter<"ScraperGenerationRun"> | number | null
-    created_at?: DateTimeFilter<"ScraperGenerationRun"> | Date | string
-    updated_at?: DateTimeFilter<"ScraperGenerationRun"> | Date | string
-    source_agency?: XOR<SourceAgencyScalarRelationFilter, SourceAgencyWhereInput>
-    scraper?: XOR<ScraperNullableScalarRelationFilter, ScraperWhereInput> | null
-    produced_version?: XOR<ScraperVersionNullableScalarRelationFilter, ScraperVersionWhereInput> | null
-    steps?: ComputerUseStepListRelationFilter
-  }
-
-  export type ScraperGenerationRunOrderByWithRelationInput = {
-    id?: SortOrder
-    source_agency_id?: SortOrder
-    scraper_id?: SortOrderInput | SortOrder
-    trigger?: SortOrder
-    status?: SortOrder
-    prompt?: SortOrderInput | SortOrder
-    max_steps?: SortOrderInput | SortOrder
-    staged_config?: SortOrderInput | SortOrder
-    produced_version_id?: SortOrderInput | SortOrder
-    error_message?: SortOrderInput | SortOrder
-    started_at?: SortOrderInput | SortOrder
-    finished_at?: SortOrderInput | SortOrder
-    duration_ms?: SortOrderInput | SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-    source_agency?: SourceAgencyOrderByWithRelationInput
-    scraper?: ScraperOrderByWithRelationInput
-    produced_version?: ScraperVersionOrderByWithRelationInput
-    steps?: ComputerUseStepOrderByRelationAggregateInput
-  }
-
-  export type ScraperGenerationRunWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    produced_version_id?: string
-    AND?: ScraperGenerationRunWhereInput | ScraperGenerationRunWhereInput[]
-    OR?: ScraperGenerationRunWhereInput[]
-    NOT?: ScraperGenerationRunWhereInput | ScraperGenerationRunWhereInput[]
-    source_agency_id?: StringFilter<"ScraperGenerationRun"> | string
-    scraper_id?: StringNullableFilter<"ScraperGenerationRun"> | string | null
-    trigger?: EnumGenerationTriggerFilter<"ScraperGenerationRun"> | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFilter<"ScraperGenerationRun"> | $Enums.GenerationRunStatus
-    prompt?: StringNullableFilter<"ScraperGenerationRun"> | string | null
-    max_steps?: IntNullableFilter<"ScraperGenerationRun"> | number | null
-    staged_config?: JsonNullableFilter<"ScraperGenerationRun">
-    error_message?: StringNullableFilter<"ScraperGenerationRun"> | string | null
-    started_at?: DateTimeNullableFilter<"ScraperGenerationRun"> | Date | string | null
-    finished_at?: DateTimeNullableFilter<"ScraperGenerationRun"> | Date | string | null
-    duration_ms?: IntNullableFilter<"ScraperGenerationRun"> | number | null
-    created_at?: DateTimeFilter<"ScraperGenerationRun"> | Date | string
-    updated_at?: DateTimeFilter<"ScraperGenerationRun"> | Date | string
-    source_agency?: XOR<SourceAgencyScalarRelationFilter, SourceAgencyWhereInput>
-    scraper?: XOR<ScraperNullableScalarRelationFilter, ScraperWhereInput> | null
-    produced_version?: XOR<ScraperVersionNullableScalarRelationFilter, ScraperVersionWhereInput> | null
-    steps?: ComputerUseStepListRelationFilter
-  }, "id" | "produced_version_id">
-
-  export type ScraperGenerationRunOrderByWithAggregationInput = {
-    id?: SortOrder
-    source_agency_id?: SortOrder
-    scraper_id?: SortOrderInput | SortOrder
-    trigger?: SortOrder
-    status?: SortOrder
-    prompt?: SortOrderInput | SortOrder
-    max_steps?: SortOrderInput | SortOrder
-    staged_config?: SortOrderInput | SortOrder
-    produced_version_id?: SortOrderInput | SortOrder
-    error_message?: SortOrderInput | SortOrder
-    started_at?: SortOrderInput | SortOrder
-    finished_at?: SortOrderInput | SortOrder
-    duration_ms?: SortOrderInput | SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-    _count?: ScraperGenerationRunCountOrderByAggregateInput
-    _avg?: ScraperGenerationRunAvgOrderByAggregateInput
-    _max?: ScraperGenerationRunMaxOrderByAggregateInput
-    _min?: ScraperGenerationRunMinOrderByAggregateInput
-    _sum?: ScraperGenerationRunSumOrderByAggregateInput
-  }
-
-  export type ScraperGenerationRunScalarWhereWithAggregatesInput = {
-    AND?: ScraperGenerationRunScalarWhereWithAggregatesInput | ScraperGenerationRunScalarWhereWithAggregatesInput[]
-    OR?: ScraperGenerationRunScalarWhereWithAggregatesInput[]
-    NOT?: ScraperGenerationRunScalarWhereWithAggregatesInput | ScraperGenerationRunScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"ScraperGenerationRun"> | string
-    source_agency_id?: StringWithAggregatesFilter<"ScraperGenerationRun"> | string
-    scraper_id?: StringNullableWithAggregatesFilter<"ScraperGenerationRun"> | string | null
-    trigger?: EnumGenerationTriggerWithAggregatesFilter<"ScraperGenerationRun"> | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusWithAggregatesFilter<"ScraperGenerationRun"> | $Enums.GenerationRunStatus
-    prompt?: StringNullableWithAggregatesFilter<"ScraperGenerationRun"> | string | null
-    max_steps?: IntNullableWithAggregatesFilter<"ScraperGenerationRun"> | number | null
-    staged_config?: JsonNullableWithAggregatesFilter<"ScraperGenerationRun">
-    produced_version_id?: StringNullableWithAggregatesFilter<"ScraperGenerationRun"> | string | null
-    error_message?: StringNullableWithAggregatesFilter<"ScraperGenerationRun"> | string | null
-    started_at?: DateTimeNullableWithAggregatesFilter<"ScraperGenerationRun"> | Date | string | null
-    finished_at?: DateTimeNullableWithAggregatesFilter<"ScraperGenerationRun"> | Date | string | null
-    duration_ms?: IntNullableWithAggregatesFilter<"ScraperGenerationRun"> | number | null
-    created_at?: DateTimeWithAggregatesFilter<"ScraperGenerationRun"> | Date | string
-    updated_at?: DateTimeWithAggregatesFilter<"ScraperGenerationRun"> | Date | string
-  }
-
-  export type ComputerUseStepWhereInput = {
-    AND?: ComputerUseStepWhereInput | ComputerUseStepWhereInput[]
-    OR?: ComputerUseStepWhereInput[]
-    NOT?: ComputerUseStepWhereInput | ComputerUseStepWhereInput[]
-    id?: StringFilter<"ComputerUseStep"> | string
-    scraper_generation_run_id?: StringFilter<"ComputerUseStep"> | string
-    step_index?: IntFilter<"ComputerUseStep"> | number
-    action_type?: EnumComputerActionTypeFilter<"ComputerUseStep"> | $Enums.ComputerActionType
-    action_payload?: JsonFilter<"ComputerUseStep">
-    screenshot_before_id?: StringNullableFilter<"ComputerUseStep"> | string | null
-    screenshot_after_id?: StringNullableFilter<"ComputerUseStep"> | string | null
-    model_reasoning?: StringNullableFilter<"ComputerUseStep"> | string | null
-    created_at?: DateTimeFilter<"ComputerUseStep"> | Date | string
-    scraper_generation_run?: XOR<ScraperGenerationRunScalarRelationFilter, ScraperGenerationRunWhereInput>
-    screenshot_before?: XOR<DocumentNullableScalarRelationFilter, DocumentWhereInput> | null
-    screenshot_after?: XOR<DocumentNullableScalarRelationFilter, DocumentWhereInput> | null
-  }
-
-  export type ComputerUseStepOrderByWithRelationInput = {
-    id?: SortOrder
-    scraper_generation_run_id?: SortOrder
-    step_index?: SortOrder
-    action_type?: SortOrder
-    action_payload?: SortOrder
-    screenshot_before_id?: SortOrderInput | SortOrder
-    screenshot_after_id?: SortOrderInput | SortOrder
-    model_reasoning?: SortOrderInput | SortOrder
-    created_at?: SortOrder
-    scraper_generation_run?: ScraperGenerationRunOrderByWithRelationInput
-    screenshot_before?: DocumentOrderByWithRelationInput
-    screenshot_after?: DocumentOrderByWithRelationInput
-  }
-
-  export type ComputerUseStepWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: ComputerUseStepWhereInput | ComputerUseStepWhereInput[]
-    OR?: ComputerUseStepWhereInput[]
-    NOT?: ComputerUseStepWhereInput | ComputerUseStepWhereInput[]
-    scraper_generation_run_id?: StringFilter<"ComputerUseStep"> | string
-    step_index?: IntFilter<"ComputerUseStep"> | number
-    action_type?: EnumComputerActionTypeFilter<"ComputerUseStep"> | $Enums.ComputerActionType
-    action_payload?: JsonFilter<"ComputerUseStep">
-    screenshot_before_id?: StringNullableFilter<"ComputerUseStep"> | string | null
-    screenshot_after_id?: StringNullableFilter<"ComputerUseStep"> | string | null
-    model_reasoning?: StringNullableFilter<"ComputerUseStep"> | string | null
-    created_at?: DateTimeFilter<"ComputerUseStep"> | Date | string
-    scraper_generation_run?: XOR<ScraperGenerationRunScalarRelationFilter, ScraperGenerationRunWhereInput>
-    screenshot_before?: XOR<DocumentNullableScalarRelationFilter, DocumentWhereInput> | null
-    screenshot_after?: XOR<DocumentNullableScalarRelationFilter, DocumentWhereInput> | null
-  }, "id">
-
-  export type ComputerUseStepOrderByWithAggregationInput = {
-    id?: SortOrder
-    scraper_generation_run_id?: SortOrder
-    step_index?: SortOrder
-    action_type?: SortOrder
-    action_payload?: SortOrder
-    screenshot_before_id?: SortOrderInput | SortOrder
-    screenshot_after_id?: SortOrderInput | SortOrder
-    model_reasoning?: SortOrderInput | SortOrder
-    created_at?: SortOrder
-    _count?: ComputerUseStepCountOrderByAggregateInput
-    _avg?: ComputerUseStepAvgOrderByAggregateInput
-    _max?: ComputerUseStepMaxOrderByAggregateInput
-    _min?: ComputerUseStepMinOrderByAggregateInput
-    _sum?: ComputerUseStepSumOrderByAggregateInput
-  }
-
-  export type ComputerUseStepScalarWhereWithAggregatesInput = {
-    AND?: ComputerUseStepScalarWhereWithAggregatesInput | ComputerUseStepScalarWhereWithAggregatesInput[]
-    OR?: ComputerUseStepScalarWhereWithAggregatesInput[]
-    NOT?: ComputerUseStepScalarWhereWithAggregatesInput | ComputerUseStepScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"ComputerUseStep"> | string
-    scraper_generation_run_id?: StringWithAggregatesFilter<"ComputerUseStep"> | string
-    step_index?: IntWithAggregatesFilter<"ComputerUseStep"> | number
-    action_type?: EnumComputerActionTypeWithAggregatesFilter<"ComputerUseStep"> | $Enums.ComputerActionType
-    action_payload?: JsonWithAggregatesFilter<"ComputerUseStep">
-    screenshot_before_id?: StringNullableWithAggregatesFilter<"ComputerUseStep"> | string | null
-    screenshot_after_id?: StringNullableWithAggregatesFilter<"ComputerUseStep"> | string | null
-    model_reasoning?: StringNullableWithAggregatesFilter<"ComputerUseStep"> | string | null
-    created_at?: DateTimeWithAggregatesFilter<"ComputerUseStep"> | Date | string
-  }
-
   export type ScraperVersionWhereInput = {
     AND?: ScraperVersionWhereInput | ScraperVersionWhereInput[]
     OR?: ScraperVersionWhereInput[]
@@ -54561,7 +51266,6 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"ScraperVersion"> | Date | string
     scraper?: XOR<ScraperScalarRelationFilter, ScraperWhereInput>
     active_for_scraper?: XOR<ScraperNullableScalarRelationFilter, ScraperWhereInput> | null
-    produced_by_run?: XOR<ScraperGenerationRunNullableScalarRelationFilter, ScraperGenerationRunWhereInput> | null
   }
 
   export type ScraperVersionOrderByWithRelationInput = {
@@ -54575,7 +51279,6 @@ export namespace Prisma {
     updated_at?: SortOrder
     scraper?: ScraperOrderByWithRelationInput
     active_for_scraper?: ScraperOrderByWithRelationInput
-    produced_by_run?: ScraperGenerationRunOrderByWithRelationInput
   }
 
   export type ScraperVersionWhereUniqueInput = Prisma.AtLeast<{
@@ -54593,7 +51296,6 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"ScraperVersion"> | Date | string
     scraper?: XOR<ScraperScalarRelationFilter, ScraperWhereInput>
     active_for_scraper?: XOR<ScraperNullableScalarRelationFilter, ScraperWhereInput> | null
-    produced_by_run?: XOR<ScraperGenerationRunNullableScalarRelationFilter, ScraperGenerationRunWhereInput> | null
   }, "id" | "scraper_id_version">
 
   export type ScraperVersionOrderByWithAggregationInput = {
@@ -57120,8 +53822,6 @@ export namespace Prisma {
     path?: StringFilter<"Document"> | string
     type?: EnumDocumentTypeFilter<"Document"> | $Enums.DocumentType
     created_at?: DateTimeFilter<"Document"> | Date | string
-    computer_use_steps_before?: ComputerUseStepListRelationFilter
-    computer_use_steps_after?: ComputerUseStepListRelationFilter
   }
 
   export type DocumentOrderByWithRelationInput = {
@@ -57134,8 +53834,6 @@ export namespace Prisma {
     path?: SortOrder
     type?: SortOrder
     created_at?: SortOrder
-    computer_use_steps_before?: ComputerUseStepOrderByRelationAggregateInput
-    computer_use_steps_after?: ComputerUseStepOrderByRelationAggregateInput
   }
 
   export type DocumentWhereUniqueInput = Prisma.AtLeast<{
@@ -57151,8 +53849,6 @@ export namespace Prisma {
     path?: StringFilter<"Document"> | string
     type?: EnumDocumentTypeFilter<"Document"> | $Enums.DocumentType
     created_at?: DateTimeFilter<"Document"> | Date | string
-    computer_use_steps_before?: ComputerUseStepListRelationFilter
-    computer_use_steps_after?: ComputerUseStepListRelationFilter
   }, "id">
 
   export type DocumentOrderByWithAggregationInput = {
@@ -57825,7 +54521,6 @@ export namespace Prisma {
     updated_at?: Date | string
     scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
     user_tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
@@ -57854,7 +54549,6 @@ export namespace Prisma {
     updated_at?: Date | string
     scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
     user_tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -57883,7 +54577,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
     user_tracked_agencies?: UserTrackedAgencyUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
@@ -57912,7 +54605,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
     user_tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -58328,7 +55020,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunCreateNestedManyWithoutScraperInput
     versions?: ScraperVersionCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
@@ -58357,7 +55048,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutScraperInput
     versions?: ScraperVersionUncheckedCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
@@ -58386,7 +55076,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUpdateManyWithoutScraperNestedInput
     versions?: ScraperVersionUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
@@ -58415,7 +55104,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutScraperNestedInput
     versions?: ScraperVersionUncheckedUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
@@ -58487,214 +55175,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ScraperGenerationRunCreateInput = {
-    id?: string
-    trigger?: $Enums.GenerationTrigger
-    status?: $Enums.GenerationRunStatus
-    prompt?: string | null
-    max_steps?: number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    duration_ms?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    source_agency: SourceAgencyCreateNestedOneWithoutScraper_generation_runsInput
-    scraper?: ScraperCreateNestedOneWithoutScraper_generation_runsInput
-    produced_version?: ScraperVersionCreateNestedOneWithoutProduced_by_runInput
-    steps?: ComputerUseStepCreateNestedManyWithoutScraper_generation_runInput
-  }
-
-  export type ScraperGenerationRunUncheckedCreateInput = {
-    id?: string
-    source_agency_id: string
-    scraper_id?: string | null
-    trigger?: $Enums.GenerationTrigger
-    status?: $Enums.GenerationRunStatus
-    prompt?: string | null
-    max_steps?: number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: string | null
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    duration_ms?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    steps?: ComputerUseStepUncheckedCreateNestedManyWithoutScraper_generation_runInput
-  }
-
-  export type ScraperGenerationRunUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    source_agency?: SourceAgencyUpdateOneRequiredWithoutScraper_generation_runsNestedInput
-    scraper?: ScraperUpdateOneWithoutScraper_generation_runsNestedInput
-    produced_version?: ScraperVersionUpdateOneWithoutProduced_by_runNestedInput
-    steps?: ComputerUseStepUpdateManyWithoutScraper_generation_runNestedInput
-  }
-
-  export type ScraperGenerationRunUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    source_agency_id?: StringFieldUpdateOperationsInput | string
-    scraper_id?: NullableStringFieldUpdateOperationsInput | string | null
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    steps?: ComputerUseStepUncheckedUpdateManyWithoutScraper_generation_runNestedInput
-  }
-
-  export type ScraperGenerationRunCreateManyInput = {
-    id?: string
-    source_agency_id: string
-    scraper_id?: string | null
-    trigger?: $Enums.GenerationTrigger
-    status?: $Enums.GenerationRunStatus
-    prompt?: string | null
-    max_steps?: number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: string | null
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    duration_ms?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
-  export type ScraperGenerationRunUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ScraperGenerationRunUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    source_agency_id?: StringFieldUpdateOperationsInput | string
-    scraper_id?: NullableStringFieldUpdateOperationsInput | string | null
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ComputerUseStepCreateInput = {
-    id?: string
-    step_index: number
-    action_type: $Enums.ComputerActionType
-    action_payload: JsonNullValueInput | InputJsonValue
-    model_reasoning?: string | null
-    created_at?: Date | string
-    scraper_generation_run: ScraperGenerationRunCreateNestedOneWithoutStepsInput
-    screenshot_before?: DocumentCreateNestedOneWithoutComputer_use_steps_beforeInput
-    screenshot_after?: DocumentCreateNestedOneWithoutComputer_use_steps_afterInput
-  }
-
-  export type ComputerUseStepUncheckedCreateInput = {
-    id?: string
-    scraper_generation_run_id: string
-    step_index: number
-    action_type: $Enums.ComputerActionType
-    action_payload: JsonNullValueInput | InputJsonValue
-    screenshot_before_id?: string | null
-    screenshot_after_id?: string | null
-    model_reasoning?: string | null
-    created_at?: Date | string
-  }
-
-  export type ComputerUseStepUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    step_index?: IntFieldUpdateOperationsInput | number
-    action_type?: EnumComputerActionTypeFieldUpdateOperationsInput | $Enums.ComputerActionType
-    action_payload?: JsonNullValueInput | InputJsonValue
-    model_reasoning?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    scraper_generation_run?: ScraperGenerationRunUpdateOneRequiredWithoutStepsNestedInput
-    screenshot_before?: DocumentUpdateOneWithoutComputer_use_steps_beforeNestedInput
-    screenshot_after?: DocumentUpdateOneWithoutComputer_use_steps_afterNestedInput
-  }
-
-  export type ComputerUseStepUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    scraper_generation_run_id?: StringFieldUpdateOperationsInput | string
-    step_index?: IntFieldUpdateOperationsInput | number
-    action_type?: EnumComputerActionTypeFieldUpdateOperationsInput | $Enums.ComputerActionType
-    action_payload?: JsonNullValueInput | InputJsonValue
-    screenshot_before_id?: NullableStringFieldUpdateOperationsInput | string | null
-    screenshot_after_id?: NullableStringFieldUpdateOperationsInput | string | null
-    model_reasoning?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ComputerUseStepCreateManyInput = {
-    id?: string
-    scraper_generation_run_id: string
-    step_index: number
-    action_type: $Enums.ComputerActionType
-    action_payload: JsonNullValueInput | InputJsonValue
-    screenshot_before_id?: string | null
-    screenshot_after_id?: string | null
-    model_reasoning?: string | null
-    created_at?: Date | string
-  }
-
-  export type ComputerUseStepUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    step_index?: IntFieldUpdateOperationsInput | number
-    action_type?: EnumComputerActionTypeFieldUpdateOperationsInput | $Enums.ComputerActionType
-    action_payload?: JsonNullValueInput | InputJsonValue
-    model_reasoning?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ComputerUseStepUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    scraper_generation_run_id?: StringFieldUpdateOperationsInput | string
-    step_index?: IntFieldUpdateOperationsInput | number
-    action_type?: EnumComputerActionTypeFieldUpdateOperationsInput | $Enums.ComputerActionType
-    action_payload?: JsonNullValueInput | InputJsonValue
-    screenshot_before_id?: NullableStringFieldUpdateOperationsInput | string | null
-    screenshot_after_id?: NullableStringFieldUpdateOperationsInput | string | null
-    model_reasoning?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type ScraperVersionCreateInput = {
     id?: string
     version: number
@@ -58705,7 +55185,6 @@ export namespace Prisma {
     updated_at?: Date | string
     scraper: ScraperCreateNestedOneWithoutVersionsInput
     active_for_scraper?: ScraperCreateNestedOneWithoutActive_versionInput
-    produced_by_run?: ScraperGenerationRunCreateNestedOneWithoutProduced_versionInput
   }
 
   export type ScraperVersionUncheckedCreateInput = {
@@ -58718,7 +55197,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     active_for_scraper?: ScraperUncheckedCreateNestedOneWithoutActive_versionInput
-    produced_by_run?: ScraperGenerationRunUncheckedCreateNestedOneWithoutProduced_versionInput
   }
 
   export type ScraperVersionUpdateInput = {
@@ -58731,7 +55209,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scraper?: ScraperUpdateOneRequiredWithoutVersionsNestedInput
     active_for_scraper?: ScraperUpdateOneWithoutActive_versionNestedInput
-    produced_by_run?: ScraperGenerationRunUpdateOneWithoutProduced_versionNestedInput
   }
 
   export type ScraperVersionUncheckedUpdateInput = {
@@ -58744,7 +55221,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     active_for_scraper?: ScraperUncheckedUpdateOneWithoutActive_versionNestedInput
-    produced_by_run?: ScraperGenerationRunUncheckedUpdateOneWithoutProduced_versionNestedInput
   }
 
   export type ScraperVersionCreateManyInput = {
@@ -61650,8 +58126,6 @@ export namespace Prisma {
     path: string
     type?: $Enums.DocumentType
     created_at?: Date | string
-    computer_use_steps_before?: ComputerUseStepCreateNestedManyWithoutScreenshot_beforeInput
-    computer_use_steps_after?: ComputerUseStepCreateNestedManyWithoutScreenshot_afterInput
   }
 
   export type DocumentUncheckedCreateInput = {
@@ -61664,8 +58138,6 @@ export namespace Prisma {
     path: string
     type?: $Enums.DocumentType
     created_at?: Date | string
-    computer_use_steps_before?: ComputerUseStepUncheckedCreateNestedManyWithoutScreenshot_beforeInput
-    computer_use_steps_after?: ComputerUseStepUncheckedCreateNestedManyWithoutScreenshot_afterInput
   }
 
   export type DocumentUpdateInput = {
@@ -61678,8 +58150,6 @@ export namespace Prisma {
     path?: StringFieldUpdateOperationsInput | string
     type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    computer_use_steps_before?: ComputerUseStepUpdateManyWithoutScreenshot_beforeNestedInput
-    computer_use_steps_after?: ComputerUseStepUpdateManyWithoutScreenshot_afterNestedInput
   }
 
   export type DocumentUncheckedUpdateInput = {
@@ -61692,8 +58162,6 @@ export namespace Prisma {
     path?: StringFieldUpdateOperationsInput | string
     type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    computer_use_steps_before?: ComputerUseStepUncheckedUpdateManyWithoutScreenshot_beforeNestedInput
-    computer_use_steps_after?: ComputerUseStepUncheckedUpdateManyWithoutScreenshot_afterNestedInput
   }
 
   export type DocumentCreateManyInput = {
@@ -62501,12 +58969,6 @@ export namespace Prisma {
     none?: ScraperWhereInput
   }
 
-  export type ScraperGenerationRunListRelationFilter = {
-    every?: ScraperGenerationRunWhereInput
-    some?: ScraperGenerationRunWhereInput
-    none?: ScraperGenerationRunWhereInput
-  }
-
   export type CrawlRunListRelationFilter = {
     every?: CrawlRunWhereInput
     some?: CrawlRunWhereInput
@@ -62532,10 +58994,6 @@ export namespace Prisma {
   }
 
   export type ScraperOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type ScraperGenerationRunOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -63124,124 +59582,6 @@ export namespace Prisma {
     _min?: NestedDecimalNullableFilter<$PrismaModel>
     _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
-
-  export type EnumGenerationTriggerFilter<$PrismaModel = never> = {
-    equals?: $Enums.GenerationTrigger | EnumGenerationTriggerFieldRefInput<$PrismaModel>
-    in?: $Enums.GenerationTrigger[] | ListEnumGenerationTriggerFieldRefInput<$PrismaModel>
-    notIn?: $Enums.GenerationTrigger[] | ListEnumGenerationTriggerFieldRefInput<$PrismaModel>
-    not?: NestedEnumGenerationTriggerFilter<$PrismaModel> | $Enums.GenerationTrigger
-  }
-
-  export type EnumGenerationRunStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.GenerationRunStatus | EnumGenerationRunStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.GenerationRunStatus[] | ListEnumGenerationRunStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.GenerationRunStatus[] | ListEnumGenerationRunStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumGenerationRunStatusFilter<$PrismaModel> | $Enums.GenerationRunStatus
-  }
-
-  export type ScraperNullableScalarRelationFilter = {
-    is?: ScraperWhereInput | null
-    isNot?: ScraperWhereInput | null
-  }
-
-  export type ComputerUseStepListRelationFilter = {
-    every?: ComputerUseStepWhereInput
-    some?: ComputerUseStepWhereInput
-    none?: ComputerUseStepWhereInput
-  }
-
-  export type ComputerUseStepOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type ScraperGenerationRunCountOrderByAggregateInput = {
-    id?: SortOrder
-    source_agency_id?: SortOrder
-    scraper_id?: SortOrder
-    trigger?: SortOrder
-    status?: SortOrder
-    prompt?: SortOrder
-    max_steps?: SortOrder
-    staged_config?: SortOrder
-    produced_version_id?: SortOrder
-    error_message?: SortOrder
-    started_at?: SortOrder
-    finished_at?: SortOrder
-    duration_ms?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-  }
-
-  export type ScraperGenerationRunAvgOrderByAggregateInput = {
-    max_steps?: SortOrder
-    duration_ms?: SortOrder
-  }
-
-  export type ScraperGenerationRunMaxOrderByAggregateInput = {
-    id?: SortOrder
-    source_agency_id?: SortOrder
-    scraper_id?: SortOrder
-    trigger?: SortOrder
-    status?: SortOrder
-    prompt?: SortOrder
-    max_steps?: SortOrder
-    produced_version_id?: SortOrder
-    error_message?: SortOrder
-    started_at?: SortOrder
-    finished_at?: SortOrder
-    duration_ms?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-  }
-
-  export type ScraperGenerationRunMinOrderByAggregateInput = {
-    id?: SortOrder
-    source_agency_id?: SortOrder
-    scraper_id?: SortOrder
-    trigger?: SortOrder
-    status?: SortOrder
-    prompt?: SortOrder
-    max_steps?: SortOrder
-    produced_version_id?: SortOrder
-    error_message?: SortOrder
-    started_at?: SortOrder
-    finished_at?: SortOrder
-    duration_ms?: SortOrder
-    created_at?: SortOrder
-    updated_at?: SortOrder
-  }
-
-  export type ScraperGenerationRunSumOrderByAggregateInput = {
-    max_steps?: SortOrder
-    duration_ms?: SortOrder
-  }
-
-  export type EnumGenerationTriggerWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.GenerationTrigger | EnumGenerationTriggerFieldRefInput<$PrismaModel>
-    in?: $Enums.GenerationTrigger[] | ListEnumGenerationTriggerFieldRefInput<$PrismaModel>
-    notIn?: $Enums.GenerationTrigger[] | ListEnumGenerationTriggerFieldRefInput<$PrismaModel>
-    not?: NestedEnumGenerationTriggerWithAggregatesFilter<$PrismaModel> | $Enums.GenerationTrigger
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumGenerationTriggerFilter<$PrismaModel>
-    _max?: NestedEnumGenerationTriggerFilter<$PrismaModel>
-  }
-
-  export type EnumGenerationRunStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.GenerationRunStatus | EnumGenerationRunStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.GenerationRunStatus[] | ListEnumGenerationRunStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.GenerationRunStatus[] | ListEnumGenerationRunStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumGenerationRunStatusWithAggregatesFilter<$PrismaModel> | $Enums.GenerationRunStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumGenerationRunStatusFilter<$PrismaModel>
-    _max?: NestedEnumGenerationRunStatusFilter<$PrismaModel>
-  }
-
-  export type EnumComputerActionTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.ComputerActionType | EnumComputerActionTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.ComputerActionType[] | ListEnumComputerActionTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ComputerActionType[] | ListEnumComputerActionTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumComputerActionTypeFilter<$PrismaModel> | $Enums.ComputerActionType
-  }
   export type JsonFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
@@ -63266,94 +59606,6 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
-  export type ScraperGenerationRunScalarRelationFilter = {
-    is?: ScraperGenerationRunWhereInput
-    isNot?: ScraperGenerationRunWhereInput
-  }
-
-  export type DocumentNullableScalarRelationFilter = {
-    is?: DocumentWhereInput | null
-    isNot?: DocumentWhereInput | null
-  }
-
-  export type ComputerUseStepCountOrderByAggregateInput = {
-    id?: SortOrder
-    scraper_generation_run_id?: SortOrder
-    step_index?: SortOrder
-    action_type?: SortOrder
-    action_payload?: SortOrder
-    screenshot_before_id?: SortOrder
-    screenshot_after_id?: SortOrder
-    model_reasoning?: SortOrder
-    created_at?: SortOrder
-  }
-
-  export type ComputerUseStepAvgOrderByAggregateInput = {
-    step_index?: SortOrder
-  }
-
-  export type ComputerUseStepMaxOrderByAggregateInput = {
-    id?: SortOrder
-    scraper_generation_run_id?: SortOrder
-    step_index?: SortOrder
-    action_type?: SortOrder
-    screenshot_before_id?: SortOrder
-    screenshot_after_id?: SortOrder
-    model_reasoning?: SortOrder
-    created_at?: SortOrder
-  }
-
-  export type ComputerUseStepMinOrderByAggregateInput = {
-    id?: SortOrder
-    scraper_generation_run_id?: SortOrder
-    step_index?: SortOrder
-    action_type?: SortOrder
-    screenshot_before_id?: SortOrder
-    screenshot_after_id?: SortOrder
-    model_reasoning?: SortOrder
-    created_at?: SortOrder
-  }
-
-  export type ComputerUseStepSumOrderByAggregateInput = {
-    step_index?: SortOrder
-  }
-
-  export type EnumComputerActionTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ComputerActionType | EnumComputerActionTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.ComputerActionType[] | ListEnumComputerActionTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ComputerActionType[] | ListEnumComputerActionTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumComputerActionTypeWithAggregatesFilter<$PrismaModel> | $Enums.ComputerActionType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumComputerActionTypeFilter<$PrismaModel>
-    _max?: NestedEnumComputerActionTypeFilter<$PrismaModel>
-  }
-  export type JsonWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedJsonFilter<$PrismaModel>
-    _max?: NestedJsonFilter<$PrismaModel>
-  }
-
   export type EnumScraperVersionCreatedByFilter<$PrismaModel = never> = {
     equals?: $Enums.ScraperVersionCreatedBy | EnumScraperVersionCreatedByFieldRefInput<$PrismaModel>
     in?: $Enums.ScraperVersionCreatedBy[] | ListEnumScraperVersionCreatedByFieldRefInput<$PrismaModel>
@@ -63366,9 +59618,9 @@ export namespace Prisma {
     isNot?: ScraperWhereInput
   }
 
-  export type ScraperGenerationRunNullableScalarRelationFilter = {
-    is?: ScraperGenerationRunWhereInput | null
-    isNot?: ScraperGenerationRunWhereInput | null
+  export type ScraperNullableScalarRelationFilter = {
+    is?: ScraperWhereInput | null
+    isNot?: ScraperWhereInput | null
   }
 
   export type ScraperVersionScraper_idVersionCompoundUniqueInput = {
@@ -63413,6 +59665,32 @@ export namespace Prisma {
 
   export type ScraperVersionSumOrderByAggregateInput = {
     version?: SortOrder
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
   }
 
   export type EnumScraperVersionCreatedByWithAggregatesFilter<$PrismaModel = never> = {
@@ -66187,13 +62465,6 @@ export namespace Prisma {
     connect?: UserTrackedAgencyWhereUniqueInput | UserTrackedAgencyWhereUniqueInput[]
   }
 
-  export type ScraperGenerationRunCreateNestedManyWithoutSource_agencyInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutSource_agencyInput, ScraperGenerationRunUncheckedCreateWithoutSource_agencyInput> | ScraperGenerationRunCreateWithoutSource_agencyInput[] | ScraperGenerationRunUncheckedCreateWithoutSource_agencyInput[]
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutSource_agencyInput | ScraperGenerationRunCreateOrConnectWithoutSource_agencyInput[]
-    createMany?: ScraperGenerationRunCreateManySource_agencyInputEnvelope
-    connect?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-  }
-
   export type CrawlRunCreateNestedManyWithoutSource_agencyInput = {
     create?: XOR<CrawlRunCreateWithoutSource_agencyInput, CrawlRunUncheckedCreateWithoutSource_agencyInput> | CrawlRunCreateWithoutSource_agencyInput[] | CrawlRunUncheckedCreateWithoutSource_agencyInput[]
     connectOrCreate?: CrawlRunCreateOrConnectWithoutSource_agencyInput | CrawlRunCreateOrConnectWithoutSource_agencyInput[]
@@ -66234,13 +62505,6 @@ export namespace Prisma {
     connectOrCreate?: UserTrackedAgencyCreateOrConnectWithoutSource_agencyInput | UserTrackedAgencyCreateOrConnectWithoutSource_agencyInput[]
     createMany?: UserTrackedAgencyCreateManySource_agencyInputEnvelope
     connect?: UserTrackedAgencyWhereUniqueInput | UserTrackedAgencyWhereUniqueInput[]
-  }
-
-  export type ScraperGenerationRunUncheckedCreateNestedManyWithoutSource_agencyInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutSource_agencyInput, ScraperGenerationRunUncheckedCreateWithoutSource_agencyInput> | ScraperGenerationRunCreateWithoutSource_agencyInput[] | ScraperGenerationRunUncheckedCreateWithoutSource_agencyInput[]
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutSource_agencyInput | ScraperGenerationRunCreateOrConnectWithoutSource_agencyInput[]
-    createMany?: ScraperGenerationRunCreateManySource_agencyInputEnvelope
-    connect?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
   }
 
   export type CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput = {
@@ -66313,20 +62577,6 @@ export namespace Prisma {
     update?: UserTrackedAgencyUpdateWithWhereUniqueWithoutSource_agencyInput | UserTrackedAgencyUpdateWithWhereUniqueWithoutSource_agencyInput[]
     updateMany?: UserTrackedAgencyUpdateManyWithWhereWithoutSource_agencyInput | UserTrackedAgencyUpdateManyWithWhereWithoutSource_agencyInput[]
     deleteMany?: UserTrackedAgencyScalarWhereInput | UserTrackedAgencyScalarWhereInput[]
-  }
-
-  export type ScraperGenerationRunUpdateManyWithoutSource_agencyNestedInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutSource_agencyInput, ScraperGenerationRunUncheckedCreateWithoutSource_agencyInput> | ScraperGenerationRunCreateWithoutSource_agencyInput[] | ScraperGenerationRunUncheckedCreateWithoutSource_agencyInput[]
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutSource_agencyInput | ScraperGenerationRunCreateOrConnectWithoutSource_agencyInput[]
-    upsert?: ScraperGenerationRunUpsertWithWhereUniqueWithoutSource_agencyInput | ScraperGenerationRunUpsertWithWhereUniqueWithoutSource_agencyInput[]
-    createMany?: ScraperGenerationRunCreateManySource_agencyInputEnvelope
-    set?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    disconnect?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    delete?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    connect?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    update?: ScraperGenerationRunUpdateWithWhereUniqueWithoutSource_agencyInput | ScraperGenerationRunUpdateWithWhereUniqueWithoutSource_agencyInput[]
-    updateMany?: ScraperGenerationRunUpdateManyWithWhereWithoutSource_agencyInput | ScraperGenerationRunUpdateManyWithWhereWithoutSource_agencyInput[]
-    deleteMany?: ScraperGenerationRunScalarWhereInput | ScraperGenerationRunScalarWhereInput[]
   }
 
   export type CrawlRunUpdateManyWithoutSource_agencyNestedInput = {
@@ -66411,20 +62661,6 @@ export namespace Prisma {
     update?: UserTrackedAgencyUpdateWithWhereUniqueWithoutSource_agencyInput | UserTrackedAgencyUpdateWithWhereUniqueWithoutSource_agencyInput[]
     updateMany?: UserTrackedAgencyUpdateManyWithWhereWithoutSource_agencyInput | UserTrackedAgencyUpdateManyWithWhereWithoutSource_agencyInput[]
     deleteMany?: UserTrackedAgencyScalarWhereInput | UserTrackedAgencyScalarWhereInput[]
-  }
-
-  export type ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyNestedInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutSource_agencyInput, ScraperGenerationRunUncheckedCreateWithoutSource_agencyInput> | ScraperGenerationRunCreateWithoutSource_agencyInput[] | ScraperGenerationRunUncheckedCreateWithoutSource_agencyInput[]
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutSource_agencyInput | ScraperGenerationRunCreateOrConnectWithoutSource_agencyInput[]
-    upsert?: ScraperGenerationRunUpsertWithWhereUniqueWithoutSource_agencyInput | ScraperGenerationRunUpsertWithWhereUniqueWithoutSource_agencyInput[]
-    createMany?: ScraperGenerationRunCreateManySource_agencyInputEnvelope
-    set?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    disconnect?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    delete?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    connect?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    update?: ScraperGenerationRunUpdateWithWhereUniqueWithoutSource_agencyInput | ScraperGenerationRunUpdateWithWhereUniqueWithoutSource_agencyInput[]
-    updateMany?: ScraperGenerationRunUpdateManyWithWhereWithoutSource_agencyInput | ScraperGenerationRunUpdateManyWithWhereWithoutSource_agencyInput[]
-    deleteMany?: ScraperGenerationRunScalarWhereInput | ScraperGenerationRunScalarWhereInput[]
   }
 
   export type CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput = {
@@ -66759,13 +62995,6 @@ export namespace Prisma {
     connect?: ScraperExecutionTraceWhereUniqueInput | ScraperExecutionTraceWhereUniqueInput[]
   }
 
-  export type ScraperGenerationRunCreateNestedManyWithoutScraperInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutScraperInput, ScraperGenerationRunUncheckedCreateWithoutScraperInput> | ScraperGenerationRunCreateWithoutScraperInput[] | ScraperGenerationRunUncheckedCreateWithoutScraperInput[]
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutScraperInput | ScraperGenerationRunCreateOrConnectWithoutScraperInput[]
-    createMany?: ScraperGenerationRunCreateManyScraperInputEnvelope
-    connect?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-  }
-
   export type NotificationCreateNestedManyWithoutScraperInput = {
     create?: XOR<NotificationCreateWithoutScraperInput, NotificationUncheckedCreateWithoutScraperInput> | NotificationCreateWithoutScraperInput[] | NotificationUncheckedCreateWithoutScraperInput[]
     connectOrCreate?: NotificationCreateOrConnectWithoutScraperInput | NotificationCreateOrConnectWithoutScraperInput[]
@@ -66799,13 +63028,6 @@ export namespace Prisma {
     connectOrCreate?: ScraperExecutionTraceCreateOrConnectWithoutScraperInput | ScraperExecutionTraceCreateOrConnectWithoutScraperInput[]
     createMany?: ScraperExecutionTraceCreateManyScraperInputEnvelope
     connect?: ScraperExecutionTraceWhereUniqueInput | ScraperExecutionTraceWhereUniqueInput[]
-  }
-
-  export type ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutScraperInput, ScraperGenerationRunUncheckedCreateWithoutScraperInput> | ScraperGenerationRunCreateWithoutScraperInput[] | ScraperGenerationRunUncheckedCreateWithoutScraperInput[]
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutScraperInput | ScraperGenerationRunCreateOrConnectWithoutScraperInput[]
-    createMany?: ScraperGenerationRunCreateManyScraperInputEnvelope
-    connect?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
   }
 
   export type NotificationUncheckedCreateNestedManyWithoutScraperInput = {
@@ -66902,20 +63124,6 @@ export namespace Prisma {
     deleteMany?: ScraperExecutionTraceScalarWhereInput | ScraperExecutionTraceScalarWhereInput[]
   }
 
-  export type ScraperGenerationRunUpdateManyWithoutScraperNestedInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutScraperInput, ScraperGenerationRunUncheckedCreateWithoutScraperInput> | ScraperGenerationRunCreateWithoutScraperInput[] | ScraperGenerationRunUncheckedCreateWithoutScraperInput[]
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutScraperInput | ScraperGenerationRunCreateOrConnectWithoutScraperInput[]
-    upsert?: ScraperGenerationRunUpsertWithWhereUniqueWithoutScraperInput | ScraperGenerationRunUpsertWithWhereUniqueWithoutScraperInput[]
-    createMany?: ScraperGenerationRunCreateManyScraperInputEnvelope
-    set?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    disconnect?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    delete?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    connect?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    update?: ScraperGenerationRunUpdateWithWhereUniqueWithoutScraperInput | ScraperGenerationRunUpdateWithWhereUniqueWithoutScraperInput[]
-    updateMany?: ScraperGenerationRunUpdateManyWithWhereWithoutScraperInput | ScraperGenerationRunUpdateManyWithWhereWithoutScraperInput[]
-    deleteMany?: ScraperGenerationRunScalarWhereInput | ScraperGenerationRunScalarWhereInput[]
-  }
-
   export type NotificationUpdateManyWithoutScraperNestedInput = {
     create?: XOR<NotificationCreateWithoutScraperInput, NotificationUncheckedCreateWithoutScraperInput> | NotificationCreateWithoutScraperInput[] | NotificationUncheckedCreateWithoutScraperInput[]
     connectOrCreate?: NotificationCreateOrConnectWithoutScraperInput | NotificationCreateOrConnectWithoutScraperInput[]
@@ -66986,20 +63194,6 @@ export namespace Prisma {
     deleteMany?: ScraperExecutionTraceScalarWhereInput | ScraperExecutionTraceScalarWhereInput[]
   }
 
-  export type ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutScraperInput, ScraperGenerationRunUncheckedCreateWithoutScraperInput> | ScraperGenerationRunCreateWithoutScraperInput[] | ScraperGenerationRunUncheckedCreateWithoutScraperInput[]
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutScraperInput | ScraperGenerationRunCreateOrConnectWithoutScraperInput[]
-    upsert?: ScraperGenerationRunUpsertWithWhereUniqueWithoutScraperInput | ScraperGenerationRunUpsertWithWhereUniqueWithoutScraperInput[]
-    createMany?: ScraperGenerationRunCreateManyScraperInputEnvelope
-    set?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    disconnect?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    delete?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    connect?: ScraperGenerationRunWhereUniqueInput | ScraperGenerationRunWhereUniqueInput[]
-    update?: ScraperGenerationRunUpdateWithWhereUniqueWithoutScraperInput | ScraperGenerationRunUpdateWithWhereUniqueWithoutScraperInput[]
-    updateMany?: ScraperGenerationRunUpdateManyWithWhereWithoutScraperInput | ScraperGenerationRunUpdateManyWithWhereWithoutScraperInput[]
-    deleteMany?: ScraperGenerationRunScalarWhereInput | ScraperGenerationRunScalarWhereInput[]
-  }
-
   export type NotificationUncheckedUpdateManyWithoutScraperNestedInput = {
     create?: XOR<NotificationCreateWithoutScraperInput, NotificationUncheckedCreateWithoutScraperInput> | NotificationCreateWithoutScraperInput[] | NotificationUncheckedCreateWithoutScraperInput[]
     connectOrCreate?: NotificationCreateOrConnectWithoutScraperInput | NotificationCreateOrConnectWithoutScraperInput[]
@@ -67028,152 +63222,6 @@ export namespace Prisma {
     deleteMany?: DiagnosticsPackageScalarWhereInput | DiagnosticsPackageScalarWhereInput[]
   }
 
-  export type SourceAgencyCreateNestedOneWithoutScraper_generation_runsInput = {
-    create?: XOR<SourceAgencyCreateWithoutScraper_generation_runsInput, SourceAgencyUncheckedCreateWithoutScraper_generation_runsInput>
-    connectOrCreate?: SourceAgencyCreateOrConnectWithoutScraper_generation_runsInput
-    connect?: SourceAgencyWhereUniqueInput
-  }
-
-  export type ScraperCreateNestedOneWithoutScraper_generation_runsInput = {
-    create?: XOR<ScraperCreateWithoutScraper_generation_runsInput, ScraperUncheckedCreateWithoutScraper_generation_runsInput>
-    connectOrCreate?: ScraperCreateOrConnectWithoutScraper_generation_runsInput
-    connect?: ScraperWhereUniqueInput
-  }
-
-  export type ScraperVersionCreateNestedOneWithoutProduced_by_runInput = {
-    create?: XOR<ScraperVersionCreateWithoutProduced_by_runInput, ScraperVersionUncheckedCreateWithoutProduced_by_runInput>
-    connectOrCreate?: ScraperVersionCreateOrConnectWithoutProduced_by_runInput
-    connect?: ScraperVersionWhereUniqueInput
-  }
-
-  export type ComputerUseStepCreateNestedManyWithoutScraper_generation_runInput = {
-    create?: XOR<ComputerUseStepCreateWithoutScraper_generation_runInput, ComputerUseStepUncheckedCreateWithoutScraper_generation_runInput> | ComputerUseStepCreateWithoutScraper_generation_runInput[] | ComputerUseStepUncheckedCreateWithoutScraper_generation_runInput[]
-    connectOrCreate?: ComputerUseStepCreateOrConnectWithoutScraper_generation_runInput | ComputerUseStepCreateOrConnectWithoutScraper_generation_runInput[]
-    createMany?: ComputerUseStepCreateManyScraper_generation_runInputEnvelope
-    connect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-  }
-
-  export type ComputerUseStepUncheckedCreateNestedManyWithoutScraper_generation_runInput = {
-    create?: XOR<ComputerUseStepCreateWithoutScraper_generation_runInput, ComputerUseStepUncheckedCreateWithoutScraper_generation_runInput> | ComputerUseStepCreateWithoutScraper_generation_runInput[] | ComputerUseStepUncheckedCreateWithoutScraper_generation_runInput[]
-    connectOrCreate?: ComputerUseStepCreateOrConnectWithoutScraper_generation_runInput | ComputerUseStepCreateOrConnectWithoutScraper_generation_runInput[]
-    createMany?: ComputerUseStepCreateManyScraper_generation_runInputEnvelope
-    connect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-  }
-
-  export type EnumGenerationTriggerFieldUpdateOperationsInput = {
-    set?: $Enums.GenerationTrigger
-  }
-
-  export type EnumGenerationRunStatusFieldUpdateOperationsInput = {
-    set?: $Enums.GenerationRunStatus
-  }
-
-  export type SourceAgencyUpdateOneRequiredWithoutScraper_generation_runsNestedInput = {
-    create?: XOR<SourceAgencyCreateWithoutScraper_generation_runsInput, SourceAgencyUncheckedCreateWithoutScraper_generation_runsInput>
-    connectOrCreate?: SourceAgencyCreateOrConnectWithoutScraper_generation_runsInput
-    upsert?: SourceAgencyUpsertWithoutScraper_generation_runsInput
-    connect?: SourceAgencyWhereUniqueInput
-    update?: XOR<XOR<SourceAgencyUpdateToOneWithWhereWithoutScraper_generation_runsInput, SourceAgencyUpdateWithoutScraper_generation_runsInput>, SourceAgencyUncheckedUpdateWithoutScraper_generation_runsInput>
-  }
-
-  export type ScraperUpdateOneWithoutScraper_generation_runsNestedInput = {
-    create?: XOR<ScraperCreateWithoutScraper_generation_runsInput, ScraperUncheckedCreateWithoutScraper_generation_runsInput>
-    connectOrCreate?: ScraperCreateOrConnectWithoutScraper_generation_runsInput
-    upsert?: ScraperUpsertWithoutScraper_generation_runsInput
-    disconnect?: ScraperWhereInput | boolean
-    delete?: ScraperWhereInput | boolean
-    connect?: ScraperWhereUniqueInput
-    update?: XOR<XOR<ScraperUpdateToOneWithWhereWithoutScraper_generation_runsInput, ScraperUpdateWithoutScraper_generation_runsInput>, ScraperUncheckedUpdateWithoutScraper_generation_runsInput>
-  }
-
-  export type ScraperVersionUpdateOneWithoutProduced_by_runNestedInput = {
-    create?: XOR<ScraperVersionCreateWithoutProduced_by_runInput, ScraperVersionUncheckedCreateWithoutProduced_by_runInput>
-    connectOrCreate?: ScraperVersionCreateOrConnectWithoutProduced_by_runInput
-    upsert?: ScraperVersionUpsertWithoutProduced_by_runInput
-    disconnect?: ScraperVersionWhereInput | boolean
-    delete?: ScraperVersionWhereInput | boolean
-    connect?: ScraperVersionWhereUniqueInput
-    update?: XOR<XOR<ScraperVersionUpdateToOneWithWhereWithoutProduced_by_runInput, ScraperVersionUpdateWithoutProduced_by_runInput>, ScraperVersionUncheckedUpdateWithoutProduced_by_runInput>
-  }
-
-  export type ComputerUseStepUpdateManyWithoutScraper_generation_runNestedInput = {
-    create?: XOR<ComputerUseStepCreateWithoutScraper_generation_runInput, ComputerUseStepUncheckedCreateWithoutScraper_generation_runInput> | ComputerUseStepCreateWithoutScraper_generation_runInput[] | ComputerUseStepUncheckedCreateWithoutScraper_generation_runInput[]
-    connectOrCreate?: ComputerUseStepCreateOrConnectWithoutScraper_generation_runInput | ComputerUseStepCreateOrConnectWithoutScraper_generation_runInput[]
-    upsert?: ComputerUseStepUpsertWithWhereUniqueWithoutScraper_generation_runInput | ComputerUseStepUpsertWithWhereUniqueWithoutScraper_generation_runInput[]
-    createMany?: ComputerUseStepCreateManyScraper_generation_runInputEnvelope
-    set?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    disconnect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    delete?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    connect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    update?: ComputerUseStepUpdateWithWhereUniqueWithoutScraper_generation_runInput | ComputerUseStepUpdateWithWhereUniqueWithoutScraper_generation_runInput[]
-    updateMany?: ComputerUseStepUpdateManyWithWhereWithoutScraper_generation_runInput | ComputerUseStepUpdateManyWithWhereWithoutScraper_generation_runInput[]
-    deleteMany?: ComputerUseStepScalarWhereInput | ComputerUseStepScalarWhereInput[]
-  }
-
-  export type ComputerUseStepUncheckedUpdateManyWithoutScraper_generation_runNestedInput = {
-    create?: XOR<ComputerUseStepCreateWithoutScraper_generation_runInput, ComputerUseStepUncheckedCreateWithoutScraper_generation_runInput> | ComputerUseStepCreateWithoutScraper_generation_runInput[] | ComputerUseStepUncheckedCreateWithoutScraper_generation_runInput[]
-    connectOrCreate?: ComputerUseStepCreateOrConnectWithoutScraper_generation_runInput | ComputerUseStepCreateOrConnectWithoutScraper_generation_runInput[]
-    upsert?: ComputerUseStepUpsertWithWhereUniqueWithoutScraper_generation_runInput | ComputerUseStepUpsertWithWhereUniqueWithoutScraper_generation_runInput[]
-    createMany?: ComputerUseStepCreateManyScraper_generation_runInputEnvelope
-    set?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    disconnect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    delete?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    connect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    update?: ComputerUseStepUpdateWithWhereUniqueWithoutScraper_generation_runInput | ComputerUseStepUpdateWithWhereUniqueWithoutScraper_generation_runInput[]
-    updateMany?: ComputerUseStepUpdateManyWithWhereWithoutScraper_generation_runInput | ComputerUseStepUpdateManyWithWhereWithoutScraper_generation_runInput[]
-    deleteMany?: ComputerUseStepScalarWhereInput | ComputerUseStepScalarWhereInput[]
-  }
-
-  export type ScraperGenerationRunCreateNestedOneWithoutStepsInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutStepsInput, ScraperGenerationRunUncheckedCreateWithoutStepsInput>
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutStepsInput
-    connect?: ScraperGenerationRunWhereUniqueInput
-  }
-
-  export type DocumentCreateNestedOneWithoutComputer_use_steps_beforeInput = {
-    create?: XOR<DocumentCreateWithoutComputer_use_steps_beforeInput, DocumentUncheckedCreateWithoutComputer_use_steps_beforeInput>
-    connectOrCreate?: DocumentCreateOrConnectWithoutComputer_use_steps_beforeInput
-    connect?: DocumentWhereUniqueInput
-  }
-
-  export type DocumentCreateNestedOneWithoutComputer_use_steps_afterInput = {
-    create?: XOR<DocumentCreateWithoutComputer_use_steps_afterInput, DocumentUncheckedCreateWithoutComputer_use_steps_afterInput>
-    connectOrCreate?: DocumentCreateOrConnectWithoutComputer_use_steps_afterInput
-    connect?: DocumentWhereUniqueInput
-  }
-
-  export type EnumComputerActionTypeFieldUpdateOperationsInput = {
-    set?: $Enums.ComputerActionType
-  }
-
-  export type ScraperGenerationRunUpdateOneRequiredWithoutStepsNestedInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutStepsInput, ScraperGenerationRunUncheckedCreateWithoutStepsInput>
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutStepsInput
-    upsert?: ScraperGenerationRunUpsertWithoutStepsInput
-    connect?: ScraperGenerationRunWhereUniqueInput
-    update?: XOR<XOR<ScraperGenerationRunUpdateToOneWithWhereWithoutStepsInput, ScraperGenerationRunUpdateWithoutStepsInput>, ScraperGenerationRunUncheckedUpdateWithoutStepsInput>
-  }
-
-  export type DocumentUpdateOneWithoutComputer_use_steps_beforeNestedInput = {
-    create?: XOR<DocumentCreateWithoutComputer_use_steps_beforeInput, DocumentUncheckedCreateWithoutComputer_use_steps_beforeInput>
-    connectOrCreate?: DocumentCreateOrConnectWithoutComputer_use_steps_beforeInput
-    upsert?: DocumentUpsertWithoutComputer_use_steps_beforeInput
-    disconnect?: DocumentWhereInput | boolean
-    delete?: DocumentWhereInput | boolean
-    connect?: DocumentWhereUniqueInput
-    update?: XOR<XOR<DocumentUpdateToOneWithWhereWithoutComputer_use_steps_beforeInput, DocumentUpdateWithoutComputer_use_steps_beforeInput>, DocumentUncheckedUpdateWithoutComputer_use_steps_beforeInput>
-  }
-
-  export type DocumentUpdateOneWithoutComputer_use_steps_afterNestedInput = {
-    create?: XOR<DocumentCreateWithoutComputer_use_steps_afterInput, DocumentUncheckedCreateWithoutComputer_use_steps_afterInput>
-    connectOrCreate?: DocumentCreateOrConnectWithoutComputer_use_steps_afterInput
-    upsert?: DocumentUpsertWithoutComputer_use_steps_afterInput
-    disconnect?: DocumentWhereInput | boolean
-    delete?: DocumentWhereInput | boolean
-    connect?: DocumentWhereUniqueInput
-    update?: XOR<XOR<DocumentUpdateToOneWithWhereWithoutComputer_use_steps_afterInput, DocumentUpdateWithoutComputer_use_steps_afterInput>, DocumentUncheckedUpdateWithoutComputer_use_steps_afterInput>
-  }
-
   export type ScraperCreateNestedOneWithoutVersionsInput = {
     create?: XOR<ScraperCreateWithoutVersionsInput, ScraperUncheckedCreateWithoutVersionsInput>
     connectOrCreate?: ScraperCreateOrConnectWithoutVersionsInput
@@ -67186,22 +63234,10 @@ export namespace Prisma {
     connect?: ScraperWhereUniqueInput
   }
 
-  export type ScraperGenerationRunCreateNestedOneWithoutProduced_versionInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutProduced_versionInput, ScraperGenerationRunUncheckedCreateWithoutProduced_versionInput>
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutProduced_versionInput
-    connect?: ScraperGenerationRunWhereUniqueInput
-  }
-
   export type ScraperUncheckedCreateNestedOneWithoutActive_versionInput = {
     create?: XOR<ScraperCreateWithoutActive_versionInput, ScraperUncheckedCreateWithoutActive_versionInput>
     connectOrCreate?: ScraperCreateOrConnectWithoutActive_versionInput
     connect?: ScraperWhereUniqueInput
-  }
-
-  export type ScraperGenerationRunUncheckedCreateNestedOneWithoutProduced_versionInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutProduced_versionInput, ScraperGenerationRunUncheckedCreateWithoutProduced_versionInput>
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutProduced_versionInput
-    connect?: ScraperGenerationRunWhereUniqueInput
   }
 
   export type EnumScraperVersionCreatedByFieldUpdateOperationsInput = {
@@ -67226,16 +63262,6 @@ export namespace Prisma {
     update?: XOR<XOR<ScraperUpdateToOneWithWhereWithoutActive_versionInput, ScraperUpdateWithoutActive_versionInput>, ScraperUncheckedUpdateWithoutActive_versionInput>
   }
 
-  export type ScraperGenerationRunUpdateOneWithoutProduced_versionNestedInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutProduced_versionInput, ScraperGenerationRunUncheckedCreateWithoutProduced_versionInput>
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutProduced_versionInput
-    upsert?: ScraperGenerationRunUpsertWithoutProduced_versionInput
-    disconnect?: ScraperGenerationRunWhereInput | boolean
-    delete?: ScraperGenerationRunWhereInput | boolean
-    connect?: ScraperGenerationRunWhereUniqueInput
-    update?: XOR<XOR<ScraperGenerationRunUpdateToOneWithWhereWithoutProduced_versionInput, ScraperGenerationRunUpdateWithoutProduced_versionInput>, ScraperGenerationRunUncheckedUpdateWithoutProduced_versionInput>
-  }
-
   export type ScraperUncheckedUpdateOneWithoutActive_versionNestedInput = {
     create?: XOR<ScraperCreateWithoutActive_versionInput, ScraperUncheckedCreateWithoutActive_versionInput>
     connectOrCreate?: ScraperCreateOrConnectWithoutActive_versionInput
@@ -67244,16 +63270,6 @@ export namespace Prisma {
     delete?: ScraperWhereInput | boolean
     connect?: ScraperWhereUniqueInput
     update?: XOR<XOR<ScraperUpdateToOneWithWhereWithoutActive_versionInput, ScraperUpdateWithoutActive_versionInput>, ScraperUncheckedUpdateWithoutActive_versionInput>
-  }
-
-  export type ScraperGenerationRunUncheckedUpdateOneWithoutProduced_versionNestedInput = {
-    create?: XOR<ScraperGenerationRunCreateWithoutProduced_versionInput, ScraperGenerationRunUncheckedCreateWithoutProduced_versionInput>
-    connectOrCreate?: ScraperGenerationRunCreateOrConnectWithoutProduced_versionInput
-    upsert?: ScraperGenerationRunUpsertWithoutProduced_versionInput
-    disconnect?: ScraperGenerationRunWhereInput | boolean
-    delete?: ScraperGenerationRunWhereInput | boolean
-    connect?: ScraperGenerationRunWhereUniqueInput
-    update?: XOR<XOR<ScraperGenerationRunUpdateToOneWithWhereWithoutProduced_versionInput, ScraperGenerationRunUpdateWithoutProduced_versionInput>, ScraperGenerationRunUncheckedUpdateWithoutProduced_versionInput>
   }
 
   export type ScraperCreateNestedOneWithoutExecution_tracesInput = {
@@ -68864,92 +64880,8 @@ export namespace Prisma {
     set?: $Enums.TranslationProvider | null
   }
 
-  export type ComputerUseStepCreateNestedManyWithoutScreenshot_beforeInput = {
-    create?: XOR<ComputerUseStepCreateWithoutScreenshot_beforeInput, ComputerUseStepUncheckedCreateWithoutScreenshot_beforeInput> | ComputerUseStepCreateWithoutScreenshot_beforeInput[] | ComputerUseStepUncheckedCreateWithoutScreenshot_beforeInput[]
-    connectOrCreate?: ComputerUseStepCreateOrConnectWithoutScreenshot_beforeInput | ComputerUseStepCreateOrConnectWithoutScreenshot_beforeInput[]
-    createMany?: ComputerUseStepCreateManyScreenshot_beforeInputEnvelope
-    connect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-  }
-
-  export type ComputerUseStepCreateNestedManyWithoutScreenshot_afterInput = {
-    create?: XOR<ComputerUseStepCreateWithoutScreenshot_afterInput, ComputerUseStepUncheckedCreateWithoutScreenshot_afterInput> | ComputerUseStepCreateWithoutScreenshot_afterInput[] | ComputerUseStepUncheckedCreateWithoutScreenshot_afterInput[]
-    connectOrCreate?: ComputerUseStepCreateOrConnectWithoutScreenshot_afterInput | ComputerUseStepCreateOrConnectWithoutScreenshot_afterInput[]
-    createMany?: ComputerUseStepCreateManyScreenshot_afterInputEnvelope
-    connect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-  }
-
-  export type ComputerUseStepUncheckedCreateNestedManyWithoutScreenshot_beforeInput = {
-    create?: XOR<ComputerUseStepCreateWithoutScreenshot_beforeInput, ComputerUseStepUncheckedCreateWithoutScreenshot_beforeInput> | ComputerUseStepCreateWithoutScreenshot_beforeInput[] | ComputerUseStepUncheckedCreateWithoutScreenshot_beforeInput[]
-    connectOrCreate?: ComputerUseStepCreateOrConnectWithoutScreenshot_beforeInput | ComputerUseStepCreateOrConnectWithoutScreenshot_beforeInput[]
-    createMany?: ComputerUseStepCreateManyScreenshot_beforeInputEnvelope
-    connect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-  }
-
-  export type ComputerUseStepUncheckedCreateNestedManyWithoutScreenshot_afterInput = {
-    create?: XOR<ComputerUseStepCreateWithoutScreenshot_afterInput, ComputerUseStepUncheckedCreateWithoutScreenshot_afterInput> | ComputerUseStepCreateWithoutScreenshot_afterInput[] | ComputerUseStepUncheckedCreateWithoutScreenshot_afterInput[]
-    connectOrCreate?: ComputerUseStepCreateOrConnectWithoutScreenshot_afterInput | ComputerUseStepCreateOrConnectWithoutScreenshot_afterInput[]
-    createMany?: ComputerUseStepCreateManyScreenshot_afterInputEnvelope
-    connect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-  }
-
   export type EnumDocumentTypeFieldUpdateOperationsInput = {
     set?: $Enums.DocumentType
-  }
-
-  export type ComputerUseStepUpdateManyWithoutScreenshot_beforeNestedInput = {
-    create?: XOR<ComputerUseStepCreateWithoutScreenshot_beforeInput, ComputerUseStepUncheckedCreateWithoutScreenshot_beforeInput> | ComputerUseStepCreateWithoutScreenshot_beforeInput[] | ComputerUseStepUncheckedCreateWithoutScreenshot_beforeInput[]
-    connectOrCreate?: ComputerUseStepCreateOrConnectWithoutScreenshot_beforeInput | ComputerUseStepCreateOrConnectWithoutScreenshot_beforeInput[]
-    upsert?: ComputerUseStepUpsertWithWhereUniqueWithoutScreenshot_beforeInput | ComputerUseStepUpsertWithWhereUniqueWithoutScreenshot_beforeInput[]
-    createMany?: ComputerUseStepCreateManyScreenshot_beforeInputEnvelope
-    set?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    disconnect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    delete?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    connect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    update?: ComputerUseStepUpdateWithWhereUniqueWithoutScreenshot_beforeInput | ComputerUseStepUpdateWithWhereUniqueWithoutScreenshot_beforeInput[]
-    updateMany?: ComputerUseStepUpdateManyWithWhereWithoutScreenshot_beforeInput | ComputerUseStepUpdateManyWithWhereWithoutScreenshot_beforeInput[]
-    deleteMany?: ComputerUseStepScalarWhereInput | ComputerUseStepScalarWhereInput[]
-  }
-
-  export type ComputerUseStepUpdateManyWithoutScreenshot_afterNestedInput = {
-    create?: XOR<ComputerUseStepCreateWithoutScreenshot_afterInput, ComputerUseStepUncheckedCreateWithoutScreenshot_afterInput> | ComputerUseStepCreateWithoutScreenshot_afterInput[] | ComputerUseStepUncheckedCreateWithoutScreenshot_afterInput[]
-    connectOrCreate?: ComputerUseStepCreateOrConnectWithoutScreenshot_afterInput | ComputerUseStepCreateOrConnectWithoutScreenshot_afterInput[]
-    upsert?: ComputerUseStepUpsertWithWhereUniqueWithoutScreenshot_afterInput | ComputerUseStepUpsertWithWhereUniqueWithoutScreenshot_afterInput[]
-    createMany?: ComputerUseStepCreateManyScreenshot_afterInputEnvelope
-    set?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    disconnect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    delete?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    connect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    update?: ComputerUseStepUpdateWithWhereUniqueWithoutScreenshot_afterInput | ComputerUseStepUpdateWithWhereUniqueWithoutScreenshot_afterInput[]
-    updateMany?: ComputerUseStepUpdateManyWithWhereWithoutScreenshot_afterInput | ComputerUseStepUpdateManyWithWhereWithoutScreenshot_afterInput[]
-    deleteMany?: ComputerUseStepScalarWhereInput | ComputerUseStepScalarWhereInput[]
-  }
-
-  export type ComputerUseStepUncheckedUpdateManyWithoutScreenshot_beforeNestedInput = {
-    create?: XOR<ComputerUseStepCreateWithoutScreenshot_beforeInput, ComputerUseStepUncheckedCreateWithoutScreenshot_beforeInput> | ComputerUseStepCreateWithoutScreenshot_beforeInput[] | ComputerUseStepUncheckedCreateWithoutScreenshot_beforeInput[]
-    connectOrCreate?: ComputerUseStepCreateOrConnectWithoutScreenshot_beforeInput | ComputerUseStepCreateOrConnectWithoutScreenshot_beforeInput[]
-    upsert?: ComputerUseStepUpsertWithWhereUniqueWithoutScreenshot_beforeInput | ComputerUseStepUpsertWithWhereUniqueWithoutScreenshot_beforeInput[]
-    createMany?: ComputerUseStepCreateManyScreenshot_beforeInputEnvelope
-    set?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    disconnect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    delete?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    connect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    update?: ComputerUseStepUpdateWithWhereUniqueWithoutScreenshot_beforeInput | ComputerUseStepUpdateWithWhereUniqueWithoutScreenshot_beforeInput[]
-    updateMany?: ComputerUseStepUpdateManyWithWhereWithoutScreenshot_beforeInput | ComputerUseStepUpdateManyWithWhereWithoutScreenshot_beforeInput[]
-    deleteMany?: ComputerUseStepScalarWhereInput | ComputerUseStepScalarWhereInput[]
-  }
-
-  export type ComputerUseStepUncheckedUpdateManyWithoutScreenshot_afterNestedInput = {
-    create?: XOR<ComputerUseStepCreateWithoutScreenshot_afterInput, ComputerUseStepUncheckedCreateWithoutScreenshot_afterInput> | ComputerUseStepCreateWithoutScreenshot_afterInput[] | ComputerUseStepUncheckedCreateWithoutScreenshot_afterInput[]
-    connectOrCreate?: ComputerUseStepCreateOrConnectWithoutScreenshot_afterInput | ComputerUseStepCreateOrConnectWithoutScreenshot_afterInput[]
-    upsert?: ComputerUseStepUpsertWithWhereUniqueWithoutScreenshot_afterInput | ComputerUseStepUpsertWithWhereUniqueWithoutScreenshot_afterInput[]
-    createMany?: ComputerUseStepCreateManyScreenshot_afterInputEnvelope
-    set?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    disconnect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    delete?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    connect?: ComputerUseStepWhereUniqueInput | ComputerUseStepWhereUniqueInput[]
-    update?: ComputerUseStepUpdateWithWhereUniqueWithoutScreenshot_afterInput | ComputerUseStepUpdateWithWhereUniqueWithoutScreenshot_afterInput[]
-    updateMany?: ComputerUseStepUpdateManyWithWhereWithoutScreenshot_afterInput | ComputerUseStepUpdateManyWithWhereWithoutScreenshot_afterInput[]
-    deleteMany?: ComputerUseStepScalarWhereInput | ComputerUseStepScalarWhereInput[]
   }
 
   export type ActivityLogChangeCreateNestedManyWithoutActivity_logInput = {
@@ -69420,55 +65352,11 @@ export namespace Prisma {
     _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
-  export type NestedEnumGenerationTriggerFilter<$PrismaModel = never> = {
-    equals?: $Enums.GenerationTrigger | EnumGenerationTriggerFieldRefInput<$PrismaModel>
-    in?: $Enums.GenerationTrigger[] | ListEnumGenerationTriggerFieldRefInput<$PrismaModel>
-    notIn?: $Enums.GenerationTrigger[] | ListEnumGenerationTriggerFieldRefInput<$PrismaModel>
-    not?: NestedEnumGenerationTriggerFilter<$PrismaModel> | $Enums.GenerationTrigger
-  }
-
-  export type NestedEnumGenerationRunStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.GenerationRunStatus | EnumGenerationRunStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.GenerationRunStatus[] | ListEnumGenerationRunStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.GenerationRunStatus[] | ListEnumGenerationRunStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumGenerationRunStatusFilter<$PrismaModel> | $Enums.GenerationRunStatus
-  }
-
-  export type NestedEnumGenerationTriggerWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.GenerationTrigger | EnumGenerationTriggerFieldRefInput<$PrismaModel>
-    in?: $Enums.GenerationTrigger[] | ListEnumGenerationTriggerFieldRefInput<$PrismaModel>
-    notIn?: $Enums.GenerationTrigger[] | ListEnumGenerationTriggerFieldRefInput<$PrismaModel>
-    not?: NestedEnumGenerationTriggerWithAggregatesFilter<$PrismaModel> | $Enums.GenerationTrigger
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumGenerationTriggerFilter<$PrismaModel>
-    _max?: NestedEnumGenerationTriggerFilter<$PrismaModel>
-  }
-
-  export type NestedEnumGenerationRunStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.GenerationRunStatus | EnumGenerationRunStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.GenerationRunStatus[] | ListEnumGenerationRunStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.GenerationRunStatus[] | ListEnumGenerationRunStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumGenerationRunStatusWithAggregatesFilter<$PrismaModel> | $Enums.GenerationRunStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumGenerationRunStatusFilter<$PrismaModel>
-    _max?: NestedEnumGenerationRunStatusFilter<$PrismaModel>
-  }
-
-  export type NestedEnumComputerActionTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.ComputerActionType | EnumComputerActionTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.ComputerActionType[] | ListEnumComputerActionTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ComputerActionType[] | ListEnumComputerActionTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumComputerActionTypeFilter<$PrismaModel> | $Enums.ComputerActionType
-  }
-
-  export type NestedEnumComputerActionTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ComputerActionType | EnumComputerActionTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.ComputerActionType[] | ListEnumComputerActionTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ComputerActionType[] | ListEnumComputerActionTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumComputerActionTypeWithAggregatesFilter<$PrismaModel> | $Enums.ComputerActionType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumComputerActionTypeFilter<$PrismaModel>
-    _max?: NestedEnumComputerActionTypeFilter<$PrismaModel>
+  export type NestedEnumScraperVersionCreatedByFilter<$PrismaModel = never> = {
+    equals?: $Enums.ScraperVersionCreatedBy | EnumScraperVersionCreatedByFieldRefInput<$PrismaModel>
+    in?: $Enums.ScraperVersionCreatedBy[] | ListEnumScraperVersionCreatedByFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ScraperVersionCreatedBy[] | ListEnumScraperVersionCreatedByFieldRefInput<$PrismaModel>
+    not?: NestedEnumScraperVersionCreatedByFilter<$PrismaModel> | $Enums.ScraperVersionCreatedBy
   }
   export type NestedJsonFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -69492,13 +65380,6 @@ export namespace Prisma {
     gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
-  export type NestedEnumScraperVersionCreatedByFilter<$PrismaModel = never> = {
-    equals?: $Enums.ScraperVersionCreatedBy | EnumScraperVersionCreatedByFieldRefInput<$PrismaModel>
-    in?: $Enums.ScraperVersionCreatedBy[] | ListEnumScraperVersionCreatedByFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ScraperVersionCreatedBy[] | ListEnumScraperVersionCreatedByFieldRefInput<$PrismaModel>
-    not?: NestedEnumScraperVersionCreatedByFilter<$PrismaModel> | $Enums.ScraperVersionCreatedBy
   }
 
   export type NestedEnumScraperVersionCreatedByWithAggregatesFilter<$PrismaModel = never> = {
@@ -71202,7 +67083,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunCreateNestedManyWithoutScraperInput
     versions?: ScraperVersionCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
@@ -71230,7 +67110,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutScraperInput
     versions?: ScraperVersionUncheckedCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
@@ -71300,52 +67179,6 @@ export namespace Prisma {
 
   export type UserTrackedAgencyCreateManySource_agencyInputEnvelope = {
     data: UserTrackedAgencyCreateManySource_agencyInput | UserTrackedAgencyCreateManySource_agencyInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type ScraperGenerationRunCreateWithoutSource_agencyInput = {
-    id?: string
-    trigger?: $Enums.GenerationTrigger
-    status?: $Enums.GenerationRunStatus
-    prompt?: string | null
-    max_steps?: number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    duration_ms?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    scraper?: ScraperCreateNestedOneWithoutScraper_generation_runsInput
-    produced_version?: ScraperVersionCreateNestedOneWithoutProduced_by_runInput
-    steps?: ComputerUseStepCreateNestedManyWithoutScraper_generation_runInput
-  }
-
-  export type ScraperGenerationRunUncheckedCreateWithoutSource_agencyInput = {
-    id?: string
-    scraper_id?: string | null
-    trigger?: $Enums.GenerationTrigger
-    status?: $Enums.GenerationRunStatus
-    prompt?: string | null
-    max_steps?: number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: string | null
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    duration_ms?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    steps?: ComputerUseStepUncheckedCreateNestedManyWithoutScraper_generation_runInput
-  }
-
-  export type ScraperGenerationRunCreateOrConnectWithoutSource_agencyInput = {
-    where: ScraperGenerationRunWhereUniqueInput
-    create: XOR<ScraperGenerationRunCreateWithoutSource_agencyInput, ScraperGenerationRunUncheckedCreateWithoutSource_agencyInput>
-  }
-
-  export type ScraperGenerationRunCreateManySource_agencyInputEnvelope = {
-    data: ScraperGenerationRunCreateManySource_agencyInput | ScraperGenerationRunCreateManySource_agencyInput[]
     skipDuplicates?: boolean
   }
 
@@ -71623,43 +67456,6 @@ export namespace Prisma {
     data: XOR<UserTrackedAgencyUpdateManyMutationInput, UserTrackedAgencyUncheckedUpdateManyWithoutSource_agencyInput>
   }
 
-  export type ScraperGenerationRunUpsertWithWhereUniqueWithoutSource_agencyInput = {
-    where: ScraperGenerationRunWhereUniqueInput
-    update: XOR<ScraperGenerationRunUpdateWithoutSource_agencyInput, ScraperGenerationRunUncheckedUpdateWithoutSource_agencyInput>
-    create: XOR<ScraperGenerationRunCreateWithoutSource_agencyInput, ScraperGenerationRunUncheckedCreateWithoutSource_agencyInput>
-  }
-
-  export type ScraperGenerationRunUpdateWithWhereUniqueWithoutSource_agencyInput = {
-    where: ScraperGenerationRunWhereUniqueInput
-    data: XOR<ScraperGenerationRunUpdateWithoutSource_agencyInput, ScraperGenerationRunUncheckedUpdateWithoutSource_agencyInput>
-  }
-
-  export type ScraperGenerationRunUpdateManyWithWhereWithoutSource_agencyInput = {
-    where: ScraperGenerationRunScalarWhereInput
-    data: XOR<ScraperGenerationRunUpdateManyMutationInput, ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyInput>
-  }
-
-  export type ScraperGenerationRunScalarWhereInput = {
-    AND?: ScraperGenerationRunScalarWhereInput | ScraperGenerationRunScalarWhereInput[]
-    OR?: ScraperGenerationRunScalarWhereInput[]
-    NOT?: ScraperGenerationRunScalarWhereInput | ScraperGenerationRunScalarWhereInput[]
-    id?: StringFilter<"ScraperGenerationRun"> | string
-    source_agency_id?: StringFilter<"ScraperGenerationRun"> | string
-    scraper_id?: StringNullableFilter<"ScraperGenerationRun"> | string | null
-    trigger?: EnumGenerationTriggerFilter<"ScraperGenerationRun"> | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFilter<"ScraperGenerationRun"> | $Enums.GenerationRunStatus
-    prompt?: StringNullableFilter<"ScraperGenerationRun"> | string | null
-    max_steps?: IntNullableFilter<"ScraperGenerationRun"> | number | null
-    staged_config?: JsonNullableFilter<"ScraperGenerationRun">
-    produced_version_id?: StringNullableFilter<"ScraperGenerationRun"> | string | null
-    error_message?: StringNullableFilter<"ScraperGenerationRun"> | string | null
-    started_at?: DateTimeNullableFilter<"ScraperGenerationRun"> | Date | string | null
-    finished_at?: DateTimeNullableFilter<"ScraperGenerationRun"> | Date | string | null
-    duration_ms?: IntNullableFilter<"ScraperGenerationRun"> | number | null
-    created_at?: DateTimeFilter<"ScraperGenerationRun"> | Date | string
-    updated_at?: DateTimeFilter<"ScraperGenerationRun"> | Date | string
-  }
-
   export type CrawlRunUpsertWithWhereUniqueWithoutSource_agencyInput = {
     where: CrawlRunWhereUniqueInput
     update: XOR<CrawlRunUpdateWithoutSource_agencyInput, CrawlRunUncheckedUpdateWithoutSource_agencyInput>
@@ -71841,7 +67637,6 @@ export namespace Prisma {
     updated_at?: Date | string
     scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
     user_tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
@@ -71869,7 +67664,6 @@ export namespace Prisma {
     updated_at?: Date | string
     scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
     user_tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -71913,7 +67707,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
     user_tracked_agencies?: UserTrackedAgencyUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
@@ -71941,7 +67734,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
     user_tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -72003,7 +67795,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
@@ -72031,7 +67822,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -72302,7 +68092,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
@@ -72330,7 +68119,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -72654,7 +68442,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     user_tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
@@ -72682,7 +68469,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     user_tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -72703,7 +68489,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     scraper: ScraperCreateNestedOneWithoutVersionsInput
-    produced_by_run?: ScraperGenerationRunCreateNestedOneWithoutProduced_versionInput
   }
 
   export type ScraperVersionUncheckedCreateWithoutActive_for_scraperInput = {
@@ -72715,7 +68500,6 @@ export namespace Prisma {
     notes?: string | null
     created_at?: Date | string
     updated_at?: Date | string
-    produced_by_run?: ScraperGenerationRunUncheckedCreateNestedOneWithoutProduced_versionInput
   }
 
   export type ScraperVersionCreateOrConnectWithoutActive_for_scraperInput = {
@@ -72816,7 +68600,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     active_for_scraper?: ScraperCreateNestedOneWithoutActive_versionInput
-    produced_by_run?: ScraperGenerationRunCreateNestedOneWithoutProduced_versionInput
   }
 
   export type ScraperVersionUncheckedCreateWithoutScraperInput = {
@@ -72828,7 +68611,6 @@ export namespace Prisma {
     created_at?: Date | string
     updated_at?: Date | string
     active_for_scraper?: ScraperUncheckedCreateNestedOneWithoutActive_versionInput
-    produced_by_run?: ScraperGenerationRunUncheckedCreateNestedOneWithoutProduced_versionInput
   }
 
   export type ScraperVersionCreateOrConnectWithoutScraperInput = {
@@ -72868,52 +68650,6 @@ export namespace Prisma {
 
   export type ScraperExecutionTraceCreateManyScraperInputEnvelope = {
     data: ScraperExecutionTraceCreateManyScraperInput | ScraperExecutionTraceCreateManyScraperInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type ScraperGenerationRunCreateWithoutScraperInput = {
-    id?: string
-    trigger?: $Enums.GenerationTrigger
-    status?: $Enums.GenerationRunStatus
-    prompt?: string | null
-    max_steps?: number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    duration_ms?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    source_agency: SourceAgencyCreateNestedOneWithoutScraper_generation_runsInput
-    produced_version?: ScraperVersionCreateNestedOneWithoutProduced_by_runInput
-    steps?: ComputerUseStepCreateNestedManyWithoutScraper_generation_runInput
-  }
-
-  export type ScraperGenerationRunUncheckedCreateWithoutScraperInput = {
-    id?: string
-    source_agency_id: string
-    trigger?: $Enums.GenerationTrigger
-    status?: $Enums.GenerationRunStatus
-    prompt?: string | null
-    max_steps?: number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: string | null
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    duration_ms?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    steps?: ComputerUseStepUncheckedCreateNestedManyWithoutScraper_generation_runInput
-  }
-
-  export type ScraperGenerationRunCreateOrConnectWithoutScraperInput = {
-    where: ScraperGenerationRunWhereUniqueInput
-    create: XOR<ScraperGenerationRunCreateWithoutScraperInput, ScraperGenerationRunUncheckedCreateWithoutScraperInput>
-  }
-
-  export type ScraperGenerationRunCreateManyScraperInputEnvelope = {
-    data: ScraperGenerationRunCreateManyScraperInput | ScraperGenerationRunCreateManyScraperInput[]
     skipDuplicates?: boolean
   }
 
@@ -73031,7 +68767,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_tracked_agencies?: UserTrackedAgencyUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
@@ -73059,7 +68794,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -73086,7 +68820,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scraper?: ScraperUpdateOneRequiredWithoutVersionsNestedInput
-    produced_by_run?: ScraperGenerationRunUpdateOneWithoutProduced_versionNestedInput
   }
 
   export type ScraperVersionUncheckedUpdateWithoutActive_for_scraperInput = {
@@ -73098,7 +68831,6 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    produced_by_run?: ScraperGenerationRunUncheckedUpdateOneWithoutProduced_versionNestedInput
   }
 
   export type CrawlRunUpsertWithWhereUniqueWithoutScraperInput = {
@@ -73177,22 +68909,6 @@ export namespace Prisma {
     updated_at?: DateTimeFilter<"ScraperExecutionTrace"> | Date | string
   }
 
-  export type ScraperGenerationRunUpsertWithWhereUniqueWithoutScraperInput = {
-    where: ScraperGenerationRunWhereUniqueInput
-    update: XOR<ScraperGenerationRunUpdateWithoutScraperInput, ScraperGenerationRunUncheckedUpdateWithoutScraperInput>
-    create: XOR<ScraperGenerationRunCreateWithoutScraperInput, ScraperGenerationRunUncheckedCreateWithoutScraperInput>
-  }
-
-  export type ScraperGenerationRunUpdateWithWhereUniqueWithoutScraperInput = {
-    where: ScraperGenerationRunWhereUniqueInput
-    data: XOR<ScraperGenerationRunUpdateWithoutScraperInput, ScraperGenerationRunUncheckedUpdateWithoutScraperInput>
-  }
-
-  export type ScraperGenerationRunUpdateManyWithWhereWithoutScraperInput = {
-    where: ScraperGenerationRunScalarWhereInput
-    data: XOR<ScraperGenerationRunUpdateManyMutationInput, ScraperGenerationRunUncheckedUpdateManyWithoutScraperInput>
-  }
-
   export type NotificationUpsertWithWhereUniqueWithoutScraperInput = {
     where: NotificationWhereUniqueInput
     update: XOR<NotificationUpdateWithoutScraperInput, NotificationUncheckedUpdateWithoutScraperInput>
@@ -73247,613 +68963,6 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"DiagnosticsPackage"> | Date | string
   }
 
-  export type SourceAgencyCreateWithoutScraper_generation_runsInput = {
-    id?: string
-    name: string
-    base_url: string
-    country?: string | null
-    city?: string | null
-    content_language?: $Enums.ContentLanguage
-    is_visible?: boolean
-    is_enabled?: boolean
-    use_ai_batching?: boolean
-    crawl_interval?: string
-    notes?: string | null
-    last_success_at?: Date | string | null
-    last_failure_at?: Date | string | null
-    last_error_message?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    block_handling_wait_timeout_ms?: number | null
-    block_handling_min_ready_body_length?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
-    user_tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutSource_agencyInput
-    crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
-    source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
-    notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
-    block_rules?: BlockRuleCreateNestedManyWithoutSource_agencyInput
-  }
-
-  export type SourceAgencyUncheckedCreateWithoutScraper_generation_runsInput = {
-    id?: string
-    name: string
-    base_url: string
-    country?: string | null
-    city?: string | null
-    content_language?: $Enums.ContentLanguage
-    is_visible?: boolean
-    is_enabled?: boolean
-    use_ai_batching?: boolean
-    crawl_interval?: string
-    notes?: string | null
-    last_success_at?: Date | string | null
-    last_failure_at?: Date | string | null
-    last_error_message?: string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    block_handling_wait_timeout_ms?: number | null
-    block_handling_min_ready_body_length?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
-    user_tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutSource_agencyInput
-    crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
-    source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
-    block_rules?: BlockRuleUncheckedCreateNestedManyWithoutSource_agencyInput
-  }
-
-  export type SourceAgencyCreateOrConnectWithoutScraper_generation_runsInput = {
-    where: SourceAgencyWhereUniqueInput
-    create: XOR<SourceAgencyCreateWithoutScraper_generation_runsInput, SourceAgencyUncheckedCreateWithoutScraper_generation_runsInput>
-  }
-
-  export type ScraperCreateWithoutScraper_generation_runsInput = {
-    id?: string
-    name: string
-    version_count?: number
-    status?: $Enums.ScraperStatus
-    use_managed_browser?: boolean
-    use_proxy_browser?: boolean
-    diagnostics_mode?: $Enums.DiagnosticsMode
-    health?: $Enums.ScraperHealth
-    success_rate?: Decimal | DecimalJsLike | number | string | null
-    avg_runtime_ms?: number | null
-    consecutive_failures?: number
-    normalize_limit?: number | null
-    crawl_job_timeout_ms?: number | null
-    detail_concurrency?: number | null
-    last_success_at?: Date | string | null
-    last_failure_at?: Date | string | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    source_agency: SourceAgencyCreateNestedOneWithoutScrapersInput
-    active_version?: ScraperVersionCreateNestedOneWithoutActive_for_scraperInput
-    crawl_runs?: CrawlRunCreateNestedManyWithoutScraperInput
-    versions?: ScraperVersionCreateNestedManyWithoutScraperInput
-    execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
-    notifications?: NotificationCreateNestedManyWithoutScraperInput
-    diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
-  }
-
-  export type ScraperUncheckedCreateWithoutScraper_generation_runsInput = {
-    id?: string
-    source_agency_id: string
-    name: string
-    active_version_id?: string | null
-    version_count?: number
-    status?: $Enums.ScraperStatus
-    use_managed_browser?: boolean
-    use_proxy_browser?: boolean
-    diagnostics_mode?: $Enums.DiagnosticsMode
-    health?: $Enums.ScraperHealth
-    success_rate?: Decimal | DecimalJsLike | number | string | null
-    avg_runtime_ms?: number | null
-    consecutive_failures?: number
-    normalize_limit?: number | null
-    crawl_job_timeout_ms?: number | null
-    detail_concurrency?: number | null
-    last_success_at?: Date | string | null
-    last_failure_at?: Date | string | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutScraperInput
-    versions?: ScraperVersionUncheckedCreateNestedManyWithoutScraperInput
-    execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
-    diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
-  }
-
-  export type ScraperCreateOrConnectWithoutScraper_generation_runsInput = {
-    where: ScraperWhereUniqueInput
-    create: XOR<ScraperCreateWithoutScraper_generation_runsInput, ScraperUncheckedCreateWithoutScraper_generation_runsInput>
-  }
-
-  export type ScraperVersionCreateWithoutProduced_by_runInput = {
-    id?: string
-    version: number
-    config: JsonNullValueInput | InputJsonValue
-    created_by: $Enums.ScraperVersionCreatedBy
-    notes?: string | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    scraper: ScraperCreateNestedOneWithoutVersionsInput
-    active_for_scraper?: ScraperCreateNestedOneWithoutActive_versionInput
-  }
-
-  export type ScraperVersionUncheckedCreateWithoutProduced_by_runInput = {
-    id?: string
-    scraper_id: string
-    version: number
-    config: JsonNullValueInput | InputJsonValue
-    created_by: $Enums.ScraperVersionCreatedBy
-    notes?: string | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    active_for_scraper?: ScraperUncheckedCreateNestedOneWithoutActive_versionInput
-  }
-
-  export type ScraperVersionCreateOrConnectWithoutProduced_by_runInput = {
-    where: ScraperVersionWhereUniqueInput
-    create: XOR<ScraperVersionCreateWithoutProduced_by_runInput, ScraperVersionUncheckedCreateWithoutProduced_by_runInput>
-  }
-
-  export type ComputerUseStepCreateWithoutScraper_generation_runInput = {
-    id?: string
-    step_index: number
-    action_type: $Enums.ComputerActionType
-    action_payload: JsonNullValueInput | InputJsonValue
-    model_reasoning?: string | null
-    created_at?: Date | string
-    screenshot_before?: DocumentCreateNestedOneWithoutComputer_use_steps_beforeInput
-    screenshot_after?: DocumentCreateNestedOneWithoutComputer_use_steps_afterInput
-  }
-
-  export type ComputerUseStepUncheckedCreateWithoutScraper_generation_runInput = {
-    id?: string
-    step_index: number
-    action_type: $Enums.ComputerActionType
-    action_payload: JsonNullValueInput | InputJsonValue
-    screenshot_before_id?: string | null
-    screenshot_after_id?: string | null
-    model_reasoning?: string | null
-    created_at?: Date | string
-  }
-
-  export type ComputerUseStepCreateOrConnectWithoutScraper_generation_runInput = {
-    where: ComputerUseStepWhereUniqueInput
-    create: XOR<ComputerUseStepCreateWithoutScraper_generation_runInput, ComputerUseStepUncheckedCreateWithoutScraper_generation_runInput>
-  }
-
-  export type ComputerUseStepCreateManyScraper_generation_runInputEnvelope = {
-    data: ComputerUseStepCreateManyScraper_generation_runInput | ComputerUseStepCreateManyScraper_generation_runInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type SourceAgencyUpsertWithoutScraper_generation_runsInput = {
-    update: XOR<SourceAgencyUpdateWithoutScraper_generation_runsInput, SourceAgencyUncheckedUpdateWithoutScraper_generation_runsInput>
-    create: XOR<SourceAgencyCreateWithoutScraper_generation_runsInput, SourceAgencyUncheckedCreateWithoutScraper_generation_runsInput>
-    where?: SourceAgencyWhereInput
-  }
-
-  export type SourceAgencyUpdateToOneWithWhereWithoutScraper_generation_runsInput = {
-    where?: SourceAgencyWhereInput
-    data: XOR<SourceAgencyUpdateWithoutScraper_generation_runsInput, SourceAgencyUncheckedUpdateWithoutScraper_generation_runsInput>
-  }
-
-  export type SourceAgencyUpdateWithoutScraper_generation_runsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    base_url?: StringFieldUpdateOperationsInput | string
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    city?: NullableStringFieldUpdateOperationsInput | string | null
-    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
-    is_visible?: BoolFieldUpdateOperationsInput | boolean
-    is_enabled?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
-    user_tracked_agencies?: UserTrackedAgencyUpdateManyWithoutSource_agencyNestedInput
-    crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
-    source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
-    notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
-    block_rules?: BlockRuleUpdateManyWithoutSource_agencyNestedInput
-  }
-
-  export type SourceAgencyUncheckedUpdateWithoutScraper_generation_runsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    base_url?: StringFieldUpdateOperationsInput | string
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    city?: NullableStringFieldUpdateOperationsInput | string | null
-    content_language?: EnumContentLanguageFieldUpdateOperationsInput | $Enums.ContentLanguage
-    is_visible?: BoolFieldUpdateOperationsInput | boolean
-    is_enabled?: BoolFieldUpdateOperationsInput | boolean
-    use_ai_batching?: BoolFieldUpdateOperationsInput | boolean
-    crawl_interval?: StringFieldUpdateOperationsInput | string
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    last_error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    block_handling_wait_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    block_handling_min_ready_body_length?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
-    user_tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutSource_agencyNestedInput
-    crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
-    source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
-    block_rules?: BlockRuleUncheckedUpdateManyWithoutSource_agencyNestedInput
-  }
-
-  export type ScraperUpsertWithoutScraper_generation_runsInput = {
-    update: XOR<ScraperUpdateWithoutScraper_generation_runsInput, ScraperUncheckedUpdateWithoutScraper_generation_runsInput>
-    create: XOR<ScraperCreateWithoutScraper_generation_runsInput, ScraperUncheckedCreateWithoutScraper_generation_runsInput>
-    where?: ScraperWhereInput
-  }
-
-  export type ScraperUpdateToOneWithWhereWithoutScraper_generation_runsInput = {
-    where?: ScraperWhereInput
-    data: XOR<ScraperUpdateWithoutScraper_generation_runsInput, ScraperUncheckedUpdateWithoutScraper_generation_runsInput>
-  }
-
-  export type ScraperUpdateWithoutScraper_generation_runsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    version_count?: IntFieldUpdateOperationsInput | number
-    status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
-    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
-    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
-    health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
-    success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    consecutive_failures?: IntFieldUpdateOperationsInput | number
-    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
-    crawl_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    detail_concurrency?: NullableIntFieldUpdateOperationsInput | number | null
-    last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    source_agency?: SourceAgencyUpdateOneRequiredWithoutScrapersNestedInput
-    active_version?: ScraperVersionUpdateOneWithoutActive_for_scraperNestedInput
-    crawl_runs?: CrawlRunUpdateManyWithoutScraperNestedInput
-    versions?: ScraperVersionUpdateManyWithoutScraperNestedInput
-    execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
-    notifications?: NotificationUpdateManyWithoutScraperNestedInput
-    diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
-  }
-
-  export type ScraperUncheckedUpdateWithoutScraper_generation_runsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    source_agency_id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    active_version_id?: NullableStringFieldUpdateOperationsInput | string | null
-    version_count?: IntFieldUpdateOperationsInput | number
-    status?: EnumScraperStatusFieldUpdateOperationsInput | $Enums.ScraperStatus
-    use_managed_browser?: BoolFieldUpdateOperationsInput | boolean
-    use_proxy_browser?: BoolFieldUpdateOperationsInput | boolean
-    diagnostics_mode?: EnumDiagnosticsModeFieldUpdateOperationsInput | $Enums.DiagnosticsMode
-    health?: EnumScraperHealthFieldUpdateOperationsInput | $Enums.ScraperHealth
-    success_rate?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    avg_runtime_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    consecutive_failures?: IntFieldUpdateOperationsInput | number
-    normalize_limit?: NullableIntFieldUpdateOperationsInput | number | null
-    crawl_job_timeout_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    detail_concurrency?: NullableIntFieldUpdateOperationsInput | number | null
-    last_success_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    last_failure_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    crawl_runs?: CrawlRunUncheckedUpdateManyWithoutScraperNestedInput
-    versions?: ScraperVersionUncheckedUpdateManyWithoutScraperNestedInput
-    execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
-    diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
-  }
-
-  export type ScraperVersionUpsertWithoutProduced_by_runInput = {
-    update: XOR<ScraperVersionUpdateWithoutProduced_by_runInput, ScraperVersionUncheckedUpdateWithoutProduced_by_runInput>
-    create: XOR<ScraperVersionCreateWithoutProduced_by_runInput, ScraperVersionUncheckedCreateWithoutProduced_by_runInput>
-    where?: ScraperVersionWhereInput
-  }
-
-  export type ScraperVersionUpdateToOneWithWhereWithoutProduced_by_runInput = {
-    where?: ScraperVersionWhereInput
-    data: XOR<ScraperVersionUpdateWithoutProduced_by_runInput, ScraperVersionUncheckedUpdateWithoutProduced_by_runInput>
-  }
-
-  export type ScraperVersionUpdateWithoutProduced_by_runInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    version?: IntFieldUpdateOperationsInput | number
-    config?: JsonNullValueInput | InputJsonValue
-    created_by?: EnumScraperVersionCreatedByFieldUpdateOperationsInput | $Enums.ScraperVersionCreatedBy
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    scraper?: ScraperUpdateOneRequiredWithoutVersionsNestedInput
-    active_for_scraper?: ScraperUpdateOneWithoutActive_versionNestedInput
-  }
-
-  export type ScraperVersionUncheckedUpdateWithoutProduced_by_runInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    scraper_id?: StringFieldUpdateOperationsInput | string
-    version?: IntFieldUpdateOperationsInput | number
-    config?: JsonNullValueInput | InputJsonValue
-    created_by?: EnumScraperVersionCreatedByFieldUpdateOperationsInput | $Enums.ScraperVersionCreatedBy
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    active_for_scraper?: ScraperUncheckedUpdateOneWithoutActive_versionNestedInput
-  }
-
-  export type ComputerUseStepUpsertWithWhereUniqueWithoutScraper_generation_runInput = {
-    where: ComputerUseStepWhereUniqueInput
-    update: XOR<ComputerUseStepUpdateWithoutScraper_generation_runInput, ComputerUseStepUncheckedUpdateWithoutScraper_generation_runInput>
-    create: XOR<ComputerUseStepCreateWithoutScraper_generation_runInput, ComputerUseStepUncheckedCreateWithoutScraper_generation_runInput>
-  }
-
-  export type ComputerUseStepUpdateWithWhereUniqueWithoutScraper_generation_runInput = {
-    where: ComputerUseStepWhereUniqueInput
-    data: XOR<ComputerUseStepUpdateWithoutScraper_generation_runInput, ComputerUseStepUncheckedUpdateWithoutScraper_generation_runInput>
-  }
-
-  export type ComputerUseStepUpdateManyWithWhereWithoutScraper_generation_runInput = {
-    where: ComputerUseStepScalarWhereInput
-    data: XOR<ComputerUseStepUpdateManyMutationInput, ComputerUseStepUncheckedUpdateManyWithoutScraper_generation_runInput>
-  }
-
-  export type ComputerUseStepScalarWhereInput = {
-    AND?: ComputerUseStepScalarWhereInput | ComputerUseStepScalarWhereInput[]
-    OR?: ComputerUseStepScalarWhereInput[]
-    NOT?: ComputerUseStepScalarWhereInput | ComputerUseStepScalarWhereInput[]
-    id?: StringFilter<"ComputerUseStep"> | string
-    scraper_generation_run_id?: StringFilter<"ComputerUseStep"> | string
-    step_index?: IntFilter<"ComputerUseStep"> | number
-    action_type?: EnumComputerActionTypeFilter<"ComputerUseStep"> | $Enums.ComputerActionType
-    action_payload?: JsonFilter<"ComputerUseStep">
-    screenshot_before_id?: StringNullableFilter<"ComputerUseStep"> | string | null
-    screenshot_after_id?: StringNullableFilter<"ComputerUseStep"> | string | null
-    model_reasoning?: StringNullableFilter<"ComputerUseStep"> | string | null
-    created_at?: DateTimeFilter<"ComputerUseStep"> | Date | string
-  }
-
-  export type ScraperGenerationRunCreateWithoutStepsInput = {
-    id?: string
-    trigger?: $Enums.GenerationTrigger
-    status?: $Enums.GenerationRunStatus
-    prompt?: string | null
-    max_steps?: number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    duration_ms?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    source_agency: SourceAgencyCreateNestedOneWithoutScraper_generation_runsInput
-    scraper?: ScraperCreateNestedOneWithoutScraper_generation_runsInput
-    produced_version?: ScraperVersionCreateNestedOneWithoutProduced_by_runInput
-  }
-
-  export type ScraperGenerationRunUncheckedCreateWithoutStepsInput = {
-    id?: string
-    source_agency_id: string
-    scraper_id?: string | null
-    trigger?: $Enums.GenerationTrigger
-    status?: $Enums.GenerationRunStatus
-    prompt?: string | null
-    max_steps?: number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: string | null
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    duration_ms?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
-  export type ScraperGenerationRunCreateOrConnectWithoutStepsInput = {
-    where: ScraperGenerationRunWhereUniqueInput
-    create: XOR<ScraperGenerationRunCreateWithoutStepsInput, ScraperGenerationRunUncheckedCreateWithoutStepsInput>
-  }
-
-  export type DocumentCreateWithoutComputer_use_steps_beforeInput = {
-    id?: string
-    user_uuid: string
-    filename: string
-    mimetype: string
-    size: number
-    url: string
-    path: string
-    type?: $Enums.DocumentType
-    created_at?: Date | string
-    computer_use_steps_after?: ComputerUseStepCreateNestedManyWithoutScreenshot_afterInput
-  }
-
-  export type DocumentUncheckedCreateWithoutComputer_use_steps_beforeInput = {
-    id?: string
-    user_uuid: string
-    filename: string
-    mimetype: string
-    size: number
-    url: string
-    path: string
-    type?: $Enums.DocumentType
-    created_at?: Date | string
-    computer_use_steps_after?: ComputerUseStepUncheckedCreateNestedManyWithoutScreenshot_afterInput
-  }
-
-  export type DocumentCreateOrConnectWithoutComputer_use_steps_beforeInput = {
-    where: DocumentWhereUniqueInput
-    create: XOR<DocumentCreateWithoutComputer_use_steps_beforeInput, DocumentUncheckedCreateWithoutComputer_use_steps_beforeInput>
-  }
-
-  export type DocumentCreateWithoutComputer_use_steps_afterInput = {
-    id?: string
-    user_uuid: string
-    filename: string
-    mimetype: string
-    size: number
-    url: string
-    path: string
-    type?: $Enums.DocumentType
-    created_at?: Date | string
-    computer_use_steps_before?: ComputerUseStepCreateNestedManyWithoutScreenshot_beforeInput
-  }
-
-  export type DocumentUncheckedCreateWithoutComputer_use_steps_afterInput = {
-    id?: string
-    user_uuid: string
-    filename: string
-    mimetype: string
-    size: number
-    url: string
-    path: string
-    type?: $Enums.DocumentType
-    created_at?: Date | string
-    computer_use_steps_before?: ComputerUseStepUncheckedCreateNestedManyWithoutScreenshot_beforeInput
-  }
-
-  export type DocumentCreateOrConnectWithoutComputer_use_steps_afterInput = {
-    where: DocumentWhereUniqueInput
-    create: XOR<DocumentCreateWithoutComputer_use_steps_afterInput, DocumentUncheckedCreateWithoutComputer_use_steps_afterInput>
-  }
-
-  export type ScraperGenerationRunUpsertWithoutStepsInput = {
-    update: XOR<ScraperGenerationRunUpdateWithoutStepsInput, ScraperGenerationRunUncheckedUpdateWithoutStepsInput>
-    create: XOR<ScraperGenerationRunCreateWithoutStepsInput, ScraperGenerationRunUncheckedCreateWithoutStepsInput>
-    where?: ScraperGenerationRunWhereInput
-  }
-
-  export type ScraperGenerationRunUpdateToOneWithWhereWithoutStepsInput = {
-    where?: ScraperGenerationRunWhereInput
-    data: XOR<ScraperGenerationRunUpdateWithoutStepsInput, ScraperGenerationRunUncheckedUpdateWithoutStepsInput>
-  }
-
-  export type ScraperGenerationRunUpdateWithoutStepsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    source_agency?: SourceAgencyUpdateOneRequiredWithoutScraper_generation_runsNestedInput
-    scraper?: ScraperUpdateOneWithoutScraper_generation_runsNestedInput
-    produced_version?: ScraperVersionUpdateOneWithoutProduced_by_runNestedInput
-  }
-
-  export type ScraperGenerationRunUncheckedUpdateWithoutStepsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    source_agency_id?: StringFieldUpdateOperationsInput | string
-    scraper_id?: NullableStringFieldUpdateOperationsInput | string | null
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type DocumentUpsertWithoutComputer_use_steps_beforeInput = {
-    update: XOR<DocumentUpdateWithoutComputer_use_steps_beforeInput, DocumentUncheckedUpdateWithoutComputer_use_steps_beforeInput>
-    create: XOR<DocumentCreateWithoutComputer_use_steps_beforeInput, DocumentUncheckedCreateWithoutComputer_use_steps_beforeInput>
-    where?: DocumentWhereInput
-  }
-
-  export type DocumentUpdateToOneWithWhereWithoutComputer_use_steps_beforeInput = {
-    where?: DocumentWhereInput
-    data: XOR<DocumentUpdateWithoutComputer_use_steps_beforeInput, DocumentUncheckedUpdateWithoutComputer_use_steps_beforeInput>
-  }
-
-  export type DocumentUpdateWithoutComputer_use_steps_beforeInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    user_uuid?: StringFieldUpdateOperationsInput | string
-    filename?: StringFieldUpdateOperationsInput | string
-    mimetype?: StringFieldUpdateOperationsInput | string
-    size?: IntFieldUpdateOperationsInput | number
-    url?: StringFieldUpdateOperationsInput | string
-    path?: StringFieldUpdateOperationsInput | string
-    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    computer_use_steps_after?: ComputerUseStepUpdateManyWithoutScreenshot_afterNestedInput
-  }
-
-  export type DocumentUncheckedUpdateWithoutComputer_use_steps_beforeInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    user_uuid?: StringFieldUpdateOperationsInput | string
-    filename?: StringFieldUpdateOperationsInput | string
-    mimetype?: StringFieldUpdateOperationsInput | string
-    size?: IntFieldUpdateOperationsInput | number
-    url?: StringFieldUpdateOperationsInput | string
-    path?: StringFieldUpdateOperationsInput | string
-    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    computer_use_steps_after?: ComputerUseStepUncheckedUpdateManyWithoutScreenshot_afterNestedInput
-  }
-
-  export type DocumentUpsertWithoutComputer_use_steps_afterInput = {
-    update: XOR<DocumentUpdateWithoutComputer_use_steps_afterInput, DocumentUncheckedUpdateWithoutComputer_use_steps_afterInput>
-    create: XOR<DocumentCreateWithoutComputer_use_steps_afterInput, DocumentUncheckedCreateWithoutComputer_use_steps_afterInput>
-    where?: DocumentWhereInput
-  }
-
-  export type DocumentUpdateToOneWithWhereWithoutComputer_use_steps_afterInput = {
-    where?: DocumentWhereInput
-    data: XOR<DocumentUpdateWithoutComputer_use_steps_afterInput, DocumentUncheckedUpdateWithoutComputer_use_steps_afterInput>
-  }
-
-  export type DocumentUpdateWithoutComputer_use_steps_afterInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    user_uuid?: StringFieldUpdateOperationsInput | string
-    filename?: StringFieldUpdateOperationsInput | string
-    mimetype?: StringFieldUpdateOperationsInput | string
-    size?: IntFieldUpdateOperationsInput | number
-    url?: StringFieldUpdateOperationsInput | string
-    path?: StringFieldUpdateOperationsInput | string
-    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    computer_use_steps_before?: ComputerUseStepUpdateManyWithoutScreenshot_beforeNestedInput
-  }
-
-  export type DocumentUncheckedUpdateWithoutComputer_use_steps_afterInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    user_uuid?: StringFieldUpdateOperationsInput | string
-    filename?: StringFieldUpdateOperationsInput | string
-    mimetype?: StringFieldUpdateOperationsInput | string
-    size?: IntFieldUpdateOperationsInput | number
-    url?: StringFieldUpdateOperationsInput | string
-    path?: StringFieldUpdateOperationsInput | string
-    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    computer_use_steps_before?: ComputerUseStepUncheckedUpdateManyWithoutScreenshot_beforeNestedInput
-  }
-
   export type ScraperCreateWithoutVersionsInput = {
     id?: string
     name: string
@@ -73877,7 +68986,6 @@ export namespace Prisma {
     active_version?: ScraperVersionCreateNestedOneWithoutActive_for_scraperInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
@@ -73905,7 +69013,6 @@ export namespace Prisma {
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
@@ -73938,7 +69045,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunCreateNestedManyWithoutScraperInput
     versions?: ScraperVersionCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
@@ -73966,7 +69072,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutScraperInput
     versions?: ScraperVersionUncheckedCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
@@ -73974,47 +69079,6 @@ export namespace Prisma {
   export type ScraperCreateOrConnectWithoutActive_versionInput = {
     where: ScraperWhereUniqueInput
     create: XOR<ScraperCreateWithoutActive_versionInput, ScraperUncheckedCreateWithoutActive_versionInput>
-  }
-
-  export type ScraperGenerationRunCreateWithoutProduced_versionInput = {
-    id?: string
-    trigger?: $Enums.GenerationTrigger
-    status?: $Enums.GenerationRunStatus
-    prompt?: string | null
-    max_steps?: number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    duration_ms?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    source_agency: SourceAgencyCreateNestedOneWithoutScraper_generation_runsInput
-    scraper?: ScraperCreateNestedOneWithoutScraper_generation_runsInput
-    steps?: ComputerUseStepCreateNestedManyWithoutScraper_generation_runInput
-  }
-
-  export type ScraperGenerationRunUncheckedCreateWithoutProduced_versionInput = {
-    id?: string
-    source_agency_id: string
-    scraper_id?: string | null
-    trigger?: $Enums.GenerationTrigger
-    status?: $Enums.GenerationRunStatus
-    prompt?: string | null
-    max_steps?: number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    duration_ms?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-    steps?: ComputerUseStepUncheckedCreateNestedManyWithoutScraper_generation_runInput
-  }
-
-  export type ScraperGenerationRunCreateOrConnectWithoutProduced_versionInput = {
-    where: ScraperGenerationRunWhereUniqueInput
-    create: XOR<ScraperGenerationRunCreateWithoutProduced_versionInput, ScraperGenerationRunUncheckedCreateWithoutProduced_versionInput>
   }
 
   export type ScraperUpsertWithoutVersionsInput = {
@@ -74051,7 +69115,6 @@ export namespace Prisma {
     active_version?: ScraperVersionUpdateOneWithoutActive_for_scraperNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
@@ -74079,7 +69142,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
@@ -74118,7 +69180,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUpdateManyWithoutScraperNestedInput
     versions?: ScraperVersionUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
@@ -74146,56 +69207,8 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutScraperNestedInput
     versions?: ScraperVersionUncheckedUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
-  }
-
-  export type ScraperGenerationRunUpsertWithoutProduced_versionInput = {
-    update: XOR<ScraperGenerationRunUpdateWithoutProduced_versionInput, ScraperGenerationRunUncheckedUpdateWithoutProduced_versionInput>
-    create: XOR<ScraperGenerationRunCreateWithoutProduced_versionInput, ScraperGenerationRunUncheckedCreateWithoutProduced_versionInput>
-    where?: ScraperGenerationRunWhereInput
-  }
-
-  export type ScraperGenerationRunUpdateToOneWithWhereWithoutProduced_versionInput = {
-    where?: ScraperGenerationRunWhereInput
-    data: XOR<ScraperGenerationRunUpdateWithoutProduced_versionInput, ScraperGenerationRunUncheckedUpdateWithoutProduced_versionInput>
-  }
-
-  export type ScraperGenerationRunUpdateWithoutProduced_versionInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    source_agency?: SourceAgencyUpdateOneRequiredWithoutScraper_generation_runsNestedInput
-    scraper?: ScraperUpdateOneWithoutScraper_generation_runsNestedInput
-    steps?: ComputerUseStepUpdateManyWithoutScraper_generation_runNestedInput
-  }
-
-  export type ScraperGenerationRunUncheckedUpdateWithoutProduced_versionInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    source_agency_id?: StringFieldUpdateOperationsInput | string
-    scraper_id?: NullableStringFieldUpdateOperationsInput | string | null
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    steps?: ComputerUseStepUncheckedUpdateManyWithoutScraper_generation_runNestedInput
   }
 
   export type ScraperCreateWithoutExecution_tracesInput = {
@@ -74221,7 +69234,6 @@ export namespace Prisma {
     active_version?: ScraperVersionCreateNestedOneWithoutActive_for_scraperInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutScraperInput
     versions?: ScraperVersionCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
@@ -74249,7 +69261,6 @@ export namespace Prisma {
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutScraperInput
     versions?: ScraperVersionUncheckedCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
@@ -74372,7 +69383,6 @@ export namespace Prisma {
     active_version?: ScraperVersionUpdateOneWithoutActive_for_scraperNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutScraperNestedInput
     versions?: ScraperVersionUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
@@ -74400,7 +69410,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutScraperNestedInput
     versions?: ScraperVersionUncheckedUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
@@ -74512,7 +69521,6 @@ export namespace Prisma {
     updated_at?: Date | string
     scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
     user_tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
     block_rules?: BlockRuleCreateNestedManyWithoutSource_agencyInput
@@ -74540,7 +69548,6 @@ export namespace Prisma {
     updated_at?: Date | string
     scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
     user_tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
     block_rules?: BlockRuleUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -74627,7 +69634,6 @@ export namespace Prisma {
     active_version?: ScraperVersionCreateNestedOneWithoutActive_for_scraperInput
     versions?: ScraperVersionCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
@@ -74655,7 +69661,6 @@ export namespace Prisma {
     updated_at?: Date | string
     versions?: ScraperVersionUncheckedCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
@@ -75025,7 +70030,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
     user_tracked_agencies?: UserTrackedAgencyUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
     block_rules?: BlockRuleUpdateManyWithoutSource_agencyNestedInput
@@ -75053,7 +70057,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
     user_tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
     block_rules?: BlockRuleUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -75152,7 +70155,6 @@ export namespace Prisma {
     active_version?: ScraperVersionUpdateOneWithoutActive_for_scraperNestedInput
     versions?: ScraperVersionUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
@@ -75180,7 +70182,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     versions?: ScraperVersionUncheckedUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
@@ -75504,7 +70505,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunCreateNestedManyWithoutScraperInput
     versions?: ScraperVersionCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     notifications?: NotificationCreateNestedManyWithoutScraperInput
   }
 
@@ -75532,7 +70532,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutScraperInput
     versions?: ScraperVersionUncheckedCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutScraperInput
   }
 
@@ -75689,7 +70688,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUpdateManyWithoutScraperNestedInput
     versions?: ScraperVersionUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
   }
 
@@ -75717,7 +70715,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutScraperNestedInput
     versions?: ScraperVersionUncheckedUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
   }
 
@@ -76181,7 +71178,6 @@ export namespace Prisma {
     updated_at?: Date | string
     scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
     user_tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyCreateNestedManyWithoutSource_agencyInput
     block_rules?: BlockRuleCreateNestedManyWithoutSource_agencyInput
@@ -76209,7 +71205,6 @@ export namespace Prisma {
     updated_at?: Date | string
     scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
     user_tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
     source_properties?: SourcePropertyUncheckedCreateNestedManyWithoutSource_agencyInput
     block_rules?: BlockRuleUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -76244,7 +71239,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunCreateNestedManyWithoutScraperInput
     versions?: ScraperVersionCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageCreateNestedManyWithoutScraperInput
   }
 
@@ -76272,7 +71266,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutScraperInput
     versions?: ScraperVersionUncheckedCreateNestedManyWithoutScraperInput
     execution_traces?: ScraperExecutionTraceUncheckedCreateNestedManyWithoutScraperInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutScraperInput
     diagnostics_packages?: DiagnosticsPackageUncheckedCreateNestedManyWithoutScraperInput
   }
 
@@ -76393,7 +71386,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
     user_tracked_agencies?: UserTrackedAgencyUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUpdateManyWithoutSource_agencyNestedInput
     block_rules?: BlockRuleUpdateManyWithoutSource_agencyNestedInput
@@ -76421,7 +71413,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
     user_tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     source_properties?: SourcePropertyUncheckedUpdateManyWithoutSource_agencyNestedInput
     block_rules?: BlockRuleUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -76462,7 +71453,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUpdateManyWithoutScraperNestedInput
     versions?: ScraperVersionUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
 
@@ -76490,7 +71480,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutScraperNestedInput
     versions?: ScraperVersionUncheckedUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
 
@@ -76853,7 +71842,6 @@ export namespace Prisma {
     updated_at?: Date | string
     scrapers?: ScraperCreateNestedManyWithoutSource_agencyInput
     user_tracked_agencies?: UserTrackedAgencyCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationCreateNestedManyWithoutSource_agencyInput
     block_rules?: BlockRuleCreateNestedManyWithoutSource_agencyInput
@@ -76881,7 +71869,6 @@ export namespace Prisma {
     updated_at?: Date | string
     scrapers?: ScraperUncheckedCreateNestedManyWithoutSource_agencyInput
     user_tracked_agencies?: UserTrackedAgencyUncheckedCreateNestedManyWithoutSource_agencyInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedCreateNestedManyWithoutSource_agencyInput
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutSource_agencyInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutSource_agencyInput
     block_rules?: BlockRuleUncheckedCreateNestedManyWithoutSource_agencyInput
@@ -76955,7 +71942,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUpdateManyWithoutSource_agencyNestedInput
     user_tracked_agencies?: UserTrackedAgencyUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUpdateManyWithoutSource_agencyNestedInput
     block_rules?: BlockRuleUpdateManyWithoutSource_agencyNestedInput
@@ -76983,7 +71969,6 @@ export namespace Prisma {
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     scrapers?: ScraperUncheckedUpdateManyWithoutSource_agencyNestedInput
     user_tracked_agencies?: UserTrackedAgencyUncheckedUpdateManyWithoutSource_agencyNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutSource_agencyNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutSource_agencyNestedInput
     block_rules?: BlockRuleUncheckedUpdateManyWithoutSource_agencyNestedInput
@@ -80578,102 +75563,6 @@ export namespace Prisma {
     cost_logs?: CostLogUncheckedUpdateManyWithoutUser_propertyNestedInput
   }
 
-  export type ComputerUseStepCreateWithoutScreenshot_beforeInput = {
-    id?: string
-    step_index: number
-    action_type: $Enums.ComputerActionType
-    action_payload: JsonNullValueInput | InputJsonValue
-    model_reasoning?: string | null
-    created_at?: Date | string
-    scraper_generation_run: ScraperGenerationRunCreateNestedOneWithoutStepsInput
-    screenshot_after?: DocumentCreateNestedOneWithoutComputer_use_steps_afterInput
-  }
-
-  export type ComputerUseStepUncheckedCreateWithoutScreenshot_beforeInput = {
-    id?: string
-    scraper_generation_run_id: string
-    step_index: number
-    action_type: $Enums.ComputerActionType
-    action_payload: JsonNullValueInput | InputJsonValue
-    screenshot_after_id?: string | null
-    model_reasoning?: string | null
-    created_at?: Date | string
-  }
-
-  export type ComputerUseStepCreateOrConnectWithoutScreenshot_beforeInput = {
-    where: ComputerUseStepWhereUniqueInput
-    create: XOR<ComputerUseStepCreateWithoutScreenshot_beforeInput, ComputerUseStepUncheckedCreateWithoutScreenshot_beforeInput>
-  }
-
-  export type ComputerUseStepCreateManyScreenshot_beforeInputEnvelope = {
-    data: ComputerUseStepCreateManyScreenshot_beforeInput | ComputerUseStepCreateManyScreenshot_beforeInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type ComputerUseStepCreateWithoutScreenshot_afterInput = {
-    id?: string
-    step_index: number
-    action_type: $Enums.ComputerActionType
-    action_payload: JsonNullValueInput | InputJsonValue
-    model_reasoning?: string | null
-    created_at?: Date | string
-    scraper_generation_run: ScraperGenerationRunCreateNestedOneWithoutStepsInput
-    screenshot_before?: DocumentCreateNestedOneWithoutComputer_use_steps_beforeInput
-  }
-
-  export type ComputerUseStepUncheckedCreateWithoutScreenshot_afterInput = {
-    id?: string
-    scraper_generation_run_id: string
-    step_index: number
-    action_type: $Enums.ComputerActionType
-    action_payload: JsonNullValueInput | InputJsonValue
-    screenshot_before_id?: string | null
-    model_reasoning?: string | null
-    created_at?: Date | string
-  }
-
-  export type ComputerUseStepCreateOrConnectWithoutScreenshot_afterInput = {
-    where: ComputerUseStepWhereUniqueInput
-    create: XOR<ComputerUseStepCreateWithoutScreenshot_afterInput, ComputerUseStepUncheckedCreateWithoutScreenshot_afterInput>
-  }
-
-  export type ComputerUseStepCreateManyScreenshot_afterInputEnvelope = {
-    data: ComputerUseStepCreateManyScreenshot_afterInput | ComputerUseStepCreateManyScreenshot_afterInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type ComputerUseStepUpsertWithWhereUniqueWithoutScreenshot_beforeInput = {
-    where: ComputerUseStepWhereUniqueInput
-    update: XOR<ComputerUseStepUpdateWithoutScreenshot_beforeInput, ComputerUseStepUncheckedUpdateWithoutScreenshot_beforeInput>
-    create: XOR<ComputerUseStepCreateWithoutScreenshot_beforeInput, ComputerUseStepUncheckedCreateWithoutScreenshot_beforeInput>
-  }
-
-  export type ComputerUseStepUpdateWithWhereUniqueWithoutScreenshot_beforeInput = {
-    where: ComputerUseStepWhereUniqueInput
-    data: XOR<ComputerUseStepUpdateWithoutScreenshot_beforeInput, ComputerUseStepUncheckedUpdateWithoutScreenshot_beforeInput>
-  }
-
-  export type ComputerUseStepUpdateManyWithWhereWithoutScreenshot_beforeInput = {
-    where: ComputerUseStepScalarWhereInput
-    data: XOR<ComputerUseStepUpdateManyMutationInput, ComputerUseStepUncheckedUpdateManyWithoutScreenshot_beforeInput>
-  }
-
-  export type ComputerUseStepUpsertWithWhereUniqueWithoutScreenshot_afterInput = {
-    where: ComputerUseStepWhereUniqueInput
-    update: XOR<ComputerUseStepUpdateWithoutScreenshot_afterInput, ComputerUseStepUncheckedUpdateWithoutScreenshot_afterInput>
-    create: XOR<ComputerUseStepCreateWithoutScreenshot_afterInput, ComputerUseStepUncheckedCreateWithoutScreenshot_afterInput>
-  }
-
-  export type ComputerUseStepUpdateWithWhereUniqueWithoutScreenshot_afterInput = {
-    where: ComputerUseStepWhereUniqueInput
-    data: XOR<ComputerUseStepUpdateWithoutScreenshot_afterInput, ComputerUseStepUncheckedUpdateWithoutScreenshot_afterInput>
-  }
-
-  export type ComputerUseStepUpdateManyWithWhereWithoutScreenshot_afterInput = {
-    where: ComputerUseStepScalarWhereInput
-    data: XOR<ComputerUseStepUpdateManyMutationInput, ComputerUseStepUncheckedUpdateManyWithoutScreenshot_afterInput>
-  }
-
   export type ActivityLogChangeCreateWithoutActivity_logInput = {
     id?: string
     entity_type: string
@@ -81721,23 +76610,6 @@ export namespace Prisma {
     updated_at?: Date | string
   }
 
-  export type ScraperGenerationRunCreateManySource_agencyInput = {
-    id?: string
-    scraper_id?: string | null
-    trigger?: $Enums.GenerationTrigger
-    status?: $Enums.GenerationRunStatus
-    prompt?: string | null
-    max_steps?: number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: string | null
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    duration_ms?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
   export type CrawlRunCreateManySource_agencyInput = {
     id?: string
     scraper_id?: string | null
@@ -81840,7 +76712,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUpdateManyWithoutScraperNestedInput
     versions?: ScraperVersionUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUpdateManyWithoutScraperNestedInput
   }
@@ -81868,7 +76739,6 @@ export namespace Prisma {
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutScraperNestedInput
     versions?: ScraperVersionUncheckedUpdateManyWithoutScraperNestedInput
     execution_traces?: ScraperExecutionTraceUncheckedUpdateManyWithoutScraperNestedInput
-    scraper_generation_runs?: ScraperGenerationRunUncheckedUpdateManyWithoutScraperNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutScraperNestedInput
     diagnostics_packages?: DiagnosticsPackageUncheckedUpdateManyWithoutScraperNestedInput
   }
@@ -81959,59 +76829,6 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ScraperGenerationRunUpdateWithoutSource_agencyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    scraper?: ScraperUpdateOneWithoutScraper_generation_runsNestedInput
-    produced_version?: ScraperVersionUpdateOneWithoutProduced_by_runNestedInput
-    steps?: ComputerUseStepUpdateManyWithoutScraper_generation_runNestedInput
-  }
-
-  export type ScraperGenerationRunUncheckedUpdateWithoutSource_agencyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    scraper_id?: NullableStringFieldUpdateOperationsInput | string | null
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    steps?: ComputerUseStepUncheckedUpdateManyWithoutScraper_generation_runNestedInput
-  }
-
-  export type ScraperGenerationRunUncheckedUpdateManyWithoutSource_agencyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    scraper_id?: NullableStringFieldUpdateOperationsInput | string | null
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -82532,23 +77349,6 @@ export namespace Prisma {
     updated_at?: Date | string
   }
 
-  export type ScraperGenerationRunCreateManyScraperInput = {
-    id?: string
-    source_agency_id: string
-    trigger?: $Enums.GenerationTrigger
-    status?: $Enums.GenerationRunStatus
-    prompt?: string | null
-    max_steps?: number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: string | null
-    error_message?: string | null
-    started_at?: Date | string | null
-    finished_at?: Date | string | null
-    duration_ms?: number | null
-    created_at?: Date | string
-    updated_at?: Date | string
-  }
-
   export type NotificationCreateManyScraperInput = {
     id?: string
     type: $Enums.NotificationType
@@ -82691,7 +77491,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     active_for_scraper?: ScraperUpdateOneWithoutActive_versionNestedInput
-    produced_by_run?: ScraperGenerationRunUpdateOneWithoutProduced_versionNestedInput
   }
 
   export type ScraperVersionUncheckedUpdateWithoutScraperInput = {
@@ -82703,7 +77502,6 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     active_for_scraper?: ScraperUncheckedUpdateOneWithoutActive_versionNestedInput
-    produced_by_run?: ScraperGenerationRunUncheckedUpdateOneWithoutProduced_versionNestedInput
   }
 
   export type ScraperVersionUncheckedUpdateManyWithoutScraperInput = {
@@ -82742,59 +77540,6 @@ export namespace Prisma {
     steps?: JsonNullValueInput | InputJsonValue
     success?: BoolFieldUpdateOperationsInput | boolean
     error_summary?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ScraperGenerationRunUpdateWithoutScraperInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    source_agency?: SourceAgencyUpdateOneRequiredWithoutScraper_generation_runsNestedInput
-    produced_version?: ScraperVersionUpdateOneWithoutProduced_by_runNestedInput
-    steps?: ComputerUseStepUpdateManyWithoutScraper_generation_runNestedInput
-  }
-
-  export type ScraperGenerationRunUncheckedUpdateWithoutScraperInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    source_agency_id?: StringFieldUpdateOperationsInput | string
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    steps?: ComputerUseStepUncheckedUpdateManyWithoutScraper_generation_runNestedInput
-  }
-
-  export type ScraperGenerationRunUncheckedUpdateManyWithoutScraperInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    source_agency_id?: StringFieldUpdateOperationsInput | string
-    trigger?: EnumGenerationTriggerFieldUpdateOperationsInput | $Enums.GenerationTrigger
-    status?: EnumGenerationRunStatusFieldUpdateOperationsInput | $Enums.GenerationRunStatus
-    prompt?: NullableStringFieldUpdateOperationsInput | string | null
-    max_steps?: NullableIntFieldUpdateOperationsInput | number | null
-    staged_config?: NullableJsonNullValueInput | InputJsonValue
-    produced_version_id?: NullableStringFieldUpdateOperationsInput | string | null
-    error_message?: NullableStringFieldUpdateOperationsInput | string | null
-    started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    finished_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    duration_ms?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -82888,50 +77633,6 @@ export namespace Prisma {
     duration_ms?: IntFieldUpdateOperationsInput | number
     failure_reason?: NullableStringFieldUpdateOperationsInput | string | null
     exception?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ComputerUseStepCreateManyScraper_generation_runInput = {
-    id?: string
-    step_index: number
-    action_type: $Enums.ComputerActionType
-    action_payload: JsonNullValueInput | InputJsonValue
-    screenshot_before_id?: string | null
-    screenshot_after_id?: string | null
-    model_reasoning?: string | null
-    created_at?: Date | string
-  }
-
-  export type ComputerUseStepUpdateWithoutScraper_generation_runInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    step_index?: IntFieldUpdateOperationsInput | number
-    action_type?: EnumComputerActionTypeFieldUpdateOperationsInput | $Enums.ComputerActionType
-    action_payload?: JsonNullValueInput | InputJsonValue
-    model_reasoning?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    screenshot_before?: DocumentUpdateOneWithoutComputer_use_steps_beforeNestedInput
-    screenshot_after?: DocumentUpdateOneWithoutComputer_use_steps_afterNestedInput
-  }
-
-  export type ComputerUseStepUncheckedUpdateWithoutScraper_generation_runInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    step_index?: IntFieldUpdateOperationsInput | number
-    action_type?: EnumComputerActionTypeFieldUpdateOperationsInput | $Enums.ComputerActionType
-    action_payload?: JsonNullValueInput | InputJsonValue
-    screenshot_before_id?: NullableStringFieldUpdateOperationsInput | string | null
-    screenshot_after_id?: NullableStringFieldUpdateOperationsInput | string | null
-    model_reasoning?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ComputerUseStepUncheckedUpdateManyWithoutScraper_generation_runInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    step_index?: IntFieldUpdateOperationsInput | number
-    action_type?: EnumComputerActionTypeFieldUpdateOperationsInput | $Enums.ComputerActionType
-    action_payload?: JsonNullValueInput | InputJsonValue
-    screenshot_before_id?: NullableStringFieldUpdateOperationsInput | string | null
-    screenshot_after_id?: NullableStringFieldUpdateOperationsInput | string | null
-    model_reasoning?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -84254,94 +78955,6 @@ export namespace Prisma {
     user_property_id?: NullableStringFieldUpdateOperationsInput | string | null
     user_tracked_agency_id?: NullableStringFieldUpdateOperationsInput | string | null
     metadata?: NullableJsonNullValueInput | InputJsonValue
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ComputerUseStepCreateManyScreenshot_beforeInput = {
-    id?: string
-    scraper_generation_run_id: string
-    step_index: number
-    action_type: $Enums.ComputerActionType
-    action_payload: JsonNullValueInput | InputJsonValue
-    screenshot_after_id?: string | null
-    model_reasoning?: string | null
-    created_at?: Date | string
-  }
-
-  export type ComputerUseStepCreateManyScreenshot_afterInput = {
-    id?: string
-    scraper_generation_run_id: string
-    step_index: number
-    action_type: $Enums.ComputerActionType
-    action_payload: JsonNullValueInput | InputJsonValue
-    screenshot_before_id?: string | null
-    model_reasoning?: string | null
-    created_at?: Date | string
-  }
-
-  export type ComputerUseStepUpdateWithoutScreenshot_beforeInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    step_index?: IntFieldUpdateOperationsInput | number
-    action_type?: EnumComputerActionTypeFieldUpdateOperationsInput | $Enums.ComputerActionType
-    action_payload?: JsonNullValueInput | InputJsonValue
-    model_reasoning?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    scraper_generation_run?: ScraperGenerationRunUpdateOneRequiredWithoutStepsNestedInput
-    screenshot_after?: DocumentUpdateOneWithoutComputer_use_steps_afterNestedInput
-  }
-
-  export type ComputerUseStepUncheckedUpdateWithoutScreenshot_beforeInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    scraper_generation_run_id?: StringFieldUpdateOperationsInput | string
-    step_index?: IntFieldUpdateOperationsInput | number
-    action_type?: EnumComputerActionTypeFieldUpdateOperationsInput | $Enums.ComputerActionType
-    action_payload?: JsonNullValueInput | InputJsonValue
-    screenshot_after_id?: NullableStringFieldUpdateOperationsInput | string | null
-    model_reasoning?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ComputerUseStepUncheckedUpdateManyWithoutScreenshot_beforeInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    scraper_generation_run_id?: StringFieldUpdateOperationsInput | string
-    step_index?: IntFieldUpdateOperationsInput | number
-    action_type?: EnumComputerActionTypeFieldUpdateOperationsInput | $Enums.ComputerActionType
-    action_payload?: JsonNullValueInput | InputJsonValue
-    screenshot_after_id?: NullableStringFieldUpdateOperationsInput | string | null
-    model_reasoning?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ComputerUseStepUpdateWithoutScreenshot_afterInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    step_index?: IntFieldUpdateOperationsInput | number
-    action_type?: EnumComputerActionTypeFieldUpdateOperationsInput | $Enums.ComputerActionType
-    action_payload?: JsonNullValueInput | InputJsonValue
-    model_reasoning?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    scraper_generation_run?: ScraperGenerationRunUpdateOneRequiredWithoutStepsNestedInput
-    screenshot_before?: DocumentUpdateOneWithoutComputer_use_steps_beforeNestedInput
-  }
-
-  export type ComputerUseStepUncheckedUpdateWithoutScreenshot_afterInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    scraper_generation_run_id?: StringFieldUpdateOperationsInput | string
-    step_index?: IntFieldUpdateOperationsInput | number
-    action_type?: EnumComputerActionTypeFieldUpdateOperationsInput | $Enums.ComputerActionType
-    action_payload?: JsonNullValueInput | InputJsonValue
-    screenshot_before_id?: NullableStringFieldUpdateOperationsInput | string | null
-    model_reasoning?: NullableStringFieldUpdateOperationsInput | string | null
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ComputerUseStepUncheckedUpdateManyWithoutScreenshot_afterInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    scraper_generation_run_id?: StringFieldUpdateOperationsInput | string
-    step_index?: IntFieldUpdateOperationsInput | number
-    action_type?: EnumComputerActionTypeFieldUpdateOperationsInput | $Enums.ComputerActionType
-    action_payload?: JsonNullValueInput | InputJsonValue
-    screenshot_before_id?: NullableStringFieldUpdateOperationsInput | string | null
-    model_reasoning?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

@@ -48,16 +48,6 @@ export const ApiRoutes = {
             bulkRun: "/admin/scrapers/bulk-run",
             bulkStop: "/admin/scrapers/bulk-stop",
         },
-        generationRuns: {
-            prefix: "/admin/generation-runs",
-            list: "/admin/generation-runs",
-            detail: (id: string) => `/admin/generation-runs/${id}`,
-            approve: (id: string) => `/admin/generation-runs/${id}/approve`,
-            reject: (id: string) => `/admin/generation-runs/${id}/reject`,
-            cancel: (id: string) => `/admin/generation-runs/${id}/cancel`,
-            retry: (id: string) => `/admin/generation-runs/${id}/retry`,
-            delete: (id: string) => `/admin/generation-runs/${id}`,
-        },
         crawlRuns: {
             prefix: "/admin/crawl-runs",
             list: "/admin/crawl-runs",
