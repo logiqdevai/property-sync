@@ -348,11 +348,22 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       await this.estateWebIntegrationResolverService.resolveAdLanguages(
         userIntegrationId,
       );
+    // An unpublish must not touch the listing's ad content. Rebuilding ads from the
+    // user property (title/description in the configured ad languages only) blanks
+    // every language outside `estateweb_ad_languages` (e.g. EN/IT) and overwrites the
+    // rest with the source-language text -- so send back exactly what is already there.
+    const existingAds = await this.resolveExistingAds(
+      userIntegrationId,
+      integrationPropertyId,
+      userProperty.id,
+    );
     const payload = this.buildPayload(
       [],
       adLanguages,
       userProperty,
       Number(integrationPropertyId),
+      false,
+      existingAds.length > 0 ? this.adMapsFromAds(existingAds) : undefined,
     ) as EstateWebUpdatePropertyPayload;
 
     await this.estateWebPropertyService.updateProperty(
@@ -361,17 +372,78 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       payload,
     );
 
-    // Intentionally do NOT persist `sites: []` here. This unpublish is a transient,
-    // crawler-driven reaction to the source listing disappearing -- not a user decision
-    // to permanently stop publishing. Leaving the stored site preference untouched lets
-    // resolvePushSitesForSync() restore the original sites automatically on the next
-    // pushUpdate() once the listing reappears, instead of the property staying
-    // unpublished on every site forever (see incident notes in api/RULES.md).
+    // Intentionally do NOT persist `sites: []` or the (unchanged) ads here. This
+    // unpublish is a transient, crawler-driven reaction to the source listing
+    // disappearing -- not a user decision to permanently stop publishing. Leaving the
+    // stored site preference untouched lets resolvePushSitesForSync() restore the
+    // original sites automatically on the next pushUpdate() once the listing
+    // reappears, instead of the property staying unpublished on every site forever
+    // (see incident notes in api/RULES.md).
     await this.persistIntegrationPropertySites({
       userIntegrationId,
       userPropertyId: userProperty.id,
-      ads: [],
     });
+  }
+
+  // Ads currently on the CRM listing; falls back to the copy we stored at the last
+  // push when the CRM can't be read. Empty when neither is known.
+  private async resolveExistingAds(
+    userIntegrationId: string,
+    integrationPropertyId: string,
+    userPropertyId: string,
+  ): Promise<EstateWebPropertyAd[]> {
+    const hasContent = (ad: EstateWebPropertyAd) =>
+      Boolean(ad.title?.trim() || ad.description?.trim() || ad.text?.trim());
+
+    try {
+      const remote = await this.estateWebPropertyService.getProperty(
+        userIntegrationId,
+        integrationPropertyId,
+      );
+      if (Array.isArray(remote.ads) && remote.ads.some(hasContent)) {
+        return remote.ads;
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Could not read current ads for CRM listing ${integrationPropertyId} before unpublishing; falling back to stored ads: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+
+    const integration = await this.prisma.userIntegration.findUnique({
+      where: { id: userIntegrationId },
+      select: { user_id: true, user_integration_settings_id: true },
+    });
+    if (!integration) return [];
+
+    const row = await this.prisma.integrationProperty.findUnique({
+      where: {
+        user_id_user_integration_settings_id_user_property_id: {
+          user_id: integration.user_id,
+          user_integration_settings_id:
+            integration.user_integration_settings_id,
+          user_property_id: userPropertyId,
+        },
+      },
+      select: { ads: true },
+    });
+    const stored = Array.isArray(row?.ads)
+      ? (row.ads as unknown as EstateWebPropertyAd[])
+      : [];
+    return stored.filter(hasContent);
+  }
+
+  private adMapsFromAds(ads: EstateWebPropertyAd[]): EstateWebAdLanguageMaps {
+    const titles: EstateWebAdLanguageMaps['titles'] = {};
+    const descriptions: EstateWebAdLanguageMaps['descriptions'] = {};
+    for (const ad of ads) {
+      titles[ad.lang_id] = ad.title ?? '';
+      descriptions[ad.lang_id] = ad.description ?? ad.text ?? '';
+    }
+    return {
+      titles,
+      descriptions,
+      languages: ads.map((ad) => ad.lang_id),
+    };
   }
 
   async deleteImages(params: CmsSyncDeleteImagesParams): Promise<void> {
