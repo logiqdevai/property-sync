@@ -558,9 +558,7 @@ export default function ScrapersListPage() {
           state={runNowModal}
           scraperName={runNowScraper.name}
           isPending={runScraperNow.isPending}
-          onConfirm={({ skip_spike_check }) =>
-            runScraperNow.mutateAsync({ id: runNowScraper.id, skip_spike_check })
-          }
+          onConfirm={(options) => runScraperNow.mutateAsync({ id: runNowScraper.id, ...options })}
         />
       )}
     </div>

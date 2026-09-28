@@ -10,6 +10,7 @@ import {
   getScraper,
   getScraperVersions,
   getScrapers,
+  type RunScraperOptions,
   runScraperNow,
   runScrapers,
   stopScrapers,
@@ -118,8 +119,7 @@ export const useRunScraperNow = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, skip_spike_check }: { id: string; skip_spike_check?: boolean }) =>
-      runScraperNow(id, { skip_spike_check }),
+    mutationFn: ({ id, ...options }: { id: string } & RunScraperOptions) => runScraperNow(id, options),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scrapers"] });
       queryClient.invalidateQueries({ queryKey: ["crawlRuns"] });

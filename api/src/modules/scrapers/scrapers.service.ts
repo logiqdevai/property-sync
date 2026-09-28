@@ -4,7 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
-import { CrawlRunsService } from '@/modules/crawl-runs/crawl-runs.service';
+import {
+  CrawlResumeOptions,
+  CrawlRunsService,
+} from '@/modules/crawl-runs/crawl-runs.service';
 import {
   CrawlRunStatus,
   Prisma,
@@ -428,7 +431,11 @@ export class ScrapersService {
     });
   }
 
-  async runNow(id: string, skipSpikeCheck?: boolean) {
+  async runNow(
+    id: string,
+    skipSpikeCheck?: boolean,
+    resume?: CrawlResumeOptions,
+  ) {
     const scraper = await this.ensureExists(id);
     const tracker = await this.prisma.userTrackedAgency.findFirst({
       where: {
@@ -443,6 +450,7 @@ export class ScrapersService {
       scraper.id,
       tracker?.id,
       skipSpikeCheck,
+      resume,
     );
   }
 

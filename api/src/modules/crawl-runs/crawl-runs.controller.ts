@@ -26,6 +26,7 @@ import {
   CrawlRunQueryType,
 } from './dto/crawl-run-query.schema';
 import { DeleteCrawlRunsDto } from './dto/delete-crawl-runs.dto';
+import { ResumeCrawlDto } from './dto/resume-crawl.dto';
 import {
   CrawlRunTimelineQuerySchema,
   CrawlRunTimelineQueryType,
@@ -111,11 +112,18 @@ export class CrawlRunsController {
   @Audited({ action: 'crawl_run.rerun', entity: 'CrawlRun', ids: { param: 'id' } })
   @Post(':id/rerun')
   @Roles(AuthRole.ADMIN)
-  @ApiOperation({ summary: 'Re-enqueue a crawl run with the same attribution' })
+  @ApiOperation({
+    summary:
+      'Re-enqueue a crawl run with the same attribution, optionally starting from a URL/page and reusing already-fetched detail pages',
+  })
   @ApiResponse({ status: 201, type: CrawlRun })
   @ApiResponse({ status: 404, description: 'Crawl run not found' })
-  rerun(@Param('id') id: string) {
-    return this.crawlRunsService.rerun(id);
+  rerun(@Param('id') id: string, @Body() dto: ResumeCrawlDto) {
+    return this.crawlRunsService.rerun(id, {
+      startUrl: dto?.start_url,
+      startPage: dto?.start_page,
+      reuseDetailHours: dto?.reuse_detail_hours,
+    });
   }
 
   @Audited({ action: 'crawl_run.cancel', entity: 'CrawlRun', ids: { param: 'id' } })

@@ -12,7 +12,12 @@ import {
 } from '@/integrations/crawler/constants/crawler.constants';
 import { PlatformConfigService } from '@/modules/platform-config/platform-config.service';
 import { CrawlerService } from '@/integrations/crawler/services/crawler.service';
-import { DetailEnrichmentService } from '@/integrations/crawler/services/detail-enrichment.service';
+import {
+  applyStoredDetail,
+  DetailEnrichmentService,
+  DetailEnrichmentSummary,
+  getDetailEnrichedAt,
+} from '@/integrations/crawler/services/detail-enrichment.service';
 import {
   CrawlResult,
   ScraperConfig,
@@ -51,6 +56,30 @@ import {
 interface CrawlJobData {
   crawlRunId: string;
   jobLogId?: string;
+}
+
+// Source-property lookups for detail reuse/ordering are chunked so a 5k-listing
+// agency never builds one giant IN (...) clause.
+const STORED_DETAIL_LOOKUP_CHUNK = 500;
+
+// Reads the resume options CrawlRunsService#resolveResumeMetadata stored on a run.
+function readResumeMetadata(metadata: unknown): {
+  startUrl: string | null;
+  reuseDetailHours: number | null;
+} {
+  const meta =
+    typeof metadata === 'object' &&
+    metadata !== null &&
+    !Array.isArray(metadata)
+      ? (metadata as Record<string, unknown>)
+      : {};
+  return {
+    startUrl: typeof meta.start_url === 'string' ? meta.start_url : null,
+    reuseDetailHours:
+      typeof meta.reuse_detail_hours === 'number' && meta.reuse_detail_hours > 0
+        ? meta.reuse_detail_hours
+        : null,
+  };
 }
 
 @Processor(CRAWL_QUEUE, { concurrency: DEFAULT_CRAWL_WORKER_CONCURRENCY })
@@ -199,10 +228,21 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
         );
       }
 
-      const config = activeVersion.config as unknown as ScraperConfig;
-      if (!config.start_url || !config.listing_selector) {
+      const baseConfig = activeVersion.config as unknown as ScraperConfig;
+      if (!baseConfig.start_url || !baseConfig.listing_selector) {
         throw new Error(
           'Active scraper config is missing start_url or listing_selector',
+        );
+      }
+      // A run started "from" a URL/page walks the listings from there instead
+      // of from the config's start_url (see CrawlRunsService#resolveResumeMetadata).
+      const resumeMeta = readResumeMetadata(run.metadata);
+      const config: ScraperConfig = resumeMeta.startUrl
+        ? { ...baseConfig, start_url: resumeMeta.startUrl }
+        : baseConfig;
+      if (resumeMeta.startUrl) {
+        this.logger.log(
+          `crawl job ${crawlRunId}: starting listing walk from ${resumeMeta.startUrl}`,
         );
       }
 
@@ -247,6 +287,12 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       const blockHandlingConfig = buildBlockHandlingConfig(run.source_agency);
 
       let crawlResult: CrawlResult;
+      let detailSummary: DetailEnrichmentSummary & { reused: number } = {
+        total: 0,
+        attempted: 0,
+        notAttempted: 0,
+        reused: 0,
+      };
       try {
         crawlResult = await this.withTimeout(
           this.crawlerService.runCrawl(
@@ -258,9 +304,15 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
           crawl_job_timeout_ms,
           `crawl timed out after ${crawl_job_timeout_ms}ms`,
         );
-        await this.withTimeout(
+        const { toFetch, reused } = await this.planDetailFetches(
+          crawlResult.items,
+          run.source_agency_id,
+          config.detail_page,
+          resumeMeta.reuseDetailHours,
+        );
+        const enrichmentSummary = await this.withTimeout(
           this.detailEnrichmentService.enrichDetailPages(
-            crawlResult.items,
+            toFetch,
             config.detail_page,
             run.source_agency_id,
             {
@@ -278,6 +330,12 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
           crawl_job_timeout_ms,
           `detail enrichment timed out after ${crawl_job_timeout_ms}ms`,
         );
+        detailSummary = { ...enrichmentSummary, reused };
+        if (reused > 0 || enrichmentSummary.notAttempted > 0) {
+          this.logger.log(
+            `crawl job ${crawlRunId}: detail pages — fetched ${enrichmentSummary.attempted}, reused ${reused}, not reached ${enrichmentSummary.notAttempted}`,
+          );
+        }
       } finally {
         // Log proxy bandwidth whether the crawl succeeded or failed -- a failed
         // crawl still spent it.
@@ -367,12 +425,23 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
           select: { id: true },
         });
 
+        // The detail page was never fetched (crawl deadline hit first), so this
+        // item only carries listing-card data. Never let it overwrite a stored
+        // listing, and never create a brand-new one from it -- the next
+        // (resumed) run picks it up with its full detail data.
+        const detailNotAttempted = raw._detail_not_attempted === true;
         const detailFailed =
-          typeof raw._detail_enrichment_error === 'string' &&
-          raw._detail_enrichment_error.length > 0;
+          detailNotAttempted ||
+          (typeof raw._detail_enrichment_error === 'string' &&
+            raw._detail_enrichment_error.length > 0);
         const barrierTitle = isAccessBarrierTitle(
           typeof raw.title === 'string' ? raw.title : null,
         );
+
+        if (!existing && detailNotAttempted) {
+          seenUrls.delete(item.source_url);
+          continue;
+        }
 
         if (existing && (detailFailed || barrierTitle)) {
           await this.prisma.sourceProperty.update({
@@ -461,8 +530,33 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
           total_new_listings: totalCreated,
           total_refreshed_listings: totalUpdated,
           error_message: crawlResult.errorSummary ?? null,
+          metadata: {
+            ...(typeof run.metadata === 'object' &&
+            run.metadata !== null &&
+            !Array.isArray(run.metadata)
+              ? (run.metadata as Prisma.JsonObject)
+              : {}),
+            detail_summary: {
+              total: detailSummary.total,
+              fetched: detailSummary.attempted,
+              reused: detailSummary.reused,
+              not_reached: detailSummary.notAttempted,
+            },
+          },
         },
       });
+
+      if (detailSummary.notAttempted > 0) {
+        this.notificationsService.create({
+          type: NotificationType.PROPERTY_REMOVAL_SPIKE,
+          severity: NotificationSeverity.WARNING,
+          title: 'Crawl ran out of time before reading every detail page',
+          message: `${detailSummary.notAttempted} of ${detailSummary.total} listings were not opened before the crawl deadline; their stored data was kept as-is. Re-run the scraper with "reuse detail data" enabled to fetch only what is still missing.`,
+          source_agency_id: run.source_agency_id,
+          scraper_id: scraper.id,
+          crawl_run_id: crawlRunId,
+        });
+      }
 
       if (finalized.count === 0) {
         this.logger.warn(
@@ -688,6 +782,89 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
 
       throw error;
     }
+  }
+
+  // Decides which listings' detail pages to open this run, and in what order.
+  //  - reuseDetailHours set (a resumed run): listings whose detail data was
+  //    fetched within that window get it copied from the stored source
+  //    property and are skipped, so the run only spends time on what is missing.
+  //  - Always: listings never enriched go first, then the stalest. Without
+  //    this, a crawl that keeps hitting its deadline would starve the same
+  //    trailing listings on every run.
+  private async planDetailFetches(
+    items: CrawlResult['items'],
+    sourceAgencyId: string,
+    detailConfig: ScraperConfig['detail_page'],
+    reuseDetailHours: number | null,
+  ): Promise<{ toFetch: CrawlResult['items']; reused: number }> {
+    if (items.length === 0) return { toFetch: items, reused: 0 };
+
+    const storedByUrl = new Map<string, Record<string, unknown>>();
+    const urls = [...new Set(items.map((item) => item.source_url))];
+    for (let i = 0; i < urls.length; i += STORED_DETAIL_LOOKUP_CHUNK) {
+      const rows = await this.prisma.sourceProperty.findMany({
+        where: {
+          source_agency_id: sourceAgencyId,
+          source_url: { in: urls.slice(i, i + STORED_DETAIL_LOOKUP_CHUNK) },
+        },
+        select: { source_url: true, raw_data: true, updated_at: true },
+      });
+      for (const row of rows) {
+        if (
+          typeof row.raw_data !== 'object' ||
+          row.raw_data === null ||
+          Array.isArray(row.raw_data)
+        ) {
+          continue;
+        }
+        const raw = row.raw_data as Record<string, unknown>;
+        // Rows stored before _detail_enriched_at existed: if a detail page was
+        // clearly read (detail text present, no error / not-attempted marker),
+        // updated_at is the best available stand-in for when.
+        const legacyEnriched =
+          raw._detail_enriched_at === undefined &&
+          typeof raw._detail_text === 'string' &&
+          raw._detail_text.length > 0 &&
+          raw._detail_not_attempted !== true &&
+          raw._detail_enrichment_error === undefined;
+        storedByUrl.set(
+          row.source_url,
+          legacyEnriched
+            ? { ...raw, _detail_enriched_at: row.updated_at.toISOString() }
+            : raw,
+        );
+      }
+    }
+
+    const reuseCutoff =
+      reuseDetailHours != null
+        ? Date.now() - reuseDetailHours * 60 * 60 * 1000
+        : null;
+
+    const toFetch: CrawlResult['items'] = [];
+    let reused = 0;
+    for (const item of items) {
+      const stored = storedByUrl.get(item.source_url);
+      const enrichedAt = getDetailEnrichedAt(stored);
+      if (
+        reuseCutoff != null &&
+        stored &&
+        enrichedAt != null &&
+        enrichedAt >= reuseCutoff
+      ) {
+        applyStoredDetail(item, stored, detailConfig);
+        reused++;
+        continue;
+      }
+      toFetch.push(item);
+    }
+
+    toFetch.sort(
+      (a, b) =>
+        (getDetailEnrichedAt(storedByUrl.get(a.source_url)) ?? 0) -
+        (getDetailEnrichedAt(storedByUrl.get(b.source_url)) ?? 0),
+    );
+    return { toFetch, reused };
   }
 
   // Bounds the crawl/enrichment work so a wedged browser call (e.g. a hung context

@@ -96,10 +96,17 @@ export const updateScraper = async (
   }
 };
 
-export const runScraperNow = async (
-  id: string,
-  options?: { skip_spike_check?: boolean },
-): Promise<CrawlRun> => {
+export type RunScraperOptions = {
+  skip_spike_check?: boolean;
+  /** Start the listing walk from this URL (same site as the scraper). */
+  start_url?: string;
+  /** Start the listing walk at this page (url_param pagination only). */
+  start_page?: number;
+  /** Reuse detail-page data fetched within the last N hours. */
+  reuse_detail_hours?: number;
+};
+
+export const runScraperNow = async (id: string, options?: RunScraperOptions): Promise<CrawlRun> => {
   try {
     const response = await axiosInstance.post(ApiRoutes.admin.scrapers.runNow(id), options ?? {});
     return response.data;

@@ -68,6 +68,62 @@ export interface DetailEnrichmentOptions {
   detailConcurrencyOverride?: number;
 }
 
+export interface DetailEnrichmentSummary {
+  total: number;
+  // Items whose detail page was actually fetched (successfully or not).
+  attempted: number;
+  // Items never reached because the deadline hit first. Each carries
+  // raw._detail_not_attempted so the caller never persists their card-only data.
+  notAttempted: number;
+}
+
+// Detail-derived keys on CrawlItem.raw. Kept in one place so a resumed crawl
+// can copy a previous run's detail data onto a fresh listing-card item.
+const STORED_DETAIL_RAW_KEYS = [
+  '_all_images',
+  '_detail_text',
+  '_detail_specs',
+  '_detail_features',
+  '_external_id',
+  '_lat_lng',
+  '_raw_html_path',
+  '_detail_enriched_at',
+  'latitude',
+  'longitude',
+] as const;
+
+export function getDetailEnrichedAt(
+  raw: Record<string, unknown> | null | undefined,
+): number | null {
+  const value = raw?._detail_enriched_at;
+  if (typeof value !== 'string') return null;
+  const ms = Date.parse(value);
+  return Number.isFinite(ms) ? ms : null;
+}
+
+// Copies a previous crawl's detail-page data onto a fresh listing-card item so
+// its detail page doesn't have to be fetched again. Fields the detail page
+// overrides (title/price/location) are only carried over when the scraper
+// actually configures a selector for them; otherwise the fresh card value wins.
+export function applyStoredDetail(
+  item: CrawlItem,
+  storedRaw: Record<string, unknown>,
+  detailConfig?: DetailPageConfig | null,
+): void {
+  for (const key of STORED_DETAIL_RAW_KEYS) {
+    if (storedRaw[key] !== undefined) item.raw[key] = storedRaw[key];
+  }
+  const overrides: Array<[string, string | undefined]> = [
+    ['title', detailConfig?.title_selector],
+    ['price', detailConfig?.price_selector],
+    ['location', detailConfig?.location_selector],
+  ];
+  for (const [key, selector] of overrides) {
+    if (selector && storedRaw[key] !== undefined)
+      item.raw[key] = storedRaw[key];
+  }
+}
+
 @Injectable()
 export class DetailEnrichmentService {
   private readonly logger = new Logger(DetailEnrichmentService.name);
@@ -83,8 +139,10 @@ export class DetailEnrichmentService {
     detailConfig?: DetailPageConfig | null,
     sourceAgencyId?: string,
     options?: DetailEnrichmentOptions,
-  ): Promise<void> {
-    if (items.length === 0) return;
+  ): Promise<DetailEnrichmentSummary> {
+    if (items.length === 0) {
+      return { total: 0, attempted: 0, notAttempted: 0 };
+    }
 
     const {
       detail_concurrency: platformDetailConcurrency,
@@ -131,6 +189,7 @@ export class DetailEnrichmentService {
         listingImages,
       );
       item.raw._detail_text = detail.raw_detail_text;
+      item.raw._detail_enriched_at = new Date().toISOString();
       if (Object.keys(detail.detail_specs).length > 0) {
         item.raw._detail_specs = detail.detail_specs;
       }
@@ -247,11 +306,25 @@ export class DetailEnrichmentService {
     const laneCount = Math.max(1, detail_concurrency);
     await Promise.all(Array.from({ length: laneCount }, () => runLane()));
 
+    // Whatever is still queued was never fetched. Mark it so the caller keeps
+    // the previously stored data (or skips a brand-new listing) instead of
+    // saving card-only data -- no description, thumbnail-only images -- as if
+    // the detail page had been read.
+    for (const item of queue) {
+      item.raw._detail_not_attempted = true;
+    }
+
     if (stoppedForDeadline) {
       this.logger.warn(
         `Detail enrichment soft-stopped at ${processedCount}/${items.length} (deadline reached)`,
       );
     }
+
+    return {
+      total: items.length,
+      attempted: processedCount,
+      notAttempted: queue.length,
+    };
   }
 
   private async enrichOneDetailPage(

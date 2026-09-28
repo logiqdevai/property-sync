@@ -9,6 +9,7 @@ import type {
   CrawlRunTimelineResponse,
   DeleteCrawlRunsPayload,
 } from "../interfaces/crawl-runs.interfaces";
+import type { RunScraperOptions } from "@/features/scrapers/services/scrapers.services";
 
 export const getCrawlRuns = async (
   query?: CrawlRunListQuery,
@@ -45,9 +46,9 @@ export const getCrawlRun = async (id: string): Promise<CrawlRunDetail> => {
   }
 };
 
-export const rerunCrawlRun = async (id: string): Promise<CrawlRun> => {
+export const rerunCrawlRun = async (id: string, options?: RunScraperOptions): Promise<CrawlRun> => {
   try {
-    const response = await axiosInstance.post(ApiRoutes.admin.crawlRuns.rerun(id));
+    const response = await axiosInstance.post(ApiRoutes.admin.crawlRuns.rerun(id), options ?? {});
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to rerun crawl. Please try again.");

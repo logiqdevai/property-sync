@@ -15,6 +15,26 @@ import { CrawlRunStatus, JobStatus, Prisma } from 'generated/prisma';
 import { CrawlRunQueryType } from './dto/crawl-run-query.schema';
 import { CrawlRunTimelineQueryType } from './dto/crawl-run-timeline-query.schema';
 import { PaginatedResult } from './interfaces/crawl-run.interface';
+import type { ScraperConfig } from '@/integrations/crawler/interfaces/scraper-config.interface';
+
+// Options that change WHERE a crawl starts or WHAT it re-fetches. Stored on
+// CrawlRun.metadata (see resolveResumeMetadata) and read by CrawlProcessor.
+export interface CrawlResumeOptions {
+  // Absolute URL on the scraper's own site to start the listing walk from,
+  // instead of the config's start_url.
+  startUrl?: string;
+  // Convenience for url_param pagination: start the walk at this page number.
+  startPage?: number;
+  // Reuse detail-page data fetched within the last N hours instead of
+  // re-fetching it, so the crawl only spends time on what is still missing.
+  reuseDetailHours?: number;
+}
+
+const MAX_START_PAGE = 5000;
+const MAX_REUSE_DETAIL_HOURS = 24 * 30;
+
+const normalizeHost = (host: string) =>
+  host.toLowerCase().replace(/^www\./, '');
 
 interface CrawlJobData {
   crawlRunId: string;
@@ -62,7 +82,10 @@ export class CrawlRunsService {
     scraperId?: string,
     userTrackedAgencyId?: string,
     skipSpikeCheck?: boolean,
+    resume?: CrawlResumeOptions,
   ) {
+    const resumeMetadata = await this.resolveResumeMetadata(scraperId, resume);
+
     const activeRun = await this.prisma.crawlRun.findFirst({
       where: {
         source_agency_id: sourceAgencyId,
@@ -99,7 +122,12 @@ export class CrawlRunsService {
         scraper_id: scraperId ?? null,
         user_tracked_agency_id: userTrackedAgencyId ?? null,
         status: CrawlRunStatus.QUEUED,
-        ...(skipSpikeCheck && { metadata: { skip_spike_check: true } }),
+        ...((skipSpikeCheck || resumeMetadata) && {
+          metadata: {
+            ...(skipSpikeCheck && { skip_spike_check: true }),
+            ...resumeMetadata,
+          },
+        }),
       },
     });
 
@@ -116,6 +144,106 @@ export class CrawlRunsService {
     );
 
     return run;
+  }
+
+  // Validates the resume options against the scraper's active config and turns
+  // them into CrawlRun.metadata keys. A run that starts mid-list is flagged
+  // `partial_crawl` so removal detection never treats the unvisited earlier
+  // pages as "listing disappeared".
+  private async resolveResumeMetadata(
+    scraperId: string | undefined,
+    resume?: CrawlResumeOptions,
+  ): Promise<Record<string, unknown> | null> {
+    if (
+      !resume ||
+      (resume.startUrl === undefined &&
+        resume.startPage === undefined &&
+        resume.reuseDetailHours === undefined)
+    ) {
+      return null;
+    }
+
+    const metadata: Record<string, unknown> = {};
+
+    if (resume.reuseDetailHours !== undefined) {
+      if (
+        !Number.isInteger(resume.reuseDetailHours) ||
+        resume.reuseDetailHours < 1 ||
+        resume.reuseDetailHours > MAX_REUSE_DETAIL_HOURS
+      ) {
+        throw new BadRequestException(
+          `reuse_detail_hours must be a whole number between 1 and ${MAX_REUSE_DETAIL_HOURS}`,
+        );
+      }
+      metadata.reuse_detail_hours = resume.reuseDetailHours;
+    }
+
+    if (resume.startUrl !== undefined || resume.startPage !== undefined) {
+      if (resume.startUrl !== undefined && resume.startPage !== undefined) {
+        throw new BadRequestException(
+          'Provide either start_url or start_page, not both',
+        );
+      }
+      if (!scraperId) {
+        throw new BadRequestException(
+          'start_url / start_page need a specific scraper',
+        );
+      }
+      const scraper = await this.prisma.scraper.findUnique({
+        where: { id: scraperId },
+        select: { active_version: { select: { config: true } } },
+      });
+      const config = scraper?.active_version?.config as unknown as
+        | ScraperConfig
+        | undefined;
+      if (!config?.start_url) {
+        throw new BadRequestException('Scraper has no active config start_url');
+      }
+
+      let resolved: URL;
+      if (resume.startUrl !== undefined) {
+        try {
+          resolved = new URL(resume.startUrl);
+        } catch {
+          throw new BadRequestException('start_url is not a valid URL');
+        }
+        if (
+          normalizeHost(resolved.hostname) !==
+          normalizeHost(new URL(config.start_url).hostname)
+        ) {
+          throw new BadRequestException(
+            "start_url must be on the same site as the scraper's start_url",
+          );
+        }
+      } else {
+        const pageNumber = resume.startPage as number;
+        const pagination = config.pagination;
+        if (pagination?.type?.toLowerCase() !== 'url_param') {
+          throw new BadRequestException(
+            'start_page only works for scrapers with url_param pagination -- pass start_url instead',
+          );
+        }
+        if (
+          !Number.isInteger(pageNumber) ||
+          pageNumber < 1 ||
+          pageNumber > MAX_START_PAGE
+        ) {
+          throw new BadRequestException(
+            `start_page must be a whole number between 1 and ${MAX_START_PAGE}`,
+          );
+        }
+        resolved = new URL(config.start_url);
+        resolved.searchParams.set(
+          pagination.url_param ?? 'page',
+          String(pageNumber),
+        );
+      }
+
+      metadata.start_url = resolved.href;
+      metadata.partial_crawl = true;
+    }
+
+    return metadata;
   }
 
   async findAll(
@@ -187,8 +315,11 @@ export class CrawlRunsService {
   // Scraper belongs to exactly one agency, so grouping by agency == grouping
   // by scraper) with every CrawlRun whose interval overlaps the requested day.
   async timeline(query: CrawlRunTimelineQueryType) {
-    const rangeFrom = query.date_from ?? new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`);
-    const rangeTo = query.date_to ?? new Date(rangeFrom.getTime() + 24 * 60 * 60 * 1000);
+    const rangeFrom =
+      query.date_from ??
+      new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`);
+    const rangeTo =
+      query.date_to ?? new Date(rangeFrom.getTime() + 24 * 60 * 60 * 1000);
 
     const where: Prisma.CrawlRunWhereInput = {
       ...(query.status && { status: query.status }),
@@ -447,7 +578,7 @@ export class CrawlRunsService {
     };
   }
 
-  async rerun(id: string) {
+  async rerun(id: string, resume?: CrawlResumeOptions) {
     const run = await this.prisma.crawlRun.findUnique({ where: { id } });
 
     if (!run) {
@@ -458,6 +589,8 @@ export class CrawlRunsService {
       run.source_agency_id,
       run.scraper_id ?? undefined,
       run.user_tracked_agency_id ?? undefined,
+      undefined,
+      resume,
     );
   }
 

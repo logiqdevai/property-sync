@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsOptional } from 'class-validator';
+import { ResumeCrawlDto } from '@/modules/crawl-runs/dto/resume-crawl.dto';
 
-export class RunScraperDto {
+export class RunScraperDto extends ResumeCrawlDto {
   @ApiProperty({
     required: false,
     description:

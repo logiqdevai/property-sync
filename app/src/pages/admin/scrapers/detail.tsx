@@ -616,9 +616,9 @@ export default function ScraperDetailPage() {
         state={runNowModal}
         scraperName={scraper.name}
         isPending={runNow.isPending}
-        onConfirm={({ skip_spike_check }) =>
+        onConfirm={(options) =>
           runNow.mutateAsync(
-            { id: scraper.id, skip_spike_check },
+            { id: scraper.id, ...options },
             { onSuccess: (run) => navigate(Routes.admin.crawlRuns.detail(run.id)) },
           )
         }

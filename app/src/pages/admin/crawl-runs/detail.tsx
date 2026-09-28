@@ -30,6 +30,9 @@ import {
 import { formatDateTime } from "@/lib/date";
 import { formatDuration } from "@/lib/duration";
 
+// A resumed run reuses detail data fetched within this window and only opens what is still missing.
+const RESUME_REUSE_DETAIL_HOURS = 48;
+
 const ACTIVE_STATUSES: CrawlRunStatus[] = [
   CrawlRunStatuses.QUEUED,
   CrawlRunStatuses.RUNNING,
@@ -105,6 +108,8 @@ export default function CrawlRunDetailPage() {
   }
 
   const isActive = ACTIVE_STATUSES.includes(run.status);
+  const detailSummary = run.metadata?.detail_summary as { not_reached?: number } | undefined;
+  const notReachedDetails = typeof detailSummary?.not_reached === "number" ? detailSummary.not_reached : 0;
   const traces = run.execution_traces ?? [];
   const jobLogs = run.job_logs ?? [];
   const userProperties = getCrawlUserProperties(run);
@@ -152,14 +157,30 @@ export default function CrawlRunDetailPage() {
               isPending={rerun.isPending}
               isDisabled={rerun.isPending}
               onPress={() =>
-                rerun.mutate(run.id, {
-                  onSuccess: (newRun) => navigate(Routes.admin.crawlRuns.detail(newRun.id)),
-                })
+                rerun.mutate(
+                  { id: run.id },
+                  { onSuccess: (newRun) => navigate(Routes.admin.crawlRuns.detail(newRun.id)) },
+                )
               }
             >
               Rerun
             </ActionButtonWithPending>
           )}
+          {!isActive && notReachedDetails > 0 ? (
+            <ActionButtonWithPending
+              variant="primary"
+              isPending={rerun.isPending}
+              isDisabled={rerun.isPending}
+              onPress={() =>
+                rerun.mutate(
+                  { id: run.id, reuse_detail_hours: RESUME_REUSE_DETAIL_HOURS },
+                  { onSuccess: (newRun) => navigate(Routes.admin.crawlRuns.detail(newRun.id)) },
+                )
+              }
+            >
+              Resume {notReachedDetails} missing
+            </ActionButtonWithPending>
+          ) : null}
           <ActionButtonWithPending
             variant="danger"
             isPending={deleteRun.isPending}

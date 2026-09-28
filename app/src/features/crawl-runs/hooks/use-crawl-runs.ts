@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
+import type { RunScraperOptions } from "@/features/scrapers/services/scrapers.services";
 import {
   cancelCrawlRun,
   deleteCrawlRun,
@@ -55,7 +56,7 @@ export const useRerunCrawlRun = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => rerunCrawlRun(id),
+    mutationFn: ({ id, ...options }: { id: string } & RunScraperOptions) => rerunCrawlRun(id, options),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["crawlRuns"] });
       toast({ title: "Crawl run triggered", duration: 2000, variant: "success" });

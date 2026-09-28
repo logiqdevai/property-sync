@@ -765,7 +765,21 @@ export class CrawlerService {
     if (pagination.type === 'url_param' || pagination.type === 'URL_PARAM') {
       const paramName = pagination.url_param ?? 'page';
       const url = new URL(page.url());
-      url.searchParams.set(paramName, String(pageNum + 2));
+      // Next page = the page currently on screen + 1, read from the URL itself
+      // rather than from the loop counter: a crawl started mid-list (a run's
+      // start_url / start_page override) must continue from that page, not
+      // restart at page 2. Falls back to the counter when the param is absent
+      // (page 1 usually has no ?page=) or unparseable.
+      const currentParam = Number.parseInt(
+        url.searchParams.get(paramName) ?? '',
+        10,
+      );
+      const currentPageNumber =
+        Number.isFinite(currentParam) && currentParam >= 1
+          ? currentParam
+          : pageNum + 1;
+      const nextPageNumber = currentPageNumber + 1;
+      url.searchParams.set(paramName, String(nextPageNumber));
 
       let activePage = page;
       let reconnected = false;
@@ -855,7 +869,7 @@ export class CrawlerService {
         return {
           advanced: false,
           networkError: true,
-          errorMessage: `HTTP ${status} on ${url.href} while paginating to page ${pageNum + 2} (${pageAccessState})`,
+          errorMessage: `HTTP ${status} on ${url.href} while paginating to page ${nextPageNumber} (${pageAccessState})`,
           ...(reconnected && { page: activePage }),
         };
       }

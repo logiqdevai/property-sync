@@ -1796,6 +1796,21 @@ export class PropertyNormalizationService {
       return { removedCount: 0, totalTracked, affected: [] };
     }
 
+    // A run started from a given URL/page (CrawlResumeOptions.startUrl/startPage)
+    // never visited the listing pages before it, so "not seen this run" says
+    // nothing about those listings -- marking them removed would unpublish
+    // everything on the skipped pages.
+    if (
+      typeof crawlRun?.metadata === 'object' &&
+      crawlRun.metadata !== null &&
+      (crawlRun.metadata as Record<string, unknown>).partial_crawl === true
+    ) {
+      this.logger.log(
+        `Crawl ${crawlRunId}: partial crawl (started mid-list) — skipping removal detection for ${candidates.length} unvisited properties`,
+      );
+      return { removedCount: 0, totalTracked, affected: [] };
+    }
+
     // Set on the CrawlRun via RunScraperDto.skip_spike_check when an admin manually
     // confirms a large listings drop is legitimate (e.g. a real agency cleanup) --
     // bypasses both the incomplete-crawl coverage guard and the spike notification

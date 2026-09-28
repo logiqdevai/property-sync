@@ -197,7 +197,11 @@ export class ScrapersController {
   @ApiResponse({ status: 201, type: CrawlRun })
   @ApiResponse({ status: 404, description: 'Scraper not found' })
   runNow(@Param('id') id: string, @Body() dto: RunScraperDto) {
-    return this.scrapersService.runNow(id, dto.skip_spike_check);
+    return this.scrapersService.runNow(id, dto.skip_spike_check, {
+      startUrl: dto.start_url,
+      startPage: dto.start_page,
+      reuseDetailHours: dto.reuse_detail_hours,
+    });
   }
 
   @Audited({ action: 'scraper.delete', entity: 'Scraper', ids: { param: 'id' } })
