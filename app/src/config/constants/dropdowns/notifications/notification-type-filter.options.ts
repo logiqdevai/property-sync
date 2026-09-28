@@ -36,6 +36,7 @@ export const NotificationTypeLabels: Record<NotificationType, string> = {
   [NotificationTypes.ESTATEWEB_LINK_NOT_FOUND]: "link not found",
   [NotificationTypes.ESTATEWEB_SESSION_PERSIST_FAILED]: "session persist failed",
   [NotificationTypes.AI_NORMALIZATION_FAILURE]: "AI normalization failure",
+  [NotificationTypes.TRANSLATION_FAILURE]: "translation failure",
 };
 
 export function getNotificationTypeLabel(type: NotificationType | string): string {

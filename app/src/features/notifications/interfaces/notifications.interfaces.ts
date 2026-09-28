@@ -31,6 +31,7 @@ export const NotificationTypes = {
   ESTATEWEB_LINK_NOT_FOUND: "ESTATEWEB_LINK_NOT_FOUND",
   ESTATEWEB_SESSION_PERSIST_FAILED: "ESTATEWEB_SESSION_PERSIST_FAILED",
   AI_NORMALIZATION_FAILURE: "AI_NORMALIZATION_FAILURE",
+  TRANSLATION_FAILURE: "TRANSLATION_FAILURE",
 } as const;
 
 export type NotificationType = (typeof NotificationTypes)[keyof typeof NotificationTypes];

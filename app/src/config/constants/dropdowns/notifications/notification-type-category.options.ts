@@ -30,6 +30,7 @@ export const NotificationTypeCategory: Record<NotificationType, NotificationCate
   [NotificationTypes.QUEUE_FAILURE]: NotificationCategories.CRAWLER,
   [NotificationTypes.WEBSITE_UNAVAILABLE]: NotificationCategories.CRAWLER,
   [NotificationTypes.AI_NORMALIZATION_FAILURE]: NotificationCategories.CRAWLER,
+  [NotificationTypes.TRANSLATION_FAILURE]: NotificationCategories.CRAWLER,
   [NotificationTypes.CMS_SYNC_FAILURE]: NotificationCategories.CMS_SYNC,
   [NotificationTypes.CMS_SYNC_SUCCESS]: NotificationCategories.CMS_SYNC,
   [NotificationTypes.ESTATEWEB_NETWORK_ERROR]: NotificationCategories.ESTATEWEB,

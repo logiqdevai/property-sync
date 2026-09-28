@@ -14,6 +14,7 @@ import { ContentProductionService } from './services/content-production.service'
 import { ContentResolutionService } from './services/content-resolution.service';
 import { GoogleTranslationService } from './services/google-translation.service';
 import { AzureTranslationService } from './services/azure-translation.service';
+import { TranslationFailureReporterService } from './services/translation-failure-reporter.service';
 import { AiTitleFamilyService } from './services/ai-title-family.service';
 import { AiTitleBatchService } from './services/ai-title-batch.service';
 import { AiBatchWatchdogCron } from '@/background/ai-batch-watchdog.cron';
@@ -36,6 +37,7 @@ import { AiBatchWatchdogCron } from '@/background/ai-batch-watchdog.cron';
     ContentResolutionService,
     GoogleTranslationService,
     AzureTranslationService,
+    TranslationFailureReporterService,
     AiTitleFamilyService,
     AiTitleBatchService,
     AiBatchWatchdogCron,
