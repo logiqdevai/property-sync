@@ -42,6 +42,7 @@ import { CrawlerDebugService } from './crawler-debug.service';
 import { FieldExtractionService } from './field-extraction.service';
 import { StealthBrowserService } from './stealth-browser.service';
 import { ProxyBrowserSession } from '../interfaces/proxy-browser-session.interface';
+import { redactSecrets } from '@/shared/utils/redact-secrets.util';
 
 export interface CrawlRunOptions {
   onPageComplete?: () => void | Promise<void>;
@@ -447,7 +448,9 @@ export class CrawlerService {
         networkError,
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
+      const message = redactSecrets(
+        err instanceof Error ? err.message : String(err),
+      );
       errorSummary = message;
       if (isTransientNavigationError(message)) {
         networkError = true;

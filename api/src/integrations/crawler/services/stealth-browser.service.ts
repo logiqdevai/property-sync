@@ -22,6 +22,7 @@ import { trackDocumentResponses } from '../block-handling/block-handling.utils';
 import { AsyncSemaphore } from '../utils/async-semaphore.util';
 import { ProxyBrowserSession } from '../interfaces/proxy-browser-session.interface';
 import { shouldBlockProxyRequest } from '../utils/proxy-resource-blocking.util';
+import { redactError } from '@/shared/utils/redact-secrets.util';
 
 export interface StealthPageSession {
   context: BrowserContext;
@@ -369,7 +370,13 @@ export class StealthBrowserService implements OnModuleInit, OnModuleDestroy {
       );
     }
 
-    const browser = await chromium.connectOverCDP(endpoint);
+    // Playwright echoes the endpoint (with its credentials) in the error, and this
+    // error is persisted to crawl_runs/job_logs/notifications -- redact at the source.
+    const browser = await chromium
+      .connectOverCDP(endpoint)
+      .catch((error: unknown) => {
+        throw redactError(error);
+      });
     this.logger.log('Connected to managed (Bright Data) browser');
     return browser;
   }

@@ -34,6 +34,7 @@ import {
   MANAGED_SESSION_MAX_AGE_MS,
   StealthBrowserService,
 } from './stealth-browser.service';
+import { redactSecrets } from '@/shared/utils/redact-secrets.util';
 
 interface DetailEnrichmentResult {
   images: string[];
@@ -885,7 +886,9 @@ export class DetailEnrichmentService {
           raw_html_path: rawHtmlPath,
         };
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = redactSecrets(
+          err instanceof Error ? err.message : String(err),
+        );
         return { ...empty, error: message };
       } finally {
         cleanupOnce();

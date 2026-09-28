@@ -37,6 +37,7 @@ import {
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD } from '@/modules/notifications/constants/notification.constants';
+import { redactSecrets } from '@/shared/utils/redact-secrets.util';
 import { ScraperFailureHandlerService } from '@/background/scraper-failure-handler.service';
 import {
   CrawlRunStatus,
@@ -548,13 +549,14 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
             crawlRunId,
           );
         } catch (normalizationError) {
-          const normalizationMessage =
+          const normalizationMessage = redactSecrets(
             normalizationError instanceof Error
               ? normalizationError.message
-              : String(normalizationError);
+              : String(normalizationError),
+          );
           const normalizationStack =
             normalizationError instanceof Error
-              ? normalizationError.stack
+              ? redactSecrets(normalizationError.stack)
               : undefined;
 
           this.logger.error(
@@ -592,8 +594,13 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       return;
     } catch (error) {
       const finishedAt = new Date();
-      const message = error instanceof Error ? error.message : String(error);
-      const stack = error instanceof Error ? error.stack : undefined;
+      const message = redactSecrets(
+        error instanceof Error ? error.message : String(error),
+      );
+      const stack =
+        error instanceof Error
+          ? (redactSecrets(error.stack) ?? undefined)
+          : undefined;
 
       const currentRun = await this.prisma.crawlRun.findUnique({
         where: { id: crawlRunId },
