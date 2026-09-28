@@ -196,7 +196,9 @@ export function normalizeUrlPath(pathname: string): string {
 export function isBotChallengeUrl(url: string): boolean {
   try {
     const { pathname } = new URL(url);
-    return /^\/(\.well-known\/sgcaptcha|cdn-cgi\/)/i.test(pathname);
+    // SiteGround serves the interstitial at both /.well-known/sgcaptcha/ and
+    // /.well-known/captcha/ (seen 2026-09-28) -- match any captcha under .well-known.
+    return /^\/(\.well-known\/(sg)?captcha|cdn-cgi\/)/i.test(pathname);
   } catch {
     return false;
   }

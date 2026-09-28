@@ -115,11 +115,12 @@ export const DEFAULT_BLOCK_RULES: BlockRule[] = [
   },
   {
     // SiteGround's bot interstitial: a JS challenge served at
-    // /.well-known/sgcaptcha/ that bounces back to the original URL once solved.
+    // /.well-known/sgcaptcha/ (or /.well-known/captcha/) that bounces back to the
+    // original URL once solved.
     id: 'siteground-sgcaptcha-path',
     signal: 'challenge',
     source: 'path',
-    pattern: '^/\\.well-known/sgcaptcha',
+    pattern: '^/\\.well-known/(sg)?captcha',
     regex: true,
   },
 ];

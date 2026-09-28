@@ -36,6 +36,7 @@ import {
 } from '@/integrations/crawler/block-handling/block-handling.utils';
 import { PropertyNormalizationService } from '@/modules/properties/services/property-normalization.service';
 import { NotificationsService } from '@/modules/notifications/notifications.service';
+import { PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD } from '@/modules/notifications/constants/notification.constants';
 import { ScraperFailureHandlerService } from '@/background/scraper-failure-handler.service';
 import {
   CrawlRunStatus,
@@ -293,11 +294,45 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       let totalUpdated = 0;
       const now = new Date();
 
+      // A handful of excluded detail pages is normal (a sold listing redirecting to
+      // a marketing page). Many at once means the site is challenging us, not that
+      // the listings are gone -- keep those properties alive instead of letting
+      // them fall out of the crawl and read as removed.
+      const excludedCount = crawlResult.items.filter(
+        (item) => item.raw?._crawl_exclude === true,
+      ).length;
+      const massExclusion =
+        excludedCount > PROPERTY_REMOVAL_SPIKE_ABSOLUTE_THRESHOLD;
+      if (massExclusion) {
+        this.logger.warn(
+          `crawl job ${crawlRunId}: ${excludedCount} detail pages excluded — keeping them alive rather than treating them as removed`,
+        );
+        this.notificationsService.create({
+          type: NotificationType.PROPERTY_REMOVAL_SPIKE,
+          severity: NotificationSeverity.WARNING,
+          title: 'Many detail pages excluded — possible bot challenge',
+          message: `${excludedCount} listings redirected away or were blocked during detail enrichment; they were kept active instead of being marked removed.`,
+          source_agency_id: run.source_agency_id,
+          scraper_id: scraper.id,
+          crawl_run_id: crawlRunId,
+        });
+      }
+
       for (const item of crawlResult.items) {
         if (seenUrls.has(item.source_url)) continue;
 
         const raw = item.raw ?? {};
         if (raw._crawl_exclude === true) {
+          if (massExclusion) {
+            const kept = await this.prisma.sourceProperty.updateMany({
+              where: {
+                source_agency_id: run.source_agency_id,
+                source_url: item.source_url,
+              },
+              data: { last_seen_at: now },
+            });
+            totalUpdated += kept.count;
+          }
           continue;
         }
 

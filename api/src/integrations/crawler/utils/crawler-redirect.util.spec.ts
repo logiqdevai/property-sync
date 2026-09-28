@@ -51,6 +51,15 @@ describe('isDetailPageRedirectAway', () => {
     expect(isBotChallengeUrl('https://x.com/property/foo/')).toBe(false);
   });
 
+  it('treats the /.well-known/captcha/ variant as a bot challenge', () => {
+    const challenge =
+      'https://lafazanihomes.com/.well-known/captcha/?y=ipc:1.2.3.4:1&r=%2Fproperty%2Ffoo%2F';
+    expect(isBotChallengeUrl(challenge)).toBe(true);
+    expect(
+      isDetailPageRedirectAway('https://lafazanihomes.com/property/foo/', challenge),
+    ).toBe(false);
+  });
+
   it('flags cross-origin redirects', () => {
     expect(
       isDetailPageRedirectAway(

@@ -6,4 +6,6 @@ export const CRAWL_REMOVAL_COVERAGE_RATIO_THRESHOLD = 0.7;
 
 export const CRAWL_REMOVAL_COVERAGE_MIN_BASELINE = 5;
 
-export const CRAWL_REMOVAL_MASS_RATIO_THRESHOLD = 0.5;
+// Lowered from 0.5 after lafazanihomes lost 37% of its live listings to a bot
+// challenge on 2026-09-28 and the guard let it through.
+export const CRAWL_REMOVAL_MASS_RATIO_THRESHOLD = 0.2;
