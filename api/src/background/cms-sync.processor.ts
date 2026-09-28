@@ -420,100 +420,116 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       operationType = 'UPDATE';
     }
 
-    try {
-      switch (operationType) {
-        case 'CREATE': {
-          if (!reconciliationCatalog) {
-            return {
-              user_property_id: operation.user_property_id,
-              operation: 'CREATE',
-              success: false,
-              property_title: propertyTitle,
-              error:
-                'EstateWeb reconciliation catalog unavailable; refusing CREATE to avoid duplicates. Ensure the linked EstateWeb integration can list properties.',
-            };
-          }
+    // Mirror of the downgrade above: the batch froze this as an UPDATE, but the link is
+    // gone by the time it runs (a previous attempt cleared it after finding the listing
+    // wasn't ours and then failed to create). Retrying as an UPDATE can never succeed.
+    if (operationType === 'UPDATE' && !userProperty.integration_property_id) {
+      this.logger.warn(
+        `CMS sync op: property=${operation.user_property_id} queued as UPDATE but has no integration_property_id; running as CREATE`,
+      );
+      operationType = 'CREATE';
+    }
 
-          const reconciled =
-            await this.estateWebPropertyReconciliationService.reconcileCreate(
-              userProperty,
-              reconciliationCatalog,
-              crawlRunId,
-            );
+    // CREATE runs from two places: a queued CREATE, and an UPDATE whose linked listing
+    // turned out not to be ours (or has no link at all). Both must reconcile against the
+    // account's existing EstateWeb listings first, or a blind POST can duplicate one.
+    const runCreate = async (): Promise<CmsSyncOperationResult> => {
+      if (!reconciliationCatalog) {
+        return {
+          user_property_id: operation.user_property_id,
+          operation: 'CREATE',
+          success: false,
+          property_title: propertyTitle,
+          error:
+            'EstateWeb reconciliation catalog unavailable; refusing CREATE to avoid duplicates. Ensure the linked EstateWeb integration can list properties.',
+        };
+      }
 
-          if (reconciled.matched && reconciled.integrationPropertyId) {
-            const integrationPropertyId = reconciled.integrationPropertyId;
+      const reconciled =
+        await this.estateWebPropertyReconciliationService.reconcileCreate(
+          userProperty,
+          reconciliationCatalog,
+          crawlRunId,
+        );
 
-            await this.stampIntegrationPropertyId(
-              operation.user_property_id,
-              operation.duplicate_group_id,
-              userProperty.user_id,
-              integrationPropertyId,
-            );
+      if (reconciled.matched && reconciled.integrationPropertyId) {
+        const integrationPropertyId = reconciled.integrationPropertyId;
 
-            if (reconciled.shouldUpdate) {
-              await adapter.pushUpdate(
-                userIntegrationId,
-                integrationPropertyId,
-                userProperty,
-                pushOptions,
-              );
-              this.logger.log(
-                `CMS sync op success: property=${operation.user_property_id} operation=CREATE reconciled=UPDATE integration_property_id=${integrationPropertyId}`,
-              );
-              return {
-                user_property_id: operation.user_property_id,
-                operation: 'UPDATE',
-                success: true,
-                property_title: propertyTitle,
-                integration_property_id: integrationPropertyId,
-                reconciled: true,
-              };
-            }
+        await this.stampIntegrationPropertyId(
+          operation.user_property_id,
+          operation.duplicate_group_id,
+          userProperty.user_id,
+          integrationPropertyId,
+        );
 
-            await this.backfillImagesCache(
-              adapter,
-              userIntegrationId,
-              integrationPropertyId,
-              userProperty,
-            );
-
-            this.logger.log(
-              `CMS sync op success: property=${operation.user_property_id} operation=CREATE reconciled=LINK integration_property_id=${integrationPropertyId}`,
-            );
-            return {
-              user_property_id: operation.user_property_id,
-              operation: 'CREATE',
-              success: true,
-              property_title: propertyTitle,
-              integration_property_id: integrationPropertyId,
-              reconciled: true,
-              skipped_push: true,
-            };
-          }
-
-          const createResult = await adapter.pushCreate(
+        if (reconciled.shouldUpdate) {
+          await adapter.pushUpdate(
             userIntegrationId,
+            integrationPropertyId,
             userProperty,
             pushOptions,
           );
-          await this.stampIntegrationPropertyId(
-            operation.user_property_id,
-            operation.duplicate_group_id,
-            userProperty.user_id,
-            createResult.integration_property_id,
-          );
           this.logger.log(
-            `CMS sync op success: property=${operation.user_property_id} operation=CREATE integration_property_id=${createResult.integration_property_id}`,
+            `CMS sync op success: property=${operation.user_property_id} operation=CREATE reconciled=UPDATE integration_property_id=${integrationPropertyId}`,
           );
           return {
             user_property_id: operation.user_property_id,
-            operation: 'CREATE',
+            operation: 'UPDATE',
             success: true,
             property_title: propertyTitle,
-            integration_property_id: createResult.integration_property_id,
+            integration_property_id: integrationPropertyId,
+            reconciled: true,
           };
         }
+
+        await this.backfillImagesCache(
+          adapter,
+          userIntegrationId,
+          integrationPropertyId,
+          userProperty,
+        );
+
+        this.logger.log(
+          `CMS sync op success: property=${operation.user_property_id} operation=CREATE reconciled=LINK integration_property_id=${integrationPropertyId}`,
+        );
+        return {
+          user_property_id: operation.user_property_id,
+          operation: 'CREATE',
+          success: true,
+          property_title: propertyTitle,
+          integration_property_id: integrationPropertyId,
+          reconciled: true,
+          skipped_push: true,
+        };
+      }
+
+      const createResult = await adapter.pushCreate(
+        userIntegrationId,
+        userProperty,
+        pushOptions,
+      );
+      await this.stampIntegrationPropertyId(
+        operation.user_property_id,
+        operation.duplicate_group_id,
+        userProperty.user_id,
+        createResult.integration_property_id,
+      );
+      this.logger.log(
+        `CMS sync op success: property=${operation.user_property_id} operation=CREATE integration_property_id=${createResult.integration_property_id}`,
+      );
+      return {
+        user_property_id: operation.user_property_id,
+        operation: 'CREATE',
+        success: true,
+        property_title: propertyTitle,
+        integration_property_id: createResult.integration_property_id,
+      };
+    };
+
+    try {
+      switch (operationType) {
+        case 'CREATE':
+          return runCreate();
         case 'UPDATE': {
           const integrationId = userProperty.integration_property_id;
           if (!integrationId) {
@@ -532,28 +548,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
           if (!belongsToLinkedAccount) {
             await this.clearIntegrationPropertyId(operation.user_property_id);
             userProperty.integration_property_id = null;
-
-            const createResult = await adapter.pushCreate(
-              userIntegrationId,
-              userProperty,
-              pushOptions,
-            );
-            await this.stampIntegrationPropertyId(
-              operation.user_property_id,
-              operation.duplicate_group_id,
-              userProperty.user_id,
-              createResult.integration_property_id,
-            );
-            this.logger.log(
-              `CMS sync op success: property=${operation.user_property_id} operation=UPDATE->CREATE integration_property_id=${createResult.integration_property_id}`,
-            );
-            return {
-              user_property_id: operation.user_property_id,
-              operation: 'CREATE',
-              success: true,
-              property_title: propertyTitle,
-              integration_property_id: createResult.integration_property_id,
-            };
+            return runCreate();
           }
 
           await adapter.pushUpdate(
@@ -623,9 +618,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     }
   }
 
-  private formatFailureSummary(
-    responses: CmsSyncOperationResult[],
-  ): string {
+  private formatFailureSummary(responses: CmsSyncOperationResult[]): string {
     const failures = responses.filter((op) => !op.success);
     if (failures.length === 0) {
       return 'Some properties failed to sync';
@@ -699,7 +692,9 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     }
   }
 
-  private async clearIntegrationPropertyId(userPropertyId: string): Promise<void> {
+  private async clearIntegrationPropertyId(
+    userPropertyId: string,
+  ): Promise<void> {
     await this.prisma.userProperty.update({
       where: { id: userPropertyId },
       data: { integration_property_id: null },

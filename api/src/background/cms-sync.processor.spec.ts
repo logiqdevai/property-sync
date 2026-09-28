@@ -118,4 +118,49 @@ describe('CmsSyncProcessor.executeSingleOperation: CREATE safety', () => {
     expect(adapter.pushCreate).toHaveBeenCalledTimes(1);
     expect(adapter.pushUpdate).not.toHaveBeenCalled();
   });
+
+  it('runs a queued UPDATE as a CREATE when the link was already cleared (retry after a failed re-create)', async () => {
+    // A previous attempt found the listing was not ours, cleared the link, then the
+    // create failed. The frozen batch still says UPDATE; it used to throw
+    // "No integration property id for update" on every remaining attempt.
+    const { run, adapter, reconciliation } = setup({
+      integration_property_id: null,
+    });
+
+    const result = await run('UPDATE');
+
+    expect(result).toMatchObject({
+      success: true,
+      operation: 'CREATE',
+      integration_property_id: 'new-999',
+    });
+    expect(reconciliation.reconcileCreate).toHaveBeenCalledTimes(1);
+    expect(adapter.pushCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it('reconciles against existing listings before re-creating a listing that is not ours', async () => {
+    const { run, adapter, reconciliation, propertyService, prisma } = setup({
+      integration_property_id: '4242',
+    });
+    propertyService.getProperty.mockResolvedValue({ code: 'SOMEONE-ELSE' });
+    reconciliation.reconcileCreate.mockResolvedValue({
+      matched: true,
+      shouldUpdate: false,
+      integrationPropertyId: '777',
+    });
+
+    const result = await run('UPDATE');
+
+    // Link cleared, then linked to the matching listing instead of a blind POST.
+    expect(prisma.userProperty.update).toHaveBeenCalledWith({
+      where: { id: 'up-1' },
+      data: { integration_property_id: null },
+    });
+    expect(reconciliation.reconcileCreate).toHaveBeenCalledTimes(1);
+    expect(adapter.pushCreate).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      success: true,
+      integration_property_id: '777',
+    });
+  });
 });
