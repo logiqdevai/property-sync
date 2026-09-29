@@ -354,6 +354,8 @@ export default function DashboardPropertiesListPage() {
   >([]);
   const [fixEstateWebRemovalPropertyIds, setFixEstateWebRemovalPropertyIds] =
     useState<string[]>([]);
+  const [checkEstateWebRemovalPropertyIds, setCheckEstateWebRemovalPropertyIds] =
+    useState<string[]>([]);
   const [renormalizePropertyIds, setRenormalizePropertyIds] = useState<string[]>([]);
   const [deleteCmsImagesPropertyIds, setDeleteCmsImagesPropertyIds] = useState<
     string[]
@@ -566,14 +568,13 @@ export default function DashboardPropertiesListPage() {
   };
 
   const openCheckEstateWebRemoval = (ids: string[]) => {
-    checkEstateWebRemoval.reset();
+    setCheckEstateWebRemovalPropertyIds(ids);
     checkEstateWebRemovalModal.open();
-    checkEstateWebRemoval.mutate({ ids });
   };
 
-  const handleFixFromCheckModal = async (ids: string[]) => {
+  const handleFixFromCheckModal = (ids: string[]) => {
     if (ids.length === 0) return;
-    await fixEstateWebRemoval.mutateAsync({ ids });
+    fixEstateWebRemoval.mutate({ ids });
     checkEstateWebRemovalModal.close();
     clearSelection();
   };
@@ -1901,8 +1902,8 @@ export default function DashboardPropertiesListPage() {
           <EstateWebOrphanSitesModal state={manageOrphanSitesModal} />
           <CheckEstateWebRemovalModal
             state={checkEstateWebRemovalModal}
-            result={checkEstateWebRemoval.data}
-            isPending={checkEstateWebRemoval.isPending}
+            propertyIds={checkEstateWebRemovalPropertyIds}
+            check={checkEstateWebRemoval}
             onFix={handleFixFromCheckModal}
             isFixPending={fixEstateWebRemoval.isPending}
           />
@@ -1934,13 +1935,13 @@ export default function DashboardPropertiesListPage() {
       />
       <ConfirmationDialog
         state={fixEstateWebRemovalConfirm}
-        title="Fix EstateWeb removal sync?"
+        title="Unlink EstateWeb sites?"
         description={
           fixEstateWebRemovalPropertyIds.length === 1
-            ? "Re-runs the EstateWeb unpublish for this property and verifies EstateWeb actually cleared its sites afterward. Admin only."
-            : `Re-runs the EstateWeb unpublish for ${fixEstateWebRemovalPropertyIds.length} properties and verifies EstateWeb actually cleared their sites afterward. Admin only.`
+            ? "Re-runs the EstateWeb unpublish for this property in the background and verifies EstateWeb actually cleared its sites afterward. Admin only."
+            : `Re-runs the EstateWeb unpublish for ${fixEstateWebRemovalPropertyIds.length} properties in the background and verifies EstateWeb actually cleared their sites afterward. Admin only.`
         }
-        confirmLabel="Fix sync"
+        confirmLabel="Start unlink"
         onConfirm={handleFixEstateWebRemoval}
         isPending={fixEstateWebRemoval.isPending}
       />

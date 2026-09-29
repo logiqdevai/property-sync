@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '@/core/databases/prisma/prisma.module';
 import {
+  CHECK_ESTATEWEB_REMOVAL_QUEUE,
+  FIX_ESTATEWEB_REMOVAL_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
   CREATE_INTEGRATION_IMAGES_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
@@ -34,6 +36,8 @@ import { MigrateIntegrationImagesProcessor } from '@/background/migrate-integrat
 import { CreateIntegrationImagesProcessor } from '@/background/create-integration-images.processor';
 import { GeocodeCoordinatesProcessor } from '@/background/geocode-coordinates.processor';
 import { ResolveEstateWebLocationProcessor } from '@/background/resolve-estateweb-location.processor';
+import { CheckEstateWebRemovalProcessor } from '@/background/check-estateweb-removal.processor';
+import { FixEstateWebRemovalProcessor } from '@/background/fix-estateweb-removal.processor';
 import { UserPropertiesController } from './user-properties.controller';
 import { AdminUserPropertiesController } from './admin-user-properties.controller';
 import { UserPropertiesService } from './user-properties.service';
@@ -48,6 +52,8 @@ import { MigrateIntegrationImagesJobService } from './services/migrate-integrati
 import { CreateIntegrationImagesJobService } from './services/create-integration-images-job.service';
 import { GeocodeCoordinatesJobService } from './services/geocode-coordinates-job.service';
 import { ResolveEstateWebLocationJobService } from './services/resolve-estateweb-location-job.service';
+import { CheckEstateWebRemovalJobService } from './services/check-estateweb-removal-job.service';
+import { FixEstateWebRemovalJobService } from './services/fix-estateweb-removal-job.service';
 
 @Module({
   imports: [
@@ -73,6 +79,8 @@ import { ResolveEstateWebLocationJobService } from './services/resolve-estateweb
       { name: CREATE_INTEGRATION_IMAGES_QUEUE },
       { name: GEOCODE_MISSING_COORDINATES_QUEUE },
       { name: RESOLVE_ESTATEWEB_LOCATION_QUEUE },
+      { name: CHECK_ESTATEWEB_REMOVAL_QUEUE },
+      { name: FIX_ESTATEWEB_REMOVAL_QUEUE },
     ),
   ],
   controllers: [UserPropertiesController, AdminUserPropertiesController],
@@ -100,6 +108,10 @@ import { ResolveEstateWebLocationJobService } from './services/resolve-estateweb
     GeocodeCoordinatesProcessor,
     ResolveEstateWebLocationJobService,
     ResolveEstateWebLocationProcessor,
+    CheckEstateWebRemovalJobService,
+    CheckEstateWebRemovalProcessor,
+    FixEstateWebRemovalJobService,
+    FixEstateWebRemovalProcessor,
   ],
   exports: [UserPropertiesService],
 })

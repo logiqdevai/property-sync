@@ -268,29 +268,39 @@ export interface CheckEstateWebRemovalPayload {
 }
 
 export interface CheckEstateWebRemovalResult {
+  job_log_id: string;
+  enqueued: number;
+  skipped: Array<{ user_property_id: string; error: string }>;
+  message: string;
+}
+
+export interface CheckEstateWebRemovalJobResult {
   total: number;
-  checked: number;
-  still_live_count: number;
-  still_live_ids: string[];
-  errors: Array<{ user_property_id: string; error: string }>;
+  processed: number;
+  still_live: number;
+  unpublished: number;
+  skipped: number;
+  failed: number;
+  still_live_ids?: string[];
 }
 
 export interface FixEstateWebRemovalPayload {
   ids: string[];
 }
 
-export interface FixEstateWebRemovalItemResult {
-  user_property_id: string;
-  status: "fixed" | "skipped" | "failed";
+export interface FixEstateWebRemovalResult {
+  job_log_id: string;
+  enqueued: number;
+  skipped: Array<{ user_property_id: string; error: string }>;
   message: string;
 }
 
-export interface FixEstateWebRemovalResult {
+export interface FixEstateWebRemovalJobResult {
   total: number;
+  processed: number;
   fixed: number;
   skipped: number;
   failed: number;
-  results: FixEstateWebRemovalItemResult[];
 }
 
 export interface RenormalizeUserPropertiesPayload {

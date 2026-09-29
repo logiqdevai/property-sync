@@ -780,21 +780,14 @@ export const useFixEstateWebRemoval = () => {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["userProperties"] });
 
-      const parts: string[] = [];
-      if (result.fixed > 0) parts.push(`${result.fixed} fixed`);
-      if (result.skipped > 0) parts.push(`${result.skipped} skipped`);
-      if (result.failed > 0) parts.push(`${result.failed} failed`);
-
       toast({
-        title:
-          result.failed > 0
-            ? "EstateWeb removal fix completed with errors"
-            : "EstateWeb removal fix completed",
+        title: "EstateWeb removal fix started",
         description:
-          parts.join(", ") ||
-          `Checked ${result.total} ${result.total === 1 ? "property" : "properties"}.`,
-        duration: 4000,
-        variant: result.failed > 0 ? "warning" : "success",
+          result.skipped.length > 0
+            ? `Enqueued ${result.enqueued}. ${result.skipped.length} skipped.`
+            : `Unlinking ${result.enqueued} ${result.enqueued === 1 ? "property" : "properties"} from EstateWeb sites in the background. Track progress in Job queue.`,
+        duration: 2500,
+        variant: result.skipped.length > 0 ? "warning" : "success",
       });
     },
     onError: (error: Error) => {

@@ -18,3 +18,5 @@ export const MIGRATE_INTEGRATION_IMAGES_QUEUE = 'migrate-integration-images';
 export const CREATE_INTEGRATION_IMAGES_QUEUE = 'create-integration-images';
 export const GEOCODE_MISSING_COORDINATES_QUEUE = 'geocode-missing-coordinates';
 export const RESOLVE_ESTATEWEB_LOCATION_QUEUE = 'resolve-estateweb-location';
+export const CHECK_ESTATEWEB_REMOVAL_QUEUE = 'check-estateweb-removal';
+export const FIX_ESTATEWEB_REMOVAL_QUEUE = 'fix-estateweb-removal';

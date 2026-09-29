@@ -9,6 +9,8 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import {
+  CHECK_ESTATEWEB_REMOVAL_QUEUE,
+  FIX_ESTATEWEB_REMOVAL_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
   CREATE_INTEGRATION_IMAGES_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
@@ -27,10 +29,17 @@ import {
   ResolveEstateWebLocationEntityType,
   ResolveEstateWebLocationJobData,
 } from './interfaces/resolve-estateweb-location-job.interface';
+import {
+  CheckEstateWebRemovalJobData,
+  CheckEstateWebRemovalJobResult,
+} from './interfaces/check-estateweb-removal-job.interface';
+import {
+  FixEstateWebRemovalJobData,
+  FixEstateWebRemovalJobResult,
+} from './interfaces/fix-estateweb-removal-job.interface';
 import { DewatermarkOrchestratorService } from '@/integrations/dewatermark/services/dewatermark-orchestrator.service';
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
-import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
 import { CmsSyncAdapterFactory } from '@/modules/cms-sync/services/cms-sync-adapter.factory';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
@@ -162,7 +171,6 @@ export class UserPropertiesService {
     private readonly cmsSyncAdapterFactory: CmsSyncAdapterFactory,
     private readonly estateWebCmsSyncAdapter: EstateWebCmsSyncAdapter,
     private readonly estateWebIntegrationResolver: EstateWebIntegrationResolverService,
-    private readonly estateWebPropertyService: EstateWebPropertyService,
     private readonly dewatermarkOrchestrator: DewatermarkOrchestratorService,
     private readonly watermarkRemovalService: WatermarkRemovalService,
     private readonly contentProductionService: ContentProductionService,
@@ -191,6 +199,10 @@ export class UserPropertiesService {
     private readonly geocodeCoordinatesQueue: Queue<GeocodeCoordinatesJobData>,
     @InjectQueue(RESOLVE_ESTATEWEB_LOCATION_QUEUE)
     private readonly resolveEstateWebLocationQueue: Queue<ResolveEstateWebLocationJobData>,
+    @InjectQueue(CHECK_ESTATEWEB_REMOVAL_QUEUE)
+    private readonly checkEstateWebRemovalQueue: Queue<CheckEstateWebRemovalJobData>,
+    @InjectQueue(FIX_ESTATEWEB_REMOVAL_QUEUE)
+    private readonly fixEstateWebRemovalQueue: Queue<FixEstateWebRemovalJobData>,
   ) {}
 
   // Fire-and-forget: queues a single-entity Google-based EstateWeb location
@@ -1246,10 +1258,14 @@ export class UserPropertiesService {
   }
 
   // Step 1 of the admin "REMOVED/SOLD locally but still live on EstateWeb"
-  // remediation (see commit d4247ab regression). Read-only: does a live GET
-  // per candidate property and reports which ones EstateWeb still shows as
-  // published on at least one site, so an admin can eyeball/copy the exact
-  // ids before running fixEstateWebRemoval (step 2) on them.
+  // remediation (see commit d4247ab regression). Read-only: enqueues one
+  // background job per candidate property to do a live GET and report which
+  // ones EstateWeb still shows as published on at least one site, so an
+  // admin can eyeball/copy the exact ids before running fixEstateWebRemoval
+  // (step 2) on them. Runs as a job (like resolveEstateWebLocations) rather
+  // than inline -- one live GET per property means even a moderate selection
+  // would otherwise risk a request timeout, and this gives the UI a real
+  // processed/total progress bar instead of a blocking spinner.
   async checkEstateWebRemoval(userId: string, ids: string[]) {
     const idList = [...new Set(ids.filter(Boolean))];
     if (idList.length === 0) {
@@ -1258,6 +1274,7 @@ export class UserPropertiesService {
 
     const properties = await this.prisma.userProperty.findMany({
       where: { id: { in: idList }, user_id: userId },
+      select: { id: true, status: true, integration_property_id: true },
     });
 
     if (properties.length === 0) {
@@ -1265,71 +1282,118 @@ export class UserPropertiesService {
     }
 
     const byId = new Map(properties.map((property) => [property.id, property]));
-    let checked = 0;
-    const stillLiveIds: string[] = [];
-    const errors: Array<{ user_property_id: string; error: string }> = [];
+    const enqueueIds: string[] = [];
+    const skipped: Array<{ user_property_id: string; error: string }> = [];
 
     for (const id of idList) {
       const property = byId.get(id);
-      if (!property) continue;
-
-      if (
-        (property.status !== PropertyStatus.REMOVED &&
-          property.status !== PropertyStatus.SOLD) ||
-        !property.integration_property_id
-      ) {
+      if (!property) {
+        skipped.push({ user_property_id: id, error: 'Property not found' });
         continue;
       }
-
-      checked++;
-      try {
-        const { userIntegrationId } =
-          await this.resolveCmsIntegrationForProperty(property);
-        const remote = await this.estateWebPropertyService.getProperty(
-          userIntegrationId,
-          property.integration_property_id,
-        );
-        // EstateWeb's GET response for `sites` never includes a `selected`
-        // field -- every entry in the array IS a currently-published site,
-        // so a non-empty array means it's still live.
-        if ((remote.sites ?? []).length > 0) {
-          stillLiveIds.push(id);
-        }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        errors.push({ user_property_id: id, error: message });
+      if (
+        property.status !== PropertyStatus.REMOVED &&
+        property.status !== PropertyStatus.SOLD
+      ) {
+        skipped.push({
+          user_property_id: id,
+          error: `Property status is ${property.status}, not REMOVED/SOLD`,
+        });
+        continue;
       }
+      if (!property.integration_property_id) {
+        skipped.push({
+          user_property_id: id,
+          error: 'Property is not linked to EstateWeb CMS',
+        });
+        continue;
+      }
+      enqueueIds.push(id);
     }
 
+    if (enqueueIds.length === 0) {
+      const firstError = skipped[0]?.error ?? 'Nothing eligible to check';
+      throw new BadRequestException(
+        skipped.length === 1
+          ? firstError
+          : `None of the ${idList.length} properties are eligible to check. ${firstError}`,
+      );
+    }
+
+    const initialResult: CheckEstateWebRemovalJobResult = {
+      total: enqueueIds.length,
+      processed: 0,
+      still_live: 0,
+      unpublished: 0,
+      skipped: 0,
+      failed: 0,
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: CHECK_ESTATEWEB_REMOVAL_QUEUE,
+        job_name: 'check-estateweb-removal',
+        status: JobStatus.WAITING,
+        payload: {
+          user_id: userId,
+          user_property_ids: enqueueIds,
+          total: enqueueIds.length,
+        } as object,
+        result: initialResult as object,
+      },
+    });
+
+    this.logger.log(
+      `[checkEstateWebRemoval] queued job_log=${jobLog.id} user=${userId} ids=${enqueueIds.length}`,
+    );
+
+    await this.checkEstateWebRemovalQueue.addBulk(
+      enqueueIds.map((userPropertyId) => {
+        const jobData: CheckEstateWebRemovalJobData = {
+          job_log_id: jobLog.id,
+          user_id: userId,
+          user_property_id: userPropertyId,
+          total: enqueueIds.length,
+        };
+        return {
+          name: 'check-estateweb-removal',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${userPropertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
+
     return {
-      total: idList.length,
-      checked,
-      still_live_count: stillLiveIds.length,
-      still_live_ids: stillLiveIds,
-      errors,
+      job_log_id: jobLog.id,
+      enqueued: enqueueIds.length,
+      skipped,
+      message:
+        'EstateWeb removal check started in the background. Track progress here or in Job queue.',
     };
   }
 
   // Step 2: re-runs the (now-fixed) pushRemove unpublish for each selected
   // property and reports whether EstateWeb actually cleared its sites
-  // afterward. Synchronous and capped at a small batch -- this is a manual
-  // spot-fix for properties an admin has identified (typically via
-  // checkEstateWebRemoval above), not a routine bulk operation; pushRemove
-  // does 2 GETs + 1 PATCH per property, so a large selection would risk a
-  // request timeout.
+  // afterward. Runs as a background job (like checkEstateWebRemoval /
+  // resolveEstateWebLocations) rather than inline -- pushRemove does 2 GETs +
+  // 1 PATCH per property, so any batch beyond a couple of properties risked a
+  // request timeout running synchronously. No selection-size cap: the queue
+  // just works through however many are enqueued.
   async fixEstateWebRemoval(userId: string, ids: string[]) {
     const idList = [...new Set(ids.filter(Boolean))];
     if (idList.length === 0) {
       throw new BadRequestException('No properties selected');
     }
-    if (idList.length > 25) {
-      throw new BadRequestException(
-        'Select 25 or fewer properties at a time to fix EstateWeb removal sync',
-      );
-    }
 
     const properties = await this.prisma.userProperty.findMany({
       where: { id: { in: idList }, user_id: userId },
+      select: { id: true, status: true, integration_property_id: true },
     });
 
     if (properties.length === 0) {
@@ -1337,69 +1401,98 @@ export class UserPropertiesService {
     }
 
     const byId = new Map(properties.map((property) => [property.id, property]));
-    const results: Array<{
-      user_property_id: string;
-      status: 'fixed' | 'skipped' | 'failed';
-      message: string;
-    }> = [];
+    const enqueueIds: string[] = [];
+    const skipped: Array<{ user_property_id: string; error: string }> = [];
 
     for (const id of idList) {
       const property = byId.get(id);
       if (!property) {
-        results.push({
-          user_property_id: id,
-          status: 'failed',
-          message: 'Property not found',
-        });
+        skipped.push({ user_property_id: id, error: 'Property not found' });
         continue;
       }
-
       if (
         property.status !== PropertyStatus.REMOVED &&
         property.status !== PropertyStatus.SOLD
       ) {
-        results.push({
+        skipped.push({
           user_property_id: id,
-          status: 'skipped',
-          message: `Property status is ${property.status}, not REMOVED/SOLD`,
+          error: `Property status is ${property.status}, not REMOVED/SOLD`,
         });
         continue;
       }
-
       if (!property.integration_property_id) {
-        results.push({
+        skipped.push({
           user_property_id: id,
-          status: 'skipped',
-          message: 'Property is not linked to EstateWeb CMS',
+          error: 'Property is not linked to EstateWeb CMS',
         });
         continue;
       }
-
-      try {
-        const { userIntegrationId } =
-          await this.resolveCmsIntegrationForProperty(property);
-        await this.estateWebCmsSyncAdapter.pushRemove(
-          userIntegrationId,
-          property.integration_property_id,
-          property,
-        );
-        results.push({
-          user_property_id: id,
-          status: 'fixed',
-          message: 'Unpublished from every EstateWeb site (verified)',
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        results.push({ user_property_id: id, status: 'failed', message });
-      }
+      enqueueIds.push(id);
     }
 
+    if (enqueueIds.length === 0) {
+      const firstError = skipped[0]?.error ?? 'Nothing eligible to fix';
+      throw new BadRequestException(
+        skipped.length === 1
+          ? firstError
+          : `None of the ${idList.length} properties are eligible to fix. ${firstError}`,
+      );
+    }
+
+    const initialResult: FixEstateWebRemovalJobResult = {
+      total: enqueueIds.length,
+      processed: 0,
+      fixed: 0,
+      skipped: 0,
+      failed: 0,
+    };
+
+    const jobLog = await this.prisma.jobLog.create({
+      data: {
+        queue_name: FIX_ESTATEWEB_REMOVAL_QUEUE,
+        job_name: 'fix-estateweb-removal',
+        status: JobStatus.WAITING,
+        payload: {
+          user_id: userId,
+          user_property_ids: enqueueIds,
+          total: enqueueIds.length,
+        } as object,
+        result: initialResult as object,
+      },
+    });
+
+    this.logger.log(
+      `[fixEstateWebRemoval] queued job_log=${jobLog.id} user=${userId} ids=${enqueueIds.length}`,
+    );
+
+    await this.fixEstateWebRemovalQueue.addBulk(
+      enqueueIds.map((userPropertyId) => {
+        const jobData: FixEstateWebRemovalJobData = {
+          job_log_id: jobLog.id,
+          user_id: userId,
+          user_property_id: userPropertyId,
+          total: enqueueIds.length,
+        };
+        return {
+          name: 'fix-estateweb-removal',
+          data: jobData,
+          opts: {
+            jobId: `${jobLog.id}__${userPropertyId}`,
+            attempts: 3,
+            backoff: { type: 'exponential' as const, delay: 5000 },
+            removeOnComplete: 100,
+            removeOnFail: 200,
+          },
+        };
+      }),
+    );
+
     return {
-      total: idList.length,
-      fixed: results.filter((r) => r.status === 'fixed').length,
-      skipped: results.filter((r) => r.status === 'skipped').length,
-      failed: results.filter((r) => r.status === 'failed').length,
-      results,
+      job_log_id: jobLog.id,
+      enqueued: enqueueIds.length,
+      skipped,
+      message:
+        'EstateWeb removal fix started in the background. Track progress here or in Job queue.',
     };
   }
 
