@@ -3949,13 +3949,21 @@ export class UserPropertiesService {
         },
       });
 
-      // Only worth a fresh Google check when there was no id yet, or the location
-      // text itself actually changed on this sync (e.g. per-user truncation makes
-      // this row's own city/district differ from the canonical property's).
+      // Only worth a fresh Google check when there was no id yet, the location text
+      // itself actually changed on this sync (e.g. per-user truncation makes this
+      // row's own city/district differ from the canonical property's), or
+      // coordinates just became available for the first time -- see the matching
+      // gate (and root cause #13) in property-normalization.service.ts.
+      const gotCoordinatesForTheFirstTime =
+        existing.latitude == null &&
+        existing.longitude == null &&
+        effectiveFields.latitude != null &&
+        effectiveFields.longitude != null;
       if (
         existing.estateweb_location_id == null ||
         effectiveFields.city !== existing.city ||
-        effectiveFields.district !== existing.district
+        effectiveFields.district !== existing.district ||
+        gotCoordinatesForTheFirstTime
       ) {
         await this.enqueueResolveEstateWebLocation(
           'user_property',

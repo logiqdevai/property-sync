@@ -333,6 +333,65 @@ function guessGreekGenitive(normalized: string): string | null {
   return null;
 }
 
+// Per-word nominative -> genitive suffix guesses, used only to try to land on an already
+// bare-indexed "Δήμος <Genitive>" municipality node (see guessMunicipalityGenitivePhrase
+// below) -- never used standalone the way guessGreekGenitive is, because on its own a
+// -η/-α guess is too easily a false match for an unrelated catalog entry (the same
+// ambiguity guessGreekGenitive's own comment calls out). Restricting every use to "must
+// land on a real municipality node" is what makes adding the -η/-α pairs here safe.
+const NOMINATIVE_TO_GENITIVE_WORD_SUFFIXES: Array<[nominative: string, genitive: string]> = [
+  ['ος', 'ου'], // masc/neut 2nd declension, e.g. Αποκόρωνος -> Αποκορώνου
+  ['η', 'ης'], // fem 1st declension, e.g. Παρασκευή -> Παρασκευής
+  ['α', 'ας'], // fem 1st declension, e.g. Καλλιθέα -> Καλλιθέας
+];
+
+// PLACE_WORD_ABBREVIATIONS already collapses "Αγία"/"Αγίας"/"Άγιος"/... to the same "αγ"
+// token on both the input and the catalog side, so an already-abbreviated word never has a
+// declined ending left to guess from (and doesn't need one -- both sides already agree).
+// Passing it through unconverted, instead of failing the whole phrase, is what lets e.g.
+// "Αγία Παρασκευή" -> "αγ παρασκευη" still find "Δήμος Αγίας Παρασκευής" -> "αγ παρασκευης".
+const PLACE_WORD_ABBREVIATION_OUTPUTS = new Set(
+  Object.values(PLACE_WORD_ABBREVIATIONS),
+);
+
+function guessGreekGenitiveWord(word: string): string | null {
+  if (PLACE_WORD_ABBREVIATION_OUTPUTS.has(word)) return word;
+  for (const [nomSuffix, genSuffix] of NOMINATIVE_TO_GENITIVE_WORD_SUFFIXES) {
+    if (word.endsWith(nomSuffix) && word.length > nomSuffix.length + 1) {
+      return word.slice(0, -nomSuffix.length) + genSuffix;
+    }
+  }
+  return null;
+}
+
+// Catalog municipality nodes are named "Δήμος <Genitive>", and a genitive Greek place name
+// is often a whole declined phrase, not one word (e.g. "Δήμος Αγίας Παρασκευής", "Δήμος
+// Παλαιού Φαλήρου") -- root cause #9's bare-municipality indexing and guessGreekGenitive
+// only ever reach a single-word "-ος -> -ου" municipality name (e.g. "Αποκορώνου"), so any
+// multi-word or -η/-α ending municipality (a real, common shape: Greek adjectives like
+// "Αγία"/"Νέα"/"Παλαιά" decline together with the noun they modify) still falls through to
+// the same "no district match -> pick a same-named neighborhood homonym by tree depth"
+// failure as #9's original bug, just for a different declension pattern (see root cause #13
+// in ESTATEWEB-LOCATION-ACCURACY-FIXES.md, e.g. "Αγία Παρασκευή" (Athens) landing on
+// Heraklion's same-named neighborhood instead of Athens' own "Δήμος Αγίας Παρασκευής").
+// Guesses per word and only trusts the result when it lands on a real indexed municipality
+// node -- a wrong per-word guess (a Greek word that isn't 1st/2nd declension, or is already
+// genitive) will not coincidentally spell a real "Δήμος <X>" name, so this stays safe without
+// needing to know Greek grammar exceptions the way the genuinely irregular cases
+// (CITY_ALIASES) do.
+function guessMunicipalityGenitivePhrase(normalized: string): string | null {
+  const words = normalized.split(' ').filter(Boolean);
+  if (words.length === 0) return null;
+  const converted = words.map(guessGreekGenitiveWord);
+  if (converted.some((word) => word == null)) return null;
+  const phrase = converted.join(' ');
+  const candidates = LOCATION_BY_NORMALIZED_NAME.get(phrase);
+  const isMunicipality = candidates?.some((loc) =>
+    normalizeEstateWebPlaceLabel(loc.name).startsWith(MUNICIPALITY_PREFIX),
+  );
+  return isMunicipality ? phrase : null;
+}
+
 // Every catalog prefecture-level segment (path[1], e.g. "Σάμος" in "Νησιά Αιγαίου » Σάμος"),
 // used to validate candidate nominatives derived from Google's legacy "Νομός <Genitive>" form.
 const PREFECTURE_SEGMENTS = new Set<string>(
@@ -408,6 +467,15 @@ function expandCityLabels(city?: string | null): {
   const aliased = CITY_ALIASES[raw];
   if (aliased) push(aliased);
 
+  // Note: unlike district labels below, a municipality-genitive guess is NOT added to this
+  // list -- resolveEstateWebLocation's final city fallback computes it separately and only
+  // uses it to override an already-found cityResult when that result has no relation to the
+  // guessed municipality (see root cause #13 in ESTATEWEB-LOCATION-ACCURACY-FIXES.md).
+  // Adding it here would make it just another label in the existing "first label with any
+  // match wins" loop, which either shadows it behind the raw label's own (possibly wrong)
+  // homonym match, or -- if given priority -- coarsens already-correct raw matches (e.g. "Νέα
+  // Σμύρνη" -> its own specific town node) down to the broader bare municipality node.
+
   // "Α - Β" compound labels are sometimes catalogued as a plain-space name ("Α Β") instead --
   // try that variant too (safe: verified against the full catalog to never collide with a
   // distinct dash-containing entry).
@@ -477,6 +545,15 @@ function expandDistrictLabels(district?: string | null): string[] {
   // "Αποκορώνου") without this -- see MUNICIPALITY_PREFIX indexing above.
   const genitiveGuess = guessGreekGenitive(raw);
   if (genitiveGuess) push(genitiveGuess);
+  // Note: unlike expandCityLabels, guessMunicipalityGenitivePhrase is deliberately NOT added
+  // here. resolveByDistrict returns on the first district label with any match, unscoped by
+  // city when no city-scoped match exists (its "unique district" fallback) -- a municipality
+  // guess added as just another label can win that fallback with NO relation to the actual
+  // city at all (e.g. city "Νεοχωρούδα", a Thessaloniki-area village, district "Καλλιθέα" ->
+  // this guess would jump to Athens' unrelated "Δήμος Καλλιθέας" -- a real regression caught
+  // while verifying root cause #13's backfill, unlike the city-side version, which has an
+  // explicit conflict guard; adding an equivalent guard here was left out of scope). The
+  // primary root cause #13 bug case (bare city, no district) is unaffected by this.
   for (let i = parts.length - 1; i >= 0; i--) {
     push(parts[i]);
     const partAlias = CITY_ALIASES[parts[i]];
@@ -489,6 +566,30 @@ function expandDistrictLabels(district?: string | null): string[] {
 // (a Piraeus or East Attica point can come back with just "Αθήνα") -- treat them as one
 // region for the hard prefecture constraint.
 const ATTICA_PREFECTURE_SEGMENTS = ['αθηνα', 'ανατολικη αττικη', 'δυτικη αττικη', 'πειραιας'];
+
+// Whether `text` names a real catalog prefecture that ISN'T among `allowedSegments` --
+// guards guessMunicipalityGenitivePhrase (see resolveEstateWebLocation) against a case like
+// district "Ρέθυμνο" (Crete) with city "Καλλιθέα" (whose only exact-name municipality
+// nationwide is in Athens): without this, the guess would jump the whole property across the
+// country on nothing but "Καλλιθέα" being a unique municipality name, ignoring an explicit,
+// specific, conflicting region the text already names. Deliberately NOT implemented via a
+// REGION_PATH_HINTS-style `\b`-delimited regex -- `\b` never matches around Greek letters in
+// a non-Unicode-mode JS regex (Greek letters aren't `\w`), so that style of pattern silently
+// never fires for Greek text at all (only for the Latin transliteration alternatives already
+// in REGION_PATH_HINTS) -- a separate, pre-existing gap this doesn't attempt to fix more
+// broadly. Token-boundary-safe via space-padding instead.
+function textMentionsConflictingPrefecture(
+  text: string | null | undefined,
+  allowedSegments: string[],
+): boolean {
+  if (!text) return false;
+  const padded = ` ${normalizeEstateWebPlaceLabel(text)} `;
+  for (const prefecture of PREFECTURE_SEGMENTS) {
+    if (allowedSegments.includes(prefecture)) continue;
+    if (padded.includes(` ${prefecture} `)) return true;
+  }
+  return false;
+}
 
 function isInRequiredPrefecture(
   loc: EstateWebLocation,
@@ -778,17 +879,62 @@ export function resolveEstateWebLocation(
     }
   }
 
+  let cityResult: EstateWebLocation | undefined;
   for (const cityLabel of cityLabels) {
     const cityMatches = filterByPreferredPath(
       LOCATION_BY_NORMALIZED_NAME.get(cityLabel) ?? [],
       hints,
     );
     if (cityMatches.length > 0) {
-      return pickCanonicalCity(cityMatches);
+      cityResult = pickCanonicalCity(cityMatches);
+      break;
     }
   }
 
-  return undefined;
+  // A scraped city is very often just a neighborhood/town name that also happens to be a
+  // whole municipality's name elsewhere in Greece (see root causes #1/#8/#9/#13 in
+  // ESTATEWEB-LOCATION-ACCURACY-FIXES.md). guessMunicipalityGenitivePhrase only ever
+  // resolves when the genitive-guessed phrase lands on a real, specific "Δήμος <X>" node --
+  // a strong signal, but NOT strong enough to unconditionally outrank cityResult above: most
+  // Greek towns share their municipality's name and already resolve correctly through it
+  // (e.g. "Νέα Σμύρνη" -> its own town node, itself a child of "Δήμος Νέας Σμύρνης"), and
+  // blindly preferring the (shallower, less specific) municipality guess in every case would
+  // coarsen those already-correct matches. Only step in when cityResult is missing, or is a
+  // node with NO relation to the guessed municipality at all (i.e. cityResult only matched
+  // because the raw label happens to also name an unrelated place in a different region --
+  // exactly the homonym trap this is meant to fix).
+  const municipalityGuessLabel = guessMunicipalityGenitivePhrase(
+    cityLabels[0] ?? '',
+  );
+  if (municipalityGuessLabel) {
+    const guessMatches = filterByPreferredPath(
+      LOCATION_BY_NORMALIZED_NAME.get(municipalityGuessLabel) ?? [],
+      hints,
+    );
+    const municipalityGuessLoc = pickMostSpecific(guessMatches);
+    // Guard against a real, specific-but-wrong-region text hint (e.g. district "Ρέθυμνο"
+    // alongside city "Καλλιθέα") -- without this, "Καλλιθέα Ρεθύμνου" would jump all the way
+    // to Athens' "Δήμος Καλλιθέας" just because it's the only municipality named exactly
+    // "Καλλιθέα" nationwide, which is worse than the existing (still wrong-node, but at
+    // least Crete-scoped) same-named-homonym guess.
+    const guessSegments = municipalityGuessLoc
+      ? (LOCATION_NORMALIZED_SEGMENTS.get(municipalityGuessLoc.id) ?? [])
+      : [];
+    const conflictsWithHints =
+      textMentionsConflictingPrefecture(city, guessSegments) ||
+      textMentionsConflictingPrefecture(district, guessSegments);
+    if (
+      municipalityGuessLoc &&
+      !conflictsWithHints &&
+      (!cityResult ||
+        (cityResult.id !== municipalityGuessLoc.id &&
+          !isDescendantOf(cityResult, municipalityGuessLoc.id)))
+    ) {
+      return municipalityGuessLoc;
+    }
+  }
+
+  return cityResult;
 }
 
 /** Convenience wrapper returning just the numeric location id (or `null`). */

@@ -230,6 +230,59 @@ describe('resolveEstateWebLocation', () => {
     );
   });
 
+  it('resolves a nominative multi-word municipality name to its genitive-phrase catalog node', () => {
+    // Regression for user_properties.id = 20ed33be-8981-40e0-8b3a-715bcb41914b (root cause
+    // #13): city "Αγία Παρασκευή" with no district resolved to the same-named Heraklion
+    // (Crete) neighborhood (99696) instead of the actual Athens municipality "Δήμος Αγίας
+    // Παρασκευής" (90001), ~330km away -- the catalog only has the municipality itself as a
+    // genitive PHRASE ("Αγίας Παρασκευής"), which root cause #9's single-word -ος/-ου
+    // genitive guessing and bare-municipality indexing never reached (no "Αγία Παρασκευή"
+    // bare entry exists at all, only same-named neighborhoods elsewhere). Also covers the
+    // "Αγ." abbreviation collapsing "Αγία"/"Αγίας" to the same token on both sides.
+    const loc = resolveEstateWebLocationFromSources({
+      city: 'Αγία Παρασκευή',
+    });
+    expect(loc).toEqual(
+      expect.objectContaining({
+        id: 90001,
+        name: 'Δήμος Αγίας Παρασκευής',
+        path: 'Στερεά Ελλάδα » Αθήνα » Δήμος Αγίας Παρασκευής',
+      }),
+    );
+  });
+
+  it('does not let a municipality-genitive guess override an explicit conflicting region', () => {
+    // Regression for user_properties.id = 9c4470a2-1c3e-4467-b9eb-f2920882232b: city
+    // "Καλλιθέα" / district "Ρέθυμνο" (real title: "Καλλιθέα Ρεθύμνου", i.e. Kallithea,
+    // Rethymno -- unambiguously Crete). "Καλλιθέα" has 41 same-named homonyms nationwide
+    // but only ONE catalog municipality named exactly "Δήμος Καλλιθέας" (Athens) -- without
+    // this guard, root cause #13's fix would jump the property across the country on that
+    // uniqueness alone, overriding the explicit "Ρέθυμνο" region the text already names.
+    const loc = resolveEstateWebLocationFromSources({
+      city: 'Καλλιθέα',
+      district: 'Ρέθυμνο',
+    });
+    expect(loc?.id).not.toBe(90019); // Athens' Δήμος Καλλιθέας
+    const segments = loc ? loc.path.split(' » ') : [];
+    expect(segments[0]).toBe('Κρήτη');
+  });
+
+  it('does not let a district-side municipality guess override an unrelated city', () => {
+    // Regression for property.id = d8fb0458-e30b-4ad9-8b14-e24e9381fcd9: city "Νεοχωρούδα"
+    // (a Thessaloniki-area village, real title: "Νεοχωρούδα (Καλλιθέα)") / district
+    // "Καλλιθέα" was already correctly resolved (114977, Thessaloniki's own "Καλλιθέα") --
+    // adding guessMunicipalityGenitivePhrase to expandDistrictLabels (mirroring the city-side
+    // fix) let the bare district label "Καλλιθέα" resolve, UNSCOPED by the actual city, to
+    // Athens' unrelated "Δήμος Καλλιθέας" via resolveByDistrict's "unique district" fallback
+    // -- worse than doing nothing, since this property has no coordinates to self-heal via
+    // the async job. The district side deliberately has no such guess (see expandDistrictLabels).
+    const loc = resolveEstateWebLocationFromSources({
+      city: 'Νεοχωρούδα',
+      district: 'Καλλιθέα',
+    });
+    expect(loc?.id).not.toBe(90019); // Athens' Δήμος Καλλιθέας
+  });
+
   it('does not coarsen an already-specific village match down to its parent municipality', () => {
     // Guard for the bare-municipality-name indexing added alongside root cause #9: once
     // district "Αποκορώνας" can resolve to the municipality "Δήμος Αποκορώνου" itself, a

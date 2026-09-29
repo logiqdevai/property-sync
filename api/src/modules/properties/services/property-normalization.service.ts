@@ -781,13 +781,27 @@ export class PropertyNormalizationService {
         });
 
         batchProperties.push(updated);
-        // Only worth a fresh Google check when there was no id yet, or the location
-        // text itself actually changed on this re-crawl -- not on every re-crawl
-        // regardless of relevance (most re-crawls only touch price/images/etc.).
+        // Only worth a fresh Google check when there was no id yet, the location
+        // text itself actually changed on this re-crawl, or coordinates just became
+        // available for the first time -- not on every re-crawl regardless of
+        // relevance (most re-crawls only touch price/images/etc.). The coordinates
+        // case matters because the very first resolution (at creation, often with no
+        // coordinates yet) can pick a same-named homonym in the wrong region with no
+        // Google hint to scope it -- if a later crawl geocodes the property, that's
+        // the resolver's one chance to self-correct via the async job, since once an
+        // id is set the synchronous path above is barred from touching it again (see
+        // root cause #7 in ESTATEWEB-LOCATION-ACCURACY-FIXES.md; this gate missing
+        // the coordinates case is what let that keep happening -- see root cause #13).
+        const gotCoordinatesForTheFirstTime =
+          existingLink.property.latitude == null &&
+          existingLink.property.longitude == null &&
+          record.latitude != null &&
+          record.longitude != null;
         if (
           existingLink.property.estateweb_location_id == null ||
           record.city !== existingLink.property.city ||
-          record.district !== existingLink.property.district
+          record.district !== existingLink.property.district ||
+          gotCoordinatesForTheFirstTime
         ) {
           await this.enqueueResolveEstateWebLocation('property', updated.id);
         }
