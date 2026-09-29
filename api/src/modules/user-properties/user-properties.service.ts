@@ -1255,11 +1255,6 @@ export class UserPropertiesService {
     if (idList.length === 0) {
       throw new BadRequestException('No properties selected');
     }
-    if (idList.length > 100) {
-      throw new BadRequestException(
-        'Select 100 or fewer properties at a time to check EstateWeb removal sync',
-      );
-    }
 
     const properties = await this.prisma.userProperty.findMany({
       where: { id: { in: idList }, user_id: userId },
