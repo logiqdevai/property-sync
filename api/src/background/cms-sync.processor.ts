@@ -474,7 +474,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
             userIntegrationId,
             integrationPropertyId,
             userProperty,
-            pushOptions,
+            { ...pushOptions, reconciledLink: true },
           );
           this.logger.log(
             `CMS sync op success: property=${operation.user_property_id} operation=CREATE reconciled=UPDATE integration_property_id=${integrationPropertyId}`,
@@ -494,6 +494,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
           userIntegrationId,
           integrationPropertyId,
           userProperty,
+          true,
         );
 
         this.logger.log(
@@ -713,6 +714,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     userIntegrationId: string,
     integrationPropertyId: string,
     userProperty: { id: string; images: unknown },
+    reconciledLink = false,
   ): Promise<void> {
     try {
       await adapter.ensureImagesCached?.({
@@ -720,6 +722,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         crmPropertyId: integrationPropertyId,
         userPropertyId: userProperty.id,
         sourceImages: userProperty.images,
+        reconciledLink,
       });
     } catch (error) {
       this.logger.warn(

@@ -43138,6 +43138,7 @@ export namespace Prisma {
     user_id: string | null
     user_integration_settings_id: string | null
     user_property_id: string | null
+    linked_via_reconciliation: boolean | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -43147,6 +43148,7 @@ export namespace Prisma {
     user_id: string | null
     user_integration_settings_id: string | null
     user_property_id: string | null
+    linked_via_reconciliation: boolean | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -43159,6 +43161,9 @@ export namespace Prisma {
     images: number
     sites: number
     ads: number
+    linked_via_reconciliation: number
+    excluded_source_images: number
+    image_upload_failures: number
     created_at: number
     updated_at: number
     _all: number
@@ -43170,6 +43175,7 @@ export namespace Prisma {
     user_id?: true
     user_integration_settings_id?: true
     user_property_id?: true
+    linked_via_reconciliation?: true
     created_at?: true
     updated_at?: true
   }
@@ -43179,6 +43185,7 @@ export namespace Prisma {
     user_id?: true
     user_integration_settings_id?: true
     user_property_id?: true
+    linked_via_reconciliation?: true
     created_at?: true
     updated_at?: true
   }
@@ -43191,6 +43198,9 @@ export namespace Prisma {
     images?: true
     sites?: true
     ads?: true
+    linked_via_reconciliation?: true
+    excluded_source_images?: true
+    image_upload_failures?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -43276,6 +43286,9 @@ export namespace Prisma {
     images: JsonValue | null
     sites: JsonValue | null
     ads: JsonValue | null
+    linked_via_reconciliation: boolean
+    excluded_source_images: JsonValue | null
+    image_upload_failures: JsonValue | null
     created_at: Date
     updated_at: Date
     _count: IntegrationPropertyCountAggregateOutputType | null
@@ -43305,6 +43318,9 @@ export namespace Prisma {
     images?: boolean
     sites?: boolean
     ads?: boolean
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: boolean
+    image_upload_failures?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -43320,6 +43336,9 @@ export namespace Prisma {
     images?: boolean
     sites?: boolean
     ads?: boolean
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: boolean
+    image_upload_failures?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -43335,6 +43354,9 @@ export namespace Prisma {
     images?: boolean
     sites?: boolean
     ads?: boolean
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: boolean
+    image_upload_failures?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -43350,11 +43372,14 @@ export namespace Prisma {
     images?: boolean
     sites?: boolean
     ads?: boolean
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: boolean
+    image_upload_failures?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type IntegrationPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "user_integration_settings_id" | "user_property_id" | "images" | "sites" | "ads" | "created_at" | "updated_at", ExtArgs["result"]["integrationProperty"]>
+  export type IntegrationPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "user_integration_settings_id" | "user_property_id" | "images" | "sites" | "ads" | "linked_via_reconciliation" | "excluded_source_images" | "image_upload_failures" | "created_at" | "updated_at", ExtArgs["result"]["integrationProperty"]>
   export type IntegrationPropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     user_integration_settings?: boolean | UserIntegrationSettingsDefaultArgs<ExtArgs>
@@ -43386,6 +43411,9 @@ export namespace Prisma {
       images: Prisma.JsonValue | null
       sites: Prisma.JsonValue | null
       ads: Prisma.JsonValue | null
+      linked_via_reconciliation: boolean
+      excluded_source_images: Prisma.JsonValue | null
+      image_upload_failures: Prisma.JsonValue | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["integrationProperty"]>
@@ -43821,6 +43849,9 @@ export namespace Prisma {
     readonly images: FieldRef<"IntegrationProperty", 'Json'>
     readonly sites: FieldRef<"IntegrationProperty", 'Json'>
     readonly ads: FieldRef<"IntegrationProperty", 'Json'>
+    readonly linked_via_reconciliation: FieldRef<"IntegrationProperty", 'Boolean'>
+    readonly excluded_source_images: FieldRef<"IntegrationProperty", 'Json'>
+    readonly image_upload_failures: FieldRef<"IntegrationProperty", 'Json'>
     readonly created_at: FieldRef<"IntegrationProperty", 'DateTime'>
     readonly updated_at: FieldRef<"IntegrationProperty", 'DateTime'>
   }
@@ -49671,6 +49702,9 @@ export namespace Prisma {
     images: 'images',
     sites: 'sites',
     ads: 'ads',
+    linked_via_reconciliation: 'linked_via_reconciliation',
+    excluded_source_images: 'excluded_source_images',
+    image_upload_failures: 'image_upload_failures',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -53620,6 +53654,9 @@ export namespace Prisma {
     images?: JsonNullableFilter<"IntegrationProperty">
     sites?: JsonNullableFilter<"IntegrationProperty">
     ads?: JsonNullableFilter<"IntegrationProperty">
+    linked_via_reconciliation?: BoolFilter<"IntegrationProperty"> | boolean
+    excluded_source_images?: JsonNullableFilter<"IntegrationProperty">
+    image_upload_failures?: JsonNullableFilter<"IntegrationProperty">
     created_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -53635,6 +53672,9 @@ export namespace Prisma {
     images?: SortOrderInput | SortOrder
     sites?: SortOrderInput | SortOrder
     ads?: SortOrderInput | SortOrder
+    linked_via_reconciliation?: SortOrder
+    excluded_source_images?: SortOrderInput | SortOrder
+    image_upload_failures?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -53654,6 +53694,9 @@ export namespace Prisma {
     images?: JsonNullableFilter<"IntegrationProperty">
     sites?: JsonNullableFilter<"IntegrationProperty">
     ads?: JsonNullableFilter<"IntegrationProperty">
+    linked_via_reconciliation?: BoolFilter<"IntegrationProperty"> | boolean
+    excluded_source_images?: JsonNullableFilter<"IntegrationProperty">
+    image_upload_failures?: JsonNullableFilter<"IntegrationProperty">
     created_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -53669,6 +53712,9 @@ export namespace Prisma {
     images?: SortOrderInput | SortOrder
     sites?: SortOrderInput | SortOrder
     ads?: SortOrderInput | SortOrder
+    linked_via_reconciliation?: SortOrder
+    excluded_source_images?: SortOrderInput | SortOrder
+    image_upload_failures?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: IntegrationPropertyCountOrderByAggregateInput
@@ -53687,6 +53733,9 @@ export namespace Prisma {
     images?: JsonNullableWithAggregatesFilter<"IntegrationProperty">
     sites?: JsonNullableWithAggregatesFilter<"IntegrationProperty">
     ads?: JsonNullableWithAggregatesFilter<"IntegrationProperty">
+    linked_via_reconciliation?: BoolWithAggregatesFilter<"IntegrationProperty"> | boolean
+    excluded_source_images?: JsonNullableWithAggregatesFilter<"IntegrationProperty">
+    image_upload_failures?: JsonNullableWithAggregatesFilter<"IntegrationProperty">
     created_at?: DateTimeWithAggregatesFilter<"IntegrationProperty"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"IntegrationProperty"> | Date | string
   }
@@ -57894,6 +57943,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutIntegration_propertiesInput
@@ -57909,6 +57961,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -57918,6 +57973,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: BoolFieldUpdateOperationsInput | boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutIntegration_propertiesNestedInput
@@ -57933,6 +57991,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: BoolFieldUpdateOperationsInput | boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -57945,6 +58006,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -57954,6 +58018,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: BoolFieldUpdateOperationsInput | boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -57966,6 +58033,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: BoolFieldUpdateOperationsInput | boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -61489,6 +61559,9 @@ export namespace Prisma {
     images?: SortOrder
     sites?: SortOrder
     ads?: SortOrder
+    linked_via_reconciliation?: SortOrder
+    excluded_source_images?: SortOrder
+    image_upload_failures?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -61498,6 +61571,7 @@ export namespace Prisma {
     user_id?: SortOrder
     user_integration_settings_id?: SortOrder
     user_property_id?: SortOrder
+    linked_via_reconciliation?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -61507,6 +61581,7 @@ export namespace Prisma {
     user_id?: SortOrder
     user_integration_settings_id?: SortOrder
     user_property_id?: SortOrder
+    linked_via_reconciliation?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -66041,6 +66116,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
     user_integration_settings: UserIntegrationSettingsCreateNestedOneWithoutIntegration_propertiesInput
@@ -66054,6 +66132,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -66317,6 +66398,9 @@ export namespace Prisma {
     images?: JsonNullableFilter<"IntegrationProperty">
     sites?: JsonNullableFilter<"IntegrationProperty">
     ads?: JsonNullableFilter<"IntegrationProperty">
+    linked_via_reconciliation?: BoolFilter<"IntegrationProperty"> | boolean
+    excluded_source_images?: JsonNullableFilter<"IntegrationProperty">
+    image_upload_failures?: JsonNullableFilter<"IntegrationProperty">
     created_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
     updated_at?: DateTimeFilter<"IntegrationProperty"> | Date | string
   }
@@ -66586,6 +66670,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutIntegration_propertiesInput
@@ -66599,6 +66686,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -73036,6 +73126,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutIntegration_propertiesInput
@@ -73049,6 +73142,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -75858,6 +75954,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -76185,6 +76284,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: BoolFieldUpdateOperationsInput | boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user_integration_settings?: UserIntegrationSettingsUpdateOneRequiredWithoutIntegration_propertiesNestedInput
@@ -76198,6 +76300,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: BoolFieldUpdateOperationsInput | boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -76209,6 +76314,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: BoolFieldUpdateOperationsInput | boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -76400,6 +76508,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -76461,6 +76572,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: BoolFieldUpdateOperationsInput | boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutIntegration_propertiesNestedInput
@@ -76474,6 +76588,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: BoolFieldUpdateOperationsInput | boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -76485,6 +76602,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: BoolFieldUpdateOperationsInput | boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -78458,6 +78578,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -78498,6 +78621,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: BoolFieldUpdateOperationsInput | boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutIntegration_propertiesNestedInput
@@ -78511,6 +78637,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: BoolFieldUpdateOperationsInput | boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -78522,6 +78651,9 @@ export namespace Prisma {
     images?: NullableJsonNullValueInput | InputJsonValue
     sites?: NullableJsonNullValueInput | InputJsonValue
     ads?: NullableJsonNullValueInput | InputJsonValue
+    linked_via_reconciliation?: BoolFieldUpdateOperationsInput | boolean
+    excluded_source_images?: NullableJsonNullValueInput | InputJsonValue
+    image_upload_failures?: NullableJsonNullValueInput | InputJsonValue
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }

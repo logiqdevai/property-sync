@@ -36,6 +36,7 @@ import { getEstateWebInitFieldsForType } from '../utils/estateweb-init-lookup.ut
 import { buildEstateWebImageUrl } from '../utils/estateweb-image-url.util';
 import { resolveEstateWebCode } from '../utils/estateweb-property-code.util';
 import { resolveEstateWebPushSitesForTracker } from '../utils/estateweb-integration-settings.util';
+import { buildEstateWebFullUpdatePayload } from '../utils/estateweb-full-update-payload.util';
 import {
   computeSalePriceStart,
   hasValidSalePriceStart,
@@ -56,6 +57,24 @@ interface ImageEntry {
   url: string;
   filename: string;
 }
+
+interface ImageUploadFailure {
+  attempts: number;
+  last_attempt_at?: string;
+}
+
+interface CachedIntegrationPropertyRow {
+  images: unknown;
+  linked_via_reconciliation: boolean;
+  excluded_source_images: unknown;
+  image_upload_failures: unknown;
+}
+
+// A source image that has failed to download/upload this many times is left
+// out of every future top-up attempt until the source URL itself changes
+// (e.g. a re-crawl finds a fresh image) -- otherwise a permanently dead or
+// bot-protected URL gets hit again on every single sync cycle forever.
+const MAX_IMAGE_UPLOAD_ATTEMPTS = 5;
 
 const EMPTY_METADATA = {
   guarantee: '',
@@ -238,57 +257,158 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       crmPropertyId: integrationPropertyId,
       userPropertyId: userProperty.id,
       sourceImages: userProperty.images,
+      reconciledLink: options?.reconciledLink,
     });
   }
 
+  // A listing counts as "reconciled" (linked to a CRM property this pipeline
+  // didn't create) either because this very call says so, or because a past
+  // call already recorded it on the cached row. Once true, it's sticky --
+  // we never top up that listing's images from our scraped source, only ever
+  // caching whatever the CRM already has.
   async ensureImagesCached(params: CmsSyncBackfillImagesParams): Promise<void> {
     try {
       const propertyId = Number(params.crmPropertyId);
       if (!Number.isFinite(propertyId)) return;
 
-      const remote = await this.estateWebPropertyService.getProperty(
-        params.userIntegrationId,
-        params.crmPropertyId,
-      );
-      const remoteHasImages =
-        Array.isArray(remote.images) &&
-        remote.images.some(
-          (image) => image != null && typeof image.id === 'number',
-        );
-
-      if (!remoteHasImages) {
-        const sourceImages =
-          params.sourceImages ??
-          (await this.loadUserPropertySourceImages(params.userPropertyId));
-        if (this.parseImages(sourceImages, propertyId).length > 0) {
-          await this.uploadImages(
-            params.userIntegrationId,
-            propertyId,
-            params.userPropertyId,
-            sourceImages,
-          );
-          return;
-        }
-      }
-
-      const cachedImages = await this.loadCachedIntegrationPropertyImages(
+      const cachedRow = await this.loadCachedIntegrationPropertyRow(
         params.userIntegrationId,
         params.userPropertyId,
       );
-      if (this.hasUsableCachedImageIds(cachedImages)) return;
 
-      await this.syncIntegrationPropertyImages({
-        userIntegrationId: params.userIntegrationId,
-        userPropertyId: params.userPropertyId,
-        estateWebPropertyId: params.crmPropertyId,
-        sourceImageUrls: this.parseSourceImageUrls(params.sourceImages),
-        preserveExistingSourceImages: false,
-      });
+      if (params.reconciledLink === true && !cachedRow?.linked_via_reconciliation) {
+        await this.markLinkedViaReconciliation(
+          params.userIntegrationId,
+          params.userPropertyId,
+        );
+      }
+
+      const isReconciledLink =
+        params.reconciledLink === true ||
+        cachedRow?.linked_via_reconciliation === true;
+
+      if (isReconciledLink) {
+        await this.ensureImagesCachedLegacy(params, propertyId, cachedRow?.images);
+        return;
+      }
+
+      await this.ensureImagesCachedWithTopUp(params, propertyId, cachedRow);
     } catch (error) {
       this.logger.warn(
         `Failed to ensure CMS images for user_property=${params.userPropertyId}: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
+  }
+
+  // Original behaviour, preserved as-is for listings we didn't create: fill
+  // in images only when the CRM listing currently has none at all. A listing
+  // that already has a photo (curated directly in the CRM, or by whoever
+  // owned it before reconciliation linked it to us) is left untouched.
+  private async ensureImagesCachedLegacy(
+    params: CmsSyncBackfillImagesParams,
+    propertyId: number,
+    cachedImages: unknown,
+  ): Promise<void> {
+    const remote = await this.estateWebPropertyService.getProperty(
+      params.userIntegrationId,
+      params.crmPropertyId,
+    );
+    const remoteHasImages =
+      Array.isArray(remote.images) &&
+      remote.images.some(
+        (image) => image != null && typeof image.id === 'number',
+      );
+
+    if (!remoteHasImages) {
+      const sourceImages =
+        params.sourceImages ??
+        (await this.loadUserPropertySourceImages(params.userPropertyId));
+      if (this.parseImages(sourceImages, propertyId).length > 0) {
+        await this.uploadImages(
+          params.userIntegrationId,
+          propertyId,
+          params.userPropertyId,
+          sourceImages,
+        );
+        return;
+      }
+    }
+
+    if (this.hasUsableCachedImageIds(cachedImages)) return;
+
+    await this.syncIntegrationPropertyImages({
+      userIntegrationId: params.userIntegrationId,
+      userPropertyId: params.userPropertyId,
+      estateWebPropertyId: params.crmPropertyId,
+      sourceImageUrls: this.parseSourceImageUrls(params.sourceImages),
+      preserveExistingSourceImages: false,
+    });
+  }
+
+  // For listings this pipeline created: top up any scraped image that isn't
+  // represented on the CRM yet, instead of stopping the moment at least one
+  // image exists. Skips images the user deliberately deleted from the CRM
+  // listing, and backs off images that keep failing to download/upload so a
+  // permanently broken source URL isn't retried every sync cycle forever.
+  private async ensureImagesCachedWithTopUp(
+    params: CmsSyncBackfillImagesParams,
+    propertyId: number,
+    cachedRow: CachedIntegrationPropertyRow | null,
+  ): Promise<void> {
+    const sourceImages =
+      params.sourceImages ??
+      (await this.loadUserPropertySourceImages(params.userPropertyId));
+    const localEntries = this.parseImages(sourceImages, propertyId);
+
+    if (localEntries.length === 0) {
+      if (this.hasUsableCachedImageIds(cachedRow?.images)) return;
+      await this.syncIntegrationPropertyImages({
+        userIntegrationId: params.userIntegrationId,
+        userPropertyId: params.userPropertyId,
+        estateWebPropertyId: params.crmPropertyId,
+        sourceImageUrls: [],
+        preserveExistingSourceImages: false,
+      });
+      return;
+    }
+
+    const excludedUrls = new Set(
+      this.parseSourceImageUrls(cachedRow?.excluded_source_images),
+    );
+    const remoteSourceUrls = new Set(
+      this.buildExistingSourceImageById(cachedRow?.images).values(),
+    );
+    const failures = this.parseImageUploadFailures(
+      cachedRow?.image_upload_failures,
+    );
+
+    const missing = localEntries.filter((entry) => {
+      if (excludedUrls.has(entry.url)) return false;
+      if (remoteSourceUrls.has(entry.url)) return false;
+      const failure = failures[entry.url];
+      if (failure && failure.attempts >= MAX_IMAGE_UPLOAD_ATTEMPTS) return false;
+      return true;
+    });
+
+    if (missing.length === 0) {
+      if (this.hasUsableCachedImageIds(cachedRow?.images)) return;
+      await this.syncIntegrationPropertyImages({
+        userIntegrationId: params.userIntegrationId,
+        userPropertyId: params.userPropertyId,
+        estateWebPropertyId: params.crmPropertyId,
+        sourceImageUrls: this.parseSourceImageUrls(sourceImages),
+        preserveExistingSourceImages: false,
+      });
+      return;
+    }
+
+    await this.topUpMissingImages(
+      params.userIntegrationId,
+      propertyId,
+      params.userPropertyId,
+      missing,
+      failures,
+    );
   }
 
   private async loadUserPropertySourceImages(
@@ -301,17 +421,23 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     return row?.images ?? [];
   }
 
-  private async loadCachedIntegrationPropertyImages(
+  private async resolveIntegrationScope(
     userIntegrationId: string,
-    userPropertyId: string,
-  ): Promise<unknown> {
-    const integration = await this.prisma.userIntegration.findUnique({
+  ): Promise<{ user_id: string; user_integration_settings_id: string } | null> {
+    return this.prisma.userIntegration.findUnique({
       where: { id: userIntegrationId },
       select: { user_id: true, user_integration_settings_id: true },
     });
+  }
+
+  private async loadCachedIntegrationPropertyRow(
+    userIntegrationId: string,
+    userPropertyId: string,
+  ): Promise<CachedIntegrationPropertyRow | null> {
+    const integration = await this.resolveIntegrationScope(userIntegrationId);
     if (!integration) return null;
 
-    const row = await this.prisma.integrationProperty.findUnique({
+    return this.prisma.integrationProperty.findUnique({
       where: {
         user_id_user_integration_settings_id_user_property_id: {
           user_id: integration.user_id,
@@ -320,10 +446,61 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
           user_property_id: userPropertyId,
         },
       },
-      select: { images: true },
+      select: {
+        images: true,
+        linked_via_reconciliation: true,
+        excluded_source_images: true,
+        image_upload_failures: true,
+      },
     });
+  }
 
-    return row?.images ?? null;
+  private async markLinkedViaReconciliation(
+    userIntegrationId: string,
+    userPropertyId: string,
+  ): Promise<void> {
+    const integration = await this.resolveIntegrationScope(userIntegrationId);
+    if (!integration) return;
+
+    await this.prisma.integrationProperty.upsert({
+      where: {
+        user_id_user_integration_settings_id_user_property_id: {
+          user_id: integration.user_id,
+          user_integration_settings_id:
+            integration.user_integration_settings_id,
+          user_property_id: userPropertyId,
+        },
+      },
+      create: {
+        user_id: integration.user_id,
+        user_integration_settings_id: integration.user_integration_settings_id,
+        user_property_id: userPropertyId,
+        linked_via_reconciliation: true,
+      },
+      update: { linked_via_reconciliation: true },
+    });
+  }
+
+  private parseImageUploadFailures(
+    imagesJson: unknown,
+  ): Record<string, ImageUploadFailure> {
+    if (imagesJson == null || typeof imagesJson !== 'object') return {};
+    const result: Record<string, ImageUploadFailure> = {};
+    for (const [url, value] of Object.entries(
+      imagesJson as Record<string, unknown>,
+    )) {
+      if (value == null || typeof value !== 'object') continue;
+      const attempts = (value as { attempts?: unknown }).attempts;
+      const lastAttemptAt = (value as { last_attempt_at?: unknown })
+        .last_attempt_at;
+      if (typeof attempts !== 'number') continue;
+      result[url] = {
+        attempts,
+        last_attempt_at:
+          typeof lastAttemptAt === 'string' ? lastAttemptAt : undefined,
+      };
+    }
+    return result;
   }
 
   private hasUsableCachedImageIds(images: unknown): boolean {
@@ -344,27 +521,40 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   ): Promise<void> {
     this.assertRequiredFields(userProperty);
 
-    const adLanguages =
-      await this.estateWebIntegrationResolverService.resolveAdLanguages(
-        userIntegrationId,
-      );
-    // An unpublish must not touch the listing's ad content. Rebuilding ads from the
-    // user property (title/description in the configured ad languages only) blanks
-    // every language outside `estateweb_ad_languages` (e.g. EN/IT) and overwrites the
-    // rest with the source-language text -- so send back exactly what is already there.
-    const existingAds = await this.resolveExistingAds(
+    // EstateWeb's PATCH /api/property/:id is NOT a true partial patch (see
+    // estateweb-full-update-payload.util.ts): fields left out of the payload, or
+    // rebuilt from OUR local copy instead of round-tripped from EstateWeb's own
+    // record, are liable to be reset/ignored rather than preserved. The previous
+    // implementation built this payload from `userProperty` (our local, possibly
+    // stale copy) and sent `sites: []`; that PATCH returned 200 but the listing
+    // stayed selected on every site -- EstateWeb never actually applied the empty
+    // `sites` array. Round-tripping the FULL current record (as the known-working
+    // admin "fix out-of-sync sites" tool does, see
+    // estateweb-bulk-sites-by-codes-job.service.ts) and only changing `sites` is the
+    // confirmed-safe way to make this stick.
+    //
+    // Regression history: from integration launch through commit d4247ab
+    // ("estateweb sites", 2026-07-24) this correctly sent the agency's FULL site
+    // list with every entry explicitly `selected: false` -- an unambiguous
+    // "deselect everything" signal. That commit refactored `sites` to only include
+    // *selected* entries (deselected sites are simply omitted), and switched
+    // pushRemove to send `[]`. Since then `[]` has meant "no site info provided" to
+    // EstateWeb, which silently keeps whatever was selected before -- not "publish
+    // nowhere". Restore the original, proven signal: every known site, explicitly
+    // deselected.
+    const current = await this.estateWebPropertyService.getProperty(
       userIntegrationId,
       integrationPropertyId,
-      userProperty.id,
     );
-    const payload = this.buildPayload(
-      [],
-      adLanguages,
-      userProperty,
-      Number(integrationPropertyId),
-      false,
-      existingAds.length > 0 ? this.adMapsFromAds(existingAds) : undefined,
-    ) as EstateWebUpdatePropertyPayload;
+    const payload = buildEstateWebFullUpdatePayload(current, []);
+    payload.sites = (current.sites ?? []).map((site) => ({
+      selected: false,
+      name: site.name ?? '',
+      agent_site_id: Number(site.agent_site_id),
+      show_on_slider: site.show_on_slider ? 1 : 0,
+      show_on_first_page: site.show_on_first_page ? 1 : 0,
+      show_on_relative_pages: site.show_on_relative_pages ? 1 : 0,
+    }));
 
     await this.estateWebPropertyService.updateProperty(
       userIntegrationId,
@@ -372,78 +562,43 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       payload,
     );
 
-    // Intentionally do NOT persist `sites: []` or the (unchanged) ads here. This
-    // unpublish is a transient, crawler-driven reaction to the source listing
-    // disappearing -- not a user decision to permanently stop publishing. Leaving the
-    // stored site preference untouched lets resolvePushSitesForSync() restore the
-    // original sites automatically on the next pushUpdate() once the listing
-    // reappears, instead of the property staying unpublished on every site forever
-    // (see incident notes in api/RULES.md).
+    // Verify the unpublish actually landed -- a 200 from EstateWeb's PATCH is not
+    // proof the field was applied (see comment above). Without this check, a
+    // silently-ignored `sites` change is reported as a successful REMOVE forever.
+    // NOTE: check for any still-*selected* site, not just a non-empty array --
+    // EstateWeb may legitimately echo back the full site catalog with every entry
+    // `selected: false` once the unpublish is correctly applied.
+    const after = await this.estateWebPropertyService.getProperty(
+      userIntegrationId,
+      integrationPropertyId,
+    );
+    const stillSelected = (after.sites ?? []).filter(
+      (site) => site.selected === true,
+    );
+    if (stillSelected.length > 0) {
+      throw new EstateWebException(
+        `EstateWeb still reports ${stillSelected.length} site(s) selected for property ${integrationPropertyId} after an unpublish PATCH -- the update was not applied`,
+        NotificationType.ESTATEWEB_VALIDATION_FAILED,
+        HttpStatus.BAD_GATEWAY,
+        {
+          integrationPropertyId,
+          userPropertyId: userProperty.id,
+          remainingSites: stillSelected.map((site) => site.agent_site_id),
+        },
+      );
+    }
+
+    // Intentionally do NOT persist `sites: []` locally here. This unpublish is a
+    // transient, crawler-driven reaction to the source listing disappearing -- not a
+    // user decision to permanently stop publishing. Leaving the stored site
+    // preference untouched lets resolvePushSitesForSync() restore the original sites
+    // automatically on the next pushUpdate() once the listing reappears, instead of
+    // the property staying unpublished on every site forever (see incident notes in
+    // api/RULES.md).
     await this.persistIntegrationPropertySites({
       userIntegrationId,
       userPropertyId: userProperty.id,
     });
-  }
-
-  // Ads currently on the CRM listing; falls back to the copy we stored at the last
-  // push when the CRM can't be read. Empty when neither is known.
-  private async resolveExistingAds(
-    userIntegrationId: string,
-    integrationPropertyId: string,
-    userPropertyId: string,
-  ): Promise<EstateWebPropertyAd[]> {
-    const hasContent = (ad: EstateWebPropertyAd) =>
-      Boolean(ad.title?.trim() || ad.description?.trim() || ad.text?.trim());
-
-    try {
-      const remote = await this.estateWebPropertyService.getProperty(
-        userIntegrationId,
-        integrationPropertyId,
-      );
-      if (Array.isArray(remote.ads) && remote.ads.some(hasContent)) {
-        return remote.ads;
-      }
-    } catch (error) {
-      this.logger.warn(
-        `Could not read current ads for CRM listing ${integrationPropertyId} before unpublishing; falling back to stored ads: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-
-    const integration = await this.prisma.userIntegration.findUnique({
-      where: { id: userIntegrationId },
-      select: { user_id: true, user_integration_settings_id: true },
-    });
-    if (!integration) return [];
-
-    const row = await this.prisma.integrationProperty.findUnique({
-      where: {
-        user_id_user_integration_settings_id_user_property_id: {
-          user_id: integration.user_id,
-          user_integration_settings_id:
-            integration.user_integration_settings_id,
-          user_property_id: userPropertyId,
-        },
-      },
-      select: { ads: true },
-    });
-    const stored = Array.isArray(row?.ads)
-      ? (row.ads as unknown as EstateWebPropertyAd[])
-      : [];
-    return stored.filter(hasContent);
-  }
-
-  private adMapsFromAds(ads: EstateWebPropertyAd[]): EstateWebAdLanguageMaps {
-    const titles: EstateWebAdLanguageMaps['titles'] = {};
-    const descriptions: EstateWebAdLanguageMaps['descriptions'] = {};
-    for (const ad of ads) {
-      titles[ad.lang_id] = ad.title ?? '';
-      descriptions[ad.lang_id] = ad.description ?? ad.text ?? '';
-    }
-    return {
-      titles,
-      descriptions,
-      languages: ads.map((ad) => ad.lang_id),
-    };
   }
 
   async deleteImages(params: CmsSyncDeleteImagesParams): Promise<void> {
@@ -462,6 +617,19 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       );
     }
 
+    // Resolve which scraped source URLs these CRM image ids correspond to
+    // *before* deleting, so a deliberate deletion is remembered -- otherwise
+    // the next sync's image top-up would see the URL as "missing" from the
+    // CRM and silently re-add the very image the user just removed.
+    const cachedRow = await this.loadCachedIntegrationPropertyRow(
+      params.userIntegrationId,
+      params.userPropertyId,
+    );
+    const sourceById = this.buildExistingSourceImageById(cachedRow?.images);
+    const deletedSourceUrls = uniqueIds
+      .map((id) => sourceById.get(id))
+      .filter((url): url is string => typeof url === 'string');
+
     for (const imageId of uniqueIds) {
       await this.estateWebPropertyService.deletePropertyImage(
         params.userIntegrationId,
@@ -469,10 +637,64 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       );
     }
 
+    if (deletedSourceUrls.length > 0) {
+      await this.recordExcludedSourceImages(
+        params.userIntegrationId,
+        params.userPropertyId,
+        deletedSourceUrls,
+      );
+    }
+
     await this.syncIntegrationPropertyImages({
       userIntegrationId: params.userIntegrationId,
       userPropertyId: params.userPropertyId,
       estateWebPropertyId: params.crmPropertyId,
+    });
+  }
+
+  private async recordExcludedSourceImages(
+    userIntegrationId: string,
+    userPropertyId: string,
+    urls: string[],
+  ): Promise<void> {
+    const integration = await this.resolveIntegrationScope(userIntegrationId);
+    if (!integration) return;
+
+    const existingRow = await this.prisma.integrationProperty.findUnique({
+      where: {
+        user_id_user_integration_settings_id_user_property_id: {
+          user_id: integration.user_id,
+          user_integration_settings_id:
+            integration.user_integration_settings_id,
+          user_property_id: userPropertyId,
+        },
+      },
+      select: { excluded_source_images: true },
+    });
+    const merged = new Set([
+      ...this.parseSourceImageUrls(existingRow?.excluded_source_images),
+      ...urls,
+    ]);
+    const value = [...merged];
+
+    await this.prisma.integrationProperty.upsert({
+      where: {
+        user_id_user_integration_settings_id_user_property_id: {
+          user_id: integration.user_id,
+          user_integration_settings_id:
+            integration.user_integration_settings_id,
+          user_property_id: userPropertyId,
+        },
+      },
+      create: {
+        user_id: integration.user_id,
+        user_integration_settings_id: integration.user_integration_settings_id,
+        user_property_id: userPropertyId,
+        excluded_source_images: value as unknown as Prisma.InputJsonValue,
+      },
+      update: {
+        excluded_source_images: value as unknown as Prisma.InputJsonValue,
+      },
     });
   }
 
@@ -1335,6 +1557,131 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
         `Failed to persist IntegrationProperty images for user_property=${userPropertyId}: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
+  }
+
+  // Uploads only the given (already-known-missing) images onto an existing CRM
+  // listing, appended after whatever images are already there, and persists
+  // per-URL attempt counts so a chronically failing image backs off instead
+  // of being retried on every future sync.
+  private async topUpMissingImages(
+    userIntegrationId: string,
+    propertyId: number,
+    userPropertyId: string,
+    missing: ImageEntry[],
+    failures: Record<string, ImageUploadFailure>,
+  ): Promise<void> {
+    const remote = await this.estateWebPropertyService.getProperty(
+      userIntegrationId,
+      propertyId,
+    );
+    const startingZindex = Array.isArray(remote.images)
+      ? remote.images.length
+      : 0;
+
+    const sourceByFilename = new Map<string, string>();
+    const updatedFailures = { ...failures };
+    let uploadedCount = 0;
+
+    for (let index = 0; index < missing.length; index++) {
+      const image = missing[index];
+      try {
+        const buffer = await this.downloadImage(image.url);
+        if (!buffer?.length) {
+          this.recordImageUploadFailure(updatedFailures, image.url);
+          this.logger.warn(
+            `[topUpMissingImages] empty/unreachable source image for property=${propertyId} user_property=${userPropertyId}: ${image.url}`,
+          );
+          continue;
+        }
+
+        const payload: EstateWebUploadImagePayload = {
+          filename: image.filename,
+          show_on_site: 1,
+          show_on_groups: 1,
+          show_on_foreign_agents: 0,
+          zindex: startingZindex + index + 1,
+        };
+
+        await this.estateWebPropertyService.uploadPropertyImage(
+          userIntegrationId,
+          propertyId,
+          buffer,
+          payload,
+          'image/jpeg',
+        );
+        sourceByFilename.set(image.filename, image.url);
+        delete updatedFailures[image.url];
+        uploadedCount += 1;
+      } catch (error) {
+        this.recordImageUploadFailure(updatedFailures, image.url);
+        this.logger.warn(
+          `[topUpMissingImages] failed to upload source image for property=${propertyId} user_property=${userPropertyId} url=${image.url}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    if (uploadedCount > 0) {
+      try {
+        await this.syncIntegrationPropertyImages({
+          userIntegrationId,
+          userPropertyId,
+          estateWebPropertyId: propertyId,
+          sourceByFilename,
+          preserveExistingSourceImages: true,
+        });
+      } catch (error) {
+        this.logger.warn(
+          `Failed to persist IntegrationProperty images for user_property=${userPropertyId}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    await this.persistImageUploadFailures(
+      userIntegrationId,
+      userPropertyId,
+      updatedFailures,
+    );
+  }
+
+  private recordImageUploadFailure(
+    failures: Record<string, ImageUploadFailure>,
+    url: string,
+  ): void {
+    const existing = failures[url];
+    failures[url] = {
+      attempts: (existing?.attempts ?? 0) + 1,
+      last_attempt_at: new Date().toISOString(),
+    };
+  }
+
+  private async persistImageUploadFailures(
+    userIntegrationId: string,
+    userPropertyId: string,
+    failures: Record<string, ImageUploadFailure>,
+  ): Promise<void> {
+    const integration = await this.resolveIntegrationScope(userIntegrationId);
+    if (!integration) return;
+
+    const value = Object.keys(failures).length > 0 ? failures : null;
+    await this.prisma.integrationProperty.upsert({
+      where: {
+        user_id_user_integration_settings_id_user_property_id: {
+          user_id: integration.user_id,
+          user_integration_settings_id:
+            integration.user_integration_settings_id,
+          user_property_id: userPropertyId,
+        },
+      },
+      create: {
+        user_id: integration.user_id,
+        user_integration_settings_id: integration.user_integration_settings_id,
+        user_property_id: userPropertyId,
+        image_upload_failures: value as unknown as Prisma.InputJsonValue,
+      },
+      update: {
+        image_upload_failures: value as unknown as Prisma.InputJsonValue,
+      },
+    });
   }
 
   async syncIntegrationPropertyImages(params: {

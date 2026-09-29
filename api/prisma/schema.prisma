@@ -1201,6 +1201,23 @@ model IntegrationProperty {
   images                       Json?
   sites                        Json?
   ads                          Json?
+  // True once this row was linked to a CRM listing that already existed there
+  // (via reconciliation) rather than one this pipeline created itself. Gates
+  // image top-up: we never push additional local images onto a listing we
+  // didn't create, to avoid duplicating or clobbering photos a human already
+  // curated directly in the CRM.
+  linked_via_reconciliation Boolean @default(false)
+  // Source image URLs a user explicitly removed from the CRM listing (via the
+  // "delete image" dashboard action). Image top-up skips these forever, even
+  // though the scraped UserProperty.images array still contains the URL --
+  // otherwise every sync would silently resurrect a deletion the user made on
+  // purpose.
+  excluded_source_images Json?
+  // Per-URL upload attempt tracking ({ [url]: { attempts, last_attempt_at } })
+  // for images that failed to download/upload to the CRM. Caps retries so a
+  // permanently broken source image (dead link, bot-protected host) isn't
+  // re-attempted on every single sync cycle forever.
+  image_upload_failures Json?
   created_at                   DateTime @default(now())
   updated_at                   DateTime @updatedAt
 

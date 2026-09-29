@@ -51,6 +51,12 @@ export interface CmsSyncPushOptions {
   sitesOverride?: CmsSyncPushSiteOverride[];
   forceContentProduction?: boolean;
   forceSalesPriceRecalc?: boolean;
+  // True when this push links to a CRM listing that already existed there
+  // (matched via reconciliation) rather than one created by this pipeline.
+  // Adapters use this to permanently mark the linked property so later,
+  // unrelated syncs never top up its images from our scraped source -- only
+  // the listing's own CRM photos are treated as authoritative for it.
+  reconciledLink?: boolean;
 }
 
 export interface CmsSyncBackfillImagesParams {
@@ -58,6 +64,7 @@ export interface CmsSyncBackfillImagesParams {
   crmPropertyId: string;
   userPropertyId: string;
   sourceImages?: unknown;
+  reconciledLink?: boolean;
 }
 
 export interface CmsSyncAdapter {
