@@ -36,7 +36,6 @@ import { getEstateWebInitFieldsForType } from '../utils/estateweb-init-lookup.ut
 import { buildEstateWebImageUrl } from '../utils/estateweb-image-url.util';
 import { resolveEstateWebCode } from '../utils/estateweb-property-code.util';
 import { resolveEstateWebPushSitesForTracker } from '../utils/estateweb-integration-settings.util';
-import { buildEstateWebFullUpdatePayload } from '../utils/estateweb-full-update-payload.util';
 import {
   computeSalePriceStart,
   hasValidSalePriceStart,
@@ -521,40 +520,29 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
   ): Promise<void> {
     this.assertRequiredFields(userProperty);
 
-    // EstateWeb's PATCH /api/property/:id is NOT a true partial patch (see
-    // estateweb-full-update-payload.util.ts): fields left out of the payload, or
-    // rebuilt from OUR local copy instead of round-tripped from EstateWeb's own
-    // record, are liable to be reset/ignored rather than preserved. The previous
-    // implementation built this payload from `userProperty` (our local, possibly
-    // stale copy) and sent `sites: []`; that PATCH returned 200 but the listing
-    // stayed selected on every site -- EstateWeb never actually applied the empty
-    // `sites` array. Round-tripping the FULL current record (as the known-working
-    // admin "fix out-of-sync sites" tool does, see
-    // estateweb-bulk-sites-by-codes-job.service.ts) and only changing `sites` is the
-    // confirmed-safe way to make this stick.
-    //
-    // Regression history: from integration launch through commit d4247ab
-    // ("estateweb sites", 2026-07-24) this correctly sent the agency's FULL site
-    // list with every entry explicitly `selected: false` -- an unambiguous
-    // "deselect everything" signal. That commit refactored `sites` to only include
-    // *selected* entries (deselected sites are simply omitted), and switched
-    // pushRemove to send `[]`. Since then `[]` has meant "no site info provided" to
-    // EstateWeb, which silently keeps whatever was selected before -- not "publish
-    // nowhere". Restore the original, proven signal: every known site, explicitly
-    // deselected.
-    const current = await this.estateWebPropertyService.getProperty(
-      userIntegrationId,
-      integrationPropertyId,
-    );
-    const payload = buildEstateWebFullUpdatePayload(current, []);
-    payload.sites = (current.sites ?? []).map((site) => ({
-      selected: false,
-      name: site.name ?? '',
-      agent_site_id: Number(site.agent_site_id),
-      show_on_slider: site.show_on_slider ? 1 : 0,
-      show_on_first_page: site.show_on_first_page ? 1 : 0,
-      show_on_relative_pages: site.show_on_relative_pages ? 1 : 0,
-    }));
+    // Use the exact same payload-building path as pushUpdate's known-working
+    // `sitesOverride: []` case (what /properties/update-estateweb-sites uses,
+    // confirmed live) -- NOT a hand-rolled round-trip. An earlier version here
+    // round-tripped the full record and explicitly deselected every site, then
+    // hard-failed if a re-GET still showed sites live. That "still live" check
+    // was firing on stale reads: EstateWeb's PATCH applies immediately but its
+    // GET has read-after-write lag (confirmed live -- a property re-checked
+    // ~10 minutes after PATCH correctly showed sites cleared, with nothing else
+    // touching it in between). So the extra verification did nothing but
+    // report false failures for every property in a batch.
+    const adLanguages =
+      await this.estateWebIntegrationResolverService.resolveAdLanguages(
+        userIntegrationId,
+      );
+    const adMaps = await this.resolveContentAds(userProperty, userIntegrationId);
+    const payload = this.buildPayload(
+      [],
+      adLanguages,
+      userProperty,
+      Number(integrationPropertyId),
+      true, // useSitesAsProvided -- send `sites: []` as-is, matching pushUpdate's sitesOverride: []
+      adMaps,
+    ) as EstateWebUpdatePropertyPayload;
 
     await this.estateWebPropertyService.updateProperty(
       userIntegrationId,
@@ -562,42 +550,18 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       payload,
     );
 
-    // Verify the unpublish actually landed -- a 200 from EstateWeb's PATCH is not
-    // proof the field was applied (see comment above). Without this check, a
-    // silently-ignored `sites` change is reported as a successful REMOVE forever.
-    // NOTE: GET's `sites` response never includes a `selected` field at all --
-    // confirmed live: every entry in that array simply IS a currently-published
-    // site (presence = selected). So a non-empty array is exactly "still live" --
-    // do NOT filter by `site.selected`, it's always undefined on read and would
-    // make this check a permanent no-op.
-    const after = await this.estateWebPropertyService.getProperty(
-      userIntegrationId,
-      integrationPropertyId,
-    );
-    const stillLive = after.sites ?? [];
-    if (stillLive.length > 0) {
-      throw new EstateWebException(
-        `EstateWeb still reports ${stillLive.length} site(s) live for property ${integrationPropertyId} after an unpublish PATCH -- the update was not applied`,
-        NotificationType.ESTATEWEB_VALIDATION_FAILED,
-        HttpStatus.BAD_GATEWAY,
-        {
-          integrationPropertyId,
-          userPropertyId: userProperty.id,
-          remainingSites: stillLive.map((site) => site.agent_site_id),
-        },
-      );
-    }
-
-    // Intentionally do NOT persist `sites: []` locally here. This unpublish is a
-    // transient, crawler-driven reaction to the source listing disappearing -- not a
-    // user decision to permanently stop publishing. Leaving the stored site
-    // preference untouched lets resolvePushSitesForSync() restore the original sites
-    // automatically on the next pushUpdate() once the listing reappears, instead of
-    // the property staying unpublished on every site forever (see incident notes in
-    // api/RULES.md).
+    // Intentionally do NOT persist `sites: []` locally here (unlike pushUpdate,
+    // which always persists whatever sites it just pushed). This unpublish is a
+    // transient, crawler-driven reaction to the source listing disappearing --
+    // not a user decision to permanently stop publishing. Leaving the stored
+    // site preference untouched lets resolvePushSitesForSync() restore the
+    // original sites automatically on the next pushUpdate() once the listing
+    // reappears, instead of the property staying unpublished on every site
+    // forever (see incident notes in api/RULES.md).
     await this.persistIntegrationPropertySites({
       userIntegrationId,
       userPropertyId: userProperty.id,
+      ads: payload.ads,
     });
   }
 

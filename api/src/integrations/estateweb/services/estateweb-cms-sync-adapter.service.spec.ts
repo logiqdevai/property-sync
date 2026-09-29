@@ -123,113 +123,76 @@ describe('EstateWebCmsSyncAdapter.pushRemove', () => {
     estateweb_location_id: 20,
   } as unknown as UserProperty;
 
-  const currentRemote = {
-    id: 56482,
-    type_id: 10,
-    scope_id: 1,
-    location_id: 20,
-    ads: [{ lang_id: 2, title: 'English title', description: 'x', text: 'x' }],
-    fields: [],
-    sites: [{ agent_site_id: 1, selected: true, name: 'Site A' }],
-  };
-
-  function setup(options: { afterSites?: unknown[] } = {}) {
+  function setup() {
     const propertyService = {
-      // First call is the pre-update read (round-trip payload source), second call
-      // is the post-update verification read.
-      getProperty: jest
-        .fn()
-        .mockResolvedValueOnce(currentRemote)
-        .mockResolvedValueOnce({
-          ...currentRemote,
-          sites: options.afterSites ?? [],
-        }),
+      getProperty: jest.fn(),
       updateProperty: jest.fn().mockResolvedValue(undefined),
     };
     const adapter = new EstateWebCmsSyncAdapter(
       {} as never,
       propertyService as never,
-      {} as never,
+      {
+        resolveAdLanguages: jest.fn().mockResolvedValue([1, 4, 3, 6]),
+      } as never,
       {} as never,
       {} as never,
     );
     const stubs = adapter as unknown as Record<string, unknown>;
+    const buildPayload = jest
+      .fn()
+      .mockReturnValue({ sites: [], ads: ['built-ads'] });
+    stubs.buildPayload = buildPayload;
+    const resolveContentAds = jest.fn().mockResolvedValue({ languages: [] });
+    stubs.resolveContentAds = resolveContentAds;
     const persist = jest.fn().mockResolvedValue(undefined);
     stubs.persistIntegrationPropertySites = persist;
-    return { adapter, propertyService, persist };
+    return { adapter, propertyService, buildPayload, resolveContentAds, persist };
   }
 
-  it('round-trips the full current record and explicitly deselects every known site (not sites: [])', async () => {
-    const { adapter, propertyService } = setup({ afterSites: [] });
+  // Uses the exact same payload-building path as pushUpdate's known-working
+  // `sitesOverride: []` case -- NOT a round-trip GET + verify. A prior version
+  // here round-tripped the full record and hard-failed on a re-GET that still
+  // showed sites live; that "still live" check was firing on EstateWeb's
+  // read-after-write lag (confirmed live), producing false failures for every
+  // property. See the comment on pushRemove for the incident.
+  it('builds the payload via buildPayload with sites: [] passed as-is (useSitesAsProvided)', async () => {
+    const { adapter, propertyService, buildPayload, resolveContentAds } = setup();
 
     await adapter.pushRemove('integration-1', '56482', userProperty);
 
-    expect(propertyService.getProperty).toHaveBeenCalledTimes(2);
-    const payload = propertyService.updateProperty.mock.calls[0][2];
-    // Every site from the live record, explicitly deselected -- not an empty array
-    // (EstateWeb silently ignores `sites: []`, see regression history in the code).
-    expect(payload.sites).toEqual([
-      {
-        selected: false,
-        name: 'Site A',
-        agent_site_id: 1,
-        show_on_slider: 0,
-        show_on_first_page: 0,
-        show_on_relative_pages: 0,
-      },
-    ]);
-    // Ads preserved straight from the live record, not rebuilt from userProperty.
-    expect(payload.ads).toEqual(currentRemote.ads);
+    expect(resolveContentAds).toHaveBeenCalledWith(userProperty, 'integration-1');
+    expect(buildPayload).toHaveBeenCalledWith(
+      [],
+      [1, 4, 3, 6],
+      userProperty,
+      56482,
+      true,
+      { languages: [] },
+    );
+    expect(propertyService.updateProperty).toHaveBeenCalledWith(
+      'integration-1',
+      '56482',
+      { sites: [], ads: ['built-ads'] },
+    );
   });
 
-  it('does not persist the sites override locally (lets it resurrect on next pushUpdate)', async () => {
-    const { adapter, persist } = setup({ afterSites: [] });
+  it('does not persist sites locally (lets it resurrect on next pushUpdate)', async () => {
+    const { adapter, persist } = setup();
 
     await adapter.pushRemove('integration-1', '56482', userProperty);
 
     expect(persist).toHaveBeenCalledTimes(1);
     const params = persist.mock.calls[0][0];
     expect(params.sites).toBeUndefined();
+    expect(params.ads).toEqual(['built-ads']);
   });
 
-  it('treats an empty sites array from EstateWeb as success', async () => {
-    const { adapter, persist } = setup({ afterSites: [] });
+  it('does not verify against EstateWeb afterward -- no post-write getProperty call', async () => {
+    const { adapter, propertyService } = setup();
 
     await adapter.pushRemove('integration-1', '56482', userProperty);
 
-    expect(persist).toHaveBeenCalledTimes(1);
-  });
-
-  // EstateWeb's GET response for `sites` never includes a `selected` field --
-  // confirmed live against production: every entry in that array simply IS a
-  // currently-published site. So ANY non-empty array after the unpublish PATCH
-  // means EstateWeb ignored it, regardless of what a `selected` key on those
-  // objects says (there isn't one).
-  it('throws instead of reporting success when EstateWeb still lists a site as live afterwards', async () => {
-    const { adapter, persist } = setup({
-      afterSites: [{ agent_site_id: 1 }],
-    });
-
-    await expect(
-      adapter.pushRemove('integration-1', '56482', userProperty),
-    ).rejects.toThrow(/still reports 1 site/);
-
-    // Never mark the unpublish as done locally when EstateWeb ignored it.
-    expect(persist).not.toHaveBeenCalled();
-  });
-
-  it('throws even if the still-live site entries happen to carry a truthy-looking field', async () => {
-    const { adapter, persist } = setup({
-      afterSites: [
-        { agent_site_id: 1, selected: false },
-        { agent_site_id: 2, selected: false },
-      ],
-    });
-
-    await expect(
-      adapter.pushRemove('integration-1', '56482', userProperty),
-    ).rejects.toThrow(/still reports 2 site/);
-    expect(persist).not.toHaveBeenCalled();
+    expect(propertyService.getProperty).not.toHaveBeenCalled();
   });
 });
 
