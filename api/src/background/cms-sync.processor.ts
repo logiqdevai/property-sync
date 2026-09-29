@@ -113,6 +113,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       {}) as unknown as StoredResponse;
     const sourceAgencyId =
       syncRun.crawl_run?.source_agency_id ?? payload.source_agency_id;
+    const scraperId = syncRun.crawl_run?.scraper_id ?? undefined;
     const agencyName = await this.resolveAgencyName(
       sourceAgencyId,
       syncRun.crawl_run?.source_agency?.name,
@@ -153,6 +154,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
         cmsSyncRunId: cms_sync_run_id,
         crawlRunId: crawl_run_id,
         sourceAgencyId,
+        scraperId,
         agencyName,
         created: syncRun.total_created,
         updated: syncRun.total_updated,
@@ -252,6 +254,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
           message: `CmsSyncRun ${cms_sync_run_id} for ${agencyName} exhausted all retries. ${failureSummary}`,
           crawl_run_id: crawl_run_id,
           source_agency_id: sourceAgencyId,
+          scraper_id: scraperId,
         });
       } else {
         throw new Error(
@@ -265,6 +268,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       cmsSyncRunId: cms_sync_run_id,
       crawlRunId: crawl_run_id,
       sourceAgencyId,
+      scraperId,
       agencyName,
       created: mergedResult.created,
       updated: mergedResult.updated,
@@ -291,6 +295,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
     cmsSyncRunId: string;
     crawlRunId: string | null;
     sourceAgencyId?: string;
+    scraperId?: string;
     agencyName: string;
     created: number;
     updated: number;
@@ -301,6 +306,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       cmsSyncRunId,
       crawlRunId,
       sourceAgencyId,
+      scraperId,
       agencyName,
       created,
       updated,
@@ -314,6 +320,7 @@ export class CmsSyncProcessor extends WorkerHost implements OnModuleInit {
       message: `CmsSyncRun ${cmsSyncRunId} for ${agencyName} completed. Created ${created}, updated ${updated}, linked ${linked}, removed ${removed}.`,
       crawl_run_id: crawlRunId,
       source_agency_id: sourceAgencyId,
+      scraper_id: scraperId,
     });
   }
 

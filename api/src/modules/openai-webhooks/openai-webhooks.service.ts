@@ -134,6 +134,7 @@ export class OpenAiWebhooksService {
               message: `Title batch ${batchId} for ${agency.name} completed but CMS enqueue failed. ${message}`,
               crawl_run_id: ready.crawlRunId,
               source_agency_id: agency.id,
+              scraper_id: agency.scraperId,
             });
           }
         }
@@ -168,6 +169,7 @@ export class OpenAiWebhooksService {
           message: `OpenAI title batch ${batchId} for ${agency.name} ${event.type}. CMS push held for affected properties.`,
           crawl_run_id: titleBatch.crawl_run_id,
           source_agency_id: agency.id,
+          scraper_id: agency.scraperId,
         });
       }
       return;
@@ -231,7 +233,7 @@ export class OpenAiWebhooksService {
 
   private async resolveAgencyForCrawlRun(
     crawlRunId: string | null | undefined,
-  ): Promise<{ id?: string; name: string }> {
+  ): Promise<{ id?: string; scraperId?: string; name: string }> {
     if (!crawlRunId) {
       return { name: 'Unknown agency' };
     }
@@ -240,12 +242,14 @@ export class OpenAiWebhooksService {
       where: { id: crawlRunId },
       select: {
         source_agency_id: true,
+        scraper_id: true,
         source_agency: { select: { name: true } },
       },
     });
 
     return {
       id: crawlRun?.source_agency_id,
+      scraperId: crawlRun?.scraper_id ?? undefined,
       name: crawlRun?.source_agency?.name ?? 'Unknown agency',
     };
   }

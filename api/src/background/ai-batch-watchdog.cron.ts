@@ -92,6 +92,7 @@ export class AiBatchWatchdogCron {
           where: { id: crawlRunId },
           select: {
             source_agency_id: true,
+            scraper_id: true,
             source_agency: { select: { name: true } },
           },
         })
@@ -105,6 +106,7 @@ export class AiBatchWatchdogCron {
       message: `OpenAI title batch ${batchId} for ${agencyName} did not complete (${reason}), detected by watchdog after webhook was never received. CMS push held for affected properties.`,
       crawl_run_id: crawlRunId ?? undefined,
       source_agency_id: crawlRun?.source_agency_id,
+      scraper_id: crawlRun?.scraper_id ?? undefined,
     });
   }
 

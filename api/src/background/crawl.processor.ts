@@ -115,12 +115,18 @@ export class CrawlProcessor extends WorkerHost implements OnModuleInit {
       await this.processCrawlJob(job);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      const run = await this.prisma.crawlRun.findUnique({
+        where: { id: job.data.crawlRunId },
+        select: { source_agency_id: true, scraper_id: true },
+      });
       this.notificationsService.create({
         type: NotificationType.QUEUE_FAILURE,
         severity: NotificationSeverity.CRITICAL,
         title: 'Crawl queue job failed',
         message: `Crawl job ${job.data.crawlRunId} failed: ${message}`,
         crawl_run_id: job.data.crawlRunId,
+        source_agency_id: run?.source_agency_id,
+        scraper_id: run?.scraper_id ?? undefined,
       });
       throw error;
     }

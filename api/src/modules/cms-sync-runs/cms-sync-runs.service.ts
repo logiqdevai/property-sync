@@ -51,6 +51,7 @@ const listInclude = {
     select: {
       id: true,
       source_agency_id: true,
+      scraper_id: true,
       source_agency: { select: { id: true, name: true } },
     },
   },
