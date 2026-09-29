@@ -374,16 +374,27 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     const excludedUrls = new Set(
       this.parseSourceImageUrls(cachedRow?.excluded_source_images),
     );
-    const remoteSourceUrls = new Set(
-      this.buildExistingSourceImageById(cachedRow?.images).values(),
+    const excludedIdentities = new Set(
+      [...excludedUrls].map((url) => this.normalizeSourceImageIdentity(url)),
+    );
+    const remoteSourceIdentities = new Set(
+      [...this.buildExistingSourceImageById(cachedRow?.images).values()].map(
+        (url) => this.normalizeSourceImageIdentity(url),
+      ),
     );
     const failures = this.parseImageUploadFailures(
       cachedRow?.image_upload_failures,
     );
 
+    // Compare by normalized identity, not the raw URL: the same scraped photo
+    // is often re-served at a different size/query string across crawls (e.g.
+    // a thumbnail URL cached from an older crawl vs. the full-size URL a
+    // newer crawl stores) -- an exact-string diff would treat that as a new,
+    // missing image and upload a duplicate of a photo already on the CRM.
     const missing = localEntries.filter((entry) => {
-      if (excludedUrls.has(entry.url)) return false;
-      if (remoteSourceUrls.has(entry.url)) return false;
+      const identity = this.normalizeSourceImageIdentity(entry.url);
+      if (excludedIdentities.has(identity)) return false;
+      if (remoteSourceIdentities.has(identity)) return false;
       const failure = failures[entry.url];
       if (failure && failure.attempts >= MAX_IMAGE_UPLOAD_ATTEMPTS) return false;
       return true;
@@ -478,6 +489,26 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
       },
       update: { linked_via_reconciliation: true },
     });
+  }
+
+  // Collapses a source image URL to a stable identity for dedup purposes:
+  // drops the query string (crawl-to-crawl cache-busting params) and a
+  // trailing "_WIDTHxHEIGHT" resize suffix (a common convention across
+  // real-estate/CMS image servers) right before the extension, so the same
+  // photo served at a different size or re-crawled with a new query string
+  // still matches what's already on the CRM. Falls back to a plain
+  // lowercased/trimmed comparison if the URL doesn't parse.
+  private normalizeSourceImageIdentity(url: string): string {
+    try {
+      const parsed = new URL(url);
+      const path = parsed.pathname.replace(
+        /[_-]\d{2,5}x\d{2,5}(?=\.[a-zA-Z0-9]+$)/i,
+        '',
+      );
+      return `${parsed.host}${path}`.toLowerCase();
+    } catch {
+      return url.trim().toLowerCase();
+    }
   }
 
   private parseImageUploadFailures(

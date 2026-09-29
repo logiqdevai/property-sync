@@ -360,6 +360,36 @@ describe('EstateWebCmsSyncAdapter.ensureImagesCached', () => {
 
     expect(propertyService.uploadPropertyImage).not.toHaveBeenCalled();
   });
+
+  it('does not re-upload a photo already cached under a different size/query variant of the same URL', async () => {
+    // Regression: a photo cached from an older crawl as a thumbnail
+    // (`_300x220`) must still be recognised as "already on the CRM" once a
+    // newer crawl stores the same photo at full size (`_900x675`) or with a
+    // different cache-busting query string -- otherwise it gets uploaded
+    // again as a duplicate.
+    const { adapter, propertyService } = setup({
+      cachedRow: {
+        images: [
+          cmsImage(1, 'https://m2.spitogatos.gr/77905567_300x220.jpg?v=20130730'),
+        ],
+        linked_via_reconciliation: false,
+      },
+      remoteImages: [
+        cmsImage(1, 'https://m2.spitogatos.gr/77905567_300x220.jpg?v=20130730'),
+      ],
+    });
+
+    await adapter.ensureImagesCached({
+      userIntegrationId: 'integration-1',
+      crmPropertyId: '4242',
+      userPropertyId: 'up-1',
+      sourceImages: [
+        'https://m2.spitogatos.gr/77905567_900x675.jpg?v=20130730',
+      ],
+    });
+
+    expect(propertyService.uploadPropertyImage).not.toHaveBeenCalled();
+  });
 });
 
 describe('EstateWebCmsSyncAdapter.deleteImages', () => {
