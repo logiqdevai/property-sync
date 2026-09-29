@@ -46,6 +46,8 @@ import {
   updateUserPropertySalesPrices,
   updateUserPropertyStatus,
   syncUserPropertyCrmClientNotes,
+  checkEstateWebRemoval,
+  fixEstateWebRemoval,
 } from "../services/user-properties.services";
 import type {
   AdminUserPropertyCountQuery,
@@ -59,6 +61,8 @@ import type {
   UpdateEstateWebSitesPayload,
   UpdateSalesPricesPayload,
   SyncCrmClientNotesPayload,
+  CheckEstateWebRemovalPayload,
+  FixEstateWebRemovalPayload,
   RenormalizeUserPropertiesPayload,
   BulkDeleteIntegrationImagesPayload,
   BulkMigrateIntegrationImagesPayload,
@@ -746,6 +750,56 @@ export const useSyncUserPropertyCrmClientNotes = () => {
     onError: (error: Error) => {
       toast({
         title: "Could not sync CRM client notes",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useCheckEstateWebRemoval = () => {
+  return useMutation({
+    mutationFn: (payload: CheckEstateWebRemovalPayload) =>
+      checkEstateWebRemoval(payload),
+    onError: (error: Error) => {
+      toast({
+        title: "Could not check EstateWeb removal sync",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useFixEstateWebRemoval = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: FixEstateWebRemovalPayload) =>
+      fixEstateWebRemoval(payload),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["userProperties"] });
+
+      const parts: string[] = [];
+      if (result.fixed > 0) parts.push(`${result.fixed} fixed`);
+      if (result.skipped > 0) parts.push(`${result.skipped} skipped`);
+      if (result.failed > 0) parts.push(`${result.failed} failed`);
+
+      toast({
+        title:
+          result.failed > 0
+            ? "EstateWeb removal fix completed with errors"
+            : "EstateWeb removal fix completed",
+        description:
+          parts.join(", ") ||
+          `Checked ${result.total} ${result.total === 1 ? "property" : "properties"}.`,
+        duration: 4000,
+        variant: result.failed > 0 ? "warning" : "success",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Could not fix EstateWeb removal sync",
         description: error.message,
         variant: "error",
       });

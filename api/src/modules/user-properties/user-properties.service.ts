@@ -30,6 +30,7 @@ import {
 import { DewatermarkOrchestratorService } from '@/integrations/dewatermark/services/dewatermark-orchestrator.service';
 import { EstateWebCmsSyncAdapter } from '@/integrations/estateweb/services/estateweb-cms-sync-adapter.service';
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
+import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
 import { CmsSyncAdapterFactory } from '@/modules/cms-sync/services/cms-sync-adapter.factory';
 import { CmsSyncOrchestratorService } from '@/modules/cms-sync/services/cms-sync-orchestrator.service';
 import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
@@ -161,6 +162,7 @@ export class UserPropertiesService {
     private readonly cmsSyncAdapterFactory: CmsSyncAdapterFactory,
     private readonly estateWebCmsSyncAdapter: EstateWebCmsSyncAdapter,
     private readonly estateWebIntegrationResolver: EstateWebIntegrationResolverService,
+    private readonly estateWebPropertyService: EstateWebPropertyService,
     private readonly dewatermarkOrchestrator: DewatermarkOrchestratorService,
     private readonly watermarkRemovalService: WatermarkRemovalService,
     private readonly contentProductionService: ContentProductionService,
@@ -1240,6 +1242,169 @@ export class UserPropertiesService {
       enqueued: ownedIds.length,
       message: `Content production started in the background (${groupedIds.length} agency batch${groupedIds.length === 1 ? '' : 'es'}). Track progress in Job queue.`,
       skipped: notOwnedFailed,
+    };
+  }
+
+  // Step 1 of the admin "REMOVED/SOLD locally but still live on EstateWeb"
+  // remediation (see commit d4247ab regression). Read-only: does a live GET
+  // per candidate property and reports which ones EstateWeb still shows as
+  // published on at least one site, so an admin can eyeball/copy the exact
+  // ids before running fixEstateWebRemoval (step 2) on them.
+  async checkEstateWebRemoval(userId: string, ids: string[]) {
+    const idList = [...new Set(ids.filter(Boolean))];
+    if (idList.length === 0) {
+      throw new BadRequestException('No properties selected');
+    }
+    if (idList.length > 100) {
+      throw new BadRequestException(
+        'Select 100 or fewer properties at a time to check EstateWeb removal sync',
+      );
+    }
+
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: idList }, user_id: userId },
+    });
+
+    if (properties.length === 0) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const byId = new Map(properties.map((property) => [property.id, property]));
+    let checked = 0;
+    const stillLiveIds: string[] = [];
+    const errors: Array<{ user_property_id: string; error: string }> = [];
+
+    for (const id of idList) {
+      const property = byId.get(id);
+      if (!property) continue;
+
+      if (
+        (property.status !== PropertyStatus.REMOVED &&
+          property.status !== PropertyStatus.SOLD) ||
+        !property.integration_property_id
+      ) {
+        continue;
+      }
+
+      checked++;
+      try {
+        const { userIntegrationId } =
+          await this.resolveCmsIntegrationForProperty(property);
+        const remote = await this.estateWebPropertyService.getProperty(
+          userIntegrationId,
+          property.integration_property_id,
+        );
+        // EstateWeb's GET response for `sites` never includes a `selected`
+        // field -- every entry in the array IS a currently-published site,
+        // so a non-empty array means it's still live.
+        if ((remote.sites ?? []).length > 0) {
+          stillLiveIds.push(id);
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        errors.push({ user_property_id: id, error: message });
+      }
+    }
+
+    return {
+      total: idList.length,
+      checked,
+      still_live_count: stillLiveIds.length,
+      still_live_ids: stillLiveIds,
+      errors,
+    };
+  }
+
+  // Step 2: re-runs the (now-fixed) pushRemove unpublish for each selected
+  // property and reports whether EstateWeb actually cleared its sites
+  // afterward. Synchronous and capped at a small batch -- this is a manual
+  // spot-fix for properties an admin has identified (typically via
+  // checkEstateWebRemoval above), not a routine bulk operation; pushRemove
+  // does 2 GETs + 1 PATCH per property, so a large selection would risk a
+  // request timeout.
+  async fixEstateWebRemoval(userId: string, ids: string[]) {
+    const idList = [...new Set(ids.filter(Boolean))];
+    if (idList.length === 0) {
+      throw new BadRequestException('No properties selected');
+    }
+    if (idList.length > 25) {
+      throw new BadRequestException(
+        'Select 25 or fewer properties at a time to fix EstateWeb removal sync',
+      );
+    }
+
+    const properties = await this.prisma.userProperty.findMany({
+      where: { id: { in: idList }, user_id: userId },
+    });
+
+    if (properties.length === 0) {
+      throw new NotFoundException('Property not found');
+    }
+
+    const byId = new Map(properties.map((property) => [property.id, property]));
+    const results: Array<{
+      user_property_id: string;
+      status: 'fixed' | 'skipped' | 'failed';
+      message: string;
+    }> = [];
+
+    for (const id of idList) {
+      const property = byId.get(id);
+      if (!property) {
+        results.push({
+          user_property_id: id,
+          status: 'failed',
+          message: 'Property not found',
+        });
+        continue;
+      }
+
+      if (
+        property.status !== PropertyStatus.REMOVED &&
+        property.status !== PropertyStatus.SOLD
+      ) {
+        results.push({
+          user_property_id: id,
+          status: 'skipped',
+          message: `Property status is ${property.status}, not REMOVED/SOLD`,
+        });
+        continue;
+      }
+
+      if (!property.integration_property_id) {
+        results.push({
+          user_property_id: id,
+          status: 'skipped',
+          message: 'Property is not linked to EstateWeb CMS',
+        });
+        continue;
+      }
+
+      try {
+        const { userIntegrationId } =
+          await this.resolveCmsIntegrationForProperty(property);
+        await this.estateWebCmsSyncAdapter.pushRemove(
+          userIntegrationId,
+          property.integration_property_id,
+          property,
+        );
+        results.push({
+          user_property_id: id,
+          status: 'fixed',
+          message: 'Unpublished from every EstateWeb site (verified)',
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        results.push({ user_property_id: id, status: 'failed', message });
+      }
+    }
+
+    return {
+      total: idList.length,
+      fixed: results.filter((r) => r.status === 'fixed').length,
+      skipped: results.filter((r) => r.status === 'skipped').length,
+      failed: results.filter((r) => r.status === 'failed').length,
+      results,
     };
   }
 

@@ -436,6 +436,44 @@ export class UserPropertiesController {
     return this.userPropertiesService.syncCrmClientNotes(userId, dto.ids);
   }
 
+  @Audited({ action: 'user_property.check_estateweb_removal', entity: 'UserProperty', ids: { body: 'ids' } })
+  @Post('check-estateweb-removal')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Check which REMOVED/SOLD properties are still live on EstateWeb (read-only, admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Check result per property' })
+  @ApiResponse({ status: 400, description: 'Cannot check EstateWeb removal sync' })
+  @ApiResponse({ status: 403, description: 'Admin only' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  checkEstateWebRemoval(
+    @CurrentUser('id') userId: string,
+    @Body() dto: DeleteUserPropertiesDto,
+  ) {
+    return this.userPropertiesService.checkEstateWebRemoval(userId, dto.ids);
+  }
+
+  @Audited({ action: 'user_property.fix_estateweb_removal', entity: 'UserProperty', ids: { body: 'ids' } })
+  @Post('fix-estateweb-removal')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Re-run the EstateWeb unpublish for REMOVED/SOLD properties that are still live on EstateWeb, and verify it took (admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Fix attempted for each property' })
+  @ApiResponse({ status: 400, description: 'Cannot fix EstateWeb removal sync' })
+  @ApiResponse({ status: 403, description: 'Admin only' })
+  @ApiResponse({ status: 404, description: 'Saved property not found' })
+  fixEstateWebRemoval(
+    @CurrentUser('id') userId: string,
+    @Body() dto: DeleteUserPropertiesDto,
+  ) {
+    return this.userPropertiesService.fixEstateWebRemoval(userId, dto.ids);
+  }
+
   @Audited({ action: 'user_property.renormalize', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('renormalize')
   @HttpCode(HttpStatus.ACCEPTED)

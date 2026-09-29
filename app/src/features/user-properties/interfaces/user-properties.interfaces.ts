@@ -263,6 +263,36 @@ export interface SyncCrmClientNotesResult {
   message: string;
 }
 
+export interface CheckEstateWebRemovalPayload {
+  ids: string[];
+}
+
+export interface CheckEstateWebRemovalResult {
+  total: number;
+  checked: number;
+  still_live_count: number;
+  still_live_ids: string[];
+  errors: Array<{ user_property_id: string; error: string }>;
+}
+
+export interface FixEstateWebRemovalPayload {
+  ids: string[];
+}
+
+export interface FixEstateWebRemovalItemResult {
+  user_property_id: string;
+  status: "fixed" | "skipped" | "failed";
+  message: string;
+}
+
+export interface FixEstateWebRemovalResult {
+  total: number;
+  fixed: number;
+  skipped: number;
+  failed: number;
+  results: FixEstateWebRemovalItemResult[];
+}
+
 export interface RenormalizeUserPropertiesPayload {
   ids: string[];
 }

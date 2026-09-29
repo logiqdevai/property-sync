@@ -13,7 +13,7 @@ import {
   useOverlayState,
   type Selection,
 } from "@heroui/react";
-import { CircleDot, Compass, CopyCheck, ExternalLink, Globe, Hash, ImageOff, Images, Languages, Layers, ListFilter, MapIcon, MapPin, NotebookPen, Percent, RefreshCw, Scissors, Sparkles, TableIcon, Trash2, Ungroup, Upload, X } from "lucide-react";
+import { CircleDot, Compass, CopyCheck, ExternalLink, Globe, Hash, ImageOff, Images, Languages, Layers, ListFilter, MapIcon, MapPin, NotebookPen, Percent, RefreshCw, Scissors, Search, Sparkles, TableIcon, Trash2, Ungroup, Upload, Wrench, X } from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { DatePickerField } from "@/components/ui/date-picker-field";
 import { ClearableSearchInput } from "@/components/ui/clearable-search-input";
@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/table-row-actions-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ManageEstateWebSitesModal } from "./components/manage-estateweb-sites-modal";
+import { CheckEstateWebRemovalModal } from "./components/check-estateweb-removal-modal";
 import { EstateWebDuplicatePropertiesModal } from "./components/estateweb-duplicate-properties-modal";
 import { EstateWebOrphanSitesModal } from "./components/estateweb-orphan-sites-modal";
 import { RemoveWatermarkByCountModal } from "./components/remove-watermark-by-count-modal";
@@ -76,6 +77,8 @@ import {
   useUpdateUserPropertySalesPrices,
   useUpdateUserPropertyStatus,
   useSyncUserPropertyCrmClientNotes,
+  useCheckEstateWebRemoval,
+  useFixEstateWebRemoval,
   useUserProperties,
   useUserPropertiesCount,
   useUserPropertiesMap,
@@ -126,6 +129,18 @@ const PROPERTY_SYNC_CRM_CLIENT_NOTES_ACTION: TableRowAction = {
   id: "sync-crm-client-notes",
   label: "Sync CRM client notes",
   icon: NotebookPen,
+};
+
+const PROPERTY_CHECK_ESTATEWEB_REMOVAL_ACTION: TableRowAction = {
+  id: "check-estateweb-removal",
+  label: "Check EstateWeb removal sync",
+  icon: Search,
+};
+
+const PROPERTY_FIX_ESTATEWEB_REMOVAL_ACTION: TableRowAction = {
+  id: "fix-estateweb-removal",
+  label: "Unlink EstateWeb sites",
+  icon: Wrench,
 };
 
 const PROPERTY_DELETE_CMS_IMAGES_ACTION: TableRowAction = {
@@ -182,6 +197,8 @@ function buildPropertyRowActions(options: {
   renormalizePending: boolean;
   updateSalesPricesPending: boolean;
   syncCrmClientNotesPending: boolean;
+  checkEstateWebRemovalPending: boolean;
+  fixEstateWebRemovalPending: boolean;
   deleteCmsImagesPending: boolean;
   migrateCmsImagesPending: boolean;
   removeWatermarksPending: boolean;
@@ -196,6 +213,8 @@ function buildPropertyRowActions(options: {
     renormalizePending,
     updateSalesPricesPending,
     syncCrmClientNotesPending,
+    checkEstateWebRemovalPending,
+    fixEstateWebRemovalPending,
     deleteCmsImagesPending,
     migrateCmsImagesPending,
     removeWatermarksPending,
@@ -224,29 +243,48 @@ function buildPropertyRowActions(options: {
     isDisabled: !hasIntegration || deleteCmsImagesPending,
   });
 
+  const crmItems: TableRowAction[] = [
+    {
+      ...PROPERTY_PUSH_ACTION,
+      isDisabled: pushPending,
+    },
+    {
+      ...PROPERTY_MANAGE_SITES_ACTION,
+      isDisabled: !hasIntegration,
+    },
+    {
+      ...PROPERTY_UPDATE_SALES_PRICES_ACTION,
+      isDisabled: !hasIntegration || updateSalesPricesPending,
+    },
+    {
+      ...PROPERTY_SYNC_CRM_CLIENT_NOTES_ACTION,
+      isDisabled: !hasIntegration || syncCrmClientNotesPending,
+    },
+  ];
+
+  // Admin/super admin only: manual remediation for properties EstateWeb kept
+  // live after we marked them REMOVED/SOLD locally. Step 1 (check, read-only)
+  // then step 2 (unlink, mutating) -- kept as separate actions so an admin
+  // can review/copy the affected ids before anything is changed.
+  if (canManageBulk) {
+    crmItems.push(
+      {
+        ...PROPERTY_CHECK_ESTATEWEB_REMOVAL_ACTION,
+        isDisabled: !hasIntegration || checkEstateWebRemovalPending,
+      },
+      {
+        ...PROPERTY_FIX_ESTATEWEB_REMOVAL_ACTION,
+        isDisabled: !hasIntegration || fixEstateWebRemovalPending,
+      },
+    );
+  }
+
   const entries: TableRowActionEntry[] = [
     {
       id: "crm",
       label: "CRM",
       icon: Upload,
-      items: [
-        {
-          ...PROPERTY_PUSH_ACTION,
-          isDisabled: pushPending,
-        },
-        {
-          ...PROPERTY_MANAGE_SITES_ACTION,
-          isDisabled: !hasIntegration,
-        },
-        {
-          ...PROPERTY_UPDATE_SALES_PRICES_ACTION,
-          isDisabled: !hasIntegration || updateSalesPricesPending,
-        },
-        {
-          ...PROPERTY_SYNC_CRM_CLIENT_NOTES_ACTION,
-          isDisabled: !hasIntegration || syncCrmClientNotesPending,
-        },
-      ],
+      items: crmItems,
     },
     {
       id: "content",
@@ -291,6 +329,8 @@ export default function DashboardPropertiesListPage() {
   const changeStatusModal = useOverlayState();
   const updateSalesPricesConfirm = useOverlayState();
   const syncCrmClientNotesConfirm = useOverlayState();
+  const checkEstateWebRemovalModal = useOverlayState();
+  const fixEstateWebRemovalConfirm = useOverlayState();
   const renormalizeConfirm = useOverlayState();
   const deleteCmsImagesConfirm = useOverlayState();
   const migrateCmsImagesModal = useOverlayState();
@@ -312,6 +352,8 @@ export default function DashboardPropertiesListPage() {
   const [crmClientNotesPropertyIds, setCrmClientNotesPropertyIds] = useState<
     string[]
   >([]);
+  const [fixEstateWebRemovalPropertyIds, setFixEstateWebRemovalPropertyIds] =
+    useState<string[]>([]);
   const [renormalizePropertyIds, setRenormalizePropertyIds] = useState<string[]>([]);
   const [deleteCmsImagesPropertyIds, setDeleteCmsImagesPropertyIds] = useState<
     string[]
@@ -428,6 +470,8 @@ export default function DashboardPropertiesListPage() {
   const updateStatus = useUpdateUserPropertyStatus();
   const updateSalesPrices = useUpdateUserPropertySalesPrices();
   const syncCrmClientNotes = useSyncUserPropertyCrmClientNotes();
+  const checkEstateWebRemoval = useCheckEstateWebRemoval();
+  const fixEstateWebRemoval = useFixEstateWebRemoval();
   const renormalize = useRenormalizeUserProperties();
   const bulkDeleteCmsImages = useBulkDeleteUserPropertyIntegrationImages();
   const bulkMigrateCmsImages = useBulkMigrateUserPropertyIntegrationImages();
@@ -516,6 +560,24 @@ export default function DashboardPropertiesListPage() {
     syncCrmClientNotesConfirm.open();
   };
 
+  const openFixEstateWebRemoval = (ids: string[]) => {
+    setFixEstateWebRemovalPropertyIds(ids);
+    fixEstateWebRemovalConfirm.open();
+  };
+
+  const openCheckEstateWebRemoval = (ids: string[]) => {
+    checkEstateWebRemoval.reset();
+    checkEstateWebRemovalModal.open();
+    checkEstateWebRemoval.mutate({ ids });
+  };
+
+  const handleFixFromCheckModal = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    await fixEstateWebRemoval.mutateAsync({ ids });
+    checkEstateWebRemovalModal.close();
+    clearSelection();
+  };
+
   const openRenormalize = (ids: string[]) => {
     setRenormalizePropertyIds(ids);
     renormalizeConfirm.open();
@@ -602,6 +664,18 @@ export default function DashboardPropertiesListPage() {
           id: "manage-crm-sites-by-code",
           label: "Manage CRM sites by code",
           icon: Hash,
+        },
+        {
+          id: "check-estateweb-removal",
+          label: "Check EstateWeb removal sync",
+          icon: Search,
+          isDisabled: selectedLinkedCount < 1 || checkEstateWebRemoval.isPending,
+        },
+        {
+          id: "fix-estateweb-removal",
+          label: "Unlink EstateWeb sites",
+          icon: Wrench,
+          isDisabled: selectedLinkedCount < 1 || fixEstateWebRemoval.isPending,
         },
       );
     }
@@ -802,6 +876,26 @@ export default function DashboardPropertiesListPage() {
       openSyncCrmClientNotes(linkedIds);
       return;
     }
+    if (actionId === "check-estateweb-removal") {
+      const linkedIds = properties
+        .filter(
+          (property) =>
+            selectedIds.has(property.id) && Boolean(property.integration_property_id),
+        )
+        .map((property) => property.id);
+      openCheckEstateWebRemoval(linkedIds);
+      return;
+    }
+    if (actionId === "fix-estateweb-removal") {
+      const linkedIds = properties
+        .filter(
+          (property) =>
+            selectedIds.has(property.id) && Boolean(property.integration_property_id),
+        )
+        .map((property) => property.id);
+      openFixEstateWebRemoval(linkedIds);
+      return;
+    }
     if (actionId === "delete-cms-images") {
       const linkedIds = properties
         .filter(
@@ -938,6 +1032,15 @@ export default function DashboardPropertiesListPage() {
     if (crmClientNotesPropertyIds.length === 0) return;
     await syncCrmClientNotes.mutateAsync({ ids: crmClientNotesPropertyIds });
     setCrmClientNotesPropertyIds([]);
+    clearSelection();
+  };
+
+  const handleFixEstateWebRemoval = async () => {
+    if (fixEstateWebRemovalPropertyIds.length === 0) return;
+    await fixEstateWebRemoval.mutateAsync({
+      ids: fixEstateWebRemovalPropertyIds,
+    });
+    setFixEstateWebRemovalPropertyIds([]);
     clearSelection();
   };
 
@@ -1393,6 +1496,8 @@ export default function DashboardPropertiesListPage() {
                 renormalizePending: renormalize.isPending,
                 updateSalesPricesPending: updateSalesPrices.isPending,
                 syncCrmClientNotesPending: syncCrmClientNotes.isPending,
+                checkEstateWebRemovalPending: checkEstateWebRemoval.isPending,
+                fixEstateWebRemovalPending: fixEstateWebRemoval.isPending,
                 deleteCmsImagesPending: bulkDeleteCmsImages.isPending,
                 migrateCmsImagesPending: bulkMigrateCmsImages.isPending,
                 removeWatermarksPending: removeWatermarks.isPending,
@@ -1444,6 +1549,14 @@ export default function DashboardPropertiesListPage() {
                     }
                     if (actionId === "sync-crm-client-notes") {
                       openSyncCrmClientNotes([property.id]);
+                      return;
+                    }
+                    if (actionId === "check-estateweb-removal") {
+                      openCheckEstateWebRemoval([property.id]);
+                      return;
+                    }
+                    if (actionId === "fix-estateweb-removal") {
+                      openFixEstateWebRemoval([property.id]);
                       return;
                     }
                     if (actionId === "delete-cms-images") {
@@ -1524,6 +1637,8 @@ export default function DashboardPropertiesListPage() {
                         renormalizePending: renormalize.isPending,
                         updateSalesPricesPending: updateSalesPrices.isPending,
                         syncCrmClientNotesPending: syncCrmClientNotes.isPending,
+                        checkEstateWebRemovalPending: checkEstateWebRemoval.isPending,
+                        fixEstateWebRemovalPending: fixEstateWebRemoval.isPending,
                         deleteCmsImagesPending: bulkDeleteCmsImages.isPending,
                         migrateCmsImagesPending: bulkMigrateCmsImages.isPending,
                         removeWatermarksPending: removeWatermarks.isPending,
@@ -1665,6 +1780,14 @@ export default function DashboardPropertiesListPage() {
                                 openSyncCrmClientNotes([property.id]);
                                 return;
                               }
+                              if (actionId === "check-estateweb-removal") {
+                                openCheckEstateWebRemoval([property.id]);
+                                return;
+                              }
+                              if (actionId === "fix-estateweb-removal") {
+                                openFixEstateWebRemoval([property.id]);
+                                return;
+                              }
                               if (actionId === "delete-cms-images") {
                                 openDeleteCmsImages([property.id]);
                                 return;
@@ -1776,6 +1899,13 @@ export default function DashboardPropertiesListPage() {
         <>
           <EstateWebDuplicatePropertiesModal state={checkCrmDuplicatesModal} />
           <EstateWebOrphanSitesModal state={manageOrphanSitesModal} />
+          <CheckEstateWebRemovalModal
+            state={checkEstateWebRemovalModal}
+            result={checkEstateWebRemoval.data}
+            isPending={checkEstateWebRemoval.isPending}
+            onFix={handleFixFromCheckModal}
+            isFixPending={fixEstateWebRemoval.isPending}
+          />
         </>
       ) : null}
       <ConfirmationDialog
@@ -1801,6 +1931,18 @@ export default function DashboardPropertiesListPage() {
         confirmLabel="Sync notes"
         onConfirm={handleSyncCrmClientNotes}
         isPending={syncCrmClientNotes.isPending}
+      />
+      <ConfirmationDialog
+        state={fixEstateWebRemovalConfirm}
+        title="Fix EstateWeb removal sync?"
+        description={
+          fixEstateWebRemovalPropertyIds.length === 1
+            ? "Re-runs the EstateWeb unpublish for this property and verifies EstateWeb actually cleared its sites afterward. Admin only."
+            : `Re-runs the EstateWeb unpublish for ${fixEstateWebRemovalPropertyIds.length} properties and verifies EstateWeb actually cleared their sites afterward. Admin only.`
+        }
+        confirmLabel="Fix sync"
+        onConfirm={handleFixEstateWebRemoval}
+        isPending={fixEstateWebRemoval.isPending}
       />
       <ConfirmationDialog
         state={renormalizeConfirm}

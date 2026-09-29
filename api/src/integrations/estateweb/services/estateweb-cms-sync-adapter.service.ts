@@ -565,25 +565,25 @@ export class EstateWebCmsSyncAdapter implements CmsSyncAdapter {
     // Verify the unpublish actually landed -- a 200 from EstateWeb's PATCH is not
     // proof the field was applied (see comment above). Without this check, a
     // silently-ignored `sites` change is reported as a successful REMOVE forever.
-    // NOTE: check for any still-*selected* site, not just a non-empty array --
-    // EstateWeb may legitimately echo back the full site catalog with every entry
-    // `selected: false` once the unpublish is correctly applied.
+    // NOTE: GET's `sites` response never includes a `selected` field at all --
+    // confirmed live: every entry in that array simply IS a currently-published
+    // site (presence = selected). So a non-empty array is exactly "still live" --
+    // do NOT filter by `site.selected`, it's always undefined on read and would
+    // make this check a permanent no-op.
     const after = await this.estateWebPropertyService.getProperty(
       userIntegrationId,
       integrationPropertyId,
     );
-    const stillSelected = (after.sites ?? []).filter(
-      (site) => site.selected === true,
-    );
-    if (stillSelected.length > 0) {
+    const stillLive = after.sites ?? [];
+    if (stillLive.length > 0) {
       throw new EstateWebException(
-        `EstateWeb still reports ${stillSelected.length} site(s) selected for property ${integrationPropertyId} after an unpublish PATCH -- the update was not applied`,
+        `EstateWeb still reports ${stillLive.length} site(s) live for property ${integrationPropertyId} after an unpublish PATCH -- the update was not applied`,
         NotificationType.ESTATEWEB_VALIDATION_FAILED,
         HttpStatus.BAD_GATEWAY,
         {
           integrationPropertyId,
           userPropertyId: userProperty.id,
-          remainingSites: stillSelected.map((site) => site.agent_site_id),
+          remainingSites: stillLive.map((site) => site.agent_site_id),
         },
       );
     }

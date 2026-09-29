@@ -123,24 +123,138 @@ describe('EstateWebCmsSyncAdapter.pushRemove', () => {
     estateweb_location_id: 20,
   } as unknown as UserProperty;
 
-  const englishAd = {
-    lang_id: 2,
-    title: 'English title',
-    description: 'English description',
-    text: 'English description',
-  };
-  const italianAd = {
-    lang_id: 5,
-    title: 'Titolo italiano',
-    description: 'Descrizione italiana',
-    text: 'Descrizione italiana',
+  const currentRemote = {
+    id: 56482,
+    type_id: 10,
+    scope_id: 1,
+    location_id: 20,
+    ads: [{ lang_id: 2, title: 'English title', description: 'x', text: 'x' }],
+    fields: [],
+    sites: [{ agent_site_id: 1, selected: true, name: 'Site A' }],
   };
 
+  function setup(options: { afterSites?: unknown[] } = {}) {
+    const propertyService = {
+      // First call is the pre-update read (round-trip payload source), second call
+      // is the post-update verification read.
+      getProperty: jest
+        .fn()
+        .mockResolvedValueOnce(currentRemote)
+        .mockResolvedValueOnce({
+          ...currentRemote,
+          sites: options.afterSites ?? [],
+        }),
+      updateProperty: jest.fn().mockResolvedValue(undefined),
+    };
+    const adapter = new EstateWebCmsSyncAdapter(
+      {} as never,
+      propertyService as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+    const stubs = adapter as unknown as Record<string, unknown>;
+    const persist = jest.fn().mockResolvedValue(undefined);
+    stubs.persistIntegrationPropertySites = persist;
+    return { adapter, propertyService, persist };
+  }
+
+  it('round-trips the full current record and explicitly deselects every known site (not sites: [])', async () => {
+    const { adapter, propertyService } = setup({ afterSites: [] });
+
+    await adapter.pushRemove('integration-1', '56482', userProperty);
+
+    expect(propertyService.getProperty).toHaveBeenCalledTimes(2);
+    const payload = propertyService.updateProperty.mock.calls[0][2];
+    // Every site from the live record, explicitly deselected -- not an empty array
+    // (EstateWeb silently ignores `sites: []`, see regression history in the code).
+    expect(payload.sites).toEqual([
+      {
+        selected: false,
+        name: 'Site A',
+        agent_site_id: 1,
+        show_on_slider: 0,
+        show_on_first_page: 0,
+        show_on_relative_pages: 0,
+      },
+    ]);
+    // Ads preserved straight from the live record, not rebuilt from userProperty.
+    expect(payload.ads).toEqual(currentRemote.ads);
+  });
+
+  it('does not persist the sites override locally (lets it resurrect on next pushUpdate)', async () => {
+    const { adapter, persist } = setup({ afterSites: [] });
+
+    await adapter.pushRemove('integration-1', '56482', userProperty);
+
+    expect(persist).toHaveBeenCalledTimes(1);
+    const params = persist.mock.calls[0][0];
+    expect(params.sites).toBeUndefined();
+  });
+
+  it('treats an empty sites array from EstateWeb as success', async () => {
+    const { adapter, persist } = setup({ afterSites: [] });
+
+    await adapter.pushRemove('integration-1', '56482', userProperty);
+
+    expect(persist).toHaveBeenCalledTimes(1);
+  });
+
+  // EstateWeb's GET response for `sites` never includes a `selected` field --
+  // confirmed live against production: every entry in that array simply IS a
+  // currently-published site. So ANY non-empty array after the unpublish PATCH
+  // means EstateWeb ignored it, regardless of what a `selected` key on those
+  // objects says (there isn't one).
+  it('throws instead of reporting success when EstateWeb still lists a site as live afterwards', async () => {
+    const { adapter, persist } = setup({
+      afterSites: [{ agent_site_id: 1 }],
+    });
+
+    await expect(
+      adapter.pushRemove('integration-1', '56482', userProperty),
+    ).rejects.toThrow(/still reports 1 site/);
+
+    // Never mark the unpublish as done locally when EstateWeb ignored it.
+    expect(persist).not.toHaveBeenCalled();
+  });
+
+  it('throws even if the still-live site entries happen to carry a truthy-looking field', async () => {
+    const { adapter, persist } = setup({
+      afterSites: [
+        { agent_site_id: 1, selected: false },
+        { agent_site_id: 2, selected: false },
+      ],
+    });
+
+    await expect(
+      adapter.pushRemove('integration-1', '56482', userProperty),
+    ).rejects.toThrow(/still reports 2 site/);
+    expect(persist).not.toHaveBeenCalled();
+  });
+});
+
+describe('EstateWebCmsSyncAdapter.ensureImagesCached', () => {
+  const cmsImage = (id: number, sourceUrl: string) => ({
+    id,
+    path: 'agent-1',
+    filename: `img-${id}.jpg`,
+    show_on_site: true,
+    show_on_groups: true,
+    show_on_foreign_agents: true,
+    source_image: sourceUrl,
+  });
+
   function setup(options: {
-    remoteAds?: unknown[];
-    remoteFails?: boolean;
-    storedAds?: unknown[] | null;
+    cachedRow?: {
+      images?: unknown;
+      linked_via_reconciliation?: boolean;
+      excluded_source_images?: unknown;
+      image_upload_failures?: unknown;
+    } | null;
+    remoteImages?: unknown[];
+    remoteImagesAfterUpload?: unknown[];
   }) {
+    const upsertCalls: unknown[] = [];
     const prisma = {
       userIntegration: {
         findUnique: jest.fn().mockResolvedValue({
@@ -149,87 +263,207 @@ describe('EstateWebCmsSyncAdapter.pushRemove', () => {
         }),
       },
       integrationProperty: {
-        findUnique: jest
-          .fn()
-          .mockResolvedValue(
-            options.storedAds === null
-              ? null
-              : { ads: options.storedAds ?? [] },
-          ),
+        findUnique: jest.fn().mockResolvedValue(
+          options.cachedRow === undefined
+            ? { images: [], linked_via_reconciliation: false }
+            : options.cachedRow,
+        ),
+        upsert: jest.fn().mockImplementation(async (args) => {
+          upsertCalls.push(args);
+          return {};
+        }),
+      },
+      userProperty: {
+        findUnique: jest.fn().mockResolvedValue({ images: [] }),
       },
     };
+
     const propertyService = {
-      getProperty: options.remoteFails
-        ? jest.fn().mockRejectedValue(new Error('EstateWeb down'))
-        : jest.fn().mockResolvedValue({ ads: options.remoteAds ?? [] }),
-      updateProperty: jest.fn().mockResolvedValue(undefined),
+      getProperty: jest
+        .fn()
+        .mockResolvedValueOnce({ id: 4242, images: options.remoteImages ?? [] })
+        .mockResolvedValue({
+          id: 4242,
+          images: options.remoteImagesAfterUpload ?? options.remoteImages ?? [],
+        }),
+      uploadPropertyImage: jest.fn().mockResolvedValue({ id: 999 }),
+      deletePropertyImage: jest.fn().mockResolvedValue(undefined),
     };
+
     const adapter = new EstateWebCmsSyncAdapter(
       prisma as never,
       propertyService as never,
-      {
-        // EN (2) and IT (5) are deliberately NOT ad languages, like the real setup.
-        resolveAdLanguages: jest.fn().mockResolvedValue([1, 4, 3, 6]),
-      } as never,
+      {} as never,
       {} as never,
       {} as never,
     );
+
     const stubs = adapter as unknown as Record<string, unknown>;
-    const buildPayload = jest.fn().mockReturnValue({ sites: [], ads: [] });
-    stubs.buildPayload = buildPayload;
-    const persist = jest.fn().mockResolvedValue(undefined);
-    stubs.persistIntegrationPropertySites = persist;
-    return { adapter, propertyService, buildPayload, persist };
+    stubs.downloadImage = jest
+      .fn()
+      .mockResolvedValue(Buffer.from('fake-image-bytes'));
+
+    return { adapter, prisma, propertyService, upsertCalls };
   }
 
-  it('resends the ads already on the CRM listing instead of blanking EN/IT', async () => {
-    const { adapter, buildPayload, propertyService } = setup({
-      remoteAds: [englishAd, italianAd],
+  it('reconciled link: leaves an already-nonempty remote listing untouched', async () => {
+    const { adapter, propertyService } = setup({
+      cachedRow: {
+        images: [cmsImage(1, 'https://source/url1.jpg')],
+        linked_via_reconciliation: true,
+      },
+      remoteImages: [cmsImage(1, 'https://source/url1.jpg')],
     });
 
-    await adapter.pushRemove('integration-1', '56482', userProperty);
-
-    const adMaps = buildPayload.mock.calls[0][5];
-    expect(adMaps.titles).toEqual({ 2: 'English title', 5: 'Titolo italiano' });
-    expect(adMaps.descriptions).toEqual({
-      2: 'English description',
-      5: 'Descrizione italiana',
+    await adapter.ensureImagesCached({
+      userIntegrationId: 'integration-1',
+      crmPropertyId: '4242',
+      userPropertyId: 'up-1',
+      sourceImages: ['https://source/url1.jpg', 'https://source/url2.jpg'],
     });
-    // Unpublished: no sites.
-    expect(buildPayload.mock.calls[0][0]).toEqual([]);
-    expect(propertyService.updateProperty).toHaveBeenCalledTimes(1);
+
+    // The remote listing already has a photo and was linked via reconciliation
+    // (not created by us) -- never top it up from our scraped source.
+    expect(propertyService.uploadPropertyImage).not.toHaveBeenCalled();
   });
 
-  it('does not wipe the stored ads record when unpublishing', async () => {
-    const { adapter, persist } = setup({ remoteAds: [englishAd] });
-
-    await adapter.pushRemove('integration-1', '56482', userProperty);
-
-    expect(persist).toHaveBeenCalledTimes(1);
-    const params = persist.mock.calls[0][0];
-    expect(params.ads).toBeUndefined();
-    expect(params.sites).toBeUndefined();
-  });
-
-  it('falls back to the last-published ads when the CRM cannot be read', async () => {
-    const { adapter, buildPayload } = setup({
-      remoteFails: true,
-      storedAds: [englishAd, italianAd],
+  it('own listing: tops up a missing image without re-uploading the one already present', async () => {
+    const { adapter, propertyService } = setup({
+      cachedRow: {
+        images: [cmsImage(1, 'https://source/url1.jpg')],
+        linked_via_reconciliation: false,
+      },
+      remoteImages: [cmsImage(1, 'https://source/url1.jpg')],
+      remoteImagesAfterUpload: [
+        cmsImage(1, 'https://source/url1.jpg'),
+        cmsImage(2, 'https://source/url2.jpg'),
+      ],
     });
 
-    await adapter.pushRemove('integration-1', '56482', userProperty);
-
-    expect(buildPayload.mock.calls[0][5].titles).toEqual({
-      2: 'English title',
-      5: 'Titolo italiano',
+    await adapter.ensureImagesCached({
+      userIntegrationId: 'integration-1',
+      crmPropertyId: '4242',
+      userPropertyId: 'up-1',
+      sourceImages: ['https://source/url1.jpg', 'https://source/url2.jpg'],
     });
+
+    expect(propertyService.uploadPropertyImage).toHaveBeenCalledTimes(1);
+    const [, , , payload] = propertyService.uploadPropertyImage.mock.calls[0];
+    // Appended after the one image already on the listing, not overwriting it.
+    expect(payload.zindex).toBe(2);
   });
 
-  it('keeps the old behaviour only when no existing ads are known anywhere', async () => {
-    const { adapter, buildPayload } = setup({ remoteAds: [], storedAds: null });
+  it('never re-uploads a source image the user deliberately deleted from the CRM', async () => {
+    const { adapter, propertyService } = setup({
+      cachedRow: {
+        images: [cmsImage(1, 'https://source/url1.jpg')],
+        linked_via_reconciliation: false,
+        excluded_source_images: ['https://source/url2.jpg'],
+      },
+      remoteImages: [cmsImage(1, 'https://source/url1.jpg')],
+    });
 
-    await adapter.pushRemove('integration-1', '56482', userProperty);
+    await adapter.ensureImagesCached({
+      userIntegrationId: 'integration-1',
+      crmPropertyId: '4242',
+      userPropertyId: 'up-1',
+      sourceImages: ['https://source/url1.jpg', 'https://source/url2.jpg'],
+    });
 
-    expect(buildPayload.mock.calls[0][5]).toBeUndefined();
+    expect(propertyService.uploadPropertyImage).not.toHaveBeenCalled();
+  });
+
+  it('stops retrying a source image that has already failed the maximum number of times', async () => {
+    const { adapter, propertyService } = setup({
+      cachedRow: {
+        images: [cmsImage(1, 'https://source/url1.jpg')],
+        linked_via_reconciliation: false,
+        image_upload_failures: {
+          'https://source/url2.jpg': {
+            attempts: 5,
+            last_attempt_at: '2026-01-01T00:00:00.000Z',
+          },
+        },
+      },
+      remoteImages: [cmsImage(1, 'https://source/url1.jpg')],
+    });
+
+    await adapter.ensureImagesCached({
+      userIntegrationId: 'integration-1',
+      crmPropertyId: '4242',
+      userPropertyId: 'up-1',
+      sourceImages: ['https://source/url1.jpg', 'https://source/url2.jpg'],
+    });
+
+    expect(propertyService.uploadPropertyImage).not.toHaveBeenCalled();
+  });
+});
+
+describe('EstateWebCmsSyncAdapter.deleteImages', () => {
+  it('records the deleted image source urls so a future sync never re-adds them', async () => {
+    const upsertCalls: unknown[] = [];
+    const prisma = {
+      userIntegration: {
+        findUnique: jest.fn().mockResolvedValue({
+          user_id: 'user-1',
+          user_integration_settings_id: 'settings-1',
+        }),
+      },
+      integrationProperty: {
+        findUnique: jest.fn().mockResolvedValue({
+          images: [
+            {
+              id: 1,
+              path: 'agent-1',
+              filename: 'img-1.jpg',
+              source_image: 'https://source/url1.jpg',
+            },
+            {
+              id: 2,
+              path: 'agent-1',
+              filename: 'img-2.jpg',
+              source_image: 'https://source/url2.jpg',
+            },
+          ],
+          excluded_source_images: null,
+        }),
+        upsert: jest.fn().mockImplementation(async (args) => {
+          upsertCalls.push(args);
+          return {};
+        }),
+      },
+    };
+    const propertyService = {
+      deletePropertyImage: jest.fn().mockResolvedValue(undefined),
+      getProperty: jest.fn().mockResolvedValue({ id: 4242, images: [] }),
+    };
+
+    const adapter = new EstateWebCmsSyncAdapter(
+      prisma as never,
+      propertyService as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+
+    await adapter.deleteImages({
+      userIntegrationId: 'integration-1',
+      crmPropertyId: '4242',
+      userPropertyId: 'up-1',
+      imageIds: [2],
+    });
+
+    expect(propertyService.deletePropertyImage).toHaveBeenCalledWith(
+      'integration-1',
+      2,
+    );
+    const excludeUpsert = upsertCalls.find((call) => {
+      const data = call as { update?: { excluded_source_images?: unknown } };
+      return data.update?.excluded_source_images !== undefined;
+    }) as { update: { excluded_source_images: string[] } };
+    expect(excludeUpsert).toBeDefined();
+    expect(excludeUpsert.update.excluded_source_images).toEqual([
+      'https://source/url2.jpg',
+    ]);
   });
 });

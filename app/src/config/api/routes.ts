@@ -248,6 +248,8 @@ export const ApiRoutes = {
         updateEstateWebSites: "/properties/update-estateweb-sites",
         updateSalesPrices: "/properties/update-sales-prices",
         syncCrmClientNotes: "/properties/sync-crm-client-notes",
+        checkEstateWebRemoval: "/properties/check-estateweb-removal",
+        fixEstateWebRemoval: "/properties/fix-estateweb-removal",
         produceContent: "/properties/produce-content",
         renormalize: "/properties/renormalize",
         geocodeMissingCoordinates: "/properties/geocode-missing-coordinates",

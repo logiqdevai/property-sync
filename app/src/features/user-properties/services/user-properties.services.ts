@@ -26,6 +26,10 @@ import type {
   UpdateSalesPricesResult,
   SyncCrmClientNotesPayload,
   SyncCrmClientNotesResult,
+  CheckEstateWebRemovalPayload,
+  CheckEstateWebRemovalResult,
+  FixEstateWebRemovalPayload,
+  FixEstateWebRemovalResult,
   UpdateUserPropertyPayload,
   UserProperty,
   AdminUserPropertyCountQuery,
@@ -448,6 +452,40 @@ export const syncUserPropertyCrmClientNotes = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to sync CRM client notes.",
+    );
+  }
+};
+
+export const checkEstateWebRemoval = async (
+  payload: CheckEstateWebRemovalPayload,
+): Promise<CheckEstateWebRemovalResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.checkEstateWebRemoval,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to check EstateWeb removal sync.",
+    );
+  }
+};
+
+export const fixEstateWebRemoval = async (
+  payload: FixEstateWebRemovalPayload,
+): Promise<FixEstateWebRemovalResult> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.userProperties.fixEstateWebRemoval,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message ||
+        "Failed to fix EstateWeb removal sync.",
     );
   }
 };
