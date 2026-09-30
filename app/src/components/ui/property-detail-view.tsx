@@ -1,11 +1,20 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Button, Checkbox, Chip, ListBox, Select, useOverlayState } from "@heroui/react";
+import {
+  Button,
+  Checkbox,
+  Chip,
+  ListBox,
+  Select,
+  Tooltip,
+  useOverlayState,
+} from "@heroui/react";
 import {
   Bath,
   BedDouble,
   Building2,
   Calendar,
+  CloudCheck,
   ExternalLink,
   Eye,
   ArrowUpDown,
@@ -331,21 +340,34 @@ function PropertyImagesGrid({
     Boolean(onReorderIntegrationImages) &&
     images.length > 1 &&
     images.every((image) => image.crmImageId != null);
-  const canSelect =
-    selectable &&
-    images.length > 0 &&
-    (Boolean(onDeleteSelected) ||
-      (canCreateFromPropertyImages && Boolean(onCreateSelected)) ||
-      (canUpdateEstateWebImageOptions &&
-        Boolean(onUpdateEstateWebImageOptions)) ||
-      (canRemoveWatermark && Boolean(onRemoveWatermark)));
+  // A CRM-synced image can be deleted/watermarked/etc; a not-yet-synced scraped
+  // photo can only be picked to upload. Never show a checkbox promising an action
+  // the image doesn't actually support.
+  const isImageSelectable = (image: PropertyDisplayImage) => {
+    if (image.crmImageId != null) {
+      return (
+        Boolean(onDeleteSelected) ||
+        (canUpdateEstateWebImageOptions &&
+          Boolean(onUpdateEstateWebImageOptions)) ||
+        (canRemoveWatermark && Boolean(onRemoveWatermark))
+      );
+    }
+    return (
+      canCreateFromPropertyImages &&
+      Boolean(onCreateSelected) &&
+      image.propertyImageIndex != null
+    );
+  };
+  const selectableIndexes = images
+    .map((image, index) => (isImageSelectable(image) ? index : null))
+    .filter((index): index is number => index != null);
+  const canSelect = selectable && selectableIndexes.length > 0;
   const canMigrate =
     canMigrateIntegrationImages && Boolean(onMigrateIntegrationImages);
   const showToolbar = canSelect || canMigrate || canReorder;
   const allSelected =
     canSelect &&
-    images.length > 0 &&
-    images.every((_, index) => selectedIndexes.has(index));
+    selectableIndexes.every((index) => selectedIndexes.has(index));
   const selectedCount = selectedIndexes.size;
   const selectedCrmIds = [
     ...new Set(
@@ -383,7 +405,7 @@ function PropertyImagesGrid({
   ].sort((a, b) => a - b);
 
   const selectAll = () => {
-    setSelectedIndexes(new Set(images.map((_, index) => index)));
+    setSelectedIndexes(new Set(selectableIndexes));
   };
 
   const deselectAll = () => {
@@ -445,7 +467,6 @@ function PropertyImagesGrid({
             variant: "danger" as const,
             icon: Trash2,
             isDisabled: isPending || selectedCrmIds.length === 0,
-            adminOnly: true,
           },
         ]
       : []),
@@ -570,7 +591,7 @@ function PropertyImagesGrid({
       >
         {images.map((image, index) => {
           const isSelected = selectedIndexes.has(index);
-          const showCheckbox = canSelect;
+          const showCheckbox = canSelect && isImageSelectable(image);
 
           return (
             <div
@@ -621,6 +642,47 @@ function PropertyImagesGrid({
                       </Checkbox.Control>
                     </Checkbox.Content>
                   </Checkbox>
+                </div>
+              ) : null}
+              {image.crmImageId != null ? (
+                <div
+                  className="absolute right-2 top-2 z-10"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                >
+                  <Tooltip delay={150}>
+                    <Tooltip.Trigger>
+                      <span
+                        tabIndex={0}
+                        className="inline-flex items-center justify-center rounded-md bg-background/90 p-1 text-accent shadow-sm backdrop-blur-sm"
+                        aria-label="Synced to CRM"
+                      >
+                        <CloudCheck className="size-3.5" />
+                      </span>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content className="max-w-56 px-2 py-1.5 text-xs leading-snug">
+                      <p className="font-medium text-foreground">
+                        Synced to CRM
+                      </p>
+                      <p className="text-muted">
+                        CRM image #{image.crmImageId}
+                      </p>
+                      <p className="text-muted">
+                        Visible on:{" "}
+                        {[
+                          image.show_on_site ? "site" : null,
+                          image.show_on_groups ? "groups" : null,
+                          image.show_on_foreign_agents
+                            ? "foreign agents"
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(", ") || "nowhere"}
+                      </p>
+                    </Tooltip.Content>
+                  </Tooltip>
                 </div>
               ) : null}
             </div>
