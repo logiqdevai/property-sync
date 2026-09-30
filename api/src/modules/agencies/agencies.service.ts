@@ -60,6 +60,43 @@ export class AgenciesService {
     };
   }
 
+  /** Every agency (unpaginated) with its crawl schedule and how many UserProperty
+   * rows it feeds, for the admin schedule-overview modal. A UserProperty belongs to
+   * an agency if any of its canonical property's source links point there -- the
+   * same "belongs to this agency" rule used to scope UserProperty queries elsewhere
+   * (see UserPropertiesService.buildWhere). */
+  async getScheduleOverview() {
+    const agencies = await this.prisma.sourceAgency.findMany({
+      orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        crawl_interval: true,
+        is_visible: true,
+        is_enabled: true,
+      },
+    });
+
+    const userPropertiesCounts = await Promise.all(
+      agencies.map((agency) =>
+        this.prisma.userProperty.count({
+          where: {
+            canonical_property: {
+              source_links: {
+                some: { source_property: { source_agency_id: agency.id } },
+              },
+            },
+          },
+        }),
+      ),
+    );
+
+    return agencies.map((agency, index) => ({
+      ...agency,
+      user_properties_count: userPropertiesCounts[index],
+    }));
+  }
+
   async findOne(id: string) {
     const agency = await this.prisma.sourceAgency.findUnique({
       where: { id },

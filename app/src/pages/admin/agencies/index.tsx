@@ -7,10 +7,19 @@ import {
   ListBox,
   Input,
   Modal,
-  Pagination,
   useOverlayState,
 } from "@heroui/react";
-import { Ban, CheckCircle, ExternalLink, Eye, EyeOff, Plus, Search, Trash2 } from "lucide-react";
+import {
+  Ban,
+  CalendarClock,
+  CheckCircle,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { Routes } from "@/routes/routes";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -20,6 +29,7 @@ import {
   type TableRowAction,
 } from "@/components/ui/table-row-actions-menu";
 import { AgencyForm } from "./components/agency-form";
+import { ScheduleOverviewModal } from "./components/schedule-overview-modal";
 import {
   useAgencies,
   useCreateAgency,
@@ -69,21 +79,21 @@ export default function AgenciesListPage() {
   const navigate = useNavigate();
   const createModal = useOverlayState();
   const deleteConfirm = useOverlayState();
+  const scheduleModal = useOverlayState();
 
   const [search, setSearch] = useState("");
   const [visibilityFilter, setVisibilityFilter] = useState<AgencyVisibilityFilter>("all");
-  const [page, setPage] = useState(1);
   const [deleteAgencyId, setDeleteAgencyId] = useState<string | null>(null);
   const debouncedSearch = useDebouncedValue(search, 300);
 
   const query = useMemo<AgencyListQuery>(
     () => ({
-      page,
-      limit: 20,
+      page: 1,
+      limit: 1000,
       ...(debouncedSearch && { search: debouncedSearch }),
       ...agencyVisibilityFilterToQuery(visibilityFilter),
     }),
-    [page, debouncedSearch, visibilityFilter],
+    [debouncedSearch, visibilityFilter],
   );
 
   const { data, isPending } = useAgencies(query);
@@ -92,7 +102,6 @@ export default function AgenciesListPage() {
   const deleteAgency = useDeleteAgency();
 
   const agencies = data?.data ?? [];
-  const pagination = data?.pagination;
 
   const handleAgencyAction = (agency: SourceAgency, actionId: string) => {
     if (actionId === "show") {
@@ -140,9 +149,18 @@ export default function AgenciesListPage() {
           <p className="text-2xl font-semibold tracking-tight text-foreground">Agencies</p>
           <p className="text-sm text-muted">Source websites scraped for property listings.</p>
         </div>
-        <ActionButtonWithPending onPress={createModal.open} idleLeading={<Plus className="h-4 w-4" />}>
-          New agency
-        </ActionButtonWithPending>
+        <div className="flex items-center gap-2">
+          <ActionButtonWithPending
+            variant="secondary"
+            onPress={scheduleModal.open}
+            idleLeading={<CalendarClock className="h-4 w-4" />}
+          >
+            Schedules
+          </ActionButtonWithPending>
+          <ActionButtonWithPending onPress={createModal.open} idleLeading={<Plus className="h-4 w-4" />}>
+            New agency
+          </ActionButtonWithPending>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
@@ -150,10 +168,7 @@ export default function AgenciesListPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
           <Input
             value={search}
-            onChange={(e) => {
-              setPage(1);
-              setSearch(e.target.value);
-            }}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or URL"
             className="pl-9"
             fullWidth
@@ -163,10 +178,7 @@ export default function AgenciesListPage() {
         <Select
           aria-label="Filter by visibility"
           selectedKey={visibilityFilter}
-          onSelectionChange={(key) => {
-            setPage(1);
-            setVisibilityFilter(key as AgencyVisibilityFilter);
-          }}
+          onSelectionChange={(key) => setVisibilityFilter(key as AgencyVisibilityFilter)}
           className="w-52"
         >
           <Select.Trigger>
@@ -214,9 +226,7 @@ export default function AgenciesListPage() {
                       className="cursor-pointer"
                     >
                       <Table.Cell>
-                        <span className="tabular-nums text-muted">
-                          {(page - 1) * 20 + index + 1}
-                        </span>
+                        <span className="tabular-nums text-muted">{index + 1}</span>
                       </Table.Cell>
                       <Table.Cell>
                         <div className="flex flex-col">
@@ -265,34 +275,6 @@ export default function AgenciesListPage() {
             </Table.ScrollContainer>
           </Table>
         </div>
-      )}
-
-      {pagination && pagination.total_pages > 1 && (
-        <Pagination>
-          <Pagination.Content>
-            <Pagination.Item>
-              <Pagination.Previous
-                isDisabled={!pagination.has_prev}
-                onPress={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                Previous
-              </Pagination.Previous>
-            </Pagination.Item>
-            <Pagination.Item>
-              <Pagination.Summary>
-                Page {pagination.page} of {pagination.total_pages}
-              </Pagination.Summary>
-            </Pagination.Item>
-            <Pagination.Item>
-              <Pagination.Next
-                isDisabled={!pagination.has_next}
-                onPress={() => setPage((p) => p + 1)}
-              >
-                Next
-              </Pagination.Next>
-            </Pagination.Item>
-          </Pagination.Content>
-        </Pagination>
       )}
 
       <ConfirmationDialog
@@ -359,6 +341,8 @@ export default function AgenciesListPage() {
           </Modal.Container>
         </Modal.Backdrop>
       </Modal>
+
+      <ScheduleOverviewModal state={scheduleModal} />
     </div>
   );
 }

@@ -691,9 +691,8 @@ export default function DashboardAgenciesPage() {
           state={imageLimitModal}
           agencyId={activeSettingsAgency.id}
           agencyName={activeSettingsAgency.name}
-          disabled={
-            !activeSettingsAgency.is_enabled || updateTracking.isPending
-          }
+          disabled={!activeSettingsAgency.is_enabled}
+          isPending={updateTracking.isPending}
           maxImageCount={activeSettingsAgency.tracking_prefs.max_image_count}
           onSave={saveSettingsPrefs}
         />

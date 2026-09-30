@@ -2,6 +2,7 @@ import axiosInstance from "@/config/api/axios";
 import { ApiRoutes } from "@/config/api/routes";
 import type {
   AgencyListQuery,
+  AgencyScheduleOverviewItem,
   CreateAgencyPayload,
   PaginatedResponse,
   SourceAgency,
@@ -50,6 +51,17 @@ export const updateAgency = async (
     return response.data;
   } catch (error: any) {
     throw new Error(error?.response?.data?.message || "Failed to update agency. Please try again.");
+  }
+};
+
+export const getAgenciesScheduleOverview = async (): Promise<AgencyScheduleOverviewItem[]> => {
+  try {
+    const response = await axiosInstance.get(ApiRoutes.admin.agencies.scheduleOverview);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to fetch agency schedules. Please try again.",
+    );
   }
 };
 

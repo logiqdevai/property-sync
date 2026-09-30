@@ -13,7 +13,7 @@ export const AgencyQuerySchema = z.object({
   limit: z
     .string()
     .optional()
-    .transform((v) => (v ? Math.min(parseInt(v, 10), 100) : 20)),
+    .transform((v) => (v ? Math.min(parseInt(v, 10), 1000) : 20)),
   search: z.string().optional(),
   country: z.string().optional(),
   city: z.string().optional(),

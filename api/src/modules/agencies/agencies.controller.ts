@@ -57,6 +57,16 @@ export class AgenciesController {
     return this.agenciesService.findAll(query);
   }
 
+  @Get('schedule-overview')
+  @ApiOperation({
+    summary:
+      'List all agencies (unpaginated) with crawl schedule and tracked user-property counts',
+  })
+  @ApiResponse({ status: 200, description: 'Agencies with schedule overview' })
+  getScheduleOverview() {
+    return this.agenciesService.getScheduleOverview();
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get one agency with related counts' })
   @ApiResponse({ status: 200, type: Agency })

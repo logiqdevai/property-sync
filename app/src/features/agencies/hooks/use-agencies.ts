@@ -4,6 +4,7 @@ import {
   createAgency,
   deleteAgency,
   getAgencies,
+  getAgenciesScheduleOverview,
   getAgency,
   updateAgency,
   updateAgencyVisibility,
@@ -21,6 +22,14 @@ export const useAgencies = (query: AgencyListQuery, options?: { enabled?: boolea
   return useQuery({
     queryKey: ["agencies", "list", query],
     queryFn: () => getAgencies(query),
+    enabled: options?.enabled ?? true,
+  });
+};
+
+export const useAgenciesScheduleOverview = (options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: ["agencies", "schedule-overview"],
+    queryFn: getAgenciesScheduleOverview,
     enabled: options?.enabled ?? true,
   });
 };

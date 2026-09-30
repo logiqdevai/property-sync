@@ -121,14 +121,14 @@ export class TrackAgencyDto {
   @ApiProperty({
     required: false,
     nullable: true,
-    minimum: 1,
+    minimum: 0,
     description:
-      'Max images to keep per listing, counted from the first image found. Null clears the cap (keep all).',
+      'Max images to keep per listing, counted from the first image found. 0 discards all images. Null clears the cap (keep all).',
     example: 10,
   })
   @IsOptional()
   @ValidateIf((_, value) => value !== null)
   @IsInt()
-  @Min(1)
+  @Min(0)
   max_image_count?: number | null;
 }

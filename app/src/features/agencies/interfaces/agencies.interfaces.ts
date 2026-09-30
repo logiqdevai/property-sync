@@ -100,6 +100,15 @@ export interface UpdateTrackerAdminSettingsPayload {
   text_truncate_pieces?: string[];
 }
 
+export interface AgencyScheduleOverviewItem {
+  id: string;
+  name: string;
+  crawl_interval: string;
+  is_visible: boolean;
+  is_enabled: boolean;
+  user_properties_count: number;
+}
+
 export interface AgencyListQuery {
   page?: number;
   limit?: number;

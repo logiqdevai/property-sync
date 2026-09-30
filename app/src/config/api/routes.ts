@@ -34,6 +34,7 @@ export const ApiRoutes = {
             visibility: (id: string) => `/admin/agencies/${id}/visibility`,
             trackerSettings: (agencyId: string, userId: string) =>
                 `/admin/agencies/${agencyId}/trackers/${userId}`,
+            scheduleOverview: "/admin/agencies/schedule-overview",
         },
         scrapers: {
             prefix: "/admin/scrapers",
