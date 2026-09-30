@@ -24,8 +24,7 @@ export function getIntegrationConnectionLabel(
 }
 
 export function getTrackableAgencyLabel(
-  agency: Pick<TrackableAgency, "name" | "city" | "country">,
+  agency: Pick<TrackableAgency, "name" | "country">,
 ) {
-  const location = [agency.city, agency.country].filter(Boolean).join(", ");
-  return location ? `${agency.name} (${location})` : agency.name;
+  return agency.country ? `${agency.name} (${agency.country})` : agency.name;
 }
