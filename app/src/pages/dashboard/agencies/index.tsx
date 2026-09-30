@@ -358,6 +358,16 @@ export default function DashboardAgenciesPage() {
     });
   };
 
+  const saveImageLimitPrefs = (payload: TrackAgencyPayload) => {
+    if (!activeSettingsAgency?.is_tracked || !activeSettingsAgency.is_enabled) {
+      return Promise.resolve();
+    }
+    return updateTracking.mutateAsync({
+      agencyId: activeSettingsAgency.id,
+      payload,
+    });
+  };
+
   const handleBulkInsertionSettingsSave = async (
     payload: BulkInsertionSettingsPayload,
   ) => {
@@ -694,7 +704,7 @@ export default function DashboardAgenciesPage() {
           disabled={!activeSettingsAgency.is_enabled}
           isPending={updateTracking.isPending}
           maxImageCount={activeSettingsAgency.tracking_prefs.max_image_count}
-          onSave={saveSettingsPrefs}
+          onSave={saveImageLimitPrefs}
         />
       ) : null}
 

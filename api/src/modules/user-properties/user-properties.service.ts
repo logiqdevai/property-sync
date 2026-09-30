@@ -3922,6 +3922,7 @@ export class UserPropertiesService {
         images: this.mergeImagesPreservingProcessed(
           existing.images,
           canonicalFields.images,
+          tracker.max_image_count === 0,
         ),
       };
 
@@ -4095,10 +4096,20 @@ export class UserPropertiesService {
   private mergeImagesPreservingProcessed(
     existingImages: unknown,
     nextImages: Prisma.JsonValue | typeof Prisma.JsonNull | undefined,
+    forceEmpty = false,
   ): Prisma.JsonValue | typeof Prisma.JsonNull | undefined {
     const isProcessed = (url: unknown): url is string =>
       typeof url === 'string' &&
       url.includes(`/${GcsFolders.propertyImages}/`);
+
+    // The tracker's image cap is explicitly 0 -- the user wants zero images,
+    // full stop. Skip the "scrape came back empty" protection below, which
+    // exists to guard against unintentional data loss (a source hiccup), not
+    // an intentional setting -- otherwise already-processed images would
+    // never actually clear once max_image_count is set to 0.
+    if (forceEmpty) {
+      return Prisma.JsonNull;
+    }
 
     // The source lost all its photos: drop the stale raw URLs (e.g. a placeholder
     // banner) but keep GCS-processed copies -- those were paid for and may be

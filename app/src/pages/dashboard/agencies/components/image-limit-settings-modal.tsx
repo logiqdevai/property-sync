@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { TrackAgencyPayload } from "@/features/user-tracked-agencies/interfaces/user-tracked-agencies.interfaces";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { Button, Modal, useOverlayState } from "@heroui/react";
+import { X } from "lucide-react";
 
 type ImageLimitSettingsModalProps = {
   state: ReturnType<typeof useOverlayState>;
@@ -10,7 +11,7 @@ type ImageLimitSettingsModalProps = {
   disabled?: boolean;
   isPending?: boolean;
   maxImageCount: number | null | undefined;
-  onSave: (payload: TrackAgencyPayload) => void;
+  onSave: (payload: TrackAgencyPayload) => void | Promise<unknown>;
 };
 
 export function ImageLimitSettingsModal({
@@ -35,9 +36,15 @@ export function ImageLimitSettingsModal({
   const isValid = parsed === null || (Number.isFinite(parsed) && parsed >= 0);
   const isUnchanged = parsed === (maxImageCount ?? null);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!isValid || isUnchanged || isInteractionDisabled) return;
-    onSave({ max_image_count: parsed });
+    try {
+      await onSave({ max_image_count: parsed });
+      state.close();
+    } catch {
+      // Error toast is shown by the mutation itself; keep the modal open so
+      // the user can see what happened and retry without re-entering the value.
+    }
   };
 
   return (
@@ -57,18 +64,30 @@ export function ImageLimitSettingsModal({
               </p>
               <label className="flex flex-col gap-1 text-sm">
                 <span className="text-foreground">Images to keep</span>
-                <input
-                  type="number"
-                  min={0}
-                  className="w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2"
-                  value={value}
-                  disabled={isInteractionDisabled}
-                  placeholder="Unlimited"
-                  onChange={(e) => setValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSave();
-                  }}
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={0}
+                    className="w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2 pr-9"
+                    value={value}
+                    disabled={isInteractionDisabled}
+                    placeholder="Unlimited"
+                    onChange={(e) => setValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSave();
+                    }}
+                  />
+                  {value.length > 0 && !isInteractionDisabled ? (
+                    <button
+                      type="button"
+                      aria-label="Clear (unlimited)"
+                      onClick={() => setValue("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-sm text-muted transition-colors hover:text-foreground"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  ) : null}
+                </div>
                 {!isValid ? (
                   <span className="text-xs text-danger">
                     Enter a number of 0 or more, or leave empty for
