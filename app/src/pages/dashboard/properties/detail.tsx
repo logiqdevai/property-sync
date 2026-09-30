@@ -542,16 +542,12 @@ export default function DashboardPropertyDetailPage() {
         backHref={backHref}
         backLabel="← Back to my properties"
         showFieldDiff
-        onDeleteIntegrationImages={
-          isAdmin
-            ? async (imageIds) => {
-                await deleteIntegrationImages.mutateAsync({
-                  id: property.id,
-                  imageIds,
-                });
-              }
-            : undefined
-        }
+        onDeleteIntegrationImages={async (imageIds) => {
+          await deleteIntegrationImages.mutateAsync({
+            id: property.id,
+            imageIds,
+          });
+        }}
         isDeletingIntegrationImages={deleteIntegrationImages.isPending}
         canUpdateEstateWebImageOptions={Boolean(
           property.integration_property_id,

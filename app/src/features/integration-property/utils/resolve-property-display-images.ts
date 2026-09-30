@@ -89,22 +89,41 @@ export function resolvePropertyDisplayImages(params: {
     params.integrationProperty,
     propertyImages,
   );
-  if (
-    integrationItems.length > 0 &&
-    !(propertyImages.length > integrationItems.length)
-  ) {
-    return integrationItems;
-  }
   if (!propertyImages.length) {
     return integrationItems;
   }
-  return propertyImages.map((url, index) => ({
-    key: `fallback-${index}`,
-    crmImageId: null,
-    propertyImageIndex: index,
-    url,
-    show_on_site: false,
-    show_on_groups: false,
-    show_on_foreign_agents: false,
-  }));
+  if (!integrationItems.length) {
+    return propertyImages.map((url, index) => ({
+      key: `fallback-${index}`,
+      crmImageId: null,
+      propertyImageIndex: index,
+      url,
+      show_on_site: false,
+      show_on_groups: false,
+      show_on_foreign_agents: false,
+    }));
+  }
+
+  // Keep every synced CRM image (with its real crmImageId, so delete/reorder/watermark
+  // stay available) and append any scraped photos the CRM hasn't received yet, so they
+  // can still be picked for "Upload to CRM".
+  const matchedIndexes = new Set(
+    integrationItems
+      .map((item) => item.propertyImageIndex)
+      .filter((index): index is number => index != null),
+  );
+  const unsyncedItems = propertyImages
+    .map((url, index) => ({ url, index }))
+    .filter(({ index }) => !matchedIndexes.has(index))
+    .map(({ url, index }) => ({
+      key: `fallback-${index}`,
+      crmImageId: null,
+      propertyImageIndex: index,
+      url,
+      show_on_site: false,
+      show_on_groups: false,
+      show_on_foreign_agents: false,
+    }));
+
+  return [...integrationItems, ...unsyncedItems];
 }
