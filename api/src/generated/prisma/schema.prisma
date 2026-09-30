@@ -472,6 +472,7 @@ model UserTrackedAgency {
   remove_watermark           Boolean  @default(false)
   watermark_image_count      Int      @default(1)
   watermark_manual_selection Boolean  @default(false)
+  max_image_count            Int? // max images to keep per listing, counted from the first found; null = keep all
   created_at                 DateTime @default(now())
   updated_at                 DateTime @updatedAt
 

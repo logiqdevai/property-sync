@@ -14,6 +14,7 @@ export interface TrackingPrefs {
   remove_watermark: boolean;
   watermark_image_count: number;
   watermark_manual_selection: boolean;
+  max_image_count?: number | null;
 }
 
 export interface TrackableAgency {
@@ -46,6 +47,7 @@ export interface TrackAgencyPayload {
   remove_watermark?: boolean;
   watermark_image_count?: number;
   watermark_manual_selection?: boolean;
+  max_image_count?: number | null;
 }
 
 export const BulkAgencyTrackingActions = {
@@ -101,6 +103,7 @@ export interface UserTrackedAgency {
   remove_watermark: boolean;
   watermark_image_count: number;
   watermark_manual_selection: boolean;
+  max_image_count: number | null;
 }
 
 export interface TrackedAgencyIntegrationLink {

@@ -103,6 +103,7 @@ export class UserTrackedAgenciesService {
                 remove_watermark: tracker.remove_watermark,
                 watermark_image_count: tracker.watermark_image_count,
                 watermark_manual_selection: tracker.watermark_manual_selection,
+                max_image_count: tracker.max_image_count,
               }
             : undefined,
         };
@@ -141,6 +142,7 @@ export class UserTrackedAgenciesService {
         remove_watermark: dto.remove_watermark ?? false,
         watermark_image_count: dto.watermark_image_count ?? 1,
         watermark_manual_selection: dto.watermark_manual_selection ?? false,
+        max_image_count: dto.max_image_count ?? null,
       },
       update: {
         enabled: true,
@@ -167,6 +169,9 @@ export class UserTrackedAgenciesService {
         }),
         ...(dto.watermark_manual_selection !== undefined && {
           watermark_manual_selection: dto.watermark_manual_selection,
+        }),
+        ...(dto.max_image_count !== undefined && {
+          max_image_count: dto.max_image_count,
         }),
       },
     });
@@ -487,6 +492,9 @@ export class UserTrackedAgenciesService {
       }),
       ...(dto.watermark_manual_selection !== undefined && {
         watermark_manual_selection: dto.watermark_manual_selection,
+      }),
+      ...(dto.max_image_count !== undefined && {
+        max_image_count: dto.max_image_count,
       }),
     };
   }

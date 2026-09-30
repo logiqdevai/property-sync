@@ -12672,6 +12672,7 @@ export namespace Prisma {
     insertion_interval_seconds: number | null
     max_properties: number | null
     watermark_image_count: number | null
+    max_image_count: number | null
   }
 
   export type UserTrackedAgencySumAggregateOutputType = {
@@ -12679,6 +12680,7 @@ export namespace Prisma {
     insertion_interval_seconds: number | null
     max_properties: number | null
     watermark_image_count: number | null
+    max_image_count: number | null
   }
 
   export type UserTrackedAgencyMinAggregateOutputType = {
@@ -12697,6 +12699,7 @@ export namespace Prisma {
     remove_watermark: boolean | null
     watermark_image_count: number | null
     watermark_manual_selection: boolean | null
+    max_image_count: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -12717,6 +12720,7 @@ export namespace Prisma {
     remove_watermark: boolean | null
     watermark_image_count: number | null
     watermark_manual_selection: boolean | null
+    max_image_count: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -12738,6 +12742,7 @@ export namespace Prisma {
     remove_watermark: number
     watermark_image_count: number
     watermark_manual_selection: number
+    max_image_count: number
     created_at: number
     updated_at: number
     _all: number
@@ -12749,6 +12754,7 @@ export namespace Prisma {
     insertion_interval_seconds?: true
     max_properties?: true
     watermark_image_count?: true
+    max_image_count?: true
   }
 
   export type UserTrackedAgencySumAggregateInputType = {
@@ -12756,6 +12762,7 @@ export namespace Prisma {
     insertion_interval_seconds?: true
     max_properties?: true
     watermark_image_count?: true
+    max_image_count?: true
   }
 
   export type UserTrackedAgencyMinAggregateInputType = {
@@ -12774,6 +12781,7 @@ export namespace Prisma {
     remove_watermark?: true
     watermark_image_count?: true
     watermark_manual_selection?: true
+    max_image_count?: true
     created_at?: true
     updated_at?: true
   }
@@ -12794,6 +12802,7 @@ export namespace Prisma {
     remove_watermark?: true
     watermark_image_count?: true
     watermark_manual_selection?: true
+    max_image_count?: true
     created_at?: true
     updated_at?: true
   }
@@ -12815,6 +12824,7 @@ export namespace Prisma {
     remove_watermark?: true
     watermark_image_count?: true
     watermark_manual_selection?: true
+    max_image_count?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -12923,6 +12933,7 @@ export namespace Prisma {
     remove_watermark: boolean
     watermark_image_count: number
     watermark_manual_selection: boolean
+    max_image_count: number | null
     created_at: Date
     updated_at: Date
     _count: UserTrackedAgencyCountAggregateOutputType | null
@@ -12963,6 +12974,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: boolean
     watermark_manual_selection?: boolean
+    max_image_count?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -12991,6 +13003,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: boolean
     watermark_manual_selection?: boolean
+    max_image_count?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -13014,6 +13027,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: boolean
     watermark_manual_selection?: boolean
+    max_image_count?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -13037,11 +13051,12 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: boolean
     watermark_manual_selection?: boolean
+    max_image_count?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "concurrent_insertions" | "insertion_interval_seconds" | "max_properties" | "text_truncate_pieces" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "auto_update_to_crm" | "cms_update_on_hash_only" | "remove_watermark" | "watermark_image_count" | "watermark_manual_selection" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
+  export type UserTrackedAgencyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "source_agency_id" | "enabled" | "concurrent_insertions" | "insertion_interval_seconds" | "max_properties" | "text_truncate_pieces" | "track_new_listings" | "track_removed_listings" | "track_updated_listings" | "auto_update_to_crm" | "cms_update_on_hash_only" | "remove_watermark" | "watermark_image_count" | "watermark_manual_selection" | "max_image_count" | "created_at" | "updated_at", ExtArgs["result"]["userTrackedAgency"]>
   export type UserTrackedAgencyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     source_agency?: boolean | SourceAgencyDefaultArgs<ExtArgs>
@@ -13087,6 +13102,7 @@ export namespace Prisma {
       remove_watermark: boolean
       watermark_image_count: number
       watermark_manual_selection: boolean
+      max_image_count: number | null
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["userTrackedAgency"]>
@@ -13534,6 +13550,7 @@ export namespace Prisma {
     readonly remove_watermark: FieldRef<"UserTrackedAgency", 'Boolean'>
     readonly watermark_image_count: FieldRef<"UserTrackedAgency", 'Int'>
     readonly watermark_manual_selection: FieldRef<"UserTrackedAgency", 'Boolean'>
+    readonly max_image_count: FieldRef<"UserTrackedAgency", 'Int'>
     readonly created_at: FieldRef<"UserTrackedAgency", 'DateTime'>
     readonly updated_at: FieldRef<"UserTrackedAgency", 'DateTime'>
   }
@@ -49207,6 +49224,7 @@ export namespace Prisma {
     remove_watermark: 'remove_watermark',
     watermark_image_count: 'watermark_image_count',
     watermark_manual_selection: 'watermark_manual_selection',
+    max_image_count: 'max_image_count',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -50954,6 +50972,7 @@ export namespace Prisma {
     remove_watermark?: BoolFilter<"UserTrackedAgency"> | boolean
     watermark_image_count?: IntFilter<"UserTrackedAgency"> | number
     watermark_manual_selection?: BoolFilter<"UserTrackedAgency"> | boolean
+    max_image_count?: IntNullableFilter<"UserTrackedAgency"> | number | null
     created_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -50981,6 +51000,7 @@ export namespace Prisma {
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
+    max_image_count?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -51012,6 +51032,7 @@ export namespace Prisma {
     remove_watermark?: BoolFilter<"UserTrackedAgency"> | boolean
     watermark_image_count?: IntFilter<"UserTrackedAgency"> | number
     watermark_manual_selection?: BoolFilter<"UserTrackedAgency"> | boolean
+    max_image_count?: IntNullableFilter<"UserTrackedAgency"> | number | null
     created_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -51039,6 +51060,7 @@ export namespace Prisma {
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
+    max_image_count?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: UserTrackedAgencyCountOrderByAggregateInput
@@ -51068,6 +51090,7 @@ export namespace Prisma {
     remove_watermark?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
     watermark_image_count?: IntWithAggregatesFilter<"UserTrackedAgency"> | number
     watermark_manual_selection?: BoolWithAggregatesFilter<"UserTrackedAgency"> | boolean
+    max_image_count?: IntNullableWithAggregatesFilter<"UserTrackedAgency"> | number | null
     created_at?: DateTimeWithAggregatesFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserTrackedAgency"> | Date | string
   }
@@ -54839,6 +54862,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -54866,6 +54890,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -54889,6 +54914,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -54916,6 +54942,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -54941,6 +54968,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -54960,6 +54988,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -54981,6 +55010,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -59349,6 +59379,7 @@ export namespace Prisma {
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
+    max_image_count?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -59358,6 +59389,7 @@ export namespace Prisma {
     insertion_interval_seconds?: SortOrder
     max_properties?: SortOrder
     watermark_image_count?: SortOrder
+    max_image_count?: SortOrder
   }
 
   export type UserTrackedAgencyMaxOrderByAggregateInput = {
@@ -59376,6 +59408,7 @@ export namespace Prisma {
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
+    max_image_count?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -59396,6 +59429,7 @@ export namespace Prisma {
     remove_watermark?: SortOrder
     watermark_image_count?: SortOrder
     watermark_manual_selection?: SortOrder
+    max_image_count?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -59405,6 +59439,7 @@ export namespace Prisma {
     insertion_interval_seconds?: SortOrder
     max_properties?: SortOrder
     watermark_image_count?: SortOrder
+    max_image_count?: SortOrder
   }
 
   export type UserTrackedAgencyScalarRelationFilter = {
@@ -65880,6 +65915,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     source_agency: SourceAgencyCreateNestedOneWithoutUser_tracked_agenciesInput
@@ -65905,6 +65941,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -66235,6 +66272,7 @@ export namespace Prisma {
     remove_watermark?: BoolFilter<"UserTrackedAgency"> | boolean
     watermark_image_count?: IntFilter<"UserTrackedAgency"> | number
     watermark_manual_selection?: BoolFilter<"UserTrackedAgency"> | boolean
+    max_image_count?: IntNullableFilter<"UserTrackedAgency"> | number | null
     created_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
     updated_at?: DateTimeFilter<"UserTrackedAgency"> | Date | string
   }
@@ -67230,6 +67268,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -67255,6 +67294,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -68327,6 +68367,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -68353,6 +68394,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -68432,6 +68474,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -68458,6 +68501,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -69664,6 +69708,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -69690,6 +69735,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedCreateNestedOneWithoutUser_tracked_agencyInput
@@ -70179,6 +70225,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -70205,6 +70252,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     integration_link?: UserTrackedAgencyIntegrationLinkUncheckedUpdateOneWithoutUser_tracked_agencyNestedInput
@@ -73461,6 +73509,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -73487,6 +73536,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -73637,6 +73687,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -73663,6 +73714,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -74896,6 +74948,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     user: UserCreateNestedOneWithoutTracked_agenciesInput
@@ -74922,6 +74975,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     crawl_runs?: CrawlRunUncheckedCreateNestedManyWithoutUser_tracked_agencyInput
@@ -75234,6 +75288,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -75260,6 +75315,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -75871,6 +75927,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -75996,6 +76053,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     source_agency?: SourceAgencyUpdateOneRequiredWithoutUser_tracked_agenciesNestedInput
@@ -76021,6 +76079,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -76045,6 +76104,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -76727,6 +76787,7 @@ export namespace Prisma {
     remove_watermark?: boolean
     watermark_image_count?: number
     watermark_manual_selection?: boolean
+    max_image_count?: number | null
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -76901,6 +76962,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTracked_agenciesNestedInput
@@ -76926,6 +76988,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     crawl_runs?: CrawlRunUncheckedUpdateManyWithoutUser_tracked_agencyNestedInput
@@ -76950,6 +77013,7 @@ export namespace Prisma {
     remove_watermark?: BoolFieldUpdateOperationsInput | boolean
     watermark_image_count?: IntFieldUpdateOperationsInput | number
     watermark_manual_selection?: BoolFieldUpdateOperationsInput | boolean
+    max_image_count?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }

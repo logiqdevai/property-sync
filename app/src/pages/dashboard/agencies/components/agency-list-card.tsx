@@ -8,7 +8,7 @@ import {
   useUpdateAgencyTracking,
 } from "@/features/user-tracked-agencies/hooks/use-user-tracked-agencies";
 import { Button, Switch } from "@heroui/react";
-import { ExternalLink, Settings } from "lucide-react";
+import { ExternalLink, Images, Settings } from "lucide-react";
 
 function PrefSwitch({
   isSelected,
@@ -114,6 +114,7 @@ type AgencyListCardProps = {
   rowNumber: number;
   onUntrackRequest: (agency: TrackableAgency) => void;
   onOpenWatermarkSettings: (agency: TrackableAgency) => void;
+  onOpenImageLimitSettings: (agency: TrackableAgency) => void;
   onOpenPublishingSettings: (agency: TrackableAgency) => void;
 };
 
@@ -122,6 +123,7 @@ export function AgencyListCard({
   rowNumber,
   onUntrackRequest,
   onOpenWatermarkSettings,
+  onOpenImageLimitSettings,
   onOpenPublishingSettings,
 }: AgencyListCardProps) {
   const {
@@ -243,6 +245,26 @@ export function AgencyListCard({
               ) : null
             }
           />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-sm text-foreground">Image limit</span>
+              <span className="text-xs text-muted">
+                {prefs.max_image_count != null
+                  ? `Keeping first ${prefs.max_image_count} image${prefs.max_image_count === 1 ? "" : "s"}`
+                  : "Keeping all images"}
+              </span>
+            </div>
+            <Button
+              size="sm"
+              variant="secondary"
+              isIconOnly
+              isDisabled={prefsDisabled}
+              aria-label="Image limit settings"
+              onPress={() => onOpenImageLimitSettings(agency)}
+            >
+              <Images className="size-3.5" />
+            </Button>
+          </div>
           <Button
             size="sm"
             variant="secondary"

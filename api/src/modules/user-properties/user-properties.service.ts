@@ -3335,7 +3335,7 @@ export class UserPropertiesService {
               source_agency_id: sourceAgencyId,
             },
           },
-          select: { text_truncate_pieces: true },
+          select: { text_truncate_pieces: true, max_image_count: true },
         })
       : null;
 
@@ -3347,6 +3347,7 @@ export class UserPropertiesService {
             userProperty.canonical_property,
             tracker?.text_truncate_pieces,
             userProperty,
+            tracker?.max_image_count,
           ),
           is_modified: false,
           last_synced_at: new Date(),
@@ -3822,6 +3823,7 @@ export class UserPropertiesService {
         property,
         tracker.text_truncate_pieces,
         existing ?? undefined,
+        tracker.max_image_count,
       );
       const listingTypeAllowed = isEstateWebListingTypeAllowed(
         estateWebSettingsByUserId.get(tracker.user_id),
@@ -4120,10 +4122,19 @@ export class UserPropertiesService {
     });
   }
 
+  private truncateImages(
+    images: Prisma.JsonValue | null | undefined,
+    maxImageCount?: number | null,
+  ): Prisma.JsonValue | null | undefined {
+    if (maxImageCount == null || !Array.isArray(images)) return images;
+    return images.slice(0, Math.max(0, maxImageCount));
+  }
+
   private mapFromCanonical(
     property: Property,
     textTruncatePieces?: string[],
     existing?: Pick<UserProperty, 'price_start'> | null,
+    maxImageCount?: number | null,
   ) {
     return {
       property_id: property.property_id,
@@ -4174,7 +4185,9 @@ export class UserPropertiesService {
       // JsonNull (not undefined) so a source that loses all its photos clears
       // them here too -- `undefined` means "leave untouched" to Prisma and would
       // keep stale images (e.g. a placeholder banner) on the user property forever.
-      images: property.images ?? Prisma.JsonNull,
+      images:
+        this.truncateImages(property.images, maxImageCount) ??
+        Prisma.JsonNull,
       normalized_data: property.normalized_data ?? undefined,
       duplicate_group_id: property.duplicate_group_id,
       last_synced_at: new Date(),

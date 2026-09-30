@@ -7,6 +7,7 @@ export type AgencyTrackingColumnId =
   | "auto_crm"
   | "content_changes_only"
   | "watermark"
+  | "image_limit"
   | "publishing";
 
 export const AgencyTrackingColumnDescriptionOptions: {
@@ -54,6 +55,12 @@ export const AgencyTrackingColumnDescriptionOptions: {
     id: "watermark",
     label: "Watermark",
     description: "Remove watermarks from listing photos before publishing.",
+  },
+  {
+    id: "image_limit",
+    label: "Image limit",
+    description:
+      "Cap how many images per listing are kept and pushed to the CMS, counted from the first image found.",
   },
   {
     id: "publishing",

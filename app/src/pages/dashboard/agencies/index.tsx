@@ -26,6 +26,7 @@ import {
   type AgencyTrackingToggleColumnId,
 } from "./components/agency-tracking-column-header";
 import { WatermarkSettingsModal } from "./components/watermark-settings-modal";
+import { ImageLimitSettingsModal } from "./components/image-limit-settings-modal";
 import {
   BulkInsertionSettingsModal,
   type BulkInsertionSettingsPayload,
@@ -47,6 +48,7 @@ import {
 import {
   ChevronDown,
   ExternalLink,
+  Images,
   Search,
   Settings,
   SlidersHorizontal,
@@ -59,12 +61,14 @@ function AgencyRow({
   rowNumber,
   onUntrackRequest,
   onOpenWatermarkSettings,
+  onOpenImageLimitSettings,
   onOpenPublishingSettings,
 }: {
   agency: TrackableAgency;
   rowNumber: number;
   onUntrackRequest: (agency: TrackableAgency) => void;
   onOpenWatermarkSettings: (agency: TrackableAgency) => void;
+  onOpenImageLimitSettings: (agency: TrackableAgency) => void;
   onOpenPublishingSettings: (agency: TrackableAgency) => void;
 }) {
   const {
@@ -201,6 +205,18 @@ function AgencyRow({
         <Button
           size="sm"
           variant="secondary"
+          isIconOnly
+          isDisabled={prefsDisabled}
+          aria-label="Image limit settings"
+          onPress={() => onOpenImageLimitSettings(agency)}
+        >
+          <Images className="size-3.5" />
+        </Button>
+      </Table.Cell>
+      <Table.Cell>
+        <Button
+          size="sm"
+          variant="secondary"
           isDisabled={prefsDisabled}
           onPress={() => onOpenPublishingSettings(agency)}
         >
@@ -216,6 +232,7 @@ export default function DashboardAgenciesPage() {
   const untrackConfirm = useOverlayState();
   const bulkUntrackConfirm = useOverlayState();
   const watermarkModal = useOverlayState();
+  const imageLimitModal = useOverlayState();
   const publishingModal = useOverlayState();
   const bulkInsertionSettingsModal = useOverlayState();
   const bulkAiBatchConfirm = useOverlayState();
@@ -369,6 +386,11 @@ export default function DashboardAgenciesPage() {
     watermarkModal.open();
   };
 
+  const openImageLimitSettings = (item: TrackableAgency) => {
+    setSettingsAgency(item);
+    imageLimitModal.open();
+  };
+
   const openPublishingSettings = (item: TrackableAgency) => {
     setSettingsAgency(item);
     publishingModal.open();
@@ -499,6 +521,7 @@ export default function DashboardAgenciesPage() {
                 rowNumber={limit === 0 ? index + 1 : (page - 1) * limit + index + 1}
                 onUntrackRequest={requestUntrack}
                 onOpenWatermarkSettings={openWatermarkSettings}
+                onOpenImageLimitSettings={openImageLimitSettings}
                 onOpenPublishingSettings={openPublishingSettings}
               />
             ))}
@@ -553,6 +576,9 @@ export default function DashboardAgenciesPage() {
                       <AgencyTrackingColumnHeader columnId="watermark" />
                     </Table.Column>
                     <Table.Column>
+                      <AgencyTrackingColumnHeader columnId="image_limit" />
+                    </Table.Column>
+                    <Table.Column>
                       <AgencyTrackingColumnHeader columnId="publishing" />
                     </Table.Column>
                   </Table.Header>
@@ -566,6 +592,7 @@ export default function DashboardAgenciesPage() {
                         }
                         onUntrackRequest={requestUntrack}
                         onOpenWatermarkSettings={openWatermarkSettings}
+                        onOpenImageLimitSettings={openImageLimitSettings}
                         onOpenPublishingSettings={openPublishingSettings}
                       />
                     ))}
@@ -655,6 +682,19 @@ export default function DashboardAgenciesPage() {
           watermarkImageCount={
             activeSettingsAgency.tracking_prefs.watermark_image_count ?? 1
           }
+          onSave={saveSettingsPrefs}
+        />
+      ) : null}
+
+      {activeSettingsAgency?.tracking_prefs ? (
+        <ImageLimitSettingsModal
+          state={imageLimitModal}
+          agencyId={activeSettingsAgency.id}
+          agencyName={activeSettingsAgency.name}
+          disabled={
+            !activeSettingsAgency.is_enabled || updateTracking.isPending
+          }
+          maxImageCount={activeSettingsAgency.tracking_prefs.max_image_count}
           onSave={saveSettingsPrefs}
         />
       ) : null}
