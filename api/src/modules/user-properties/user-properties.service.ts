@@ -745,6 +745,7 @@ export class UserPropertiesService {
             images: integrationProperty.images,
             sites: integrationProperty.sites,
             ads: integrationProperty.ads,
+            excluded_source_images: integrationProperty.excluded_source_images,
             created_at: integrationProperty.created_at,
             updated_at: integrationProperty.updated_at,
           }
@@ -4478,6 +4479,7 @@ export class UserPropertiesService {
             images: integrationProperty.images,
             sites: integrationProperty.sites,
             ads: integrationProperty.ads,
+            excluded_source_images: integrationProperty.excluded_source_images,
             created_at: integrationProperty.created_at,
             updated_at: integrationProperty.updated_at,
           }

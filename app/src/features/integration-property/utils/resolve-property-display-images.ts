@@ -130,7 +130,16 @@ export function resolvePropertyDisplayImages(params: {
 
   // Keep every synced CRM image (with its real crmImageId, so delete/reorder/watermark
   // stay available) and append any scraped photos the CRM hasn't received yet, so they
-  // can still be picked for "Upload to CRM".
+  // can still be picked for "Upload to CRM". Never resurrect a photo the user explicitly
+  // deleted from the CRM (tracked server-side in excluded_source_images) -- otherwise a
+  // deleted image just reappears as a broken, unmanageable tile.
+  const excludedIdentities = new Set(
+    (params.integrationProperty?.excluded_source_images ?? [])
+      .filter(
+        (url): url is string => typeof url === "string" && url.length > 0,
+      )
+      .map(normalizeSourceImageIdentity),
+  );
   const matchedIndexes = new Set(
     integrationItems
       .map((item) => item.propertyImageIndex)
@@ -138,7 +147,11 @@ export function resolvePropertyDisplayImages(params: {
   );
   const unsyncedItems = propertyImages
     .map((url, index) => ({ url, index }))
-    .filter(({ index }) => !matchedIndexes.has(index))
+    .filter(
+      ({ index, url }) =>
+        !matchedIndexes.has(index) &&
+        !excludedIdentities.has(normalizeSourceImageIdentity(url)),
+    )
     .map(({ url, index }) => ({
       key: `fallback-${index}`,
       crmImageId: null,

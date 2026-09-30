@@ -33,6 +33,8 @@ export interface IntegrationProperty {
   images: IntegrationPropertyImage[] | null;
   sites: IntegrationPropertySite[] | null;
   ads: IntegrationPropertyAd[] | null;
+  /** Source image URLs a user explicitly deleted from the CRM listing; never re-offered for upload. */
+  excluded_source_images?: string[] | null;
   created_at: string;
   updated_at: string;
 }
