@@ -320,6 +320,7 @@ export default function DashboardPropertyDetailPage() {
         variant: "danger",
         icon: Unlink,
         isDisabled: isEditing || updateProperty.isPending,
+        adminOnly: true,
       });
     }
 

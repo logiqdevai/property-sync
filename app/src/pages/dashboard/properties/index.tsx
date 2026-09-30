@@ -185,6 +185,7 @@ const PROPERTY_DELETE_ACTION: TableRowAction = {
   label: "Delete",
   variant: "danger",
   icon: Trash2,
+  adminOnly: true,
 };
 
 function buildPropertyRowActions(options: {
@@ -235,6 +236,7 @@ function buildPropertyRowActions(options: {
     imageItems.push({
       ...PROPERTY_MIGRATE_CMS_IMAGES_ACTION,
       isDisabled: !hasIntegration || migrateCmsImagesPending,
+      adminOnly: true,
     });
   }
 
@@ -271,10 +273,12 @@ function buildPropertyRowActions(options: {
       {
         ...PROPERTY_CHECK_ESTATEWEB_REMOVAL_ACTION,
         isDisabled: !hasIntegration || checkEstateWebRemovalPending,
+        adminOnly: true,
       },
       {
         ...PROPERTY_FIX_ESTATEWEB_REMOVAL_ACTION,
         isDisabled: !hasIntegration || fixEstateWebRemovalPending,
+        adminOnly: true,
       },
     );
   }
@@ -610,12 +614,14 @@ export default function DashboardPropertiesListPage() {
         label: "Remove watermarks",
         icon: Sparkles,
         isDisabled: selectedLinkedCount < 1 || removeWatermarks.isPending,
+        adminOnly: true,
       });
       imageItems.push({
         id: "migrate-cms-images",
         label: "Migrate CMS images",
         icon: Images,
         isDisabled: selectedLinkedCount < 1 || bulkMigrateCmsImages.isPending,
+        adminOnly: true,
       });
     }
 
@@ -660,23 +666,27 @@ export default function DashboardPropertiesListPage() {
           id: "check-crm-duplicates",
           label: "Check CRM duplicates",
           icon: CopyCheck,
+          adminOnly: true,
         },
         {
           id: "manage-crm-sites-by-code",
           label: "Manage CRM sites by code",
           icon: Hash,
+          adminOnly: true,
         },
         {
           id: "check-estateweb-removal",
           label: "Check EstateWeb removal sync",
           icon: Search,
           isDisabled: selectedLinkedCount < 1 || checkEstateWebRemoval.isPending,
+          adminOnly: true,
         },
         {
           id: "fix-estateweb-removal",
           label: "Unlink EstateWeb sites",
           icon: Wrench,
           isDisabled: selectedLinkedCount < 1 || fixEstateWebRemoval.isPending,
+          adminOnly: true,
         },
       );
     }
@@ -732,12 +742,14 @@ export default function DashboardPropertiesListPage() {
         id: "geocode-missing-coordinates",
         label: "Find missing coordinates",
         icon: MapPin,
+        adminOnly: true,
       });
       entries.push({
         id: "resolve-estateweb-locations",
         label: "Resolve EstateWeb locations",
         icon: Compass,
         isDisabled: selectedCount < 1,
+        adminOnly: true,
       });
 
       const duplicateItems: TableRowAction[] = [
@@ -763,6 +775,7 @@ export default function DashboardPropertiesListPage() {
         label: "Duplicates",
         icon: Layers,
         items: duplicateItems,
+        adminOnly: true,
       });
 
       entries.push({
@@ -771,6 +784,7 @@ export default function DashboardPropertiesListPage() {
         variant: "danger",
         icon: Trash2,
         isDisabled: selectedCount < 1,
+        adminOnly: true,
       });
     }
 

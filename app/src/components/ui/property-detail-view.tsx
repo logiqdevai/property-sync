@@ -399,6 +399,7 @@ function PropertyImagesGrid({
             variant: "accent" as const,
             icon: Images,
             isDisabled: isPending,
+            adminOnly: true,
           },
         ]
       : []),
@@ -421,6 +422,7 @@ function PropertyImagesGrid({
             variant: "accent" as const,
             icon: Images,
             isDisabled: isPending || selectedPropertyIndexes.length === 0,
+            adminOnly: true,
           },
         ]
       : []),
@@ -443,6 +445,7 @@ function PropertyImagesGrid({
             variant: "danger" as const,
             icon: Trash2,
             isDisabled: isPending || selectedCrmIds.length === 0,
+            adminOnly: true,
           },
         ]
       : []),

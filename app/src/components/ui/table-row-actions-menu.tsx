@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { MoreHorizontal } from "lucide-react";
+import { Lock, MoreHorizontal } from "lucide-react";
 import { Button, Dropdown, Label } from "@heroui/react";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,8 @@ export type TableRowAction = {
   variant?: TableRowActionVariant;
   icon?: LucideIcon;
   isDisabled?: boolean;
+  /** Only reachable by admins/super admins — shows a small lock indicator. */
+  adminOnly?: boolean;
 };
 
 export type TableRowActionGroup = {
@@ -18,6 +20,8 @@ export type TableRowActionGroup = {
   label: string;
   icon?: LucideIcon;
   items: TableRowAction[];
+  /** Whole submenu is only reachable by admins/super admins — shows a small lock indicator. */
+  adminOnly?: boolean;
 };
 
 export type TableRowActionEntry = TableRowAction | TableRowActionGroup;
@@ -79,6 +83,12 @@ function ActionMenuItem({ action }: { action: TableRowAction }) {
           <Icon className={cn("h-3.5 w-3.5 shrink-0", tone.icon)} />
         ) : null}
         <Label className={tone.label}>{action.label}</Label>
+        {action.adminOnly ? (
+          <Lock
+            className="ml-auto h-3 w-3 shrink-0 text-yellow-500"
+            aria-label="Admin only"
+          />
+        ) : null}
       </div>
     </Dropdown.Item>
   );
@@ -109,6 +119,12 @@ export function ActionMenuEntries({
                     <GroupIcon className="h-3.5 w-3.5 shrink-0 text-muted" />
                   ) : null}
                   <Label>{entry.label}</Label>
+                  {entry.adminOnly ? (
+                    <Lock
+                      className="ml-auto h-3 w-3 shrink-0 text-yellow-500"
+                      aria-label="Admin only"
+                    />
+                  ) : null}
                 </div>
                 <Dropdown.SubmenuIndicator />
               </Dropdown.Item>
