@@ -537,9 +537,11 @@ export class UserPropertiesController {
 
   @Audited({ action: 'user_property.bulk_remove_watermark_images', entity: 'UserProperty', ids: { body: 'ids' } })
   @Post('remove-watermark-images')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(AuthRole.ADMIN)
   @ApiOperation({
     summary:
-      'Enqueue watermark removal for the first N CRM images on one or more properties',
+      'Enqueue watermark removal for the first N CRM images on one or more properties (admin only)',
   })
   @ApiResponse({
     status: 200,
@@ -547,6 +549,7 @@ export class UserPropertiesController {
     type: BulkRemoveWatermarkImagesResponseEntity,
   })
   @ApiResponse({ status: 400, description: 'Cannot enqueue watermark removal' })
+  @ApiResponse({ status: 403, description: 'Admin only' })
   @ApiResponse({ status: 404, description: 'Saved property not found' })
   removeWatermarkImagesBulk(
     @CurrentUser('id') userId: string,

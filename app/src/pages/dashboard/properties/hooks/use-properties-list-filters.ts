@@ -15,9 +15,9 @@ import {
 } from "@/interfaces/filters/filters.interface";
 import { TablePageSizeOptions } from "@/config/constants/dropdowns/shared/table-page-size.options";
 
-const DEFAULT_LIMIT = 20;
+const DEFAULT_LIMIT = 50;
 const DEFAULT_PAGE = 1;
-const DEFAULT_ORDER_BY = OrderBy.UPDATED_AT;
+const DEFAULT_ORDER_BY = OrderBy.CREATED_AT;
 const DEFAULT_ORDER_DIRECTION = OrderDirection.DESC;
 
 const STATUS_VALUES = new Set<string>(Object.values(PropertyStatuses));

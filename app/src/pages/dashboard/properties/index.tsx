@@ -602,15 +602,15 @@ export default function DashboardPropertiesListPage() {
         icon: Upload,
         isDisabled: selectedLinkedCount < 1 || pushSelectedImagesToCrm.isPending,
       },
-      {
+    ];
+
+    if (canManageBulk) {
+      imageItems.push({
         id: "remove-watermarks",
         label: "Remove watermarks",
         icon: Sparkles,
         isDisabled: selectedLinkedCount < 1 || removeWatermarks.isPending,
-      },
-    ];
-
-    if (canManageBulk) {
+      });
       imageItems.push({
         id: "migrate-cms-images",
         label: "Migrate CMS images",
