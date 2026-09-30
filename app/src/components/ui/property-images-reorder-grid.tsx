@@ -26,9 +26,9 @@ import { cn } from "@/lib/utils";
 interface SortableImageTileProps {
   id: string;
   image: PropertyDisplayImage;
-  position: number;
+  position: number | null;
   alt: string;
-  isDisabled: boolean;
+  isPending: boolean;
 }
 
 const SortableImageTile: FC<SortableImageTileProps> = ({
@@ -36,8 +36,12 @@ const SortableImageTile: FC<SortableImageTileProps> = ({
   image,
   position,
   alt,
-  isDisabled,
+  isPending,
 }) => {
+  // A photo without a crmImageId isn't part of the CRM sequence (not yet synced, or a
+  // permanently excluded duplicate) -- it can be seen but never dragged or numbered.
+  const isExcluded = image.crmImageId == null;
+  const isDisabled = isPending || isExcluded;
   const {
     attributes,
     listeners,
@@ -53,7 +57,11 @@ const SortableImageTile: FC<SortableImageTileProps> = ({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
         "relative aspect-square touch-manipulation select-none overflow-hidden rounded-lg border border-border bg-surface",
-        isDisabled ? "cursor-progress opacity-70" : "cursor-grab",
+        isExcluded
+          ? "cursor-not-allowed opacity-50"
+          : isPending
+            ? "cursor-progress opacity-70"
+            : "cursor-grab",
         isDragging &&
           "z-20 cursor-grabbing border-accent opacity-90 shadow-lg ring-2 ring-accent/40",
       )}
@@ -75,11 +83,13 @@ const SortableImageTile: FC<SortableImageTileProps> = ({
             : "bg-background/90 text-foreground",
         )}
       >
-        {position === 1 ? "Cover" : position}
+        {isExcluded ? "Not synced" : position === 1 ? "Cover" : position}
       </span>
-      <span className="absolute right-2 top-2 rounded-md bg-background/90 p-1 text-muted shadow-sm backdrop-blur-sm">
-        <GripVertical className="size-4" aria-hidden />
-      </span>
+      {isExcluded ? null : (
+        <span className="absolute right-2 top-2 rounded-md bg-background/90 p-1 text-muted shadow-sm backdrop-blur-sm">
+          <GripVertical className="size-4" aria-hidden />
+        </span>
+      )}
     </div>
   );
 };
@@ -112,7 +122,9 @@ export const PropertyImagesReorderGrid: FC<PropertyImagesReorderGridProps> = ({
     }),
   );
 
-  const idOf = (image: PropertyDisplayImage) => String(image.crmImageId);
+  // image.key is unique per tile; crmImageId is null for every excluded/unsynced photo
+  // and would collide as a sortable id if more than one is present.
+  const idOf = (image: PropertyDisplayImage) => image.key;
   const isDirty = items.some((item, index) => item.key !== images[index]?.key);
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
@@ -164,16 +176,23 @@ export const PropertyImagesReorderGrid: FC<PropertyImagesReorderGridProps> = ({
       >
         <SortableContext items={items.map(idOf)} strategy={rectSortingStrategy}>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {items.map((image, index) => (
-              <SortableImageTile
-                key={image.key}
-                id={idOf(image)}
-                image={image}
-                position={index + 1}
-                alt={`${title} photo ${index + 1}`}
-                isDisabled={isPending}
-              />
-            ))}
+            {(() => {
+              let syncedPosition = 0;
+              return items.map((image, index) => {
+                const position =
+                  image.crmImageId != null ? ++syncedPosition : null;
+                return (
+                  <SortableImageTile
+                    key={image.key}
+                    id={idOf(image)}
+                    image={image}
+                    position={position}
+                    alt={`${title} photo ${index + 1}`}
+                    isPending={isPending}
+                  />
+                );
+              });
+            })()}
           </div>
         </SortableContext>
       </DndContext>

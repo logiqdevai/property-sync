@@ -33,16 +33,36 @@ function resolveIntegrationImageDisplayUrl(
   return null;
 }
 
+// Mirrors the backend's EstateWebCmsSyncAdapter.normalizeSourceImageIdentity(): the same
+// scraped photo is often re-served at a different size or with a different cache-busting
+// query string across crawls, so comparing raw URLs treats it as a different photo and
+// makes an already-synced image look unsynced. Strips the query string and a trailing
+// "_WIDTHxHEIGHT" resize suffix before comparing.
+function normalizeSourceImageIdentity(url: string): string {
+  try {
+    const parsed = new URL(url);
+    const path = parsed.pathname.replace(
+      /[_-]\d{2,5}x\d{2,5}(?=\.[a-zA-Z0-9]+$)/i,
+      "",
+    );
+    return `${parsed.host}${path}`.toLowerCase();
+  } catch {
+    return url.trim().toLowerCase();
+  }
+}
+
 function resolvePropertyImageIndex(
   image: IntegrationPropertyImage,
   index: number,
   propertyImages: string[],
+  propertyImageIdentities: string[],
 ): number | null {
   if (
     typeof image.source_image === "string" &&
     image.source_image.length > 0
   ) {
-    const matched = propertyImages.indexOf(image.source_image);
+    const identity = normalizeSourceImageIdentity(image.source_image);
+    const matched = propertyImageIdentities.indexOf(identity);
     if (matched >= 0) return matched;
   }
   if (index >= 0 && index < propertyImages.length) return index;
@@ -55,6 +75,9 @@ export function getIntegrationPropertyDisplayImages(
 ): PropertyDisplayImage[] {
   if (!integrationProperty?.images?.length) return [];
 
+  const propertyImageIdentities = propertyImages.map(
+    normalizeSourceImageIdentity,
+  );
   const items: PropertyDisplayImage[] = [];
   for (let index = 0; index < integrationProperty.images.length; index++) {
     const image = integrationProperty.images[index];
@@ -67,6 +90,7 @@ export function getIntegrationPropertyDisplayImages(
         image,
         index,
         propertyImages,
+        propertyImageIdentities,
       ),
       url,
       show_on_site: Boolean(image.show_on_site),

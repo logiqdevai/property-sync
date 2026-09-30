@@ -335,11 +335,14 @@ function PropertyImagesGrid({
     isRemoveWatermarkPending ||
     isMigrateIntegrationImagesPending ||
     isReorderPending;
+  // Only CRM-synced images have an id the reorder endpoint can act on; a not-yet-synced
+  // (or permanently excluded duplicate) scraped photo tagging along in `images` shouldn't
+  // block reordering the ones that actually are synced.
+  const crmBackedImages = images.filter((image) => image.crmImageId != null);
   const canReorder =
     canReorderIntegrationImages &&
     Boolean(onReorderIntegrationImages) &&
-    images.length > 1 &&
-    images.every((image) => image.crmImageId != null);
+    crmBackedImages.length > 1;
   // A CRM-synced image can be deleted/watermarked/etc; a not-yet-synced scraped
   // photo can only be picked to upload. Never show a checkbox promising an action
   // the image doesn't actually support.
