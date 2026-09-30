@@ -75,6 +75,10 @@ export function AgencyForm({ defaultValues, submitLabel, isPending, onSubmit, on
           <Label htmlFor="agency-city">City</Label>
           <Input id="agency-city" {...register("city")} placeholder="Athens" fullWidth />
           {errors.city && <FieldError>{errors.city.message}</FieldError>}
+          <p className="text-xs text-muted">
+            The agency&apos;s usual area. Used to disambiguate same-named places elsewhere in
+            Greece when matching a listing&apos;s location.
+          </p>
         </div>
       </div>
 

@@ -543,6 +543,9 @@ export function buildPropertyRecord(
     property_id: string;
     internal_id: string | null;
   },
+  // The listing's SourceAgency.city (admin-set "home region" of the agency), when set --
+  // see agencyCity on EstateWebLocationSourcesInput for what this does to resolution.
+  agencyCity?: string | null,
 ): PropertyRecordInput {
   const allImages = extractImages(sp.raw_data);
   const rawData =
@@ -571,6 +574,7 @@ export function buildPropertyRecord(
       rawLocation,
       title: n.title ?? sp.raw_title,
       description: sp.raw_description,
+      agencyCity,
     }) ??
     (perioxi
       ? resolveEstateWebLocationFromSources({
@@ -579,6 +583,7 @@ export function buildPropertyRecord(
           rawLocation,
           title: n.title ?? sp.raw_title,
           description: sp.raw_description,
+          agencyCity,
         })
       : undefined);
   const estatewebLocationId =

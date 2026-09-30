@@ -672,6 +672,16 @@ export class PropertyNormalizationService {
       },
     });
 
+    // The agency's admin-set "home region" (SourceAgency.city), used to scope
+    // estateweb_location_id resolution to that region first -- see agencyCity on
+    // EstateWebLocationSourcesInput. Fetched once per call rather than threaded through
+    // every caller of applyNormalizedResults.
+    const sourceAgency = await this.prisma.sourceAgency.findUnique({
+      where: { id: params.sourceAgencyId },
+      select: { city: true },
+    });
+    const agencyCity = sourceAgency?.city ?? null;
+
     for (const loadedSp of params.sourceProperties) {
       // AI sync can take minutes; source rows may be deleted/recreated by a
       // concurrent crawl or admin cleanup before we write property links.
@@ -690,7 +700,7 @@ export class PropertyNormalizationService {
         params.normalizedBySourceId.get(loadedSp.id) ??
         params.normalizedBySourceId.get(sp.id) ??
         buildFallbackNormalizedRow(sp);
-      const record = buildPropertyRecord(aiRow, sp);
+      const record = buildPropertyRecord(aiRow, sp, agencyCity);
 
       if (record.internal_id && !sp.internal_id) {
         await this.prisma.sourceProperty.update({

@@ -1,4 +1,5 @@
 import {
+  resolveAgencyPrefectureSegments,
   resolveEstateWebLocation,
   resolveEstateWebLocationFromSources,
   resolveEstateWebLocationId,
@@ -251,6 +252,40 @@ describe('resolveEstateWebLocation', () => {
     );
   });
 
+  it('resolves a "Neighborhood (Municipality)" parenthetical district via the municipality-genitive anchor', () => {
+    // Regression found while enabling agencyCity for housemarket-realestate.gr: a "Village
+    // (Municipality)"-shaped district like "Παράδεισος (Αγία Παρασκευή)" goes through
+    // resolveParentheticalDistrict/resolveRelatedToAnchor, a SEPARATE code path from the
+    // bare-city guessMunicipalityGenitivePhrase fallback the test above covers.
+    // resolveRelatedToAnchor's matchesCity check only ever compared the inner label's exact
+    // nominative form ("Αγία Παρασκευή") against candidates' own path segments -- but a real
+    // child of that municipality carries it in GENITIVE form in its own path ("Δήμος Αγίας
+    // Παρασκευής"), so the correct candidate (101166, "Παράδεισος", an actual child of that
+    // municipality) never looked "related" to its own anchor. Whole-catalog old-vs-new diff
+    // (5,639 properties, no agencyCity, no Google hints) confirmed this fix only ever changes
+    // rows using this exact "X (Αγία Παρασκευή)" pattern -- 54 rows, all housemarket-realestate.gr,
+    // all correcting a same-named-homonym-elsewhere-in-Greece pick (Crete/Ioannina/Trikala) to
+    // the real Athens neighborhood -- no unrelated regressions.
+    expect(
+      resolveEstateWebLocationFromSources({
+        city: 'Αγία Παρασκευή',
+        district: 'Παράδεισος (Αγία Παρασκευή)',
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        id: 101166,
+        name: 'Παράδεισος',
+        path: 'Στερεά Ελλάδα » Αθήνα » Δήμος Αγίας Παρασκευής » Παράδεισος',
+      }),
+    );
+    expect(
+      resolveEstateWebLocationFromSources({
+        city: 'Αγία Παρασκευή',
+        district: 'Νέα Ζωή (Αγία Παρασκευή)',
+      }),
+    ).toEqual(expect.objectContaining({ id: 101165, name: 'Νέα Ζωή' }));
+  });
+
   it('does not let a municipality-genitive guess override an explicit conflicting region', () => {
     // Regression for user_properties.id = 9c4470a2-1c3e-4467-b9eb-f2920882232b: city
     // "Καλλιθέα" / district "Ρέθυμνο" (real title: "Καλλιθέα Ρεθύμνου", i.e. Kallithea,
@@ -415,5 +450,131 @@ describe('resolveEstateWebLocation', () => {
         googleCoordinatePrefectures: ['Περιφερειακή Ενότητα Πειραιώς'],
       })?.id,
     ).toBe(113138);
+  });
+
+  describe('agencyCity scoping (SourceAgency.city)', () => {
+    it('resolves a SourceAgency.city label to its own catalog prefecture segment', () => {
+      expect(resolveAgencyPrefectureSegments('Αθήνα')).toEqual(['αθηνα']);
+      // A specific city/neighborhood within the region resolves to the same prefecture.
+      expect(resolveAgencyPrefectureSegments('Χαλάνδρι')).toEqual(['αθηνα']);
+      expect(resolveAgencyPrefectureSegments(null)).toEqual([]);
+      expect(resolveAgencyPrefectureSegments('')).toEqual([]);
+      // Text that doesn't resolve to any catalog node at all.
+      expect(resolveAgencyPrefectureSegments('Not A Real Place Xyz')).toEqual([]);
+    });
+
+    it('scopes resolution to the agency region before falling back unscoped', () => {
+      // Same nationwide-homonym case as the "googleMunicipality" test above (11 unrelated
+      // "Αγία Σοφία" nodes nationwide), but scoped via the SourceAgency's own declared
+      // operating region instead of a per-property Google hint -- lets the SYNCHRONOUS,
+      // no-Google-hint resolver (used at property creation) get an agency's listings right
+      // immediately, not just the async job that only runs once coordinates exist.
+      const withoutAgency = resolveEstateWebLocationFromSources({
+        city: 'Νέο Ψυχικό',
+        district: 'Αγία Σοφία',
+      });
+      expect(withoutAgency?.id).toBe(114915); // wrong: Thessaloniki
+
+      const withAgency = resolveEstateWebLocationFromSources({
+        city: 'Νέο Ψυχικό',
+        district: 'Αγία Σοφία',
+        agencyCity: 'Αθήνα',
+      });
+      expect(withAgency).toEqual(
+        expect.objectContaining({
+          id: 101123,
+          name: 'Αγία Σοφία',
+          path: 'Στερεά Ελλάδα » Αθήνα » Δήμος Φιλοθέης-Ψυχικού » Αγία Σοφία',
+        }),
+      );
+    });
+
+    it('does nothing when the agency has no city set', () => {
+      const withBlankAgency = resolveEstateWebLocationFromSources({
+        city: 'Νέο Ψυχικό',
+        district: 'Αγία Σοφία',
+        agencyCity: '',
+      });
+      const withNullAgency = resolveEstateWebLocationFromSources({
+        city: 'Νέο Ψυχικό',
+        district: 'Αγία Σοφία',
+      });
+      expect(withBlankAgency?.id).toBe(114915);
+      expect(withBlankAgency?.id).toBe(withNullAgency?.id);
+    });
+
+    it('falls back to unscoped resolution for a genuine out-of-region exception', () => {
+      // A real shape: an agency that's ~99% one metro area still occasionally carries a
+      // handful of listings genuinely elsewhere (e.g. housemarket-realestate.gr is almost
+      // entirely Attica but also has a few Crete/Cyclades/Epirus rows). The agency scope
+      // must not force those into the agency's usual region, and must not leave
+      // estateweb_location_id null either (root cause #8 -- that blocks the CMS push).
+      const loc = resolveEstateWebLocationFromSources({
+        city: 'Ιεράπετρα',
+        agencyCity: 'Αθήνα',
+      });
+      const unscoped = resolveEstateWebLocationFromSources({ city: 'Ιεράπετρα' });
+      expect(loc?.id).toBe(unscoped?.id);
+      expect(loc?.id).toBeDefined();
+      expect(loc?.path.startsWith('Στερεά Ελλάδα » Αθήνα')).toBe(false);
+    });
+
+    it('never returns null for a property whose text alone the unscoped resolver already handles, just because agencyCity was set', () => {
+      // Regression against the "never blank" requirement: an agency-scoped miss must never
+      // regress an otherwise-resolvable property to undefined.
+      const withoutAgency = resolveEstateWebLocationFromSources({
+        city: 'Χανιά',
+        district: 'Αποκορώνας',
+      });
+      const withUnrelatedAgency = resolveEstateWebLocationFromSources({
+        city: 'Χανιά',
+        district: 'Αποκορώνας',
+        agencyCity: 'Αθήνα',
+      });
+      expect(withoutAgency?.id).toBe(40300);
+      expect(withUnrelatedAgency?.id).toBe(40300);
+    });
+
+    it('does not force a broad regional guess onto a property whose text has no real match in the agency region', () => {
+      // Regression found while enabling agencyCity for housemarket-realestate.gr (Athens):
+      // city "Μαλεσίνα" / district "Θεολόγος" are both real, unique, unambiguous Central-
+      // Greece (Φθιώτιδα) catalog matches -- genuinely outside Athens/Attica. The
+      // agency-scoped pass found no confident match there, but its OWN "never return null"
+      // last-resort fallback (meant only for when there is truly nowhere else to fall back
+      // to) fired anyway and picked a low-confidence broad "Αθήνα" node, blocking the
+      // fallback to the unscoped pass that has the real, correct, specific answer.
+      const unscoped = resolveEstateWebLocationFromSources({
+        city: 'Μαλεσίνα',
+        district: 'Θεολόγος',
+      });
+      const scoped = resolveEstateWebLocationFromSources({
+        city: 'Μαλεσίνα',
+        district: 'Θεολόγος',
+        agencyCity: 'Αθήνα',
+      });
+      expect(unscoped?.path.startsWith('Στερεά Ελλάδα » Φθιώτιδα')).toBe(true);
+      expect(scoped?.id).toBe(unscoped?.id);
+    });
+
+    it('does not let an agency-region homonym win when the text explicitly names a different real prefecture', () => {
+      // Regression found the same way: city "Άγιος Κωνσταντίνος" / district "Φθιώτιδα" (the
+      // prefecture name spelled out directly) -- "Άγιος Κωνσταντίνος" is a common enough name
+      // that it ALSO exists inside the agency's own Attica region (Τροιζηνία), so unlike the
+      // Μαλεσίνα case above, the agency-scoped pass finds a genuinely confident (not
+      // last-resort) match there -- just the wrong one, since the district field explicitly
+      // names a different, real, conflicting prefecture the agency scope has no business
+      // overriding. Mirrors the existing guard on guessMunicipalityGenitivePhrase below.
+      const unscoped = resolveEstateWebLocationFromSources({
+        city: 'Άγιος Κωνσταντίνος',
+        district: 'Φθιώτιδα',
+      });
+      const scoped = resolveEstateWebLocationFromSources({
+        city: 'Άγιος Κωνσταντίνος',
+        district: 'Φθιώτιδα',
+        agencyCity: 'Αθήνα',
+      });
+      expect(unscoped?.path.startsWith('Στερεά Ελλάδα » Φθιώτιδα')).toBe(true);
+      expect(scoped?.id).toBe(unscoped?.id);
+    });
   });
 });

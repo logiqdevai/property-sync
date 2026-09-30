@@ -23,6 +23,24 @@ export class ResolveEstateWebLocationJobService {
   // admin/locality names out of the response -- lat/lng backfill is explicitly out of
   // scope for this job (handled separately by geocode-missing-coordinates).
   //
+  // The property's canonical Property.id -- resolves the SourceAgency.city of its
+  // (primary, or otherwise first-linked) source. A canonical Property can in principle be
+  // backed by more than one SourceProperty/agency (see the SourceAgency -> Scraper ->
+  // CrawlRun -> SourceProperty -> Property comment on the schema); is_primary_source picks
+  // a single, stable one to scope by. Returns null when the agency has no city set (or the
+  // property somehow has no source link at all), which leaves resolution unscoped, exactly
+  // as before this feature existed.
+  private async resolveAgencyCity(propertyId: string): Promise<string | null> {
+    const link = await this.prisma.propertySourceLink.findFirst({
+      where: { property_id: propertyId },
+      orderBy: [{ is_primary_source: 'desc' }, { created_at: 'asc' }],
+      select: {
+        source_property: { select: { source_agency: { select: { city: true } } } },
+      },
+    });
+    return link?.source_property.source_agency.city ?? null;
+  }
+
   // Returns [] (not an error) when Google has nothing usable -- ZERO_RESULTS, or a
   // result with no admin/locality components -- so the resolver still runs on the
   // property's own city/district/title/description below instead of being skipped
@@ -87,7 +105,10 @@ export class ResolveEstateWebLocationJobService {
     }
 
     try {
-      const google = await this.resolveGoogleAddressSegments(property);
+      const [google, agencyCity] = await Promise.all([
+        this.resolveGoogleAddressSegments(property),
+        this.resolveAgencyCity(property.id),
+      ]);
 
       const resolved = resolveEstateWebLocationFromSources({
         city: property.city,
@@ -96,6 +117,7 @@ export class ResolveEstateWebLocationJobService {
         description: property.description,
         googleAddressSegments: google.segments,
         googleCoordinatePrefectures: google.coordinatePrefectures,
+        agencyCity,
       });
 
       if (!resolved) {
@@ -129,6 +151,7 @@ export class ResolveEstateWebLocationJobService {
       where: { id: data.entity_id, user_id: data.user_id },
       select: {
         id: true,
+        canonical_property_id: true,
         latitude: true,
         longitude: true,
         address: true,
@@ -151,7 +174,10 @@ export class ResolveEstateWebLocationJobService {
     }
 
     try {
-      const google = await this.resolveGoogleAddressSegments(property);
+      const [google, agencyCity] = await Promise.all([
+        this.resolveGoogleAddressSegments(property),
+        this.resolveAgencyCity(property.canonical_property_id),
+      ]);
 
       const resolved = resolveEstateWebLocationFromSources({
         city: property.city,
@@ -160,6 +186,7 @@ export class ResolveEstateWebLocationJobService {
         description: property.description,
         googleAddressSegments: google.segments,
         googleCoordinatePrefectures: google.coordinatePrefectures,
+        agencyCity,
       });
 
       if (!resolved) {

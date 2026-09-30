@@ -651,10 +651,29 @@ function resolveRelatedToAnchor(
     for (const anchor of anchors) {
       const sameParent =
         anchor.parent_id != null && candidate.parent_id === anchor.parent_id;
+      const anchorName = normalizeEstateWebPlaceLabel(anchor.name);
+      // The anchor is a bare nominative label (e.g. "Αγία Παρασκευή" from a "Village
+      // (Municipality)"-shaped district), but a candidate nested under that municipality
+      // carries it in genitive form in ITS OWN path ("Δήμος Αγίας Παρασκευής") -- an exact
+      // matchesCity(candidate, anchorName) never matches across that declension gap (same
+      // class of bug guessMunicipalityGenitivePhrase fixed for the plain city/district
+      // fallback in root cause #13, never wired in here). Without this, a candidate that IS
+      // the correct match (e.g. "Παράδεισος", child of "Δήμος Αγίας Παρασκευής") looks
+      // unrelated to its own anchor, and an unrelated same-named-anchor homonym elsewhere in
+      // the same broad region (e.g. a different municipality's own tiny "Αγία Παρασκευή"
+      // settlement) can win the id-tiebreak fallback below instead.
+      // matchesCity checks full path SEGMENTS verbatim (LOCATION_NORMALIZED_SEGMENTS is the
+      // raw catalog path text, never bare-indexed) -- the municipality segment itself is
+      // "Δήμος <Genitive>", so the guessed phrase must be re-prefixed to match it; comparing
+      // the bare phrase directly (as the LOCATION_BY_NORMALIZED_NAME lookup inside
+      // guessMunicipalityGenitivePhrase does) would never equal that segment string.
+      const anchorMunicipalityGenitive = guessMunicipalityGenitivePhrase(anchorName);
       if (
         sameParent ||
         isDescendantOf(candidate, anchor.id) ||
-        matchesCity(candidate, normalizeEstateWebPlaceLabel(anchor.name))
+        matchesCity(candidate, anchorName) ||
+        (anchorMunicipalityGenitive != null &&
+          matchesCity(candidate, MUNICIPALITY_PREFIX + anchorMunicipalityGenitive))
       ) {
         related.push(candidate);
         break;
@@ -946,7 +965,7 @@ export function resolveEstateWebLocationId(
   return resolveEstateWebLocation(city, district, hints)?.id ?? null;
 }
 
-export function resolveEstateWebLocationFromSources(input: {
+export type EstateWebLocationSourcesInput = {
   city?: string | null;
   district?: string | null;
   rawLocation?: string | null;
@@ -970,7 +989,74 @@ export function resolveEstateWebLocationFromSources(input: {
   // pass forward-geocoded names here: ambiguous text merges several homonyms' regions
   // (root cause #11).
   googleCoordinatePrefectures?: string[] | null;
-}): EstateWebLocation | undefined {
+  // The listing's SourceAgency.city -- an admin-curated "home region" for the agency
+  // (SourceAgency.city, e.g. "Αθήνα"), when set. Resolution is tried FIRST hard-restricted
+  // to that region alone (every stage -- district, city, rawLocation, title patterns, and
+  // the last-resort fallback -- only considers candidates inside it); if that scoped
+  // attempt finds nothing, this falls through to the exact same unrestricted resolution as
+  // when agencyCity is omitted entirely. This never makes the result MORE likely to be
+  // null than before (a scoped miss always retries unscoped) -- a missing
+  // estateweb_location_id blocks the CMS push (see root cause #8 in
+  // ESTATEWEB-LOCATION-ACCURACY-FIXES.md). Most agencies only ever list in one metro
+  // area/prefecture, which makes this a much stronger per-agency signal than tree-depth
+  // guessing for a same-named homonym the property's own text/coordinates don't
+  // disambiguate on their own (see the recurring "Αγία Παρασκευή" class of bug there).
+  agencyCity?: string | null;
+};
+
+export function resolveEstateWebLocationFromSources(
+  input: EstateWebLocationSourcesInput,
+): EstateWebLocation | undefined {
+  const agencyPrefectureSegments = resolveAgencyPrefectureSegments(
+    input.agencyCity,
+  );
+  // Skip the agency-scoped pass entirely when the property's OWN text already names a real,
+  // different catalog prefecture (same guard used for guessMunicipalityGenitivePhrase below,
+  // and the same reasoning: an explicit, specific region the text names must win over a
+  // regional GUESS). Without this, a homonym that happens to ALSO exist somewhere inside the
+  // agency's usual region (e.g. "Άγιος Κωνσταντίνος" existing both in Τροιζηνία/Πειραιάς and
+  // nationwide) is a genuine, confident match within the forced scope -- not caught by the
+  // "no confident match, fall through" case the two-pass design otherwise handles -- so it
+  // would win pass 1 outright and silently discard a property whose district field literally
+  // spells out a different, real prefecture ("Φθιώτιδα"), found via a real production case
+  // while enabling agencyCity for housemarket-realestate.gr.
+  const agencyScopeConflicts =
+    agencyPrefectureSegments.length > 0 &&
+    (textMentionsConflictingPrefecture(input.city, agencyPrefectureSegments) ||
+      textMentionsConflictingPrefecture(input.district, agencyPrefectureSegments));
+  if (agencyPrefectureSegments.length > 0 && !agencyScopeConflicts) {
+    const scoped = resolveEstateWebLocationFromSourcesCore(
+      input,
+      agencyPrefectureSegments,
+    );
+    if (scoped) return scoped;
+  }
+  return resolveEstateWebLocationFromSourcesCore(input);
+}
+
+/**
+ * Resolves a SourceAgency's admin-set "city"/home-region text (SourceAgency.city) to the
+ * catalog prefecture segment(s) (path[1]) it falls under -- e.g. "Αθήνα" or a specific city
+ * within that region like "Χαλάνδρι" both resolve to the "αθηνα" prefecture segment, via the
+ * exact same free-text resolution a property's own city/district goes through (no hints).
+ * Returns [] when the agency has no city set, or when the text doesn't resolve to any
+ * catalog node at all -- both leave scoping entirely up to the caller (i.e. behave as if no
+ * agency hint were given).
+ */
+export function resolveAgencyPrefectureSegments(
+  agencyCity?: string | null,
+): string[] {
+  if (!agencyCity?.trim()) return [];
+  const location = resolveEstateWebLocation(agencyCity, null);
+  if (!location) return [];
+  const prefecture = LOCATION_NORMALIZED_SEGMENTS.get(location.id)?.[1];
+  return prefecture ? [prefecture] : [];
+}
+
+function resolveEstateWebLocationFromSourcesCore(
+  input: EstateWebLocationSourcesInput,
+  forcedRequiredPrefectureSegments?: string[],
+): EstateWebLocation | undefined {
   const preferredPathSegments = inferPreferredPathSegments(
     input.title,
     input.description,
@@ -979,7 +1065,7 @@ export function resolveEstateWebLocationFromSources(input: {
     input.district,
   );
   let googleSegments: string[] = [];
-  let requiredPrefectureSegments: string[] = [];
+  let requiredPrefectureSegments: string[] = forcedRequiredPrefectureSegments ?? [];
   if (input.googleAddressSegments?.length) {
     const normalizedSegments = input.googleAddressSegments
       .flatMap((segment) =>
@@ -996,7 +1082,13 @@ export function resolveEstateWebLocationFromSources(input: {
     );
     googleSegments = normalizedSegments;
   }
-  if (input.googleCoordinatePrefectures?.length) {
+  // Skip when forcedRequiredPrefectureSegments (the agency-scoped first pass) is already
+  // active -- that pass is a separate, self-contained "region-only" attempt (see
+  // resolveEstateWebLocationFromSources); mixing in the coordinate-derived constraint here
+  // too would turn it into an OR of two different regions instead of a clean single-region
+  // scope, and a real per-property coordinate disagreeing with the agency's usual region is
+  // exactly the legitimate-exception case the unscoped fallback pass exists to catch.
+  if (!forcedRequiredPrefectureSegments && input.googleCoordinatePrefectures?.length) {
     const coordinatePrefectures = input.googleCoordinatePrefectures
       .flatMap((segment) =>
         expandGoogleAdminSegment(normalizeEstateWebPlaceLabel(segment)),
@@ -1053,7 +1145,16 @@ export function resolveEstateWebLocationFromSources(input: {
   // coordinates are in Lasithi, where the catalog spells the village "Φουρνή"). Google named
   // the real place, so take the most specific Google segment (they're ordered broad-to-
   // specific) that has a catalog node inside the known prefecture.
-  if (requiredPrefectureSegments.length > 0) {
+  //
+  // Never during the agency-scoped first pass (forcedRequiredPrefectureSegments):
+  // requiredPrefectureSegments there is the agency's usual-region GUESS, not real per-property
+  // evidence, so this would use it to justify picking a broad, low-confidence node (e.g. the
+  // bare region "Αθήνα") for a property that is genuinely elsewhere -- found via a real
+  // production case (city "Μαλεσίνα", district "Θεολόγος", both real, unique, unambiguous
+  // Central-Greece catalog matches) where this fired on nothing but a generic/shared fallback
+  // coordinate's reverse-geocode, silently discarding the correct answer that only the
+  // unscoped second pass (with its own, real, ambiguity-gated coordinate logic) would find.
+  if (!forcedRequiredPrefectureSegments && requiredPrefectureSegments.length > 0) {
     for (let i = googleSegments.length - 1; i >= 0; i--) {
       const named = filterByPreferredPath(
         LOCATION_BY_NORMALIZED_NAME.get(googleSegments[i]) ?? [],
@@ -1083,7 +1184,13 @@ export function resolveEstateWebLocationFromSources(input: {
   // back to the broader region we're already confident about from `preferredPathSegments`.
   // First prefer a real `is_city` anchor for a named prefecture (Χανιά/Ρέθυμνο/Ηράκλειο/
   // Λασίθι all have one) when one of the hint segments names it directly.
-  if (preferredPathSegments.length > 0) {
+  //
+  // Never during the agency-scoped first pass, same reasoning as the requiredPrefectureSegments
+  // branch above: this is the ultimate "give up, guess broad" fallback, and pass 1 always has
+  // a real fallback available (pass 2) -- letting IT decide "nothing fits, guess broadly" is
+  // what keeps a genuinely out-of-region listing from being silently forced into the agency's
+  // usual area instead of correctly falling through unscoped.
+  if (!forcedRequiredPrefectureSegments && preferredPathSegments.length > 0) {
     for (const segment of preferredPathSegments) {
       const cityNode = (LOCATION_BY_NORMALIZED_NAME.get(segment) ?? []).find(
         (loc) =>
@@ -1162,6 +1269,7 @@ export function resolveEstateWebLocationIdFromSources(input: {
   rawLocation?: string | null;
   title?: string | null;
   description?: string | null;
+  agencyCity?: string | null;
 }): number | null {
   return resolveEstateWebLocationFromSources(input)?.id ?? null;
 }
