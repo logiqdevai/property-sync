@@ -195,6 +195,62 @@ describe('resolveEstateWebLocation', () => {
     );
   });
 
+  it('scopes a nationwide-homonym district to the correct South Aegean island group via a bare Google island name', () => {
+    // Regression for Property.id = 5c968f5a-2c94-4dcb-805c-7439832b4560 (root cause #14):
+    // city "Γαλήνη" has 12 same-depth nodes nationwide (Chania, Larissa, Thessaloniki,
+    // Naxos, ...) -- unlike Crete/mainland prefectures, Google's reverse-geocode for a
+    // Cyclades coordinate never names the catalog's group prefecture ("Κυκλάδες") at ANY
+    // admin level; it jumps straight from the broad region ("Περιφέρεια Νοτίου Αιγαίου") to
+    // the bare island/municipality name ("Νάξος"). Without ISLAND_PREFECTURE_SEGMENT, none
+    // of Google's hint segments share any text with the correct Naxos node, so both the hard
+    // (requiredPrefectureSegments) and soft (preferredPathSegments) scoping mechanisms stay
+    // empty and the resolver falls back to an arbitrary smallest-id tie-break (Chania, id
+    // 100598, simply because it happens to have the lowest id among the 12 homonyms) --
+    // verified live against the real Google API for this property's actual coordinates.
+    const googleAddressSegments = [
+      'Αποκεντρωμένη Διοίκηση Αιγαίου',
+      'Περιφέρεια Νοτίου Αιγαίου',
+      'Νάξος και Μικρές Κυκλάδες',
+      'Νάξος',
+      'Τοπική Κοινότητα Γαλήνης',
+    ];
+    expect(
+      resolveEstateWebLocationFromSources({
+        city: 'Γαλήνη',
+        title:
+          '- Ναξος: -Plot of 4113sq.m in the best spot of Galini an emerging village on top of a hill near Naxos Chora',
+        googleAddressSegments,
+        googleCoordinatePrefectures: ['Νάξος'],
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        id: 107207,
+        name: 'Γαλήνη',
+        path: 'Νησιά Αιγαίου » Κυκλάδες » Δήμος Νάξου-Μικρών Κυκλάδων » Γαλήνη',
+      }),
+    );
+  });
+
+  it('scopes a Dodecanese bare island name the same way as a Cyclades one', () => {
+    // General case behind root cause #14 -- the same Google-naming gap applies to the other
+    // South Aegean group prefecture ("Δωδεκάνησα"): "Λουτρά" has 11 same-depth nodes
+    // nationwide (Ioannina, Serres, Halkidiki, Tinos, Lesvos, ...), only one of them the
+    // real Nisyros (Δωδεκάνησα) node -- verified live that Google names the bare island
+    // ("Νίσυρος") at admin_level_3 for a Nisyros coordinate, never "Δωδεκάνησα" itself.
+    expect(
+      resolveEstateWebLocationFromSources({
+        city: 'Λουτρά',
+        googleAddressSegments: ['Περιφέρεια Νοτίου Αιγαίου', 'Νίσυρος'],
+        googleCoordinatePrefectures: ['Νίσυρος'],
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        id: 107068,
+        path: 'Νησιά Αιγαίου » Δωδεκάνησα » Δήμος Νισύρου » Λουτρά',
+      }),
+    );
+  });
+
   it('resolves a municipality named only in the nominative to its genitive-cased catalog node', () => {
     // Regression for user_properties.id = e02c44ec-6412-4459-99dc-775d483883a4 (root cause #9):
     // city "Χανιά" / district "Αποκορώνας" resolved to Χανιά *town* (113671, under Δήμος

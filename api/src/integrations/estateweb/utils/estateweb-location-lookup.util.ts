@@ -414,6 +414,58 @@ const GENITIVE_TO_NOMINATIVE_REWRITES: Array<[suffix: string, replacements: stri
 
 const GOOGLE_ADMIN_PREFIXES = ['νομος ', 'περιφερειακη ενοτητα '];
 
+// Google's administrative hierarchy for the South Aegean never names the catalog's
+// old-nomos-style group prefecture ("Κυκλάδες", "Δωδεκάνησα") at ANY level -- for a specific
+// island's coordinates it jumps straight from the broad region ("Περιφέρεια Νοτίου Αιγαίου")
+// to the island/municipality name itself (verified live: administrative_area_level_3 for
+// Naxos, Paros, Mykonos, Rhodes all return the bare island name, never "Κυκλάδες" or
+// "Δωδεκάνησα"). Single-island prefectures (Σάμος, Λέσβος, Χίος) don't have this gap --
+// Google's island name already equals the catalog's prefecture segment there (see root cause
+// #10 in ESTATEWEB-LOCATION-ACCURACY-FIXES.md). Without this, a same-named-nationwide label
+// (e.g. "Γαλήνη", 12 nodes all at the same catalog depth) has no hint segment in common with
+// the correct Cyclades/Dodecanese node at all, and falls back to an effectively arbitrary
+// smallest-id tie-break (root cause #14). Curated from the catalog's own municipality list
+// under "Νησιά Αιγαίου » Κυκλάδες"/"» Δωδεκάνησα" (verified against ESTATEWEB_LOCATIONS);
+// Θήρα/Σαντορίνη both included since Google returns both forms across admin levels.
+const ISLAND_PREFECTURE_SEGMENT: Record<string, string> = {
+  αμοργος: 'κυκλαδες',
+  αναφη: 'κυκλαδες',
+  ανδρος: 'κυκλαδες',
+  αντιπαρος: 'κυκλαδες',
+  θηρα: 'κυκλαδες',
+  σαντορινη: 'κυκλαδες',
+  ιος: 'κυκλαδες',
+  κεα: 'κυκλαδες',
+  κιμωλος: 'κυκλαδες',
+  κυθνος: 'κυκλαδες',
+  μηλος: 'κυκλαδες',
+  μυκονος: 'κυκλαδες',
+  ναξος: 'κυκλαδες',
+  παρος: 'κυκλαδες',
+  σεριφος: 'κυκλαδες',
+  σικινος: 'κυκλαδες',
+  σιφνος: 'κυκλαδες',
+  συρος: 'κυκλαδες',
+  τηνος: 'κυκλαδες',
+  φολεγανδρος: 'κυκλαδες',
+  αγαθονησι: 'δωδεκανησα',
+  αστυπαλαια: 'δωδεκανησα',
+  καλυμνος: 'δωδεκανησα',
+  καρπαθος: 'δωδεκανησα',
+  κασος: 'δωδεκανησα',
+  κως: 'δωδεκανησα',
+  λειψοι: 'δωδεκανησα',
+  λερος: 'δωδεκανησα',
+  μεγιστη: 'δωδεκανησα',
+  καστελοριζο: 'δωδεκανησα',
+  νισυρος: 'δωδεκανησα',
+  πατμος: 'δωδεκανησα',
+  ροδος: 'δωδεκανησα',
+  συμη: 'δωδεκανησα',
+  τηλος: 'δωδεκανησα',
+  χαλκη: 'δωδεκανησα',
+};
+
 /**
  * Google's forward geocoding (address text, no coordinates) names the prefecture in its
  * legacy form -- "Νομός Σάμου" (administrative_area_level_3) -- which never equals a catalog
@@ -421,10 +473,17 @@ const GOOGLE_ADMIN_PREFIXES = ['νομος ', 'περιφερειακη ενοτ
  * to picking a same-named homonym by tree depth (root cause #10 in
  * ESTATEWEB-LOCATION-ACCURACY-FIXES.md). Returns the segment itself plus, when it has a
  * "Νομός"/"Περιφερειακή Ενότητα" prefix, the bare genitive and any nominative that resolves
- * to a real catalog prefecture.
+ * to a real catalog prefecture; also resolves a bare South Aegean island name (with or
+ * without that prefix) to its catalog group prefecture via ISLAND_PREFECTURE_SEGMENT.
  */
 function expandGoogleAdminSegment(normalized: string): string[] {
   const out = [normalized];
+
+  const islandPrefecture = ISLAND_PREFECTURE_SEGMENT[normalized];
+  if (islandPrefecture && !out.includes(islandPrefecture)) {
+    out.push(islandPrefecture);
+  }
+
   const prefix = GOOGLE_ADMIN_PREFIXES.find((p) => normalized.startsWith(p));
   if (!prefix) return out;
 
@@ -435,6 +494,8 @@ function expandGoogleAdminSegment(normalized: string): string[] {
   const candidates = new Set<string>();
   const alias = CITY_ALIASES[bare];
   if (alias) candidates.add(alias);
+  const bareIslandPrefecture = ISLAND_PREFECTURE_SEGMENT[bare];
+  if (bareIslandPrefecture) candidates.add(bareIslandPrefecture);
   for (const [suffix, replacements] of GENITIVE_TO_NOMINATIVE_REWRITES) {
     if (!bare.endsWith(suffix) || bare.length <= suffix.length + 1) continue;
     for (const replacement of replacements) {
