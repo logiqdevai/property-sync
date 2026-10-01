@@ -117,3 +117,18 @@ Client instruction: triple-check this change for unwanted side effects, "especia
 2. **#2 bigidis config not applying** — investigated; turned out to be a scheduling non-issue, not a bug. **Done.**
 3. **#4 Count mismatch** — investigated; property-sync's "2" confirmed correct (1 of 3 new listings was a RENT property intentionally filtered by the client's own EstateWeb settings). The "4"/`bigidis` claim doesn't match any property-sync record — **waiting on a screenshot from the client of EstateWeb's "4 new" view to go further.**
 4. **#3 Location homonym resolver** — known recurring bug class; add these 3 cases to `docs/ESTATEWEB-LOCATION-ACCURACY-FIXES.md` as root cause #14 and fix with a full before/after diff over all properties, per established practice.
+
+
+
+
+1) Already-synced property, over 8 images, source unchanged — The stored list just gets quietly trimmed down to 8 (photos 9+ dropped from what we show). Photos 2–8 do NOT get dewatermarked if they're still raw — they stay watermarked, forever, unless the source listing itself changes that specific photo. No credits billed, nothing pushed to EstateWeb.
+
+2) Already-synced property, 8 or fewer images — Nothing happens at all. The cap doesn't even reduce anything. No billing, no push.
+
+3) New property, over 8 images in source — All first 8 get dewatermarked immediately on creation, billed correctly (8 credits), pushed to EstateWeb normally — this one always worked right.
+
+4) New property, 8 or fewer images in source — Same as #3, just however many images there actually are.
+
+The correction, plainly: setting watermark_image_count: 8 does not retroactively clean up photos 2–8 on properties you're already tracking — only on brand new ones going forward. For already-tracked properties (the 152 cretahouses ones sitting at ≤8, or any property with >8 that just gets silently trimmed), if you actually want photos 2–8 cleaned up too, that needs a separate, deliberate action — it doesn't happen on its own, by design (that's exactly what stops the credit burn from recurring).
+
+Do you want that as a real feature — a button to say "also clean up photos 2-8 on my existing properties for this agency," so you can see the credit cost before it runs?
