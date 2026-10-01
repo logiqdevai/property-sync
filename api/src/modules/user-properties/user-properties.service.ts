@@ -3984,20 +3984,25 @@ export class UserPropertiesService {
         );
       }
 
-      if (imagesContentChangedInOverlap) {
-        await this.watermarkRemovalService.applyTrackerWatermarkPipeline({
-          userPropertyId: existing.id,
-          userId: tracker.user_id,
-          removeWatermark: tracker.remove_watermark,
-          watermarkManualSelection: tracker.watermark_manual_selection,
-          watermarkImageCount: tracker.watermark_image_count,
-        });
-      }
+      const watermarkPipelineChangedImages = imagesContentChangedInOverlap
+        ? await this.watermarkRemovalService.applyTrackerWatermarkPipeline({
+            userPropertyId: existing.id,
+            userId: tracker.user_id,
+            removeWatermark: tracker.remove_watermark,
+            watermarkManualSelection: tracker.watermark_manual_selection,
+            watermarkImageCount: tracker.watermark_image_count,
+          })
+        : false;
 
       const statusChanged = existing.status !== canonicalFields.status;
 
+      // A watermark-pipeline change is paid for (Dewatermark credits) and must
+      // reach the CRM regardless of cms_update_on_hash_only -- that gate exists
+      // to skip pushes when the SOURCE listing's own content didn't change, not
+      // to silently swallow a local image replacement we already billed for.
       if (
         !statusChanged &&
+        !watermarkPipelineChangedImages &&
         tracker.cms_update_on_hash_only &&
         options.contentHashChanged === false
       ) {

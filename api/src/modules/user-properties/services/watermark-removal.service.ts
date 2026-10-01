@@ -69,23 +69,29 @@ export class WatermarkRemovalService {
     });
   }
 
+  // Returns whether it actually replaced any image -- the caller (syncForProperty)
+  // uses this to make sure a property that was only touched by this pipeline (no
+  // source content_hash change) still isn't silently excluded from the CRM push,
+  // the way cms_update_on_hash_only would otherwise exclude it. Paying Dewatermark
+  // for a new image and then never telling EstateWeb about it defeats the whole
+  // point of the feature -- see docs/CLIENT-ISSUES-2026-10-01.md issue #1.
   async applyTrackerWatermarkPipeline(params: {
     userPropertyId: string;
     userId: string;
     removeWatermark: boolean;
     watermarkManualSelection: boolean;
     watermarkImageCount: number;
-  }): Promise<void> {
-    if (!params.removeWatermark || params.watermarkManualSelection) return;
+  }): Promise<boolean> {
+    if (!params.removeWatermark || params.watermarkManualSelection) return false;
 
     const userProperty = await this.prisma.userProperty.findUnique({
       where: { id: params.userPropertyId },
       select: { id: true, user_id: true, images: true },
     });
-    if (!userProperty || userProperty.user_id !== params.userId) return;
+    if (!userProperty || userProperty.user_id !== params.userId) return false;
 
     const sourceUrls = this.parseSourceImageUrls(userProperty.images);
-    if (sourceUrls.length === 0) return;
+    if (sourceUrls.length === 0) return false;
 
     const dewatermarkIntegration =
       await this.dewatermarkOrchestrator.findActiveForUser(params.userId);
@@ -93,14 +99,14 @@ export class WatermarkRemovalService {
       this.logger.warn(
         `Skipping watermark pipeline for user_property=${params.userPropertyId}: no active Dewatermark integration`,
       );
-      return;
+      return false;
     }
 
     const limit = Math.max(
       0,
       Math.min(params.watermarkImageCount, sourceUrls.length),
     );
-    if (limit === 0) return;
+    if (limit === 0) return false;
 
     const nextUrls = [...sourceUrls];
     let changed = false;
@@ -157,14 +163,17 @@ export class WatermarkRemovalService {
       }
     }
 
-    if (!changed) return;
+    if (!changed) return false;
 
     await this.prisma.userProperty.update({
       where: { id: params.userPropertyId },
       data: {
         images: nextUrls as unknown as Prisma.InputJsonValue,
+        is_modified: true,
+        pending_crm_update: true,
       },
     });
+    return true;
   }
 
   async processSingleImage(
