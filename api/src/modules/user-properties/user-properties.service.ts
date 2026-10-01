@@ -3930,9 +3930,17 @@ export class UserPropertiesService {
         continue;
       }
 
-      const imagesChanged =
-        this.normalizeComparableValue(existing.images) !==
-        this.normalizeComparableValue(effectiveFields.images);
+      // Only true when a position that was already visible to the user
+      // actually changed content. Raising the tracker's max_image_count
+      // widens the truncation window and makes previously-hidden (but
+      // already-existing) canonical images appear at new positions --
+      // that's not a new photo, and must not silently re-bill the whole
+      // back catalog to Dewatermark the next time this agency's cron crawl
+      // runs. See docs/CLIENT-ISSUES-2026-10-01.md #1.
+      const imagesContentChangedInOverlap = this.imagesOverlapChanged(
+        existing.images,
+        effectiveFields.images,
+      );
       const contentChanged =
         this.normalizeComparableValue(existing.title) !==
           this.normalizeComparableValue(canonicalFields.title) ||
@@ -3976,7 +3984,7 @@ export class UserPropertiesService {
         );
       }
 
-      if (imagesChanged) {
+      if (imagesContentChangedInOverlap) {
         await this.watermarkRemovalService.applyTrackerWatermarkPipeline({
           userPropertyId: existing.id,
           userId: tracker.user_id,
@@ -4091,6 +4099,28 @@ export class UserPropertiesService {
     });
 
     return new Map(rows.map((row) => [row.user_id, row.settings]));
+  }
+
+  // Compares only the index range both arrays share (0..min(lengthA, lengthB)),
+  // so growing or shrinking the array purely via a max_image_count change --
+  // which only adds/removes trailing positions -- never counts as a change by
+  // itself. A real difference inside the shared window (a source photo that
+  // was actually swapped) still counts.
+  private imagesOverlapChanged(
+    existingImages: unknown,
+    nextImages: unknown,
+  ): boolean {
+    if (!Array.isArray(existingImages) || !Array.isArray(nextImages)) {
+      return (
+        this.normalizeComparableValue(existingImages as Prisma.JsonValue) !==
+        this.normalizeComparableValue(nextImages as Prisma.JsonValue)
+      );
+    }
+    const overlapLength = Math.min(existingImages.length, nextImages.length);
+    for (let index = 0; index < overlapLength; index++) {
+      if (existingImages[index] !== nextImages[index]) return true;
+    }
+    return false;
   }
 
   private mergeImagesPreservingProcessed(

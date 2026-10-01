@@ -1,0 +1,43 @@
+# Client-Reported Issues — 2026-10-01
+
+Source: `issues.txt` — WhatsApp thread with Κώστας Πετράκης (client), 2026-10-01 13:51–15:25.
+Scheduling-only messages (lines 5–6, request for a phone call) are omitted below — not a product issue.
+
+## Issues
+
+| # | Issue | Description | Evidence (from issues.txt) | Likely area / files to check | Priority | Status |
+|---|-------|-------------|------------------------------|-------------------------------|----------|--------|
+| 1 | **Dewatermark credits consumed with no new properties** | Client changed the per-agency image settings on 4 agencies that have watermark removal enabled (cap + watermark the first 8 photos). No new properties were crawled, yet ~300 dewatermark credits were consumed. Client has a limited credit balance and is worried a repeat will leave him short when he needs it most. | Line 7–8: "Έφαγε 300 credits στο watermark χωρίς να προκύψουν καινούργια γραφεία... Χωρίς να υπάρξουνε καινούργια ακίνητα ρούφηξε τα 300 credits" | `api/src/modules/user-properties/user-properties.service.ts` `syncForProperty` | **Critical** — real money/credits, client explicitly flagged this as most urgent | **Fixed, pending deploy** — see root cause & fix below |
+| 2 | **New watermark/image-limit config not applying (bigidis agency)** | Client set the "first 8 photos, watermark all 8" config on the `bigidis` tracked agency specifically to test it. The setting did not take effect. | Line 11: "...το ένα είναι του bigidis που είχα ενεργοποιήσει για ... να δείξει 8 φωτογραφίες μόνο και να κάνει και στις 8 watermark...... Και που δεν δούλεψε" | Same settings path as #1 — verify `watermark_image_count`/`max_image_count` are actually read and honored during crawl/normalization for `bigidis`, not just persisted. | High — likely same root cause as #1 | Open |
+| 3 | **Location resolver picks the wrong municipality/prefecture for homonym place names** | When a listing's area name also exists as a place name in a different municipality/prefecture, the resolver sometimes attaches the wrong (homonym) location instead of the one matching the property's real municipality. Client deliberately left 3 properties unedited to demonstrate the bug. | Line 1–4: (a) `re1.gr/property/57880` — actually in **Naxos**, resolved as **Γαλήνη Χανίων** (Galini, Chania); (b) `re1.gr/property/52230` — actually in **Λαγκαδάς, Θεσσαλονίκης** (Lagkadas, Thessaloniki), resolved as **Λαγκαδά Χανίων** (Lagkada, Chania); (c) `re1.gr/property/53921` — actually in **Χανιά** (Apokoronas, Chania), resolved as **Χανιά Μαγνησίας** (Chania, Magnisia — a same-named village in a different prefecture) | `docs/ESTATEWEB-LOCATION-ACCURACY-FIXES.md` — this is a recurring class of bug already tracked there (homonym root causes #11–#13); these 3 cases are new repro examples to add. Per project history, diff old-vs-new resolver output over **all** properties before changing the resolver. | High — wrong public-facing location on live listings | Open |
+| 4 | **Mismatch between property-sync's "new items" count and EstateWeb's own record** | At 09:09 the same morning, property-sync's dashboard showed 2 new items ingested, while EstateWeb's own record shows 4 new items came in, one of them from `bigidis`. Client's wording mixes "γραφεία" (offices/agencies) and "κινητά" (likely a typo/autocorrect for "ακίνητα", properties) — needs clarification from client on whether this is a count of new **agencies** or new **properties**. | Line 11: "...σήμερα το πρωί 9:9 λεπτά μπήκανα 2 καινούργια γραφεία...... Ενώ στο estate ... μου δείχνουν ότι μπήκαν τέσσερα κινητά..." | `docs/estateweb-sync-reconciliation-flow.md`, `docs/ESTATEWEB-PROPERTY-RECONCILIATION.md` — crawl/sync reconciliation between property-sync and EstateWeb. Possibly related to #2's `bigidis` crawl (the 4th missing item). | High — if confirmed as properties, listings may be silently missing from the platform | Open |
+
+## #1 — Root cause & fix (confirmed against production data)
+
+**Root cause:** `syncForProperty` truncates each property's canonical images to the tracker's `max_image_count` (`mapFromCanonical` → `truncateImages`), then compares the *whole* truncated array against what was previously stored to decide whether to re-run the paid Dewatermark pipeline (`imagesChanged`). Raising `max_image_count` (e.g. 1 → 8) on an already-tracked agency makes that array longer for **every existing property** on the very next sync — not because the source photo changed, but because the truncation window widened and now exposes canonical images at positions 2–8 that were always there but never kept before. The array-length difference alone made `imagesChanged` true, which silently re-ran `applyTrackerWatermarkPipeline` (a real paid call to the Dewatermark API) against the agency's entire back catalog on its next scheduled crawl — not just new listings.
+
+**Confirmed in the production DB (read-only queries against `cost_logs`):**
+- 4 tracked agencies (`bitsimis-real-homes`, `asiminarealestate`, `cretahouses`, `nikiestate`) were all changed to `watermark_image_count: 8` / `max_image_count: 8` on 2026-09-30 ~18:29–18:30 UTC (21:29 Athens) — matching the client's description exactly.
+- Baseline Dewatermark usage for this account is 1–7 calls/hour. Between 03:00–04:00 UTC on 2026-10-01 (the agencies' next scheduled crawl) there was a spike of **320 calls in one hour** — 310 against `asiminarealestate`, 10 against `cretahouses` — matching the client's "~300 credits" report almost exactly.
+- Every one of the 41 billed properties in that burst was created well before the burst (oldest: 2026-08-11, newest: 2026-09-12) — confirming these were pre-existing properties being silently reprocessed, not new listings.
+
+**Fix applied** (`api/src/modules/user-properties/user-properties.service.ts`): added `imagesOverlapChanged`, which only compares the index range both the old and new image arrays share. A genuine content swap inside that shared window still triggers the watermark pipeline as before; a cap increase that merely exposes new trailing positions no longer does. The extra images still get saved and shown on the property (per `max_image_count`/the "show first 8 photos" intent) — they're just not auto-sent to the paid Dewatermark API for the back catalog anymore. `tsc --noEmit` passes.
+
+**Not yet done / for discussion:** there's currently no way to *intentionally* backfill-dewatermark the newly-exposed images on existing properties — e.g. if the client genuinely wants photos 2–8 of already-tracked listings dewatermarked too, that now requires a deliberate action (not yet built) rather than happening automatically. Worth a short follow-up conversation with the client on whether that's wanted, and if so, as an explicit opt-in action (so the credit cost is visible before it's spent) rather than an automatic side effect of changing a setting.
+
+**Εξήγηση για τον πελάτη (στα ελληνικά, απλά):**
+
+Βρήκα τι έφταιγε για τα 300 credits. Δεν ήταν bug που έτρεχε τυχαία — έγινε εξαιτίας μιας αλλαγής ρύθμισης.
+
+Όταν άλλαξες τη ρύθμιση στα 4 γραφεία (να δείχνει και να κάνει watermark στις πρώτες 8 φωτογραφίες, ενώ πριν ήταν σε λιγότερες), το σύστημα το εξέλαβε σαν να άλλαξαν οι φωτογραφίες σε **όλα** τα παλιά ακίνητα αυτών των γραφείων — όχι μόνο στα καινούργια. Έτσι, στην επόμενη αυτόματη ανανέωση, πήγε και έκανε ξανά watermark στις νέες φωτογραφίες (2-8) όλων των ήδη υπαρχόντων ακινήτων, κι εκεί κάηκαν τα credits, χωρίς να μπει κανένα καινούργιο ακίνητο.
+
+Το διόρθωσα: από εδώ και πέρα, μια τέτοια αλλαγή ρύθμισης θα ισχύει μόνο για τα καινούργια ακίνητα που θα μπαίνουν στο σύστημα — δεν θα ξαναπειράζει αυτόματα τα ήδη υπάρχοντα και δεν θα ξοδεύει credits χωρίς λόγο.
+
+Ερώτηση για τον πελάτη: θέλει να γίνει watermark και στις φωτογραφίες 2-8 των ακινήτων που υπάρχουν ήδη στα 4 αυτά γραφεία (όχι μόνο στα καινούργια); Αν ναι, μπορεί να γίνει χειροκίνητα, αλλά πρέπει να του πούμε πρώτα πόσα credits θα χρειαστούν πριν τρέξει, ώστε να το εγκρίνει πριν ξοδευτούν.
+
+## Suggested fix order
+
+1. **#1 Dewatermark credit burn** — time-sensitive, client has limited credits and asked this be looked at before anything else.
+2. **#2 bigidis config not applying** — fix alongside #1, same settings path, gives a clean test case to confirm the fix.
+3. **#4 Count mismatch** — clarify with client whether "γραφεία" vs "κινητά" means agencies or properties, then reconcile against the `bigidis` crawl from #2.
+4. **#3 Location homonym resolver** — known recurring bug class; add these 3 cases to `docs/ESTATEWEB-LOCATION-ACCURACY-FIXES.md` as root cause #14 and fix with a full before/after diff over all properties, per established practice.
