@@ -13,9 +13,33 @@ export type PropertyDisplayImage = {
   show_on_foreign_agents: boolean;
 };
 
+// Mirrors the backend's GcsFolders.propertyImages check (isPropertyImagesGcsUrl in
+// watermark-removal.service.ts): identifies a URL as one of our own already-processed
+// (e.g. watermark-removed) uploads, as opposed to a source-site URL.
+const PROCESSED_IMAGE_MARKER = "/property-images/";
+
+function isProcessedImageUrl(url: string | null | undefined): boolean {
+  return typeof url === "string" && url.includes(PROCESSED_IMAGE_MARKER);
+}
+
+// `image.source_image` is a cache of what the CRM was told at push time -- it goes stale
+// the moment a local-only reprocess (e.g. the automatic watermark pipeline) replaces that
+// same position in UserProperty.images without having reached the CRM yet (see
+// docs/CLIENT-ISSUES-2026-10-01.md issue #1: the pipeline never used to flag that push).
+// Until that push happens, showing the CRM's stale cache here silently hides a real,
+// already-paid-for change. Prefer the fresher local copy whenever the CRM's own cached
+// value isn't itself already a processed one -- never overrides a CRM value that's
+// already current.
 function resolveIntegrationImageDisplayUrl(
   image: IntegrationPropertyImage,
+  localOverrideUrl?: string | null,
 ): string | null {
+  if (
+    isProcessedImageUrl(localOverrideUrl) &&
+    !isProcessedImageUrl(image.source_image)
+  ) {
+    return localOverrideUrl as string;
+  }
   if (typeof image.source_image === "string" && image.source_image.length > 0) {
     return image.source_image;
   }
@@ -81,17 +105,20 @@ export function getIntegrationPropertyDisplayImages(
   const items: PropertyDisplayImage[] = [];
   for (let index = 0; index < integrationProperty.images.length; index++) {
     const image = integrationProperty.images[index];
-    const url = resolveIntegrationImageDisplayUrl(image);
+    const propertyImageIndex = resolvePropertyImageIndex(
+      image,
+      index,
+      propertyImages,
+      propertyImageIdentities,
+    );
+    const localOverrideUrl =
+      propertyImageIndex != null ? propertyImages[propertyImageIndex] : null;
+    const url = resolveIntegrationImageDisplayUrl(image, localOverrideUrl);
     if (!url) continue;
     items.push({
       key: `${image.id}-${index}`,
       crmImageId: typeof image.id === "number" ? image.id : null,
-      propertyImageIndex: resolvePropertyImageIndex(
-        image,
-        index,
-        propertyImages,
-        propertyImageIdentities,
-      ),
+      propertyImageIndex,
       url,
       show_on_site: Boolean(image.show_on_site),
       show_on_groups: Boolean(image.show_on_groups),
