@@ -152,6 +152,31 @@ export function extractInternalIdFromText(
   return null;
 }
 
+// Label keys as a scraped detail-specs table (see readDetailStructured) stores
+// them verbatim, not as prose -- a site that renders its code in a labeled
+// specs row (e.g. `{"Κωδικός": "4-2569"}`) frequently never repeats that label
+// in _detail_text at all, so INTERNAL_ID_PATTERNS above silently finds
+// nothing there and internal_id degrades to the URL slug, losing a category
+// prefix the agency's own site displays (e.g. "4-2569" vs the slug's "2569")
+// -- a mismatch that broke EstateWeb's duplicate-detection code match for an
+// already-linked listing (docs/CLIENT-ISSUES-2026-10-01.md #4). Checked ahead
+// of the free-text patterns since a labeled specs value is the more reliable
+// source when both exist.
+const SPECS_CODE_LABEL_PATTERN =
+  /^(?:κωδ\.|κωδικός(?:\s+ακινήτου)?|code|ref(?:erence)?|property\s*id)$/iu;
+
+export function extractInternalIdFromSpecs(
+  specs: Record<string, string> | null | undefined,
+): string | null {
+  if (!specs) return null;
+  for (const [label, value] of Object.entries(specs)) {
+    if (!SPECS_CODE_LABEL_PATTERN.test(label.trim())) continue;
+    const stripped = stripIdPrefix(value);
+    if (stripped) return stripped;
+  }
+  return null;
+}
+
 // Some sites never put price in its own element -- it's baked straight into
 // the title/description prose (e.g. "...102τμ 150000ευρώ."), so a
 // price_selector has nothing to target. Only used as a fallback when the
@@ -363,6 +388,7 @@ export function extractSourcePropertyIds(
       'internal_id',
       'listing_code',
     ]) ??
+      extractInternalIdFromSpecs(readDetailStructured(raw).specs) ??
       extractInternalIdFromText(
         readRawString(raw, [
           '_detail_text',

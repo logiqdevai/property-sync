@@ -149,3 +149,43 @@ describe('EstateWebPropertyReconciliationService.reconcileCreate', () => {
     expect(result).toEqual({ matched: false, shouldUpdate: false });
   });
 });
+
+describe('EstateWebPropertyReconciliationService.loadCatalog + reconcileCreate', () => {
+  // Regression test for a real duplicate incident (docs/CLIENT-ISSUES-2026-10-01.md
+  // #4): a bulk-imported EstateWeb listing was stored with a numeric category
+  // prefix in its code ("4-2569"), which our own internal_id/property_id never
+  // carries ("2569"). The stale catalog lookup never found it, so reconcileCreate
+  // created a live duplicate instead of relinking to the existing listing.
+  it('finds a bulk-imported listing whose code carries a numeric category prefix', async () => {
+    const estateWebPropertyService = {
+      listAllPropertiesForIntegration: jest.fn().mockResolvedValue({
+        total: 1,
+        list: [{ id: 51965, code: '4-2569', scope_id: 1, price: 73000, sqm: 115 }],
+      }),
+    };
+    const estateWebIntegrationResolverService = {
+      resolvePushSites: jest.fn().mockResolvedValue([]),
+    };
+    const service = new EstateWebPropertyReconciliationService(
+      { propertyHistory: { findFirst: jest.fn() } } as never,
+      estateWebPropertyService as never,
+      estateWebIntegrationResolverService as never,
+    );
+
+    const catalog = await service.loadCatalog('integration-1');
+    const result = await service.reconcileCreate(
+      makeUserProperty({
+        internal_id: '2569',
+        listing_type: 'SALE' as never,
+        price: 73000 as never,
+        square_meters: 115 as never,
+      }),
+      catalog!,
+    );
+
+    expect(result).toMatchObject({
+      matched: true,
+      integrationPropertyId: '51965',
+    });
+  });
+});

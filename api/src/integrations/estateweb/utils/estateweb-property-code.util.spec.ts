@@ -1,6 +1,6 @@
 import {
-  buildEstateWebOwnershipCodes,
   buildEstateWebReconcileCodes,
+  estateWebCodeLookupKeys,
   resolveEstateWebCode,
 } from './estateweb-property-code.util';
 
@@ -54,17 +54,17 @@ describe('estateweb-property-code.util', () => {
     });
   });
 
-  describe('buildEstateWebOwnershipCodes', () => {
-    it('includes raw internal_id, raw property_id and the pushed code', () => {
-      expect(buildEstateWebOwnershipCodes('AP 419', 'X-1')).toEqual([
-        'ap 419',
-        'x-1',
-        'ap419',
-      ]);
+  describe('estateWebCodeLookupKeys', () => {
+    it('indexes a bulk-imported listing under both its raw and de-prefixed code', () => {
+      expect(estateWebCodeLookupKeys('4-2569')).toEqual(['4-2569', '2569']);
     });
 
-    it('is empty when there is no code at all', () => {
-      expect(buildEstateWebOwnershipCodes(null, undefined)).toEqual([]);
+    it('returns a single key when the code has no numeric category prefix', () => {
+      expect(estateWebCodeLookupKeys('2569')).toEqual(['2569']);
+    });
+
+    it('is empty when there is no code', () => {
+      expect(estateWebCodeLookupKeys(null)).toEqual([]);
     });
   });
 });

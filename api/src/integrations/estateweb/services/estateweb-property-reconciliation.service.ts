@@ -4,13 +4,14 @@ import {
   PropertyHistoryEventType,
   UserProperty,
 } from 'generated/prisma';
-import { EstateWebScope } from '../constants/estateweb-enums.constants';
-import { resolveEstateWebScopeId } from '../utils/estateweb-catalog.util';
 import {
   EstateWebPropertyListItem,
 } from '../interfaces/estateweb-property.interface';
-import { resolveSaleBasePrice } from '@/modules/user-integrations/utils/sales-pricing.util';
-import { buildEstateWebReconcileCodes } from '../utils/estateweb-property-code.util';
+import {
+  buildEstateWebReconcileCodes,
+  estateWebCodeLookupKeys,
+} from '../utils/estateweb-property-code.util';
+import { isEstateWebListingIdentityMismatch } from '../utils/estateweb-listing-identity.util';
 import { EstateWebIntegrationResolverService } from './estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from './estateweb-property.service';
 
@@ -124,46 +125,7 @@ export class EstateWebPropertyReconciliationService {
     userProperty: UserProperty,
     listing: EstateWebPropertyListItem,
   ): boolean {
-    if (this.resolveScopeId(userProperty) !== Number(listing.scope_id)) {
-      return true;
-    }
-
-    const userAddress = (userProperty.address ?? '').trim();
-    const listingAddress = (listing.address ?? '').trim();
-    if (
-      userAddress.length > 0 &&
-      listingAddress.length > 0 &&
-      !this.stringsEqual(userAddress, listingAddress)
-    ) {
-      return true;
-    }
-
-    // The price we push is resolveSaleBasePrice(price, price_web, sqm), which can
-    // legitimately differ from the raw `price` (e.g. `price` was mis-parsed as the
-    // sqm figure). Accept a match on either, or we'd refuse our own listing.
-    const pushedPrice = resolveSaleBasePrice(
-      userProperty.price,
-      userProperty.price_web,
-      userProperty.square_meters,
-    );
-    if (
-      userProperty.price != null &&
-      listing.price != null &&
-      !this.pricesEqual(userProperty.price, listing.price) &&
-      !this.pricesEqual(pushedPrice, listing.price)
-    ) {
-      return true;
-    }
-
-    if (
-      userProperty.square_meters != null &&
-      listing.sqm != null &&
-      !this.numbersEqual(userProperty.square_meters, listing.sqm)
-    ) {
-      return true;
-    }
-
-    return false;
+    return isEstateWebListingIdentityMismatch(userProperty, listing);
   }
 
   private buildCodeIndex(
@@ -171,11 +133,24 @@ export class EstateWebPropertyReconciliationService {
   ): Map<string, EstateWebPropertyListItem> {
     const byCode = new Map<string, EstateWebPropertyListItem>();
 
+    // Exact codes first, in listing order, so a real exact-code match always wins.
     for (const listing of listings) {
       const code = this.normalizeCode(listing.code);
       if (!code) continue;
       if (byCode.has(code)) continue;
       byCode.set(code, listing);
+    }
+
+    // Fallback pass: a listing whose code carries a leading numeric category prefix
+    // from a prior bulk import (e.g. "4-2569") is also indexed under the de-prefixed
+    // code, so it can still be found here even though our own internal_id/property_id
+    // never carries that prefix -- otherwise reconcileCreate() never sees it as a
+    // match and creates a duplicate instead (see docs/CLIENT-ISSUES-2026-10-01.md #4).
+    // Never overrides an exact-code match found above.
+    for (const listing of listings) {
+      for (const key of estateWebCodeLookupKeys(listing.code)) {
+        if (!byCode.has(key)) byCode.set(key, listing);
+      }
     }
 
     return byCode;
@@ -213,41 +188,4 @@ export class EstateWebPropertyReconciliationService {
     return Boolean(crawlHistory);
   }
 
-  private resolveScopeId(userProperty: UserProperty): EstateWebScope {
-    const scopeId = resolveEstateWebScopeId(
-      userProperty.listing_type,
-      userProperty.estateweb_scope_id,
-    );
-    if (scopeId === EstateWebScope.RENT) return EstateWebScope.RENT;
-    return EstateWebScope.SALE;
-  }
-
-  private pricesEqual(
-    left: UserProperty['price'] | number,
-    right: number | undefined,
-  ): boolean {
-    const a = left != null ? Number(left) : null;
-    const b = right != null ? Number(right) : null;
-    if (a == null && b == null) return true;
-    if (a == null || b == null) return false;
-    if (a === b) return true;
-    const max = Math.max(Math.abs(a), Math.abs(b));
-    if (max === 0) return true;
-    return Math.abs(a - b) / max <= 0.01;
-  }
-
-  private numbersEqual(
-    left: UserProperty['square_meters'],
-    right: number | undefined,
-  ): boolean {
-    const a = left != null ? Number(left) : null;
-    const b = right != null ? Number(right) : null;
-    if (a == null && b == null) return true;
-    if (a == null || b == null) return false;
-    return Math.abs(a - b) < 0.01;
-  }
-
-  private stringsEqual(left: string, right: string): boolean {
-    return left.trim().toLowerCase() === right.trim().toLowerCase();
-  }
 }

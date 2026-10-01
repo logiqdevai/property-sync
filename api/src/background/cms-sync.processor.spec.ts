@@ -33,8 +33,11 @@ describe('CmsSyncProcessor.executeSingleOperation: CREATE safety', () => {
         .mockResolvedValue({ matched: false, shouldUpdate: false }),
     };
     const propertyService = {
-      // CRM stores the *sanitized* code for the raw internal_id "AP 419".
-      getProperty: jest.fn().mockResolvedValue({ code: 'AP419' }),
+      // Ownership is decided by identity fields (scope/address/price/sqm), not
+      // by `code` -- see isEstateWebListingIdentityMismatch. scope_id: 1 (SALE)
+      // matches the default scope resolveScopeId() gives this userProperty
+      // (no listing_type/estateweb_scope_id override above).
+      getProperty: jest.fn().mockResolvedValue({ code: 'AP419', scope_id: 1 }),
     };
 
     const processor = new CmsSyncProcessor(
@@ -93,10 +96,27 @@ describe('CmsSyncProcessor.executeSingleOperation: CREATE safety', () => {
     expect(adapter.pushUpdate).toHaveBeenCalledTimes(1);
   });
 
-  it('recognises the linked listing via its sanitized code (no false "not ours" -> no duplicate create)', async () => {
-    // internal_id "AP 419" vs CRM code "AP419": a raw comparison used to fail here,
-    // clear the link and create a second listing.
+  it('recognises the linked listing via identity fields, not a code comparison (no false "not ours" -> no duplicate create)', async () => {
     const { run, adapter, prisma } = setup({ integration_property_id: '4242' });
+
+    await run('UPDATE');
+
+    expect(adapter.pushCreate).not.toHaveBeenCalled();
+    expect(adapter.pushUpdate).toHaveBeenCalledTimes(1);
+    expect(prisma.userProperty.update).not.toHaveBeenCalled();
+  });
+
+  // Regression test for docs/CLIENT-ISSUES-2026-10-01.md #4: a scraping/
+  // normalization fix that corrects internal_id for an already-linked property
+  // (completely changing its computed `code`, e.g. "AP419" -> "4-2569") must
+  // not make the ownership check treat the live listing as "not ours" and
+  // create a duplicate -- only a genuine identity conflict (scope/address/
+  // price/sqm) may do that.
+  it('keeps an existing link even when internal_id changes completely (no duplicate create)', async () => {
+    const { run, adapter, prisma } = setup({
+      integration_property_id: '4242',
+      internal_id: '4-2569',
+    });
 
     await run('UPDATE');
 

@@ -1,10 +1,16 @@
 // The public `code` EstateWeb stores for a listing is a *sanitized* form of our
-// internal_id / property_id (see resolveEstateWebCode). Every place that needs to
-// recognise "is this CRM listing the one we pushed for this user property" -- CREATE
-// reconciliation, the ownership check before an UPDATE -- must compare against that
-// same sanitized code, not the raw scraped value. Comparing raw values misses e.g.
-// "AP 419" (stored as "AP419") or "#1987" (stored as "1987"), which surfaces as a
-// duplicate CREATE in the CRM.
+// internal_id / property_id (see resolveEstateWebCode). Finding a pre-existing
+// listing before a CREATE must search by that same sanitized code, not the raw
+// scraped value -- comparing raw values misses e.g. "AP 419" (stored as "AP419")
+// or "#1987" (stored as "1987"), which surfaces as a duplicate CREATE in the CRM.
+//
+// This is deliberately NOT used to verify an already-linked listing still
+// belongs to us before an UPDATE -- see isEstateWebListingIdentityMismatch in
+// estateweb-listing-identity.util.ts, which checks scope/address/price/sqm
+// instead. Our own internal_id/property_id can legitimately change later (e.g.
+// a scraper fix), with no corresponding change on the CRM side, so a `code`
+// mismatch alone is not safe proof that an id now points at a different listing
+// (see docs/CLIENT-ISSUES-2026-10-01.md #4).
 
 function sanitizeEstateWebCode(
   candidate: string | null | undefined,
@@ -38,6 +44,35 @@ function normalizeCode(value: string | null | undefined): string | null {
   return trimmed ? trimmed : null;
 }
 
+const CATEGORY_PREFIXED_CODE_RE = /^\d+-(.+)$/;
+
+/**
+ * Some EstateWeb accounts store a listing's code with a leading numeric category
+ * prefix from a prior bulk import (e.g. "4-2569" for a commercial listing), which
+ * our own internal_id/property_id never carries (ours would just be "2569").
+ * Returns null when `code` (already normalized) has no such prefix.
+ */
+function stripEstateWebCategoryPrefix(code: string): string | null {
+  const match = code.match(CATEGORY_PREFIXED_CODE_RE);
+  return match ? match[1] : null;
+}
+
+/**
+ * Lower-cased lookup keys an EstateWeb listing's code should be indexed/matched
+ * under: itself, and -- when it carries a leading numeric category prefix (see
+ * stripEstateWebCategoryPrefix) -- the de-prefixed form too, so a listing created
+ * before property-sync tracked it (code never matches our internal_id/property_id
+ * as-is) can still be recognised instead of triggering a duplicate CREATE.
+ */
+export function estateWebCodeLookupKeys(
+  code: string | null | undefined,
+): string[] {
+  const normalized = normalizeCode(code);
+  if (!normalized) return [];
+  const stripped = stripEstateWebCategoryPrefix(normalized);
+  return stripped !== null ? [normalized, stripped] : [normalized];
+}
+
 function unique(values: Array<string | null>): string[] {
   return [...new Set(values.filter((value): value is string => !!value))];
 }
@@ -58,19 +93,3 @@ export function buildEstateWebReconcileCodes(
   ]);
 }
 
-/**
- * Lower-cased CRM codes that prove an already-linked listing still belongs to this
- * user property: the raw internal_id and property_id (property_id is URL-derived and
- * never changes even if internal_id is later corrected), plus the sanitized code we
- * actually pushed. Used by the ownership check before an UPDATE.
- */
-export function buildEstateWebOwnershipCodes(
-  internalId: string | null | undefined,
-  propertyId: string | null | undefined,
-): string[] {
-  return unique([
-    normalizeCode(internalId),
-    normalizeCode(propertyId),
-    normalizeCode(resolveEstateWebCode(internalId, propertyId)),
-  ]);
-}

@@ -7,7 +7,10 @@ import { CmsSyncRunsService } from '@/modules/cms-sync-runs/cms-sync-runs.servic
 import { EstateWebIntegrationResolverService } from '@/integrations/estateweb/services/estateweb-integration-resolver.service';
 import { EstateWebPropertyService } from '@/integrations/estateweb/services/estateweb-property.service';
 import { isNotFoundEstateWebError } from '@/integrations/estateweb/utils/estateweb-error.util';
-import { buildEstateWebOwnershipCodes } from '@/integrations/estateweb/utils/estateweb-property-code.util';
+import {
+  EstateWebListingIdentityUserProperty,
+  isEstateWebListingIdentityMismatch,
+} from '@/integrations/estateweb/utils/estateweb-listing-identity.util';
 import { ContentProductionService } from '@/modules/content-publishing/services/content-production.service';
 import {
   AffectedUserProperty,
@@ -591,8 +594,7 @@ export class CmsSyncOrchestratorService {
           belongsToLinkedAccount = await this.listingBelongsToLinkedIntegration(
             link.user_integration_id,
             userProperty.integration_property_id,
-            userProperty.internal_id,
-            userProperty.property_id,
+            userProperty,
           );
         } catch (error) {
           failed.push({
@@ -910,26 +912,21 @@ export class CmsSyncOrchestratorService {
   private async listingBelongsToLinkedIntegration(
     userIntegrationId: string,
     integrationPropertyId: string,
-    internalId: string | null,
-    propertyId?: string | null,
+    userProperty: EstateWebListingIdentityUserProperty,
   ): Promise<boolean> {
     try {
       const listing = await this.estateWebPropertyService.getProperty(
         userIntegrationId,
         integrationPropertyId,
       );
-      // Fall back to property_id (the URL-derived id, which never changes)
-      // alongside internal_id (the displayed public code, which can be
-      // corrected after the fact, e.g. a scraper selector fix) -- otherwise
-      // correcting internal_id for an already-pushed property makes every
-      // already-linked EstateWeb listing look "not ours" on its next sync
-      // and creates a duplicate instead of updating the existing one.
-      const candidates = buildEstateWebOwnershipCodes(internalId, propertyId);
-      if (candidates.length === 0) {
-        return true;
-      }
-      const listingCode = listing.code?.trim().toLowerCase() ?? '';
-      return candidates.includes(listingCode);
+      // The listing still exists under this id -- that's the actual proof of
+      // ownership. A mismatched `code` string is NOT used to second-guess that:
+      // our own internal_id/property_id (and thus the code we'd compute) can
+      // legitimately change over time as scraping/normalization improves, with
+      // no corresponding change on the CRM side. Only a clear identity conflict
+      // (different scope/address/price/sqm) means this id now points at a
+      // different real-world listing (see isEstateWebListingIdentityMismatch).
+      return !isEstateWebListingIdentityMismatch(userProperty, listing);
     } catch (error) {
       if (isNotFoundEstateWebError(error)) {
         return false;

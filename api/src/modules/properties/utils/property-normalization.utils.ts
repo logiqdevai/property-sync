@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import {
+  extractInternalIdFromSpecs,
   extractInternalIdFromText,
   readDetailStructured,
 } from '@/integrations/crawler/utils/crawler.utils';
@@ -593,6 +594,7 @@ export function buildPropertyRecord(
   }
   const internalId =
     sp.internal_id ??
+    extractInternalIdFromSpecs(structured.specs) ??
     extractInternalIdFromText(
       sp.raw_description,
       rawData
