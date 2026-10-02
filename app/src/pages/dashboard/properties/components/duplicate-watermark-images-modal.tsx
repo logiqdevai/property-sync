@@ -16,6 +16,7 @@ import { useJob } from "@/features/jobs/hooks/use-jobs";
 import type {
   AgencyWatermarkSettings,
   DuplicateWatermarkCleanupJobResult,
+  DuplicateWatermarkImageCandidate,
   DuplicateWatermarkPropertyCandidate,
 } from "@/features/user-properties/interfaces/user-properties.interfaces";
 
@@ -35,6 +36,27 @@ function handleThumbnailError(event: SyntheticEvent<HTMLImageElement>) {
   const img = event.currentTarget;
   img.onerror = null;
   img.src = BROKEN_IMAGE_FALLBACK;
+}
+
+// A single original photo can have more than one stale CRM row (e.g. the
+// source site re-serves it at multiple sizes, each uploaded separately at
+// some point) -- all genuinely stale, all replaced by the same one clean
+// image. Grouping by after_image shows that real one-replacement-to-many-
+// stale-copies relationship instead of repeating what looks like an
+// identical remove/keep pair for each row.
+function groupDuplicatesByAfterImage(
+  duplicates: DuplicateWatermarkImageCandidate[],
+): Array<{ after_image: string; removes: DuplicateWatermarkImageCandidate[] }> {
+  const order: string[] = [];
+  const groups = new Map<string, DuplicateWatermarkImageCandidate[]>();
+  for (const img of duplicates) {
+    if (!groups.has(img.after_image)) {
+      order.push(img.after_image);
+      groups.set(img.after_image, []);
+    }
+    groups.get(img.after_image)!.push(img);
+  }
+  return order.map((after_image) => ({ after_image, removes: groups.get(after_image)! }));
 }
 
 function describeWatermarkSettings(settings: AgencyWatermarkSettings[] | undefined): {
@@ -341,28 +363,38 @@ export function DuplicateWatermarkImagesModal({
                               </div>
 
                               <div className="flex gap-3 overflow-x-auto pb-1">
-                                {c.genuine_duplicates.map((img) => (
-                                  <div key={img.id} className="flex flex-shrink-0 gap-2">
-                                    <div className="flex w-28 flex-col gap-1">
-                                      <span className="w-fit rounded bg-danger/10 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-danger">
-                                        Remove
-                                      </span>
-                                      <button
-                                        type="button"
-                                        className="h-20 w-28 cursor-zoom-in overflow-hidden rounded-md border-2 border-danger/50 bg-surface-secondary"
-                                        onClick={() => setExpandedImage(img.source_image)}
-                                      >
-                                        <img
-                                          src={img.source_image}
-                                          alt={`Watermarked, CRM image ${img.id}`}
-                                          loading="lazy"
-                                          onError={handleThumbnailError}
-                                          className="h-full w-full object-cover"
-                                        />
-                                      </button>
-                                      <span className="font-mono text-[0.65rem] text-muted">
-                                        CRM img #{img.id}
-                                      </span>
+                                {groupDuplicatesByAfterImage(c.genuine_duplicates).map((group) => (
+                                  <div
+                                    key={group.after_image}
+                                    className="flex flex-shrink-0 items-center gap-2"
+                                  >
+                                    <div className="flex gap-2">
+                                      {group.removes.map((img) => (
+                                        <div key={img.id} className="flex w-28 flex-col gap-1">
+                                          <span className="w-fit rounded bg-danger/10 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-danger">
+                                            Remove
+                                          </span>
+                                          <button
+                                            type="button"
+                                            className="h-20 w-28 cursor-zoom-in overflow-hidden rounded-md border-2 border-danger/50 bg-surface-secondary"
+                                            onClick={() => setExpandedImage(img.source_image)}
+                                          >
+                                            <img
+                                              src={img.source_image}
+                                              alt={`Watermarked, CRM image ${img.id}`}
+                                              loading="lazy"
+                                              onError={handleThumbnailError}
+                                              className="h-full w-full object-cover"
+                                            />
+                                          </button>
+                                          <span className="font-mono text-[0.65rem] text-muted">
+                                            CRM img #{img.id}
+                                            {group.removes.length > 1
+                                              ? " (same photo, other size)"
+                                              : ""}
+                                          </span>
+                                        </div>
+                                      ))}
                                     </div>
                                     <div className="flex w-28 flex-col gap-1">
                                       <span className="w-fit rounded bg-success/10 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-success">
@@ -371,10 +403,10 @@ export function DuplicateWatermarkImagesModal({
                                       <button
                                         type="button"
                                         className="h-20 w-28 cursor-zoom-in overflow-hidden rounded-md border-2 border-success/50 bg-surface-secondary"
-                                        onClick={() => setExpandedImage(img.after_image)}
+                                        onClick={() => setExpandedImage(group.after_image)}
                                       >
                                         <img
-                                          src={img.after_image}
+                                          src={group.after_image}
                                           alt="Clean replacement"
                                           loading="lazy"
                                           onError={handleThumbnailError}
