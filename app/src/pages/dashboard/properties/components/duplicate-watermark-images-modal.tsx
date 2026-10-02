@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type SyntheticEvent } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState, type SyntheticEvent } from "react";
 import { Link } from "react-router-dom";
 import { Button, Checkbox, Modal, useOverlayState } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -84,15 +84,18 @@ export function DuplicateWatermarkImagesModal({
   }, [state.isOpen]);
 
   // Modal.Body is one persistent DOM node across both steps -- only its
-  // children swap, its scrollTop does not reset on its own. Selecting a
-  // checkbox near the bottom of the agency list can scroll Modal.Body down
-  // a little (native focus-into-view), and without this, that leftover
-  // scroll position carries straight into the review step's completely
-  // different content next render, making it look like everything -- up to
-  // and including the heading text above the agency-group cards -- shifted
-  // upward with dead space appearing before the footer.
-  useEffect(() => {
-    document.getElementById(bodyScrollId)?.scrollTo({ top: 0 });
+  // children swap, its scrollTop does not reset on its own. Must be
+  // useLayoutEffect, not useEffect: useEffect fires after the browser
+  // paints, so the new step's DOM would render for one visible frame with
+  // the OLD step's leftover scrollTop still applied (valid as long as the
+  // new content is tall enough), THEN snap to 0 -- that flash is the
+  // "content jumps up" symptom. useLayoutEffect runs synchronously before
+  // paint, so the reset is already in place in the first visible frame.
+  // Direct scrollTop assignment (not .scrollTo) to stay unambiguously
+  // synchronous regardless of any scroll-behavior CSS.
+  useLayoutEffect(() => {
+    const el = document.getElementById(bodyScrollId);
+    if (el) el.scrollTop = 0;
   }, [step]);
 
   // The admin agencies endpoint takes `limit` literally (Prisma `take`), unlike
