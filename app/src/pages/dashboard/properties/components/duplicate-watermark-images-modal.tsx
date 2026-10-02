@@ -6,11 +6,13 @@ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Routes } from "@/routes/routes";
 import { useAgencies } from "@/features/agencies/hooks/use-agencies";
 import {
+  useAgencyWatermarkSettings,
   useCalculateDuplicateWatermarkImages,
   useEnqueueDuplicateWatermarkCleanup,
 } from "@/features/user-properties/hooks/use-user-properties";
 import { useJob } from "@/features/jobs/hooks/use-jobs";
 import type {
+  AgencyWatermarkSettings,
   DuplicateWatermarkCleanupJobResult,
   DuplicateWatermarkPropertyCandidate,
 } from "@/features/user-properties/interfaces/user-properties.interfaces";
@@ -20,6 +22,26 @@ export type DuplicateWatermarkImagesModalState = ReturnType<typeof useOverlaySta
 type Step = "select-agencies" | "review" | "running";
 
 const ACTIVE_JOB_STATUSES = new Set(["WAITING", "ACTIVE", "DELAYED", "PAUSED"]);
+
+function describeWatermarkSettings(settings: AgencyWatermarkSettings[] | undefined): {
+  text: string;
+  isActive: boolean;
+} {
+  if (!settings || settings.length === 0) {
+    return { text: "Not tracked", isActive: false };
+  }
+  const active = settings.filter((s) => s.remove_watermark);
+  if (active.length === 0) {
+    return { text: "Watermark removal off", isActive: false };
+  }
+  const first = active[0];
+  const keep = first.max_image_count == null ? "all" : String(first.max_image_count);
+  const extra = active.length > 1 ? ` (+${active.length - 1} more tracker${active.length - 1 === 1 ? "" : "s"})` : "";
+  return {
+    text: `Dewatermark first ${first.watermark_image_count} · Keep ${keep}${extra}`,
+    isActive: true,
+  };
+}
 
 export function DuplicateWatermarkImagesModal({
   state,
@@ -50,6 +72,19 @@ export function DuplicateWatermarkImagesModal({
     { enabled: state.isOpen },
   );
   const agencies = agenciesData?.data ?? [];
+
+  const { data: watermarkSettings } = useAgencyWatermarkSettings({
+    enabled: state.isOpen,
+  });
+  const watermarkSettingsByAgency = useMemo(() => {
+    const map = new Map<string, AgencyWatermarkSettings[]>();
+    for (const setting of watermarkSettings ?? []) {
+      const list = map.get(setting.source_agency_id) ?? [];
+      list.push(setting);
+      map.set(setting.source_agency_id, list);
+    }
+    return map;
+  }, [watermarkSettings]);
 
   const calculate = useCalculateDuplicateWatermarkImages();
   const cleanup = useEnqueueDuplicateWatermarkCleanup();
@@ -152,23 +187,35 @@ export function DuplicateWatermarkImagesModal({
                         <p className="text-sm text-muted">Loading agencies…</p>
                       ) : (
                         <div className="flex max-h-[45vh] flex-col gap-1 overflow-y-auto rounded-xl border border-border p-2">
-                          {agencies.map((agency) => (
-                            <label
-                              key={agency.id}
-                              className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-surface-secondary"
-                            >
-                              <Checkbox
-                                aria-label={agency.name}
-                                isSelected={selectedAgencyIds.has(agency.id)}
-                                onChange={() => toggleAgency(agency.id)}
+                          {agencies.map((agency) => {
+                            const summary = describeWatermarkSettings(
+                              watermarkSettingsByAgency.get(agency.id),
+                            );
+                            return (
+                              <label
+                                key={agency.id}
+                                className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-surface-secondary"
                               >
-                                <Checkbox.Control className="size-5">
-                                  <Checkbox.Indicator className="size-3.5" />
-                                </Checkbox.Control>
-                              </Checkbox>
-                              <span className="text-sm text-foreground">{agency.name}</span>
-                            </label>
-                          ))}
+                                <Checkbox
+                                  aria-label={agency.name}
+                                  isSelected={selectedAgencyIds.has(agency.id)}
+                                  onChange={() => toggleAgency(agency.id)}
+                                >
+                                  <Checkbox.Control className="size-5">
+                                    <Checkbox.Indicator className="size-3.5" />
+                                  </Checkbox.Control>
+                                </Checkbox>
+                                <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+                                  <span className="text-sm text-foreground">{agency.name}</span>
+                                  <span
+                                    className={`font-mono text-xs ${summary.isActive ? "text-foreground" : "text-muted"}`}
+                                  >
+                                    {summary.text}
+                                  </span>
+                                </div>
+                              </label>
+                            );
+                          })}
                         </div>
                       )}
                     </>

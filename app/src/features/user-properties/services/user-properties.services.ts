@@ -55,6 +55,7 @@ import type {
   DuplicateWatermarkPropertyCandidate,
   EnqueueDuplicateWatermarkCleanupPayload,
   EnqueueDuplicateWatermarkCleanupResponse,
+  AgencyWatermarkSettings,
   UpdateUserPropertyStatusPayload,
   UpdateUserPropertyStatusResult,
 } from "../interfaces/user-properties.interfaces";
@@ -741,6 +742,19 @@ export const enqueueDuplicateWatermarkCleanup = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to start duplicate image cleanup.",
+    );
+  }
+};
+
+export const getAgencyWatermarkSettings = async (): Promise<AgencyWatermarkSettings[]> => {
+  try {
+    const response = await axiosInstance.get(
+      ApiRoutes.admin.userProperties.agencyWatermarkSettings,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to load agency watermark settings.",
     );
   }
 };

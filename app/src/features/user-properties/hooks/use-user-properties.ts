@@ -50,6 +50,7 @@ import {
   fixEstateWebRemoval,
   calculateDuplicateWatermarkImages,
   enqueueDuplicateWatermarkCleanup,
+  getAgencyWatermarkSettings,
 } from "../services/user-properties.services";
 import type {
   AdminUserPropertyCountQuery,
@@ -1148,6 +1149,14 @@ export const useEnqueueDuplicateWatermarkCleanup = () => {
         variant: "error",
       });
     },
+  });
+};
+
+export const useAgencyWatermarkSettings = (options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: ["adminUserProperties", "agencyWatermarkSettings"],
+    queryFn: () => getAgencyWatermarkSettings(),
+    enabled: options?.enabled ?? true,
   });
 };
 

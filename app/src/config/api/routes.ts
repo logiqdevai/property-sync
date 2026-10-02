@@ -140,6 +140,8 @@ export const ApiRoutes = {
                 "/admin/user-properties/duplicate-watermark-images/calculate",
             cleanupDuplicateWatermarkImages:
                 "/admin/user-properties/duplicate-watermark-images/cleanup",
+            agencyWatermarkSettings:
+                "/admin/user-properties/duplicate-watermark-images/agency-settings",
         },
         notifications: {
             prefix: "/admin/notifications",

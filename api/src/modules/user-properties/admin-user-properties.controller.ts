@@ -203,6 +203,16 @@ export class AdminUserPropertiesController {
     return this.userPropertiesService.adminSplitMany(dto.ids);
   }
 
+  @Get('duplicate-watermark-images/agency-settings')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      "List each tracker's watermark removal settings, for the duplicate-photo agency picker",
+  })
+  listAgencyWatermarkSettings() {
+    return this.duplicateWatermarkImagesService.listAgencyWatermarkSettings();
+  }
+
   @SkipAudit()
   @Post('duplicate-watermark-images/calculate')
   @Roles(AuthRole.ADMIN)

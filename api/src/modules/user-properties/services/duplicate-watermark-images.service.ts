@@ -10,6 +10,7 @@ import {
   DuplicateWatermarkCleanupJobResult,
 } from '../interfaces/duplicate-watermark-cleanup-job.interface';
 import { DuplicateWatermarkPropertyCandidate } from '../interfaces/duplicate-watermark-candidate.interface';
+import { AgencyWatermarkSettings } from '../interfaces/agency-watermark-settings.interface';
 import {
   isPropertyImagesGcsUrl,
   normalizeSourceImageIdentity,
@@ -28,6 +29,23 @@ export class DuplicateWatermarkImagesService {
     @InjectQueue(DUPLICATE_WATERMARK_CLEANUP_QUEUE)
     private readonly cleanupQueue: Queue<DuplicateWatermarkCleanupJobData>,
   ) {}
+
+  // For the agency picker: lets the admin see, before calculating, which
+  // agencies even have watermark removal on and what their current settings
+  // are, instead of picking blind.
+  async listAgencyWatermarkSettings(): Promise<AgencyWatermarkSettings[]> {
+    const trackers = await this.prisma.userTrackedAgency.findMany({
+      where: { enabled: true },
+      select: {
+        source_agency_id: true,
+        user_id: true,
+        remove_watermark: true,
+        watermark_image_count: true,
+        max_image_count: true,
+      },
+    });
+    return trackers;
+  }
 
   // Finds CRM images that are stale leftovers from the automatic watermark
   // pipeline: a raw (still-watermarked) image that used to be at a position
