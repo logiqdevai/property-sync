@@ -24,6 +24,10 @@ import {
   patchIntegrationPropertyImageSource,
   resolveIntegrationImageProcessUrl,
 } from '../utils/integration-property-images.util';
+import {
+  hashSourceIdentity,
+  normalizeSourceImageIdentity,
+} from '../utils/duplicate-watermark-detection.util';
 
 function formatError(error: unknown): string {
   if (!(error instanceof Error)) {
@@ -176,7 +180,17 @@ export class WatermarkRemovalService {
           userPropertyId: params.userPropertyId,
         });
 
-        const filename = `watermark-removed-${params.userPropertyId}-${index}-${Date.now()}.jpg`;
+        // Embeds exactly what source identity this GCS file replaced, so
+        // later duplicate-detection can verify a CRM leftover is truly stale
+        // by exact match instead of guessing from canonical_property.images'
+        // CURRENT order -- which can drift (reorder/change) after this runs
+        // while this slot stays pinned to this file forever
+        // (mergeImagesPreservingProcessed), silently invalidating a
+        // position-based guess. See docs/CLIENT-ISSUES-2026-10-01.md.
+        const sourceIdentityHash = hashSourceIdentity(
+          normalizeSourceImageIdentity(sourceUrl),
+        );
+        const filename = `watermark-removed-${params.userPropertyId}-${index}-${Date.now()}-src-${sourceIdentityHash}.jpg`;
         const gcsUpload = await this.gcsService.uploadImageFromBuffer(
           processedBuffer,
           filename,

@@ -304,11 +304,23 @@ export function DuplicateWatermarkImagesModal({
 
                   {step === "review" ? (
                     <>
-                      <p className="text-sm text-muted">
-                        {candidates.length} properties / {approvedImageCount} of{" "}
-                        {candidates.reduce((s, c) => s + c.genuine_duplicate_count, 0)} images
-                        selected for deletion. Uncheck any property you're not sure about.
-                      </p>
+                      {candidates.length === 0 ? (
+                        <p className="text-sm text-muted">
+                          No verified duplicates found. Detection only flags a CRM image once
+                          it can confirm, by an exact fingerprint embedded when the clean
+                          replacement was created, which original photo it replaced — this
+                          avoids the false positives an earlier guess-from-current-listing-order
+                          version produced. Images processed before this fix don't carry that
+                          fingerprint and won't be matched automatically; they'd need to go
+                          through watermark removal again to become checkable here.
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted">
+                          {candidates.length} properties / {approvedImageCount} of{" "}
+                          {candidates.reduce((s, c) => s + c.genuine_duplicate_count, 0)} images
+                          selected for deletion. Uncheck any property you're not sure about.
+                        </p>
+                      )}
 
                       {byAgency.map(([agencyName, items]) => (
                         <div

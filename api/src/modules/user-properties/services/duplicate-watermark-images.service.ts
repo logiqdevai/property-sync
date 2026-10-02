@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { JobStatus, Prisma } from 'generated/prisma';
+import { JobStatus } from 'generated/prisma';
 import { PrismaService } from '@/core/databases/prisma/prisma.service';
 import { DUPLICATE_WATERMARK_CLEANUP_QUEUE } from '@/core/queues/queues.constants';
 import { DuplicateWatermarkCleanupItemDto } from '../dto/enqueue-duplicate-watermark-cleanup.dto';
@@ -12,6 +12,8 @@ import {
 import { DuplicateWatermarkPropertyCandidate } from '../interfaces/duplicate-watermark-candidate.interface';
 import { AgencyWatermarkSettings } from '../interfaces/agency-watermark-settings.interface';
 import {
+  extractEmbeddedSourceIdentityHash,
+  hashSourceIdentity,
   isPropertyImagesGcsUrl,
   normalizeSourceImageIdentity,
 } from '../utils/duplicate-watermark-detection.util';
@@ -75,7 +77,6 @@ export class DuplicateWatermarkImagesService {
         integration_property_id: true,
         canonical_property: {
           select: {
-            images: true,
             source_links: {
               take: 1,
               select: {
@@ -137,37 +138,37 @@ export class DuplicateWatermarkImagesService {
       const upImages = Array.isArray(up.images)
         ? up.images.filter((x): x is string => typeof x === 'string')
         : [];
-      const canonicalImages = Array.isArray(up.canonical_property.images)
-        ? up.canonical_property.images.filter(
-            (x): x is string => typeof x === 'string',
-          )
-        : [];
       const crmImages = Array.isArray(up.integration_properties[0]?.images)
         ? (up.integration_properties[0].images as RawIntegrationImage[])
         : [];
-      if (upImages.length === 0 || crmImages.length === 0 || canonicalImages.length === 0) {
+      if (upImages.length === 0 || crmImages.length === 0) {
         continue;
       }
 
-      // mapFromCanonical() builds up.images as canonicalImages.slice(0, cap),
-      // then the watermark pipeline replaces raw urls with GCS urls IN PLACE
-      // at the same index -- so up.images[k] and canonicalImages[k] are the
-      // same photo by position, never by independent identity-set membership.
-      // Walking both by index (not comparing two differently-ordered identity
-      // sets) is what ties each stale CRM image to the ONE specific GCS image
-      // that actually replaced it, instead of pairing by array-index
-      // coincidence against an unrelated list later in the UI.
-      const windowLimit = Math.min(watermarkImageCount, canonicalImages.length, upImages.length);
-      const afterImageByIdentity = new Map<string, string>();
+      // Each GCS file created by the watermark pipeline embeds a hash of the
+      // exact source identity it replaced (see WatermarkRemovalService), so a
+      // CRM leftover can be verified as truly stale by EXACT match instead of
+      // guessing "what was at this position" from canonical_property.images'
+      // CURRENT order. That guess is unsound: canonical order can drift
+      // (reorder/replace) after a GCS file is created while this slot stays
+      // pinned to it forever (mergeImagesPreservingProcessed), silently
+      // decoupling position k's current canonical content from what this GCS
+      // file actually replaced. A GCS file from before this embedding existed
+      // has no verifiable hash and is skipped rather than guessed at -- see
+      // docs/CLIENT-ISSUES-2026-10-01.md for the false positives this caused.
+      const windowLimit = Math.min(watermarkImageCount, upImages.length);
+      const afterImageByHash = new Map<string, string>();
       for (let k = 0; k < windowLimit; k++) {
         const afterUrl = upImages[k];
-        const beforeUrl = canonicalImages[k];
-        if (!isPropertyImagesGcsUrl(afterUrl) || isPropertyImagesGcsUrl(beforeUrl)) continue;
-        afterImageByIdentity.set(normalizeSourceImageIdentity(beforeUrl), afterUrl);
+        if (!isPropertyImagesGcsUrl(afterUrl)) continue;
+        const hash = extractEmbeddedSourceIdentityHash(afterUrl);
+        if (hash) afterImageByHash.set(hash, afterUrl);
       }
-      if (afterImageByIdentity.size === 0) continue;
+      if (afterImageByHash.size === 0) continue;
 
-      const currentIdentities = new Set(upImages.map(normalizeSourceImageIdentity));
+      const currentIdentities = new Set(
+        upImages.map(normalizeSourceImageIdentity),
+      );
 
       const genuineDuplicates: DuplicateWatermarkPropertyCandidate['genuine_duplicates'] =
         [];
@@ -175,11 +176,12 @@ export class DuplicateWatermarkImagesService {
 
       for (const img of crmImages) {
         if (typeof img?.id !== 'number') continue;
-        const src = typeof img.source_image === 'string' ? img.source_image : null;
+        const src =
+          typeof img.source_image === 'string' ? img.source_image : null;
         if (!src || isPropertyImagesGcsUrl(src)) continue;
         const identity = normalizeSourceImageIdentity(src);
         if (currentIdentities.has(identity)) continue; // still current, not stale
-        const afterImage = afterImageByIdentity.get(identity);
+        const afterImage = afterImageByHash.get(hashSourceIdentity(identity));
         if (afterImage) {
           genuineDuplicates.push({
             id: img.id,
@@ -241,8 +243,9 @@ export class DuplicateWatermarkImagesService {
     const trackerKeys = new Set(
       userProperties
         .map((up) => {
-          const agencyId = up.canonical_property.source_links[0]?.source_property
-            .source_agency_id;
+          const agencyId =
+            up.canonical_property.source_links[0]?.source_property
+              .source_agency_id;
           return agencyId ? `${up.user_id}::${agencyId}` : null;
         })
         .filter((key): key is string => key !== null),
@@ -274,8 +277,8 @@ export class DuplicateWatermarkImagesService {
     for (const item of items) {
       const up = userPropertyById.get(item.user_property_id);
       if (!up || !up.integration_property_id) continue;
-      const agencyId = up.canonical_property.source_links[0]?.source_property
-        .source_agency_id;
+      const agencyId =
+        up.canonical_property.source_links[0]?.source_property.source_agency_id;
       const userIntegrationId = agencyId
         ? trackerByKey.get(`${up.user_id}::${agencyId}`)?.integration_link
             ?.user_integration_id
@@ -302,7 +305,9 @@ export class DuplicateWatermarkImagesService {
       deleted: 0,
       failed: 0,
       items: [],
-      logs: [`enqueued images=${enqueueItems.length} action=delete-duplicate-watermarked`],
+      logs: [
+        `enqueued images=${enqueueItems.length} action=delete-duplicate-watermarked`,
+      ],
     };
 
     const jobLog = await this.prisma.jobLog.create({
@@ -345,7 +350,8 @@ export class DuplicateWatermarkImagesService {
     return {
       job_log_id: jobLog.id,
       enqueued: enqueueItems.length,
-      message: 'Duplicate image cleanup started in the background. Track progress in Job queue.',
+      message:
+        'Duplicate image cleanup started in the background. Track progress in Job queue.',
     };
   }
 }
