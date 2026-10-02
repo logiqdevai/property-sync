@@ -42,8 +42,11 @@ export function DuplicateWatermarkImagesModal({
     setJobLogId(null);
   }, [state.isOpen]);
 
+  // The admin agencies endpoint takes `limit` literally (Prisma `take`), unlike
+  // the trackable-agencies endpoint elsewhere in the app -- 0 means "zero rows",
+  // not "unlimited". Use a limit comfortably above the real agency count instead.
   const { data: agenciesData, isPending: agenciesPending } = useAgencies(
-    { page: 1, limit: 0 },
+    { page: 1, limit: 500 },
     { enabled: state.isOpen },
   );
   const agencies = agenciesData?.data ?? [];
