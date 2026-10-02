@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
+import { X } from "lucide-react";
 import { Button, Checkbox, Modal, useOverlayState } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
@@ -50,8 +52,21 @@ export function ImageCapExcessImagesModal({
   const [candidates, setCandidates] = useState<ImageCapExcessPropertyCandidate[]>([]);
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
   const [jobLogId, setJobLogId] = useState<string | null>(null);
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const deleteConfirm = useOverlayState();
   const bodyContentRef = useRef<HTMLDivElement>(null);
+
+  // Portaled to document.body (not rendered inside Modal.Dialog) so it isn't
+  // clipped by the dialog's own overflow-clip, and sits above the modal
+  // backdrop's z-50 via z-[60].
+  useEffect(() => {
+    if (!expandedImage) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExpandedImage(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [expandedImage]);
 
   // Modal.Body is the single scroll container (see the 85vh/nested-scroll fix
   // above). It doesn't reset on its own when the step changes, so scrolling
@@ -74,6 +89,7 @@ export function ImageCapExcessImagesModal({
     setCandidates([]);
     setApprovedIds(new Set());
     setJobLogId(null);
+    setExpandedImage(null);
   }, [state.isOpen]);
 
   // The admin agencies endpoint takes `limit` literally (Prisma `take`), unlike
@@ -312,7 +328,14 @@ export function ImageCapExcessImagesModal({
                                     <span className="w-fit rounded bg-danger/10 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-danger">
                                       Remove
                                     </span>
-                                    <div className="h-20 w-28 overflow-hidden rounded-md border-2 border-danger/50 bg-surface-secondary">
+                                    <button
+                                      type="button"
+                                      className="h-20 w-28 cursor-zoom-in overflow-hidden rounded-md border-2 border-danger/50 bg-surface-secondary"
+                                      onClick={() =>
+                                        img.source_image && setExpandedImage(img.source_image)
+                                      }
+                                      disabled={!img.source_image}
+                                    >
                                       {img.source_image ? (
                                         <img
                                           src={img.source_image}
@@ -321,7 +344,7 @@ export function ImageCapExcessImagesModal({
                                           className="h-full w-full object-cover"
                                         />
                                       ) : null}
-                                    </div>
+                                    </button>
                                     <span className="font-mono text-[0.65rem] text-muted">
                                       CRM img #{img.id}
                                     </span>
@@ -441,6 +464,31 @@ export function ImageCapExcessImagesModal({
         onConfirm={handleConfirmDelete}
         isPending={cleanup.isPending}
       />
+
+      {expandedImage
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-6"
+              onClick={() => setExpandedImage(null)}
+            >
+              <button
+                type="button"
+                className="absolute right-4 top-4 rounded-full bg-black/40 p-2 text-white hover:bg-black/60"
+                onClick={() => setExpandedImage(null)}
+                aria-label="Close"
+              >
+                <X className="size-5" />
+              </button>
+              <img
+                src={expandedImage}
+                alt="Expanded preview"
+                className="max-h-full max-w-full rounded-lg object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>,
+            document.body,
+          )
+        : null}
     </>
   );
 }
