@@ -454,6 +454,7 @@ export interface DuplicateWatermarkImageCandidate {
   id: number;
   source_image: string;
   filename: string | null;
+  after_image: string;
 }
 
 export interface DuplicateWatermarkPropertyCandidate {
@@ -465,12 +466,9 @@ export interface DuplicateWatermarkPropertyCandidate {
   agency_name: string;
   user_integration_id: string;
   crm_property_id: string;
-  kept_gcs_count: number;
   genuine_duplicate_count: number;
   excess_left_alone_count: number;
-  is_high_confidence: boolean;
   genuine_duplicates: DuplicateWatermarkImageCandidate[];
-  kept_gcs_images: string[];
 }
 
 export interface CalculateDuplicateWatermarkImagesPayload {

@@ -149,12 +149,24 @@ export class DuplicateWatermarkImagesService {
         continue;
       }
 
-      const keptGcsImages = upImages.filter(isPropertyImagesGcsUrl);
-      if (keptGcsImages.length === 0) continue;
+      // mapFromCanonical() builds up.images as canonicalImages.slice(0, cap),
+      // then the watermark pipeline replaces raw urls with GCS urls IN PLACE
+      // at the same index -- so up.images[k] and canonicalImages[k] are the
+      // same photo by position, never by independent identity-set membership.
+      // Walking both by index (not comparing two differently-ordered identity
+      // sets) is what ties each stale CRM image to the ONE specific GCS image
+      // that actually replaced it, instead of pairing by array-index
+      // coincidence against an unrelated list later in the UI.
+      const windowLimit = Math.min(watermarkImageCount, canonicalImages.length, upImages.length);
+      const afterImageByIdentity = new Map<string, string>();
+      for (let k = 0; k < windowLimit; k++) {
+        const afterUrl = upImages[k];
+        const beforeUrl = canonicalImages[k];
+        if (!isPropertyImagesGcsUrl(afterUrl) || isPropertyImagesGcsUrl(beforeUrl)) continue;
+        afterImageByIdentity.set(normalizeSourceImageIdentity(beforeUrl), afterUrl);
+      }
+      if (afterImageByIdentity.size === 0) continue;
 
-      const watermarkWindowIdentities = new Set(
-        canonicalImages.slice(0, watermarkImageCount).map(normalizeSourceImageIdentity),
-      );
       const currentIdentities = new Set(upImages.map(normalizeSourceImageIdentity));
 
       const genuineDuplicates: DuplicateWatermarkPropertyCandidate['genuine_duplicates'] =
@@ -167,11 +179,13 @@ export class DuplicateWatermarkImagesService {
         if (!src || isPropertyImagesGcsUrl(src)) continue;
         const identity = normalizeSourceImageIdentity(src);
         if (currentIdentities.has(identity)) continue; // still current, not stale
-        if (watermarkWindowIdentities.has(identity)) {
+        const afterImage = afterImageByIdentity.get(identity);
+        if (afterImage) {
           genuineDuplicates.push({
             id: img.id,
             source_image: src,
             filename: typeof img.filename === 'string' ? img.filename : null,
+            after_image: afterImage,
           });
         } else {
           excessCount += 1;
@@ -189,12 +203,9 @@ export class DuplicateWatermarkImagesService {
         agency_name: agencyName,
         user_integration_id: userIntegrationId,
         crm_property_id: up.integration_property_id as string,
-        kept_gcs_count: keptGcsImages.length,
         genuine_duplicate_count: genuineDuplicates.length,
         excess_left_alone_count: excessCount,
-        is_high_confidence: genuineDuplicates.length === keptGcsImages.length,
         genuine_duplicates: genuineDuplicates,
-        kept_gcs_images: keptGcsImages,
       });
     }
 

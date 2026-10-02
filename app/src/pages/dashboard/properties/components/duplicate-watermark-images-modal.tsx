@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useState, type SyntheticEvent } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
+import { X } from "lucide-react";
 import { Button, Checkbox, Modal, useOverlayState } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
@@ -72,6 +74,7 @@ export function DuplicateWatermarkImagesModal({
   const [candidates, setCandidates] = useState<DuplicateWatermarkPropertyCandidate[]>([]);
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
   const [jobLogId, setJobLogId] = useState<string | null>(null);
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const deleteConfirm = useOverlayState();
 
   useEffect(() => {
@@ -81,7 +84,20 @@ export function DuplicateWatermarkImagesModal({
     setCandidates([]);
     setApprovedIds(new Set());
     setJobLogId(null);
+    setExpandedImage(null);
   }, [state.isOpen]);
+
+  // Portaled to document.body (not rendered inside Modal.Dialog) so it isn't
+  // clipped by the dialog's own overflow-clip, and sits above the modal
+  // backdrop's z-50 via z-[60].
+  useEffect(() => {
+    if (!expandedImage) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExpandedImage(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [expandedImage]);
 
   // Modal.Body is one persistent DOM node across both steps -- only its
   // children swap, its scrollTop does not reset on its own. Must be
@@ -126,25 +142,17 @@ export function DuplicateWatermarkImagesModal({
   const jobResult = job?.result as DuplicateWatermarkCleanupJobResult | undefined;
   const jobIsActive = !!job && ACTIVE_JOB_STATUSES.has(job.status);
 
-  const highConfidence = useMemo(
-    () => candidates.filter((c) => c.is_high_confidence),
-    [candidates],
-  );
-  const needsReview = useMemo(
-    () => candidates.filter((c) => !c.is_high_confidence),
-    [candidates],
-  );
   const byAgency = useMemo(() => {
     const map = new Map<string, DuplicateWatermarkPropertyCandidate[]>();
-    for (const c of highConfidence) {
+    for (const c of candidates) {
       const list = map.get(c.agency_name) ?? [];
       list.push(c);
       map.set(c.agency_name, list);
     }
     return [...map.entries()].sort((a, b) => b[1].length - a[1].length);
-  }, [highConfidence]);
+  }, [candidates]);
 
-  const approvedCandidates = highConfidence.filter((c) => approvedIds.has(c.user_property_id));
+  const approvedCandidates = candidates.filter((c) => approvedIds.has(c.user_property_id));
   const approvedImageCount = approvedCandidates.reduce(
     (sum, c) => sum + c.genuine_duplicate_count,
     0,
@@ -166,13 +174,7 @@ export function DuplicateWatermarkImagesModal({
       {
         onSuccess: (result) => {
           setCandidates(result);
-          setApprovedIds(
-            new Set(
-              result
-                .filter((c) => c.is_high_confidence)
-                .map((c) => c.user_property_id),
-            ),
-          );
+          setApprovedIds(new Set(result.map((c) => c.user_property_id)));
           setStep("review");
         },
       },
@@ -281,13 +283,9 @@ export function DuplicateWatermarkImagesModal({
                   {step === "review" ? (
                     <>
                       <p className="text-sm text-muted">
-                        {highConfidence.length} properties / {approvedImageCount} of{" "}
-                        {highConfidence.reduce((s, c) => s + c.genuine_duplicate_count, 0)}{" "}
-                        images selected for deletion. Uncheck any property you're not sure
-                        about.
-                        {needsReview.length > 0
-                          ? ` ${needsReview.length} more properties had an uneven count (likely a mix of a real duplicate and photos outside the image cap) and are not shown here — they need individual review.`
-                          : ""}
+                        {candidates.length} properties / {approvedImageCount} of{" "}
+                        {candidates.reduce((s, c) => s + c.genuine_duplicate_count, 0)} images
+                        selected for deletion. Uncheck any property you're not sure about.
                       </p>
 
                       {byAgency.map(([agencyName, items]) => (
@@ -343,13 +341,17 @@ export function DuplicateWatermarkImagesModal({
                               </div>
 
                               <div className="flex gap-3 overflow-x-auto pb-1">
-                                {c.genuine_duplicates.map((img, i) => (
+                                {c.genuine_duplicates.map((img) => (
                                   <div key={img.id} className="flex flex-shrink-0 gap-2">
                                     <div className="flex w-28 flex-col gap-1">
                                       <span className="w-fit rounded bg-danger/10 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-danger">
                                         Remove
                                       </span>
-                                      <div className="h-20 w-28 overflow-hidden rounded-md border-2 border-danger/50 bg-surface-secondary">
+                                      <button
+                                        type="button"
+                                        className="h-20 w-28 cursor-zoom-in overflow-hidden rounded-md border-2 border-danger/50 bg-surface-secondary"
+                                        onClick={() => setExpandedImage(img.source_image)}
+                                      >
                                         <img
                                           src={img.source_image}
                                           alt={`Watermarked, CRM image ${img.id}`}
@@ -357,30 +359,32 @@ export function DuplicateWatermarkImagesModal({
                                           onError={handleThumbnailError}
                                           className="h-full w-full object-cover"
                                         />
-                                      </div>
+                                      </button>
                                       <span className="font-mono text-[0.65rem] text-muted">
                                         CRM img #{img.id}
                                       </span>
                                     </div>
-                                    {c.kept_gcs_images[i] ? (
-                                      <div className="flex w-28 flex-col gap-1">
-                                        <span className="w-fit rounded bg-success/10 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-success">
-                                          Keep
-                                        </span>
-                                        <div className="h-20 w-28 overflow-hidden rounded-md border-2 border-success/50 bg-surface-secondary">
-                                          <img
-                                            src={c.kept_gcs_images[i]}
-                                            alt="Clean replacement"
-                                            loading="lazy"
-                                            onError={handleThumbnailError}
-                                            className="h-full w-full object-cover"
-                                          />
-                                        </div>
-                                        <span className="font-mono text-[0.65rem] text-muted">
-                                          already on property
-                                        </span>
-                                      </div>
-                                    ) : null}
+                                    <div className="flex w-28 flex-col gap-1">
+                                      <span className="w-fit rounded bg-success/10 px-1.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-success">
+                                        Keep
+                                      </span>
+                                      <button
+                                        type="button"
+                                        className="h-20 w-28 cursor-zoom-in overflow-hidden rounded-md border-2 border-success/50 bg-surface-secondary"
+                                        onClick={() => setExpandedImage(img.after_image)}
+                                      >
+                                        <img
+                                          src={img.after_image}
+                                          alt="Clean replacement"
+                                          loading="lazy"
+                                          onError={handleThumbnailError}
+                                          className="h-full w-full object-cover"
+                                        />
+                                      </button>
+                                      <span className="font-mono text-[0.65rem] text-muted">
+                                        already on property
+                                      </span>
+                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -497,6 +501,31 @@ export function DuplicateWatermarkImagesModal({
         onConfirm={handleConfirmDelete}
         isPending={cleanup.isPending}
       />
+
+      {expandedImage
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-6"
+              onClick={() => setExpandedImage(null)}
+            >
+              <button
+                type="button"
+                className="absolute right-4 top-4 rounded-full bg-black/40 p-2 text-white hover:bg-black/60"
+                onClick={() => setExpandedImage(null)}
+                aria-label="Close"
+              >
+                <X className="size-5" />
+              </button>
+              <img
+                src={expandedImage}
+                alt="Expanded preview"
+                className="max-h-full max-w-full rounded-lg object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>,
+            document.body,
+          )
+        : null}
     </>
   );
 }
