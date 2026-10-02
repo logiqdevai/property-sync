@@ -51,6 +51,8 @@ import {
   calculateDuplicateWatermarkImages,
   enqueueDuplicateWatermarkCleanup,
   getAgencyWatermarkSettings,
+  calculateImageCapExcessImages,
+  enqueueImageCapExcessImagesCleanup,
 } from "../services/user-properties.services";
 import type {
   AdminUserPropertyCountQuery,
@@ -59,6 +61,8 @@ import type {
   DedupeUserPropertiesPayload,
   CalculateDuplicateWatermarkImagesPayload,
   EnqueueDuplicateWatermarkCleanupPayload,
+  CalculateImageCapExcessImagesPayload,
+  EnqueueImageCapExcessImagesCleanupPayload,
   PushUserPropertiesToCrmPayload,
   PushUserPropertiesToCrmResult,
   PushUserPropertiesImagesToCrmPayload,
@@ -1157,6 +1161,34 @@ export const useAgencyWatermarkSettings = (options?: { enabled?: boolean }) => {
     queryKey: ["adminUserProperties", "agencyWatermarkSettings"],
     queryFn: () => getAgencyWatermarkSettings(),
     enabled: options?.enabled ?? true,
+  });
+};
+
+export const useCalculateImageCapExcessImages = () => {
+  return useMutation({
+    mutationFn: (payload: CalculateImageCapExcessImagesPayload) =>
+      calculateImageCapExcessImages(payload),
+    onError: (error: Error) => {
+      toast({
+        title: "Could not find excess CRM images",
+        description: error.message,
+        variant: "error",
+      });
+    },
+  });
+};
+
+export const useEnqueueImageCapExcessImagesCleanup = () => {
+  return useMutation({
+    mutationFn: (payload: EnqueueImageCapExcessImagesCleanupPayload) =>
+      enqueueImageCapExcessImagesCleanup(payload),
+    onError: (error: Error) => {
+      toast({
+        title: "Could not start image cap cleanup",
+        description: error.message,
+        variant: "error",
+      });
+    },
   });
 };
 

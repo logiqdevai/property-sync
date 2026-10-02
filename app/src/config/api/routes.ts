@@ -142,6 +142,10 @@ export const ApiRoutes = {
                 "/admin/user-properties/duplicate-watermark-images/cleanup",
             agencyWatermarkSettings:
                 "/admin/user-properties/duplicate-watermark-images/agency-settings",
+            calculateImageCapExcessImages:
+                "/admin/user-properties/image-cap-excess-images/calculate",
+            cleanupImageCapExcessImages:
+                "/admin/user-properties/image-cap-excess-images/cleanup",
         },
         notifications: {
             prefix: "/admin/notifications",

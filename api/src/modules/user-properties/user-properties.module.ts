@@ -5,6 +5,7 @@ import {
   CHECK_ESTATEWEB_REMOVAL_QUEUE,
   FIX_ESTATEWEB_REMOVAL_QUEUE,
   DUPLICATE_WATERMARK_CLEANUP_QUEUE,
+  IMAGE_CAP_EXCESS_IMAGES_CLEANUP_QUEUE,
   CONTENT_PRODUCTION_QUEUE,
   CREATE_INTEGRATION_IMAGES_QUEUE,
   CRM_CLIENT_NOTES_SYNC_QUEUE,
@@ -40,6 +41,7 @@ import { ResolveEstateWebLocationProcessor } from '@/background/resolve-estatewe
 import { CheckEstateWebRemovalProcessor } from '@/background/check-estateweb-removal.processor';
 import { FixEstateWebRemovalProcessor } from '@/background/fix-estateweb-removal.processor';
 import { DuplicateWatermarkCleanupProcessor } from '@/background/duplicate-watermark-cleanup.processor';
+import { ImageCapExcessImagesCleanupProcessor } from '@/background/image-cap-excess-images-cleanup.processor';
 import { UserPropertiesController } from './user-properties.controller';
 import { AdminUserPropertiesController } from './admin-user-properties.controller';
 import { UserPropertiesService } from './user-properties.service';
@@ -58,6 +60,8 @@ import { CheckEstateWebRemovalJobService } from './services/check-estateweb-remo
 import { FixEstateWebRemovalJobService } from './services/fix-estateweb-removal-job.service';
 import { DuplicateWatermarkImagesService } from './services/duplicate-watermark-images.service';
 import { DuplicateWatermarkCleanupJobService } from './services/duplicate-watermark-cleanup-job.service';
+import { ImageCapExcessImagesService } from './services/image-cap-excess-images.service';
+import { ImageCapExcessImagesCleanupJobService } from './services/image-cap-excess-images-cleanup-job.service';
 
 @Module({
   imports: [
@@ -86,6 +90,7 @@ import { DuplicateWatermarkCleanupJobService } from './services/duplicate-waterm
       { name: CHECK_ESTATEWEB_REMOVAL_QUEUE },
       { name: FIX_ESTATEWEB_REMOVAL_QUEUE },
       { name: DUPLICATE_WATERMARK_CLEANUP_QUEUE },
+      { name: IMAGE_CAP_EXCESS_IMAGES_CLEANUP_QUEUE },
     ),
   ],
   controllers: [UserPropertiesController, AdminUserPropertiesController],
@@ -120,6 +125,9 @@ import { DuplicateWatermarkCleanupJobService } from './services/duplicate-waterm
     DuplicateWatermarkImagesService,
     DuplicateWatermarkCleanupJobService,
     DuplicateWatermarkCleanupProcessor,
+    ImageCapExcessImagesService,
+    ImageCapExcessImagesCleanupJobService,
+    ImageCapExcessImagesCleanupProcessor,
   ],
   exports: [UserPropertiesService],
 })

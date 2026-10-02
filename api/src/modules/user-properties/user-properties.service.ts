@@ -3943,6 +3943,17 @@ export class UserPropertiesService {
         existing.images,
         effectiveFields.images,
       );
+      // A pure max_image_count change (no overlap change, no pipeline run) still
+      // means the locally-stored image LIST differs from what was last pushed to
+      // the CRM -- e.g. raising 8 -> 10 exposes 2 more images, or lowering 8 -> 5
+      // drops 3. That must still reach the CRM even when the source listing's own
+      // content_hash didn't change, or the CRM silently keeps serving the stale
+      // image set forever. See docs/CLIENT-ISSUES-2026-10-01.md #1 follow-up.
+      const imagesListChanged =
+        this.normalizeComparableValue(existing.images as Prisma.JsonValue) !==
+        this.normalizeComparableValue(
+          effectiveFields.images as Prisma.JsonValue,
+        );
       const contentChanged =
         this.normalizeComparableValue(existing.title) !==
           this.normalizeComparableValue(canonicalFields.title) ||
@@ -4003,9 +4014,12 @@ export class UserPropertiesService {
       // reach the CRM regardless of cms_update_on_hash_only -- that gate exists
       // to skip pushes when the SOURCE listing's own content didn't change, not
       // to silently swallow a local image replacement we already billed for.
+      // Same reasoning for imagesListChanged: an image-count setting change is a
+      // real, user-intended difference in what should be live, not noise.
       if (
         !statusChanged &&
         !watermarkPipelineChangedImages &&
+        !imagesListChanged &&
         tracker.cms_update_on_hash_only &&
         options.contentHashChanged === false
       ) {

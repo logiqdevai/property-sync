@@ -512,3 +512,58 @@ export interface AgencyWatermarkSettings {
   watermark_image_count: number;
   max_image_count: number | null;
 }
+
+export interface ImageCapExcessImageCandidate {
+  id: number;
+  source_image: string | null;
+  filename: string | null;
+}
+
+export interface ImageCapExcessPropertyCandidate {
+  user_property_id: string;
+  user_id: string;
+  property_id: string;
+  title: string;
+  agency_id: string;
+  agency_name: string;
+  user_integration_id: string;
+  crm_property_id: string;
+  local_image_count: number;
+  crm_image_count: number;
+  excess_count: number;
+  is_high_confidence: boolean;
+  excess_images: ImageCapExcessImageCandidate[];
+  kept_local_images: string[];
+}
+
+export interface CalculateImageCapExcessImagesPayload {
+  source_agency_ids: string[];
+}
+
+export interface ImageCapExcessImagesCleanupItem {
+  user_property_id: string;
+  crm_image_id: number;
+}
+
+export interface EnqueueImageCapExcessImagesCleanupPayload {
+  items: ImageCapExcessImagesCleanupItem[];
+}
+
+export interface EnqueueImageCapExcessImagesCleanupResponse {
+  job_log_id: string;
+  enqueued: number;
+  message: string;
+}
+
+export interface ImageCapExcessImagesCleanupJobResult {
+  total: number;
+  processed: number;
+  deleted: number;
+  failed: number;
+  items: Array<{
+    user_property_id: string;
+    crm_image_id: number;
+    status: "deleted" | "failed";
+    error?: string;
+  }>;
+}

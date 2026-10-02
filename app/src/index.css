@@ -26,13 +26,16 @@ body {
      themselves off this custom property (h-(--visual-viewport-height) in
      their own CSS) but never define it -- it was undefined everywhere in
      this project and in @heroui itself, so that height declaration was
-     silently invalid and fell back to height: auto. That made the
-     centering container's size purely content-driven, recomputed on every
-     reflow, which could visibly shift a centered dialog's position when
-     content inside it changed (e.g. focusing a checkbox near a scroll
-     boundary). html/body are already position: fixed; inset: 0 here, so
-     the real viewport never resizes dynamically -- a static value is
-     correct and sufficient, no JS visualViewport listener needed.
+     silently invalid and fell back to height: auto, letting a centered
+     dialog's position visibly shift when content inside it changed.
+     This static 100dvh is only the pre-JS fallback for first paint --
+     main.tsx overrides it with a live value kept in sync with the real
+     viewport. Confirmed via live measurement that a static value is NOT
+     reliable on its own: dvh read through a custom property can go stale
+     after a real viewport change (e.g. a backdrop stuck at an old height
+     while Modal.Dialog's own max-h-[85vh], a plain vh unit, correctly
+     recomputed) -- the mismatch misplaces the centered dialog relative to
+     the true viewport. See main.tsx's syncVisualViewportHeight.
   */
   --visual-viewport-height: 100dvh;
 

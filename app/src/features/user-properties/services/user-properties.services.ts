@@ -58,6 +58,10 @@ import type {
   AgencyWatermarkSettings,
   UpdateUserPropertyStatusPayload,
   UpdateUserPropertyStatusResult,
+  CalculateImageCapExcessImagesPayload,
+  ImageCapExcessPropertyCandidate,
+  EnqueueImageCapExcessImagesCleanupPayload,
+  EnqueueImageCapExcessImagesCleanupResponse,
 } from "../interfaces/user-properties.interfaces";
 
 export const getUserProperties = async (
@@ -742,6 +746,38 @@ export const enqueueDuplicateWatermarkCleanup = async (
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.message || "Failed to start duplicate image cleanup.",
+    );
+  }
+};
+
+export const calculateImageCapExcessImages = async (
+  payload: CalculateImageCapExcessImagesPayload,
+): Promise<ImageCapExcessPropertyCandidate[]> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.calculateImageCapExcessImages,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to find excess CRM images.",
+    );
+  }
+};
+
+export const enqueueImageCapExcessImagesCleanup = async (
+  payload: EnqueueImageCapExcessImagesCleanupPayload,
+): Promise<EnqueueImageCapExcessImagesCleanupResponse> => {
+  try {
+    const response = await axiosInstance.post(
+      ApiRoutes.admin.userProperties.cleanupImageCapExcessImages,
+      payload,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to start image cap cleanup.",
     );
   }
 };

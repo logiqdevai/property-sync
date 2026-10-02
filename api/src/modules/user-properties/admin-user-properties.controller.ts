@@ -44,6 +44,9 @@ import { Audited, SkipAudit } from '@/modules/activity-logs/decorators/audited.d
 import { CalculateDuplicateWatermarkImagesDto } from './dto/calculate-duplicate-watermark-images.dto';
 import { EnqueueDuplicateWatermarkCleanupDto } from './dto/enqueue-duplicate-watermark-cleanup.dto';
 import { DuplicateWatermarkImagesService } from './services/duplicate-watermark-images.service';
+import { CalculateImageCapExcessImagesDto } from './dto/calculate-image-cap-excess-images.dto';
+import { EnqueueImageCapExcessImagesCleanupDto } from './dto/enqueue-image-cap-excess-images-cleanup.dto';
+import { ImageCapExcessImagesService } from './services/image-cap-excess-images.service';
 
 @ApiTags('Admin User Properties')
 @ApiBearerAuth()
@@ -54,6 +57,7 @@ export class AdminUserPropertiesController {
   constructor(
     private readonly userPropertiesService: UserPropertiesService,
     private readonly duplicateWatermarkImagesService: DuplicateWatermarkImagesService,
+    private readonly imageCapExcessImagesService: ImageCapExcessImagesService,
   ) {}
 
   @Get()
@@ -241,6 +245,36 @@ export class AdminUserPropertiesController {
     @Body() dto: EnqueueDuplicateWatermarkCleanupDto,
   ) {
     return this.duplicateWatermarkImagesService.enqueueCleanup(dto.items);
+  }
+
+  @SkipAudit()
+  @Post('image-cap-excess-images/calculate')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary:
+      'Find CRM images left over on EstateWeb beyond a tracker image cap that trimmed the local copy, for the given source agencies',
+  })
+  calculateImageCapExcessImages(
+    @Body() dto: CalculateImageCapExcessImagesDto,
+  ) {
+    return this.imageCapExcessImagesService.calculateCandidates(
+      dto.source_agency_ids,
+    );
+  }
+
+  @Audited({
+    action: 'user_property.image_cap_excess_images_cleanup',
+    entity: 'UserProperty',
+  })
+  @Post('image-cap-excess-images/cleanup')
+  @Roles(AuthRole.ADMIN)
+  @ApiOperation({
+    summary: 'Enqueue background deletion of confirmed excess CRM images beyond the image cap',
+  })
+  enqueueImageCapExcessImagesCleanup(
+    @Body() dto: EnqueueImageCapExcessImagesCleanupDto,
+  ) {
+    return this.imageCapExcessImagesService.enqueueCleanup(dto.items);
   }
 
   @Get(':id')
