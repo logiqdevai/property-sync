@@ -30,15 +30,21 @@ function describeWatermarkSettings(settings: AgencyWatermarkSettings[] | undefin
   if (!settings || settings.length === 0) {
     return { text: "Not tracked", isActive: false };
   }
-  const active = settings.filter((s) => s.remove_watermark);
-  if (active.length === 0) {
-    return { text: "Watermark removal off", isActive: false };
-  }
-  const first = active[0];
-  const keep = first.max_image_count == null ? "all" : String(first.max_image_count);
-  const extra = active.length > 1 ? ` (+${active.length - 1} more tracker${active.length - 1 === 1 ? "" : "s"})` : "";
+  // remove_watermark and max_image_count are independent settings -- an
+  // agency can have watermark removal off but still cap how many images are
+  // kept, so both are shown regardless of each other.
+  const first = settings[0];
+  const watermarkPart = first.remove_watermark
+    ? `Dewatermark first ${first.watermark_image_count}`
+    : "Watermark off";
+  const keepPart =
+    first.max_image_count == null ? "Keep all" : `Keep ${first.max_image_count}`;
+  const extra =
+    settings.length > 1
+      ? ` (+${settings.length - 1} more tracker${settings.length - 1 === 1 ? "" : "s"})`
+      : "";
   return {
-    text: `Dewatermark first ${first.watermark_image_count} · Keep ${keep}${extra}`,
+    text: `${watermarkPart} · ${keepPart}${extra}`,
     isActive: true,
   };
 }
