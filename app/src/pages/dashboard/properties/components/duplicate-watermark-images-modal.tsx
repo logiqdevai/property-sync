@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type SyntheticEvent } from "react";
 import { Link } from "react-router-dom";
 import { Button, Checkbox, Modal, useOverlayState } from "@heroui/react";
 import { ActionButtonWithPending } from "@/components/ui/action-button-with-pending";
@@ -22,6 +22,18 @@ export type DuplicateWatermarkImagesModalState = ReturnType<typeof useOverlaySta
 type Step = "select-agencies" | "review" | "running";
 
 const ACTIVE_JOB_STATUSES = new Set(["WAITING", "ACTIVE", "DELAYED", "PAUSED"]);
+
+// Source-site image hosts sometimes block hotlinking or the photo has since
+// been removed -- swap a broken <img> for a plain placeholder instead of the
+// browser's default broken-image icon.
+const BROKEN_IMAGE_FALLBACK =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='80'%3E%3Crect width='112' height='80' fill='%23d9d4c8'/%3E%3C/svg%3E";
+
+function handleThumbnailError(event: SyntheticEvent<HTMLImageElement>) {
+  const img = event.currentTarget;
+  img.onerror = null;
+  img.src = BROKEN_IMAGE_FALLBACK;
+}
 
 function describeWatermarkSettings(settings: AgencyWatermarkSettings[] | undefined): {
   text: string;
@@ -211,10 +223,12 @@ export function DuplicateWatermarkImagesModal({
                                     <Checkbox.Indicator className="size-3.5" />
                                   </Checkbox.Control>
                                 </Checkbox>
-                                <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-                                  <span className="text-sm text-foreground">{agency.name}</span>
+                                <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
+                                  <span className="min-w-0 flex-1 truncate text-sm text-foreground">
+                                    {agency.name}
+                                  </span>
                                   <span
-                                    className={`font-mono text-xs ${summary.isActive ? "text-foreground" : "text-muted"}`}
+                                    className={`shrink-0 whitespace-nowrap font-mono text-xs ${summary.isActive ? "text-foreground" : "text-muted"}`}
                                   >
                                     {summary.text}
                                   </span>
@@ -244,11 +258,11 @@ export function DuplicateWatermarkImagesModal({
                           key={agencyName}
                           className="flex flex-col gap-3 rounded-xl border border-border p-3"
                         >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-semibold text-foreground">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
                               {agencyName}
                             </span>
-                            <span className="font-mono text-xs text-muted">
+                            <span className="shrink-0 whitespace-nowrap font-mono text-xs text-muted">
                               {items.length} properties ·{" "}
                               {items.reduce((s, c) => s + c.genuine_duplicate_count, 0)} images
                             </span>
@@ -259,8 +273,8 @@ export function DuplicateWatermarkImagesModal({
                               key={c.user_property_id}
                               className="flex flex-col gap-2 rounded-lg border border-border p-2.5"
                             >
-                              <div className="flex flex-wrap items-start justify-between gap-2">
-                                <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0 flex-1">
                                   <p className="text-sm font-medium text-foreground">
                                     {c.title}
                                   </p>
@@ -270,7 +284,7 @@ export function DuplicateWatermarkImagesModal({
                                     <b className="text-foreground">{c.crm_property_id}</b>
                                   </p>
                                 </div>
-                                <label className="flex items-center gap-2 text-xs text-muted">
+                                <label className="flex shrink-0 items-center gap-2 text-xs text-muted">
                                   <Checkbox
                                     aria-label="Approve for deletion"
                                     isSelected={approvedIds.has(c.user_property_id)}
@@ -303,6 +317,7 @@ export function DuplicateWatermarkImagesModal({
                                           src={img.source_image}
                                           alt={`Watermarked, CRM image ${img.id}`}
                                           loading="lazy"
+                                          onError={handleThumbnailError}
                                           className="h-full w-full object-cover"
                                         />
                                       </div>
@@ -320,6 +335,7 @@ export function DuplicateWatermarkImagesModal({
                                             src={c.kept_gcs_images[i]}
                                             alt="Clean replacement"
                                             loading="lazy"
+                                            onError={handleThumbnailError}
                                             className="h-full w-full object-cover"
                                           />
                                         </div>
