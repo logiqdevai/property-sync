@@ -312,7 +312,7 @@ export function DuplicateWatermarkImagesModal({
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-medium text-foreground">
+                                  <p className="break-words text-sm font-medium text-foreground">
                                     {c.title}
                                   </p>
                                   <p className="font-mono text-xs text-muted">
